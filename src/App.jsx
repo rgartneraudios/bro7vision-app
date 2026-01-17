@@ -220,7 +220,7 @@ function App() {
       {(step === 1 || selectedCard || previewCard) && (
         <div className="
             /* MÓVIL: Más grande y centrado en el hueco izquierdo */
-            fixed top-6 left-[35%] -translate-x-1/2 z-[50000] scale-[0.45] origin-center pointer-events-none
+            fixed top-6 left-[25%] -translate-x-1/2 z-[50000] scale-[0.45] origin-center pointer-events-none
             
             /* PC: Restaurar posición original */
             md:relative md:top-auto md:left-auto md:translate-x-0 md:scale-100 md:origin-center
