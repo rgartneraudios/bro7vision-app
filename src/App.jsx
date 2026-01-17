@@ -219,8 +219,11 @@ function App() {
      {/* 2. HOLO-PRISMA */}
       {(step === 1 || selectedCard || previewCard) && (
         <div className="
-            fixed top-[10%] right-[-60px] z-[50] scale-[0.35] origin-top-right pointer-events-none
-            md:relative md:top-auto md:right-auto md:scale-100 md:origin-center
+            /* MÓVIL: Fijo arriba, centrado pero desplazado a la izquierda */
+            fixed top-5 left-1/2 -translate-x-[80%] z-[50000] scale-[0.25] origin-top pointer-events-none
+            
+            /* PC: Posición original relativa */
+            md:relative md:top-auto md:left-auto md:translate-x-0 md:scale-100 md:origin-center
         ">
             <HoloPrism customImages={
                 (selectedCard || previewCard) 
@@ -235,7 +238,7 @@ function App() {
                     : null)
             } />
         </div>
-      )}      
+      )} 
       {/* 3. BRO-LIVES (REPRODUCTOR FLOTANTE DERECHA) */}
       {step > 0 && (
         <BroLives 
