@@ -1,0 +1,177 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: black;
+  color: white; 
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* =========================================
+   ANIMACIÓN CARRUSEL (OPTIMIZADA)
+   ========================================= */
+@keyframes desfile {
+  0% { 
+    transform: translate3d(0, 0, 0); 
+  }
+  100% { 
+    /* NO CAMBIAR ESTE -50% - Es matemático para el loop infinito */
+    transform: translate3d(-50%, 0, 0); 
+  } 
+}
+
+.animate-desfile {
+  display: flex;
+  animation: desfile 40s linear infinite;
+  width: max-content; 
+  
+  /* OPTIMIZACIONES GPU */
+  will-change: transform;
+  transform: translate3d(0, 0, 0); /* Fuerza capa de composición */
+  backface-visibility: hidden;
+  transform-style: preserve-3d; /* CRÍTICO para backface-visibility */
+  
+  /* Prevenir glitches de sub-píxeles */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Pausar al hacer hover */
+.animate-desfile:hover {
+  animation-play-state: paused;
+}
+
+/* =========================================
+   ANIMACIÓN FONDO (KEN BURNS)
+   ========================================= */
+@keyframes kenBurns {
+  0% { 
+    transform: scale(1) translateZ(0); 
+  }
+  100% { 
+    transform: scale(1.15) translateZ(0); 
+  }
+}
+
+.animate-ken-burns {
+  animation: kenBurns 20s ease-out infinite alternate;
+  will-change: transform;
+  transform: translateZ(0); /* Fuerza GPU desde el inicio */
+  backface-visibility: hidden;
+}
+
+/* =========================================
+   UTILIDADES PERFORMANCE
+   ========================================= */
+
+/* Forzar aceleración GPU */
+.transform-gpu {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Prevenir flickering en imágenes */
+img {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Suavizar animaciones globales */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================================
+   ANIMACIONES ADICIONALES
+   ========================================= */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0); 
+  }
+}
+
+.animate-slideUp {
+  animation: slideUp 0.4s ease-out;
+}
+
+/* Prevenir parpadeo en transiciones */
+.transition-all,
+.transition-transform,
+.transition-colors {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+/* --- src/index.css --- */
+
+/* Animación personalizada de entrada "Vuelo" */
+@keyframes flyIn {
+  0% {
+    opacity: 0;
+    transform: translateY(150px) scale(0.5) perspective(500px) rotateX(20deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) perspective(500px) rotateX(0deg);
+  }
+}
+
+.animate-flyIn {
+  /* Duración 0.6s, curva suave de frenado */
+  animation: flyIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  /* El 'forwards' asegura que se quede quieto al terminar */
+}
+
+@keyframes scan {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 0% 200%; }
+}
+
+.animate-scan {
+  animation: scan 3s linear infinite;
+}
+
+/* CLASES 3D PARA EL PRISMA */
+.perspective-\[1000px\] {
+  perspective: 1000px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+/* Rotación lenta y continua del prisma */
+@keyframes spin-3d {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(360deg); }
+}
+
+.animate-spin-slow-3d {
+  animation: spin-3d 15s linear infinite;
+}
+
+/* Utilidades de rotación manuales por si Tailwind no las pilla */
+.rotate-y-90 { transform: rotateY(90deg); }
+.-rotate-y-90 { transform: rotateY(-90deg); }
+.rotate-y-180 { transform: rotateY(180deg); }
+.rotate-x-90 { transform: rotateX(90deg); }
+.-rotate-x-90 { transform: rotateX(-90deg); }
+.translate-z-\[64px\] { transform: translateZ(64px); }
+.-translate-z-\[64px\] { transform: translateZ(-64px); }
