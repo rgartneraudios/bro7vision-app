@@ -117,23 +117,19 @@ const LiveGrid = ({ onTuneIn, onSelectShop, onUserClick, onClose }) => {
   return (
     <div className="absolute top-48 bottom-48 md:top-[15%] md:bottom-[15%] w-full max-w-6xl px-4 pointer-events-auto z-40 animate-zoomIn flex flex-col items-center">
         
+        {/* ... (La parte del Toast y la Esfera déjala igual) ... */}
         {toast && (
             <div className="fixed top-36 left-0 right-0 mx-auto w-max max-w-[90%] z-[300] bg-yellow-500 text-black font-bold px-4 py-2 rounded-full shadow-[0_0_20px_rgba(234,179,8,0.8)] animate-bounce border-2 border-white text-xs text-center">
                 {toast}
             </div>
         )}
-        
         {showSphere && (
-            <div className="fixed bottom-32 right-8 md:right-64 z-[9999] pointer-events-none animate-spiritFloat">
+             /* ... (Deja el código de la esfera igual) ... */
+             <div className="fixed bottom-32 right-8 md:right-64 z-[9999] pointer-events-none animate-spiritFloat">
                 <div className="w-20 h-20 rounded-full bg-white blur-md relative flex items-center justify-center shadow-[0_0_60px_rgba(255,255,255,0.8)]">
                     <div className="absolute inset-0 bg-cyan-400 rounded-full blur-xl opacity-60 animate-pulse"></div>
                     <div className="absolute inset-0 bg-purple-500 rounded-full blur-xl opacity-40 animate-pulse delay-75"></div>
-                    <div className="absolute w-full h-full animate-spin-slow">
-                        <div className="absolute top-0 left-1/2 w-1 h-1 bg-white rounded-full shadow-[0_0_10px_white]"></div>
-                        <div className="absolute bottom-2 right-2 w-1 h-1 bg-cyan-200 rounded-full shadow-[0_0_10px_cyan]"></div>
-                    </div>
                 </div>
-                <div className="absolute top-10 left-1/2 -translate-x-1/2 w-0.5 h-40 bg-gradient-to-t from-transparent via-white to-transparent opacity-50 blur-[1px]"></div>
             </div>
         )}
         <style>{`
@@ -147,15 +143,20 @@ const LiveGrid = ({ onTuneIn, onSelectShop, onUserClick, onClose }) => {
             .animate-spiritFloat { animation: spiritFloat 3.5s ease-out forwards; }
         `}</style>
 
+        {/* FILTROS */}
         <div className="w-full flex justify-between items-end mb-4 bg-black/80 p-2 rounded-xl border border-white/10 backdrop-blur-md overflow-x-auto shrink-0">
             <div className="flex gap-2 min-w-max">{['ALL', 'TALK', 'MUSIC', 'SHOP'].map(f => (<button key={f} onClick={() => setFilter(f)} className={`px-4 py-2 text-[10px] font-black uppercase rounded-lg border transition-all ${filter === f ? 'bg-red-600 border-red-500 text-white shadow-[0_0_15px_red]' : 'bg-transparent border-white/20 text-gray-400 hover:text-white'}`}>{f}</button>))}</div>
             <button onClick={onClose} className="text-gray-500 hover:text-white px-4 text-xs font-bold whitespace-nowrap">CERRAR ✕</button>
         </div>
 
-        <div className="w-full h-full overflow-y-auto custom-scrollbar pr-2 px-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 pb-20 w-full max-w-sm md:max-w-none mx-auto"> 
+        {/* GRID DE TARJETAS */}
+        <div className="w-full h-full overflow-y-auto custom-scrollbar pr-1 px-0">
+            {/* AQUÍ EL CAMBIO CLAVE: grid-cols-2 */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-4 pb-24 w-full mx-auto"> 
                 {filteredCreators.map((creator) => (
                     <div key={creator.id} className="group relative aspect-[3/4] bg-[#0a0a0a] rounded-xl overflow-hidden border border-white/10 hover:border-red-500 transition-all hover:scale-[1.02] shadow-lg w-full">
+                        
+                        {/* IMAGEN DE FONDO */}
                         <img 
                             src={creator.img} 
                             referrerPolicy="no-referrer"
@@ -163,80 +164,50 @@ const LiveGrid = ({ onTuneIn, onSelectShop, onUserClick, onClose }) => {
                             className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity" 
                             alt={creator.alias} 
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
-                        <div className="absolute top-2 right-2 bg-black/60 backdrop-blur text-cyan-400 text-[8px] font-mono px-2 py-1 rounded border border-cyan-500/30">📡 {creator.distance}</div>
-                        <div className="absolute bottom-24 left-3 right-3">
-                            <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/10 text-white border border-white/20 mb-1 inline-block`}>{creator.role}</span>
-                            <h3 className="text-white font-bold text-sm leading-tight truncate">{creator.alias}</h3>
-                            <p className="text-[10px] text-gray-400 truncate">{creator.desc}</p>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+                        
+                        {/* DISTANCIA */}
+                        <div className="absolute top-2 right-2 bg-black/60 backdrop-blur text-cyan-400 text-[8px] font-mono px-1.5 py-0.5 rounded border border-cyan-500/30">📡 {creator.distance}</div>
+                        
+                        {/* TEXTOS (SUBIDOS UN POCO PARA QUE QUEPAN LOS BOTONES) */}
+                        <div className="absolute bottom-[6.5rem] left-2 right-2 md:bottom-24 md:left-3 md:right-3">
+                            <span className={`text-[7px] md:text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/10 text-white border border-white/20 mb-1 inline-block`}>{creator.role}</span>
+                            <h3 className="text-white font-bold text-xs md:text-sm leading-tight truncate">{creator.alias}</h3>
+                            <p className="text-[9px] md:text-[10px] text-gray-400 truncate">{creator.desc}</p>
                         </div>
                         
-                        
-                        {/* === BOTÓN CYBERPUNK: CYAN GLOW EDITION === */}
-<div className="absolute bottom-2 left-2 right-2 flex flex-col gap-1">
-    <button 
-        onClick={() => sendPulse(creator.alias)} 
-        className="
-            w-full py-2 
-            bg-black 
-            border border-cyan-600 
-            text-white font-black text-[9px] uppercase 
-            rounded 
-            flex items-center justify-center gap-2 
-            transition-all duration-500 ease-out
-            group active:scale-95
-            
-            /* EFECTO LUZ AL PASAR EL RATÓN */
-            /* 1. El borde se vuelve blanco brillante */
-            hover:border-white 
-            /* 2. Sombra multinivel: Un resplandor cyan suave y un núcleo blanco intenso */
-            hover:shadow-[0_0_15px_rgba(8,145,178,0.8),0_0_30px_rgba(255,255,255,0.4)]
-        "
-    >
-        {/* Emoji Esfera: Latido constante que se intensifica en hover */}
-        <span className="
-            text-xs 
-            animate-pulse 
-            filter drop-shadow-[0_0_5px_#0891b2] 
-            group-hover:drop-shadow-[0_0_12px_#fff]
-            group-hover:scale-110
-            transition-all duration-300
-        ">
-            ⚪
-        </span>
-        
-        {/* Texto: Ahora también late sutilmente junto al emoji */}
-        <span className="
-            tracking-wider
-            animate-pulse
-            group-hover:animate-none
-            group-hover:text-white
-            group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]
-            transition-all duration-300
-        ">
-            ENVIAR HALO DE LUZ (-100 G)
-        </span>
-    </button>                            
+                        {/* BOTONERA INFERIOR COMPACTA */}
+                        <div className="absolute bottom-2 left-2 right-2 flex flex-col gap-1">
+                            {/* HALO BUTTON */}
+                            <button onClick={() => sendPulse(creator)} className="w-full py-1.5 bg-black border border-cyan-600 text-white font-black text-[8px] md:text-[9px] uppercase rounded flex items-center justify-center gap-1 hover:border-white hover:shadow-[0_0_10px_cyan]">
+                                <span className="animate-pulse text-[10px]">⚪</span>
+                                <span className="truncate">HALO (-100 G)</span>
+                            </button>                            
                             
+                            {/* LIVE & B-CAST */}
                             <div className="flex gap-1">
-                                <button onClick={() => onTuneIn(creator)} className="flex-1 py-1.5 bg-red-600 hover:bg-red-500 text-white font-black text-[8px] uppercase rounded shadow-md border border-red-500">▶ LIVE</button>
-                                <button onClick={() => handlePlayBCast(creator)} className="flex-1 py-1.5 bg-violet-600 hover:bg-violet-500 text-white font-black text-[8px] uppercase rounded shadow-md border border-violet-400">📼 B-CAST</button>
+                                <button onClick={() => onTuneIn(creator)} className="flex-1 py-1.5 bg-red-600 text-white font-black text-[8px] uppercase rounded border border-red-500 truncate">▶ LIVE</button>
+                                <button onClick={() => handlePlayBCast(creator)} className="flex-1 py-1.5 bg-violet-600 text-white font-black text-[8px] uppercase rounded border border-violet-400 truncate">📼 B-CAST</button>
                             </div>
                             
-                            
+                            {/* TIENDA & PERFIL */}
                             <div className="flex gap-1">
-                                {creator.role && creator.role.includes('SHOP') ? (<button onClick={() => handleOpenShop(creator)} className="flex-1 py-1.5 bg-yellow-500 hover:bg-yellow-400 text-black font-black text-[8px] uppercase rounded shadow-md">🛒 TIENDA</button>) : ( <div className="flex-1"></div> )}
-                                <button onClick={() => onUserClick(creator)} className="flex-1 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white font-black text-[8px] uppercase rounded shadow-[0_0_10px_rgba(34,211,238,0.5)]">👤 PERFIL</button>
+                                {creator.role && creator.role.includes('SHOP') 
+                                    ? (<button onClick={() => handleOpenShop(creator)} className="flex-1 py-1.5 bg-yellow-500 text-black font-black text-[8px] uppercase rounded truncate">🛒 SHOP</button>) 
+                                    : (<div className="flex-1"></div>)
+                                }
+                                <button onClick={() => onUserClick(creator)} className="flex-1 py-1.5 bg-cyan-600 text-white font-black text-[8px] uppercase rounded truncate">👤 PERFIL</button>
                             </div>
                         </div>
+
                     </div>
                 ))}
             </div>
             {filteredCreators.length === 0 && (
-                <div className="w-full h-64 flex flex-col items-center justify-center text-gray-600"><span className="text-4xl mb-2">📡</span><p className="text-xs font-mono uppercase">No hay señales en esta frecuencia.</p></div>
+                <div className="w-full h-64 flex flex-col items-center justify-center text-gray-600"><span className="text-4xl mb-2">📡</span><p className="text-xs font-mono uppercase">No hay señales.</p></div>
             )}
         </div>
     </div>
-  );
-};
+    );
+ };
 export default LiveGrid;

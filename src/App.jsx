@@ -218,13 +218,14 @@ function App() {
 
      {/* 2. HOLO-PRISMA */}
       {(step === 1 || selectedCard || previewCard) && (
-        <div className="relative z-[50000]">
+        <div className="
+            fixed top-[10%] right-[-60px] z-[50] scale-[0.35] origin-top-right pointer-events-none
+            md:relative md:top-auto md:right-auto md:scale-100 md:origin-center
+        ">
             <HoloPrism customImages={
-                // CASO A: Tarjeta seleccionada (Tienda/Perfil)
                 (selectedCard || previewCard) 
                 ? prismImages 
                 : (playingCreator 
-                    // CASO B: Reproduciendo música (Radio/Live)
                     ? [ 
                         playingCreator.holo_1 || playingCreator.img,
                         playingCreator.holo_2 || playingCreator.img,
