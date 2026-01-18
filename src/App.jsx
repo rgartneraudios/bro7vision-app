@@ -172,31 +172,120 @@ function App() {
       } catch (e) { console.error("Error guardando puntos:", e); }
     }
   };
+  // --- LÓGICA DE FUSIÓN DE DATOS (REAL + STATIC) ---
+  const [realItems, setRealItems] = useState([]);
+
+  useEffect(() => {
+    const fetchMarket = async () => {
+      // Traemos perfiles que tengan título de producto O servicio
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .or('product_title.neq.null,service_title.neq.null');
+
+      if (data) {
+        const formatted = data.map(u => {
+          // Determinar estilo NEÓN según el color elegido en Booster
+          const colorMap = {
+             cyan: 'border-cyan-500 shadow-[0_0_20px_rgba(34,211,238,0.4)] text-cyan-400',
+             fuchsia: 'border-fuchsia-500 shadow-[0_0_20px_rgba(232,121,249,0.4)] text-fuchsia-400',
+             yellow: 'border-yellow-400 shadow-[0_0_20px_rgba(250,204,21,0.4)] text-yellow-400',
+             green: 'border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.4)] text-green-400',
+             red: 'border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.4)] text-red-500'
+          };
+          const baseColor = u.card_color || 'cyan';
+          const neonStyle = colorMap[baseColor];
+
+          // Crear items separados para Producto y Servicio si el usuario tiene ambos
+          const items = [];
+
+          if (u.product_title) {
+            items.push({
+              id: `${u.id}_prod`,
+              type: ['product', 'shop'],
+              name: u.product_title, // Lo que vende
+              shopName: u.alias,     // Quién lo vende
+              img: u.product_img || u.banner_url || u.avatar_url,
+              message: u.twit_message,
+              distance: u.city || 'Online',
+              category: 'Shop',
+              price: u.product_price,
+              url: u.product_url,    // <--- LINK EXTERNO
+              neonColor: `text-${baseColor}-400`,
+              style: `bg-black/90 border ${neonStyle}`, // Estilo Neón generado
+              isReal: true
+            });
+          }
+
+          if (u.service_title) {
+            items.push({
+              id: `${u.id}_serv`,
+              type: ['service', 'shop'],
+              name: u.service_title,
+              shopName: u.alias,
+              img: u.service_img || u.banner_url || u.avatar_url,
+              message: u.twit_message,
+              distance: u.city || 'Online',
+              category: 'Service',
+              price: u.service_price,
+              url: u.service_url,    // <--- LINK EXTERNO
+              neonColor: `text-${baseColor}-400`,
+              style: `bg-black/90 border ${neonStyle}`,
+              isReal: true
+            });
+          }
+          return items;
+        }).flat(); // Aplanar el array
+
+        setRealItems(formatted);
+      }
+    };
+    fetchMarket();
+  }, [step]); // Se recarga al cambiar de paso o al entrar
+
+  // MODIFICAMOS EL FILTRO PARA INCLUIR LOS REALES
   const filteredItems = useMemo(() => {
+    // Unimos la DB maestra con los reales
+    const ALL_ITEMS = [...realItems, ...MASTER_DB]; 
+
     const parseDistance = (d) => {
       if (!d) return 999999;
       if (d === 'Online') return 0;
       return parseFloat(d.replace(',', '.').replace(/[^\d.]/g, '')) * (d.includes('km') ? 1000 : 1);
     };
-    return MASTER_DB.filter(item => {
+
+    return ALL_ITEMS.filter(item => {
       if (intent === 'ai' || intent === 'game') return false;
+      
       let typeMatch = false;
+      // Ajuste para que 'product' lea shops y 'service' lea services
       const types = Array.isArray(item.type) ? item.type : [item.type];
+      
       if (intent === 'product') typeMatch = types.includes('product') || types.includes('shop');
       else if (intent === 'service') typeMatch = types.includes('service');
-      let scopeMatch = true; 
+      else if (intent === 'lives') typeMatch = types.includes('live'); // Si hubiese lógica aquí
+
       let searchMatch = true;
       if (activeSearch && activeSearch.trim() !== "") {
         const q = activeSearch.toLowerCase();
-        searchMatch = (item.name?.toLowerCase().includes(q) || item.shopName?.toLowerCase().includes(q) || item.category?.toLowerCase().includes(q));
+        // AÑADIDO: Búsqueda por shopName (Nombre User)
+        searchMatch = (
+            item.name?.toLowerCase().includes(q) || 
+            item.shopName?.toLowerCase().includes(q) || 
+            item.category?.toLowerCase().includes(q)
+        );
       }
-      return typeMatch && scopeMatch && searchMatch;
+      return typeMatch && searchMatch;
     }).sort((a, b) => {
       if (scope === 'gps') return parseDistance(a.distance) - parseDistance(b.distance);
-      return (b.mentionLevel || 0) - (a.mentionLevel || 0);
+      // Priorizar los reales sobre los bots si quieres
+      if (a.isReal && !b.isReal) return -1;
+      if (!a.isReal && b.isReal) return 1;
+      return 0;
     });
-  }, [intent, scope, activeSearch]);
-
+  }, [intent, scope, activeSearch, realItems]); // Añadido realItems a dependencias
+  
+  
   const handleLogout = async () => { await supabase.auth.signOut(); setSession(null); setStep(0); };
 
   if (!session) return <GenesisGate />;
@@ -355,6 +444,8 @@ function App() {
                 intent={intent} 
                 userCoinType="nova" 
                 currentPhase={moonPhase} 
+                // AÑADIR ESTA LÍNEA PARA QUE EL BOTÓN FUNCIONE:
+                onTuneIn={handleTuneIn} 
             />     
         </div> 
      )}    

@@ -1,10 +1,11 @@
-// src/components/NexusDashboard.jsx (BOTONERA DE 8 ELEMENTOS)
+// src/components/NexusDashboard.jsx
 
 import React, { useState, useEffect } from 'react';
 import LiveGrid from './LiveGrid';
 import WebBotTerminal from './WebBotTerminal'; 
 import RacoonTerminal from './RacoonTerminal';
 import CommunityTicker from './CommunityTicker'; 
+import { askGemini } from '../services/gemini'; // <--- Importante que esto esté aquí
 
 // --- JUEGOS ---
 import NeonReact from './NeonReact'; 
@@ -22,8 +23,16 @@ const NexusDashboard = ({
   const [gameDifficulty, setGameDifficulty] = useState('hard');
   const [aiModeType, setAiModeType] = useState('text'); 
 
-  const MOCK_LOGS = ["ENSAYO: IA en artesanía...", "OPINIÓN: Moon Coins...", "HISTORIA: Catedral...", "FUTURO: Bro-Drop y el Campo"];
+  // --- ⚠️ AQUÍ FALTABAN ESTAS DOS LÍNEAS ⚠️ ---
+  const [aiResponse, setAiResponse] = useState(null);
+  const [isLoadingAI, setIsLoadingAI] = useState(false);
+  const [imagePrompt, setImagePrompt] = useState("");
+  const [generatedImage, setGeneratedImage] = useState(null);
+  const [isLoadingImage, setIsLoadingImage] = useState(false);
+  // ----------------------------------------------
 
+  const MOCK_LOGS = ["ENSAYO: IA en artesanía...", "OPINIÓN: Moon Coins...", "HISTORIA: Catedral...", "FUTURO: Bro-Drop y el Campo"];
+  
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentLogIndex((prev) => (prev + 1) % MOCK_LOGS.length);
@@ -56,11 +65,31 @@ const NexusDashboard = ({
       { id: 'service', label: '🤝 Servicios', color: 'border-cyan-400 text-cyan-400' },
       { id: 'lives',   label: '📡 Lives',     color: 'border-red-500 text-red-500' }, 
       { id: 'game',    label: '🎮 Games',     color: 'border-fuchsia-500 text-fuchsia-500' },
-      { id: 'ai',      label: '🤖 AI',        color: 'border-green-500 text-green-500' },
+      { id: 'ai',      label: '🤖 AI',        color: 'border-cyan-500 text-cyan-500' },
       { id: 'web_search', label: '🌐 WebBot', color: 'border-blue-400 text-blue-400' },
       { id: 'internal_search', label: '🏠 IN Search', color: 'border-orange-400 text-orange-400' }
   ];
 
+const handleGenImage = () => {
+      if (!imagePrompt) return;
+      setIsLoadingImage(true);
+      setGeneratedImage(null);
+      
+      // Truco: Pollinations genera la imagen directamente en la URL
+      const encoded = encodeURIComponent(imagePrompt);
+      const randomSeed = Math.floor(Math.random() * 1000); 
+      
+      // --- CAMBIO AQUÍ: NUEVA URL (v2) ---
+      // Antes: https://image.pollinations.ai/prompt/...
+      // Ahora: https://pollinations.ai/p/...
+      const url = `https://pollinations.ai/p/${encoded}?width=1024&height=1024&seed=${randomSeed}&nologo=true`;
+      
+      // Damos un segundo para que parezca que procesa
+      setTimeout(() => {
+          setGeneratedImage(url);
+      }, 1000);
+  };
+  
   return (
     <div className="absolute inset-0 z-40 flex flex-col items-center justify-center pointer-events-none">
       
@@ -80,12 +109,24 @@ const NexusDashboard = ({
       )}
 
       {/* 4. ZONA JUEGOS */}
-      {isGameMode && (
+      {isGameMode && (      
           <div className="absolute top-[20%] bottom-40 md:bottom-[20%] w-full max-w-6xl px-4 pointer-events-auto z-[200] flex items-center justify-center animate-zoomIn">
               {!selectedGame && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl overflow-y-auto max-h-full custom-scrollbar p-2">
                       <div onClick={() => setSelectedGame('neon')} className="group bg-black/80 border border-fuchsia-500/30 p-6 rounded-2xl hover:border-fuchsia-500 hover:bg-fuchsia-900/20 cursor-pointer transition-all flex flex-col items-center gap-2">
                           <div className="text-4xl">🧠</div>
+                          
+                          {/* --- BLOQUEO DE ROTACIÓN PARA MÓVIL --- */}
+      <div className="md:hidden fixed inset-0 z-[99999] bg-black flex-col items-center justify-center text-center p-8 hidden portrait:flex">
+          <div className="text-6xl mb-4 animate-spin-slow">📱</div>
+          <h2 className="text-2xl font-black text-red-500 uppercase mb-2">SISTEMA BLOQUEADO</h2>
+          <p className="text-white text-sm font-mono">
+              LOS JUEGOS REQUIEREN PANTALLA HORIZONTAL.
+              <br/><br/>
+              <span className="text-cyan-400 animate-pulse">↻ POR FAVOR, GIRA TU DISPOSITIVO</span>
+          </p>
+      </div>
+                          
                           <h3 className="text-xl font-black text-white italic">NEON MEMORY</h3>
                           <div className="px-3 py-1 bg-fuchsia-500 text-black text-[9px] font-bold uppercase rounded-full">50 GEN</div>
                       </div>
@@ -114,21 +155,125 @@ const NexusDashboard = ({
           </div>
       )}
 
-      {/* 5. IA */}
+      {/* 5. IA CONECTADA (GEMINI + POLLINATIONS) */}
       {isAIMode && (
-          <div className="absolute top-[15%] bottom-[25%] w-full max-w-6xl px-4 pointer-events-auto z-50 animate-zoomIn">
-              <div className="w-full h-full bg-[#050505]/95 backdrop-blur-xl border border-cyan-500/50 rounded-2xl p-0 font-mono shadow-2xl flex flex-col relative overflow-hidden">
-                  <div className="flex border-b border-cyan-500/30 bg-black/50">
-                      <button onClick={() => setAiModeType('text')} className={`flex-1 py-4 text-xs font-bold uppercase tracking-widest ${aiModeType === 'text' ? 'bg-cyan-500/10 text-cyan-400 border-b-2 border-cyan-500' : 'text-gray-500'}`}>💬 ASK AI</button>
-                      <button onClick={() => setAiModeType('image')} className={`flex-1 py-4 text-xs font-bold uppercase tracking-widest ${aiModeType === 'image' ? 'bg-fuchsia-500/10 text-fuchsia-400 border-b-2 border-fuchsia-500' : 'text-gray-500'}`}>🖼️ IMAGE GEN</button>
+          <div className="absolute top-[10%] bottom-[20%] w-full max-w-6xl px-4 pointer-events-auto z-50 animate-zoomIn">
+              <div className={`w-full h-full bg-[#050505]/95 backdrop-blur-xl border-2 rounded-2xl p-0 font-mono shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col relative overflow-hidden transition-colors duration-500 ${aiModeType === 'text' ? 'border-cyan-500 shadow-cyan-500/20' : 'border-fuchsia-500 shadow-fuchsia-500/20'}`}>
+                  
+                  {/* CABECERA (TABS + LINK STUDIO) */}
+                  <div className="flex justify-between items-center bg-black/80 border-b border-white/10 pr-4">
+                      
+                      {/* TABS IZQUIERDA */}
+                      <div className="flex flex-1">
+                          <button 
+                              onClick={() => setAiModeType('text')} 
+                              className={`flex-1 py-4 text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${aiModeType === 'text' ? 'bg-cyan-950/50 text-cyan-400 border-b-2 border-cyan-500 shadow-[inset_0_-10px_20px_rgba(6,182,212,0.1)]' : 'text-gray-500 hover:text-white'}`}
+                          >
+                              💬 BRO-CHAT
+                          </button>
+                          <button 
+                              onClick={() => setAiModeType('image')} 
+                              className={`flex-1 py-4 text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${aiModeType === 'image' ? 'bg-fuchsia-950/50 text-fuchsia-400 border-b-2 border-fuchsia-500 shadow-[inset_0_-10px_20px_rgba(217,70,239,0.1)]' : 'text-gray-500 hover:text-white'}`}
+                          >
+                              🎨 IMAGEN-GEN
+                          </button>
+                      </div>
+
+                      {/* BOTÓN STUDIO (DERECHA) */}
+                      <button 
+                          onClick={() => window.open('https://aistudio.google.com/', '_blank')}
+                          className="hidden md:flex items-center gap-2 text-[10px] bg-white/5 hover:bg-white/20 border border-white/20 px-3 py-1.5 rounded text-gray-300 hover:text-white transition-all uppercase tracking-wider ml-4"
+                      >
+                          <span>🧠</span> GOOGLE STUDIO ↗
+                      </button>
                   </div>
-                  <div className="flex-1 p-6 relative">
-                      <p className="text-cyan-100 text-lg">"Sistema BRO-AI listo. ¿En qué puedo ayudarte hoy?"</p>
-                  </div>
+
+                  {/* --- MODO TEXTO (GEMINI - CYAN THEME) --- */}
+                  {aiModeType === 'text' && (
+                      <>
+                        <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-gradient-to-b from-black via-[#0a1014] to-black">
+                            {aiResponse ? (
+                                <div className="text-cyan-100 text-sm md:text-lg leading-relaxed typing-effect font-medium">
+                                    <span className="text-cyan-500 font-bold mr-2 text-xl">{'>'}</span>
+                                    {aiResponse}
+                                </div>
+                            ) : (
+                                <div className="h-full flex flex-col items-center justify-center opacity-40">
+                                    <div className="text-8xl mb-6 animate-pulse filter drop-shadow-[0_0_15px_cyan]">🤖</div>
+                                    <p className="text-cyan-500 tracking-[0.5em] text-sm">SISTEMA NEURONAL ACTIVO</p>
+                                </div>
+                            )}
+                            {isLoadingAI && <div className="mt-4 text-cyan-400 text-xs animate-pulse font-mono">PROCESANDO DATOS... ▊▊▊</div>}
+                        </div>
+
+                        <div className="p-4 bg-black border-t border-cyan-500/30 flex gap-2">
+                            <input 
+                                type="text" placeholder="Pregunta al Oráculo..." 
+                                className="flex-1 bg-[#0a0a0a] border border-cyan-900/50 text-cyan-100 p-4 rounded-xl focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.2)] outline-none transition-all placeholder-cyan-900"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        const val = e.target.value;
+                                        if(!val) return;
+                                        setIsLoadingAI(true);
+                                        setAiResponse(null);
+                                        e.target.value = '';
+                                        askGemini(val).then(res => {
+                                            setAiResponse(res);
+                                            setIsLoadingAI(false);
+                                        });
+                                    }
+                                }}
+                            />
+                        </div>
+                      </>
+                  )}
+
+                  {/* --- MODO IMAGEN (POLLINATIONS - FUCHSIA THEME) --- */}
+                  {aiModeType === 'image' && (
+                      <>
+                        <div className="flex-1 p-4 flex flex-col items-center justify-center relative bg-black/50">
+                            {generatedImage ? (
+                                <div className="relative w-full h-full flex items-center justify-center group">
+                                    <img 
+                                        src={generatedImage} 
+                                        onLoad={() => setIsLoadingImage(false)}
+                                        className={`max-w-full max-h-full rounded-lg shadow-[0_0_50px_rgba(217,70,239,0.4)] border border-fuchsia-500/30 ${isLoadingImage ? 'opacity-50 blur-sm' : 'opacity-100'}`} 
+                                        alt="Generated" 
+                                    />
+                                    {!isLoadingImage && (
+                                        <a href={generatedImage} target="_blank" rel="noreferrer" className="absolute bottom-6 bg-black/90 border border-fuchsia-500 text-fuchsia-400 px-6 py-3 rounded-full text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity hover:bg-fuchsia-600 hover:text-white">
+                                            ⬇ DESCARGAR HD
+                                        </a>
+                                    )}
+                                    {isLoadingImage && <div className="absolute text-fuchsia-400 font-mono tracking-widest animate-pulse bg-black/80 px-4 py-2 rounded">RENDERIZANDO PIXELES...</div>}
+                                </div>
+                            ) : (
+                                <div className="text-center opacity-40">
+                                    <div className="text-8xl mb-6 filter drop-shadow-[0_0_15px_magenta]">🎨</div>
+                                    <p className="text-fuchsia-500 tracking-[0.5em] text-sm">MOTOR GRÁFICO EN ESPERA</p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="p-4 bg-black border-t border-fuchsia-500/30 flex gap-2">
+                            <input 
+                                type="text" placeholder="Describe una imagen (Ej: Cyberpunk city neon rain)" 
+                                value={imagePrompt}
+                                onChange={(e) => setImagePrompt(e.target.value)}
+                                className="flex-1 bg-[#0a0a0a] border border-fuchsia-900/50 text-fuchsia-100 p-4 rounded-xl focus:border-fuchsia-500 focus:shadow-[0_0_15px_rgba(217,70,239,0.2)] outline-none transition-all placeholder-fuchsia-900"
+                                onKeyDown={(e) => e.key === 'Enter' && handleGenImage()}
+                            />
+                            <button onClick={handleGenImage} className="bg-fuchsia-600 text-white font-bold px-8 rounded-xl hover:bg-fuchsia-500 shadow-[0_0_20px_rgba(217,70,239,0.4)] transition-all transform hover:scale-105">
+                                GENERAR
+                            </button>
+                        </div>
+                      </>
+                  )}
+
               </div>
           </div>
       )}
-
+          
       {/* 6. OTROS MODOS */}
       {isLiveMode && <LiveGrid onTuneIn={onTuneIn} onSelectShop={onSelectShop} onUserClick={onUserClick} onClose={() => setIntent('product')} />}
       {isWebMode && <WebBotTerminal />}
