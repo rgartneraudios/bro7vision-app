@@ -70,26 +70,41 @@ const NexusDashboard = ({
       { id: 'internal_search', label: '🏠 IN Search', color: 'border-orange-400 text-orange-400' }
   ];
 
-const handleGenImage = () => {
+const handleGenImage = async () => {
       if (!imagePrompt) return;
+      
       setIsLoadingImage(true);
       setGeneratedImage(null);
-      
-      // Truco: Pollinations genera la imagen directamente en la URL
-      const encoded = encodeURIComponent(imagePrompt);
-      const randomSeed = Math.floor(Math.random() * 1000); 
-      
-      // --- CAMBIO AQUÍ: NUEVA URL (v2) ---
-      // Antes: https://image.pollinations.ai/prompt/...
-      // Ahora: https://pollinations.ai/p/...
-      const url = `https://pollinations.ai/p/${encoded}?width=1024&height=1024&seed=${randomSeed}&nologo=true`;
-      
-      // Damos un segundo para que parezca que procesa
-      setTimeout(() => {
-          setGeneratedImage(url);
-      }, 1000);
+
+      try {
+          // 1. Leemos el token desde las variables de entorno de Vercel/Vite
+          const HF_TOKEN = import.meta.env.VITE_HUGGINGFACE_TOKEN; 
+
+          const response = await fetch(
+              "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell", 
+              {
+                  headers: { 
+                      Authorization: `Bearer ${HF_TOKEN}`,
+                      "Content-Type": "application/json",
+                  },
+                  method: "POST",
+                  body: JSON.stringify({ inputs: imagePrompt }),
+              }
+          );
+
+          if (!response.ok) throw new Error("IA ocupada, intenta en 10 segundos");
+
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+          
+          setGeneratedImage(url); // Mostramos la imagen procesada
+      } catch (error) {
+          console.error("Error en Imagen:", error);
+      } finally {
+          setIsLoadingImage(false);
+      }
   };
-  
+      
   return (
     <div className="absolute inset-0 z-40 flex flex-col items-center justify-center pointer-events-none">
       
@@ -287,20 +302,26 @@ const handleGenImage = () => {
       <div className="absolute bottom-20 md:bottom-6 w-full max-w-5xl px-2 pointer-events-auto flex flex-col gap-2 z-[20000]">
           {/* CAMBIO: grid-cols-4 (Móvil) y md:grid-cols-8 (PC) */}
           <div className="grid grid-cols-4 md:grid-cols-8 gap-1 md:gap-3">
-              {NAV_BUTTONS.map((opt) => (
-                  <button 
-                      key={opt.id} 
-                      onClick={() => opt.id === 'zone' ? onBack() : setIntent(opt.id)} // LÓGICA ESPECIAL PARA ZONA
-                      className={`
-                          py-3 md:py-4 text-[9px] md:text-[10px] font-black uppercase tracking-widest border transition-all 
-                          ${intent === opt.id && opt.id !== 'zone' 
-                             ? `bg-black ${opt.color} scale-105 z-10` 
-                             : `bg-black/60 border-white/10 text-gray-500 hover:border-white/50 ${opt.color ? opt.color : ''}`}
-                      `}
-                  >
-                      {opt.label}
-                  </button>
-              ))}
+              {NAV_BUTTONS.map((opt) => {
+  // Comprobamos si este botón es el que está activo
+  const isActive = intent === opt.id && opt.id !== 'zone';
+
+  return (
+    <button 
+        key={opt.id} 
+        onClick={() => opt.id === 'zone' ? onBack() : setIntent(opt.id)}
+        className={`
+            py-3 md:py-4 text-[9px] md:text-[10px] font-black uppercase tracking-widest border transition-all 
+            ${isActive 
+               ? `bg-black border-${opt.color} text-${opt.color} scale-105 z-10 shadow-[0_0_15px_rgba(250,204,21,0.3)]` 
+               : `bg-black/60 border-white/10 text-gray-500 hover:border-white/50`}
+        `}
+    >
+        {opt.label}
+    </button>
+  );
+})}
+
           </div>
           
           {showSearchBar && (
