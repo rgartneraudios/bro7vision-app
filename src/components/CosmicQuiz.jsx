@@ -286,65 +286,66 @@ const CosmicQuiz = ({ onWin }) => {
             filter: 'brightness(0.9)'
         }}
       >
-          {/* BURBUJA DE DIÁLOGO (ESTILO HUD - COMPACTO) */}
+{/* BURBUJA DE DIÁLOGO (ESTILO HUD - COMPACTO Y ELEGANTE) */}
           {doorState === 'open' && (
-              <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-[90%] max-w-xl z-30 animate-slideUp">
+              <div className="
+                  absolute 
+                  top-4 left-4 md:top-6 md:left-6   /* Pegado a la esquina con margen */
+                  w-auto 
+                  max-w-[85%] md:max-w-[320px]      /* Límite de ancho estricto en PC */
+                  z-30 animate-slideUp
+              ">
                   
-                  {/* MARCO EXTERIOR (Más fino: p-[1px]) */}
+                  {/* MARCO EXTERIOR */}
                   <div className={`
-                      p-[1px] rounded-xl shadow-2xl backdrop-blur-sm
+                      p-[1px] rounded-lg shadow-2xl backdrop-blur-sm
                       ${isHeaven 
-                          ? 'bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_30px_rgba(34,211,238,0.2)]' 
-                          : 'bg-gradient-to-r from-transparent via-red-600 to-transparent shadow-[0_0_30px_rgba(220,38,38,0.2)]'
+                          ? 'bg-gradient-to-r from-transparent via-cyan-400 to-transparent' 
+                          : 'bg-gradient-to-r from-transparent via-red-600 to-transparent'
                       }
                   `}>
-                      {/* INTERIOR DEL MENSAJE (Padding reducido: p-4) */}
+                      {/* INTERIOR DEL MENSAJE (Padding reducido: p-3) */}
                       <div className={`
-                          relative rounded-lg p-4 md:p-5 flex flex-col items-center text-center overflow-hidden
+                          relative rounded-lg p-3 md:p-4 flex flex-col items-start text-left overflow-hidden
                           ${isHeaven 
-                              ? 'bg-slate-900/90 border border-cyan-500/30' 
-                              : 'bg-black/95 border border-red-600/50'
+                              ? 'bg-slate-900/80 border border-cyan-500/30' // Más transparente (/80)
+                              : 'bg-black/80 border border-red-600/50'
                           }
                       `}>
                           
                           {/* DECORACIÓN FONDO */}
                           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none"></div>
-                          <div className={`absolute top-0 bottom-0 left-0 w-0.5 ${isHeaven ? 'bg-cyan-500' : 'bg-red-600'}`}></div>
-                          <div className={`absolute top-0 bottom-0 right-0 w-0.5 ${isHeaven ? 'bg-cyan-500' : 'bg-red-600'}`}></div>
 
-                          {/* HEADER TÉCNICO (Texto mini) */}
-                          <div className="flex justify-between w-full mb-2 opacity-70">
-                              <span className={`text-[8px] font-mono tracking-[0.2em] ${isHeaven ? 'text-cyan-400' : 'text-red-500 animate-pulse'}`}>
-                                  {isHeaven ? '⚡ INCOMING' : '⚠ WARNING'}
-                              </span>
-                              <span className={`text-[8px] font-mono tracking-widest ${isHeaven ? 'text-cyan-400' : 'text-red-500'}`}>
-                                  SIG: 100%
+                          {/* HEADER TÉCNICO */}
+                          <div className="flex justify-between w-full mb-1 opacity-70 border-b border-white/10 pb-1">
+                              <span className={`text-[7px] font-mono tracking-widest ${isHeaven ? 'text-cyan-400' : 'text-red-500'}`}>
+                                  {isHeaven ? 'INCOMING MSG' : 'THREAT DETECTED'}
                               </span>
                           </div>
 
-                          {/* EL MENSAJE (Tamaño ajustado: text-xl a 2xl) */}
+                          {/* EL MENSAJE (Letra más pequeña: text-sm en móvil, text-base en PC) */}
                           <p className={`
-                              text-xl md:text-2xl font-black italic tracking-wide leading-snug drop-shadow-md z-10
+                              text-sm md:text-base font-bold italic tracking-wide leading-snug drop-shadow-md z-10 mt-1
                               ${isHeaven 
-                                  ? 'text-transparent bg-clip-text bg-gradient-to-br from-white via-cyan-100 to-cyan-200' 
-                                  : 'text-transparent bg-clip-text bg-gradient-to-br from-red-100 via-red-500 to-red-900'
+                                  ? 'text-cyan-50' 
+                                  : 'text-red-50'
                               }
                           `}>
                             "{bubbleText}"
                           </p>
 
-                          {/* FOOTER TÉCNICO (Margen reducido) */}
-                          <div className="mt-3 flex items-center gap-2">
-                              <div className={`w-1.5 h-1.5 rounded-full ${isHeaven ? 'bg-cyan-400 animate-ping' : 'bg-red-500 animate-ping'}`}></div>
-                              <span className={`text-[8px] font-bold uppercase tracking-widest ${isHeaven ? 'text-cyan-200' : 'text-red-400'}`}>
-                                  {isHeaven ? 'GUARDIAN' : 'UNKNOWN'}
+                          {/* FOOTER TÉCNICO */}
+                          <div className="mt-2 flex items-center gap-2 opacity-80">
+                              <div className={`w-1 h-1 rounded-full ${isHeaven ? 'bg-cyan-400' : 'bg-red-500'}`}></div>
+                              <span className={`text-[7px] font-mono uppercase ${isHeaven ? 'text-cyan-300' : 'text-red-400'}`}>
+                                  GUARDIAN_AI
                               </span>
                           </div>
 
                       </div>
                   </div>
               </div>
-          )}                    
+          )}                   
      </div>
 
       {/* 2. PUERTAS */}

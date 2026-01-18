@@ -1,3 +1,5 @@
+// src/components/NeonReact.jsx (VERSIÓN FINAL ECONOMÍA 10 PTS)
+
 import React, { useState, useEffect, useRef } from 'react';
 
 export default function NeonReact({ onWin }) {
@@ -109,7 +111,10 @@ export default function NeonReact({ onWin }) {
     // SECUENCIA COMPLETADA
     if (newPlayerSequence.length === sequence.length) {
       setIsPlayerTurn(false);
-      const pointsWon = 50; 
+      
+      // --- CAMBIO AQUÍ: 10 Puntos FIJOS ---
+      const pointsWon = 10; 
+      
       setScore(score + pointsWon);
       setLevel(level + 1);
       setMessage(`¡BIEN! +${pointsWon} PTS`);
