@@ -212,9 +212,9 @@ function App() {
             <div className="absolute inset-0 bg-black/10"></div>
           </div>
         ) : (
-          /* VIDEO ÚNICO Y FLUIDO */
+          /* VIDEO ÚNICO DE ALTA CALIDAD (1080p) */
           <video 
-            key={`vid-${intent}-${JSON.stringify(scope)}`} 
+            key={`vid-${intent}-${JSON.stringify(scope)}`} // El 'key' fuerza a React a recargar si cambia el modo
             src={getCurrentVideo()} 
             autoPlay 
             loop 
@@ -224,7 +224,7 @@ function App() {
           />
         )}
       </div>
-            
+                  
       {/* CAPA 2: WIDGETS GLOBALES */}
       
       {/* 1. BRO-TUNER (Abajo Izquierda) */}
