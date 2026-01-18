@@ -19,7 +19,7 @@ import BroLogViewer from './components/BroLogViewer';
 import HoloPrism from './components/HoloPrism';
 import IdentityTerminal from './components/IdentityTerminal';
 import BoosterModal from './components/BoosterModal';
-import SequentialBackground from './components/SequentialBackground';
+// import SequentialBackground from './components/SequentialBackground';
 
 function App() {
   // --- 1. LÓGICA DE SEGURIDAD (SUPABASE) ---
@@ -30,43 +30,6 @@ function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => setSession(session));
     return () => subscription.unsubscribe();
   }, []);
-  
-  // --- CONFIGURACIÓN DE VIDEOS SECUENCIALES ---
-  const VIDEO_PLAYLISTS = {
-    lives: [
-        "/brolives_01.mp4", 
-        "/brolives_02.mp4",
-        "/brolives_03.mp4",
-        "/brolives_04.mp4",
-        "/brolives_05.mp4",
-        "/brolives_06.mp4"
-    ],
-    ai: [
-        "/ai_bg_01.mp4", 
-        "/ai_bg_02.mp4", 
-        "/ai_bg_03.mp4",
-        "/ai_bg_04.mp4"
-    ],
-    city: [
-        "/ciudad_01.mp4", 
-        "/ciudad_02.mp4"
-    ]
-  };
-
-  // Función auxiliar para saber qué lista usar
-  const getActivePlaylist = () => {
-      if (intent === 'lives') return VIDEO_PLAYLISTS.lives;
-      if (intent === 'ai') return VIDEO_PLAYLISTS.ai;
-      
-      // Si estamos en modo producto/servicio y hay una ubicación (scope), usamos el de ciudad
-      if ((intent === 'product' || intent === 'service') && scope) {
-          // OJO: Aquí podrías diferenciar por ciudad si quisieras, 
-          // pero por ahora usaremos la secuencia genérica de ciudad que pediste.
-          return VIDEO_PLAYLISTS.city;
-      }
-      
-      return null; // Si no hay lista, usaremos video único (getCurrentVideo)
-  };
 
   const [step, setStep] = useState(0);
   const [intent, setIntent] = useState('product');
@@ -157,14 +120,18 @@ function App() {
   };
 
   const getCurrentVideo = () => {
-    if (intent === 'ai') return "/ai_bg.mp4";
+    if (intent === 'ai') return "/ai_bg.mp4"; // Archivo único 720p
     if (intent === 'game') return "/game_bg.mp4";
     if (intent === 'web_search') return "/websearch.mp4";
     if (intent === 'internal_search') return "/racoonask.mp4";
-    if (intent === 'lives') return "/brolives.mp4";
-    return getVideoForLocation(scope);
+    if (intent === 'lives') return "/brolives.mp4"; // Archivo único 720p
+    
+    // Para modo producto/servicio (Ciudad)
+    // Asegúrate de que getVideoForLocation devuelva "/ciudad.mp4" 
+    // o el nombre que le hayas puesto al video unido.
+    return getVideoForLocation(scope); 
   };
-
+  
   const handleGPS = () => { setScope('gps'); setStep(1); setActiveSearch(null); };
   const handleTeleportConfirm = () => {
     if (teleportCoords.city || teleportCoords.country) {
@@ -245,20 +212,19 @@ function App() {
             <div className="absolute inset-0 bg-black/10"></div>
           </div>
         ) : (
-          /* Lógica Híbrida: ¿Tenemos lista secuencial o video único? */
-          getActivePlaylist() ? (
-              <SequentialBackground videos={getActivePlaylist()} />
-          ) : (
-              /* Fallback a video único (ej: juegos, websearch, o sin ubicación) */
-              <video 
-                key={`vid-${intent}-${JSON.stringify(scope)}`} 
-                src={getCurrentVideo()} 
-                autoPlay loop muted playsInline 
-                className="w-full h-full object-cover animate-fadeIn transition-opacity duration-1000" 
-              />
-          )
+          /* VIDEO ÚNICO Y FLUIDO */
+          <video 
+            key={`vid-${intent}-${JSON.stringify(scope)}`} 
+            src={getCurrentVideo()} 
+            autoPlay 
+            loop 
+            muted 
+            playsInline 
+            className="w-full h-full object-cover animate-fadeIn transition-opacity duration-1000" 
+          />
         )}
       </div>
+            
       {/* CAPA 2: WIDGETS GLOBALES */}
       
       {/* 1. BRO-TUNER (Abajo Izquierda) */}
