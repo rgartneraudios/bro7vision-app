@@ -8,7 +8,7 @@ const genAI = new GoogleGenerativeAI(API_KEY);
 export const askGemini = async (prompt) => {
   try {
     // Usamos el nombre del modelo estable para evitar fallos de versión
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-8b" });
 
     const systemInstruction = "ACTÚA COMO: BRO-AI. Tono cyberpunk y breve.";
     
