@@ -132,13 +132,56 @@ function App() {
     return getVideoForLocation(scope); 
   };
   
-  const handleGPS = () => { setScope('gps'); setStep(1); setActiveSearch(null); };
-  const handleTeleportConfirm = () => {
-    if (teleportCoords.city || teleportCoords.country) {
-      setScope(teleportCoords); setIsTeleporting(false); setStep(1); setActiveSearch(null);
-    } else { alert("Introduce al menos País o Localidad"); }
-  };
+ // --- FUNCIÓN GPS MEJORADA ---
+  const handleGPS = () => {
+    // 1. Pedir permiso al navegador
+    if (!("geolocation" in navigator)) {
+        alert("⚠️ Tu dispositivo no soporta geolocalización.");
+        return;
+    }
 
+    // Feedback visual
+    alert("🛰️ CONECTANDO CON SATÉLITES... (Permite el acceso)");
+
+    navigator.geolocation.getCurrentPosition(
+        async (position) => {
+            const { latitude, longitude } = position.coords;
+            
+            try {
+                // 2. Traducir coordenadas a Ciudad (Reverse Geocoding GRATIS)
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                const data = await response.json();
+                
+                // Extraemos la ciudad o pueblo
+                const city = data.address.city || data.address.town || data.address.village || data.address.municipality;
+                const country = data.address.country;
+
+                if (city) {
+                    // 3. Fijar el Scope y entrar
+                    setScope({ city, country });
+                    setTeleportCoords({ city, country }); // Para que se vea en el input si quieres
+                    setStep(1); 
+                    setActiveSearch(null);
+                    
+                    // Aviso de éxito
+                    alert(`📍 UBICACIÓN CONFIRMADA: ${city.toUpperCase()}, ${country.toUpperCase()}`);
+                } else {
+                    alert("⚠️ Coordenadas recibidas pero zona desconocida. Activando modo Global.");
+                    setScope('gps'); // Fallback
+                    setStep(1);
+                }
+
+            } catch (error) {
+                console.error("Error GPS:", error);
+                alert("⚠️ Error al triangula la posición. Introduce la ciudad manualmente.");
+            }
+        },
+        (error) => {
+            console.error("GPS Denied:", error);
+            alert("🚫 Acceso GPS denegado. Usa el teletransporte manual.");
+        }
+    );
+  };
   const handleSearchConfirm = useCallback(() => {
     if (intent === 'ai') { alert("🤖 [IA]: Procesando..."); return; }
     if (intent === 'game') return;
