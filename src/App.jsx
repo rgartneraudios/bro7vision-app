@@ -182,6 +182,22 @@ function App() {
         }
     );
   };
+  
+  // --- FUNCIÓN DE TELETRANSPORTE MANUAL (LA QUE FALTABA) ---
+  const handleTeleportConfirm = () => {
+    if (teleportCoords.city || teleportCoords.country) {
+      // 1. Guardamos la ubicación escrita
+      setScope(teleportCoords); 
+      // 2. Apagamos el modo de input
+      setIsTeleporting(false); 
+      // 3. Entramos al Dashboard
+      setStep(1); 
+      setActiveSearch(null);
+    } else { 
+      alert("⚠️ Introduce al menos País o Localidad para saltar."); 
+    }
+  };
+  
   const handleSearchConfirm = useCallback(() => {
     if (intent === 'ai') { alert("🤖 [IA]: Procesando..."); return; }
     if (intent === 'game') return;

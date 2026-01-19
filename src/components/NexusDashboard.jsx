@@ -218,7 +218,7 @@ const NexusDashboard = ({
                             )}
                         </div>
                         
-                        {/* FOOTER CON ENLACES EXTERNOS (ARSENAL COMPLETO) */}
+                        {/* FOOTER CON ENLACES EXTERNOS (ARSENAL DE 5 MOTORES) */}
                         <div className="bg-black border-t border-fuchsia-500/30 p-4 flex flex-col gap-3">
                             
                             {/* 1. INPUT INTERNO */}
@@ -235,10 +235,10 @@ const NexusDashboard = ({
                                 </button>
                             </div>
                             
-                            {/* 2. BOTONES DE ACCESO RÁPIDO */}
+                            {/* 2. BOTONES DE ACCESO RÁPIDO (5 MOTORES) */}
                             <div className="flex flex-wrap justify-center gap-2 pt-2 border-t border-white/5">
                                 
-                                {/* FLUX (Calidad Cine) */}
+                                {/* 1. FLUX */}
                                 <button 
                                     onClick={() => window.open('https://playground.bfl.ai/image/generate', '_blank')}
                                     className="flex items-center gap-1 bg-white text-black px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-fuchsia-400 hover:scale-105 transition-all"
@@ -246,7 +246,7 @@ const NexusDashboard = ({
                                     ⚡ FLUX
                                 </button>
 
-                                {/* META (Rápido) */}
+                                {/* 2. META */}
                                 <button 
                                     onClick={() => window.open('https://www.meta.ai/', '_blank')} 
                                     className="flex items-center gap-1 bg-[#0064e0] text-white border border-transparent px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:brightness-125 hover:scale-105 transition-all"
@@ -254,7 +254,23 @@ const NexusDashboard = ({
                                     ♾️ META
                                 </button>
 
-                                {/* RECRAFT (Vectores/Diseño) */}
+                                {/* 3. GROK */}
+                                <button 
+                                    onClick={() => window.open('https://x.com/i/grok', '_blank')} 
+                                    className="flex items-center gap-1 bg-black border border-white/30 text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-white hover:text-black hover:scale-105 transition-all"
+                                >
+                                    ⬛ GROK
+                                </button>
+
+                                {/* 4. REVE (Asignado a Leonardo.ai, cambia la URL si es otra) */}
+                                <button 
+                                    onClick={() => window.open('https://app.leonardo.ai/', '_blank')} 
+                                    className="flex items-center gap-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white border border-transparent px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:brightness-110 hover:scale-105 transition-all"
+                                >
+                                    🔮 REVE
+                                </button>
+
+                                {/* 5. RECRAFT */}
                                 <button 
                                     onClick={() => window.open('https://www.recraft.ai/', '_blank')} 
                                     className="flex items-center gap-1 bg-gradient-to-r from-orange-500 to-red-600 text-white border border-transparent px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:brightness-110 hover:scale-105 transition-all"
@@ -262,25 +278,9 @@ const NexusDashboard = ({
                                     🎨 RECRAFT
                                 </button>
 
-                                {/* GROK (Elon Musk / X) */}
-                                <button 
-                                    onClick={() => window.open('https://x.com/i/grok', '_blank')} 
-                                    className="flex items-center gap-1 bg-black border border-white/30 text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-white hover:text-black hover:scale-105 transition-all"
-                                >
-                                    ⬛ GROK
-                                </button>
-                                 </button>
-
-                                {/* REVE (He puesto RECRAFT.AI que es la mejor gratuita vectorial/raster actualmente) */}
-                                <button 
-                                    onClick={() => window.open('https://www.recraft.ai/', '_blank')} 
-                                    className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-red-500 text-white border border-transparent px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest hover:brightness-110 hover:scale-105 transition-all"
-                                >
-                                    🎨 REVE
-                                </button>
                             </div>
                         </div>
-                   </>
+                                           </>
                   )}
               </div>
           </div>
