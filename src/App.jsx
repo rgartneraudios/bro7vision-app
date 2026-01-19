@@ -1,4 +1,4 @@
-// src/App.jsx (VERSIÓN MASTER FINAL)
+// src/App.jsx (VERSIÓN FINAL CORREGIDA: LEGAL + GPS + CARDS)
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { supabase } from './supabaseClient';
@@ -19,9 +19,8 @@ import BroLogViewer from './components/BroLogViewer';
 import HoloPrism from './components/HoloPrism';
 import IdentityTerminal from './components/IdentityTerminal';
 import BoosterModal from './components/BoosterModal';
-import LegalBar from './components/LegalBar'; // <--- 1. IMPORTAR
-// import SequentialBackground from './components/SequentialBackground';
-
+import LegalBar from './components/LegalBar'; 
+import LegalTerminal from './components/LegalTerminal';
 
 function App() {
   // --- 1. LÓGICA DE SEGURIDAD (SUPABASE) ---
@@ -33,6 +32,7 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // --- ESTADOS GLOBALES ---
   const [step, setStep] = useState(0);
   const [intent, setIntent] = useState('product');
   const [scope, setScope] = useState(null);
@@ -41,6 +41,9 @@ function App() {
   const [balances, setBalances] = useState({ genesis: 0, nova: 0, crescens: 0, plena: 0, decrescens: 0 });
   const [moonPhase, setMoonPhase] = useState('plena');
   const [showWalletModal, setShowWalletModal] = useState(false);
+  
+  // ESTADO LEGAL (NUEVO)
+  const [showLegal, setShowLegal] = useState(false);
 
   // VISUALES
   const [showStory, setShowStory] = useState(false);
@@ -99,11 +102,8 @@ function App() {
 
   const handleCardSelect = (item) => {
     setSelectedCard(item);
-    
-    // LÓGICA DEL PRISMA (4 CARAS):
-    // Si tiene holo_1, úsalo. Si no, usa el Banner (img) o Avatar.
+    // LÓGICA DEL PRISMA
     const defaultImg = item.img || item.image || "/images/prism_1.jpg";
-
     setPrismImages([
         item.holo_1 || defaultImg,
         item.holo_2 || defaultImg,
@@ -112,8 +112,6 @@ function App() {
     ]);
   };
 
-  // 2. EL ARREGLO DEL ERROR (Alias)
-  // Definimos handlePreviewCard para que haga lo mismo que handleCardSelect
   const handlePreviewCard = (item) => handleCardSelect(item);
      
   const handleOpenIdentity = (data) => {
@@ -122,57 +120,42 @@ function App() {
   };
 
   const getCurrentVideo = () => {
-    if (intent === 'ai') return "/ai_bg.mp4"; // Archivo único 720p
+    if (intent === 'ai') return "/ai_bg.mp4";
     if (intent === 'game') return "/game_bg.mp4";
     if (intent === 'web_search') return "/websearch.mp4";
     if (intent === 'internal_search') return "/racoonask.mp4";
-    if (intent === 'lives') return "/brolives.mp4"; // Archivo único 720p
-    
-    // Para modo producto/servicio (Ciudad)
-    // Asegúrate de que getVideoForLocation devuelva "/ciudad.mp4" 
-    // o el nombre que le hayas puesto al video unido.
+    if (intent === 'lives') return "/brolives.mp4";
     return getVideoForLocation(scope); 
   };
   
- // --- FUNCIÓN GPS MEJORADA ---
+  // --- FUNCIÓN GPS ---
   const handleGPS = () => {
-    // 1. Pedir permiso al navegador
     if (!("geolocation" in navigator)) {
         alert("⚠️ Tu dispositivo no soporta geolocalización.");
         return;
     }
-
-    // Feedback visual
     alert("🛰️ CONECTANDO CON SATÉLITES... (Permite el acceso)");
-
     navigator.geolocation.getCurrentPosition(
         async (position) => {
             const { latitude, longitude } = position.coords;
-            
             try {
-                // 2. Traducir coordenadas a Ciudad (Reverse Geocoding GRATIS)
                 const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
                 const data = await response.json();
                 
-                // Extraemos la ciudad o pueblo
                 const city = data.address.city || data.address.town || data.address.village || data.address.municipality;
                 const country = data.address.country;
 
                 if (city) {
-                    // 3. Fijar el Scope y entrar
                     setScope({ city, country });
-                    setTeleportCoords({ city, country }); // Para que se vea en el input si quieres
+                    setTeleportCoords({ city, country });
                     setStep(1); 
                     setActiveSearch(null);
-                    
-                    // Aviso de éxito
                     alert(`📍 UBICACIÓN CONFIRMADA: ${city.toUpperCase()}, ${country.toUpperCase()}`);
                 } else {
                     alert("⚠️ Coordenadas recibidas pero zona desconocida. Activando modo Global.");
-                    setScope('gps'); // Fallback
+                    setScope('gps'); 
                     setStep(1);
                 }
-
             } catch (error) {
                 console.error("Error GPS:", error);
                 alert("⚠️ Error al triangula la posición. Introduce la ciudad manualmente.");
@@ -185,14 +168,11 @@ function App() {
     );
   };
   
-  // --- FUNCIÓN DE TELETRANSPORTE MANUAL (LA QUE FALTABA) ---
+  // --- FUNCIÓN TELETRANSPORTE MANUAL ---
   const handleTeleportConfirm = () => {
     if (teleportCoords.city || teleportCoords.country) {
-      // 1. Guardamos la ubicación escrita
       setScope(teleportCoords); 
-      // 2. Apagamos el modo de input
       setIsTeleporting(false); 
-      // 3. Entramos al Dashboard
       setStep(1); 
       setActiveSearch(null);
     } else { 
@@ -218,12 +198,9 @@ function App() {
   const handleVideoEnd = (amt) => { setShowStory(false); handleGameWin(amt); };
   
   const handleGameWin = async (amt) => {
-    // 1. Visual
     setBalances(prev => ({ ...prev, genesis: (prev.genesis || 0) + amt }));
     setShowSuccess(true); 
     setTimeout(() => setShowSuccess(false), 3000);
-    
-    // 2. Base de Datos (PARA TODOS, INCLUIDO TÚ)
     if (session?.user) {
       try {
         const { data } = await supabase.from('profiles').select('genesis').eq('id', session.user.id).single();
@@ -233,12 +210,12 @@ function App() {
       } catch (e) { console.error("Error guardando puntos:", e); }
     }
   };
+
   // --- LÓGICA DE FUSIÓN DE DATOS (REAL + STATIC) ---
   const [realItems, setRealItems] = useState([]);
 
   useEffect(() => {
     const fetchMarket = async () => {
-      // Traemos perfiles que tengan título de producto O servicio
       const { data } = await supabase
         .from('profiles')
         .select('*')
@@ -246,7 +223,6 @@ function App() {
 
       if (data) {
         const formatted = data.map(u => {
-          // Determinar estilo NEÓN según el color elegido en Booster
           const colorMap = {
              cyan: 'border-cyan-500 shadow-[0_0_20px_rgba(34,211,238,0.4)] text-cyan-400',
              fuchsia: 'border-fuchsia-500 shadow-[0_0_20px_rgba(232,121,249,0.4)] text-fuchsia-400',
@@ -257,23 +233,23 @@ function App() {
           const baseColor = u.card_color || 'cyan';
           const neonStyle = colorMap[baseColor];
 
-          // Crear items separados para Producto y Servicio si el usuario tiene ambos
           const items = [];
 
           if (u.product_title) {
             items.push({
               id: `${u.id}_prod`,
               type: ['product', 'shop'],
-              name: u.product_title, // Lo que vende
-              shopName: u.alias,     // Quién lo vende
+              name: u.product_title,
+              shopName: u.alias,
+              // PRIORIDAD: Imagen Producto -> Banner -> Avatar
               img: u.product_img || u.banner_url || u.avatar_url,
               message: u.twit_message,
               distance: u.city || 'Online',
               category: 'Shop',
               price: u.product_price,
-              url: u.product_url,    // <--- LINK EXTERNO
+              url: u.product_url, 
               neonColor: `text-${baseColor}-400`,
-              style: `bg-black/90 border ${neonStyle}`, // Estilo Neón generado
+              style: `bg-black/90 border ${neonStyle}`,
               isReal: true
             });
           }
@@ -284,29 +260,28 @@ function App() {
               type: ['service', 'shop'],
               name: u.service_title,
               shopName: u.alias,
+              // PRIORIDAD: Imagen Servicio -> Banner -> Avatar
               img: u.service_img || u.banner_url || u.avatar_url,
               message: u.twit_message,
               distance: u.city || 'Online',
               category: 'Service',
               price: u.service_price,
-              url: u.service_url,    // <--- LINK EXTERNO
+              url: u.service_url,
               neonColor: `text-${baseColor}-400`,
               style: `bg-black/90 border ${neonStyle}`,
               isReal: true
             });
           }
           return items;
-        }).flat(); // Aplanar el array
+        }).flat();
 
         setRealItems(formatted);
       }
     };
     fetchMarket();
-  }, [step]); // Se recarga al cambiar de paso o al entrar
+  }, [step]);
 
-  // MODIFICAMOS EL FILTRO PARA INCLUIR LOS REALES
   const filteredItems = useMemo(() => {
-    // Unimos la DB maestra con los reales
     const ALL_ITEMS = [...realItems, ...MASTER_DB]; 
 
     const parseDistance = (d) => {
@@ -317,19 +292,16 @@ function App() {
 
     return ALL_ITEMS.filter(item => {
       if (intent === 'ai' || intent === 'game') return false;
-      
       let typeMatch = false;
-      // Ajuste para que 'product' lea shops y 'service' lea services
       const types = Array.isArray(item.type) ? item.type : [item.type];
       
       if (intent === 'product') typeMatch = types.includes('product') || types.includes('shop');
       else if (intent === 'service') typeMatch = types.includes('service');
-      else if (intent === 'lives') typeMatch = types.includes('live'); // Si hubiese lógica aquí
+      else if (intent === 'lives') typeMatch = types.includes('live'); 
 
       let searchMatch = true;
       if (activeSearch && activeSearch.trim() !== "") {
         const q = activeSearch.toLowerCase();
-        // AÑADIDO: Búsqueda por shopName (Nombre User)
         searchMatch = (
             item.name?.toLowerCase().includes(q) || 
             item.shopName?.toLowerCase().includes(q) || 
@@ -339,12 +311,11 @@ function App() {
       return typeMatch && searchMatch;
     }).sort((a, b) => {
       if (scope === 'gps') return parseDistance(a.distance) - parseDistance(b.distance);
-      // Priorizar los reales sobre los bots si quieres
       if (a.isReal && !b.isReal) return -1;
       if (!a.isReal && b.isReal) return 1;
       return 0;
     });
-  }, [intent, scope, activeSearch, realItems]); // Añadido realItems a dependencias
+  }, [intent, scope, activeSearch, realItems]);
   
   
   const handleLogout = async () => { await supabase.auth.signOut(); setSession(null); setStep(0); };
@@ -362,14 +333,10 @@ function App() {
             <div className="absolute inset-0 bg-black/10"></div>
           </div>
         ) : (
-          /* VIDEO ÚNICO DE ALTA CALIDAD (1080p) */
           <video 
-            key={`vid-${intent}-${JSON.stringify(scope)}`} // El 'key' fuerza a React a recargar si cambia el modo
+            key={`vid-${intent}-${JSON.stringify(scope)}`} 
             src={getCurrentVideo()} 
-            autoPlay 
-            loop 
-            muted 
-            playsInline 
+            autoPlay loop muted playsInline 
             className="w-full h-full object-cover animate-fadeIn transition-opacity duration-1000" 
           />
         )}
@@ -377,16 +344,13 @@ function App() {
                   
       {/* CAPA 2: WIDGETS GLOBALES */}
       
-      {/* 1. BRO-TUNER (Abajo Izquierda) */}
+      {/* 1. BRO-TUNER */}
       <BroTuner />
 
      {/* 2. HOLO-PRISMA */}
       {(step === 1 || selectedCard || previewCard) && (
         <div className="
-            /* MÓVIL: Configuración que ya funciona (Top-2, Centrado-Izquierda) */
             fixed top-2 left-[35%] -translate-x-1/2 z-[50000] scale-[0.45] origin-center pointer-events-none
-            
-            /* PC: Ahora ABSOLUTO para control total. Bajado (top-32) y Derecha (right-10) */
             md:absolute md:top-32 md:right-10 md:left-auto md:translate-x-0 md:scale-100 md:origin-center
         ">
             <HoloPrism customImages={
@@ -404,7 +368,7 @@ function App() {
         </div>
       )}
                  
-            {/* 3. BRO-LIVES (REPRODUCTOR FLOTANTE DERECHA) */}
+      {/* 3. BRO-LIVES */}
       {step > 0 && (
         <BroLives 
             playingCreator={playingCreator}
@@ -413,17 +377,15 @@ function App() {
         />
       )}
 
-      {/* 4. WALLET (Centro Abajo Móvil / Arriba Izquierda PC) */}
+      {/* 4. WALLET */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 md:top-8 md:left-8 md:translate-x-0 z-[60]">
         <WalletWidget balances={balances} activePhase={moonPhase} onClick={() => setShowWalletModal(true)} />
       </div>
 
-     {/* 5. BRO-STORIES: ARRIBA IZQ (MÓVIL) / COLUMNA IZQ (PC) */}
-    {/* CAMBIO: En PC baja a 'top-80' y mostramos el texto */}
+     {/* 5. BRO-STORIES */}
     <div className="absolute top-4 left-4 md:top-72 md:left-8 z-[60] animate-pulse scale-75 md:scale-100 origin-top-left">
         <button onClick={() => setShowStory(true)} className="flex items-center gap-2 bg-gradient-to-r from-violet-900/80 to-fuchsia-900/80 backdrop-blur-md border border-fuchsia-500/50 px-4 py-2 rounded-2xl shadow-lg">
             <div className="text-2xl relative">❄️</div>
-            {/* CAMBIO: 'hidden md:block' asegura que el texto se vea en PC */}
             <div className="hidden md:block text-left">
                 <p className="text-[7px] text-fuchsia-300 font-bold uppercase">Nueva Temporada</p>
                 <p className="text-xs font-black italic">BRO-STORIES</p>
@@ -431,7 +393,7 @@ function App() {
         </button>
     </div>
             
-      {/* 6. USUARIO + BOOSTER (Arriba Derecha) */}
+      {/* 6. USUARIO + BOOSTER */}
       <div className="absolute top-4 right-4 md:top-6 md:right-6 z-[60] flex flex-col items-end gap-2 pointer-events-auto scale-90 md:scale-100 origin-top-right">
         <div className="flex items-center gap-3 bg-black/60 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full shadow-lg group hover:border-cyan-500 transition-colors">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_lime]"></div>
@@ -482,12 +444,12 @@ function App() {
         </div>
      )}
 
-    {/* STEP 1: NEXUS DASHBOARD (LIMPIO, EL BOTÓN ZONA AHORA ESTÁ DENTRO) */}
+    {/* STEP 1: NEXUS DASHBOARD */}
      {step === 1 && (
         <NexusDashboard 
             onSearch={handleSearchConfirm} searchQuery={searchQuery} setSearchQuery={setSearchQuery} 
             intent={intent} setIntent={setIntent} 
-            onBack={resetApp} // Pasamos la función, el Nexus la usará en su botón interno
+            onBack={resetApp} 
             onGameWin={handleGameWin} 
             onOpenLog={handleOpenIdentity}
             onTuneIn={handleTuneIn}
@@ -501,11 +463,7 @@ function App() {
             <PaginatedDisplay 
                 items={filteredItems} 
                 onSelect={handlePreviewCard} 
-                activeBoosts={activeBoosts} 
                 intent={intent} 
-                userCoinType="nova" 
-                currentPhase={moonPhase} 
-                // AÑADIR ESTA LÍNEA PARA QUE EL BOTÓN FUNCIONE:
                 onTuneIn={handleTuneIn} 
             />     
         </div> 
@@ -518,8 +476,7 @@ function App() {
      {showWalletModal && <ConversionModal balances={balances} activePhase={moonPhase} onClose={() => setShowWalletModal(false)} />}
      {showStory && <StoryPlayer src="/brostories_demo.mp4" activePhase={moonPhase} onClose={() => setShowStory(false)} onComplete={handleVideoEnd} />}
      
-     {/* BOTÓN VOLVER (EMERGENCIA) */}
-     {/* CAMBIO: En PC 'md:top-1/2' para que esté en el centro vertical (igual que Cambiar Zona) */}
+    {/* --- BOTÓN VOLVER --- */}
      {step === 2 && (
         <div className="fixed bottom-4 right-4 md:top-1/2 md:left-8 z-[99999] pointer-events-auto filter drop-shadow-2xl scale-75 md:scale-100 origin-bottom-right md:origin-center">
             <button onClick={() => setStep(1)} className="group flex items-center gap-3 bg-yellow-500 hover:bg-white text-black px-6 py-3 rounded-full font-black uppercase tracking-[0.2em] text-xs border-4 border-black shadow-[0_0_0_4px_#fbbf24]">
@@ -528,17 +485,28 @@ function App() {
             </button>
         </div>
      )} 
-     
-     <div className="relative w-full h-screen ...">
-      
-      {/* ... todo el contenido de la app ... */}
 
-      {/* CAPA LEGAL (GDPR + CONTACTO) */}
-      <LegalBar />  {/* <--- 2. PONER AQUÍ AL FINAL */}
-
-    </div>
+     {/* --- SECCIÓN LEGAL --- */}
      
-    </div>
+     {/* 1. MODAL GRANDE */}
+     {showLegal && <LegalTerminal onClose={() => setShowLegal(false)} />}
+
+     {/* 2. BARRA DE COOKIES */}
+     <LegalBar onOpenLegal={() => setShowLegal(true)} />
+
+     {/* 3. BOTÓN DISCRETO (CENTRO ABAJO) */}
+     {/* left-1/2 y -translate-x-1/2 lo centran matemáticamente. bottom-1 lo pega al suelo */}
+     <div className="fixed bottom-1 left-1/2 -translate-x-1/2 z-[55] opacity-50 hover:opacity-100 transition-opacity pointer-events-auto">
+          <button 
+              onClick={() => setShowLegal(true)}
+              className="text-[9px] text-gray-500 font-mono border border-white/10 px-3 py-1 rounded-t-lg bg-black/90 backdrop-blur hover:bg-white hover:text-black transition-colors"
+          >
+              ⚖️ LEGAL / CONTACTO
+          </button>
+     </div>
+     
+    </div> 
   )
 }
+
 export default App;
