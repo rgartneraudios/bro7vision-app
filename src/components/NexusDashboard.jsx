@@ -29,6 +29,24 @@ const NexusDashboard = ({
   const [imagePrompt, setImagePrompt] = useState("");
   const [generatedImage, setGeneratedImage] = useState(null);
   const [isLoadingImage, setIsLoadingImage] = useState(false);
+  // --- NUEVOS ESTADOS DE DEFENSA ---
+  const [cooldown, setCooldown] = useState(0); // Tiempo de espera
+  const [dailyCount, setDailyCount] = useState(0); // Contador de hoy
+  const MAX_DAILY_MSG = 20; // Límite por persona
+  
+  // --- AL CARGAR: REVISAR LA CARTILLA DE RACIONAMIENTO ---
+  useEffect(() => {
+      const today = new Date().toDateString(); // Ej: "Mon Jan 19 2026"
+      const storedData = JSON.parse(localStorage.getItem('bro7_ai_usage') || '{}');
+      
+      if (storedData.date === today) {
+          setDailyCount(storedData.count);
+      } else {
+          // Si es un día nuevo, reseteamos a 0
+          localStorage.setItem('bro7_ai_usage', JSON.stringify({ date: today, count: 0 }));
+          setDailyCount(0);
+      }
+  }, []);
 
   const MOCK_LOGS = ["ENSAYO: IA en artesanía...", "OPINIÓN: Moon Coins...", "HISTORIA: Catedral...", "FUTURO: Bro-Drop y el Campo"];
   
@@ -157,47 +175,105 @@ const NexusDashboard = ({
                   {/* CABECERA */}
                   <div className="flex justify-between items-center bg-black/80 border-b border-white/10 pr-4">
                       <div className="flex flex-1">
-                          <button onClick={() => setAiModeType('text')} className={`flex-1 py-4 text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${aiModeType === 'text' ? 'bg-cyan-950/50 text-cyan-400 border-b-2 border-cyan-500' : 'text-gray-500 hover:text-white'}`}>💬 BRO-CHAT</button>
+                          <button onClick={() => setAiModeType('text')} className={`flex-1 py-4 text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${aiModeType === 'text' ? 'bg-cyan-950/50 text-cyan-400 border-b-2 border-cyan-500' : 'text-gray-500 hover:text-white'}`}>💬 BRO7VISION-GEMINI-CHAT</button>
                           <button onClick={() => setAiModeType('image')} className={`flex-1 py-4 text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${aiModeType === 'image' ? 'bg-fuchsia-950/50 text-fuchsia-400 border-b-2 border-fuchsia-500' : 'text-gray-500 hover:text-white'}`}>🎨 IMAGEN-GEN</button>
                       </div>
                       <button onClick={() => window.open('https://aistudio.google.com/', '_blank')} className="hidden md:flex items-center gap-2 text-[10px] bg-white/5 border border-white/20 px-3 py-1.5 rounded text-gray-300 hover:text-white transition-all uppercase tracking-wider ml-4"><span>🧠</span> STUDIO ↗</button>
                   </div>
 
-                  {/* --- MODO TEXTO (GEMINI PRO) --- */}
+                 {/* --- MODO TEXTO (GEMINI PRO + DEFENSAS + RACCON) --- */}
                   {aiModeType === 'text' && (
                       <>
+                        {/* 1. ÁREA DE CHAT / PANTALLA DE ESPERA */}
                         <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-gradient-to-b from-black via-[#0a1014] to-black">
                             {aiResponse ? (
                                 <div className="text-cyan-100 text-sm md:text-lg leading-relaxed typing-effect font-medium">
                                     <span className="text-cyan-500 font-bold mr-2 text-xl">{'>'}</span>{aiResponse}
                                 </div>
                             ) : (
-                                <div className="h-full flex flex-col items-center justify-center opacity-40">
-                                    <div className="text-8xl mb-6 animate-pulse filter drop-shadow-[0_0_15px_cyan]">🤖</div>
-                                    <p className="text-cyan-500 tracking-[0.5em] text-sm">SISTEMA NEURONAL ACTIVO</p>
+                                // PANTALLA DE ESPERA: ROBOT + MAPACHE
+                                <div className="h-full flex flex-col items-center justify-center opacity-60">
+                                    <div className="flex gap-4 text-7xl md:text-8xl mb-6 filter drop-shadow-[0_0_20px_rgba(6,182,212,0.6)]">
+                                        <span className="animate-bounce delay-700">🦝</span>
+                                        <span className="animate-pulse">🤖</span>
+                                        
+                                    </div>
+                                    <p className="text-cyan-400 tracking-[0.2em] md:tracking-[0.3em] text-xs md:text-sm font-bold uppercase text-center px-4">
+                                        BRO7VISION <span className="text-white">&</span> GEMINI JUNTOS
+                                    </p>
                                 </div>
                             )}
                             {isLoadingAI && <div className="mt-4 text-cyan-400 text-xs animate-pulse font-mono">PROCESANDO DATOS... ▊▊▊</div>}
                         </div>
-                        <div className="p-4 bg-black border-t border-cyan-500/30 flex gap-2">
+
+                        {/* 2. INPUT DE TEXTO + BARRA DE CRÉDITOS */}
+                        <div className="p-4 bg-black border-t border-cyan-500/30 flex flex-col gap-2">
+                            
+                            {/* CAMPO DE TEXTO */}
                             <input 
-                                type="text" placeholder="Pregunta al Oráculo..." 
-                                className="flex-1 bg-[#0a0a0a] border border-cyan-900/50 text-cyan-100 p-4 rounded-xl focus:border-cyan-500 outline-none"
+                                type="text" 
+                                placeholder={cooldown > 0 ? `❄️ ENFRIANDO SISTEMA (${cooldown}s)...` : "Pregunta al Oráculo..."}
+                                disabled={cooldown > 0 || dailyCount >= MAX_DAILY_MSG}
+                                className={`
+                                    flex-1 bg-[#0a0a0a] border text-cyan-100 p-4 rounded-xl outline-none transition-all placeholder-cyan-900
+                                    ${cooldown > 0 ? 'border-red-900/50 cursor-not-allowed opacity-50' : 'border-cyan-900/50 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.2)]'}
+                                `}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                         const val = e.target.value;
                                         if(!val) return;
+
+                                        // 🛡️ DEFENSA 1: ENFRIAMIENTO
+                                        if (cooldown > 0) return;
+
+                                        // 🛡️ DEFENSA 2: CUPO DIARIO
+                                        if (dailyCount >= MAX_DAILY_MSG) {
+                                            setAiResponse("⛔ CUPO DIARIO AGOTADO. Vuelve mañana, ciudadano.");
+                                            return;
+                                        }
+
+                                        // EJECUCIÓN
                                         setIsLoadingAI(true);
                                         setAiResponse(null);
                                         e.target.value = '';
+
+                                        // A. Iniciar Timer
+                                        setCooldown(10);
+                                        const timer = setInterval(() => {
+                                            setCooldown((prev) => {
+                                                if (prev <= 1) { clearInterval(timer); return 0; }
+                                                return prev - 1;
+                                            });
+                                        }, 1000);
+
+                                        // B. Actualizar Contador
+                                        const newCount = dailyCount + 1;
+                                        setDailyCount(newCount);
+                                        const today = new Date().toDateString();
+                                        localStorage.setItem('bro7_ai_usage', JSON.stringify({ date: today, count: newCount }));
+
+                                        // C. Llamada a Gemini
                                         askGemini(val).then(res => { setAiResponse(res); setIsLoadingAI(false); });
                                     }
                                 }}
                             />
+
+                            {/* BARRA DE ESTADO (CRÉDITOS) */}
+                            <div className="flex justify-between text-[10px] font-mono uppercase px-2 mt-1">
+                                <span className={cooldown > 0 ? "text-red-500 animate-pulse font-bold" : "text-green-500"}>
+                                    {cooldown > 0 ? `❄️ RECALENTADO: ${cooldown}s` : '🟢 SISTEMA LISTO'}
+                                </span>
+                                <span className="text-cyan-600">
+                                    CRÉDITOS DIARIOS: <span className={dailyCount >= MAX_DAILY_MSG ? "text-red-500 font-black" : "text-cyan-300 font-bold"}>
+                                        {MAX_DAILY_MSG - dailyCount}
+                                    </span> / {MAX_DAILY_MSG}
+                                </span>
+                            </div>
+
                         </div>
                       </>
                   )}
-
+                  
                   {/* --- MODO IMAGEN (POLLINATIONS v2 + EXTERNOS) --- */}
                   {aiModeType === 'image' && (
                       <>
