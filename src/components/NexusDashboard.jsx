@@ -218,13 +218,13 @@ const NexusDashboard = ({
                             )}
                         </div>
                         
-                        {/* FOOTER CON ENLACES EXTERNOS (ARSENAL GRÁFICO) */}
+                        {/* FOOTER CON ENLACES EXTERNOS (ARSENAL COMPLETO) */}
                         <div className="bg-black border-t border-fuchsia-500/30 p-4 flex flex-col gap-3">
                             
-                            {/* 1. GENERADOR INTERNO (EXPERIMENTAL) */}
+                            {/* 1. INPUT INTERNO */}
                             <div className="flex gap-2">
                                 <input 
-                                    type="text" placeholder="Prompt interno (Experimental)..." 
+                                    type="text" placeholder="Prompt interno..." 
                                     value={imagePrompt}
                                     onChange={(e) => setImagePrompt(e.target.value)}
                                     className="flex-1 bg-[#0a0a0a] border border-fuchsia-900/50 text-fuchsia-100 p-3 rounded-xl focus:border-fuchsia-500 outline-none text-xs"
@@ -235,25 +235,41 @@ const NexusDashboard = ({
                                 </button>
                             </div>
                             
-                            {/* 2. BOTONES DE ACCESO RÁPIDO (META + FLUX + REVE) */}
+                            {/* 2. BOTONES DE ACCESO RÁPIDO */}
                             <div className="flex flex-wrap justify-center gap-2 pt-2 border-t border-white/5">
-                                <span className="text-[9px] text-gray-500 self-center uppercase mr-1">MOTORES PRO:</span>
                                 
-                                {/* FLUX (Black Forest Labs) */}
+                                {/* FLUX (Calidad Cine) */}
                                 <button 
                                     onClick={() => window.open('https://playground.bfl.ai/image/generate', '_blank')}
-                                    className="flex items-center gap-2 bg-white text-black px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-fuchsia-400 hover:scale-105 transition-all"
+                                    className="flex items-center gap-1 bg-white text-black px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-fuchsia-400 hover:scale-105 transition-all"
                                 >
                                     ⚡ FLUX
                                 </button>
 
-                                {/* META AI (Imagine) */}
+                                {/* META (Rápido) */}
                                 <button 
                                     onClick={() => window.open('https://www.meta.ai/', '_blank')} 
-                                    className="flex items-center gap-2 bg-[#0064e0] text-white border border-transparent px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-blue-500 hover:scale-105 transition-all"
+                                    className="flex items-center gap-1 bg-[#0064e0] text-white border border-transparent px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:brightness-125 hover:scale-105 transition-all"
                                 >
                                     ♾️ META
                                 </button>
+
+                                {/* RECRAFT (Vectores/Diseño) */}
+                                <button 
+                                    onClick={() => window.open('https://www.recraft.ai/', '_blank')} 
+                                    className="flex items-center gap-1 bg-gradient-to-r from-orange-500 to-red-600 text-white border border-transparent px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:brightness-110 hover:scale-105 transition-all"
+                                >
+                                    🎨 RECRAFT
+                                </button>
+
+                                {/* GROK (Elon Musk / X) */}
+                                <button 
+                                    onClick={() => window.open('https://x.com/i/grok', '_blank')} 
+                                    className="flex items-center gap-1 bg-black border border-white/30 text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-white hover:text-black hover:scale-105 transition-all"
+                                >
+                                    ⬛ GROK
+                                </button>
+                                 </button>
 
                                 {/* REVE (He puesto RECRAFT.AI que es la mejor gratuita vectorial/raster actualmente) */}
                                 <button 
@@ -264,7 +280,7 @@ const NexusDashboard = ({
                                 </button>
                             </div>
                         </div>
-                    </>
+                   </>
                   )}
               </div>
           </div>
