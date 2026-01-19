@@ -22,9 +22,9 @@ const DARK_QUOTES = [
   "¡Has llegado justo a tiempo! ¡Jajaja!",
   "Tuve la sensación de que había algún ruido por aquí...",
   "Estas son las consecuencias de no estudiar, jojojojo.",
-  "¿Nos gustan los libros verdad, Jajaja, Que bien! ?",
+  "¿No nos gustan los libros verdad? , Jajaja!",
   "Oh!! que sorpresa!, Creo que vas a pasar un buen tiempo aquí! HjjjuuuuHHH",
-  "¿Has ido al colegio alguna vez? Jajajaja."
+  "Justo a tiempo! Necesitábamos esclavos aquí, Jajajaja."
 ];
 
 // --- BASE DE DATOS DE PREGUNTAS (Necesitamos al menos 10) ---

@@ -182,7 +182,7 @@ const BoosterModal = ({ onClose }) => {
                         </h3>
                         
                         <p className="text-[9px] text-gray-400 mb-3">
-                            ℹ RECOMENDADO: Usa imágenes ligeras (400x300px). Puedes subirlas gratis en <a href="https://postimages.org/" target="_blank" className="text-cyan-400 underline">Postimages</a>.
+                            ℹ RECOMENDADO: Usa imágenes ligeras ar 9 x 16 px.. Puedes subirlas gratis en <a href="https://postimages.org/" target="_blank" className="text-cyan-400 underline">Postimages</a>.
                         </p>
 
                         <div className="space-y-3">
@@ -205,7 +205,7 @@ const BoosterModal = ({ onClose }) => {
                         </h3>
 
                         <p className="text-[9px] text-gray-400 mb-3">
-                            ℹ RECOMENDADO: Usa imágenes ligeras (400x300px).
+                            ℹ RECOMENDADO: Usa imágenes ligeras , ar 9 x 16 px.
                         </p>
 
                         <div className="space-y-3">

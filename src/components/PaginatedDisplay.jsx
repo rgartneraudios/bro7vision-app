@@ -1,4 +1,4 @@
-// src/components/PaginatedDisplay.jsx (VERSIÓN ZONAS SEGURAS)
+// src/components/PaginatedDisplay.jsx (VERSIÓN VOLUMEN LIMPIO + CRYSTAL UI)
 
 import React, { useState, useEffect } from 'react';
 
@@ -16,8 +16,8 @@ const PaginatedDisplay = ({ items, onSelect, onTuneIn }) => {
   if (!items || items.length === 0) {
       return (
           <div className="w-full h-full flex flex-col items-center justify-center pt-20">
-              <div className="text-6xl animate-pulse text-cyan-500">📡</div>
-              <p className="text-cyan-500 font-mono text-sm mt-4 uppercase tracking-widest">NO SIGNALS DETECTED</p>
+              <div className="text-6xl animate-pulse text-white/50">📡</div>
+              <p className="text-white/50 font-mono text-sm mt-4 uppercase tracking-widest">NO SIGNALS</p>
           </div>
       );
   }
@@ -32,123 +32,137 @@ const PaginatedDisplay = ({ items, onSelect, onTuneIn }) => {
   const prevSlide = (e) => { e?.stopPropagation(); if (totalItems > itemsPerPage) setStartIndex((prev) => (prev - 1 + totalItems) % totalItems); };
 
   // --- ACCIONES ---
-  const handleConnect = (item, e) => {
-      e.stopPropagation(); // Detener propagación
-      e.preventDefault();
-      
-      console.log("CLICK EN CONECTAR:", item.url);
-
+  const handleConnect = (item) => {
       if (item.url && item.url.trim() !== "") {
           let targetUrl = item.url.trim();
           if (!targetUrl.startsWith('http')) targetUrl = 'https://' + targetUrl;
           window.open(targetUrl, '_blank');
       } else {
-          // Si es un item de la DB vieja sin URL, avisamos
-          alert("⚠️ (FASE 0) Este comercio simulado no tiene enlace real.");
+          alert("⚠️ (FASE 0) Enlace no configurado.");
       }
   };
 
-  const handleGoToLive = (item, e) => {
-      e.stopPropagation();
+  const handleGoToLive = (item) => {
       const cleanId = item.id.replace('_prod', '').replace('_serv', '');
       if (onTuneIn) {
           onTuneIn({
-              id: cleanId,
-              alias: item.shopName, 
-              img: item.img,
+              id: cleanId, alias: item.shopName, img: item.img,
               audioFile: item.audioFile || "/audio/static_noise.mp3"
           });
       }
   };
 
-  const getCardTheme = (colorClass) => {
-      let theme = { border: 'border-white', shadow: 'shadow-[0_0_25px_rgba(255,255,255,0.3)]', bg: 'bg-gradient-to-b from-gray-900 to-black', text: 'text-white', button: 'hover:bg-gray-200' };
-      if (!colorClass) return theme;
-      if (colorClass.includes('cyan')) theme = { border: 'border-cyan-500', shadow: 'shadow-[0_0_35px_rgba(6,182,212,0.6)]', bg: 'bg-gradient-to-b from-cyan-950/80 via-black to-black', text: 'text-cyan-400', button: 'hover:bg-cyan-400' };
-      else if (colorClass.includes('fuchsia')) theme = { border: 'border-fuchsia-500', shadow: 'shadow-[0_0_35px_rgba(217,70,239,0.6)]', bg: 'bg-gradient-to-b from-fuchsia-950/80 via-black to-black', text: 'text-fuchsia-400', button: 'hover:bg-fuchsia-400' };
-      else if (colorClass.includes('yellow')) theme = { border: 'border-yellow-400', shadow: 'shadow-[0_0_35px_rgba(250,204,21,0.6)]', bg: 'bg-gradient-to-b from-yellow-900/80 via-black to-black', text: 'text-yellow-400', button: 'hover:bg-yellow-400' };
-      else if (colorClass.includes('green')) theme = { border: 'border-green-500', shadow: 'shadow-[0_0_35px_rgba(34,197,94,0.6)]', bg: 'bg-gradient-to-b from-green-950/80 via-black to-black', text: 'text-green-400', button: 'hover:bg-green-400' };
-      else if (colorClass.includes('red')) theme = { border: 'border-red-500', shadow: 'shadow-[0_0_35px_rgba(239,68,68,0.6)]', bg: 'bg-gradient-to-b from-red-950/80 via-black to-black', text: 'text-red-500', button: 'hover:bg-red-500' };
-      return theme;
+  // --- PALETA DE COLORES SUTIL (Solo para detalles) ---
+  const getAccentColor = (colorClass) => {
+      if (colorClass?.includes('fuchsia')) return 'text-fuchsia-400 bg-fuchsia-500';
+      if (colorClass?.includes('yellow')) return 'text-yellow-400 bg-yellow-500';
+      if (colorClass?.includes('green')) return 'text-green-400 bg-green-500';
+      if (colorClass?.includes('red')) return 'text-red-400 bg-red-500';
+      return 'text-cyan-400 bg-cyan-500'; // Default Cyan
   };
 
   return (
-    <div className="absolute top-[12%] bottom-[12%] w-full max-w-[1200px] left-1/2 -translate-x-1/2 z-40 flex items-center justify-center px-4">
-        {totalItems > itemsPerPage && (<button onClick={prevSlide} className="hidden md:flex bg-black hover:bg-white/20 text-white border border-white/30 rounded-full w-12 h-12 items-center justify-center transition-all hover:scale-110 z-50 mr-6 font-black text-2xl cursor-pointer">❮</button>)}
+    <div className="absolute top-[8%] bottom-[12%] w-full max-w-[1300px] left-1/2 -translate-x-1/2 z-40 flex items-center justify-center px-4">
+        
+        {/* FLECHAS DE NAVEGACIÓN (Discretas) */}
+        {totalItems > itemsPerPage && (<button onClick={prevSlide} className="hidden md:flex text-white/50 hover:text-white text-6xl font-thin transition-all hover:scale-110 z-50 mr-8 cursor-pointer">‹</button>)}
 
-        <div className="flex flex-row gap-6 items-center justify-center w-full h-full">
+        {/* CONTENEDOR CARTAS */}
+        <div className="flex flex-row gap-10 items-center justify-center w-full h-full">
             {visibleItems.map((item, index) => {
-                const theme = getCardTheme(item.neonColor);
-                
+                const accent = getAccentColor(item.neonColor);
+                const accentText = accent.split(' ')[0];
+                const accentBg = accent.split(' ')[1];
+
                 return (
                     <div 
                         key={`${item.id}-${index}`}
-                        // QUITAMOS EL ONCLICK DEL PADRE PARA EVITAR CONFLICTOS
                         className={`
-                            relative w-full md:w-[280px] h-[560px] flex flex-col shrink-0
-                            rounded-[2rem] border-[3px]
-                            ${theme.bg} ${theme.border} ${theme.shadow}
-                            hover:scale-[1.03] transition-transform duration-300 overflow-hidden
+                            relative w-full md:w-[320px] h-[620px] flex flex-col shrink-0
+                            rounded-[2.5rem] bg-[#050505]
+                            /* AQUÍ ESTÁ EL VOLUMEN: Sombra Negra Profunda */
+                            shadow-[0_30px_60px_-10px_rgba(0,0,0,1)] 
+                            transition-all duration-500 ease-out
+                            hover:-translate-y-4 hover:shadow-[0_50px_80px_-20px_rgba(0,0,0,1)]
+                            overflow-hidden isolate
                         `}
                     >
-                        {/* --- ZONA 1: CUERPO CLICABLE (Abre PaymentModal) --- */}
+                        {/* 1. IMAGEN FULL (LIMPIA) */}
                         <div 
-                            className="flex-1 flex flex-col cursor-pointer"
-                            onClick={() => onSelect(item)} // Solo esta parte abre el modal
+                            className="absolute inset-0 z-0 cursor-pointer"
+                            onClick={() => onSelect(item)} 
                         >
-                            {/* IMAGEN */}
-                            <div className={`relative h-44 w-full shrink-0 border-b border-white/10`}>
-                                <img src={item.img || 'https://via.placeholder.com/400x300'} className="w-full h-full object-cover opacity-80" alt="item" />
-                                <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-white text-black px-4 py-1 rounded-lg shadow-xl transform rotate-[-2deg] border-2 border-black">
-                                    <p className="text-xl font-black tracking-tighter leading-none">{item.distance || 'Online'}</p>
-                                </div>
-                                <div className="absolute bottom-[-10px] left-1/2 -translate-x-1/2 bg-black text-white px-3 py-1 rounded text-[9px] font-bold uppercase tracking-widest border border-gray-600">
-                                    {item.category || 'SHOP'} 🔒
-                                </div>
+                            <img 
+                                src={item.img || 'https://via.placeholder.com/400x600'} 
+                                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" 
+                                alt="item" 
+                            />
+                            {/* Degradado SOLO abajo para leer texto */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90"></div>
+                            
+                            {/* Brillo sutil superior (Reflejo de cristal) */}
+                            <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
+                        </div>
+
+                        {/* 2. CAPA FLOTANTE SUPERIOR (Distancia + Live) */}
+                        <div className="absolute top-5 left-0 right-0 px-6 flex justify-between items-start z-10 pointer-events-none">
+                            {/* Distancia: Cápsula de Cristal */}
+                            <div className="bg-black/30 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
+                                <div className={`w-1.5 h-1.5 rounded-full ${accentBg} animate-pulse shadow-[0_0_10px_currentColor]`}></div>
+                                <span className="text-white font-mono text-xs font-bold tracking-wider">{item.distance || 'Online'}</span>
                             </div>
 
-                            {/* MENSAJE */}
-                            <div className="flex-1 px-4 flex flex-col items-center justify-center text-center mt-2">
-                                <p className={`font-mono text-lg font-bold italic leading-snug ${theme.text} drop-shadow-md`}>
-                                    "{item.message || "Esperando señal..."}"
+                            {/* Botón Live (Si es real) */}
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); handleGoToLive(item); }}
+                                className="bg-black/30 backdrop-blur-md border border-white/10 w-8 h-8 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 transition-all cursor-pointer pointer-events-auto"
+                            >
+                                📡
+                            </button>
+                        </div>
+
+                        {/* 3. MENSAJE FLOTANTE (CENTRO) */}
+                        <div className="absolute top-[35%] left-4 right-4 z-10 pointer-events-none flex justify-center">
+                            <div className="bg-white/5 backdrop-blur-sm border-l-2 border-white/30 pl-4 py-2 pr-2 rounded-r-lg max-w-[90%]">
+                                <p className="font-mono text-lg font-bold italic leading-snug text-white/90 drop-shadow-md">
+                                    "{item.message || "..."}"
                                 </p>
                             </div>
                         </div>
 
-                        {/* --- ZONA 2: FOOTER INTERACTIVO (NO abre PaymentModal) --- */}
-                        <div className="p-4 pt-2 flex flex-col items-center text-center bg-black/30 backdrop-blur-md border-t border-white/10 relative z-50">
+                        {/* 4. FOOTER (DATOS + ACCIÓN) */}
+                        <div className="absolute bottom-0 left-0 right-0 p-6 z-20 pointer-events-none">
                             
-                            <h3 className="text-white font-black text-xl uppercase leading-none mb-1 cursor-default">{item.name}</h3>
-                            <p className="text-gray-400 text-[10px] uppercase font-bold mb-3 tracking-widest cursor-default">{item.shopName}</p>
+                            {/* Títulos */}
+                            <div className="mb-6">
+                                <p className={`text-[10px] uppercase font-bold tracking-[0.3em] mb-1 opacity-80 ${accentText}`}>
+                                    {item.shopName}
+                                </p>
+                                <h3 className="text-white font-black text-3xl uppercase leading-none drop-shadow-lg">
+                                    {item.name}
+                                </h3>
+                            </div>
 
-                            <div className={`w-full h-[1px] mb-3 opacity-50 ${theme.border.replace('border-', 'bg-')}`}></div>
-
-                            <div className="w-full flex items-end justify-between">
-                                {/* BOTÓN ANTENA */}
-                                <button 
-                                    onClick={(e) => handleGoToLive(item, e)}
-                                    className="text-gray-400 hover:text-white transition-colors p-2 hover:scale-110 cursor-pointer"
-                                >
-                                    <span className="text-2xl animate-pulse">📡</span>
-                                </button>
-
-                                {/* PRECIO (No hace nada) */}
-                                <div className="text-center cursor-default">
-                                    <p className="text-[7px] text-gray-500 uppercase font-mono">FASE 0</p>
-                                    <p className="text-xl font-black text-white leading-none">{item.price || '0 GEN'}</p>
+                            {/* Fila de Acción */}
+                            <div className="flex items-center justify-between gap-4 pointer-events-auto">
+                                
+                                {/* Precio */}
+                                <div className="flex flex-col">
+                                    <span className="text-[8px] text-white/40 uppercase">FASE 0</span>
+                                    <span className="text-2xl font-mono font-bold text-white">{item.price || '0'}</span>
                                 </div>
 
-                                {/* BOTÓN CONECTAR */}
+                                {/* Botón Conectar (Minimalista) */}
                                 <button 
-                                    onClick={(e) => handleConnect(item, e)}
+                                    onClick={(e) => { e.stopPropagation(); handleConnect(item); }}
                                     className={`
-                                        bg-white text-black px-4 py-2 rounded-lg font-black uppercase text-[9px] tracking-widest 
-                                        transition-colors shadow-lg flex gap-1 items-center cursor-pointer hover:scale-105 active:scale-95
-                                        ${theme.button}
+                                        flex-1 py-3 px-4 rounded-xl 
+                                        bg-white text-black font-black uppercase text-[10px] tracking-[0.2em]
+                                        hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)]
+                                        flex items-center justify-center gap-2 cursor-pointer
                                     `}
                                 >
-                                    <span>{item.url ? 'CONECTAR' : 'VER'}</span>
-                                    <span className="text-xs">↗</span>
+                                    CONECTAR <span className="text-sm">↗</span>
                                 </button>
                             </div>
                         </div>
@@ -158,7 +172,7 @@ const PaginatedDisplay = ({ items, onSelect, onTuneIn }) => {
             })}
         </div>
 
-        {totalItems > itemsPerPage && (<button onClick={nextSlide} className="hidden md:flex bg-black hover:bg-white/20 text-white border border-white/30 rounded-full w-12 h-12 items-center justify-center transition-all hover:scale-110 z-50 ml-6 font-black text-2xl cursor-pointer">❯</button>)}
+        {totalItems > itemsPerPage && (<button onClick={nextSlide} className="hidden md:flex text-white/50 hover:text-white text-6xl font-thin transition-all hover:scale-110 z-50 ml-8 cursor-pointer">›</button>)}
 
         {totalItems > 1 && (
             <div className="md:hidden absolute -bottom-10 left-0 right-0 flex justify-center gap-6 z-50">
