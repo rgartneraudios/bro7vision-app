@@ -218,28 +218,53 @@ const NexusDashboard = ({
                             )}
                         </div>
                         
-                        {/* FOOTER CON ENLACES EXTERNOS */}
+                        {/* FOOTER CON ENLACES EXTERNOS (ARSENAL GRÁFICO) */}
                         <div className="bg-black border-t border-fuchsia-500/30 p-4 flex flex-col gap-3">
+                            
+                            {/* 1. GENERADOR INTERNO (EXPERIMENTAL) */}
                             <div className="flex gap-2">
                                 <input 
-                                    type="text" placeholder="Describe una imagen..." 
+                                    type="text" placeholder="Prompt interno (Experimental)..." 
                                     value={imagePrompt}
                                     onChange={(e) => setImagePrompt(e.target.value)}
                                     className="flex-1 bg-[#0a0a0a] border border-fuchsia-900/50 text-fuchsia-100 p-3 rounded-xl focus:border-fuchsia-500 outline-none text-xs"
                                     onKeyDown={(e) => e.key === 'Enter' && handleGenImage()}
                                 />
                                 <button onClick={handleGenImage} className="bg-fuchsia-900/50 text-fuchsia-400 border border-fuchsia-500/50 font-bold px-4 rounded-xl hover:bg-fuchsia-500 hover:text-white transition-all text-xs">
-                                    GENERAR
+                                    PROBAR
                                 </button>
                             </div>
                             
-                            <div className="flex gap-2 justify-center pt-2 border-t border-white/5">
-                                <span className="text-[9px] text-gray-500 self-center uppercase mr-2">O USA:</span>
-                                <button onClick={() => window.open('https://playground.bfl.ai/image/generate', '_blank')} className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-fuchsia-400 hover:scale-105 transition-all">⚡ FLUX AI</button>
-                                <button onClick={() => window.open('https://app.leonardo.ai/', '_blank')} className="flex items-center gap-2 bg-gray-800 text-gray-300 border border-gray-600 px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:border-white hover:text-white hover:scale-105 transition-all">🍌 LEONARDO</button>
+                            {/* 2. BOTONES DE ACCESO RÁPIDO (META + FLUX + REVE) */}
+                            <div className="flex flex-wrap justify-center gap-2 pt-2 border-t border-white/5">
+                                <span className="text-[9px] text-gray-500 self-center uppercase mr-1">MOTORES PRO:</span>
+                                
+                                {/* FLUX (Black Forest Labs) */}
+                                <button 
+                                    onClick={() => window.open('https://playground.bfl.ai/image/generate', '_blank')}
+                                    className="flex items-center gap-2 bg-white text-black px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-fuchsia-400 hover:scale-105 transition-all"
+                                >
+                                    ⚡ FLUX
+                                </button>
+
+                                {/* META AI (Imagine) */}
+                                <button 
+                                    onClick={() => window.open('https://www.meta.ai/', '_blank')} 
+                                    className="flex items-center gap-2 bg-[#0064e0] text-white border border-transparent px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-blue-500 hover:scale-105 transition-all"
+                                >
+                                    ♾️ META
+                                </button>
+
+                                {/* REVE (He puesto RECRAFT.AI que es la mejor gratuita vectorial/raster actualmente) */}
+                                <button 
+                                    onClick={() => window.open('https://www.recraft.ai/', '_blank')} 
+                                    className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-red-500 text-white border border-transparent px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest hover:brightness-110 hover:scale-105 transition-all"
+                                >
+                                    🎨 REVE
+                                </button>
                             </div>
                         </div>
-                      </>
+                    </>
                   )}
               </div>
           </div>
