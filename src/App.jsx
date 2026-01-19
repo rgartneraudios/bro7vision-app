@@ -19,7 +19,9 @@ import BroLogViewer from './components/BroLogViewer';
 import HoloPrism from './components/HoloPrism';
 import IdentityTerminal from './components/IdentityTerminal';
 import BoosterModal from './components/BoosterModal';
+import LegalBar from './components/LegalBar'; // <--- 1. IMPORTAR
 // import SequentialBackground from './components/SequentialBackground';
+
 
 function App() {
   // --- 1. LÓGICA DE SEGURIDAD (SUPABASE) ---
@@ -526,6 +528,16 @@ function App() {
             </button>
         </div>
      )} 
+     
+     <div className="relative w-full h-screen ...">
+      
+      {/* ... todo el contenido de la app ... */}
+
+      {/* CAPA LEGAL (GDPR + CONTACTO) */}
+      <LegalBar />  {/* <--- 2. PONER AQUÍ AL FINAL */}
+
+    </div>
+     
     </div>
   )
 }
