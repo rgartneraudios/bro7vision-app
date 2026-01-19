@@ -340,7 +340,7 @@ const NexusDashboard = ({
 
                                 {/* 4. REVE (Asignado a Leonardo.ai, cambia la URL si es otra) */}
                                 <button 
-                                    onClick={() => window.open('https://app.leonardo.ai/', '_blank')} 
+                                    onClick={() => window.open('https://app.reve.com/', '_blank')} 
                                     className="flex items-center gap-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white border border-transparent px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:brightness-110 hover:scale-105 transition-all"
                                 >
                                     🔮 REVE
