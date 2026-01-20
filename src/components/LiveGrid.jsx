@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
-// --- MOCK DATA CON TU USUARIO RESTAURADO ---
+// --- MOCK DATA CON TU USUARIO (CON AUDIO Y LINK) ---
 const MOCK_CREATORS = [
     // 1. TU PERFIL (FORZADO MANUALMENTE)
     { 
@@ -11,7 +11,6 @@ const MOCK_CREATORS = [
         alias: 'BRO7VISION', 
         role: 'MUSIC,SHOP', 
         
-        // TUS FOTOS
         img: 'https://i.postimg.cc/MKNcqGKv/BRO7VISIONAVA1.png', 
         avatar_url: 'https://i.postimg.cc/kgj7q1y7/RG1x1a.png', 
         holo_1: 'https://i.postimg.cc/LXM2K9QV/2dbc1d91-18b2-418b-9c46-d9c4195f6d8a.png', 
@@ -22,19 +21,26 @@ const MOCK_CREATORS = [
         distance: '0km', 
         desc: 'Arquitecto del Sistema', 
         
-        // IMPORTANTE: Pon aquí tu link real para que el botón funcione en el Admin
+        // LINK TIENDA (Corregido)
         product_url: 'https://www.instagram.com/coolfindskr/', 
+        
+        // --- AUDIO (AQUÍ FALTABA ESTO) ---
+        // Pon aquí un link de dropbox para probar. 
+        // Ejemplo: 'https://www.dropbox.com/s/...../cancion.mp3?dl=0'
+        // Si no tienes uno a mano, deja el local para asegurar que suena:
+        audioFile: '/audio/podcast_live.mp3', 
+        bcastFile: '/audio/podcast_bcast.mp3',
+        // ---------------------------------
         
         price: 10,
         isReal: true 
     },
     
-    // 2. BOTS DE RELLENO
+    // ... resto de bots ...
     { id: 'bot1', alias: 'Dj_Neon', role: 'MUSIC', img: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&q=80', distance: '1200km', desc: 'Techno from Berlin', price: 10, isReal: false },
     { id: 'bot2', alias: 'Ana_Talks', role: 'TALK', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80', distance: '500km', desc: 'Debate: Futuro AI', price: 0, isReal: false },
     { id: 'bot3', alias: 'Retro_Shop', role: 'SHOP', img: 'https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&q=80', distance: 'Online', desc: 'Venta de Consolas', shopName: 'Retro World', price: 25, isReal: false },
 ];
-
 const LiveGrid = ({ onTuneIn, onUserClick, onClose }) => {
   const [creators, setCreators] = useState(MOCK_CREATORS);
   const [filter, setFilter] = useState('ALL'); 
@@ -79,13 +85,13 @@ const LiveGrid = ({ onTuneIn, onUserClick, onClose }) => {
 
   const sendPulse = async (creator) => {
       if (!creator.isReal || creator.id === 'manual_admin') {
-          setToast(`🔮 (SIMULACIÓN) Halo enviado a ${creator.alias}`);
+          setToast(`⚪ (SIMULACIÓN) Halo enviado a ${creator.alias}`);
           setShowSphere(true);
           setTimeout(() => { setToast(null); setShowSphere(false); }, 4000);
           return;
       }
       try {
-          setToast(`🔮 ¡HALO ENVIADO A ${creator.alias}! (-100 GEN)`);
+          setToast(`⚪ ¡HALO ENVIADO A ${creator.alias}! (-100 GEN)`);
           setShowSphere(true);
           setTimeout(() => { setToast(null); setShowSphere(false); }, 4000);
       } catch (e) { console.error(e); }
@@ -107,15 +113,24 @@ const LiveGrid = ({ onTuneIn, onUserClick, onClose }) => {
       }
   };
 
+  // --- LÓGICA DE B-CAST (FIXED ID) ---
   const handlePlayBCast = (creator) => {
+      // Verificamos si tiene archivo (o si es el admin manual)
       if (!creator.bcastFile && creator.id !== 'manual_admin') { 
-          alert("⚠️ Sin B-CAST."); return; 
+          alert("⚠️ Este usuario no tiene contenido B-CAST subido."); 
+          return; 
       }
-      // Si es el admin manual, ponemos un placeholder si quieres
+      
       const audio = creator.bcastFile || "/audio/static_noise.mp3";
-      onTuneIn({ ...creator, audioFile: audio, name: `${creator.alias} (B-CAST)` });
+      
+      onTuneIn({ 
+          ...creator, 
+          // ⚠️ TRUCO CLAVE: Cambiamos el ID para forzar el cambio de pista
+          id: creator.id + "_bcast", 
+          audioFile: audio, 
+          name: `${creator.alias} (B-CAST)` // Cambiamos el nombre para que se vea en el player
+      });
   };
-
   return (
     <div className="absolute top-48 bottom-48 md:top-[15%] md:bottom-[15%] w-full max-w-6xl px-4 pointer-events-auto z-40 animate-zoomIn flex flex-col items-center">
         

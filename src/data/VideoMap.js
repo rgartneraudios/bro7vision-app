@@ -305,7 +305,7 @@ export const VIDEO_MAP = {
     "barbados": "/videos/caribe.mp4",
     "cuba": "/videos/caribe.mp4",
     "dominica": "/videos/caribe.mp4",
-    "granada": "/videos/caribe.mp4",
+    "granada_caribe": "/videos/caribe.mp4",
     "haiti": "/videos/caribe.mp4",
     "jamaica": "/videos/caribe.mp4",
     "republica_dominicana": "/videos/caribe.mp4",

@@ -5,7 +5,7 @@ const BroLives = ({ playingCreator, isAudioPlaying, onToggleAudio }) => {
 
   return (
     // CAMBIO: 'hidden md:block' para que solo se vea en PC
-    <div className="hidden md:block absolute right-20 top-[43%] pointer-events-auto z-[80] perspective-[1000px]">        {/* CONTENEDOR 3D QUE GIRA */}
+    <div className="hidden md:block absolute right-20 top-[45%] pointer-events-auto z-[80] perspective-[1000px]">        {/* CONTENEDOR 3D QUE GIRA */}
         <div 
             onClick={() => onToggleAudio(playingCreator)} 
             className="relative w-28 h-48 animate-spin-slow-3d cursor-pointer group hover:scale-110 transition-transform"

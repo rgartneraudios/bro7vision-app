@@ -156,13 +156,36 @@ const BoosterModal = ({ onClose }) => {
             {/* TAB 2: AUDIO */}
             {tab === 'audio' && (
                  <div className="space-y-6 animate-fadeIn">
+                     
+                     {/* 1. INSTRUCCIONES (NUEVO) */}
+                     <div className="bg-blue-900/10 border border-blue-500/30 p-4 rounded text-justify">
+                        <p className="text-blue-400 font-bold text-xs mb-2">ℹ️ CÓMO SUBIR TU MÚSICA</p>
+                        <p className="text-[10px] text-gray-400">
+                            Sube tu archivo MP3 a <strong>Dropbox</strong>. 
+                            Copia el enlace (Compartir -> Copiar vínculo) y pégalo aquí tal cual. 
+                            El sistema lo convertirá automáticamente para el streaming.
+                        </p>
+                     </div>
+
+                     {/* 2. TUS INPUTS (LO QUE YA TENÍAS) */}
                      <p className="text-gray-400 text-xs">Configura aquí tus canales. Solo si tienes rol MUSIC o TALK.</p>
-                     <div><label className="text-gray-400 text-xs font-bold block mb-2">Título Global</label><input type="text" value={formData.track_name} onChange={e => setFormData({...formData, track_name: e.target.value})} className="w-full bg-black border border-white/20 p-3 text-white text-sm rounded focus:border-white outline-none" /></div>
-                     <div className="p-3 border border-red-900/30 bg-red-900/10 rounded"><label className="text-red-400 text-xs font-bold block mb-2">🔴 Canal 1: LIVE (MP3 URL)</label><input type="text" value={formData.audio_file} onChange={e => setFormData({...formData, audio_file: e.target.value})} className="w-full bg-black border border-white/20 p-3 text-white text-sm rounded focus:border-red-500 outline-none" /></div>
-                     <div className="p-3 border border-fuchsia-900/30 bg-fuchsia-900/10 rounded"><label className="text-fuchsia-400 text-xs font-bold block mb-2">📼 Canal 2: B-CAST (MP3 URL)</label><input type="text" value={formData.bcast_file} onChange={e => setFormData({...formData, bcast_file: e.target.value})} className="w-full bg-black border border-white/20 p-3 text-white text-sm rounded focus:border-fuchsia-500 outline-none" /></div>
+                     
+                     <div>
+                        <label className="text-gray-400 text-xs font-bold block mb-2">Título Global</label>
+                        <input type="text" value={formData.track_name} onChange={e => setFormData({...formData, track_name: e.target.value})} className="w-full bg-black border border-white/20 p-3 text-white text-sm rounded focus:border-white outline-none" />
+                     </div>
+                     
+                     <div className="p-3 border border-red-900/30 bg-red-900/10 rounded">
+                        <label className="text-red-400 text-xs font-bold block mb-2">🔴 Canal 1: LIVE (MP3 URL)</label>
+                        <input type="text" value={formData.audio_file} onChange={e => setFormData({...formData, audio_file: e.target.value})} className="w-full bg-black border border-white/20 p-3 text-white text-sm rounded focus:border-red-500 outline-none" placeholder="https://dropbox.com/..." />
+                     </div>
+                     
+                     <div className="p-3 border border-fuchsia-900/30 bg-fuchsia-900/10 rounded">
+                        <label className="text-fuchsia-400 text-xs font-bold block mb-2">📼 Canal 2: B-CAST (MP3 URL)</label>
+                        <input type="text" value={formData.bcast_file} onChange={e => setFormData({...formData, bcast_file: e.target.value})} className="w-full bg-black border border-white/20 p-3 text-white text-sm rounded focus:border-fuchsia-500 outline-none" placeholder="https://dropbox.com/..." />
+                     </div>
                  </div>
             )}
-
             {/* TAB 3: ESCAPARATE */}
             {tab === 'market' && (
                 <div className="space-y-8 animate-fadeIn">

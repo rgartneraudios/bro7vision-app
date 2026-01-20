@@ -76,6 +76,59 @@ function App() {
       if (data) setBalances({ ...data });
     } catch (error) { console.error("Error al leer saldo:", error); }
   };
+  
+  // --- FUNCIÓN HELPER: TRADUCTOR DE AUDIO ---
+  // Esta función convierte enlaces "sucios" en enlaces "reproducibles"
+  const getPlayableUrl = (url) => {
+    if (!url) return "";
+    
+    // 1. SI ES UN ARCHIVO LOCAL (Empieza por /)
+    if (url.startsWith('/')) return url;
+
+    // 2. SI ES DROPBOX (La magia)
+    if (url.includes('dropbox.com')) {
+      // Truco: Cambiar el dominio a dl.dropboxusercontent.com y quitar parámetros
+      let cleanUrl = url.replace('www.dropbox.com', 'dl.dropboxusercontent.com');
+      // Quitamos ?dl=0 o ?dl=1 si existen
+      cleanUrl = cleanUrl.split('?')[0]; 
+      return cleanUrl;
+    }
+
+    // 3. SI ES OTRO LINK DIRECTO
+    return url;
+  };
+
+  // --- EFECTO DE AUDIO (MOTOR DE REPRODUCCIÓN) ---
+  useEffect(() => {
+    if (playingCreator && playingCreator.audioFile) {
+      
+      // 1. Traducimos la URL antes de usarla
+      const rawUrl = playingCreator.audioFile;
+      const finalUrl = getPlayableUrl(rawUrl);
+
+      // 2. Comprobamos si hay que cambiar de canción o solo reanudar
+      // (Usamos finalUrl para comparar)
+      if (!audioRef.current.src.includes(finalUrl)) {
+        console.log("🎵 Sintonizando:", finalUrl);
+        
+        audioRef.current.src = finalUrl;
+        audioRef.current.load();
+        
+        if (isAudioPlaying) {
+            const playPromise = audioRef.current.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(e => console.error("Error Play (Posible bloqueo navegador):", e));
+            }
+        }
+      } else {
+        // Es la misma canción, solo Play/Pause
+        if (isAudioPlaying) audioRef.current.play().catch(e => console.error("Error Resume:", e));
+        else audioRef.current.pause();
+      }
+    } else {
+      audioRef.current.pause();
+    }
+  }, [playingCreator, isAudioPlaying]);
 
   useEffect(() => { if (session) fetchBalances(); }, [session]);
 
