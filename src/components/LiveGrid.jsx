@@ -22,7 +22,7 @@ const MOCK_CREATORS = [
         desc: 'Arquitecto del Sistema', 
         
         // LINK TIENDA (Corregido)
-        product_url: 'https://www.instagram.com/coolfindskr/', 
+        product_url: 'https://www.instagram.com/bro7vision/', 
         
         // --- AUDIO (AQUÍ FALTABA ESTO) ---
         // Pon aquí un link de dropbox para probar. 
