@@ -1,11 +1,10 @@
-// src/components/NexusDashboard.jsx (VERSIÓN FINAL: TODOS LOS JUEGOS + IA FIXED)
-
 import React, { useState, useEffect } from 'react';
 import LiveGrid from './LiveGrid';
 import WebBotTerminal from './WebBotTerminal'; 
 import RacoonTerminal from './RacoonTerminal';
 import CommunityTicker from './CommunityTicker'; 
 import { askGemini } from '../services/gemini'; 
+import PaginatedDisplay from './PaginatedDisplay'; 
 
 // JUEGOS
 import NeonReact from './NeonReact'; 
@@ -16,7 +15,8 @@ const NexusDashboard = ({
     onSearch, searchQuery, setSearchQuery, 
     intent, setIntent, 
     onBack, onGameWin, onOpenLog, 
-    onSelectShop, onTuneIn, onUserClick 
+    onSelectShop, onTuneIn, onUserClick,
+    items 
 }) => {
   const [currentLogIndex, setCurrentLogIndex] = useState(0);
   const [selectedGame, setSelectedGame] = useState(null); 
@@ -29,52 +29,43 @@ const NexusDashboard = ({
   const [imagePrompt, setImagePrompt] = useState("");
   const [generatedImage, setGeneratedImage] = useState(null);
   const [isLoadingImage, setIsLoadingImage] = useState(false);
-  // --- NUEVOS ESTADOS DE DEFENSA ---
-  const [cooldown, setCooldown] = useState(0); // Tiempo de espera
-  const [dailyCount, setDailyCount] = useState(0); // Contador de hoy
-  const MAX_DAILY_MSG = 20; // Límite por persona
-  
-  // --- AL CARGAR: REVISAR LA CARTILLA DE RACIONAMIENTO ---
+  const [cooldown, setCooldown] = useState(0);
+  const [dailyCount, setDailyCount] = useState(0);
+  const MAX_DAILY_MSG = 20;
+
   useEffect(() => {
-      const today = new Date().toDateString(); // Ej: "Mon Jan 19 2026"
+      const today = new Date().toDateString();
       const storedData = JSON.parse(localStorage.getItem('bro7_ai_usage') || '{}');
-      
-      if (storedData.date === today) {
-          setDailyCount(storedData.count);
-      } else {
-          // Si es un día nuevo, reseteamos a 0
-          localStorage.setItem('bro7_ai_usage', JSON.stringify({ date: today, count: 0 }));
-          setDailyCount(0);
-      }
+      if (storedData.date === today) { setDailyCount(storedData.count); } 
+      else { localStorage.setItem('bro7_ai_usage', JSON.stringify({ date: today, count: 0 })); setDailyCount(0); }
   }, []);
 
   const MOCK_LOGS = ["ENSAYO: IA en artesanía...", "OPINIÓN: Moon Coins...", "HISTORIA: Catedral...", "FUTURO: Bro-Drop y el Campo"];
   
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentLogIndex((prev) => (prev + 1) % MOCK_LOGS.length);
-    }, 5000);
+    const interval = setInterval(() => { setCurrentLogIndex((prev) => (prev + 1) % MOCK_LOGS.length); }, 5000);
     return () => clearInterval(interval);
   }, []);
 
+  // DETECCIÓN DE MODOS
   const isGameMode = intent === 'game';
   const isAIMode = intent === 'ai';
   const isLiveMode = intent === 'lives';
   const isWebMode = intent === 'web_search'; 
-  const isInternalMode = intent === 'internal_search'; 
-  
+  const isInternalMode = intent === 'internal_search';
+  const isCardMode = (intent === 'product' || intent === 'service'); 
+
+  // --- CAMBIO CLAVE AQUI ---
+  // Quitamos "!isCardMode". Ahora el Feed se muestra TAMBIÉN cuando hay tarjetas.
   const showFeed = !isGameMode && !isAIMode && !isLiveMode && !isWebMode && !isInternalMode;
+  
   const showSearchBar = !isGameMode && !isAIMode && !isLiveMode;
 
-  const handleLogClick = () => {
-      onOpenLog({ title: MOCK_LOGS[currentLogIndex], category: "ENSAYO", author: "Editorial_Bot" });
-  };
-
+  const handleLogClick = () => { onOpenLog({ title: MOCK_LOGS[currentLogIndex], category: "ENSAYO", author: "Editorial_Bot" }); };
   const getPlaceholder = () => "Busca productos, servicios o lugares...";
   
-  // --- BOTONES ---
   const NAV_BUTTONS = [
-      { id: 'zone', label: '📍 ZONA', color: 'border-white text-white hover:bg-white hover:text-black' },
+      { id: 'zone', label: '◀ ATRÁS', color: 'border-white text-white hover:bg-white hover:text-black' },
       { id: 'product', label: '📦 Productos', color: 'border-yellow-400 text-yellow-400' },
       { id: 'service', label: '🤝 Servicios', color: 'border-cyan-400 text-cyan-400' },
       { id: 'lives',   label: '📡 Lives',     color: 'border-red-500 text-red-500' }, 
@@ -84,32 +75,31 @@ const NexusDashboard = ({
       { id: 'internal_search', label: '🏠 IN Search', color: 'border-orange-400 text-orange-400' }
   ];
 
-  // --- GENERACIÓN DE IMAGEN (POLLINATIONS V2) ---
-  const handleGenImage = () => {
-      if (!imagePrompt) return;
-      setIsLoadingImage(true);
-      setGeneratedImage(null);
-      
-      const encoded = encodeURIComponent(imagePrompt);
-      const seed = Math.floor(Math.random() * 10000);
-      const url = `https://pollinations.ai/p/${encoded}?width=1024&height=1024&seed=${seed}&nologo=true`;
-      
-      setTimeout(() => {
-          setGeneratedImage(url);
-      }, 1000);
+  const handleZoneClick = () => {
+      if (intent && intent !== 'product') {
+          setIntent(null);
+      } else if (isCardMode) {
+          setIntent(null);
+      } else {
+          onBack(); 
+      }
   };
+
+  const handleGenImage = () => { if (!imagePrompt) return; setIsLoadingImage(true); setGeneratedImage(null); const encoded = encodeURIComponent(imagePrompt); const seed = Math.floor(Math.random() * 10000); const url = `https://pollinations.ai/p/${encoded}?width=1024&height=1024&seed=${seed}&nologo=true`; setTimeout(() => { setGeneratedImage(url); }, 1000); };
       
   return (
     <div className="absolute inset-0 z-40 flex flex-col items-center justify-center pointer-events-none">
       
-      {/* 2. FEED */}
+      {/* 2. FEED SUPERIOR (TICKER) */}
       {!isGameMode && !isAIMode && (
           <CommunityTicker onUserClick={onUserClick} />
       )}
 
-      {/* 3. LOGS */}
+      {/* 3. ZONA CENTRAL */}
+      
+      {/* CASO A: FEED DE TEXTO (Bro-Logs) - SUBIDO AL 20% */}
       {showFeed && (
-          <div onClick={handleLogClick} className="absolute top-[35%] md:top-[15%] w-full max-w-4xl text-center pointer-events-auto cursor-pointer transition-all hover:scale-105 z-30 px-4">
+          <div onClick={handleLogClick} className="absolute top-[20%] md:top-[18%] w-full max-w-4xl text-center pointer-events-auto cursor-pointer transition-all hover:scale-105 z-30 px-4">
             <div className="bg-black/40 backdrop-blur-md border-y border-cyan-500/30 py-4 px-10 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
                  <p className="text-[10px] md:text-xs text-cyan-400 uppercase tracking-[0.3em] mb-2 animate-pulse">⚡ BRO-LOGS FEED</p>
                  <h2 className="text-xl md:text-3xl text-white font-thin italic tracking-wide animate-fadeIn leading-tight">"{MOCK_LOGS[currentLogIndex]}"</h2>
@@ -117,7 +107,13 @@ const NexusDashboard = ({
           </div>
       )}
 
-      {/* 4. ZONA JUEGOS (RESTAURADOS) */}
+      {/* CASO B: TARJETAS (CARDS) - SUBIDO AL 25% (Antes 32%) */}
+      {isCardMode && (
+          <div className="absolute top-[26%] bottom-[15%] w-full z-50 pointer-events-auto animate-zoomIn">
+               <PaginatedDisplay items={items} onSelect={onSelectShop} onTuneIn={onTuneIn} />
+          </div>
+      )}
+     {/* 4. ZONA JUEGOS (RESTAURADOS) */}
       {isGameMode && (      
           <div className="absolute top-[20%] bottom-40 md:bottom-[20%] w-full max-w-6xl px-4 pointer-events-auto z-[200] flex items-center justify-center animate-zoomIn">
               {!selectedGame && (

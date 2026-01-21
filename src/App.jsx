@@ -1,9 +1,8 @@
-// src/App.jsx (VERSIÓN FINAL CORREGIDA: LEGAL + GPS + CARDS)
+// src/App.jsx (VERSIÓN FINAL ESTABLE: GPS CLEAN + TELEPORT FIX)
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { supabase } from './supabaseClient';
 import GenesisGate from './components/GenesisGate';
-import PaginatedDisplay from './components/PaginatedDisplay';
 import MascotGuide from './components/MascotGuide';
 import WalletWidget from './components/WalletWidget';
 import ConversionModal from './components/ConversionModal';
@@ -23,7 +22,7 @@ import LegalBar from './components/LegalBar';
 import LegalTerminal from './components/LegalTerminal';
 
 function App() {
-  // --- 1. LÓGICA DE SEGURIDAD (SUPABASE) ---
+  // --- 1. SEGURIDAD ---
   const [session, setSession] = useState(null);
 
   useEffect(() => {
@@ -42,7 +41,7 @@ function App() {
   const [moonPhase, setMoonPhase] = useState('plena');
   const [showWalletModal, setShowWalletModal] = useState(false);
   
-  // ESTADO LEGAL (NUEVO)
+  // ESTADO LEGAL
   const [showLegal, setShowLegal] = useState(false);
 
   // VISUALES
@@ -67,62 +66,32 @@ function App() {
   const fetchBalances = async () => {
     if (!session?.user) return;
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('genesis, nova, crescens, plena, decrescens')
-        .eq('id', session.user.id)
-        .single();
-      if (error) throw error;
+      const { data, error } = await supabase.from('profiles').select('genesis, nova, crescens, plena, decrescens').eq('id', session.user.id).single();
       if (data) setBalances({ ...data });
-    } catch (error) { console.error("Error al leer saldo:", error); }
+    } catch (error) { console.error("Error saldo:", error); }
   };
   
-  // --- FUNCIÓN HELPER: TRADUCTOR DE AUDIO ---
-  // Esta función convierte enlaces "sucios" en enlaces "reproducibles"
   const getPlayableUrl = (url) => {
     if (!url) return "";
-    
-    // 1. SI ES UN ARCHIVO LOCAL (Empieza por /)
     if (url.startsWith('/')) return url;
-
-    // 2. SI ES DROPBOX (La magia)
     if (url.includes('dropbox.com')) {
-      // Truco: Cambiar el dominio a dl.dropboxusercontent.com y quitar parámetros
       let cleanUrl = url.replace('www.dropbox.com', 'dl.dropboxusercontent.com');
-      // Quitamos ?dl=0 o ?dl=1 si existen
       cleanUrl = cleanUrl.split('?')[0]; 
       return cleanUrl;
     }
-
-    // 3. SI ES OTRO LINK DIRECTO
     return url;
   };
 
-  // --- EFECTO DE AUDIO (MOTOR DE REPRODUCCIÓN) ---
   useEffect(() => {
     if (playingCreator && playingCreator.audioFile) {
-      
-      // 1. Traducimos la URL antes de usarla
       const rawUrl = playingCreator.audioFile;
       const finalUrl = getPlayableUrl(rawUrl);
-
-      // 2. Comprobamos si hay que cambiar de canción o solo reanudar
-      // (Usamos finalUrl para comparar)
       if (!audioRef.current.src.includes(finalUrl)) {
-        console.log("🎵 Sintonizando:", finalUrl);
-        
         audioRef.current.src = finalUrl;
         audioRef.current.load();
-        
-        if (isAudioPlaying) {
-            const playPromise = audioRef.current.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(e => console.error("Error Play (Posible bloqueo navegador):", e));
-            }
-        }
+        if (isAudioPlaying) audioRef.current.play().catch(e => console.error(e));
       } else {
-        // Es la misma canción, solo Play/Pause
-        if (isAudioPlaying) audioRef.current.play().catch(e => console.error("Error Resume:", e));
+        if (isAudioPlaying) audioRef.current.play().catch(e => console.error(e));
         else audioRef.current.pause();
       }
     } else {
@@ -132,22 +101,6 @@ function App() {
 
   useEffect(() => { if (session) fetchBalances(); }, [session]);
 
-  useEffect(() => {
-    if (playingCreator && playingCreator.audioFile) {
-      const fileUrl = playingCreator.audioFile;
-      if (!audioRef.current.src.endsWith(fileUrl)) {
-        audioRef.current.src = fileUrl;
-        audioRef.current.load();
-        if (isAudioPlaying) audioRef.current.play().catch(e => console.error("Error Play:", e));
-      } else {
-        if (isAudioPlaying) audioRef.current.play().catch(e => console.error("Error Resume:", e));
-        else audioRef.current.pause();
-      }
-    } else {
-      audioRef.current.pause();
-    }
-  }, [playingCreator, isAudioPlaying]);
-
   const handleTuneIn = (creator) => {
     if (playingCreator?.id === creator.id) setIsAudioPlaying(!isAudioPlaying);
     else { setPlayingCreator(creator); setIsAudioPlaying(true); }
@@ -155,22 +108,12 @@ function App() {
 
   const handleCardSelect = (item) => {
     setSelectedCard(item);
-    // LÓGICA DEL PRISMA
     const defaultImg = item.img || item.image || "/images/prism_1.jpg";
-    setPrismImages([
-        item.holo_1 || defaultImg,
-        item.holo_2 || defaultImg,
-        item.holo_3 || defaultImg,
-        item.holo_4 || defaultImg
-    ]);
+    setPrismImages([item.holo_1 || defaultImg, item.holo_2 || defaultImg, item.holo_3 || defaultImg, item.holo_4 || defaultImg]);
   };
 
   const handlePreviewCard = (item) => handleCardSelect(item);
-     
-  const handleOpenIdentity = (data) => {
-    if (data && (data.title || data.category)) setSelectedLog(data);
-    else setSelectedIdentity(data);
-  };
+  const handleOpenIdentity = (data) => { if (data && (data.title || data.category)) setSelectedLog(data); else setSelectedIdentity(data); };
 
   const getCurrentVideo = () => {
     if (intent === 'ai') return "/ai_bg.mp4";
@@ -181,13 +124,13 @@ function App() {
     return getVideoForLocation(scope); 
   };
   
-  // --- FUNCIÓN GPS ---
+  // --- GPS CLÁSICO (EL QUE TE GUSTABA) ---
   const handleGPS = () => {
-    if (!("geolocation" in navigator)) {
-        alert("⚠️ Tu dispositivo no soporta geolocalización.");
-        return;
-    }
-    alert("🛰️ CONECTANDO CON SATÉLITES... (Permite el acceso)");
+    if (!("geolocation" in navigator)) { alert("Tu dispositivo no soporta GPS."); return; }
+    
+    // Feedback visual simple
+    alert("🛰️ Sintonizando satélites...");
+
     navigator.geolocation.getCurrentPosition(
         async (position) => {
             const { latitude, longitude } = position.coords;
@@ -203,25 +146,26 @@ function App() {
                     setTeleportCoords({ city, country });
                     setStep(1); 
                     setActiveSearch(null);
-                    alert(`📍 UBICACIÓN CONFIRMADA: ${city.toUpperCase()}, ${country.toUpperCase()}`);
+                    // Sin alert extra, transición suave
                 } else {
-                    alert("⚠️ Coordenadas recibidas pero zona desconocida. Activando modo Global.");
+                    alert("⚠️ Zona desconocida. Activando modo Global.");
                     setScope('gps'); 
                     setStep(1);
                 }
             } catch (error) {
                 console.error("Error GPS:", error);
-                alert("⚠️ Error al triangula la posición. Introduce la ciudad manualmente.");
+                setScope('gps'); // Fallback silencioso a global
+                setStep(1);
             }
         },
         (error) => {
             console.error("GPS Denied:", error);
-            alert("🚫 Acceso GPS denegado. Usa el teletransporte manual.");
+            alert("🚫 GPS denegado. Usa el teletransporte.");
         }
     );
   };
   
-  // --- FUNCIÓN TELETRANSPORTE MANUAL ---
+  // --- TELETRANSPORTE (FIXED) ---
   const handleTeleportConfirm = () => {
     if (teleportCoords.city || teleportCoords.country) {
       setScope(teleportCoords); 
@@ -229,14 +173,13 @@ function App() {
       setStep(1); 
       setActiveSearch(null);
     } else { 
-      alert("⚠️ Introduce al menos País o Localidad para saltar."); 
+      alert("⚠️ Escribe una ciudad para saltar."); 
     }
   };
   
   const handleSearchConfirm = useCallback(() => {
-    if (intent === 'ai') { alert("🤖 [IA]: Procesando..."); return; }
-    if (intent === 'game') return;
-    if (searchQuery.trim() !== "") { setActiveSearch(searchQuery); setStep(2); }
+    if (intent === 'ai' || intent === 'game') return;
+    if (searchQuery.trim() !== "") { setActiveSearch(searchQuery); }
   }, [searchQuery, intent]);
 
   const resetApp = useCallback(() => {
@@ -255,16 +198,11 @@ function App() {
     setShowSuccess(true); 
     setTimeout(() => setShowSuccess(false), 3000);
     if (session?.user) {
-      try {
-        const { data } = await supabase.from('profiles').select('genesis').eq('id', session.user.id).single();
-        if (data) {
-            await supabase.from('profiles').update({ genesis: (data.genesis || 0) + amt }).eq('id', session.user.id);
-        }
-      } catch (e) { console.error("Error guardando puntos:", e); }
+        await supabase.from('profiles').update({ genesis: (balances.genesis || 0) + amt }).eq('id', session.user.id);
     }
   };
 
-  // --- LÓGICA DE FUSIÓN DE DATOS (REAL + STATIC) ---
+  // --- LÓGICA DE FUSIÓN DE DATOS (PRODUCTOS vs SERVICIOS) ---
   const [realItems, setRealItems] = useState([]);
 
   useEffect(() => {
@@ -276,52 +214,44 @@ function App() {
 
       if (data) {
         const formatted = data.map(u => {
-          const colorMap = {
-             cyan: 'border-cyan-500 shadow-[0_0_20px_rgba(34,211,238,0.4)] text-cyan-400',
-             fuchsia: 'border-fuchsia-500 shadow-[0_0_20px_rgba(232,121,249,0.4)] text-fuchsia-400',
-             yellow: 'border-yellow-400 shadow-[0_0_20px_rgba(250,204,21,0.4)] text-yellow-400',
-             green: 'border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.4)] text-green-400',
-             red: 'border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.4)] text-red-500'
-          };
-          const baseColor = u.card_color || 'cyan';
-          const neonStyle = colorMap[baseColor];
-
+          const rawColor = u.card_color || 'cyan-void';
+          const userAudio = u.audio_file || u.bcast_file || "/audio/static_noise.mp3";
           const items = [];
 
+          // PRODUCTOS
           if (u.product_title) {
             items.push({
               id: `${u.id}_prod`,
-              type: ['product', 'shop'],
+              type: ['product'], // Etiqueta limpia
               name: u.product_title,
               shopName: u.alias,
-              // PRIORIDAD: Imagen Producto -> Banner -> Avatar
               img: u.product_img || u.banner_url || u.avatar_url,
               message: u.twit_message,
               distance: u.city || 'Online',
-              category: 'Shop',
+              category: 'PRODUCTO',
               price: u.product_price,
               url: u.product_url, 
-              neonColor: `text-${baseColor}-400`,
-              style: `bg-black/90 border ${neonStyle}`,
+              neonColor: rawColor,
+              audioFile: userAudio,
               isReal: true
             });
           }
 
+          // SERVICIOS
           if (u.service_title) {
             items.push({
               id: `${u.id}_serv`,
-              type: ['service', 'shop'],
+              type: ['service'], // Etiqueta limpia
               name: u.service_title,
               shopName: u.alias,
-              // PRIORIDAD: Imagen Servicio -> Banner -> Avatar
               img: u.service_img || u.banner_url || u.avatar_url,
               message: u.twit_message,
               distance: u.city || 'Online',
-              category: 'Service',
+              category: 'SERVICIO',
               price: u.service_price,
               url: u.service_url,
-              neonColor: `text-${baseColor}-400`,
-              style: `bg-black/90 border ${neonStyle}`,
+              neonColor: rawColor,
+              audioFile: userAudio,
               isReal: true
             });
           }
@@ -334,21 +264,17 @@ function App() {
     fetchMarket();
   }, [step]);
 
+  // --- FILTRO Y ORDENAMIENTO (SAFE TELEPORT) ---
   const filteredItems = useMemo(() => {
     const ALL_ITEMS = [...realItems, ...MASTER_DB]; 
-
-    const parseDistance = (d) => {
-      if (!d) return 999999;
-      if (d === 'Online') return 0;
-      return parseFloat(d.replace(',', '.').replace(/[^\d.]/g, '')) * (d.includes('km') ? 1000 : 1);
-    };
 
     return ALL_ITEMS.filter(item => {
       if (intent === 'ai' || intent === 'game') return false;
       let typeMatch = false;
       const types = Array.isArray(item.type) ? item.type : [item.type];
       
-      if (intent === 'product') typeMatch = types.includes('product') || types.includes('shop');
+      // FILTRO ESTRICTO
+      if (intent === 'product') typeMatch = (types.includes('product') || types.includes('shop')) && !types.includes('service');
       else if (intent === 'service') typeMatch = types.includes('service');
       else if (intent === 'lives') typeMatch = types.includes('live'); 
 
@@ -363,13 +289,32 @@ function App() {
       }
       return typeMatch && searchMatch;
     }).sort((a, b) => {
-      if (scope === 'gps') return parseDistance(a.distance) - parseDistance(b.distance);
+      // 1. Prioridad Real
       if (a.isReal && !b.isReal) return -1;
       if (!a.isReal && b.isReal) return 1;
+
+      // 2. Prioridad GPS/Teleport (BLINDADO CONTRA ERRORES)
+      if (scope && scope.city) {
+          const currentCity = (scope.city || '').toLowerCase(); // Safety check
+          const distA = (a.distance || '').toLowerCase();       // Safety check
+          const distB = (b.distance || '').toLowerCase();       // Safety check
+
+          const aIsLocal = distA.includes(currentCity);
+          const bIsLocal = distB.includes(currentCity);
+
+          if (aIsLocal && !bIsLocal) return -1;
+          if (!aIsLocal && bIsLocal) return 1;
+      }
+
+      // 3. Online
+      const aOnline = a.distance === 'Online';
+      const bOnline = b.distance === 'Online';
+      if (aOnline && !bOnline) return -1;
+      if (!aOnline && bOnline) return 1;
+
       return 0;
     });
   }, [intent, scope, activeSearch, realItems]);
-  
   
   const handleLogout = async () => { await supabase.auth.signOut(); setSession(null); setStep(0); };
 
@@ -377,76 +322,36 @@ function App() {
 
   return (
     <div className="relative w-full h-screen bg-black text-white overflow-hidden font-sans selection:bg-fuchsia-500 selection:text-white">
-      
-      {/* CAPA 1: FONDO */}
+      {/* CAPA 1: FONDO (SIN FILTER) */}
       <div className="absolute inset-0 z-0">
         {step === 0 ? (
           <div className="w-full h-full relative">
-            <video src="/portada.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover opacity-60" />
-            <div className="absolute inset-0 bg-black/10"></div>
+            <video src="/portada.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover" />
           </div>
         ) : (
-          <video 
-            key={`vid-${intent}-${JSON.stringify(scope)}`} 
-            src={getCurrentVideo()} 
-            autoPlay loop muted playsInline 
-            className="w-full h-full object-cover animate-fadeIn transition-opacity duration-1000" 
-          />
+          <video key={`vid-${intent}-${JSON.stringify(scope)}`} src={getCurrentVideo()} autoPlay loop muted playsInline className="w-full h-full object-cover animate-fadeIn transition-opacity duration-1000" />
         )}
       </div>
                   
-      {/* CAPA 2: WIDGETS GLOBALES */}
-      
-      {/* 1. BRO-TUNER */}
+      {/* CAPA 2: WIDGETS */}
       <BroTuner />
-
-     {/* 2. HOLO-PRISMA */}
       {(step === 1 || selectedCard || previewCard) && (
-        <div className="
-            fixed top-2 left-[35%] -translate-x-1/2 z-[50000] scale-[0.45] origin-center pointer-events-none
-            md:absolute md:top-32 md:right-10 md:left-auto md:translate-x-0 md:scale-100 md:origin-center
-        ">
-            <HoloPrism customImages={
-                (selectedCard || previewCard) 
-                ? prismImages 
-                : (playingCreator 
-                    ? [ 
-                        playingCreator.holo_1 || playingCreator.img,
-                        playingCreator.holo_2 || playingCreator.img,
-                        playingCreator.holo_3 || playingCreator.img,
-                        playingCreator.holo_4 || playingCreator.img
-                      ] 
-                    : null)
-            } />
+        <div className="fixed top-2 left-[35%] -translate-x-1/2 z-[50000] scale-[0.45] md:absolute md:top-32 md:right-10 md:left-auto md:scale-100 pointer-events-none">
+            <HoloPrism customImages={(selectedCard || previewCard) ? prismImages : null} />
         </div>
       )}
-                 
-      {/* 3. BRO-LIVES */}
-      {step > 0 && (
-        <BroLives 
-            playingCreator={playingCreator}
-            isAudioPlaying={isAudioPlaying}
-            onToggleAudio={(creator) => handleTuneIn(creator)}
-        />
-      )}
-
-      {/* 4. WALLET */}
+      {step > 0 && <BroLives playingCreator={playingCreator} isAudioPlaying={isAudioPlaying} onToggleAudio={(creator) => handleTuneIn(creator)} />}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 md:top-8 md:left-8 md:translate-x-0 z-[60]">
         <WalletWidget balances={balances} activePhase={moonPhase} onClick={() => setShowWalletModal(true)} />
       </div>
-
-     {/* 5. BRO-STORIES */}
-    <div className="absolute top-4 left-4 md:top-72 md:left-8 z-[60] animate-pulse scale-75 md:scale-100 origin-top-left">
+      <div className="absolute top-4 left-4 md:top-72 md:left-8 z-[60] animate-pulse scale-75 md:scale-100 origin-top-left">
         <button onClick={() => setShowStory(true)} className="flex items-center gap-2 bg-gradient-to-r from-violet-900/80 to-fuchsia-900/80 backdrop-blur-md border border-fuchsia-500/50 px-4 py-2 rounded-2xl shadow-lg">
             <div className="text-2xl relative">❄️</div>
-            <div className="hidden md:block text-left">
-                <p className="text-[7px] text-fuchsia-300 font-bold uppercase">Nueva Temporada</p>
-                <p className="text-xs font-black italic">BRO-STORIES</p>
-            </div>
+            <div className="hidden md:block text-left"><p className="text-[7px] text-fuchsia-300 font-bold uppercase">Nueva Temporada</p><p className="text-xs font-black italic">BRO-STORIES</p></div>
         </button>
-    </div>
+      </div>
             
-      {/* 6. USUARIO + BOOSTER */}
+      {/* USUARIO + BOOSTER */}
       <div className="absolute top-4 right-4 md:top-6 md:right-6 z-[60] flex flex-col items-end gap-2 pointer-events-auto scale-90 md:scale-100 origin-top-right">
         <div className="flex items-center gap-3 bg-black/60 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full shadow-lg group hover:border-cyan-500 transition-colors">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_lime]"></div>
@@ -461,10 +366,9 @@ function App() {
         )}
       </div>
 
-      <MascotGuide step={step} intent={intent} isSearching={!!activeSearch} hasModal={!!selectedCard || showWalletModal || showStory || !!previewCard} hoverHelp={hoverHelp} />
+      <MascotGuide step={step} intent={intent} isSearching={!!activeSearch} hasModal={!!selectedCard} hoverHelp={hoverHelp} />
 
-      {/* CAPA 3: CONTENIDO PRINCIPAL */}
-
+      {/* CAPA 3: CONTENIDO */}
       {step === 0 && (
         <div className="relative z-20 h-full w-full animate-fadeIn flex flex-col items-center justify-center pointer-events-auto">
             {!isTeleporting && !showBooster && (
@@ -497,7 +401,7 @@ function App() {
         </div>
      )}
 
-    {/* STEP 1: NEXUS DASHBOARD */}
+    {/* STEP 1: NEXUS DASHBOARD (CON CARDS INTEGRADAS) */}
      {step === 1 && (
         <NexusDashboard 
             onSearch={handleSearchConfirm} searchQuery={searchQuery} setSearchQuery={setSearchQuery} 
@@ -508,19 +412,9 @@ function App() {
             onTuneIn={handleTuneIn}
             onSelectShop={handlePreviewCard}
             onUserClick={setSelectedIdentity}
+            items={filteredItems}
         />
      )}
-                              
-     {step === 2 && (
-        <div className="absolute inset-0 z-50">
-            <PaginatedDisplay 
-                items={filteredItems} 
-                onSelect={handlePreviewCard} 
-                intent={intent} 
-                onTuneIn={handleTuneIn} 
-            />     
-        </div> 
-     )}    
      
     {/* MODALES */}
      {selectedIdentity && <IdentityTerminal user={selectedIdentity} onClose={() => setSelectedIdentity(null)} onOpenLog={(log) => { setSelectedIdentity(null); setSelectedLog(log); }} />}
@@ -528,38 +422,14 @@ function App() {
      <PaymentModal isOpen={!!selectedCard} onClose={() => setSelectedCard(null)} product={selectedCard} balances={balances} currentPhase={moonPhase} onConfirmPayment={handleConfirmPayment} />
      {showWalletModal && <ConversionModal balances={balances} activePhase={moonPhase} onClose={() => setShowWalletModal(false)} />}
      {showStory && <StoryPlayer src="/brostories_demo.mp4" activePhase={moonPhase} onClose={() => setShowStory(false)} onComplete={handleVideoEnd} />}
-     
-    {/* --- BOTÓN VOLVER --- */}
-     {step === 2 && (
-        <div className="fixed bottom-4 right-4 md:top-1/2 md:left-8 z-[99999] pointer-events-auto filter drop-shadow-2xl scale-75 md:scale-100 origin-bottom-right md:origin-center">
-            <button onClick={() => setStep(1)} className="group flex items-center gap-3 bg-yellow-500 hover:bg-white text-black px-6 py-3 rounded-full font-black uppercase tracking-[0.2em] text-xs border-4 border-black shadow-[0_0_0_4px_#fbbf24]">
-                <span className="text-xl leading-none">🔙</span>
-                <span>VOLVER</span>
-            </button>
-        </div>
-     )} 
 
-     {/* --- SECCIÓN LEGAL --- */}
-     
-     {/* 1. MODAL GRANDE */}
-     {showLegal && <LegalTerminal onClose={() => setShowLegal(false)} />}
-
-     {/* 2. BARRA DE COOKIES */}
+     {/* LEGAL */}
      <LegalBar onOpenLegal={() => setShowLegal(true)} />
-
-     {/* 3. BOTÓN DISCRETO (CENTRO ABAJO) */}
-     {/* left-1/2 y -translate-x-1/2 lo centran matemáticamente. bottom-1 lo pega al suelo */}
+     {showLegal && <LegalTerminal onClose={() => setShowLegal(false)} />}
      <div className="fixed bottom-1 left-1/2 -translate-x-1/2 z-[55] opacity-50 hover:opacity-100 transition-opacity pointer-events-auto">
-          <button 
-              onClick={() => setShowLegal(true)}
-              className="text-[9px] text-gray-500 font-mono border border-white/10 px-3 py-1 rounded-t-lg bg-black/90 backdrop-blur hover:bg-white hover:text-black transition-colors"
-          >
-              ⚖️ LEGAL / CONTACTO
-          </button>
+          <button onClick={() => setShowLegal(true)} className="text-[9px] text-gray-500 font-mono border border-white/10 px-3 py-1 rounded-t-lg bg-black/90 backdrop-blur hover:bg-white hover:text-black transition-colors">⚖️ LEGAL / CONTACTO</button>
      </div>
-     
     </div> 
   )
 }
-
 export default App;

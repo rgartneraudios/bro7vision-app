@@ -28,8 +28,6 @@ const MOCK_CREATORS = [
         // Pon aquí un link de dropbox para probar. 
         // Ejemplo: 'https://www.dropbox.com/s/...../cancion.mp3?dl=0'
         // Si no tienes uno a mano, deja el local para asegurar que suena:
-        audioFile: '/audio/podcast_live.mp3', 
-        bcastFile: '/audio/podcast_bcast.mp3',
         // ---------------------------------
         
         price: 10,

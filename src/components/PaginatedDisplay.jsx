@@ -1,5 +1,4 @@
-// src/components/PaginatedDisplay.jsx (VERSIÓN VOLUMEN LIMPIO + CRYSTAL UI)
-
+// src/components/PaginatedDisplay.jsx (VERSIÓN "IN-DASHBOARD": MÁS COMPACTA)
 import React, { useState, useEffect } from 'react';
 
 const PaginatedDisplay = ({ items, onSelect, onTuneIn }) => {
@@ -15,7 +14,7 @@ const PaginatedDisplay = ({ items, onSelect, onTuneIn }) => {
 
   if (!items || items.length === 0) {
       return (
-          <div className="w-full h-full flex flex-col items-center justify-center pt-20">
+          <div className="w-full h-full flex flex-col items-center justify-center pt-10">
               <div className="text-6xl animate-pulse text-white/50">📡</div>
               <p className="text-white/50 font-mono text-sm mt-4 uppercase tracking-widest">NO SIGNALS</p>
           </div>
@@ -24,164 +23,89 @@ const PaginatedDisplay = ({ items, onSelect, onTuneIn }) => {
 
   const visibleItems = [];
   const totalItems = items.length;
-  
   if (totalItems <= itemsPerPage) visibleItems.push(...items);
   else for (let i = 0; i < itemsPerPage; i++) visibleItems.push(items[(startIndex + i) % totalItems]);
 
   const nextSlide = (e) => { e?.stopPropagation(); if (totalItems > itemsPerPage) setStartIndex((prev) => (prev + 1) % totalItems); };
   const prevSlide = (e) => { e?.stopPropagation(); if (totalItems > itemsPerPage) setStartIndex((prev) => (prev - 1 + totalItems) % totalItems); };
 
-  // --- ACCIONES ---
-  const handleConnect = (item) => {
-      if (item.url && item.url.trim() !== "") {
-          let targetUrl = item.url.trim();
-          if (!targetUrl.startsWith('http')) targetUrl = 'https://' + targetUrl;
-          window.open(targetUrl, '_blank');
-      } else {
-          alert("⚠️ (FASE 0) Enlace no configurado.");
-      }
-  };
+  const handleConnect = (e, item) => { e.stopPropagation(); e.preventDefault(); let targetUrl = item.url || item.product_url || item.service_url; if (targetUrl && targetUrl.trim() !== "") { targetUrl = targetUrl.trim(); if (!targetUrl.startsWith('http')) targetUrl = 'https://' + targetUrl; window.open(targetUrl, '_blank'); } else { alert("⚠️ Enlace no configurado."); } };
 
-  const handleGoToLive = (item) => {
-      const cleanId = item.id.replace('_prod', '').replace('_serv', '');
-      if (onTuneIn) {
-          onTuneIn({
-              id: cleanId, alias: item.shopName, img: item.img,
-              audioFile: item.audioFile || "/audio/static_noise.mp3"
-          });
-      }
-  };
+  const handleGoToLive = (e, item) => { e.stopPropagation(); e.preventDefault(); const cleanId = item.id.replace(/_(prod|serv)$/, ''); if (onTuneIn) { onTuneIn({ id: cleanId, alias: item.shopName, img: item.img, audioFile: item.audioFile || "/audio/static_noise.mp3", name: item.shopName }); } };
 
-  // --- PALETA DE COLORES SUTIL (Solo para detalles) ---
-  const getAccentColor = (colorClass) => {
-      if (colorClass?.includes('fuchsia')) return 'text-fuchsia-400 bg-fuchsia-500';
-      if (colorClass?.includes('yellow')) return 'text-yellow-400 bg-yellow-500';
-      if (colorClass?.includes('green')) return 'text-green-400 bg-green-500';
-      if (colorClass?.includes('red')) return 'text-red-400 bg-red-500';
-      return 'text-cyan-400 bg-cyan-500'; // Default Cyan
+  const getDualStyle = (colorString) => {
+      let energy = 'cyan'; let matter = 'void';
+      if (colorString && colorString.includes('-')) { [energy, matter] = colorString.split('-'); } else if (colorString) { energy = colorString; }
+      const bgMap = { void: 'bg-black', carbon: 'bg-[#222222]', navy: 'bg-[#0a1a35]', cobalt: 'bg-[#003366]', wine: 'bg-[#2b0505]', crimson: 'bg-[#4a0404]', forest: 'bg-[#052b05]', emerald: 'bg-[#004d26]', plum: 'bg-[#2e0542]', chocolate: 'bg-[#3b1702]' };
+      const bgClass = bgMap[matter] || 'bg-black';
+      const energyMap = {
+          cyan: { border: 'border-cyan-400/60', text: 'text-cyan-400', shadow: 'shadow-[0_0_40px_-5px_rgba(34,211,238,0.5)]', btn: 'bg-cyan-400 text-black' },
+          fuchsia: { border: 'border-fuchsia-400/60', text: 'text-fuchsia-400', shadow: 'shadow-[0_0_40px_-5px_rgba(232,121,249,0.5)]', btn: 'bg-fuchsia-400 text-black' },
+          yellow: { border: 'border-yellow-400/60', text: 'text-yellow-400', shadow: 'shadow-[0_0_40px_-5px_rgba(250,204,21,0.5)]', btn: 'bg-yellow-400 text-black' },
+          green: { border: 'border-green-400/60', text: 'text-green-400', shadow: 'shadow-[0_0_40px_-5px_rgba(34,197,94,0.5)]', btn: 'bg-green-400 text-black' },
+          red: { border: 'border-red-500/60', text: 'text-red-500', shadow: 'shadow-[0_0_40px_-5px_rgba(239,68,68,0.6)]', btn: 'bg-red-500 text-white' },
+          orange: { border: 'border-orange-500/60', text: 'text-orange-500', shadow: 'shadow-[0_0_40px_-5px_rgba(249,115,22,0.6)]', btn: 'bg-orange-500 text-white' },
+          gold: { border: 'border-[#FFD700]/60', text: 'text-[#FFD700]', shadow: 'shadow-[0_0_40px_-5px_rgba(255,215,0,0.6)]', btn: 'bg-[#FFD700] text-black' },
+          silver: { border: 'border-[#C0C0C0]/60', text: 'text-[#C0C0C0]', shadow: 'shadow-[0_0_40px_-5px_rgba(192,192,192,0.5)]', btn: 'bg-[#C0C0C0] text-black' },
+          white: { border: 'border-white/60', text: 'text-white', shadow: 'shadow-[0_0_40px_-5px_rgba(255,255,255,0.6)]', btn: 'bg-white text-black' },
+      };
+      const styles = energyMap[energy] || energyMap.cyan;
+      return { container: `${bgClass} border-2 ${styles.border} ${styles.shadow}`, text: styles.text, btn: styles.btn, deco: styles.border.replace('border-', 'bg-').replace('/60', '') };
   };
 
   return (
-    <div className="absolute top-[8%] bottom-[12%] w-full max-w-[1300px] left-1/2 -translate-x-1/2 z-40 flex items-center justify-center px-4">
+    <div className="w-full h-full flex items-center justify-center px-4"> {/* Eliminado absolute para que encaje en el dashboard */}
         
-        {/* FLECHAS DE NAVEGACIÓN (Discretas) */}
-        {totalItems > itemsPerPage && (<button onClick={prevSlide} className="hidden md:flex text-white/50 hover:text-white text-6xl font-thin transition-all hover:scale-110 z-50 mr-8 cursor-pointer">‹</button>)}
+        <style>{`@keyframes flyIn { 0% { opacity: 0; transform: scale(0.9) translateY(40px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }`}</style>
 
-        {/* CONTENEDOR CARTAS */}
-        <div className="flex flex-row gap-10 items-center justify-center w-full h-full">
+        {totalItems > itemsPerPage && (<button onClick={prevSlide} className="hidden md:flex text-white/50 hover:text-white text-6xl font-thin transition-all hover:scale-110 z-50 mr-4 cursor-pointer">‹</button>)}
+
+        <div className="flex flex-row gap-6 items-center justify-center w-full h-full">
             {visibleItems.map((item, index) => {
-                const accent = getAccentColor(item.neonColor);
-                const accentText = accent.split(' ')[0];
-                const accentBg = accent.split(' ')[1];
+                const style = getDualStyle(item.neonColor);
 
                 return (
                     <div 
-                        key={`${item.id}-${index}`}
+                        key={`${item.id}-${index}`} 
+                        onClick={() => onSelect(item)}
+                        style={{ animation: `flyIn 0.5s ease-out forwards`, animationDelay: `${index * 0.1}s` }}
                         className={`
-                            relative w-full md:w-[320px] h-[620px] flex flex-col shrink-0
-                            rounded-[2.5rem] bg-[#050505]
-                            /* AQUÍ ESTÁ EL VOLUMEN: Sombra Negra Profunda */
-                            shadow-[0_30px_60px_-10px_rgba(0,0,0,1)] 
-                            transition-all duration-500 ease-out
-                            hover:-translate-y-4 hover:shadow-[0_50px_80px_-20px_rgba(0,0,0,1)]
-                            overflow-hidden isolate
+                            relative w-full md:w-[260px] h-[450px] flex flex-col shrink-0 /* AQUI EL CAMBIO DE TAMAÑO: h-[450px] */
+                            rounded-[2rem]
+                            ${style.container}
+                            transition-all duration-300 ease-out
+                            hover:-translate-y-2 hover:scale-[1.02] hover:z-50
+                            cursor-pointer opacity-0
                         `}
                     >
-                        {/* 1. IMAGEN FULL (LIMPIA) */}
-                        <div 
-                            className="absolute inset-0 z-0 cursor-pointer"
-                            onClick={() => onSelect(item)} 
-                        >
-                            <img 
-                                src={item.img || 'https://via.placeholder.com/400x600'} 
-                                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" 
-                                alt="item" 
-                            />
-                            {/* Degradado SOLO abajo para leer texto */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90"></div>
-                            
-                            {/* Brillo sutil superior (Reflejo de cristal) */}
-                            <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
+                        <div className="flex justify-between items-center p-4 border-b border-white/5 relative z-50">
+                             <button onClick={(e) => handleConnect(e, item)} className={`flex-1 mr-2 py-2 px-3 rounded-lg font-black uppercase text-[9px] tracking-[0.1em] transition-all bg-white text-black hover:bg-gray-200 shadow-[0_0_10px_white]`}>CONECTAR ↗</button>
+                            {item.isReal && (<button onClick={(e) => handleGoToLive(e, item)} className={`py-2 px-2 rounded-lg border border-white/10 bg-black text-[8px] font-bold uppercase text-white hover:border-white flex items-center gap-1 transition-all`}><span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> LIVE</button>)}
                         </div>
-
-                        {/* 2. CAPA FLOTANTE SUPERIOR (Distancia + Live) */}
-                        <div className="absolute top-5 left-0 right-0 px-6 flex justify-between items-start z-10 pointer-events-none">
-                            {/* Distancia: Cápsula de Cristal */}
-                            <div className="bg-black/30 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
-                                <div className={`w-1.5 h-1.5 rounded-full ${accentBg} animate-pulse shadow-[0_0_10px_currentColor]`}></div>
-                                <span className="text-white font-mono text-xs font-bold tracking-wider">{item.distance || 'Online'}</span>
+                        <div className="flex-1 flex flex-col items-center justify-center p-4 text-center relative overflow-hidden">
+                            <div className={`absolute w-24 h-24 rounded-full ${style.deco} opacity-[0.08] blur-[40px] pointer-events-none`}></div>
+                            <p className="text-white text-base font-bold italic leading-snug drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] z-10 break-words w-full">"{item.message || "..."}"</p>
+                            <span className={`mt-4 text-[8px] font-bold uppercase tracking-[0.2em] opacity-80 ${style.text}`}>{item.category}</span>
+                        </div>
+                        <div className="pb-6 pt-2 px-4 flex flex-col items-center relative z-20">
+                            <div className="flex items-center gap-2 mb-2 bg-white/5 px-3 py-1 rounded-full border border-white/5">
+                                <div className={`w-1.5 h-1.5 rounded-full ${style.deco} shadow-[0_0_5px_currentColor]`}></div>
+                                <span className="text-sm font-mono font-bold text-white tracking-widest">{item.distance || 'Online'}</span>
                             </div>
-
-                            {/* Botón Live (Si es real) */}
-                            <button 
-                                onClick={(e) => { e.stopPropagation(); handleGoToLive(item); }}
-                                className="bg-black/30 backdrop-blur-md border border-white/10 w-8 h-8 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 transition-all cursor-pointer pointer-events-auto"
-                            >
-                                📡
-                            </button>
-                        </div>
-
-                        {/* 3. MENSAJE FLOTANTE (CENTRO) */}
-                        <div className="absolute top-[35%] left-4 right-4 z-10 pointer-events-none flex justify-center">
-                            <div className="bg-white/5 backdrop-blur-sm border-l-2 border-white/30 pl-4 py-2 pr-2 rounded-r-lg max-w-[90%]">
-                                <p className="font-mono text-lg font-bold italic leading-snug text-white/90 drop-shadow-md">
-                                    "{item.message || "..."}"
-                                </p>
+                            <div className="text-center w-full border-t border-white/10 pt-2">
+                                <p className="text-[7px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-0.5">{item.shopName}</p>
+                                <h3 className="text-white font-black text-lg uppercase leading-none truncate mb-1">{item.name}</h3>
+                                <div className="text-white/60 font-mono font-bold text-xs">{item.price || "0"}</div>
                             </div>
                         </div>
-
-                        {/* 4. FOOTER (DATOS + ACCIÓN) */}
-                        <div className="absolute bottom-0 left-0 right-0 p-6 z-20 pointer-events-none">
-                            
-                            {/* Títulos */}
-                            <div className="mb-6">
-                                <p className={`text-[10px] uppercase font-bold tracking-[0.3em] mb-1 opacity-80 ${accentText}`}>
-                                    {item.shopName}
-                                </p>
-                                <h3 className="text-white font-black text-3xl uppercase leading-none drop-shadow-lg">
-                                    {item.name}
-                                </h3>
-                            </div>
-
-                            {/* Fila de Acción */}
-                            <div className="flex items-center justify-between gap-4 pointer-events-auto">
-                                
-                                {/* Precio */}
-                                <div className="flex flex-col">
-                                    <span className="text-[8px] text-white/40 uppercase">FASE 0</span>
-                                    <span className="text-2xl font-mono font-bold text-white">{item.price || '0'}</span>
-                                </div>
-
-                                {/* Botón Conectar (Minimalista) */}
-                                <button 
-                                    onClick={(e) => { e.stopPropagation(); handleConnect(item); }}
-                                    className={`
-                                        flex-1 py-3 px-4 rounded-xl 
-                                        bg-white text-black font-black uppercase text-[10px] tracking-[0.2em]
-                                        hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)]
-                                        flex items-center justify-center gap-2 cursor-pointer
-                                    `}
-                                >
-                                    CONECTAR <span className="text-sm">↗</span>
-                                </button>
-                            </div>
-                        </div>
-
                     </div>
                 );
             })}
         </div>
 
-        {totalItems > itemsPerPage && (<button onClick={nextSlide} className="hidden md:flex text-white/50 hover:text-white text-6xl font-thin transition-all hover:scale-110 z-50 ml-8 cursor-pointer">›</button>)}
-
-        {totalItems > 1 && (
-            <div className="md:hidden absolute -bottom-10 left-0 right-0 flex justify-center gap-6 z-50">
-                <button onClick={prevSlide} className="w-10 h-10 rounded-full border border-white/20 bg-black text-white flex items-center justify-center cursor-pointer">←</button>
-                <button onClick={nextSlide} className="w-10 h-10 rounded-full border border-white/20 bg-black text-white flex items-center justify-center cursor-pointer">→</button>
-            </div>
-        )}
+        {totalItems > itemsPerPage && (<button onClick={nextSlide} className="hidden md:flex text-white/50 hover:text-white text-6xl font-thin transition-all hover:scale-110 z-50 ml-4 cursor-pointer">›</button>)}
+        {totalItems > 1 && (<div className="md:hidden absolute -bottom-10 left-0 right-0 flex justify-center gap-6 z-50"><button onClick={prevSlide} className="w-10 h-10 rounded-full border border-white/20 bg-black/80 text-white flex items-center justify-center">←</button><button onClick={nextSlide} className="w-10 h-10 rounded-full border border-white/20 bg-black/80 text-white flex items-center justify-center">→</button></div>)}
     </div>
   );
 };
-
 export default PaginatedDisplay;
