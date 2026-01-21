@@ -10,6 +10,7 @@ import PaginatedDisplay from './PaginatedDisplay';
 import NeonReact from './NeonReact'; 
 import ScalextricPhaser from './ScalextricPhaser'; 
 import CosmicQuiz from './CosmicQuiz'; 
+import SevenGates from './SevenGates';
 
 const NexusDashboard = ({ 
     onSearch, searchQuery, setSearchQuery, 
@@ -115,7 +116,7 @@ const NexusDashboard = ({
       )}
      {/* 4. ZONA JUEGOS (RESTAURADOS) */}
       {isGameMode && (      
-          <div className="absolute top-[20%] bottom-40 md:bottom-[20%] w-full max-w-6xl px-4 pointer-events-auto z-[200] flex items-center justify-center animate-zoomIn">
+          <div className="absolute top-[15%] bottom-40 md:bottom-[15%] w-full max-w-6xl px-4 pointer-events-auto z-[200] flex items-center justify-center animate-zoomIn">
               {!selectedGame && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl overflow-y-auto max-h-full custom-scrollbar p-2">
                       
@@ -153,16 +154,39 @@ const NexusDashboard = ({
                           <h3 className="text-xl font-black text-white italic">COSMIC PORTAL</h3>
                           <div className="px-3 py-1 bg-purple-500 text-black text-[9px] font-bold uppercase rounded-full">10 GEN</div>
                       </div>
+                      
+                      {/* THE 7 GATES */}
+		<div onClick={() => setSelectedGame('gates')} className="group bg-black/80 border border-yellow-500/30 p-6 rounded-2xl hover:border-yellow-500 hover:bg-yellow-900/20 cursor-pointer transition-all flex flex-col items-center gap-2"><div className="text-4xl">🔓</div><h3 className="text-xl font-black text-white italic">THE 7 GATES</h3><div className="px-3 py-1 bg-yellow-500 text-black text-[9px] font-bold uppercase rounded-full">140 GEN</div></div>
                   </div>
               )}
-              
+                            
               {/* RENDERIZADO DE JUEGOS */}
               {selectedGame === 'neon' && <div className="w-full h-full relative flex items-center justify-center"><button onClick={() => setSelectedGame(null)} className="absolute -top-8 left-0 text-white font-bold uppercase text-xs z-50 pointer-events-auto">❮ MENU</button><div className="w-full max-w-4xl h-[500px] pointer-events-auto"><NeonReact onWin={onGameWin} /></div></div>}
               {selectedGame === 'racer' && <div className="w-full h-full relative flex items-center justify-center"><button onClick={() => setSelectedGame(null)} className="absolute -top-8 left-0 text-white font-bold uppercase text-xs z-50 pointer-events-auto">❮ MENU</button><div className="w-full md:w-[800px] h-[300px] md:h-[500px] pointer-events-auto"><ScalextricPhaser onWin={onGameWin} difficulty={gameDifficulty} /></div></div>}
               {selectedGame === 'quiz' && <div className="w-full h-full relative flex items-center justify-center"><button onClick={() => setSelectedGame(null)} className="absolute -top-8 left-0 text-white font-bold uppercase text-xs z-50 pointer-events-auto">❮ MENU</button><div className="w-full md:w-[900px] h-full md:h-[550px] relative shadow-2xl pointer-events-auto"><CosmicQuiz onWin={onGameWin} /></div></div>}
+             {/* SEVEN GATES RENDER */}
+{selectedGame === 'gates' && (
+    <div className="w-full h-full relative flex items-center justify-center">
+        {/* Ahora es igual a los otros: posicionado arriba a la izquierda y con texto MENU */}
+        <button 
+            onClick={() => setSelectedGame(null)} 
+            className="absolute -top-8 left-0 text-white font-bold uppercase text-xs z-50 pointer-events-auto"
+        >
+            ❮ MENU
+        </button>
+        
+        <div className="w-full h-full pointer-events-auto shadow-2xl rounded-xl overflow-hidden">
+            <SevenGates 
+                onWin={(amt) => { onGameWin(amt); setSelectedGame(null); }} 
+                onClose={() => setSelectedGame(null)} 
+            />
+        </div>
+    </div>
+)}
+
           </div>
       )}
-
+      
       {/* 5. IA CONECTADA (GEMINI PRO + POLLINATIONS V2 + EXTERNAL LINKS) */}
       {isAIMode && (
           <div className="absolute top-[10%] bottom-[20%] w-full max-w-6xl px-4 pointer-events-auto z-50 animate-zoomIn">
