@@ -373,7 +373,7 @@ function App() {
         <div className="relative z-20 h-full w-full animate-fadeIn flex flex-col items-center justify-center pointer-events-auto">
             {!isTeleporting && !showBooster && (
                 <>
-                <div className="absolute top-[15%] w-full text-center px-4">
+                <div className="absolute top-[10%] w-full text-center px-4">
                     <h1 className="text-5xl md:text-8xl font-black italic tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-500 drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">BRO7VISION</h1>
                     <p className="text-xs md:text-xl text-white font-bold tracking-[0.5em] shadow-black drop-shadow-lg uppercase">Explora tu realidad</p>
                 </div>
