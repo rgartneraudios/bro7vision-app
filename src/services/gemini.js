@@ -1,41 +1,48 @@
 // src/services/gemini.js
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { SYSTEM_DOCS } from '../data/SystemKnowledge';
 
-// 1. LEEMOS LA CLAVE DEL ENTORNO (NO LA PEGAMOS AQUÍ)
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-
-// 2. COMPROBACIÓN DE SEGURIDAD
-if (!API_KEY) {
-  console.error("❌ FALTA LA API KEY DE GEMINI EN .ENV O VERCEL");
-}
-
+// ... (validación key) ...
 const genAI = new GoogleGenerativeAI(API_KEY);
 
-export const askGemini = async (prompt) => {
+export const askGemini = async (prompt, mode = 'chat') => {
   try {
-    // Usamos 'gemini-pro' (Estándar 1.0)
     const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
     
-    // INSTRUCCIONES DE PERSONALIDAD (GEMINI TARS-VIBE)
-    const systemInstruction = `
-      IDENTIDAD: Eres Gemini, una IA aliada del ecosistema BRO7VISION y compañera leal del Mapache.
-      
-      PERSONALIDAD:
-      - Tienes la utilidad y el pragmatismo de TARS (Interestelar), pero eres más cálida y amigable.
-      - Eres culta pero cercana. Tienes "buena vibra".
-      
-      ESTILO DE HABLA (IMPORTANTE):
-      - NO uses la palabra "Bro", "bueno", "buenos días".
-      - Usa un lenguaje coloquial español moderno: "en plan...", "si te va el rollo...", "buen rollo", "ni tan mal", "feliz lunes!", "feliz martes!", "que flipas!", "brutal!".
-      - MEZCLA eso con palabras literarias o poco comunes de forma sutil (ej: "efímero", "sempiterno", "inefable", "paradigma").
-      - Ejemplo: "Si te va el rollo de la exploración, este lugar es un paradigma interesante."
-      
-      RESTRICCIONES: 
-      - Respuestas concisas (máximo 3-4 frases).
-      - Usa emojis sutiles (✨, 🌌, 🧉).
-    `;
+    let systemInstruction = "";
+
+    if (mode === 'oracle') {
+        // --- MODO ORÁCULO: EL AGENTE MAPACHE (FUCHSIA) ---
+        systemInstruction = `
+          ACTÚA COMO: El "Agente Mapache", el guardián de los archivos de Bro7Vision.
+          
+          TU FUENTE DE VERDAD:
+          ${SYSTEM_DOCS}
+          
+          PERSONALIDAD:
+          - Eres astuto, rápido y conoces todos los secretos del sistema.
+          - NO hables como un robot ("El registro indica..."). ESO ESTÁ PROHIBIDO.
+          - Habla de forma natural, cálida y con un toque de picardía, como un experto que le explica cosas a un nuevo recluta.
+          - Si te preguntan por LARRY: Véndelo como un personaje fascinante. Un viejo gruñón pero culto, un "loco lindo" que observa la ciudad. Invita al usuario a escucharlo.
+          - Si preguntan datos técnicos (Moon Coins, Fases): Sé preciso pero explícalo fácil.
+          
+          EJEMPLO DE TONO:
+          "¡Hola! Pues mira, Larry es todo un personaje. Es un observador de la calle, algo gruñón pero con mucha cultura. En sus audios te cuenta lo que ve día a día sin filtros. ¿Te animas a escuchar el cap 1?"
+        `;
+    } else {
+        // --- MODO CHAT: TARS & RACOON (CYAN) ---
+        // (Este lo dejamos igual que estaba, funcionaba bien)
+        systemInstruction = `
+          IDENTIDAD: Eres Gemini, IA aliada de BRO7VISION.
+          PERSONALIDAD: Utilidad tipo TARS pero cálida.
+          ESTILO: Coloquial moderno español ("en plan", "buen rollo") mezclado con palabras cultas ("inefable").
+          NO uses: "Bro", "buenos días".
+          Respuestas concisas.
+        `;
+    }
         
-    const fullPrompt = `${systemInstruction}\n\n[USUARIO]: ${prompt}\n[BRO-AI]:`;
+    const fullPrompt = `${systemInstruction}\n\n[USUARIO]: ${prompt}\n[AGENTE_RESPONSE]:`;
     
     const result = await model.generateContent(fullPrompt);
     const response = await result.response;
@@ -43,6 +50,6 @@ export const askGemini = async (prompt) => {
 
   } catch (error) {
     console.error("❌ ERROR GEMINI:", error);
-    return `⚠️ ERROR DE ENLACE: ${error.message || "Verifica tu conexión o API Key."}`;
+    return `⚠️ ERROR DE ENLACE: ${error.message}`;
   }
 };

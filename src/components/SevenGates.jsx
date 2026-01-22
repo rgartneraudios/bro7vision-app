@@ -71,12 +71,22 @@ const SevenGates = ({ onWin, onClose }) => {
           { q: "DIRECTOR DE DUNE", a: "VILLENEUVE", w: ["NOLAN", "SPIELBERG", "LUCAS", "CAMERON"], isAd: false },
           { q: "ROBOT DE STAR WARS", a: "R2D2", w: ["HAL9000", "WALL-E", "CHAPPIE", "SONNY"], isAd: false },
 
-          // --- ASTRONOMÍA Y ESPACIO ---
-          { q: "EL PLANETA ROJO", a: "MARTE", w: ["VENUS", "MERCURIO", "SATURNO", "URANO"], isAd: false },
-          { q: "ESTRELLA CERCANA", a: "PROXIMA", w: ["SIRIUS", "VEGA", "POLARIS", "BETELGEUSE"], isAd: false },
-          { q: "NUESTRA GALAXIA", a: "VIA LACTEA", w: ["ANDROMEDA", "TRIANGULO", "SOMBRERO", "CIGARRO"], isAd: false },
-          { q: "SATELITE DE TIERRA", a: "LUNA", w: ["IO", "EUROPA", "TITAN", "GANIMEDES"], isAd: false },
-
+        // --- ASTRONOMÍA Y ESPACIO ---
+	{ q: "EL PLANETA ROJO", a: "MARTE", w: ["VENUS", "MERCURIO", "SATURNO", "URANO"], isAd: false },
+	{ q: "ESTRELLA CERCANA", a: "PROXIMA", w: ["SIRIUS", "VEGA", "POLARIS", "BETELGEUSE"], isAd: false },
+	{ q: "NUESTRA GALAXIA", a: "VIA LACTEA", w: ["ANDROMEDA", "TRIANGULO", "SOMBRERO", "CIGARRO"], isAd: false },
+	{ q: "SATELITE DE TIERRA", a: "LUNA", w: ["IO", "EUROPA", "TITAN", "GANIMEDES"], isAd: false },
+	{ q: "PLANETA MAS GRANDE", a: "JUPITER", w: ["SATURNO", "NEPTUNO", "TIERRA", "MARTE"], isAd: false },
+	{ q: "EL PLANETA CON ANILLOS", a: "SATURNO", w: ["MARTE", "JUPITER", "MERCURIO", "PLUTON"], isAd: false },
+	{ q: "ESTRELLA DEL SISTEMA", a: "SOL", w: ["ALFA CENTAURI", "SIRIUS", "ANTARES", "LUNA"], isAd: false },
+	{ q: "PLANETA MAS CALIENTE", a: "VENUS", w: ["MERCURIO", "MARTE", "JUPITER", "SATURNO"], isAd: false },
+	{ q: "ESTRELLA QUE GUIA", a: "POLARIS", w: ["VEGA", "RIGEL", "DENEB", "ALTAIR"], isAd: false },
+	{ q: "PLANETA MAS ALEJADO", a: "NEPTUNO", w: ["URANO", "SATURNO", "PLUTON", "JUPITER"], isAd: false },
+	{ q: "EL PLANETA ENANO", a: "PLUTON", w: ["MERCURIO", "CERES", "ERIS", "MARTE"], isAd: false },
+	{ q: "CONJUNTO DE ESTRELLAS", a: "CONSTELACION", w: ["NEBULOSA", "CUMULO", "PULSAR", "QUASAR"], isAd: false },
+	{ q: "PRIMER HOMBRE EN LUNA", a: "ARMSTRONG", w: ["ALDRIN", "GAGARIN", "GLENN", "SHEPARD"], isAd: false },
+	{ q: "TEORIA DEL ORIGEN", a: "BIG BANG", w: ["ESTADO ESTACIONARIO", "CUERDAS", "MULTIVERSO", "RELATIVIDAD"], isAd: false },
+	
          // --- ASTROLOGÍA ---
 	{ q: "SIGNO DE LOS GEMELOS", a: "GEMINIS", w: ["LIBRA", "ACUARIO", "VIRGO", "PISCIS"], isAd: false },
 	{ q: "SIGNO DEL LEON", a: "LEO", w: ["ARIES", "TAURO", "CANCER", "CAPRI"], isAd: false },
