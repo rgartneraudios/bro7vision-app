@@ -20,6 +20,7 @@ import IdentityTerminal from './components/IdentityTerminal';
 import BoosterModal from './components/BoosterModal';
 import LegalBar from './components/LegalBar'; 
 import LegalTerminal from './components/LegalTerminal';
+import HoloProjector from './components/HoloProjector';
 
 function App() {
   // --- 1. SEGURIDAD ---
@@ -40,6 +41,7 @@ function App() {
   const [balances, setBalances] = useState({ genesis: 0, nova: 0, crescens: 0, plena: 0, decrescens: 0 });
   const [moonPhase, setMoonPhase] = useState('plena');
   const [showWalletModal, setShowWalletModal] = useState(false);
+
   
   // ESTADO LEGAL
   const [showLegal, setShowLegal] = useState(false);
@@ -57,7 +59,8 @@ function App() {
   const [selectedIdentity, setSelectedIdentity] = useState(null);
   const [showBooster, setShowBooster] = useState(false);
   const [selectedLog, setSelectedLog] = useState(null);
-
+  const [projectingUser, setProjectingUser] = useState(null);
+  
   // AUDIO STATE
   const [playingCreator, setPlayingCreator] = useState(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
@@ -73,23 +76,38 @@ function App() {
   
   const getPlayableUrl = (url) => {
     if (!url) return "";
-    if (url.startsWith('/')) return url;
-    if (url.includes('dropbox.com')) {
-      let cleanUrl = url.replace('www.dropbox.com', 'dl.dropboxusercontent.com');
-      cleanUrl = cleanUrl.split('?')[0]; 
-      return cleanUrl;
-    }
-    return url;
-  };
+    let clean = url.trim(); // 1. Quitar espacios en blanco al principio/final
 
+    if (clean.startsWith('/')) return clean; // Archivos locales
+
+    // --- FIX DROPBOX UNIVERSAL ---
+    if (clean.includes('dropbox.com')) {
+      // Reemplazar dominio para forzar descarga directa
+      clean = clean.replace('www.dropbox.com', 'dl.dropboxusercontent.com');
+      clean = clean.replace('dropbox.com', 'dl.dropboxusercontent.com'); // Por si no tiene www
+
+      // TRUCO: Si el link tiene 'rlkey' (links privados nuevos), NO quitamos los parámetros
+      if (clean.includes('rlkey')) {
+          // Solo aseguramos que use dl.dropboxusercontent.com y mantenemos el resto
+          return clean; 
+      }
+      
+      // Si es un link público normal, quitamos parámetros basura
+      return clean.split('?')[0];
+    }
+    
+    return clean;
+  };  
   useEffect(() => {
     if (playingCreator && playingCreator.audioFile) {
       const rawUrl = playingCreator.audioFile;
-      const finalUrl = getPlayableUrl(rawUrl);
+      const finalUrl = getPlayableUrl(rawUrl); // <--- Usa la función mejorada
+
       if (!audioRef.current.src.includes(finalUrl)) {
+        console.log("Reproduciendo Audio:", finalUrl); // <--- MIRA LA CONSOLA (F12) PARA VER SI EL LINK ES CORRECTO
         audioRef.current.src = finalUrl;
         audioRef.current.load();
-        if (isAudioPlaying) audioRef.current.play().catch(e => console.error(e));
+      if (isAudioPlaying) audioRef.current.play().catch(e => console.error(e));
       } else {
         if (isAudioPlaying) audioRef.current.play().catch(e => console.error(e));
         else audioRef.current.pause();
@@ -207,6 +225,7 @@ function App() {
 
   useEffect(() => {
     const fetchMarket = async () => {
+      // 1. Asegúrate de pedir TODO ('*') para que venga el video_file
       const { data } = await supabase
         .from('profiles')
         .select('*')
@@ -222,7 +241,7 @@ function App() {
           if (u.product_title) {
             items.push({
               id: `${u.id}_prod`,
-              type: ['product'], // Etiqueta limpia
+              type: ['product'], 
               name: u.product_title,
               shopName: u.alias,
               img: u.product_img || u.banner_url || u.avatar_url,
@@ -233,6 +252,7 @@ function App() {
               url: u.product_url, 
               neonColor: rawColor,
               audioFile: userAudio,
+              video_file: u.video_file, // <--- ¡ESTA LÍNEA ES LA CLAVE!
               isReal: true
             });
           }
@@ -241,7 +261,7 @@ function App() {
           if (u.service_title) {
             items.push({
               id: `${u.id}_serv`,
-              type: ['service'], // Etiqueta limpia
+              type: ['service'],
               name: u.service_title,
               shopName: u.alias,
               img: u.service_img || u.banner_url || u.avatar_url,
@@ -252,6 +272,7 @@ function App() {
               url: u.service_url,
               neonColor: rawColor,
               audioFile: userAudio,
+              video_file: u.video_file, // <--- ¡AQUÍ TAMBIÉN!
               isReal: true
             });
           }
@@ -413,9 +434,10 @@ function App() {
             onSelectShop={handlePreviewCard}
             onUserClick={setSelectedIdentity}
             items={filteredItems}
+           onOpenVideo={setProjectingUser}
         />
      )}
-     
+          
     {/* MODALES */}
      {selectedIdentity && <IdentityTerminal user={selectedIdentity} onClose={() => setSelectedIdentity(null)} onOpenLog={(log) => { setSelectedIdentity(null); setSelectedLog(log); }} />}
      {selectedLog && <BroLogViewer log={selectedLog} onClose={() => setSelectedLog(null)} />}
@@ -425,11 +447,24 @@ function App() {
 
      {/* LEGAL */}
      <LegalBar onOpenLegal={() => setShowLegal(true)} />
+     
      {showLegal && <LegalTerminal onClose={() => setShowLegal(false)} />}
+     
      <div className="fixed bottom-1 left-1/2 -translate-x-1/2 z-[55] opacity-50 hover:opacity-100 transition-opacity pointer-events-auto">
           <button onClick={() => setShowLegal(true)} className="text-[9px] text-gray-500 font-mono border border-white/10 px-3 py-1 rounded-t-lg bg-black/90 backdrop-blur hover:bg-white hover:text-black transition-colors">⚖️ LEGAL / CONTACTO</button>
      </div>
+
+     {/* HOLO PROYECTOR */}
+     {projectingUser && (
+         <HoloProjector 
+            videoUrl={projectingUser.video_file} 
+            user={projectingUser} 
+            onClose={() => setProjectingUser(null)} 
+         />
+     )}
+
     </div> 
-  )
+  );
 }
+
 export default App;

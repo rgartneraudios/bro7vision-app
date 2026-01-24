@@ -1,7 +1,7 @@
 // src/components/PaginatedDisplay.jsx (VERSIÓN "IN-DASHBOARD": MÁS COMPACTA)
 import React, { useState, useEffect } from 'react';
 
-const PaginatedDisplay = ({ items, onSelect, onTuneIn }) => {
+const PaginatedDisplay = ({ items, onSelect, onTuneIn, onOpenVideo }) => {
   const [startIndex, setStartIndex] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(3);
 
@@ -78,11 +78,41 @@ const PaginatedDisplay = ({ items, onSelect, onTuneIn }) => {
                             cursor-pointer opacity-0
                         `}
                     >
-                        <div className="flex justify-between items-center p-4 border-b border-white/5 relative z-50">
-                             <button onClick={(e) => handleConnect(e, item)} className={`flex-1 mr-2 py-2 px-3 rounded-lg font-black uppercase text-[9px] tracking-[0.1em] transition-all bg-white text-black hover:bg-gray-200 shadow-[0_0_10px_white]`}>CONECTAR ↗</button>
-                            {item.isReal && (<button onClick={(e) => handleGoToLive(e, item)} className={`py-2 px-2 rounded-lg border border-white/10 bg-black text-[8px] font-bold uppercase text-white hover:border-white flex items-center gap-1 transition-all`}><span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> LIVE</button>)}
+                        {/* --- ENCABEZADO DE LA TARJETA (BOTONES) --- */}
+                        <div className="flex justify-between items-center p-4 border-b border-white/5 relative z-50 gap-2">
+                             
+                             {/* 1. BOTÓN CONECTAR (TIENDA) - ESTE SIEMPRE ESTÁ */}
+                             <button onClick={(e) => handleConnect(e, item)} className={`flex-1 mr-2 py-2 px-3 rounded-lg font-black uppercase text-[9px] tracking-[0.1em] transition-all bg-white text-black hover:bg-gray-200 shadow-[0_0_10px_white]`}>
+                                CONECTAR ↗
+                             </button>
+
+                             {/* 2. GRUPO MULTIMEDIA (A LA DERECHA) */}
+                             <div className="flex gap-1 shrink-0">
+                                
+                                {/* BOTÓN DE TV (SOLO SI TIENE VIDEO) */}
+                                {item.video_file && (
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); onOpenVideo(item); }} 
+                                        className="w-8 h-8 rounded-lg border border-fuchsia-500 bg-black text-fuchsia-400 hover:bg-fuchsia-500 hover:text-white flex items-center justify-center transition-all shadow-[0_0_10px_magenta]"
+                                        title="Ver Holo-TV"
+                                    >
+                                        🎥
+                                    </button>
+                                )}
+
+                                {/* BOTÓN DE RADIO (SOLO SI ES REAL/LIVE) */}
+                                {item.isReal && (
+                                    <button 
+                                        onClick={(e) => handleGoToLive(e, item)} 
+                                        className="w-8 h-8 rounded-lg border border-red-500 bg-black text-white hover:bg-red-600 flex items-center justify-center transition-all shadow-[0_0_10px_red]"
+                                        title="Escuchar Live"
+                                    >
+                                        ▶
+                                    </button>
+                                )}
+                             </div>
                         </div>
-                        <div className="flex-1 flex flex-col items-center justify-center p-4 text-center relative overflow-hidden">
+                                                <div className="flex-1 flex flex-col items-center justify-center p-4 text-center relative overflow-hidden">
                             <div className={`absolute w-24 h-24 rounded-full ${style.deco} opacity-[0.08] blur-[40px] pointer-events-none`}></div>
                             <p className="text-white text-base font-bold italic leading-snug drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] z-10 break-words w-full">"{item.message || "..."}"</p>
                             <span className={`mt-4 text-[8px] font-bold uppercase tracking-[0.2em] opacity-80 ${style.text}`}>{item.category}</span>

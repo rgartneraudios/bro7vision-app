@@ -11,14 +11,17 @@ import NeonReact from './NeonReact';
 import ScalextricPhaser from './ScalextricPhaser'; 
 import CosmicQuiz from './CosmicQuiz'; 
 import SevenGates from './SevenGates';
+import CruceDeCaminos from './CruceDeCaminos';
 
 const NexusDashboard = ({ 
     onSearch, searchQuery, setSearchQuery, 
     intent, setIntent, 
     onBack, onGameWin, onOpenLog, 
     onSelectShop, onTuneIn, onUserClick,
-    items 
+    items,
+    onOpenVideo // <--- ¡AÑADE ESTA LÍNEA AQUÍ!
 }) => {
+
   const [currentLogIndex, setCurrentLogIndex] = useState(0);
   const [selectedGame, setSelectedGame] = useState(null); 
   const [gameDifficulty, setGameDifficulty] = useState('hard');
@@ -108,15 +111,22 @@ const NexusDashboard = ({
           </div>
       )}
 
-      {/* CASO B: TARJETAS (CARDS) - SUBIDO AL 25% (Antes 32%) */}
       {isCardMode && (
           <div className="absolute top-[26%] bottom-[15%] w-full z-50 pointer-events-auto animate-zoomIn">
-               <PaginatedDisplay items={items} onSelect={onSelectShop} onTuneIn={onTuneIn} />
+               <PaginatedDisplay 
+                    items={items} 
+                    onSelect={onSelectShop} 
+                    onTuneIn={onTuneIn} 
+                    onOpenVideo={onOpenVideo}
+                />
           </div>
       )}
-     {/* 4. ZONA JUEGOS (RESTAURADOS) */}
+            
+     {/* 4. ZONA JUEGOS (CORREGIDA Y COMPLETA) */}
       {isGameMode && (      
           <div className="absolute top-[15%] bottom-40 md:bottom-[15%] w-full max-w-6xl px-4 pointer-events-auto z-[200] flex items-center justify-center animate-zoomIn">
+              
+              {/* --- MENÚ DE SELECCIÓN DE JUEGOS --- */}
               {!selectedGame && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl overflow-y-auto max-h-full custom-scrollbar p-2">
                       
@@ -132,7 +142,7 @@ const NexusDashboard = ({
                           <div className="px-3 py-1 bg-fuchsia-500 text-black text-[9px] font-bold uppercase rounded-full">50 GEN</div>
                       </div>
 
-                      {/* F1 ROOKIE (RESTAURADO) */}
+                      {/* F1 ROOKIE */}
                       <div onClick={() => { setSelectedGame('racer'); setGameDifficulty('easy'); }} className="group bg-black/80 border border-green-500/30 p-6 rounded-2xl hover:border-green-500 hover:bg-green-900/20 cursor-pointer transition-all flex flex-col items-center gap-2">
                           <div className="text-4xl">🏎️</div>
                           <h3 className="text-xl font-black text-white italic">F1 ROOKIE</h3>
@@ -140,7 +150,7 @@ const NexusDashboard = ({
                           <div className="px-3 py-1 bg-green-500 text-black text-[9px] font-bold uppercase rounded-full">50 GEN</div>
                       </div>
 
-                      {/* F1 PRO (RESTAURADO) */}
+                      {/* F1 PRO */}
                       <div onClick={() => { setSelectedGame('racer'); setGameDifficulty('hard'); }} className="group bg-black/80 border border-cyan-500/30 p-6 rounded-2xl hover:border-cyan-500 hover:bg-cyan-900/20 cursor-pointer transition-all flex flex-col items-center gap-2">
                           <div className="text-4xl">🔥</div>
                           <h3 className="text-xl font-black text-white italic">F1 PRO</h3>
@@ -156,37 +166,75 @@ const NexusDashboard = ({
                       </div>
                       
                       {/* THE 7 GATES */}
-		<div onClick={() => setSelectedGame('gates')} className="group bg-black/80 border border-yellow-500/30 p-6 rounded-2xl hover:border-yellow-500 hover:bg-yellow-900/20 cursor-pointer transition-all flex flex-col items-center gap-2"><div className="text-4xl">🔓</div><h3 className="text-xl font-black text-white italic">THE 7 GATES</h3><div className="px-3 py-1 bg-yellow-500 text-black text-[9px] font-bold uppercase rounded-full">140 GEN</div></div>
-                  </div>
+                      <div onClick={() => setSelectedGame('gates')} className="group bg-black/80 border border-yellow-500/30 p-6 rounded-2xl hover:border-yellow-500 hover:bg-yellow-900/20 cursor-pointer transition-all flex flex-col items-center gap-2">
+                          <div className="text-4xl">🔓</div>
+                          <h3 className="text-xl font-black text-white italic">THE 7 GATES</h3>
+                          <div className="px-3 py-1 bg-yellow-500 text-black text-[9px] font-bold uppercase rounded-full">140 GEN</div>
+                      </div>
+
+                      {/* Cruce Caminos (NUEVO JUEGO) */}
+<div onClick={() => setSelectedGame('steps')} className="group bg-black/80 border border-indigo-500/30 p-6 rounded-2xl hover:border-indigo-500 hover:bg-indigo-900/20 cursor-pointer transition-all flex flex-col items-center gap-2">
+    
+    {/* CAMBIADO text-4xl por text-[20px] para que sea una línea fina de iconos */}
+    <div className="text-[20px] tracking-widest opacity-60 group-hover:opacity-100 transition-opacity">
+        👺🦊🙏🐧 🐶🐨🐍🐈 🐎☕🦉😶
+    </div>
+
+    <h3 className="text-xl font-black text-white italic">Cruce Caminos</h3>
+    <div className="px-3 py-1 bg-indigo-500 text-white text-[9px] font-bold uppercase rounded-full">SOCIAL RPG</div>
+</div>
+                  </div> 
               )}
                             
-              {/* RENDERIZADO DE JUEGOS */}
-              {selectedGame === 'neon' && <div className="w-full h-full relative flex items-center justify-center"><button onClick={() => setSelectedGame(null)} className="absolute -top-8 left-0 text-white font-bold uppercase text-xs z-50 pointer-events-auto">❮ MENU</button><div className="w-full max-w-4xl h-[500px] pointer-events-auto"><NeonReact onWin={onGameWin} /></div></div>}
-              {selectedGame === 'racer' && <div className="w-full h-full relative flex items-center justify-center"><button onClick={() => setSelectedGame(null)} className="absolute -top-8 left-0 text-white font-bold uppercase text-xs z-50 pointer-events-auto">❮ MENU</button><div className="w-full md:w-[800px] h-[300px] md:h-[500px] pointer-events-auto"><ScalextricPhaser onWin={onGameWin} difficulty={gameDifficulty} /></div></div>}
-              {selectedGame === 'quiz' && <div className="w-full h-full relative flex items-center justify-center"><button onClick={() => setSelectedGame(null)} className="absolute -top-8 left-0 text-white font-bold uppercase text-xs z-50 pointer-events-auto">❮ MENU</button><div className="w-full md:w-[900px] h-full md:h-[550px] relative shadow-2xl pointer-events-auto"><CosmicQuiz onWin={onGameWin} /></div></div>}
-             {/* SEVEN GATES RENDER */}
-{selectedGame === 'gates' && (
-    <div className="w-full h-full relative flex items-center justify-center">
-        {/* Ahora es igual a los otros: posicionado arriba a la izquierda y con texto MENU */}
-        <button 
-            onClick={() => setSelectedGame(null)} 
-            className="absolute -top-8 left-0 text-white font-bold uppercase text-xs z-50 pointer-events-auto"
-        >
-            ❮ MENU
-        </button>
-        
-        <div className="w-full h-full pointer-events-auto shadow-2xl rounded-xl overflow-hidden">
-            <SevenGates 
-                onWin={(amt) => { onGameWin(amt); setSelectedGame(null); }} 
-                onClose={() => setSelectedGame(null)} 
-            />
-        </div>
-    </div>
-)}
+              {/* --- RENDERIZADO DE JUEGOS (PANTALLAS ACTIVAS) --- */}
+              
+              {/* 1. NEON */}
+              {selectedGame === 'neon' && (
+                  <div className="w-full h-full relative flex items-center justify-center">
+                      <button onClick={() => setSelectedGame(null)} className="absolute -top-8 left-0 text-white font-bold uppercase text-xs z-50 pointer-events-auto">❮ MENU</button>
+                      <div className="w-full max-w-4xl h-[500px] pointer-events-auto"><NeonReact onWin={onGameWin} /></div>
+                  </div>
+              )}
+
+              {/* 2. RACER */}
+              {selectedGame === 'racer' && (
+                  <div className="w-full h-full relative flex items-center justify-center">
+                      <button onClick={() => setSelectedGame(null)} className="absolute -top-8 left-0 text-white font-bold uppercase text-xs z-50 pointer-events-auto">❮ MENU</button>
+                      <div className="w-full md:w-[800px] h-[300px] md:h-[500px] pointer-events-auto"><ScalextricPhaser onWin={onGameWin} difficulty={gameDifficulty} /></div>
+                  </div>
+              )}
+
+              {/* 3. QUIZ */}
+              {selectedGame === 'quiz' && (
+                  <div className="w-full h-full relative flex items-center justify-center">
+                      <button onClick={() => setSelectedGame(null)} className="absolute -top-8 left-0 text-white font-bold uppercase text-xs z-50 pointer-events-auto">❮ MENU</button>
+                      <div className="w-full md:w-[900px] h-full md:h-[550px] relative shadow-2xl pointer-events-auto"><CosmicQuiz onWin={onGameWin} /></div>
+                  </div>
+              )}
+
+              {/* 4. THE 7 GATES */}
+              {selectedGame === 'gates' && (
+                  <div className="w-full h-full relative flex items-center justify-center">
+                      <button onClick={() => setSelectedGame(null)} className="absolute -top-8 left-0 text-white font-bold uppercase text-xs z-50 pointer-events-auto">❮ MENU</button>
+                      <div className="w-full h-full pointer-events-auto shadow-2xl rounded-xl overflow-hidden">
+                          <SevenGates onWin={(amt) => { onGameWin(amt); setSelectedGame(null); }} onClose={() => setSelectedGame(null)} />
+                      </div>
+                  </div>
+              )}
+
+              {/* 5. Cruce De Caminos (NUEVO RENDER) */}
+              {selectedGame === 'steps' && (
+                  <div className="w-full h-full relative flex items-center justify-center">
+                      <button onClick={() => setSelectedGame(null)} className="absolute -top-8 left-0 text-white font-bold uppercase text-xs z-50 pointer-events-auto">❮ MENU</button>
+                      <div className="w-full h-full pointer-events-auto shadow-2xl rounded-xl overflow-hidden bg-black">
+                          <CruceDeCaminos onWin={(amt) => { onGameWin(amt); setSelectedGame(null); }} onClose={() => setSelectedGame(null)} />
+                      </div>
+                  </div>
+              )}
 
           </div>
       )}
-      
+            
       {/* 5. IA CONECTADA (GEMINI PRO + AGENTE MAPACHE + EXTERNAL LINKS) */}
 {isAIMode && (
   <div className="absolute top-[10%] bottom-[20%] w-full max-w-6xl px-4 pointer-events-auto z-50 animate-zoomIn">
@@ -342,7 +390,9 @@ const NexusDashboard = ({
   </div>
 )}          
       {/* 6. OTROS MODOS */}
-      {isLiveMode && <LiveGrid onTuneIn={onTuneIn} onSelectShop={onSelectShop} onUserClick={onUserClick} onClose={() => setIntent('product')} />}
+      {isLiveMode && <LiveGrid onTuneIn={onTuneIn} onSelectShop={onSelectShop} onUserClick={onUserClick} onClose={() =>   	setIntent('product')} 
+      onOpenVideo={onOpenVideo}
+       />}
       {isWebMode && <WebBotTerminal />}
       {isInternalMode && <div className="absolute top-[15%] bottom-[25%] w-full max-w-5xl px-4 pointer-events-auto z-50 animate-zoomIn"><RacoonTerminal searchQuery={searchQuery} /></div>}
 

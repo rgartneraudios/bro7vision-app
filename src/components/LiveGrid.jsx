@@ -1,45 +1,20 @@
-// src/components/LiveGrid.jsx (VERSIÓN FINAL: ADMIN RESTAURADO + LINK TIENDA)
+// src/components/LiveGrid.jsx
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
-// --- MOCK DATA CON TU USUARIO (CON AUDIO Y LINK) ---
+// --- MOCK DATA INICIAL ---
 const MOCK_CREATORS = [
-    // 1. TU PERFIL (FORZADO MANUALMENTE)
-    { 
-        id: 'manual_admin', 
-        alias: 'BRO7VISION', 
-        role: 'MUSIC,SHOP', 
-        
-        img: 'https://i.postimg.cc/MKNcqGKv/BRO7VISIONAVA1.png', 
-        avatar_url: 'https://i.postimg.cc/kgj7q1y7/RG1x1a.png', 
-        holo_1: 'https://i.postimg.cc/LXM2K9QV/2dbc1d91-18b2-418b-9c46-d9c4195f6d8a.png', 
-        holo_2: 'https://i.postimg.cc/76yw8HtV/87b85deb-53c2-453c-9123-91122e872234.png', 
-        holo_3: 'https://i.postimg.cc/XJ04Sj1k/e4956cf7-88f9-488f-82bc-e82b3da3c2cd.png', 
-        holo_4: 'https://i.postimg.cc/76yw8HtM/fdaf3e49-8237-4823-98b4-318bcf12aa98.png', 
-
-        distance: '0km', 
-        desc: 'Arquitecto del Sistema', 
-        
-        // LINK TIENDA (Corregido)
-        product_url: 'https://www.instagram.com/bro7vision/', 
-        
-        // --- AUDIO (AQUÍ FALTABA ESTO) ---
-        // Pon aquí un link de dropbox para probar. 
-        // Ejemplo: 'https://www.dropbox.com/s/...../cancion.mp3?dl=0'
-        // Si no tienes uno a mano, deja el local para asegurar que suena:
-        // ---------------------------------
-        
-        price: 10,
-        isReal: true 
-    },
+    // HE BORRADO AL ADMIN MANUAL PORQUE YA VIENE DE LA DB
+    // { id: 'manual_admin', ... }, <--- ADIÓS A ESTE
     
-    // ... resto de bots ...
+    // Dejamos solo los bots para que haya bulto si quieres, o bórralos también si prefieres
     { id: 'bot1', alias: 'Dj_Neon', role: 'MUSIC', img: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&q=80', distance: '1200km', desc: 'Techno from Berlin', price: 10, isReal: false },
     { id: 'bot2', alias: 'Ana_Talks', role: 'TALK', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80', distance: '500km', desc: 'Debate: Futuro AI', price: 0, isReal: false },
     { id: 'bot3', alias: 'Retro_Shop', role: 'SHOP', img: 'https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&q=80', distance: 'Online', desc: 'Venta de Consolas', shopName: 'Retro World', price: 25, isReal: false },
 ];
-const LiveGrid = ({ onTuneIn, onUserClick, onClose }) => {
+
+  const LiveGrid = ({ onTuneIn, onUserClick, onClose, onOpenVideo }) => {
   const [creators, setCreators] = useState(MOCK_CREATORS);
   const [filter, setFilter] = useState('ALL'); 
   const [toast, setToast] = useState(null); 
@@ -47,10 +22,11 @@ const LiveGrid = ({ onTuneIn, onUserClick, onClose }) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      // 1. TRAEMOS LOS LINKS (product_url, service_url) DE LA DB
+      // CAMBIO CLAVE: Usamos '*' en lugar de la lista manual.
+      // Esto arregla el error 400 inmediatamente.
       const { data } = await supabase
         .from('profiles')
-        .select('id, alias, avatar_url, banner_url, role, bio, city, track_name, audio_file, bcast_file, holo_1, holo_2, holo_3, holo_4, product_url, service_url');
+        .select('*'); // <--- ASÍ DE SIMPLE
 
       if (data && data.length > 0) {
         const realUsers = data.map(u => ({
@@ -61,24 +37,22 @@ const LiveGrid = ({ onTuneIn, onUserClick, onClose }) => {
             distance: u.city ? `${u.city}` : 'Online',
             desc: u.bio || 'Usuario',
             
-            // MAPEO DEL LINK: Si tiene producto usa ese, si no servicio
-            product_url: u.product_url || u.service_url, 
+            product_url: u.product_url || u.service_url, // Enlace Tienda
             
             audioFile: u.audio_file,
             bcastFile: u.bcast_file,
+            video_file: u.video_file, // <--- Ahora sí llegará seguro
+            
             holo_1: u.holo_1, holo_2: u.holo_2, holo_3: u.holo_3, holo_4: u.holo_4,
             isReal: true
         }));
         
-        // FUSIÓN: Primero los reales de la DB, luego el Admin manual y los bots
-        // OJO: Si tu usuario ya está en la DB real, saldrás dos veces. 
-        // Si prefieres solo el manual, filtra los reales para quitar tu ID.
+        // Fusión con los Mock Data
         setCreators([...realUsers, ...MOCK_CREATORS]);
       }
     };    
     fetchData();
   }, []);
-
   const filteredCreators = creators.filter(c => filter === 'ALL' || (c.role && c.role.includes(filter)));
 
   const sendPulse = async (creator) => {
@@ -95,40 +69,31 @@ const LiveGrid = ({ onTuneIn, onUserClick, onClose }) => {
       } catch (e) { console.error(e); }
   };
 
-  // --- FUNCIÓN PARA ABRIR LINK (TIENDA) ---
   const handleOpenLink = (creator) => {
-      // Buscamos el link en varias propiedades por si acaso
       const targetUrl = creator.product_url || creator.service_url || creator.url;
-
       if (targetUrl && targetUrl.trim() !== "") {
           let url = targetUrl.trim();
-          // Añadir https si falta
           if (!url.startsWith('http')) url = 'https://' + url;
-          
           window.open(url, '_blank');
       } else {
           alert("⚠️ (FASE 0) Este usuario no tiene enlace de tienda configurado.");
       }
   };
 
-  // --- LÓGICA DE B-CAST (FIXED ID) ---
   const handlePlayBCast = (creator) => {
-      // Verificamos si tiene archivo (o si es el admin manual)
       if (!creator.bcastFile && creator.id !== 'manual_admin') { 
           alert("⚠️ Este usuario no tiene contenido B-CAST subido."); 
           return; 
       }
-      
       const audio = creator.bcastFile || "/audio/static_noise.mp3";
-      
       onTuneIn({ 
           ...creator, 
-          // ⚠️ TRUCO CLAVE: Cambiamos el ID para forzar el cambio de pista
           id: creator.id + "_bcast", 
           audioFile: audio, 
-          name: `${creator.alias} (B-CAST)` // Cambiamos el nombre para que se vea en el player
+          name: `${creator.alias} (B-CAST)` 
       });
   };
+
   return (
     <div className="absolute top-48 bottom-48 md:top-[15%] md:bottom-[15%] w-full max-w-6xl px-4 pointer-events-auto z-40 animate-zoomIn flex flex-col items-center">
         
@@ -182,35 +147,40 @@ const LiveGrid = ({ onTuneIn, onUserClick, onClose }) => {
                             <p className="text-[9px] md:text-[10px] text-gray-400 truncate">{creator.desc}</p>
                         </div>
                         
+                        {/* --- BLOQUE DE BOTONES HÍBRIDO (AUDIO + VIDEO) --- */}
                         <div className="absolute bottom-2 left-2 right-2 flex flex-col gap-1">
-                            {/* HALO BUTTON */}
+                            {/* 1. BOTÓN HALO */}
                             <button onClick={() => sendPulse(creator)} className="w-full py-1.5 bg-black border border-cyan-600 text-white font-black text-[8px] md:text-[9px] uppercase rounded flex items-center justify-center gap-1 hover:border-white hover:shadow-[0_0_10px_cyan]">
                                 <span className="animate-pulse text-[10px]">⚪</span>
                                 <span className="truncate">HALO (-100 G)</span>
                             </button>                            
                             
-                            {/* AUDIO BUTTONS */}
+                            {/* 2. BOTÓN DE VIDEO (SOLO SI EXISTE) */}
+                            {creator.video_file && (
+                                <button 
+                                    onClick={() => onOpenVideo(creator)} 
+                                    className="w-full py-1.5 bg-fuchsia-600 text-white font-black text-[8px] uppercase rounded border border-fuchsia-400 hover:bg-white hover:text-fuchsia-600 transition-colors flex items-center justify-center gap-1 shadow-[0_0_10px_magenta]"
+                                >
+                                    <span className="animate-pulse">🎥</span> HOLO-TV
+                                </button>
+                            )}
+
+                            {/* 3. AUDIO BUTTONS */}
                             <div className="flex gap-1">
-                                <button onClick={() => onTuneIn(creator)} className="flex-1 py-1.5 bg-red-600 text-white font-black text-[8px] uppercase rounded border border-red-500 truncate">▶ LIVE</button>
+                                <button onClick={() => onTuneIn(creator)} className="flex-1 py-1.5 bg-red-600 text-white font-black text-[8px] uppercase rounded border border-red-500 truncate">▶ RADIO</button>
                                 <button onClick={() => handlePlayBCast(creator)} className="flex-1 py-1.5 bg-violet-600 text-white font-black text-[8px] uppercase rounded border border-violet-400 truncate">📼 B-CAST</button>
                             </div>
                             
-                            {/* SHOP & PERFIL BUTTONS */}
+                            {/* 4. SHOP & PERFIL */}
                             <div className="flex gap-1">
                                 {creator.role && creator.role.includes('SHOP') 
-                                    ? (
-                                        <button 
-                                            onClick={() => handleOpenLink(creator)} // <--- AQUÍ ESTÁ EL CAMBIO
-                                            className="flex-1 py-1.5 bg-yellow-500 text-black font-black text-[8px] uppercase rounded truncate hover:bg-white transition-colors"
-                                        >
-                                            🛒 TIENDA
-                                        </button>
-                                      ) 
+                                    ? (<button onClick={() => handleOpenLink(creator)} className="flex-1 py-1.5 bg-yellow-500 text-black font-black text-[8px] uppercase rounded truncate hover:bg-white transition-colors">🛒 TIENDA</button>) 
                                     : (<div className="flex-1"></div>)
                                 }
                                 <button onClick={() => onUserClick(creator)} className="flex-1 py-1.5 bg-cyan-600 text-white font-black text-[8px] uppercase rounded truncate">👤 PERFIL</button>
                             </div>
                         </div>
+
                     </div>
                 ))}
             </div>
