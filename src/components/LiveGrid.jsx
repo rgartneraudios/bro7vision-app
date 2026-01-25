@@ -3,15 +3,26 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
-// --- MOCK DATA INICIAL ---
+// --- MOCK DATA INICIAL (BOTS CON AVATAR CORREGIDO) ---
 const MOCK_CREATORS = [
-    // HE BORRADO AL ADMIN MANUAL PORQUE YA VIENE DE LA DB
-    // { id: 'manual_admin', ... }, <--- ADIÓS A ESTE
-    
-    // Dejamos solo los bots para que haya bulto si quieres, o bórralos también si prefieres
-    { id: 'bot1', alias: 'Dj_Neon', role: 'MUSIC', img: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&q=80', distance: '1200km', desc: 'Techno from Berlin', price: 10, isReal: false },
-    { id: 'bot2', alias: 'Ana_Talks', role: 'TALK', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80', distance: '500km', desc: 'Debate: Futuro AI', price: 0, isReal: false },
-    { id: 'bot3', alias: 'Retro_Shop', role: 'SHOP', img: 'https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&q=80', distance: 'Online', desc: 'Venta de Consolas', shopName: 'Retro World', price: 25, isReal: false },
+    { 
+        id: 'bot1', alias: 'Dj_Neon', role: 'MUSIC', 
+        img: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&q=80', // Foto Real
+        avatar_url: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&q=80&w=150&h=150', 
+        distance: '1200km', desc: 'Techno from Berlin', price: 10, isReal: false 
+    },
+    { 
+        id: 'bot2', alias: 'Ana_Talks', role: 'TALK', 
+        img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80', // Foto Real
+        avatar_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150&h=150',
+        distance: '500km', desc: 'Debate: Futuro AI', price: 0, isReal: false 
+    },
+    { 
+        id: 'bot3', alias: 'Retro_Shop', role: 'SHOP', 
+        img: 'https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&q=80', // Foto Real
+        avatar_url: 'https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&q=80&w=150&h=150',
+        distance: 'Online', desc: 'Venta de Consolas', shopName: 'Retro World', price: 25, isReal: false 
+    },
 ];
 
   const LiveGrid = ({ onTuneIn, onUserClick, onClose, onOpenVideo }) => {
@@ -22,41 +33,41 @@ const MOCK_CREATORS = [
 
   useEffect(() => {
     const fetchData = async () => {
-      // CAMBIO CLAVE: Usamos '*' en lugar de la lista manual.
-      // Esto arregla el error 400 inmediatamente.
+      // Pedimos TODO (*) para evitar errores de columnas faltantes
       const { data } = await supabase
         .from('profiles')
-        .select('*'); // <--- ASÍ DE SIMPLE
+        .select('*');
 
       if (data && data.length > 0) {
         const realUsers = data.map(u => ({
             id: u.id,
             alias: u.alias || 'Usuario', 
             role: u.role || 'CITIZEN',
-            img: u.banner_url || u.avatar_url || 'https://via.placeholder.com/150',
+            img: u.banner_url || u.avatar_url || 'https://placehold.co/150x150/000000/FFFFFF/png?text=Bot',
+            avatar_url: u.avatar_url || u.banner_url, // <--- Importante para BroLives
             distance: u.city ? `${u.city}` : 'Online',
             desc: u.bio || 'Usuario',
             
-            product_url: u.product_url || u.service_url, // Enlace Tienda
+            product_url: u.product_url || u.service_url, 
             
             audioFile: u.audio_file,
             bcastFile: u.bcast_file,
-            video_file: u.video_file, // <--- Ahora sí llegará seguro
+            video_file: u.video_file,
             
             holo_1: u.holo_1, holo_2: u.holo_2, holo_3: u.holo_3, holo_4: u.holo_4,
             isReal: true
         }));
         
-        // Fusión con los Mock Data
         setCreators([...realUsers, ...MOCK_CREATORS]);
       }
     };    
     fetchData();
   }, []);
+
   const filteredCreators = creators.filter(c => filter === 'ALL' || (c.role && c.role.includes(filter)));
 
   const sendPulse = async (creator) => {
-      if (!creator.isReal || creator.id === 'manual_admin') {
+      if (!creator.isReal) { // Bots o manuales
           setToast(`⚪ (SIMULACIÓN) Halo enviado a ${creator.alias}`);
           setShowSphere(true);
           setTimeout(() => { setToast(null); setShowSphere(false); }, 4000);
@@ -81,10 +92,7 @@ const MOCK_CREATORS = [
   };
 
   const handlePlayBCast = (creator) => {
-      if (!creator.bcastFile && creator.id !== 'manual_admin') { 
-          alert("⚠️ Este usuario no tiene contenido B-CAST subido."); 
-          return; 
-      }
+      // Lógica B-Cast
       const audio = creator.bcastFile || "/audio/static_noise.mp3";
       onTuneIn({ 
           ...creator, 
@@ -131,13 +139,19 @@ const MOCK_CREATORS = [
                 {filteredCreators.map((creator) => (
                     <div key={creator.id} className="group relative aspect-[3/4] bg-[#0a0a0a] rounded-xl overflow-hidden border border-white/10 hover:border-red-500 transition-all hover:scale-[1.02] shadow-lg w-full">
                         
+                        {/* --- IMAGEN CON FIX DE ERROR --- */}
                         <img 
                             src={creator.img} 
                             referrerPolicy="no-referrer"
-                            onError={(e) => { e.target.src = 'https://via.placeholder.com/400x500?text=No+Signal'; }}
+                            onError={(e) => { 
+                                // FRENO DE EMERGENCIA: Si falla, ponemos un placeholder robusto y evitamos bucle
+                                e.target.onerror = null; 
+                                e.target.src = 'https://placehold.co/400x500/000000/FFFFFF/png?text=No+Signal'; 
+                            }}
                             className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity" 
                             alt={creator.alias} 
                         />
+                        
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
                         <div className="absolute top-2 right-2 bg-black/60 backdrop-blur text-cyan-400 text-[8px] font-mono px-1.5 py-0.5 rounded border border-cyan-500/30">📡 {creator.distance}</div>
                         
@@ -147,15 +161,15 @@ const MOCK_CREATORS = [
                             <p className="text-[9px] md:text-[10px] text-gray-400 truncate">{creator.desc}</p>
                         </div>
                         
-                        {/* --- BLOQUE DE BOTONES HÍBRIDO (AUDIO + VIDEO) --- */}
+                        {/* --- BOTONES --- */}
                         <div className="absolute bottom-2 left-2 right-2 flex flex-col gap-1">
-                            {/* 1. BOTÓN HALO */}
+                            {/* HALO */}
                             <button onClick={() => sendPulse(creator)} className="w-full py-1.5 bg-black border border-cyan-600 text-white font-black text-[8px] md:text-[9px] uppercase rounded flex items-center justify-center gap-1 hover:border-white hover:shadow-[0_0_10px_cyan]">
                                 <span className="animate-pulse text-[10px]">⚪</span>
                                 <span className="truncate">HALO (-100 G)</span>
                             </button>                            
                             
-                            {/* 2. BOTÓN DE VIDEO (SOLO SI EXISTE) */}
+                            {/* HOLO-TV (VIDEO) */}
                             {creator.video_file && (
                                 <button 
                                     onClick={() => onOpenVideo(creator)} 
@@ -165,13 +179,13 @@ const MOCK_CREATORS = [
                                 </button>
                             )}
 
-                            {/* 3. AUDIO BUTTONS */}
+                            {/* RADIO & B-CAST */}
                             <div className="flex gap-1">
                                 <button onClick={() => onTuneIn(creator)} className="flex-1 py-1.5 bg-red-600 text-white font-black text-[8px] uppercase rounded border border-red-500 truncate">▶ RADIO</button>
                                 <button onClick={() => handlePlayBCast(creator)} className="flex-1 py-1.5 bg-violet-600 text-white font-black text-[8px] uppercase rounded border border-violet-400 truncate">📼 B-CAST</button>
                             </div>
                             
-                            {/* 4. SHOP & PERFIL */}
+                            {/* TIENDA & PERFIL */}
                             <div className="flex gap-1">
                                 {creator.role && creator.role.includes('SHOP') 
                                     ? (<button onClick={() => handleOpenLink(creator)} className="flex-1 py-1.5 bg-yellow-500 text-black font-black text-[8px] uppercase rounded truncate hover:bg-white transition-colors">🛒 TIENDA</button>) 

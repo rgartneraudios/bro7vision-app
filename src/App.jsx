@@ -120,16 +120,42 @@ function App() {
   useEffect(() => { if (session) fetchBalances(); }, [session]);
 
   const handleTuneIn = (creator) => {
+    // Si el usuario NO tiene holo_1, usa la imagen principal (img).
+    // Si tampoco tiene img, usa la local ("/images/prism_1.jpg").
+    const img1 = creator.holo_1 || creator.img || "/images/prism_1.jpg";
+    const img2 = creator.holo_2 || creator.img || "/images/prism_2.jpg";
+    const img3 = creator.holo_3 || creator.img || "/images/prism_3.jpg";
+    const img4 = creator.holo_4 || creator.img || "/images/prism_4.jpg";
+    
+    setPrismImages([img1, img2, img3, img4]);
+
     if (playingCreator?.id === creator.id) setIsAudioPlaying(!isAudioPlaying);
     else { setPlayingCreator(creator); setIsAudioPlaying(true); }
   };
-
-  const handleCardSelect = (item) => {
-    setSelectedCard(item);
-    const defaultImg = item.img || item.image || "/images/prism_1.jpg";
-    setPrismImages([item.holo_1 || defaultImg, item.holo_2 || defaultImg, item.holo_3 || defaultImg, item.holo_4 || defaultImg]);
+        
+  const handleOpenVideo = (creator) => {
+      const img1 = creator.holo_1 || creator.img || "/images/prism_1.jpg";
+      const img2 = creator.holo_2 || creator.img || "/images/prism_2.jpg";
+      const img3 = creator.holo_3 || creator.img || "/images/prism_3.jpg";
+      const img4 = creator.holo_4 || creator.img || "/images/prism_4.jpg";
+      
+      setPrismImages([img1, img2, img3, img4]);
+      setProjectingUser(creator);
   };
+          
+    const handleCardSelect = (item) => {
+    setSelectedCard(item);
+    
+    const img1 = item.holo_1 || item.img || "/images/prism_1.jpg";
+    const img2 = item.holo_2 || item.img || "/images/prism_1.jpg";
+    const img3 = item.holo_3 || item.img || "/images/prism_1.jpg";
+    const img4 = item.holo_4 || item.img || "/images/prism_1.jpg";
 
+    const prismImageArray = [img1, img2, img3, img4];
+    console.log("HoloPrisma recibiendo (CardSelect):", prismImageArray); // <--- AÑADE ESTO
+    setPrismImages(prismImageArray);
+  };
+      
   const handlePreviewCard = (item) => handleCardSelect(item);
   const handleOpenIdentity = (data) => { if (data && (data.title || data.category)) setSelectedLog(data); else setSelectedIdentity(data); };
 
@@ -223,9 +249,8 @@ function App() {
   // --- LÓGICA DE FUSIÓN DE DATOS (PRODUCTOS vs SERVICIOS) ---
   const [realItems, setRealItems] = useState([]);
 
-  useEffect(() => {
+   useEffect(() => {
     const fetchMarket = async () => {
-      // 1. Asegúrate de pedir TODO ('*') para que venga el video_file
       const { data } = await supabase
         .from('profiles')
         .select('*')
@@ -235,6 +260,40 @@ function App() {
         const formatted = data.map(u => {
           const rawColor = u.card_color || 'cyan-void';
           const userAudio = u.audio_file || u.bcast_file || "/audio/static_noise.mp3";
+          
+          // --- FUNCIÓN LIMPIADORA DE URLs: Elimina via.placeholder.com ---
+          const cleanUrl = (url) => {
+              if (!url) return '';
+              if (url.includes('via.placeholder.com')) {
+                  console.warn("URL de placeholder detectada y limpiada:", url);
+                  return ''; // Ignorar si es el placeholder problemático
+              }
+              return url;
+          };
+          
+          // Fallback robusto para imágenes que no son holo
+          const robustFallbackImg = 'https://placehold.co/400x500/000000/FFFFFF/png?text=NO+IMAGE';
+
+
+          // 2. DATOS COMUNES (Aplicamos cleanUrl a todo lo que sea URL)
+          const commonData = {
+              video_file: cleanUrl(u.video_file),
+              avatar_url: cleanUrl(u.avatar_url), // Crucial para BroLives y otros avatares
+              
+              // --- DATOS DEL PRISMA (APLICAMOS CLEANURL) ---
+              holo_1: cleanUrl(u.holo_1),         
+              holo_2: cleanUrl(u.holo_2),
+              holo_3: cleanUrl(u.holo_3),
+              holo_4: cleanUrl(u.holo_4),
+              // ------------------------
+              
+              product_url: cleanUrl(u.product_url), 
+              service_url: cleanUrl(u.service_url),
+              neonColor: rawColor,
+              audioFile: userAudio,
+              isReal: true
+          };
+
           const items = [];
 
           // PRODUCTOS
@@ -244,16 +303,14 @@ function App() {
               type: ['product'], 
               name: u.product_title,
               shopName: u.alias,
-              img: u.product_img || u.banner_url || u.avatar_url,
+              // Imagen principal: limpia y con fallback robusto
+              img: cleanUrl(u.product_img) || cleanUrl(u.banner_url) || cleanUrl(u.avatar_url) || robustFallbackImg,
               message: u.twit_message,
               distance: u.city || 'Online',
               category: 'PRODUCTO',
               price: u.product_price,
               url: u.product_url, 
-              neonColor: rawColor,
-              audioFile: userAudio,
-              video_file: u.video_file, // <--- ¡ESTA LÍNEA ES LA CLAVE!
-              isReal: true
+              ...commonData 
             });
           }
 
@@ -264,16 +321,14 @@ function App() {
               type: ['service'],
               name: u.service_title,
               shopName: u.alias,
-              img: u.service_img || u.banner_url || u.avatar_url,
+              // Imagen principal: limpia y con fallback robusto
+              img: cleanUrl(u.service_img) || cleanUrl(u.banner_url) || cleanUrl(u.avatar_url) || robustFallbackImg,
               message: u.twit_message,
               distance: u.city || 'Online',
               category: 'SERVICIO',
               price: u.service_price,
               url: u.service_url,
-              neonColor: rawColor,
-              audioFile: userAudio,
-              video_file: u.video_file, // <--- ¡AQUÍ TAMBIÉN!
-              isReal: true
+              ...commonData 
             });
           }
           return items;
@@ -284,8 +339,8 @@ function App() {
     };
     fetchMarket();
   }, [step]);
-
-  // --- FILTRO Y ORDENAMIENTO (SAFE TELEPORT) ---
+      
+    // --- FILTRO Y ORDENAMIENTO (SAFE TELEPORT) ---
   const filteredItems = useMemo(() => {
     const ALL_ITEMS = [...realItems, ...MASTER_DB]; 
 
@@ -356,11 +411,14 @@ function App() {
                   
       {/* CAPA 2: WIDGETS */}
       <BroTuner />
+      
+      {/* FIX: Ahora pasamos prismImages SIEMPRE, sin condiciones extra */}
       {(step === 1 || selectedCard || previewCard) && (
         <div className="fixed top-2 left-[35%] -translate-x-1/2 z-[50000] scale-[0.45] md:absolute md:top-32 md:right-10 md:left-auto md:scale-100 pointer-events-none">
-            <HoloPrism customImages={(selectedCard || previewCard) ? prismImages : null} />
+            <HoloPrism customImages={prismImages} />
         </div>
       )}
+            
       {step > 0 && <BroLives playingCreator={playingCreator} isAudioPlaying={isAudioPlaying} onToggleAudio={(creator) => handleTuneIn(creator)} />}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 md:top-8 md:left-8 md:translate-x-0 z-[60]">
         <WalletWidget balances={balances} activePhase={moonPhase} onClick={() => setShowWalletModal(true)} />
@@ -434,7 +492,7 @@ function App() {
             onSelectShop={handlePreviewCard}
             onUserClick={setSelectedIdentity}
             items={filteredItems}
-           onOpenVideo={setProjectingUser}
+           onOpenVideo={handleOpenVideo}
         />
      )}
           

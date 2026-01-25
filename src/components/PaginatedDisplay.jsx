@@ -31,7 +31,14 @@ const PaginatedDisplay = ({ items, onSelect, onTuneIn, onOpenVideo }) => {
 
   const handleConnect = (e, item) => { e.stopPropagation(); e.preventDefault(); let targetUrl = item.url || item.product_url || item.service_url; if (targetUrl && targetUrl.trim() !== "") { targetUrl = targetUrl.trim(); if (!targetUrl.startsWith('http')) targetUrl = 'https://' + targetUrl; window.open(targetUrl, '_blank'); } else { alert("⚠️ Enlace no configurado."); } };
 
-  const handleGoToLive = (e, item) => { e.stopPropagation(); e.preventDefault(); const cleanId = item.id.replace(/_(prod|serv)$/, ''); if (onTuneIn) { onTuneIn({ id: cleanId, alias: item.shopName, img: item.img, audioFile: item.audioFile || "/audio/static_noise.mp3", name: item.shopName }); } };
+  const handleGoToLive = (e, item) => { 
+      e.stopPropagation(); 
+      e.preventDefault(); 
+      // ... lógica de limpieza de ID ...
+      if (onTuneIn) { 
+          onTuneIn(item); // <--- Al pasar 'item', ahora lleva 'avatar_url' gracias al arreglo de App.jsx
+      } 
+  };
 
   const getDualStyle = (colorString) => {
       let energy = 'cyan'; let matter = 'void';
