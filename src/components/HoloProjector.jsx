@@ -21,9 +21,9 @@ const HoloProjector = ({ videoUrl, user, onClose }) => {
       beamColor = '217,70,239'; 
   }
   if (userColor.includes('yellow') || userColor.includes('gold')) { 
-      neonClass = 'border-yellow-400 shadow-[0_0_50px_rgba(250,204,21,0.8),inset_0_0_30px_rgba(250,204,21,0.5)]'; 
-      textClass = 'text-yellow-400'; 
-      beamColor = '250,204,21'; 
+      neonClass = 'border-[#C7AF38] shadow-[0_0_50px_rgba(199,175,56,0.8),inset_0_0_30px_rgba(199,175,56,0.5)]'; 
+      textClass = 'text-[#C7AF38]'; 
+      beamColor = '199,175,56'; 
   }
   if (userColor.includes('red')) { 
       neonClass = 'border-red-500 shadow-[0_0_50px_rgba(239,68,68,0.8),inset_0_0_30px_rgba(239,68,68,0.5)]'; 
@@ -35,18 +35,23 @@ const HoloProjector = ({ videoUrl, user, onClose }) => {
       textClass = 'text-green-400'; 
       beamColor = '34,197,94'; 
   }
+  if (userColor.includes('blue')) { 
+      neonClass = 'border-blue-500 shadow-[0_0_50px_rgba(59,130,246,0.8),inset_0_0_30px_rgba(59,130,246,0.5)]'; 
+      textClass = 'text-blue-400'; 
+      beamColor = '59,130,246'; 
+  }
   if (userColor.includes('orange')) { 
       neonClass = 'border-orange-500 shadow-[0_0_50px_rgba(249,115,22,0.8),inset_0_0_30px_rgba(249,115,22,0.5)]'; 
       textClass = 'text-orange-400'; 
       beamColor = '249,115,22'; 
   }
   // BLANCO / PLATA
-  if (userColor.includes('white') || userColor.includes('silver') || userColor.includes('zinc')) { 
-      neonClass = 'border-white shadow-[0_0_50px_rgba(255,255,255,0.8),inset_0_0_30px_rgba(255,255,255,0.5)]'; 
-      textClass = 'text-white'; 
-      beamColor = '255,255,255'; 
+  if (userColor.includes('silver')) { 
+      neonClass = 'border-[#D9D9D9] shadow-[0_0_50px_rgba(217,217,217,0.8),inset_0_0_30px_rgba(217,217,217,0.5)]'; 
+      textClass = 'text-[#D9D9D9]'; 
+      beamColor = '217,217,217'; 
   }
-
+  
   // 2. CORRECCIÓN URL
   const getPlayableUrl = (url) => {
     if (!url) return "";
@@ -83,17 +88,16 @@ const HoloProjector = ({ videoUrl, user, onClose }) => {
             style={{
                 // ORIGEN: Esquina absoluta (100% 0%)
                 // ÁNGULO: Desde 180deg (Vertical abajo) barriendo hasta la izquierda
-                background: `conic-gradient(from 180deg at 100% 0%, 
-                    rgba(${beamColor}, 0.2) 0deg,   /* Inicio abajo */
-                    rgba(${beamColor}, 0.8) 35deg,  /* Núcleo diagonal */
-                    rgba(${beamColor}, 0.9) 55deg,  /* Núcleo superior */
-                    rgba(${beamColor}, 0.2) 90deg,  /* Final arriba */
-                    transparent 100deg)`,
+                background: `conic-gradient(from 200deg at 100% 0%, 
+    		rgba(${beamColor}, 0) 0deg,      /* Totalmente transparente al inicio */
+    		rgba(${beamColor}, 0.8) 35deg,   /* Núcleo mucho más suave */
+    		rgba(${beamColor}, 0.9) 55deg,   /* Brillo máximo reducido */
+    		rgba(${beamColor}, 0) 90deg,     /* Corte más rápido para oscurecer */
+                        transparent 100deg)`,
                 
                 // MÁSCARA: Suavizamos el corte para dejar pasar el haz ancho
-                maskImage: 'linear-gradient(to right, transparent 15%, black 60%)',
-                WebkitMaskImage: 'linear-gradient(to right, transparent 15%, black 60%)',
-                
+                maskImage: 'linear-gradient(to right, transparent 30%, black 80%)',
+WebkitMaskImage: 'linear-gradient(to right, transparent 30%, black 80%)',                
                 filter: 'blur(60px)', 
                 opacity: 1,
                 mixBlendMode: 'screen'
@@ -193,6 +197,10 @@ const HoloProjector = ({ videoUrl, user, onClose }) => {
                 0% { transform: translateY(0) scale(0.5); opacity: 0; } 
                 50% { transform: translateY(-100px) scale(1.2); opacity: 1; } 
                 100% { transform: translateY(-300px) scale(0); opacity: 0; } 
+           @keyframes beamFlicker {
+    0%, 100% { opacity: 0.4; transform: skewX(0deg) scale(1); }
+    50% { opacity: 0.6; transform: skewX(1deg) scale(1.02); }
+}
             }
             .animate-hologramExpand { animation: hologramExpand 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
             .animate-spiritFloatModal { animation: spiritFloatModal 1.5s ease-out forwards; }

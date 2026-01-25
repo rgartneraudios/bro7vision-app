@@ -43,23 +43,46 @@ const PaginatedDisplay = ({ items, onSelect, onTuneIn, onOpenVideo }) => {
   const getDualStyle = (colorString) => {
       let energy = 'cyan'; let matter = 'void';
       if (colorString && colorString.includes('-')) { [energy, matter] = colorString.split('-'); } else if (colorString) { energy = colorString; }
-      const bgMap = { void: 'bg-black', carbon: 'bg-[#222222]', navy: 'bg-[#0a1a35]', cobalt: 'bg-[#003366]', wine: 'bg-[#2b0505]', crimson: 'bg-[#4a0404]', forest: 'bg-[#052b05]', emerald: 'bg-[#004d26]', plum: 'bg-[#2e0542]', chocolate: 'bg-[#3b1702]' };
+      
+      // 1. MAPA DE MATERIA (FONDOS) - ACTUALIZADO CON TUS HEX
+      const bgMap = { 
+          void: 'bg-black', 
+          carbon: 'bg-[#222222]', 
+          navy: 'bg-[#091221]',      // NUEVO HEX
+          cobalt: 'bg-[#0A5AAB]',    // NUEVO HEX
+          wine: 'bg-[#2b0505]', 
+          crimson: 'bg-[#4a0404]', 
+          forest: 'bg-[#0A730A]',    // NUEVO HEX
+          emerald: 'bg-[#013030]',   // NUEVO HEX
+          plum: 'bg-[#2e0542]', 
+          chocolate: 'bg-[#B04405]'  // NUEVO HEX
+      };
+      
       const bgClass = bgMap[matter] || 'bg-black';
+      
+      // 2. MAPA DE ENERGÍA (BORDES/TEXTO) - ACTUALIZADO
       const energyMap = {
           cyan: { border: 'border-cyan-400/60', text: 'text-cyan-400', shadow: 'shadow-[0_0_40px_-5px_rgba(34,211,238,0.5)]', btn: 'bg-cyan-400 text-black' },
           fuchsia: { border: 'border-fuchsia-400/60', text: 'text-fuchsia-400', shadow: 'shadow-[0_0_40px_-5px_rgba(232,121,249,0.5)]', btn: 'bg-fuchsia-400 text-black' },
           yellow: { border: 'border-yellow-400/60', text: 'text-yellow-400', shadow: 'shadow-[0_0_40px_-5px_rgba(250,204,21,0.5)]', btn: 'bg-yellow-400 text-black' },
           green: { border: 'border-green-400/60', text: 'text-green-400', shadow: 'shadow-[0_0_40px_-5px_rgba(34,197,94,0.5)]', btn: 'bg-green-400 text-black' },
+          
+          // NUEVO: AZUL
+          blue: { border: 'border-blue-500/60', text: 'text-blue-500', shadow: 'shadow-[0_0_40px_-5px_rgba(59,130,246,0.6)]', btn: 'bg-blue-500 text-white' },
+
           red: { border: 'border-red-500/60', text: 'text-red-500', shadow: 'shadow-[0_0_40px_-5px_rgba(239,68,68,0.6)]', btn: 'bg-red-500 text-white' },
           orange: { border: 'border-orange-500/60', text: 'text-orange-500', shadow: 'shadow-[0_0_40px_-5px_rgba(249,115,22,0.6)]', btn: 'bg-orange-500 text-white' },
-          gold: { border: 'border-[#FFD700]/60', text: 'text-[#FFD700]', shadow: 'shadow-[0_0_40px_-5px_rgba(255,215,0,0.6)]', btn: 'bg-[#FFD700] text-black' },
-          silver: { border: 'border-[#C0C0C0]/60', text: 'text-[#C0C0C0]', shadow: 'shadow-[0_0_40px_-5px_rgba(192,192,192,0.5)]', btn: 'bg-[#C0C0C0] text-black' },
+          
+          // ACTUALIZADOS HEX
+          gold: { border: 'border-[#C7AF38]/60', text: 'text-[#C7AF38]', shadow: 'shadow-[0_0_40px_-5px_rgba(199,175,56,0.6)]', btn: 'bg-[#C7AF38] text-black' },
+          silver: { border: 'border-[#D9D9D9]/60', text: 'text-[#D9D9D9]', shadow: 'shadow-[0_0_40px_-5px_rgba(217,217,217,0.5)]', btn: 'bg-[#D9D9D9] text-black' },
+          
           white: { border: 'border-white/60', text: 'text-white', shadow: 'shadow-[0_0_40px_-5px_rgba(255,255,255,0.6)]', btn: 'bg-white text-black' },
       };
+      
       const styles = energyMap[energy] || energyMap.cyan;
       return { container: `${bgClass} border-2 ${styles.border} ${styles.shadow}`, text: styles.text, btn: styles.btn, deco: styles.border.replace('border-', 'bg-').replace('/60', '') };
   };
-
   return (
     <div className="w-full h-full flex items-center justify-center px-4"> {/* Eliminado absolute para que encaje en el dashboard */}
         

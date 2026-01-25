@@ -3,31 +3,33 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
+// src/components/BoosterModal.jsx
+
 const ENERGY_COLORS = [
     { id: 'cyan', hex: 'bg-cyan-500', name: 'CYAN' },
     { id: 'fuchsia', hex: 'bg-fuchsia-500', name: 'MAGENTA' },
     { id: 'yellow', hex: 'bg-yellow-400', name: 'AMARILLO' },
     { id: 'green', hex: 'bg-green-500', name: 'VERDE' },
+    { id: 'blue', hex: 'bg-blue-500', name: 'AZUL' }, // <--- NUEVO
     { id: 'red', hex: 'bg-red-500', name: 'ROJO' },
     { id: 'orange', hex: 'bg-orange-500', name: 'NARANJA' },
-    { id: 'gold', hex: 'bg-[#FFD700]', name: 'ORO' },
-    { id: 'silver', hex: 'bg-[#C0C0C0]', name: 'PLATA' },
+    { id: 'gold', hex: 'bg-[#C7AF38]', name: 'ORO' }, // <--- AJUSTADO
+    { id: 'silver', hex: 'bg-[#D9D9D9]', name: 'PLATA' }, // <--- AJUSTADO
     { id: 'white', hex: 'bg-white', name: 'BLANCO' }
 ];
 
 const MATTER_COLORS = [
     { id: 'void', hex: 'bg-[#000000]', name: 'NEGRO PURO' },
     { id: 'carbon', hex: 'bg-[#222222]', name: 'GRIS SOLIDO' },
-    { id: 'navy', hex: 'bg-[#0a1a35]', name: 'AZUL NAVY' },
-    { id: 'cobalt', hex: 'bg-[#003366]', name: 'COBALTO' },
+    { id: 'navy', hex: 'bg-[#091221]', name: 'AZUL NAVY' }, // <--- AJUSTADO
+    { id: 'cobalt', hex: 'bg-[#0A5AAB]', name: 'COBALTO' }, // <--- AJUSTADO
     { id: 'wine', hex: 'bg-[#2b0505]', name: 'VINO' },
     { id: 'crimson', hex: 'bg-[#4a0404]', name: 'CARMESÍ' },
-    { id: 'forest', hex: 'bg-[#052b05]', name: 'BOSQUE' },
-    { id: 'emerald', hex: 'bg-[#004d26]', name: 'ESMERALDA' },
+    { id: 'forest', hex: 'bg-[#0A730A]', name: 'BOSQUE' }, // <--- AJUSTADO
+    { id: 'emerald', hex: 'bg-[#013030]', name: 'ESMERALDA' }, // <--- AJUSTADO
     { id: 'plum', hex: 'bg-[#2e0542]', name: 'CIRUELA' },
-    { id: 'chocolate', hex: 'bg-[#3b1702]', name: 'CHOCOLATE' }
+    { id: 'chocolate', hex: 'bg-[#B04405]', name: 'CHOCOLATE' } // <--- AJUSTADO
 ];
-
 const BoosterModal = ({ onClose }) => {
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState('identity'); 
@@ -186,29 +188,52 @@ const BoosterModal = ({ onClose }) => {
                     <div><label className="text-gray-400 text-xs font-bold block mb-2">Mensaje Twit</label><input type="text" maxLength={60} value={formData.twit_message} onChange={e => setFormData({...formData, twit_message: e.target.value})} className="w-full bg-black border border-white/20 p-3 text-white text-sm rounded" /></div>
 
                     {/* COLORES */}
-                    <div className="bg-white/5 border border-white/10 p-4 rounded-xl">
-                        <div className="mb-4">
-                            <p className="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider">⚡ 1. ENERGÍA (Bordes & Neón)</p>
-                            <div className="flex flex-wrap gap-3">
-                                {ENERGY_COLORS.map(c => (
-                                    <button key={c.id} onClick={() => setEnergyColor(c.id)} className={`w-8 h-8 rounded-full ${c.hex} transition-all ${energyColor === c.id ? 'ring-2 ring-white scale-110 shadow-[0_0_15px_white]' : 'opacity-40 hover:opacity-100 hover:scale-105'}`} title={c.name} />
-                                ))}
-                            </div>
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider">🌑 2. MATERIA (Fondo del Cristal)</p>
-                            <div className="flex flex-wrap gap-3">
-                                {MATTER_COLORS.map(c => (
-                                    <button key={c.id} onClick={() => setMatterColor(c.id)} className={`w-8 h-8 rounded-full ${c.hex} border border-white/30 transition-all ${matterColor === c.id ? 'ring-2 ring-white scale-110 shadow-[0_0_15px_white]' : 'opacity-40 hover:opacity-100 hover:scale-105'}`} title={c.name} />
-                                ))}
-                            </div>
-                        </div>
-                        <div className="mt-4 p-2 bg-black rounded text-center">
-                            <span className="text-[10px] text-gray-500">Preview: </span>
-                            <span className="text-white font-mono text-xs uppercase">{energyColor} + {matterColor}</span>
-                        </div>
-                    </div>
+<div className="bg-white/5 border border-white/10 p-4 rounded-xl">
+    <div className="mb-4">
+        <p className="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider">⚡ 1. ENERGÍA (Bordes & Neón)</p>
+        <div className="flex flex-wrap gap-3">
+            {ENERGY_COLORS.map(c => (
+                <button 
+                    key={c.id} 
+                    onClick={() => setEnergyColor(c.id)} 
+                    // Usamos style para asegurar que el color se aplique siempre
+                    style={{ backgroundColor: c.hex.startsWith('bg-') ? undefined : c.hex }}
+                    className={`w-8 h-8 rounded-full transition-all ${c.hex.startsWith('bg-') ? c.hex : ''} ${
+                        energyColor === c.id 
+                        ? 'ring-2 ring-white scale-110 shadow-[0_0_15px_white] z-10' 
+                        : 'opacity-40 hover:opacity-100 hover:scale-105'
+                    }`} 
+                    title={c.name} 
+                />
+            ))}
+        </div>
+    </div>
+    
+    <div>
+        <p className="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider">🌑 2. MATERIA (Fondo del Cristal)</p>
+        <div className="flex flex-wrap gap-3">
+            {MATTER_COLORS.map(c => (
+                <button 
+                    key={c.id} 
+                    onClick={() => setMatterColor(c.id)} 
+                    // Aplicación directa del HEX para colores oscuros como el Navy
+                    style={{ backgroundColor: c.hex.startsWith('bg-') ? undefined : c.hex }}
+                    className={`w-8 h-8 rounded-full border border-white/30 transition-all ${c.hex.startsWith('bg-') ? c.hex : ''} ${
+                        matterColor === c.id 
+                        ? 'ring-2 ring-white scale-110 shadow-[0_0_15px_white] z-10' 
+                        : 'opacity-40 hover:opacity-100 hover:scale-105'
+                    }`} 
+                    title={c.name} 
+                />
+            ))}
+        </div>
+    </div>
 
+    <div className="mt-4 p-2 bg-black rounded text-center">
+        <span className="text-[10px] text-gray-500">Preview: </span>
+        <span className="text-white font-mono text-xs uppercase">{energyColor} + {matterColor}</span>
+    </div>
+</div>
                     {/* HOLOPRISMA (RECUPERADO CON TOGGLE) */}
                     <div className="border border-white/10 p-4 rounded-xl">
                         <div className="flex justify-between items-center">
