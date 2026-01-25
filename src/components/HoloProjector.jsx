@@ -1,46 +1,61 @@
 // src/components/HoloProjector.jsx
 import React, { useRef, useState, useEffect } from 'react';
 
-  const HoloProjector = ({ videoUrl, user, onClose }) => {
+const HoloProjector = ({ videoUrl, user, onClose }) => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [haloSent, setHaloSent] = useState(false); 
-  const [showSpirit, setShowSpirit] = useState(false); // Estado para la animación visual del Halo
+  const [showSpirit, setShowSpirit] = useState(false); 
   const videoRef = useRef(null);
 
-  // 1. CONFIGURACIÓN DE COLORES NEÓN Y HAZ DE LUZ
+  // 1. CONFIGURACIÓN DE COLORES (PALETA COMPLETA)
   let neonClass = 'border-cyan-500 shadow-[0_0_30px_cyan,inset_0_0_20px_cyan]';
   let textClass = 'text-cyan-400';
-  let beamColor = 'rgba(6,182,212,'; // Base Cyan
+  let beamColor = '6,182,212'; // Base Cyan
   
-  if (user?.card_color?.includes('fuchsia')) { 
-      neonClass = 'border-fuchsia-500 shadow-[0_0_80px_rgba(217,70,239,0.6),inset_0_0_40px_rgba(217,70,239,0.4)]';
+  // Normalizamos para evitar errores
+  const userColor = (user?.neonColor || user?.card_color || '').toLowerCase();
+
+  if (userColor.includes('fuchsia') || userColor.includes('magenta')) { 
+      neonClass = 'border-fuchsia-500 shadow-[0_0_50px_rgba(217,70,239,0.8),inset_0_0_30px_rgba(217,70,239,0.5)]'; 
       textClass = 'text-fuchsia-400'; 
-      beamColor = 'rgba(217,70,239,';
+      beamColor = '217,70,239'; 
   }
-  if (user?.card_color?.includes('yellow')) { 
-      neonClass = 'border-yellow-500 shadow-[0_0_80px_yellow,inset_0_0_20px_yellow]'; 
+  if (userColor.includes('yellow') || userColor.includes('gold')) { 
+      neonClass = 'border-yellow-400 shadow-[0_0_50px_rgba(250,204,21,0.8),inset_0_0_30px_rgba(250,204,21,0.5)]'; 
       textClass = 'text-yellow-400'; 
-      beamColor = 'rgba(250,204,21,';
+      beamColor = '250,204,21'; 
   }
-  if (user?.card_color?.includes('red')) { 
-      neonClass = 'border-red-500 shadow-[0_0_80px_red,inset_0_0_20px_red]'; 
+  if (userColor.includes('red')) { 
+      neonClass = 'border-red-500 shadow-[0_0_50px_rgba(239,68,68,0.8),inset_0_0_30px_rgba(239,68,68,0.5)]'; 
       textClass = 'text-red-500'; 
-      beamColor = 'rgba(239,68,68,';
+      beamColor = '239,68,68'; 
+  }
+  if (userColor.includes('green') || userColor.includes('emerald')) { 
+      neonClass = 'border-green-500 shadow-[0_0_50px_rgba(34,197,94,0.8),inset_0_0_30px_rgba(34,197,94,0.5)]'; 
+      textClass = 'text-green-400'; 
+      beamColor = '34,197,94'; 
+  }
+  if (userColor.includes('orange')) { 
+      neonClass = 'border-orange-500 shadow-[0_0_50px_rgba(249,115,22,0.8),inset_0_0_30px_rgba(249,115,22,0.5)]'; 
+      textClass = 'text-orange-400'; 
+      beamColor = '249,115,22'; 
+  }
+  // BLANCO / PLATA
+  if (userColor.includes('white') || userColor.includes('silver') || userColor.includes('zinc')) { 
+      neonClass = 'border-white shadow-[0_0_50px_rgba(255,255,255,0.8),inset_0_0_30px_rgba(255,255,255,0.5)]'; 
+      textClass = 'text-white'; 
+      beamColor = '255,255,255'; 
   }
 
-  // 2. CORRECCIÓN DE URL BLINDADA (Dropbox)
+  // 2. CORRECCIÓN URL
   const getPlayableUrl = (url) => {
     if (!url) return "";
     let clean = url.trim();
-    if (clean.startsWith('/')) return clean; // Archivo local
-    
+    if (clean.startsWith('/')) return clean; 
     if (clean.includes('dropbox.com')) {
        clean = clean.replace('www.dropbox.com', 'dl.dropboxusercontent.com');
        clean = clean.replace('dropbox.com', 'dl.dropboxusercontent.com');
-       
-       // Si tiene clave de seguridad, la mantenemos
        if (clean.includes('rlkey')) return clean;
-       
        return clean.split('?')[0]; 
     }
     return clean;
@@ -48,16 +63,11 @@ import React, { useRef, useState, useEffect } from 'react';
 
   const finalSrc = getPlayableUrl(videoUrl);
   const shopLink = user?.product_url || user?.service_url;
-  
-  // 3. PRIORIDAD DE AVATAR (Redonda > Banner > Placeholder)
-  const avatarImage = user.avatar_url || user.img || 'https://via.placeholder.com/150';
+  const avatarImage = user.avatar_url || user.img || 'https://placehold.co/150x150/000000/FFFFFF/png?text=Anon';
 
-  // 4. LÓGICA DEL HALO
   const handleSendHalo = () => {
       setHaloSent(true);
-      setShowSpirit(true); // Disparar animación
-      
-      // Resetear estados después de la animación
+      setShowSpirit(true);
       setTimeout(() => {
           setHaloSent(false);
           setShowSpirit(false); 
@@ -67,24 +77,37 @@ import React, { useRef, useState, useEffect } from 'react';
   return (
     <div className="fixed inset-0 z-[99999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 animate-fadeIn overflow-hidden">
         
-       {/* --- A. CAÑÓN DE LUZ FINAL (COBERTURA TOTAL) --- */}
-<div 
-    className="absolute top-[-45%] right-[-20%] w-[270%] h-[160%] pointer-events-none z-0"
-    style={{
-        opacity: 0.85, 
-            background: `conic-gradient(from 190deg at 90% 5%, 
-            transparent 0deg, 
-            ${beamColor}0.3) 10deg, 
-            ${beamColor}0.6) 25deg, 
-            ${beamColor}0.3) 40deg, 
-            transparent 55deg)`,
-        filter: 'blur(40px)',
-        mixBlendMode: 'screen'
-    }}
-></div> 
-        
-        {/* --- B. ANIMACIÓN DEL HALO (ESPÍRITU) --- */}
-        {/* Está fuera del contenedor del video para que no se corte al subir */}
+        {/* === A. CAÑÓN DE LUZ (ABANICO AMPLIO + COBERTURA TOTAL) === */}
+        <div 
+            className="absolute inset-0 pointer-events-none z-0 animate-pulse-slow"
+            style={{
+                // ORIGEN: Esquina absoluta (100% 0%)
+                // ÁNGULO: Desde 180deg (Vertical abajo) barriendo hasta la izquierda
+                background: `conic-gradient(from 180deg at 100% 0%, 
+                    rgba(${beamColor}, 0.2) 0deg,   /* Inicio abajo */
+                    rgba(${beamColor}, 0.8) 35deg,  /* Núcleo diagonal */
+                    rgba(${beamColor}, 0.9) 55deg,  /* Núcleo superior */
+                    rgba(${beamColor}, 0.2) 90deg,  /* Final arriba */
+                    transparent 100deg)`,
+                
+                // MÁSCARA: Suavizamos el corte para dejar pasar el haz ancho
+                maskImage: 'linear-gradient(to right, transparent 15%, black 60%)',
+                WebkitMaskImage: 'linear-gradient(to right, transparent 15%, black 60%)',
+                
+                filter: 'blur(60px)', 
+                opacity: 1,
+                mixBlendMode: 'screen'
+            }}
+        ></div>
+
+        {/* FOCO DE ORIGEN (GIGANTE) */}
+        <div 
+            className="absolute top-[-20%] right-[-20%] w-[800px] h-[800px] rounded-full blur-[100px] pointer-events-none z-0 opacity-60"
+            style={{ background: `radial-gradient(circle, rgba(${beamColor}, 1) 0%, transparent 60%)` }}
+        ></div>
+
+
+        {/* --- B. ANIMACIÓN DEL HALO --- */}
         {showSpirit && (
             <div className="absolute bottom-[20%] right-[20%] md:right-[35%] z-[100] pointer-events-none animate-spiritFloatModal">
                 <div className="w-16 h-16 rounded-full bg-white blur-md flex items-center justify-center shadow-[0_0_40px_white]">
@@ -94,24 +117,20 @@ import React, { useRef, useState, useEffect } from 'react';
         )}
 
         {/* --- C. BOTÓN CERRAR --- */}
-        <button onClick={onClose} className="absolute top-6 right-6 text-white/80 hover:text-white z-50 font-black tracking-widest text-xs flex items-center gap-2 hover:scale-110 transition-transform bg-black/50 px-4 py-2 rounded-full border border-white/20 cursor-pointer backdrop-blur">
+        <button onClick={onClose} className="absolute top-6 right-6 text-white hover:text-white z-50 font-black tracking-widest text-xs flex items-center gap-2 hover:scale-110 transition-transform bg-black/40 px-4 py-2 rounded-full border border-white/40 cursor-pointer backdrop-blur shadow-[0_0_20px_rgba(255,255,255,0.5)]">
             <span>✖</span> CERRAR PROYECCIÓN
         </button>
 
-        {/* --- D. CONTENEDOR VIDEO (HOLO FRAME) --- */}
+        {/* --- D. CONTENEDOR VIDEO --- */}
         <div className={`relative z-10 h-[80vh] md:h-[85vh] aspect-[9/16] bg-black rounded-3xl overflow-hidden border-2 ${neonClass} transition-all duration-500 animate-hologramExpand shadow-2xl`}>
             
-            {/* D.1 SCANLINES */}
+            {/* SCANLINES */}
             <div className="absolute inset-0 z-20 pointer-events-none opacity-10 bg-[url('https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2Q4N2Q0N2Q0N2Q0N2Q0N2Q0N2Q0N2Q0N2Q0N2Q0N2Q0/3o7qE1YN7aQf3rfWve/giphy.gif')] bg-cover mix-blend-overlay"></div>
             
-            {/* D.2 VIDEO DE FONDO (BLUR) para rellenar */}
-            <video 
-                src={finalSrc} 
-                className="absolute inset-0 w-full h-full object-cover opacity-60 blur-2xl scale-125" 
-                autoPlay loop muted 
-            />
+            {/* VIDEO DE FONDO (BLUR) */}
+            <video src={finalSrc} className="absolute inset-0 w-full h-full object-cover opacity-60 blur-2xl scale-125" autoPlay loop muted />
 
-            {/* D.3 VIDEO REAL */}
+            {/* VIDEO REAL */}
             <video 
                 ref={videoRef}
                 src={finalSrc} 
@@ -124,7 +143,7 @@ import React, { useRef, useState, useEffect } from 'react';
                 onError={(e) => console.error("Error video:", e)}
             />
 
-            {/* D.4 HUD SUPERIOR (INFO USER) */}
+            {/* HUD SUPERIOR */}
             <div className="absolute top-0 left-0 w-full p-6 z-30 bg-gradient-to-b from-black/90 via-transparent to-transparent flex items-center gap-4">
                 <div className={`p-[2px] rounded-full bg-gradient-to-tr from-white to-transparent`}>
                     <img src={avatarImage} className="w-12 h-12 rounded-full border-2 border-black object-cover" />
@@ -138,21 +157,14 @@ import React, { useRef, useState, useEffect } from 'react';
                 </div>
             </div>
 
-            {/* D.5 HUD INFERIOR (BOTONES FLOTANTES) */}
+            {/* HUD INFERIOR */}
             <div className="absolute bottom-24 right-4 z-30 flex flex-col gap-6 items-center">
-                 
-                 {/* BOTÓN HALO */}
-                 <button 
-                    onClick={handleSendHalo}
-                    className={`group relative w-12 h-12 rounded-full backdrop-blur-md border flex items-center justify-center text-xl transition-all ${haloSent ? 'bg-cyan-500 border-white scale-110 shadow-[0_0_20px_cyan]' : 'bg-black/40 border-white/20 hover:bg-white hover:text-black'}`}
-                 >
+                 <button onClick={handleSendHalo} className={`group relative w-12 h-12 rounded-full backdrop-blur-md border flex items-center justify-center text-xl transition-all ${haloSent ? 'bg-cyan-500 border-white scale-110 shadow-[0_0_20px_cyan]' : 'bg-black/40 border-white/20 hover:bg-white hover:text-black'}`}>
                     {haloSent ? '✨' : '⚪'}
                     <span className="absolute right-full mr-2 bg-black/80 text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-white/20">
                         {haloSent ? '¡ENVIADO!' : 'Enviar Halo (-100)'}
                     </span>
                  </button>
-                 
-                 {/* BOTÓN TIENDA */}
                  {shopLink && (
                      <button onClick={() => window.open(shopLink, '_blank')} className="group relative w-14 h-14 rounded-full bg-yellow-400 text-black flex items-center justify-center text-2xl hover:scale-110 transition-all shadow-[0_0_30px_yellow] border-2 border-white animate-bounce-slow cursor-pointer">
                         🛍️
@@ -163,7 +175,7 @@ import React, { useRef, useState, useEffect } from 'react';
                  )}
             </div>
 
-            {/* D.6 PAUSA ICON */}
+            {/* PAUSA ICON */}
             {!isPlaying && (
                 <div className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none bg-black/20 backdrop-blur-[2px]">
                     <div className="text-8xl text-white/80 drop-shadow-[0_0_20px_black]">▶</div>
@@ -171,7 +183,6 @@ import React, { useRef, useState, useEffect } from 'react';
             )}
         </div>
 
-        {/* --- ESTILOS Y ANIMACIONES --- */}
         <style dangerouslySetInnerHTML={{__html: `
             @keyframes hologramExpand {
                 0% { transform: scaleY(0.01) scaleX(0); opacity: 0; filter: blur(20px); }
@@ -182,10 +193,11 @@ import React, { useRef, useState, useEffect } from 'react';
                 0% { transform: translateY(0) scale(0.5); opacity: 0; } 
                 50% { transform: translateY(-100px) scale(1.2); opacity: 1; } 
                 100% { transform: translateY(-300px) scale(0); opacity: 0; } 
-            } 
+            }
             .animate-hologramExpand { animation: hologramExpand 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
             .animate-spiritFloatModal { animation: spiritFloatModal 1.5s ease-out forwards; }
             .animate-bounce-slow { animation: bounce 3s infinite; }
+            .animate-pulse-slow { animation: pulse 6s ease-in-out infinite; }
         `}} />
     </div>
   );
