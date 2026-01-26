@@ -431,15 +431,20 @@ const handleLaunchAsset = (product) => {
         )}
       </div>
                   
-      {/* A. WALLET (Esquina superior izquierda) */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 md:top-8 md:left-8 md:translate-x-0 z-[60]">
-        <WalletWidget balances={balances} activePhase={moonPhase} onClick={() => setShowWalletModal(true)} />
+      {/* A. WALLET WIDGET */}
+      {/* AGREGADO: pointer-events-none al contenedor padre para que no bloquee clics */}
+      {/* DENTRO: WalletWidget ya tiene pointer-events-auto, así que funcionará */}
+      <div className="fixed top-4 left-4 md:top-8 md:left-8 z-[90] pointer-events-none">
+        <div className="pointer-events-auto">
+            <WalletWidget balances={balances} activePhase={moonPhase} onClick={() => setShowWalletModal(true)} />
+        </div>
       </div>
 
-      {/* B. BRO-STORIES (Debajo del Wallet) */}
-      <div className="absolute top-4 left-4 md:top-40 md:left-8 z-[60] animate-pulse scale-75 md:scale-100 origin-top-left">
-        <button onClick={() => setShowStory(true)} className="flex items-center gap-2 bg-gradient-to-r from-violet-900/80 to-fuchsia-900/80 backdrop-blur-md border border-fuchsia-500/50 px-4 py-2 rounded-2xl shadow-lg">
-            <div className="text-2xl relative">❄️</div>
+      {/* B. BRO-STORIES */}
+      {/* AGREGADO: pointer-events-none al padre, pointer-events-auto al botón */}
+      <div className="fixed bottom-4 right-4 md:top-8 md:left-44 z-[80] animate-pulse scale-90 md:scale-100 origin-bottom-right md:origin-top-left pointer-events-none">
+        <button onClick={() => setShowStory(true)} className="pointer-events-auto flex items-center gap-2 bg-gradient-to-r from-violet-900/80 to-fuchsia-900/80 backdrop-blur-md border border-fuchsia-500/50 px-3 py-2 md:px-4 md:py-2 rounded-2xl shadow-lg">
+            <div className="text-xl md:text-2xl relative">❄️</div>
             <div className="hidden md:block text-left">
                 <p className="text-[7px] text-fuchsia-300 font-bold uppercase">Nueva Temporada</p>
                 <p className="text-xs font-black italic">BRO-STORIES</p>
@@ -447,27 +452,31 @@ const handleLaunchAsset = (product) => {
         </button>
       </div>
 
-      {/* C. BROLIVES (REPRODUCTOR: Bajado al centro y más hacia adentro) */}
+      {/* C. BROLIVES */}
+      {/* AGREGADO: pointer-events-none al padre */}
       {step > 0 && (
-        <div className="fixed left-14 top-[28%] -translate-y-1/2 z-[60] transform transition-all duration-500">
-            <BroLives 
-                playingCreator={playingCreator} 
-                isAudioPlaying={isAudioPlaying} 
-                onToggleAudio={(creator) => handleTuneIn(creator)} 
-            />
+        <div className="hidden md:block fixed left-14 top-[28%] -translate-y-1/2 z-[60] transform transition-all duration-500 pointer-events-none">
+            <div className="pointer-events-auto">
+                <BroLives 
+                    playingCreator={playingCreator} 
+                    isAudioPlaying={isAudioPlaying} 
+                    onToggleAudio={(creator) => handleTuneIn(creator)} 
+                />
+            </div>
         </div>
       )}
-
+            
       {/* 1. BRO-TUNER (Abajo a la izquierda) */}
       <BroTuner />
       
-                {/* 2. HOLOPRISMA (Lado derecho, centrado para equilibrar) */}
+           {/* 2. HOLOPRISMA (Solo PC) */}
+      {/* Ya tenía pointer-events-none, pero nos aseguramos */}
       {(step === 1 || selectedCard || previewCard) && (
-        <div className="fixed top-48 -translate-y-1/2 right-12 z-[50000] scale-[0.45] md:scale-100 pointer-events-none transform">
+        <div className="hidden md:block fixed top-48 right-12 -translate-y-1/2 z-[50000] scale-100 origin-center pointer-events-none transform transition-all duration-500">
             <HoloPrism customImages={prismImages} />
         </div>
       )}
-         
+                                       
       {/* USUARIO + BOOSTER */}
       <div className="absolute top-4 right-4 md:top-6 md:right-6 z-[60] flex flex-col items-end gap-2 pointer-events-auto scale-90 md:scale-100 origin-top-right">
         <div className="flex items-center gap-3 bg-black/60 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full shadow-lg group hover:border-cyan-500 transition-colors">
@@ -492,7 +501,7 @@ const handleLaunchAsset = (product) => {
 
       {/* CAPA 3: CONTENIDO */}
       {step === 0 && (
-        <div className="relative z-20 h-full w-full animate-fadeIn flex flex-col items-center justify-center pointer-events-auto">
+        <div className="relative z-70 h-full w-full animate-fadeIn flex flex-col items-center justify-center pointer-events-auto">
             {!isTeleporting && !showBooster && (
                 <>
                 <div className="absolute top-[5%] w-full text-center px-4">

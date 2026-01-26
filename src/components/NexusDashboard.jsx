@@ -94,25 +94,30 @@ const NexusDashboard = ({
   return (
     <div className="absolute inset-0 z-40 flex flex-col items-center justify-center pointer-events-none">
       
-      {/* 2. FEED SUPERIOR (TICKER) */}
+      {/* 2. FEED SUPERIOR (TICKER) - LO SUBIMOS UN POCO */}
       {!isGameMode && !isAIMode && (
-          <CommunityTicker onUserClick={onUserClick} />
+          <div className="absolute top-16 md:top-0 w-full z-30"> 
+             {/* Nota: CommunityTicker suele tener su propio posicionamiento, si es absoluto revísalo, si es relativo está bien aquí */}
+             <CommunityTicker onUserClick={onUserClick} />
+          </div>
       )}
 
       {/* 3. ZONA CENTRAL */}
       
-      {/* CASO A: FEED DE TEXTO (Bro-Logs) - SUBIDO AL 20% */}
+      {/* CASO A: FEED DE TEXTO (Bro-Logs) - SUBIDO AL 14% (Antes 20%) */}
       {showFeed && (
-          <div onClick={handleLogClick} className="absolute top-[20%] md:top-[18%] w-full max-w-4xl text-center pointer-events-auto cursor-pointer transition-all hover:scale-105 z-30 px-4">
-            <div className="bg-black/40 backdrop-blur-md border-y border-cyan-500/30 py-4 px-10 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-                 <p className="text-[10px] md:text-xs text-cyan-400 uppercase tracking-[0.3em] mb-2 animate-pulse">⚡ BRO-LOGS FEED</p>
-                 <h2 className="text-xl md:text-3xl text-white font-thin italic tracking-wide animate-fadeIn leading-tight">"{MOCK_LOGS[currentLogIndex]}"</h2>
+          <div onClick={handleLogClick} className="absolute top-[14%] md:top-[18%] w-full max-w-4xl text-center pointer-events-auto cursor-pointer transition-all hover:scale-105 z-30 px-4">
+            <div className="bg-black/40 backdrop-blur-md border-y border-cyan-500/30 py-3 md:py-4 px-6 md:px-10 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+                 <p className="text-[8px] md:text-xs text-cyan-400 uppercase tracking-[0.3em] mb-1 md:mb-2 animate-pulse">⚡ BRO-LOGS FEED</p>
+                 <h2 className="text-lg md:text-3xl text-white font-thin italic tracking-wide animate-fadeIn leading-tight">"{MOCK_LOGS[currentLogIndex]}"</h2>
             </div>
           </div>
       )}
 
+      {/* CASO B: TARJETAS (BroShop) - SUBIDAS Y CON MÁS ESPACIO ABAJO */}
+      {/* top: 22% (antes 26%), bottom: 20% (antes 15%) para no tocar botones */}
       {isCardMode && (
-          <div className="absolute top-[26%] bottom-[15%] w-full z-50 pointer-events-auto animate-zoomIn">
+          <div className="absolute top-[22%] bottom-[20%] w-full z-50 pointer-events-auto animate-zoomIn">
                <PaginatedDisplay 
                     items={items} 
                     onSelect={onSelectShop} 
@@ -120,8 +125,7 @@ const NexusDashboard = ({
                     onOpenVideo={onOpenVideo}
                 />
           </div>
-      )}
-            
+      )}            
      {/* 4. ZONA JUEGOS (CORREGIDA Y COMPLETA) */}
       {isGameMode && (      
           <div className="absolute top-[5%] bottom-40 md:bottom-[15%] w-full max-w-6xl px-4 pointer-events-auto z-[200] flex items-center justify-center animate-zoomIn">
