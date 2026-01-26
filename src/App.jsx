@@ -266,16 +266,41 @@ function App() {
 
 // 2. Nueva función para el lanzamiento REAL
 const handleLaunchAsset = (product) => {
+    console.log("🚀 LANZANDO ACTIVO:", product);
+
+    // CASO A: JUEGOS (HoloArcade)
     if (product.assetType === 'game') {
         setActiveGame({ url: product.url, title: product.name });
-    } else if (product.assetType === 'video') {
+    } 
+    // CASO B: VIDEO (HoloProjector)
+    else if (product.assetType === 'video') {
         setProjectingUser({ 
             alias: product.shopName, 
-            video_file: product.url,
-            isAsset: true 
+            video_file: product.url, // El link privado de la nube
+            isAsset: true,
+            // Si tiene avatar, lo usamos, si no, uno genérico
+            avatar_url: product.avatar_url || product.img 
         });
     }
-    // Cerramos el modal de pago al lanzar
+    // CASO C: AUDIO (BroLives / Player Global)
+    else if (product.assetType === 'audio' || product.assetType === 'music') {
+        // Simulamos que es un "Creator" para que el reproductor lo entienda
+        const audioAsset = {
+            id: product.id,
+            alias: product.shopName,
+            audioFile: product.url, // El link privado de audio
+            img: product.img, // Carátula del disco/audio
+            holo_1: product.holo_1 || product.img, // Imágenes para el prisma
+            holo_2: product.holo_2 || product.img,
+            holo_3: product.holo_3 || product.img,
+            holo_4: product.holo_4 || product.img
+        };
+        
+        // Activamos el audio global y el Prisma
+        handleTuneIn(audioAsset);
+    }
+    
+    // Cerramos el modal de pago al lanzar para limpiar la pantalla
     setSelectedCard(null);
 };
 
