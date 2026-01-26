@@ -8,7 +8,7 @@ const BroLives = ({ playingCreator, isAudioPlaying, onToggleAudio }) => {
   const avatarImage = playingCreator.avatar_url || playingCreator.img || 'https://placehold.co/150x150/000000/FFFFFF/png?text=Anon';
     
   return (
-    <div className="hidden md:block absolute right-20 top-[45%] pointer-events-auto z-[80] perspective-[1000px]">        
+    <div className="relative flex flex-col gap-2 pointer-events-auto">        
         <div 
             onClick={() => onToggleAudio(playingCreator)} 
             className="relative w-28 h-48 animate-spin-slow-3d cursor-pointer group hover:scale-110 transition-transform"

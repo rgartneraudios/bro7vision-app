@@ -1,161 +1,112 @@
-// src/components/PaginatedDisplay.jsx (VERSIÓN "IN-DASHBOARD": MÁS COMPACTA)
+// PaginatedDisplay.jsx -> Sustituye el componente
+
 import React, { useState, useEffect } from 'react';
 
 const PaginatedDisplay = ({ items, onSelect, onTuneIn, onOpenVideo }) => {
   const [startIndex, setStartIndex] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(3);
+  const [itemsPerPage, setItemsPerPage] = useState(4);
 
   useEffect(() => {
-    const handleResize = () => setItemsPerPage(window.innerWidth < 768 ? 1 : 3);
+    const handleResize = () => {
+        setItemsPerPage(window.innerWidth < 768 ? 2 : 4);
+    };
     handleResize(); 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  if (!items || items.length === 0) {
-      return (
-          <div className="w-full h-full flex flex-col items-center justify-center pt-10">
-              <div className="text-6xl animate-pulse text-white/50">📡</div>
-              <p className="text-white/50 font-mono text-sm mt-4 uppercase tracking-widest">NO SIGNALS</p>
-          </div>
-      );
-  }
+  if (!items || items.length === 0) return null;
 
   const visibleItems = [];
   const totalItems = items.length;
   if (totalItems <= itemsPerPage) visibleItems.push(...items);
   else for (let i = 0; i < itemsPerPage; i++) visibleItems.push(items[(startIndex + i) % totalItems]);
 
-  const nextSlide = (e) => { e?.stopPropagation(); if (totalItems > itemsPerPage) setStartIndex((prev) => (prev + 1) % totalItems); };
-  const prevSlide = (e) => { e?.stopPropagation(); if (totalItems > itemsPerPage) setStartIndex((prev) => (prev - 1 + totalItems) % totalItems); };
-
-  const handleConnect = (e, item) => { e.stopPropagation(); e.preventDefault(); let targetUrl = item.url || item.product_url || item.service_url; if (targetUrl && targetUrl.trim() !== "") { targetUrl = targetUrl.trim(); if (!targetUrl.startsWith('http')) targetUrl = 'https://' + targetUrl; window.open(targetUrl, '_blank'); } else { alert("⚠️ Enlace no configurado."); } };
-
-  const handleGoToLive = (e, item) => { 
-      e.stopPropagation(); 
-      e.preventDefault(); 
-      // ... lógica de limpieza de ID ...
-      if (onTuneIn) { 
-          onTuneIn(item); // <--- Al pasar 'item', ahora lleva 'avatar_url' gracias al arreglo de App.jsx
-      } 
-  };
+  const nextSlide = () => { if (totalItems > itemsPerPage) setStartIndex((prev) => (prev + 1) % totalItems); };
+  const prevSlide = () => { if (totalItems > itemsPerPage) setStartIndex((prev) => (prev - 1 + totalItems) % totalItems); };
 
   const getDualStyle = (colorString) => {
       let energy = 'cyan'; let matter = 'void';
-      if (colorString && colorString.includes('-')) { [energy, matter] = colorString.split('-'); } else if (colorString) { energy = colorString; }
-      
-      // 1. MAPA DE MATERIA (FONDOS) - ACTUALIZADO CON TUS HEX
-      const bgMap = { 
-          void: 'bg-black', 
-          carbon: 'bg-[#222222]', 
-          navy: 'bg-[#091221]',      // NUEVO HEX
-          cobalt: 'bg-[#0A5AAB]',    // NUEVO HEX
-          wine: 'bg-[#2b0505]', 
-          crimson: 'bg-[#4a0404]', 
-          forest: 'bg-[#0A730A]',    // NUEVO HEX
-          emerald: 'bg-[#013030]',   // NUEVO HEX
-          plum: 'bg-[#2e0542]', 
-          chocolate: 'bg-[#B04405]'  // NUEVO HEX
-      };
-      
-      const bgClass = bgMap[matter] || 'bg-black';
-      
-      // 2. MAPA DE ENERGÍA (BORDES/TEXTO) - ACTUALIZADO
+      if (colorString && colorString.includes('-')) { [energy, matter] = colorString.split('-'); }
+      const bgMap = { void: 'bg-black', carbon: 'bg-[#111]', navy: 'bg-[#050a15]', cobalt: 'bg-[#051525]', wine: 'bg-[#150505]', crimson: 'bg-[#200505]', forest: 'bg-[#051505]', emerald: 'bg-[#051010]', plum: 'bg-[#100515]', chocolate: 'bg-[#150a05]' };
       const energyMap = {
-          cyan: { border: 'border-cyan-400/60', text: 'text-cyan-400', shadow: 'shadow-[0_0_40px_-5px_rgba(34,211,238,0.5)]', btn: 'bg-cyan-400 text-black' },
-          fuchsia: { border: 'border-fuchsia-400/60', text: 'text-fuchsia-400', shadow: 'shadow-[0_0_40px_-5px_rgba(232,121,249,0.5)]', btn: 'bg-fuchsia-400 text-black' },
-          yellow: { border: 'border-yellow-400/60', text: 'text-yellow-400', shadow: 'shadow-[0_0_40px_-5px_rgba(250,204,21,0.5)]', btn: 'bg-yellow-400 text-black' },
-          green: { border: 'border-green-400/60', text: 'text-green-400', shadow: 'shadow-[0_0_40px_-5px_rgba(34,197,94,0.5)]', btn: 'bg-green-400 text-black' },
-          
-          // NUEVO: AZUL
-          blue: { border: 'border-blue-500/60', text: 'text-blue-500', shadow: 'shadow-[0_0_40px_-5px_rgba(59,130,246,0.6)]', btn: 'bg-blue-500 text-white' },
-
-          red: { border: 'border-red-500/60', text: 'text-red-500', shadow: 'shadow-[0_0_40px_-5px_rgba(239,68,68,0.6)]', btn: 'bg-red-500 text-white' },
-          orange: { border: 'border-orange-500/60', text: 'text-orange-500', shadow: 'shadow-[0_0_40px_-5px_rgba(249,115,22,0.6)]', btn: 'bg-orange-500 text-white' },
-          
-          // ACTUALIZADOS HEX
-          gold: { border: 'border-[#C7AF38]/60', text: 'text-[#C7AF38]', shadow: 'shadow-[0_0_40px_-5px_rgba(199,175,56,0.6)]', btn: 'bg-[#C7AF38] text-black' },
-          silver: { border: 'border-[#D9D9D9]/60', text: 'text-[#D9D9D9]', shadow: 'shadow-[0_0_40px_-5px_rgba(217,217,217,0.5)]', btn: 'bg-[#D9D9D9] text-black' },
-          
-          white: { border: 'border-white/60', text: 'text-white', shadow: 'shadow-[0_0_40px_-5px_rgba(255,255,255,0.6)]', btn: 'bg-white text-black' },
+          cyan: 'border-cyan-400 text-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.3)]',
+          fuchsia: 'border-fuchsia-500 text-fuchsia-500 shadow-[0_0_20px_rgba(232,121,249,0.3)]',
+          yellow: 'border-yellow-400 text-yellow-400 shadow-[0_0_20px_rgba(250,204,21,0.3)]',
+          green: 'border-green-500 text-green-500 shadow-[0_0_20px_rgba(34,197,94,0.3)]',
+          blue: 'border-blue-500 text-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)]',
+          red: 'border-red-500 text-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)]',
+          orange: 'border-orange-500 text-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.3)]',
+          gold: 'border-[#C7AF38] text-[#C7AF38]',
+          silver: 'border-[#D9D9D9] text-[#D9D9D9]',
+          white: 'border-white text-white'
       };
-      
-      const styles = energyMap[energy] || energyMap.cyan;
-      return { container: `${bgClass} border-2 ${styles.border} ${styles.shadow}`, text: styles.text, btn: styles.btn, deco: styles.border.replace('border-', 'bg-').replace('/60', '') };
+      return { container: `${bgMap[matter] || 'bg-black'} border-2 ${energyMap[energy] || energyMap.cyan}`, text: energyMap[energy]?.split(' ')[1] };
   };
+
   return (
-    <div className="w-full h-full flex items-center justify-center px-4"> {/* Eliminado absolute para que encaje en el dashboard */}
+    <div className="w-full h-full flex items-center justify-center px-6 md:px-24 relative">
         
-        <style>{`@keyframes flyIn { 0% { opacity: 0; transform: scale(0.9) translateY(40px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }`}</style>
+        {totalItems > itemsPerPage && (
+            <button onClick={prevSlide} className="hidden md:block absolute left-10 text-white/40 hover:text-white text-5xl font-thin z-50 transition-all">‹</button>
+        )}
 
-        {totalItems > itemsPerPage && (<button onClick={prevSlide} className="hidden md:flex text-white/50 hover:text-white text-6xl font-thin transition-all hover:scale-110 z-50 mr-4 cursor-pointer">‹</button>)}
-
-        <div className="flex flex-row gap-6 items-center justify-center w-full h-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-5xl">
             {visibleItems.map((item, index) => {
                 const style = getDualStyle(item.neonColor);
-
+                
                 return (
                     <div 
                         key={`${item.id}-${index}`} 
                         onClick={() => onSelect(item)}
-                        style={{ animation: `flyIn 0.5s ease-out forwards`, animationDelay: `${index * 0.1}s` }}
                         className={`
-                            relative w-full md:w-[260px] h-[450px] flex flex-col shrink-0 /* AQUI EL CAMBIO DE TAMAÑO: h-[450px] */
-                            rounded-[2rem]
-                            ${style.container}
-                            transition-all duration-300 ease-out
-                            hover:-translate-y-2 hover:scale-[1.02] hover:z-50
-                            cursor-pointer opacity-0
+                            relative w-full h-[160px] flex flex-row rounded-2xl overflow-hidden cursor-pointer
+                            ${style.container} transition-all duration-300 hover:scale-[1.03] hover:brightness-110
                         `}
                     >
-                        {/* --- ENCABEZADO DE LA TARJETA (BOTONES) --- */}
-                        <div className="flex justify-between items-center p-4 border-b border-white/5 relative z-50 gap-2">
-                             
-                             {/* 1. BOTÓN CONECTAR (TIENDA) - ESTE SIEMPRE ESTÁ */}
-                             <button onClick={(e) => handleConnect(e, item)} className={`flex-1 mr-2 py-2 px-3 rounded-lg font-black uppercase text-[9px] tracking-[0.1em] transition-all bg-white text-black hover:bg-gray-200 shadow-[0_0_10px_white]`}>
-                                CONECTAR ↗
-                             </button>
+                        {/* BANNER DE FONDO */}
+                        <img src={item.img} className="absolute inset-0 w-full h-full object-cover opacity-30" alt="card-bg" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/90 to-transparent"></div>
 
-                             {/* 2. GRUPO MULTIMEDIA (A LA DERECHA) */}
-                             <div className="flex gap-1 shrink-0">
-                                
-                                {/* BOTÓN DE TV (SOLO SI TIENE VIDEO) */}
-                                {item.video_file && (
-                                    <button 
-                                        onClick={(e) => { e.stopPropagation(); onOpenVideo(item); }} 
-                                        className="w-8 h-8 rounded-lg border border-fuchsia-500 bg-black text-fuchsia-400 hover:bg-fuchsia-500 hover:text-white flex items-center justify-center transition-all shadow-[0_0_10px_magenta]"
-                                        title="Ver Holo-TV"
-                                    >
-                                        🎥
-                                    </button>
-                                )}
-
-                                {/* BOTÓN DE RADIO (SOLO SI ES REAL/LIVE) */}
-                                {item.isReal && (
-                                    <button 
-                                        onClick={(e) => handleGoToLive(e, item)} 
-                                        className="w-8 h-8 rounded-lg border border-red-500 bg-black text-white hover:bg-red-600 flex items-center justify-center transition-all shadow-[0_0_10px_red]"
-                                        title="Escuchar Live"
-                                    >
-                                        ▶
-                                    </button>
-                                )}
-                             </div>
-                        </div>
-                                                <div className="flex-1 flex flex-col items-center justify-center p-4 text-center relative overflow-hidden">
-                            <div className={`absolute w-24 h-24 rounded-full ${style.deco} opacity-[0.08] blur-[40px] pointer-events-none`}></div>
-                            <p className="text-white text-base font-bold italic leading-snug drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] z-10 break-words w-full">"{item.message || "..."}"</p>
-                            <span className={`mt-4 text-[8px] font-bold uppercase tracking-[0.2em] opacity-80 ${style.text}`}>{item.category}</span>
-                        </div>
-                        <div className="pb-6 pt-2 px-4 flex flex-col items-center relative z-20">
-                            <div className="flex items-center gap-2 mb-2 bg-white/5 px-3 py-1 rounded-full border border-white/5">
-                                <div className={`w-1.5 h-1.5 rounded-full ${style.deco} shadow-[0_0_5px_currentColor]`}></div>
-                                <span className="text-sm font-mono font-bold text-white tracking-widest">{item.distance || 'Online'}</span>
+                        {/* CUERPO: INFO Y AVATAR */}
+                        <div className="relative z-10 flex flex-1 flex-row items-center p-5 gap-5">
+                            {/* Círculo Avatar */}
+                            <div className="relative shrink-0">
+                                <img src={item.avatar_url} className="w-20 h-20 rounded-full border-2 border-white/20 object-cover shadow-[0_0_20px_rgba(0,0,0,0.5)]" alt="av" />
+                                <div className="absolute -bottom-1 -right-1 flex gap-1">
+                                    {item.hasProduct && <span className="text-xs bg-black/80 p-0.5 rounded shadow">📦</span>}
+                                    {item.hasService && <span className="text-xs bg-black/80 p-0.5 rounded shadow">🤝</span>}
+                                </div>
                             </div>
-                            <div className="text-center w-full border-t border-white/10 pt-2">
-                                <p className="text-[7px] text-gray-500 font-bold uppercase tracking-[0.2em] mb-0.5">{item.shopName}</p>
-                                <h3 className="text-white font-black text-lg uppercase leading-none truncate mb-1">{item.name}</h3>
-                                <div className="text-white/60 font-mono font-bold text-xs">{item.price || "0"}</div>
+                            
+                            <div className="flex flex-col flex-1 min-w-0">
+                                <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] mb-1">{item.shopName}</span>
+                                <h3 className="text-white font-black text-xl uppercase leading-tight tracking-tighter italic truncate mb-2">
+                                    {item.name}
+                                </h3>
+                                {/* MESSAGE TWIT (Estado WhatsApp) */}
+                                <p className="text-gray-300 text-sm md:text-base font-medium italic leading-snug line-clamp-2 drop-shadow-md">
+                                    "{item.message}"
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* BARRA LATERAL: PRECIO Y MEDIA */}
+                        <div className="relative z-10 w-[110px] bg-black/60 backdrop-blur-xl flex flex-col items-center justify-center border-l border-white/10 gap-3">
+                            <div className="text-center">
+                                <p className="text-[8px] text-gray-500 font-bold uppercase tracking-widest mb-1">Precio</p>
+                                <p className="text-2xl font-black text-white font-mono leading-none">
+                                    {item.productData?.price || item.serviceData?.price || "---"}€
+                                </p>
+                            </div>
+                            
+                            <div className="flex gap-2">
+                                {item.audioFile && <button onClick={(e) => {e.stopPropagation(); onTuneIn(item)}} className="w-9 h-9 rounded-full bg-red-600 flex items-center justify-center text-xs hover:bg-red-500 transition-colors shadow-lg shadow-red-900/40">▶</button>}
+                                {item.video_file && <button onClick={(e) => {e.stopPropagation(); onOpenVideo(item)}} className="w-9 h-9 rounded-full bg-fuchsia-600 flex items-center justify-center text-xs hover:bg-fuchsia-500 transition-colors shadow-lg shadow-fuchsia-900/40">🎥</button>}
+                            </div>
+
+                            <div className="px-2 py-0.5 bg-white/5 rounded text-[8px] font-bold text-cyan-400 uppercase tracking-tighter">
+                                {item.distance}
                             </div>
                         </div>
                     </div>
@@ -163,8 +114,9 @@ const PaginatedDisplay = ({ items, onSelect, onTuneIn, onOpenVideo }) => {
             })}
         </div>
 
-        {totalItems > itemsPerPage && (<button onClick={nextSlide} className="hidden md:flex text-white/50 hover:text-white text-6xl font-thin transition-all hover:scale-110 z-50 ml-4 cursor-pointer">›</button>)}
-        {totalItems > 1 && (<div className="md:hidden absolute -bottom-10 left-0 right-0 flex justify-center gap-6 z-50"><button onClick={prevSlide} className="w-10 h-10 rounded-full border border-white/20 bg-black/80 text-white flex items-center justify-center">←</button><button onClick={nextSlide} className="w-10 h-10 rounded-full border border-white/20 bg-black/80 text-white flex items-center justify-center">→</button></div>)}
+        {totalItems > itemsPerPage && (
+            <button onClick={nextSlide} className="hidden md:block absolute right-10 text-white/40 hover:text-white text-5xl font-thin z-50 transition-all">›</button>
+        )}
     </div>
   );
 };

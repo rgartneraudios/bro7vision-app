@@ -57,7 +57,7 @@ const NexusDashboard = ({
   const isLiveMode = intent === 'lives';
   const isWebMode = intent === 'web_search'; 
   const isInternalMode = intent === 'internal_search';
-  const isCardMode = (intent === 'product' || intent === 'service'); 
+  const isCardMode = (intent === 'broshop' || intent === 'product' || intent === 'service');
 
   // --- CAMBIO CLAVE AQUI ---
   // Quitamos "!isCardMode". Ahora el Feed se muestra TAMBIÉN cuando hay tarjetas.
@@ -69,15 +69,15 @@ const NexusDashboard = ({
   const getPlaceholder = () => "Busca productos, servicios o lugares...";
   
   const NAV_BUTTONS = [
-      { id: 'zone', label: '◀ ATRÁS', color: 'border-white text-white hover:bg-white hover:text-black' },
-      { id: 'product', label: '📦 Productos', color: 'border-yellow-400 text-yellow-400' },
-      { id: 'service', label: '🤝 Servicios', color: 'border-cyan-400 text-cyan-400' },
-      { id: 'lives',   label: '📡 Lives',     color: 'border-red-500 text-red-500' }, 
-      { id: 'game',    label: '🎮 Games',     color: 'border-fuchsia-500 text-fuchsia-500' },
-      { id: 'ai',      label: '🤖 AI',        color: 'border-cyan-500 text-cyan-500' },
-      { id: 'web_search', label: '🌐 WebBot', color: 'border-blue-400 text-blue-400' },
-      { id: 'internal_search', label: '🏠 IN Search', color: 'border-orange-400 text-orange-400' }
-  ];
+    { id: 'zone', label: '◀ ATRÁS', color: 'border-white text-white hover:bg-white hover:text-black' },
+    { id: 'broshop', label: '🛒 BroShop', color: 'border-yellow-400 text-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.2)]' },
+    // Eliminamos el botón 'service' para unificar
+    { id: 'lives',   label: '📡 Lives',     color: 'border-red-500 text-red-500' }, 
+    { id: 'game',    label: '🎮 Games',     color: 'border-fuchsia-500 text-fuchsia-500' },
+    { id: 'ai',      label: '🤖 AI',        color: 'border-cyan-500 text-cyan-500' },
+    { id: 'web_search', label: '🌐 P2P', color: 'border-blue-400 text-blue-400' },
+    { id: 'internal_search', label: '🏠 IN Search', color: 'border-orange-400 text-orange-400' }
+];
 
   const handleZoneClick = () => {
       if (intent && intent !== 'product') {
@@ -124,7 +124,7 @@ const NexusDashboard = ({
             
      {/* 4. ZONA JUEGOS (CORREGIDA Y COMPLETA) */}
       {isGameMode && (      
-          <div className="absolute top-[15%] bottom-40 md:bottom-[15%] w-full max-w-6xl px-4 pointer-events-auto z-[200] flex items-center justify-center animate-zoomIn">
+          <div className="absolute top-[5%] bottom-40 md:bottom-[15%] w-full max-w-6xl px-4 pointer-events-auto z-[200] flex items-center justify-center animate-zoomIn">
               
               {/* --- MENÚ DE SELECCIÓN DE JUEGOS --- */}
               {!selectedGame && (
@@ -396,39 +396,47 @@ const NexusDashboard = ({
       {isWebMode && <WebBotTerminal />}
       {isInternalMode && <div className="absolute top-[15%] bottom-[25%] w-full max-w-5xl px-4 pointer-events-auto z-50 animate-zoomIn"><RacoonTerminal searchQuery={searchQuery} /></div>}
 
-      {/* 7. BOTONERA INFERIOR (SIN DUPLICAR CLASES) */}
-      <div className="absolute bottom-20 md:bottom-6 w-full max-w-5xl px-2 pointer-events-auto flex flex-col gap-2 z-[20000]">
-          <div className="grid grid-cols-4 md:grid-cols-8 gap-1 md:gap-3">
-              {NAV_BUTTONS.map((opt) => {
-                  const isActive = intent === opt.id && opt.id !== 'zone';
-                  return (
-                      <button 
-                          key={opt.id} 
-                          onClick={() => opt.id === 'zone' ? onBack() : setIntent(opt.id)}
-                          className={`
-                              py-3 md:py-4 text-[9px] md:text-[10px] font-black uppercase tracking-widest border transition-all 
-                              ${isActive 
-                                 ? `bg-black scale-110 z-10 shadow-[0_0_20px_rgba(255,255,255,0.3)] ${opt.color}` 
-                                 : `bg-black/60 border-white/10 text-gray-500 hover:border-white/50`
-                              }
-                              ${opt.id === 'zone' ? 'border-red-500 text-red-500' : ''}
-                          `}
-                      >
-                          {opt.label}
-                      </button>
-                  );
-              })}
-          </div>
-          
-          {showSearchBar && (
-              <div className="flex items-center bg-black/90 rounded-full border-2 border-white/20 h-12 md:h-16">
-                  <span className="pl-4 text-gray-500 text-xl">🔍</span>
-                  <input type="text" placeholder={getPlaceholder()} className="w-full bg-transparent text-white px-4 py-2 focus:outline-none font-bold text-sm md:text-lg placeholder-gray-600" onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && onSearch()} />
-                  <button onClick={onSearch} className="mr-1 bg-white text-black px-4 py-2 rounded-full font-black text-xs uppercase">GO</button>
-              </div>
-          )}
-      </div>
-
+      {/* 7. BOTONERA INFERIOR CENTRADA */}
+<div className="absolute bottom-20 md:bottom-6 w-full max-w-5xl px-4 pointer-events-auto flex flex-col items-center gap-4 z-[20000]">
+    
+    {/* Contenedor de botones centrado con flex-wrap para móvil */}
+    <div className="flex flex-wrap justify-center gap-2 md:gap-3 w-full">
+        {NAV_BUTTONS.map((opt) => {
+            const isActive = intent === opt.id;
+            return (
+                <button 
+                    key={opt.id} 
+                    onClick={() => opt.id === 'zone' ? onBack() : setIntent(opt.id)}
+                    className={`
+                        px-4 py-3 md:py-4 md:px-6 text-[9px] md:text-[10px] font-black uppercase tracking-widest border transition-all 
+                        ${isActive 
+                           ? `bg-white text-black scale-105 z-10 shadow-[0_0_20px_rgba(255,255,255,0.4)] border-white` 
+                           : `bg-black/60 border-white/10 text-gray-500 hover:border-white/50`
+                        }
+                        ${opt.id === 'zone' ? 'border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white' : ''}
+                    `}
+                >
+                    {opt.label}
+                </button>
+            );
+        })}
+    </div>
+    
+    {/* Barra de búsqueda centrada */}
+    {showSearchBar && (
+        <div className="flex items-center bg-black/90 rounded-full border-2 border-white/10 h-12 md:h-16 w-full max-w-3xl shadow-2xl">
+            <span className="pl-6 text-gray-500 text-xl">🔍</span>
+            <input 
+                type="text" 
+                placeholder="Busca en la Red Bro7..." 
+                className="w-full bg-transparent text-white px-4 py-2 focus:outline-none font-bold text-sm md:text-lg placeholder-gray-700" 
+                onChange={(e) => setSearchQuery(e.target.value)} 
+                onKeyDown={(e) => e.key === 'Enter' && onSearch()} 
+            />
+            <button onClick={onSearch} className="mr-2 bg-white text-black px-6 py-2 rounded-full font-black text-xs uppercase hover:bg-cyan-400 transition-colors">GO</button>
+        </div>
+    )}
+</div>
     </div>
   );
 };

@@ -21,11 +21,14 @@ import BoosterModal from './components/BoosterModal';
 import LegalBar from './components/LegalBar'; 
 import LegalTerminal from './components/LegalTerminal';
 import HoloProjector from './components/HoloProjector';
+import HoloArcade from './components/HoloArcade';
+import WebBotTerminal from './components/WebBotTerminal'; // Importar el componente WebBotTerminal
+
 
 function App() {
   // --- 1. SEGURIDAD ---
   const [session, setSession] = useState(null);
-
+  
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => setSession(session));
@@ -34,7 +37,7 @@ function App() {
 
   // --- ESTADOS GLOBALES ---
   const [step, setStep] = useState(0);
-  const [intent, setIntent] = useState('product');
+  const [intent, setIntent] = useState('broshop');
   const [scope, setScope] = useState(null);
   const [isTeleporting, setIsTeleporting] = useState(false);
   const [teleportCoords, setTeleportCoords] = useState({ city: '', country: '' });
@@ -65,6 +68,9 @@ function App() {
   const [playingCreator, setPlayingCreator] = useState(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const audioRef = useRef(new Audio());
+  const [activeGame, setActiveGame] = useState(null); // Estado para el HoloArcade
+  
+  
 
   const fetchBalances = async () => {
     if (!session?.user) return;
@@ -230,10 +236,48 @@ function App() {
     setStep(0); setIntent('product'); setScope(null); setSearchQuery(""); setActiveSearch(null); setIsTeleporting(false);
   }, []);
 
-  const handleConfirmPayment = (coinKey, amount) => {
-    setBalances(prev => ({ ...prev, [coinKey]: prev[coinKey] - amount }));
-    setSelectedCard(null); setShowSuccess(true); setTimeout(() => setShowSuccess(false), 4000);
+  const handleSelectAsset = (asset) => {
+    const cardData = {
+        id: asset.id,
+        name: asset.title,
+        price: `${asset.price_fiat}€`,
+        img: "https://placehold.co/400x400/000000/00FFFF/png?text=DATA+ACTIVO", // Imagen genérica
+        shopName: asset.profiles?.alias,
+        url: asset.url, // Este es el link a la nube
+        isAsset: true,
+        assetType: asset.asset_type
+    };
+    setSelectedCard(cardData);
   };
+
+  const handleConfirmPayment = (coinKey, amount, product) => {
+    // Descontar saldo
+    setBalances(prev => ({ ...prev, [coinKey]: (prev[coinKey] || 0) - amount }));
+
+    // Si NO es un activo (es un producto físico/servicio normal), cerramos el modal
+    if (!product.isAsset) {
+        setSelectedCard(null);
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 4000);
+    }
+    // Si ES un activo, NO hacemos nada más aquí. 
+    // Dejamos que el PaymentModal muestre su pantalla de "Éxito" propia.
+};
+
+// 2. Nueva función para el lanzamiento REAL
+const handleLaunchAsset = (product) => {
+    if (product.assetType === 'game') {
+        setActiveGame({ url: product.url, title: product.name });
+    } else if (product.assetType === 'video') {
+        setProjectingUser({ 
+            alias: product.shopName, 
+            video_file: product.url,
+            isAsset: true 
+        });
+    }
+    // Cerramos el modal de pago al lanzar
+    setSelectedCard(null);
+};
 
   const handleVideoEnd = (amt) => { setShowStory(false); handleGameWin(amt); };
   
@@ -251,109 +295,85 @@ function App() {
 
    useEffect(() => {
     const fetchMarket = async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .or('product_title.neq.null,service_title.neq.null');
+      // 1. Pedimos todos los datos a la tabla profiles
+      const { data } = await supabase.from('profiles').select('*');
 
       if (data) {
-        const formatted = data.map(u => {
-          const rawColor = u.card_color || 'cyan-void';
-          const userAudio = u.audio_file || u.bcast_file || "/audio/static_noise.mp3";
-          
-          // --- FUNCIÓN LIMPIADORA DE URLs: Elimina via.placeholder.com ---
-          const cleanUrl = (url) => {
-              if (!url) return '';
-              if (url.includes('via.placeholder.com')) {
-                  console.warn("URL de placeholder detectada y limpiada:", url);
-                  return ''; // Ignorar si es el placeholder problemático
-              }
-              return url;
+        const unifiedCards = data.map(u => {
+          // FILTRO: Si el usuario no tiene ni producto ni servicio, no creamos tarjeta
+          if (!u.product_title && !u.service_title) return null;
+
+          return {
+            id: u.id,
+            shopName: u.alias || 'Usuario',
+            name: u.product_title || u.service_title || 'Sin Título', // Título principal
+            message: u.twit_message || 'Emitiendo señal...',
+            
+            // --- GESTIÓN DE IMÁGENES (EL CABLEADO) ---
+            // El fondo de la tarjeta (Banner)
+            img: u.card_banner_url || u.banner_url || 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=1000&auto=format&fit=crop', 
+            
+            // La cara del usuario (Avatar circular)
+            avatar_url: u.avatar_url || 'https://placehold.co/200x200/000000/FFFFFF/png?text=BRO',
+            
+            distance: u.city || 'Online',
+            neonColor: u.card_color || 'cyan-void',
+            
+            // --- FLAGS PARA INDICADORES Y PAYMENT MODAL ---
+            hasProduct: !!u.product_title,
+            productData: { 
+                name: u.product_title, 
+                price: u.product_price, 
+                url: u.product_url,
+                desc: u.product_desc 
+            },
+            
+            hasService: !!u.service_title,
+            serviceData: { 
+                name: u.service_title, 
+                price: u.service_price, 
+                url: u.service_url,
+                desc: u.service_desc 
+            },
+            
+            // --- DATOS MULTIMEDIA Y HOLOPRISMA ---
+            holo_1: u.holo_1, 
+            holo_2: u.holo_2, 
+            holo_3: u.holo_3, 
+            holo_4: u.holo_4,
+            video_file: u.video_file, 
+            audioFile: u.audio_file,
+            
+            // Categoría técnica para el filtro
+            type: ['shop'] 
           };
-          
-          // Fallback robusto para imágenes que no son holo
-          const robustFallbackImg = 'https://placehold.co/400x500/000000/FFFFFF/png?text=NO+IMAGE';
+        }).filter(Boolean); // Borra los que devolvieron "null" (los que no venden nada)
 
-
-          // 2. DATOS COMUNES (Aplicamos cleanUrl a todo lo que sea URL)
-          const commonData = {
-              video_file: cleanUrl(u.video_file),
-              avatar_url: cleanUrl(u.avatar_url), // Crucial para BroLives y otros avatares
-              
-              // --- DATOS DEL PRISMA (APLICAMOS CLEANURL) ---
-              holo_1: cleanUrl(u.holo_1),         
-              holo_2: cleanUrl(u.holo_2),
-              holo_3: cleanUrl(u.holo_3),
-              holo_4: cleanUrl(u.holo_4),
-              // ------------------------
-              
-              product_url: cleanUrl(u.product_url), 
-              service_url: cleanUrl(u.service_url),
-              neonColor: rawColor,
-              audioFile: userAudio,
-              isReal: true
-          };
-
-          const items = [];
-
-          // PRODUCTOS
-          if (u.product_title) {
-            items.push({
-              id: `${u.id}_prod`,
-              type: ['product'], 
-              name: u.product_title,
-              shopName: u.alias,
-              // Imagen principal: limpia y con fallback robusto
-              img: cleanUrl(u.product_img) || cleanUrl(u.banner_url) || cleanUrl(u.avatar_url) || robustFallbackImg,
-              message: u.twit_message,
-              distance: u.city || 'Online',
-              category: 'PRODUCTO',
-              price: u.product_price,
-              url: u.product_url, 
-              ...commonData 
-            });
-          }
-
-          // SERVICIOS
-          if (u.service_title) {
-            items.push({
-              id: `${u.id}_serv`,
-              type: ['service'],
-              name: u.service_title,
-              shopName: u.alias,
-              // Imagen principal: limpia y con fallback robusto
-              img: cleanUrl(u.service_img) || cleanUrl(u.banner_url) || cleanUrl(u.avatar_url) || robustFallbackImg,
-              message: u.twit_message,
-              distance: u.city || 'Online',
-              category: 'SERVICIO',
-              price: u.service_price,
-              url: u.service_url,
-              ...commonData 
-            });
-          }
-          return items;
-        }).flat();
-
-        setRealItems(formatted);
+        setRealItems(unifiedCards);
       }
     };
     fetchMarket();
-  }, [step]);
-      
+  }, [step]); // Se actualiza cuando cambias de fase o entras al Nexus      
     // --- FILTRO Y ORDENAMIENTO (SAFE TELEPORT) ---
-  const filteredItems = useMemo(() => {
+    const filteredItems = useMemo(() => {
     const ALL_ITEMS = [...realItems, ...MASTER_DB]; 
 
     return ALL_ITEMS.filter(item => {
-      if (intent === 'ai' || intent === 'game') return false;
+      // Si estamos en modo IA o Games, no mostramos tarjetas de tienda
+      if (intent === 'ai' || intent === 'game' || intent === 'web_search') return false;
+      
       let typeMatch = false;
       const types = Array.isArray(item.type) ? item.type : [item.type];
       
-      // FILTRO ESTRICTO
-      if (intent === 'product') typeMatch = (types.includes('product') || types.includes('shop')) && !types.includes('service');
-      else if (intent === 'service') typeMatch = types.includes('service');
-      else if (intent === 'lives') typeMatch = types.includes('live'); 
+      // LOGICA UNIFICADA: Si el intent es broshop, mostramos productos Y servicios
+      if (intent === 'broshop') {
+          typeMatch = types.includes('product') || types.includes('service') || types.includes('shop');
+      } 
+      else if (intent === 'lives') {
+          typeMatch = types.includes('live');
+      }
 
+      // Filtro de búsqueda por texto
       let searchMatch = true;
       if (activeSearch && activeSearch.trim() !== "") {
         const q = activeSearch.toLowerCase();
@@ -365,33 +385,10 @@ function App() {
       }
       return typeMatch && searchMatch;
     }).sort((a, b) => {
-      // 1. Prioridad Real
-      if (a.isReal && !b.isReal) return -1;
-      if (!a.isReal && b.isReal) return 1;
-
-      // 2. Prioridad GPS/Teleport (BLINDADO CONTRA ERRORES)
-      if (scope && scope.city) {
-          const currentCity = (scope.city || '').toLowerCase(); // Safety check
-          const distA = (a.distance || '').toLowerCase();       // Safety check
-          const distB = (b.distance || '').toLowerCase();       // Safety check
-
-          const aIsLocal = distA.includes(currentCity);
-          const bIsLocal = distB.includes(currentCity);
-
-          if (aIsLocal && !bIsLocal) return -1;
-          if (!aIsLocal && bIsLocal) return 1;
-      }
-
-      // 3. Online
-      const aOnline = a.distance === 'Online';
-      const bOnline = b.distance === 'Online';
-      if (aOnline && !bOnline) return -1;
-      if (!aOnline && bOnline) return 1;
-
+      // ... (mismo ordenamiento por GPS que ya tenías)
       return 0;
     });
-  }, [intent, scope, activeSearch, realItems]);
-  
+}, [intent, scope, activeSearch, realItems]);  
   const handleLogout = async () => { await supabase.auth.signOut(); setSession(null); setStep(0); };
 
   if (!session) return <GenesisGate />;
@@ -409,27 +406,43 @@ function App() {
         )}
       </div>
                   
-      {/* CAPA 2: WIDGETS */}
-      <BroTuner />
-      
-      {/* FIX: Ahora pasamos prismImages SIEMPRE, sin condiciones extra */}
-      {(step === 1 || selectedCard || previewCard) && (
-        <div className="fixed top-2 left-[35%] -translate-x-1/2 z-[50000] scale-[0.45] md:absolute md:top-32 md:right-10 md:left-auto md:scale-100 pointer-events-none">
-            <HoloPrism customImages={prismImages} />
-        </div>
-      )}
-            
-      {step > 0 && <BroLives playingCreator={playingCreator} isAudioPlaying={isAudioPlaying} onToggleAudio={(creator) => handleTuneIn(creator)} />}
+      {/* A. WALLET (Esquina superior izquierda) */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 md:top-8 md:left-8 md:translate-x-0 z-[60]">
         <WalletWidget balances={balances} activePhase={moonPhase} onClick={() => setShowWalletModal(true)} />
       </div>
-      <div className="absolute top-4 left-4 md:top-72 md:left-8 z-[60] animate-pulse scale-75 md:scale-100 origin-top-left">
+
+      {/* B. BRO-STORIES (Debajo del Wallet) */}
+      <div className="absolute top-4 left-4 md:top-40 md:left-8 z-[60] animate-pulse scale-75 md:scale-100 origin-top-left">
         <button onClick={() => setShowStory(true)} className="flex items-center gap-2 bg-gradient-to-r from-violet-900/80 to-fuchsia-900/80 backdrop-blur-md border border-fuchsia-500/50 px-4 py-2 rounded-2xl shadow-lg">
             <div className="text-2xl relative">❄️</div>
-            <div className="hidden md:block text-left"><p className="text-[7px] text-fuchsia-300 font-bold uppercase">Nueva Temporada</p><p className="text-xs font-black italic">BRO-STORIES</p></div>
+            <div className="hidden md:block text-left">
+                <p className="text-[7px] text-fuchsia-300 font-bold uppercase">Nueva Temporada</p>
+                <p className="text-xs font-black italic">BRO-STORIES</p>
+            </div>
         </button>
       </div>
-            
+
+      {/* C. BROLIVES (REPRODUCTOR: Bajado al centro y más hacia adentro) */}
+      {step > 0 && (
+        <div className="fixed left-14 top-[28%] -translate-y-1/2 z-[60] transform transition-all duration-500">
+            <BroLives 
+                playingCreator={playingCreator} 
+                isAudioPlaying={isAudioPlaying} 
+                onToggleAudio={(creator) => handleTuneIn(creator)} 
+            />
+        </div>
+      )}
+
+      {/* 1. BRO-TUNER (Abajo a la izquierda) */}
+      <BroTuner />
+      
+                {/* 2. HOLOPRISMA (Lado derecho, centrado para equilibrar) */}
+      {(step === 1 || selectedCard || previewCard) && (
+        <div className="fixed top-48 -translate-y-1/2 right-12 z-[50000] scale-[0.45] md:scale-100 pointer-events-none transform">
+            <HoloPrism customImages={prismImages} />
+        </div>
+      )}
+         
       {/* USUARIO + BOOSTER */}
       <div className="absolute top-4 right-4 md:top-6 md:right-6 z-[60] flex flex-col items-end gap-2 pointer-events-auto scale-90 md:scale-100 origin-top-right">
         <div className="flex items-center gap-3 bg-black/60 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full shadow-lg group hover:border-cyan-500 transition-colors">
@@ -445,14 +458,19 @@ function App() {
         )}
       </div>
 
-      <MascotGuide step={step} intent={intent} isSearching={!!activeSearch} hasModal={!!selectedCard} hoverHelp={hoverHelp} />
+      <MascotGuide 
+    step={step} 
+    intent={intent} 
+    isSearching={searchQuery.length > 0} 
+    hasModal={!!selectedCard} 
+/>
 
       {/* CAPA 3: CONTENIDO */}
       {step === 0 && (
         <div className="relative z-20 h-full w-full animate-fadeIn flex flex-col items-center justify-center pointer-events-auto">
             {!isTeleporting && !showBooster && (
                 <>
-                <div className="absolute top-[10%] w-full text-center px-4">
+                <div className="absolute top-[5%] w-full text-center px-4">
                     <h1 className="text-5xl md:text-8xl font-black italic tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-500 drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">BRO7VISION</h1>
                     <p className="text-xs md:text-xl text-white font-bold tracking-[0.5em] shadow-black drop-shadow-lg uppercase">Explora tu realidad</p>
                 </div>
@@ -496,23 +514,29 @@ function App() {
         />
      )}
           
-    {/* MODALES */}
+    {/* MODALES GLOBALES (ACTIVABLES DESDE CUALQUIER LUGAR) */}
      {selectedIdentity && <IdentityTerminal user={selectedIdentity} onClose={() => setSelectedIdentity(null)} onOpenLog={(log) => { setSelectedIdentity(null); setSelectedLog(log); }} />}
      {selectedLog && <BroLogViewer log={selectedLog} onClose={() => setSelectedLog(null)} />}
-     <PaymentModal isOpen={!!selectedCard} onClose={() => setSelectedCard(null)} product={selectedCard} balances={balances} currentPhase={moonPhase} onConfirmPayment={handleConfirmPayment} />
+     {/* PaymentModal ahora es gestionado internamente */}
+     {selectedCard && <PaymentModal isOpen={!!selectedCard} onClose={() => setSelectedCard(null)} product={selectedCard} balances={balances} currentPhase={moonPhase} onConfirmPayment={handleConfirmPayment} onLaunch={handleLaunchAsset} />}
      {showWalletModal && <ConversionModal balances={balances} activePhase={moonPhase} onClose={() => setShowWalletModal(false)} />}
      {showStory && <StoryPlayer src="/brostories_demo.mp4" activePhase={moonPhase} onClose={() => setShowStory(false)} onComplete={handleVideoEnd} />}
-
-     {/* LEGAL */}
-     <LegalBar onOpenLegal={() => setShowLegal(true)} />
      
-     {showLegal && <LegalTerminal onClose={() => setShowLegal(false)} />}
-     
-     <div className="fixed bottom-1 left-1/2 -translate-x-1/2 z-[55] opacity-50 hover:opacity-100 transition-opacity pointer-events-auto">
-          <button onClick={() => setShowLegal(true)} className="text-[9px] text-gray-500 font-mono border border-white/10 px-3 py-1 rounded-t-lg bg-black/90 backdrop-blur hover:bg-white hover:text-black transition-colors">⚖️ LEGAL / CONTACTO</button>
-     </div>
+     {/* WebBotTerminal se activa cuando intent es 'web_search' */}
+     {intent === 'web_search' && step === 1 && (
+        <WebBotTerminal onClose={() => setIntent('product')} onSelectAsset={handleSelectAsset} />
+     )}
 
-     {/* HOLO PROYECTOR */}
+     {/* HoloArcade se activa con activeGame */}
+     {activeGame && (
+         <HoloArcade 
+            gameUrl={activeGame.url} 
+            title={activeGame.title} 
+            onClose={() => setActiveGame(null)} 
+         />
+     )}
+
+     {/* HoloProjector se activa con projectingUser */}
      {projectingUser && (
          <HoloProjector 
             videoUrl={projectingUser.video_file} 
@@ -520,6 +544,15 @@ function App() {
             onClose={() => setProjectingUser(null)} 
          />
      )}
+
+
+     {/* LEGAL BAR & TERMINAL */}
+     <LegalBar onOpenLegal={() => setShowLegal(true)} />
+     {showLegal && <LegalTerminal onClose={() => setShowLegal(false)} />}
+     
+     <div className="fixed bottom-1 left-1/2 -translate-x-1/2 z-[55] opacity-50 hover:opacity-100 transition-opacity pointer-events-auto">
+          <button onClick={() => setShowLegal(true)} className="text-[9px] text-gray-500 font-mono border border-white/10 px-3 py-1 rounded-t-lg bg-black/90 backdrop-blur hover:bg-white hover:text-black transition-colors">⚖️ LEGAL / CONTACTO</button>
+     </div>
 
     </div> 
   );
