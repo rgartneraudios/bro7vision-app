@@ -43,8 +43,8 @@ export const MASTER_DB = [
       message: "Últimas unidades en stock local.", 
       offerText: "PLAN RENOVE PS5",
       neonColor: "cyan-cobalt", 
-      img: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?q=60&w=600&auto=format&fit=crop",
-      avatar_url: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?q=60&w=600&auto=format&fit=crop",
+      img: '/images/prism_0.jpg',
+      avatar_url: '/images/prism_0.jpg',
       isLive: false
     },
 

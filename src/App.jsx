@@ -237,19 +237,30 @@ function App() {
   }, []);
 
   const handleSelectAsset = (asset) => {
-    const cardData = {
+    console.log("ACTIVO SELECCIONADO:", asset); // Para depurar
+
+    const assetCard = {
         id: asset.id,
         name: asset.title,
-        price: `${asset.price_fiat}€`,
-        img: "https://placehold.co/400x400/000000/00FFFF/png?text=DATA+ACTIVO", // Imagen genérica
-        shopName: asset.profiles?.alias,
-        url: asset.url, // Este es el link a la nube
+        
+        // MAPEO DE PRECIO CRÍTICO:
+        // Si viene price_fiat (Supabase), úsalo. Si no, 0.
+        price: asset.price_fiat || 0, 
+        price_fiat: asset.price_fiat || 0, // Lo guardamos también con su nombre real por si acaso
+        
+        img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Z5Z3p5Z3Z5Z3Z5Z3Z5Z3Z5Z3Z5Z3Z5Z3Z5Z3Z5Z3Z5/LmcMk7X6y4g6s/giphy.gif",
+        shopName: asset.profiles?.alias || 'Unknown Source',
+        avatar_url: 'https://placehold.co/100x100/0000FF/FFFFFF/png?text=P2P',
+        
         isAsset: true,
-        assetType: asset.asset_type
+        assetType: asset.asset_type,
+        url: asset.url,
+        neonColor: 'blue-void'
     };
-    setSelectedCard(cardData);
-  };
 
+    setSelectedCard(assetCard); // Abre el modal con esta tarjeta
+    setIntent('product'); // Cierra el WebBot y muestra la interfaz principal
+  };  
   const handleConfirmPayment = (coinKey, amount, product) => {
     // Descontar saldo
     setBalances(prev => ({ ...prev, [coinKey]: (prev[coinKey] || 0) - amount }));
@@ -264,45 +275,49 @@ function App() {
     // Dejamos que el PaymentModal muestre su pantalla de "Éxito" propia.
 };
 
-// 2. Nueva función para el lanzamiento REAL
-const handleLaunchAsset = (product) => {
+// 2. FUNCIÓN DE LANZAMIENTO (LAUNCHER UNIVERSAL)
+  const handleLaunchAsset = (product) => {
     console.log("🚀 LANZANDO ACTIVO:", product);
 
+    // 1. NORMALIZACIÓN DE DATOS (El traductor)
+    // Aceptamos assetType (WebBot) O asset_type (Base de datos)
+    const type = product.assetType || product.asset_type;
+    // Aceptamos url (P2P) O video_file/audio_file (Perfiles antiguos)
+    const url = product.url || product.video_file || product.audio_file;
+    // Nombre
+    const name = product.name || product.title || product.shopName;
+
     // CASO A: JUEGOS (HoloArcade)
-    if (product.assetType === 'game') {
-        setActiveGame({ url: product.url, title: product.name });
+    if (type === 'game') {
+        setActiveGame({ url: url, title: name });
     } 
     // CASO B: VIDEO (HoloProjector)
-    else if (product.assetType === 'video') {
+    else if (type === 'video') {
         setProjectingUser({ 
-            alias: product.shopName, 
-            video_file: product.url, // El link privado de la nube
+            alias: product.shopName || product.profiles?.alias || 'P2P Source', 
+            video_file: url, // Importante: pasamos la URL normalizada
             isAsset: true,
-            // Si tiene avatar, lo usamos, si no, uno genérico
             avatar_url: product.avatar_url || product.img 
         });
     }
     // CASO C: AUDIO (BroLives / Player Global)
-    else if (product.assetType === 'audio' || product.assetType === 'music') {
-        // Simulamos que es un "Creator" para que el reproductor lo entienda
+    else if (type === 'audio' || type === 'music') {
         const audioAsset = {
             id: product.id,
-            alias: product.shopName,
-            audioFile: product.url, // El link privado de audio
-            img: product.img, // Carátula del disco/audio
-            holo_1: product.holo_1 || product.img, // Imágenes para el prisma
+            alias: product.shopName || product.profiles?.alias || 'Audio Source',
+            audioFile: url, // URL normalizada
+            img: product.img || product.avatar_url, 
+            holo_1: product.holo_1 || product.img, 
             holo_2: product.holo_2 || product.img,
             holo_3: product.holo_3 || product.img,
             holo_4: product.holo_4 || product.img
         };
-        
-        // Activamos el audio global y el Prisma
         handleTuneIn(audioAsset);
     }
     
-    // Cerramos el modal de pago al lanzar para limpiar la pantalla
+    // Cerramos el modal de pago al lanzar
     setSelectedCard(null);
-};
+  };
 
   const handleVideoEnd = (amt) => { setShowStory(false); handleGameWin(amt); };
   
@@ -469,14 +484,14 @@ const handleLaunchAsset = (product) => {
       {/* 1. BRO-TUNER (Abajo a la izquierda) */}
       <BroTuner />
       
-           {/* 2. HOLOPRISMA (Solo PC) */}
-      {/* Ya tenía pointer-events-none, pero nos aseguramos */}
-      {(step === 1 || selectedCard || previewCard) && (
+          {/* 2. HOLOPRISMA (Solo PC) */}
+      {/* AGREGADO: && !projectingUser -> Si hay video proyectando, ocultamos el prisma para ahorrar GPU */}
+      {(step === 1 || selectedCard || previewCard) && !projectingUser && (
         <div className="hidden md:block fixed top-48 right-12 -translate-y-1/2 z-[50000] scale-100 origin-center pointer-events-none transform transition-all duration-500">
             <HoloPrism customImages={prismImages} />
         </div>
       )}
-                                       
+                                             
       {/* USUARIO + BOOSTER */}
       <div className="absolute top-4 right-4 md:top-6 md:right-6 z-[60] flex flex-col items-end gap-2 pointer-events-auto scale-90 md:scale-100 origin-top-right">
         <div className="flex items-center gap-3 bg-black/60 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full shadow-lg group hover:border-cyan-500 transition-colors">
@@ -492,13 +507,17 @@ const handleLaunchAsset = (product) => {
         )}
       </div>
 
-      <MascotGuide 
-    step={step} 
-    intent={intent} 
-    isSearching={searchQuery.length > 0} 
-    hasModal={!!selectedCard} 
-/>
-
+      {/* MASCOTA (MAPACHE) */}
+      {/* CONDICIÓN: No mostrar si hay Video (projectingUser) O si hay Juego (activeGame) */}
+      {!projectingUser && !activeGame && (
+        <MascotGuide 
+            step={step} 
+            intent={intent} 
+            isSearching={searchQuery.length > 0} 
+            hasModal={!!selectedCard} 
+        />
+      )}
+      
       {/* CAPA 3: CONTENIDO */}
       {step === 0 && (
         <div className="relative z-70 h-full w-full animate-fadeIn flex flex-col items-center justify-center pointer-events-auto">
