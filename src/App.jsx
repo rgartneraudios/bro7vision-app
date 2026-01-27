@@ -237,30 +237,26 @@ function App() {
   }, []);
 
   const handleSelectAsset = (asset) => {
-    console.log("ACTIVO SELECCIONADO:", asset); // Para depurar
-
     const assetCard = {
         id: asset.id,
         name: asset.title,
-        
-        // MAPEO DE PRECIO CRÍTICO:
-        // Si viene price_fiat (Supabase), úsalo. Si no, 0.
-        price: asset.price_fiat || 0, 
-        price_fiat: asset.price_fiat || 0, // Lo guardamos también con su nombre real por si acaso
-        
-        img: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3Z5Z3p5Z3Z5Z3Z5Z3Z5Z3Z5Z3Z5Z3Z5Z3Z5Z3Z5Z3Z5/LmcMk7X6y4g6s/giphy.gif",
-        shopName: asset.profiles?.alias || 'Unknown Source',
-        avatar_url: 'https://placehold.co/100x100/0000FF/FFFFFF/png?text=P2P',
-        
-        isAsset: true,
-        assetType: asset.asset_type,
+        price: asset.price_fiat || 0,
         url: asset.url,
-        neonColor: 'blue-void'
+        assetType: asset.asset_type,
+        shopName: asset.profiles?.alias || session?.user?.user_metadata?.alias || 'Merchant',
+        avatar_url: asset.profiles?.avatar_url || 'https://placehold.co/100x100/0000FF/FFFFFF/png?text=P2P',
+        
+        // --- AQUÍ ESTÁ EL TRUCO ---
+        // Buscamos el color en el perfil del dueño del activo. 
+        // Si no existe, usamos el color que tengas tú en ese momento (o un fallback).
+        neonColor: asset.profiles?.card_color || 'yellow-void', 
+        
+        isAsset: true
     };
 
-    setSelectedCard(assetCard); // Abre el modal con esta tarjeta
-    setIntent('product'); // Cierra el WebBot y muestra la interfaz principal
-  };  
+    setSelectedCard(assetCard);
+    setIntent('product'); 
+};  
   const handleConfirmPayment = (coinKey, amount, product) => {
     // Descontar saldo
     setBalances(prev => ({ ...prev, [coinKey]: (prev[coinKey] || 0) - amount }));
@@ -276,49 +272,40 @@ function App() {
 };
 
 // 2. FUNCIÓN DE LANZAMIENTO (LAUNCHER UNIVERSAL)
-  const handleLaunchAsset = (product) => {
+ const handleLaunchAsset = (product) => {
     console.log("🚀 LANZANDO ACTIVO:", product);
 
-    // 1. NORMALIZACIÓN DE DATOS (El traductor)
-    // Aceptamos assetType (WebBot) O asset_type (Base de datos)
     const type = product.assetType || product.asset_type;
-    // Aceptamos url (P2P) O video_file/audio_file (Perfiles antiguos)
     const url = product.url || product.video_file || product.audio_file;
-    // Nombre
     const name = product.name || product.title || product.shopName;
+    const color = product.neonColor || 'yellow-void';
 
-    // CASO A: JUEGOS (HoloArcade)
-    if (type === 'game') {
-        setActiveGame({ url: url, title: name });
-    } 
-    // CASO B: VIDEO (HoloProjector)
-    else if (type === 'video') {
+    // A. Cerramos el modal de inmediato
+    setSelectedCard(null); 
+
+    // B. Si es video, lanzamos directo sin setTimeout para que no haya "hipo" en la CPU
+    if (type === 'video') {
         setProjectingUser({ 
-            alias: product.shopName || product.profiles?.alias || 'P2P Source', 
-            video_file: url, // Importante: pasamos la URL normalizada
+            alias: name, 
+            video_file: url, 
             isAsset: true,
-            avatar_url: product.avatar_url || product.img 
+            avatar_url: product.avatar_url || product.img,
+            neonColor: color 
+        });
+    } 
+    else if (type === 'game') {
+        setActiveGame({ url: url, title: name });
+    }
+    else if (type === 'audio' || type === 'music') {
+        handleTuneIn({
+            id: product.id,
+            alias: name,
+            audioFile: url,
+            img: product.img || product.avatar_url,
+            neonColor: color
         });
     }
-    // CASO C: AUDIO (BroLives / Player Global)
-    else if (type === 'audio' || type === 'music') {
-        const audioAsset = {
-            id: product.id,
-            alias: product.shopName || product.profiles?.alias || 'Audio Source',
-            audioFile: url, // URL normalizada
-            img: product.img || product.avatar_url, 
-            holo_1: product.holo_1 || product.img, 
-            holo_2: product.holo_2 || product.img,
-            holo_3: product.holo_3 || product.img,
-            holo_4: product.holo_4 || product.img
-        };
-        handleTuneIn(audioAsset);
-    }
-    
-    // Cerramos el modal de pago al lanzar
-    setSelectedCard(null);
-  };
-
+};
   const handleVideoEnd = (amt) => { setShowStory(false); handleGameWin(amt); };
   
   const handleGameWin = async (amt) => {
@@ -485,12 +472,15 @@ function App() {
       <BroTuner />
       
           {/* 2. HOLOPRISMA (Solo PC) */}
-      {/* AGREGADO: && !projectingUser -> Si hay video proyectando, ocultamos el prisma para ahorrar GPU */}
-      {(step === 1 || selectedCard || previewCard) && !projectingUser && (
-        <div className="hidden md:block fixed top-48 right-12 -translate-y-1/2 z-[50000] scale-100 origin-center pointer-events-none transform transition-all duration-500">
-            <HoloPrism customImages={prismImages} />
-        </div>
-      )}
+{/* AJUSTE TARS: Si hay video, si estamos en P2P o si estamos en Juegos, el Prisma se apaga CERO logs */}
+{(step === 1 || selectedCard || previewCard) && 
+ !projectingUser && 
+ !activeGame && 
+ intent !== 'web_search' && (
+    <div className="hidden md:block fixed top-48 right-12 -translate-y-1/2 z-[50000] scale-100 origin-center pointer-events-none transform transition-all duration-500">
+        <HoloPrism customImages={prismImages} />
+    </div>
+)}
                                              
       {/* USUARIO + BOOSTER */}
       <div className="absolute top-4 right-4 md:top-6 md:right-6 z-[60] flex flex-col items-end gap-2 pointer-events-auto scale-90 md:scale-100 origin-top-right">
@@ -508,15 +498,14 @@ function App() {
       </div>
 
       {/* MASCOTA (MAPACHE) */}
-      {/* CONDICIÓN: No mostrar si hay Video (projectingUser) O si hay Juego (activeGame) */}
-      {!projectingUser && !activeGame && (
-        <MascotGuide 
-            step={step} 
-            intent={intent} 
-            isSearching={searchQuery.length > 0} 
-            hasModal={!!selectedCard} 
-        />
-      )}
+{!projectingUser && !activeGame && (
+  <MascotGuide 
+      step={step} 
+      intent={intent} 
+      // Si quieres que desaparezca del todo al proyectar, 
+      // la condición !projectingUser arriba ya lo hace.
+  />
+)}
       
       {/* CAPA 3: CONTENIDO */}
       {step === 0 && (
@@ -563,7 +552,7 @@ function App() {
             onSelectShop={handlePreviewCard}
             onUserClick={setSelectedIdentity}
             items={filteredItems}
-           onOpenVideo={handleOpenVideo}
+           onOpenVideo={handleOpenVideo} 
         />
      )}
           

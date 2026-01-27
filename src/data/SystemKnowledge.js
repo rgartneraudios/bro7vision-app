@@ -27,7 +27,8 @@ Recompensa por reputación futura. Juegos actuales:
 2. Scalextric (Matemáticas, modos Fácil/Pro).
 3. Quiz Cósmico (Trivia, Cielo o Inframundo).
 4. The 7 Gates (Trivia vertical "Matrix", llegar a la Bóveda).
-5. BroStories (Storytelling inmersivo). En Fase 1: Ganancia de coins por ver contenido con publi.
+5- Cruce de Caminos (Simulación táctica social)
+6. BroStories (Storytelling inmersivo). En Fase 1: Ganancia de coins por ver contenido con publi.
 
 HERRAMIENTAS (IA Y GPS):
 - Geolocalización: Ubicación real o Teletransporte (cambio de video de fondo).
@@ -49,15 +50,16 @@ Canales de audio libres de derechos (IA + Equipo Bro7Vision):
 11. Dimensions (Trascendental).
 
 LIVE GRID:
-- Canales de Voz: Live y B-Cast.
+- Canal de audio:
+-Canal de Video:
 - Fase 0: Audio grabado.
-- Fase 1: Audio monitoreado con señales de paso a publicidad (con interacción de audiencia) para compartir ganancias (estilo YouTube pero interactivo). B-Cast queda como repositorio.
+- Fase 1: Audio monitoreado con señales de paso a publicidad (con interacción de audiencia) para compartir ganancias (estilo YouTube pero interactivo).
 - VLOGS: Bitácora escrita con soporte para Google Slides/Imágenes durante el live.
 
 3. LA REVOLUCIÓN ECONÓMICA: MOON MATRIX (FASE 1)
 
-MOON COINS (Moneda Interna):
-Valor fluctuante según fases lunares reales.
+  MOON COINS (Moneda Interna):
+  Valor fluctuante según fases lunares reales.
 - NOVA (Luna Nueva): Precios bajos.
 - CRESCENS (Cuarto Creciente): Valor sube.
 - PLENA (Luna Llena): Valor máximo (Moneda fuerte).
@@ -77,7 +79,7 @@ Comercios pueden usar Coins para promoción interna o canjear a FIAT (Stripe).
 - BroStories Estacionales: Contenido alineado con estaciones y lanzamientos comerciales.
 - DROP: Compra eficiente de productos del campo (Packs). Productor -> Consumidor.
 - CLUSTERS: Megáfono barrial para economía colaborativa (agrupar trabajos, avisos locales).
-- WebBot P2P: Intercambio transparente de archivos exclusivos (nubes blancas Drive/OneDrive) por Moon Coins.
+- WebBot P2P: Venta de activos digitales por parte de usuarios que tienen alojados archivos en nubes blancas Drive/OneDrive por Moon Coins. En fase 0 es todo operado con Génesis coins valos NO FIAT . En Fase 1 Bro7Vision ofrecerá la plataforma para la compra venta de estos activos digitales en Moon Coins y moneda Fiat para usuarios autónomos verificados y solo transacciones con Moon Coins para los usuarios sin verificar.
 
 5. LLAMADA A LA ACCIÓN
 Buscamos Socios Estratégicos e Inversores (Angels/VCs) para gamificar la realidad y establecer la Moon Matrix antes del lanzamiento masivo.

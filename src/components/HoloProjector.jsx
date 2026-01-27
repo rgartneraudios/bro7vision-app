@@ -82,34 +82,32 @@ const HoloProjector = ({ videoUrl, user, onClose }) => {
   return (
     <div className="fixed inset-0 z-[99999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 animate-fadeIn overflow-hidden">
         
-        {/* === A. CAÑÓN DE LUZ (ABANICO AMPLIO + COBERTURA TOTAL) === */}
-        <div 
-            className="absolute inset-0 pointer-events-none z-0 animate-pulse-slow"
-            style={{
-                // ORIGEN: Esquina absoluta (100% 0%)
-                // ÁNGULO: Desde 180deg (Vertical abajo) barriendo hasta la izquierda
-                background: `conic-gradient(from 200deg at 100% 0%, 
-    		rgba(${beamColor}, 0) 0deg,      /* Totalmente transparente al inicio */
-    		rgba(${beamColor}, 0.8) 35deg,   /* Núcleo mucho más suave */
-    		rgba(${beamColor}, 0.9) 55deg,   /* Brillo máximo reducido */
-    		rgba(${beamColor}, 0) 90deg,     /* Corte más rápido para oscurecer */
-                        transparent 100deg)`,
-                
-                // MÁSCARA: Suavizamos el corte para dejar pasar el haz ancho
-                maskImage: 'linear-gradient(to right, transparent 30%, black 80%)',
-WebkitMaskImage: 'linear-gradient(to right, transparent 30%, black 80%)',                
-                filter: 'blur(60px)', 
-                opacity: 1,
-                mixBlendMode: 'screen'
-            }}
-        ></div>
+       {/* === A. CAÑÓN DE LUZ OPTIMIZADO Y RECORTADO === */}
+<div 
+    className="absolute inset-0 pointer-events-none z-0 opacity-40"
+    style={{
+        // 1. Estrechamos los ángulos del haz (de 210deg a 60deg) para que sea más como un foco
+        background: `conic-gradient(from 210deg at 100% 0%, 
+            transparent 0deg,      
+            rgba(${beamColor}, 0.4) 25deg,   
+            rgba(${beamColor}, 0.5) 45deg,   
+            transparent 70deg)`,
+        
+        filter: 'blur(30px)', 
+        mixBlendMode: 'screen',
 
-        {/* FOCO DE ORIGEN (GIGANTE) */}
-        <div 
-            className="absolute top-[-20%] right-[-20%] w-[800px] h-[800px] rounded-full blur-[100px] pointer-events-none z-0 opacity-60"
-            style={{ background: `radial-gradient(circle, rgba(${beamColor}, 1) 0%, transparent 60%)` }}
-        ></div>
+        // 2. LA CLAVE: Aplicamos una máscara que borra el haz a medida que viaja a la izquierda
+        // Black significa "se ve", Transparent significa "se borra"
+        maskImage: 'linear-gradient(to left, black 20%, rgba(0,0,0,0.5) 50%, transparent 80%)',
+        WebkitMaskImage: 'linear-gradient(to left, black 20%, rgba(0,0,0,0.5) 50%, transparent 80%)'
+    }}
+></div>
 
+{/* FOCO DE ORIGEN (GIGANTE PERO MÁS LIGERO) */}
+<div 
+    className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[60px] pointer-events-none z-0 opacity-40"
+    style={{ background: `radial-gradient(circle, rgba(${beamColor}, 1) 0%, transparent 70%)` }}
+></div>
 
         {/* --- B. ANIMACIÓN DEL HALO --- */}
         {showSpirit && (
