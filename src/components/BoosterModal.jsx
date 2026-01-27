@@ -1,4 +1,4 @@
-// src/components/BoosterModal.jsx (VERSION BLINDADA ANTI-CRASH)
+// src/components/BoosterModal.jsx (VERSION FINAL CORREGIDA: FORM DATA + GPS + HOLO)
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
@@ -34,12 +34,21 @@ const BoosterModal = ({ onClose }) => {
   const [tab, setTab] = useState('identity'); 
   const [showHoloConfig, setShowHoloConfig] = useState(false);
   
+  // --- ESTADOS DE GPS (Separados para fácil manejo) ---
+  const [country, setCountry] = useState('');
+  const [city, setCity] = useState('');
+  const [zipCode, setZipCode] = useState('');
+  
+  // --- ESTADOS VISUALES ---
   const [energyColor, setEnergyColor] = useState('cyan');
   const [matterColor, setMatterColor] = useState('void');
+  
+  // --- ESTADOS DE ACTIVOS ---
   const [isMerchant, setIsMerchant] = useState(false);
   const [assets, setAssets] = useState([]); 
   const [newAsset, setNewAsset] = useState({ title: '', url: '', type: 'video', price: 0 });
 
+  // --- FORM DATA (Aquí vive todo lo demás: Holo, Productos, Perfil) ---
   const [formData, setFormData] = useState({
     alias: '', avatar_url: '', banner_url: '', card_banner_url: '',
     twit_message: '', role: '', audio_file: '', bcast_file: '', video_file: '',
@@ -55,72 +64,126 @@ const BoosterModal = ({ onClose }) => {
       { id: 'SERVICE', label: '🤝 SERVICE' }
   ];
 
+  // 1. CARGAR DATOS
   useEffect(() => {
     const loadData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-        if (profile) {
-          setIsMerchant(profile.is_merchant || false);
-          setEnergyColor(profile.card_color?.split('-')[0] || 'cyan');
-          setMatterColor(profile.card_color?.split('-')[1] || 'void');
-          setFormData({
-            alias: profile.alias || user.user_metadata.alias || '',
-            // Aseguramos que 'role' sea al menos un string vacío para evitar el error .includes
-            role: profile.role || '', 
-            avatar_url: profile.avatar_url || '',
-            banner_url: profile.banner_url || '',
-            card_banner_url: profile.card_banner_url || '',
-            twit_message: profile.twit_message || '',
-            audio_file: profile.audio_file || '',
-            bcast_file: profile.bcast_file || '',
-            video_file: profile.video_file || '',
-            holo_1: profile.holo_1 || '', holo_2: profile.holo_2 || '',
-            holo_3: profile.holo_3 || '', holo_4: profile.holo_4 || '',
-            product_title: profile.product_title || '', product_desc: profile.product_desc || '', product_price: profile.product_price || '', product_url: profile.product_url || '',
-            service_title: profile.service_title || '', service_desc: profile.service_desc || '', service_price: profile.service_price || '', service_url: profile.service_url || ''
-          });
-        }
-        const { data: assetData } = await supabase.from('assets').select('*').eq('owner_id', user.id);
-        if (assetData) setAssets(assetData);
+      try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+            
+            if (profile) {
+              setIsMerchant(profile.is_merchant || false);
+              
+              // Cargar Colores
+              const colors = (profile.card_color || 'cyan-void').split('-');
+              setEnergyColor(colors[0] || 'cyan');
+              setMatterColor(colors[1] || 'void');
+              
+              // Cargar GPS
+              setCountry(profile.country || '');
+              setCity(profile.city || '');
+              setZipCode(profile.zip_code || '');
+
+              // Cargar Formulario Completo
+              setFormData({
+                alias: profile.alias || user.user_metadata.alias || '',
+                role: profile.role || '', 
+                avatar_url: profile.avatar_url || '',
+                banner_url: profile.banner_url || '',
+                card_banner_url: profile.card_banner_url || '',
+                twit_message: profile.twit_message || '',
+                audio_file: profile.audio_file || '',
+                bcast_file: profile.bcast_file || '',
+                video_file: profile.video_file || '',
+                // Aquí están tus imágenes del prisma
+                holo_1: profile.holo_1 || '', holo_2: profile.holo_2 || '',
+                holo_3: profile.holo_3 || '', holo_4: profile.holo_4 || '',
+                // Productos y Servicios
+                product_title: profile.product_title || '', product_desc: profile.product_desc || '', product_price: profile.product_price || '', product_url: profile.product_url || '',
+                service_title: profile.service_title || '', service_desc: profile.service_desc || '', service_price: profile.service_price || '', service_url: profile.service_url || ''
+              });
+            }
+            // Cargar Activos P2P
+            const { data: assetData } = await supabase.from('assets').select('*').eq('owner_id', user.id);
+            if (assetData) setAssets(assetData);
+          }
+      } catch (e) {
+          console.error("Error cargando perfil:", e);
       }
     };
     loadData();
   }, []);
 
   const toggleRole = (roleId) => {
-      // Seguridad extra para el toggle
       let currentRoles = formData.role ? String(formData.role).split(',') : [];
       if (currentRoles.includes(roleId)) currentRoles = currentRoles.filter(r => r !== roleId);
       else currentRoles.push(roleId);
       setFormData({ ...formData, role: currentRoles.join(',') });
   };
 
+  // 2. GUARDAR DATOS (CORREGIDO)
   const handleSave = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
-      const finalColorString = `${energyColor}-${matterColor}`;
+      if (!user) throw new Error("No user");
+
+      // Construimos el string de color
+      const finalColor = `${energyColor}-${matterColor}`;
+
+      // Preparamos el objeto mezclando formData + estados sueltos
       const updates = {
-        ...formData,
-        card_color: finalColorString,
+        ...formData, // Esto mete alias, roles, holos, productos, etc.
+        
+        // Sobrescribimos/Añadimos los campos especiales
+        card_color: finalColor,
         is_merchant: isMerchant,
+        
+        // GPS
+        country: country,
+        city: city,
+        zip_code: zipCode, // Asegúrate de que la columna en Supabase es zip_code
+
         updated_at: new Date(),
       };
+
+      console.log("📤 Guardando:", updates);
+
       const { error } = await supabase.from('profiles').update(updates).eq('id', user.id);
+
       if (error) throw error;
-      alert("✅ PERFIL ACTUALIZADO");
+
+      alert("✅ ¡PERFIL Y HOLOGRAMAS ACTUALIZADOS!");
       onClose();
       window.location.reload(); 
-    } catch (error) { alert(error.message); } finally { setLoading(false); }
-  };
+
+    } catch (error) {
+      console.error('❌ Error:', error);
+      alert("Error al guardar: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };   
 
   const handleAddAsset = async () => {
     if (!newAsset.title || !newAsset.url) return;
     const { data: { user } } = await supabase.auth.getUser();
+    
+    // Aquí usamos country/city del estado para geolocalizar el activo si quieres, 
+    // o simplemente guardamos el activo.
     const { data } = await supabase.from('assets').insert([
-      { owner_id: user.id, title: newAsset.title, url: newAsset.url, asset_type: newAsset.type, price_fiat: newAsset.price }
+      { 
+          owner_id: user.id, 
+          title: newAsset.title, 
+          url: newAsset.url, 
+          asset_type: newAsset.type, 
+          price_fiat: newAsset.price
+          // Si tu tabla assets tiene country/city, puedes añadirlos aquí también:
+          // country: country, city: city 
+      }
     ]).select();
+
     if (data) {
       setAssets([...assets, data[0]]);
       setNewAsset({ title: '', url: '', type: 'video', price: 0 });
@@ -130,23 +193,23 @@ const BoosterModal = ({ onClose }) => {
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-fadeIn font-mono">
       <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" onClick={onClose}></div>
-      <div className="relative z-10 w-full max-w-2xl bg-[#0a0a0a] border-2 border-white/10 rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col pointer-events-auto">
+      <div className="relative z-10 w-full max-w-2xl bg-[#0a0a0a] border-2 border-white/10 rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col pointer-events-auto h-[90vh] md:h-auto">
         
         {/* HEADER */}
-        <div className="bg-gray-900/50 border-b border-white/10 p-4 flex justify-between items-center">
+        <div className="bg-gray-900/50 border-b border-white/10 p-4 flex justify-between items-center shrink-0">
             <h2 className="text-white font-black uppercase tracking-widest text-sm flex items-center gap-2"><span>🔧</span> BOOSTER STUDIO</h2>
             <button onClick={onClose} className="text-gray-400 hover:text-white text-xs">✕ ESC</button>
         </div>
 
         {/* TABS */}
-        <div className="flex border-b border-white/10 bg-black overflow-x-auto">
+        <div className="flex border-b border-white/10 bg-black overflow-x-auto shrink-0">
             <button onClick={() => setTab('identity')} className={`flex-1 py-4 px-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${tab === 'identity' ? 'bg-white/10 text-white border-b-2 border-white' : 'text-gray-600'}`}>👤 Identidad</button>
             <button onClick={() => setTab('audio')} className={`flex-1 py-4 px-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${tab === 'audio' ? 'bg-white/10 text-white border-b-2 border-white' : 'text-gray-600'}`}>📡 Señal</button>
             <button onClick={() => setTab('market')} className={`flex-1 py-4 px-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${tab === 'market' ? 'bg-white/10 text-white border-b-2 border-white' : 'text-gray-600'}`}>🛒 Tienda</button>
             <button onClick={() => setTab('assets')} className={`flex-1 py-4 px-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${tab === 'assets' ? 'bg-white/10 text-white border-b-2 border-white' : 'text-blue-500'}`}>📦 Activos</button>
         </div>
 
-        <div className="p-6 overflow-y-auto custom-scrollbar max-h-[60vh] bg-black">
+        <div className="p-6 overflow-y-auto custom-scrollbar flex-1 bg-black">
             
             {/* TAB IDENTIDAD */}
             {tab === 'identity' && (
@@ -177,6 +240,26 @@ const BoosterModal = ({ onClose }) => {
                             <label className="text-gray-400 text-[10px] font-bold block mb-2 uppercase">Nick de Ciudadano</label>
                             <input type="text" value={formData.alias} onChange={e => setFormData({...formData, alias: e.target.value})} className="w-full bg-black border border-white/20 p-3 text-white text-lg font-bold rounded" />
                         </div>
+                        
+                        {/* --- SECCIÓN UBICACIÓN (GPS LÓGICO) --- */}
+                        <div className="space-y-4 pt-0">
+                            <h3 className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">📍 Coordenadas Base</h3>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label className="block text-[8px] text-gray-500 uppercase mb-1">País</label>
+                                    <input type="text" value={country} onChange={(e) => setCountry(e.target.value)} className="w-full bg-black border border-white/10 text-white px-2 py-2 rounded text-[10px] focus:border-fuchsia-500 outline-none uppercase" placeholder="ESPAÑA" />
+                                </div>
+                                <div>
+                                    <label className="block text-[8px] text-gray-500 uppercase mb-1">Ciudad</label>
+                                    <input type="text" value={city} onChange={(e) => setCity(e.target.value)} className="w-full bg-black border border-white/10 text-white px-2 py-2 rounded text-[10px] focus:border-fuchsia-500 outline-none uppercase" placeholder="MADRID" />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-[8px] text-gray-500 uppercase mb-1">Código Postal</label>
+                                <input type="text" value={zipCode} onChange={(e) => setZipCode(e.target.value)} className="w-full bg-black border border-white/10 text-white px-2 py-2 rounded text-[10px] focus:border-fuchsia-500 outline-none uppercase" placeholder="28001" />
+                            </div>
+                        </div>
+
                         <div>
                             <label className="text-gray-400 text-[10px] font-bold block mb-2 uppercase">Roles de Señal</label>
                             <div className="grid grid-cols-2 gap-2">
@@ -234,7 +317,7 @@ const BoosterModal = ({ onClose }) => {
                     </div>
                     <div className="space-y-4">
                         <div><label className="text-[9px] text-cyan-400 font-bold block mb-1">📡 SEÑAL AUDIO LIVE (URL MP3/Dropbox)</label><input type="text" value={formData.audio_file} onChange={e=>setFormData({...formData, audio_file:e.target.value})} className="w-full bg-black border border-white/20 p-2 text-white text-[10px] font-mono" /></div>
-                        <div><label className="text-[9px] text-cyan-400 font-bold block mb-1">📼 SEÑAL B-CAST (Audio Grabado)</label><input type="text" value={formData.bcast_file} onChange={e=>setFormData({...formData, bcast_file:e.target.value})} className="w-full bg-black border border-white/20 p-2 text-white text-[10px] font-mono" /></div>
+                        
                         <div><label className="text-[9px] text-fuchsia-400 font-bold block mb-1">🎥 SEÑAL HOLO-TV (URL Video MP4)</label><input type="text" value={formData.video_file} onChange={e=>setFormData({...formData, video_file:e.target.value})} className="w-full bg-black border border-white/20 p-2 text-white text-[10px] font-mono" /></div>
                     </div>
                 </div>
@@ -293,7 +376,7 @@ const BoosterModal = ({ onClose }) => {
             )}
 
         </div>
-        <div className="p-4 border-t border-white/10 bg-[#080808] flex justify-end gap-2">
+        <div className="p-4 border-t border-white/10 bg-[#080808] flex justify-end gap-2 shrink-0">
             <button onClick={onClose} className="text-gray-500 text-[10px] px-4 font-bold uppercase">Cancelar</button>
             <button onClick={handleSave} disabled={loading} className="bg-white text-black font-black uppercase text-[10px] px-10 py-3 rounded hover:bg-cyan-400 transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)]">{loading ? 'Procesando...' : 'Guardar Cambios'}</button>
         </div>

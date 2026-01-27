@@ -109,16 +109,23 @@ const PaginatedDisplay = ({ items, onSelect, onTuneIn, onOpenVideo }) => {
                                     <img src={item.avatar_url} className="w-14 h-14 md:w-16 md:h-16 rounded-full border border-white/20 object-cover shadow-lg bg-black" alt="av" />
                                 </div>
                                 
-                                <div className="flex flex-col flex-1 min-w-0 justify-center">
-                                    <span className="text-[8px] font-black text-white/50 uppercase tracking-[0.2em] mb-0.5">{item.shopName}</span>
-                                    <h3 className="text-white font-black text-lg md:text-xl uppercase leading-none tracking-tighter italic truncate mb-1">
+                                <div className="flex flex-col flex-1 min-w-0 justify-center px-1">
+                                    {/* NICKNAME / SHOPNAME: Más grande y con más espacio */}
+                                    <span className="text-[10px] md:text-xs font-black text-white/60 uppercase tracking-[0.2em] mb-1">
+                                        {item.shopName}
+                                    </span>
+                                    
+                                    {/* TITULO PRINCIPAL */}
+                                    <h3 className="text-white font-black text-xl md:text-1xl uppercase leading-none tracking-tighter italic truncate mb-2 drop-shadow-md">
                                         {item.name}
                                     </h3>
-                                    <p className="text-gray-300 text-[10px] md:text-xs font-medium italic leading-snug line-clamp-2 opacity-80">
+                                    
+                                    {/* MESSAGE TWIT: Mucho más grande y legible */}
+                                    <p className="text-gray-200 text-xs md:text-base font-medium italic leading-snug line-clamp-3 opacity-90">
                                         "{item.message}"
                                     </p>
                                 </div>
-                            </div>
+                          </div>
 
                             {/* BARRA LATERAL DERECHA (Compacta) */}
                             <div className="relative z-10 w-[70px] md:w-[85px] bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center border-l border-white/10 gap-2">

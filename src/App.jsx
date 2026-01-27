@@ -486,7 +486,7 @@ const handleLaunchAsset = (product) => {
             <button onClick={handleLogout} className="text-[10px] font-bold text-red-500 hover:text-red-300 uppercase tracking-widest hover:underline">[ EXIT ]</button>
         </div>
         {step === 0 && !isTeleporting && (
-            <button onClick={() => setShowBooster(true)} className="text-[9px] text-orange-500/80 hover:text-orange-400 font-mono border border-transparent hover:border-orange-500/50 px-2 py-1 rounded uppercase tracking-widest transition-all">
+            <button onClick={() => setShowBooster(true)} className="text-[14px] text-white-500/80 hover:text-cyan-400 font-mono border border-transparent hover:border-orange-500/50 px-2 py-1 rounded uppercase tracking-widest transition-all">
                 [ ACCESS BOOSTER STUDIO ]
             </button>
         )}
