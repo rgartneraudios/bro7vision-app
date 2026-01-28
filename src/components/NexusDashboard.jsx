@@ -12,6 +12,7 @@ import ScalextricPhaser from './ScalextricPhaser';
 import CosmicQuiz from './CosmicQuiz'; 
 import SevenGates from './SevenGates';
 import CruceDeCaminos from './CruceDeCaminos';
+import AtlasGame from './AtlasGame';
 
 const NexusDashboard = ({ 
     onSearch, searchQuery, setSearchQuery, 
@@ -187,6 +188,14 @@ const NexusDashboard = ({
     <h3 className="text-xl font-black text-white italic">Cruce Caminos</h3>
     <div className="px-3 py-1 bg-indigo-500 text-white text-[9px] font-bold uppercase rounded-full">SOCIAL RPG</div>
 </div>
+
+                {/* 3i-ATLAS */}
+<div onClick={() => setSelectedGame('atlas')} className="group bg-black/80 border border-blue-500/30 p-6 rounded-2xl hover:border-blue-500 hover:bg-blue-900/20 cursor-pointer transition-all flex flex-col items-center gap-2">
+    <div className="text-4xl filter drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]">☄️</div>
+    <h3 className="text-xl font-black text-white italic">3i-ATLAS</h3>
+    <div className="px-3 py-1 bg-blue-500 text-black text-[9px] font-bold uppercase rounded-full">100 GEN</div>
+</div>
+                
                   </div> 
               )}
                             
@@ -235,7 +244,26 @@ const NexusDashboard = ({
                       </div>
                   </div>
               )}
+              
+            {/* --- 3i-ATLAS (IGUAL QUE GATES) --- */}
+{selectedGame === 'atlas' && (
+    <div className="w-full h-full relative flex items-center justify-center">
+        <button 
+            onClick={() => setSelectedGame(null)} 
+            className="absolute -top-8 left-0 text-white font-bold uppercase text-xs z-50 pointer-events-auto"
+        >
+            ❮ MENU
+        </button>
 
+        <div className="w-full h-full pointer-events-auto shadow-2xl rounded-xl overflow-hidden bg-black/60">
+            <AtlasGame 
+                // QUITAMOS el setSelectedGame(null) de aquí para que NO se cierre solo
+                onWin={(amt) => onGameWin(amt)} 
+                onClose={() => setSelectedGame(null)} 
+            />
+        </div>
+    </div>
+)}            
           </div>
       )}
             

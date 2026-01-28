@@ -1,43 +1,30 @@
+// src/components/HoloArcade.jsx
 import React from 'react';
 
 const HoloArcade = ({ gameUrl, title, onClose }) => {
   if (!gameUrl) return null;
 
   return (
-    // z-[200000] para asegurar que esté por encima de TODO
-    <div className="fixed inset-0 z-[200000] bg-black flex flex-col animate-fadeIn">
+    <div className="fixed inset-0 z-[200000] bg-black animate-fadeIn overflow-hidden">
       
-      {/* CABECERA COMPACTA */}
-      <div className="w-full bg-black/90 border-b border-fuchsia-500/50 p-3 flex justify-between items-center backdrop-blur-md">
-        <div className="flex items-center gap-3">
-          <span className="text-xl">🎮</span>
-          <h2 className="text-white font-black italic uppercase text-xs tracking-widest">{title}</h2>
-        </div>
-        <button 
-          onClick={onClose}
-          className="bg-fuchsia-600 text-white px-4 py-1 rounded-full font-black text-[10px] uppercase hover:bg-white hover:text-fuchsia-600 transition-all border border-fuchsia-400"
-        >
-          Cerrar ✕
-        </button>
-      </div>
+      {/* BOTÓN CERRAR FLOTANTE (Minimalista para no romper la inmersión) */}
+      <button 
+        onClick={onClose}
+        className="absolute top-4 right-4 z-[200001] bg-black/20 hover:bg-red-600/80 text-white/40 hover:text-white px-3 py-1 rounded-full border border-white/10 hover:border-white/40 transition-all text-[10px] font-black uppercase tracking-widest backdrop-blur-sm"
+      >
+        Cerrar Conexión ✕
+      </button>
 
-      {/* CONTENEDOR DEL JUEGO: OCUPA TODO EL RESTO DE LA PANTALLA */}
-      <div className="flex-1 w-full bg-black relative">
-        <iframe 
-          src={gameUrl} 
-          title={title}
-          className="w-full h-full border-none"
-          // Importante para que el juego reciba las teclas
-          allow="autoplay; fullscreen; gamepad" 
-        />
-      </div>
+      {/* EL JUEGO OCUPA EL 100% REAL */}
+      <iframe 
+        src={gameUrl} 
+        title={title}
+        className="w-full h-full border-none"
+        allow="autoplay; fullscreen; gamepad"
+      />
 
-      {/* FOOTER MINI */}
-      <div className="w-full bg-black border-t border-fuchsia-500/30 p-1 text-center">
-        <p className="text-[7px] text-gray-500 font-mono uppercase tracking-[0.3em]">
-          BRO7VISION ARCADE RUNTIME
-        </p>
-      </div>
+      {/* MARGEN DE SEGURIDAD (Opcional: un sutil resplandor fucsia en los bordes) */}
+      <div className="absolute inset-0 pointer-events-none border-2 border-fuchsia-500/10 shadow-[inset_0_0_100px_rgba(0,0,0,1)]"></div>
     </div>
   );
 };
