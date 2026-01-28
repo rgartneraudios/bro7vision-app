@@ -82,7 +82,7 @@ const AtlasGame = ({ onWin, onClose }) => {
             id: Date.now()+Math.random(), 
             x: Math.random()*95, 
             y: -10, 
-            speed: 0.6 + Math.random()*1.5 
+            speed: 0.6 + Math.random()*1.2 
         }]);
       }
       setEnemies(prev => prev.map(e => ({ ...e, y: e.y + e.speed })).filter(e => e.y < 110));
