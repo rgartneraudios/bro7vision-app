@@ -122,6 +122,21 @@ const BoosterModal = ({ onClose }) => {
       setFormData({ ...formData, role: currentRoles.join(',') });
   };
 
+const handleDeleteAsset = async (assetId) => {
+    if (!window.confirm("¿Confirmas la eliminación definitiva?")) return;
+    
+    console.log("Intentando borrar activo:", assetId);
+    const { error } = await supabase.from('assets').delete().eq('id', assetId);
+    
+    if (error) {
+        console.error("Error de Supabase:", error.message);
+        alert("Error: " + error.message);
+    } else {
+        console.log("Borrado con éxito de la DB");
+        setAssets(assets.filter(a => a.id !== assetId));
+    }
+};
+
   // 2. GUARDAR DATOS (CORREGIDO)
   const handleSave = async () => {
     try {
@@ -344,13 +359,23 @@ const BoosterModal = ({ onClose }) => {
                         </div>
                     </div>
                     <div className="space-y-2">
-                        {assets.map(a => (
-                            <div key={a.id} className="flex justify-between items-center bg-white/5 p-2 rounded border border-white/5 text-[9px]">
-                                <span className="text-white font-bold">{a.title} ({a.asset_type.toUpperCase()})</span>
-                                <span className="text-blue-400 font-mono">{a.price_fiat}€</span>
-                            </div>
-                        ))}
-                    </div>
+    {assets.map(a => (
+        <div key={a.id} className="flex justify-between items-center bg-white/5 p-2 rounded border border-white/5 text-[9px]">
+            <div className="flex flex-col">
+                <span className="text-white font-bold">{a.title} ({a.asset_type.toUpperCase()})</span>
+                <span className="text-blue-400 font-mono">{a.price_fiat}€</span>
+            </div>
+            {/* BOTÓN ELIMINAR */}
+            <button 
+                onClick={() => handleDeleteAsset(a.id)}
+                className="bg-red-900/40 hover:bg-red-600 text-red-500 hover:text-white px-2 py-1 rounded border border-red-500/30 transition-all font-black"
+            >
+                BORRAR ✕
+            </button>
+        </div>
+    ))}
+</div>
+
                 </div>
             )}
 

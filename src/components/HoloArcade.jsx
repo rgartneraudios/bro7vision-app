@@ -4,47 +4,38 @@ const HoloArcade = ({ gameUrl, title, onClose }) => {
   if (!gameUrl) return null;
 
   return (
-    <div className="fixed inset-0 z-[1000] bg-black flex flex-col items-center justify-center p-0 md:p-8 animate-fadeIn">
-      {/* CAPA DE FONDO NEÓN */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-fuchsia-900/20 via-black to-black"></div>
-
-      {/* CABECERA DE LA CONSOLA */}
-      <div className="relative z-10 w-full max-w-5xl bg-black border-x-2 border-t-2 border-fuchsia-500 rounded-t-2xl p-4 flex justify-between items-center shadow-[0_-10px_30px_rgba(217,70,239,0.3)]">
+    // z-[200000] para asegurar que esté por encima de TODO
+    <div className="fixed inset-0 z-[200000] bg-black flex flex-col animate-fadeIn">
+      
+      {/* CABECERA COMPACTA */}
+      <div className="w-full bg-black/90 border-b border-fuchsia-500/50 p-3 flex justify-between items-center backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <span className="text-2xl animate-pulse">🎮</span>
-          <div>
-            <h2 className="text-white font-black italic uppercase text-sm tracking-tighter leading-none">{title}</h2>
-            <p className="text-[8px] text-fuchsia-400 font-mono mt-1 uppercase tracking-widest">HoloArcade Runtime Active</p>
-          </div>
+          <span className="text-xl">🎮</span>
+          <h2 className="text-white font-black italic uppercase text-xs tracking-widest">{title}</h2>
         </div>
         <button 
           onClick={onClose}
-          className="bg-fuchsia-600 text-white px-6 py-2 rounded-full font-black text-[10px] uppercase hover:bg-white hover:text-fuchsia-600 transition-all"
+          className="bg-fuchsia-600 text-white px-4 py-1 rounded-full font-black text-[10px] uppercase hover:bg-white hover:text-fuchsia-600 transition-all border border-fuchsia-400"
         >
-          Cerrar Juego ✕
+          Cerrar ✕
         </button>
       </div>
 
-      {/* CONTENEDOR DEL JUEGO (iFrame) */}
-      <div className="relative z-10 w-full max-w-5xl aspect-video bg-black border-2 border-fuchsia-500 shadow-[0_0_50px_rgba(217,70,239,0.2)] overflow-hidden">
+      {/* CONTENEDOR DEL JUEGO: OCUPA TODO EL RESTO DE LA PANTALLA */}
+      <div className="flex-1 w-full bg-black relative">
         <iframe 
           src={gameUrl} 
           title={title}
           className="w-full h-full border-none"
-          allow="autoplay; fullscreen; gamepad"
-          sandbox="allow-scripts allow-same-origin allow-forms"
+          // Importante para que el juego reciba las teclas
+          allow="autoplay; fullscreen; gamepad" 
         />
-        
-        {/* OVERLAY DE CARGA (Opcional) */}
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-10">
-            <span className="text-white font-black text-9xl italic">BRO7</span>
-        </div>
       </div>
 
-      {/* FOOTER DE LA CONSOLA */}
-      <div className="relative z-10 w-full max-w-5xl bg-gray-900/50 border-x-2 border-b-2 border-fuchsia-500 rounded-b-2xl p-3 text-center">
-        <p className="text-[8px] text-gray-400 font-mono uppercase tracking-[0.3em]">
-          Powered by BRO7VISION P2P Engine • Fase 1 • Enjoy the Reality
+      {/* FOOTER MINI */}
+      <div className="w-full bg-black border-t border-fuchsia-500/30 p-1 text-center">
+        <p className="text-[7px] text-gray-500 font-mono uppercase tracking-[0.3em]">
+          BRO7VISION ARCADE RUNTIME
         </p>
       </div>
     </div>
