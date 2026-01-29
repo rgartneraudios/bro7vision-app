@@ -36,7 +36,7 @@ const LegalTerminal = ({ onClose }) => {
            <p className="text-[10px] text-cyan-200 uppercase tracking-widest mb-6">Founder & Lead Dev</p>
 
            <p className="text-gray-400 text-sm italic mb-8 leading-relaxed">
-             "Construyendo puentes digitales entre la realidad y la ficción. <br/>Estética Pandora Nocturno."
+             "Construyendo puentes digitales entre la realidad y la ficción. <br/>Estética Digital Neon Art."
            </p>
 
            {/* DATOS DE CONTACTO VISIBLES */}
