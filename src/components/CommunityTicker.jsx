@@ -42,7 +42,7 @@ const CommunityTicker = ({ onUserClick }) => {
   const msg = messages[currentIndex];
 
   return (
-    <div className="absolute top-32 md:top-8 left-1/2 -translate-x-1/2 pointer-events-auto z-40 w-full max-w-4xl animate-slideDown px-4">
+    <div className="absolute top-0 md:top-8 left-1/2 -translate-x-1/2 pointer-events-auto z-40 w-full max-w-4xl animate-slideDown px-4 mt-2">
         
         <div 
             onClick={() => onUserClick && onUserClick(msg)}
