@@ -1,115 +1,96 @@
 // src/components/LegalTerminal.jsx
-import React, { useState } from 'react';
+import React from 'react';
 
 const LegalTerminal = ({ onClose }) => {
-  const [tab, setTab] = useState('contact'); // Empieza en contacto
-
-  // DATOS A RELLENAR POR TI
-  const INFO = {
-      email: "ehgartnerrober@gmail.com", // Tu email real
-      owner: "BRO7VISION TEAM", // O tu nombre real si eres autónomo
-      location: "Calle rio Sella 25 1º izquierda, Oviedo, España (33010)"
-  };
-
   return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 animate-fadeIn backdrop-blur-sm bg-black/80">
-      <div className="w-full max-w-4xl h-[80vh] bg-[#0a0a0a] border border-gray-600 shadow-[0_0_50px_rgba(255,255,255,0.1)] rounded-lg flex flex-col overflow-hidden font-mono text-xs md:text-sm">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 animate-fadeIn">
+      {/* Fondo oscuro traslúcido */}
+      <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" onClick={onClose}></div>
+
+      {/* Contenedor Principal Estilo HUD */}
+      <div className="relative w-full max-w-5xl h-[80vh] bg-black border border-cyan-500/30 rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(6,182,212,0.15)] flex flex-col md:flex-row">
         
-        {/* HEADER */}
-        <div className="bg-gray-900 p-4 border-b border-gray-700 flex justify-between items-center">
-            <div className="flex items-center gap-2">
-                <span className="text-xl">⚖️</span>
-                <h2 className="text-white font-bold uppercase tracking-widest">SISTEMA LEGAL & CONTACTO</h2>
-            </div>
-            <button onClick={onClose} className="text-red-500 hover:text-red-400 font-bold px-2">[ CERRAR X ]</button>
+        {/* === COLUMNA IZQUIERDA: EL CREADOR (RGartner) === */}
+        <div className="w-full md:w-1/3 bg-gradient-to-b from-[#0a0a0a] to-[#050505] border-r border-cyan-500/20 p-8 flex flex-col items-center text-center relative">
+           
+           {/* Decoración superior */}
+           <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50"></div>
+
+           <h2 className="text-cyan-400 font-black tracking-widest uppercase mb-8 mt-4 text-xl">Arquitectura</h2>
+
+           {/* FOTO DE PERFIL (Ruta Corregida) */}
+           <div className="relative w-40 h-40 mb-6 group">
+              <div className="absolute inset-0 rounded-full bg-cyan-500 blur-md opacity-20 group-hover:opacity-40 transition-opacity"></div>
+              <img 
+                src="/images/rgartner.jpg" 
+                alt="RGartner" 
+                className="w-full h-full object-cover rounded-full border-2 border-cyan-500/50 shadow-2xl relative z-10 grayscale group-hover:grayscale-0 transition-all duration-500"
+                onError={(e) => {
+                    e.target.onerror = null; 
+                    e.target.src = 'https://placehold.co/400x400/000000/06b6d4/png?text=RG';
+                }} 
+              />
+           </div>
+
+           <h3 className="text-2xl text-white font-bold font-mono mb-1">RGartner</h3>
+           <p className="text-[10px] text-cyan-200 uppercase tracking-widest mb-6">Founder & Lead Dev</p>
+
+           <p className="text-gray-400 text-sm italic mb-8 leading-relaxed">
+             "Construyendo puentes digitales entre la realidad y la ficción. <br/>Estética Pandora Nocturno."
+           </p>
+
+           {/* DATOS DE CONTACTO VISIBLES */}
+           <div className="w-full mt-auto mb-4 bg-white/5 rounded-xl p-4 border border-white/10">
+              <p className="text-[9px] text-gray-500 uppercase tracking-widest mb-2">Contacto Oficial</p>
+              
+              {/* Email en texto plano y visible */}
+              <p className="text-cyan-400 font-mono font-bold text-sm md:text-base break-all selection:bg-cyan-500 selection:text-black">
+                ehgartnerrober@gmail.com
+              </p>
+              
+              <div className="w-full h-[1px] bg-white/10 my-3"></div>
+              
+              {/* Link a LinkedIn (Opcional, si tienes la URL ponla aquí) */}
+              <a href="https://www.linkedin.com/in/rober-ehgartner-74a10a124/" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-white hover:underline transition-colors">
+                 LinkedIn Profile &rarr;
+              </a>
+           </div>
         </div>
 
-        {/* NAVEGACIÓN */}
-        <div className="flex bg-black border-b border-gray-800 overflow-x-auto">
-            <button onClick={() => setTab('contact')} className={`px-6 py-3 font-bold uppercase transition-colors ${tab === 'contact' ? 'bg-cyan-900/30 text-cyan-400 border-b-2 border-cyan-500' : 'text-gray-500 hover:text-white'}`}>📧 Contacto</button>
-            <button onClick={() => setTab('legal')} className={`px-6 py-3 font-bold uppercase transition-colors ${tab === 'legal' ? 'bg-gray-800 text-white border-b-2 border-white' : 'text-gray-500 hover:text-white'}`}>⚖️ Aviso Legal</button>
-            <button onClick={() => setTab('privacy')} className={`px-6 py-3 font-bold uppercase transition-colors ${tab === 'privacy' ? 'bg-gray-800 text-white border-b-2 border-white' : 'text-gray-500 hover:text-white'}`}>🔒 Privacidad</button>
-            <button onClick={() => setTab('cookies')} className={`px-6 py-3 font-bold uppercase transition-colors ${tab === 'cookies' ? 'bg-gray-800 text-white border-b-2 border-white' : 'text-gray-500 hover:text-white'}`}>🍪 Cookies</button>
+        {/* === COLUMNA DERECHA: TEXTO LEGAL === */}
+        <div className="flex-1 bg-black p-8 relative flex flex-col">
+           <button onClick={onClose} className="absolute top-6 right-6 text-gray-600 hover:text-red-500 transition-colors font-bold text-lg">✕</button>
+           
+           <h2 className="text-gray-500 font-mono text-sm uppercase tracking-widest mb-6 border-b border-white/10 pb-4">Protocolos Legales & Privacidad</h2>
+           
+           <div className="overflow-y-auto custom-scrollbar pr-4 space-y-6 text-gray-400 text-xs font-mono leading-relaxed text-justify">
+              <section>
+                <h4 className="text-white font-bold mb-2">1. FINALIDAD DEL ECOSISTEMA</h4>
+                <p>BRO7VISION es una plataforma experimental de gamificación (PWA). Fase 0 (Génesis) es un entorno de simulación sin transacciones financieras reales vinculadas a moneda fiduciaria obligatoria.</p>
+              </section>
+
+              <section>
+                <h4 className="text-white font-bold mb-2">2. PRIVACIDAD Y DATOS</h4>
+                <p>No vendemos tus datos. Utilizamos Supabase para autenticación segura. Tu ubicación GPS (si la activas) se procesa en tu dispositivo para mostrar contenido local y no se almacena históricamente en nuestros servidores.</p>
+              </section>
+
+              <section>
+                <h4 className="text-white font-bold mb-2">3. ECONOMÍA SIMULADA</h4>
+                <p>Los "Puntos Génesis" y "Moon Coins" son activos digitales de entretenimiento. No constituyen criptomonedas ni títulos valores regulados por la CNMV en esta fase.</p>
+              </section>
+
+              <section>
+                <h4 className="text-white font-bold mb-2">4. PROPIEDAD INTELECTUAL</h4>
+                <p>El código, diseño "Neón Bioluminiscente" y conceptos (Moon Matrix, HoloPrisma) son propiedad intelectual de RGartner. El contenido subido por usuarios pertenece a sus autores.</p>
+              </section>
+              
+              <div className="pt-8 text-center opacity-50">
+                  <p>Bro7Vision © {new Date().getFullYear()}</p>
+                  <p>Hecho a mano + IA Copilot</p>
+              </div>
+           </div>
         </div>
 
-        {/* CONTENIDO (SCROLLABLE) */}
-        <div className="flex-1 p-8 overflow-y-auto bg-black text-gray-300 leading-relaxed custom-scrollbar">
-            
-            {/* 1. CONTACTO */}
-            {tab === 'contact' && (
-                <div className="flex flex-col items-center justify-center h-full text-center space-y-6">
-                    <div className="text-6xl mb-4">📨</div>
-                    <h3 className="text-2xl text-white font-bold">CANAL ABIERTO</h3>
-                    <p className="max-w-md">
-                        Para consultas sobre la Fase 0, propuestas de inversión o soporte técnico, contacta directamente con el Arquitecto del sistema.
-                    </p>
-                    <a href={`mailto:${INFO.email}`} className="text-2xl text-cyan-400 font-black hover:underline tracking-widest border border-cyan-500 px-8 py-4 rounded hover:bg-cyan-900/20 transition-all">
-                        {INFO.email}
-                    </a>
-                    <p className="text-xs text-gray-600 mt-8">Tiempo de respuesta estimado: 24h - 48h</p>
-                </div>
-            )}
-
-            {/* 2. AVISO LEGAL */}
-            {tab === 'legal' && (
-                <div className="space-y-4">
-                    <h3 className="text-xl text-white font-bold border-b border-gray-700 pb-2">1. INFORMACIÓN GENERAL</h3>
-                    <p>En cumplimiento con el deber de información recogido en la normativa de Servicios de la Sociedad de la Información y del Comercio Electrónico, se indican los siguientes datos:</p>
-                    <ul className="list-disc pl-5 space-y-1 text-gray-400">
-                        <li><strong>Titular del Proyecto:</strong> {INFO.owner}</li>
-                        <li><strong>Ubicación:</strong> {INFO.location}</li>
-                        <li><strong>Contacto:</strong> {INFO.email}</li>
-                        <li><strong>Naturaleza:</strong> Proyecto tecnológico en Fase Beta (Fase 0). Sin transacciones económicas directas en la plataforma actual.</li>
-                    </ul>
-                    <h3 className="text-xl text-white font-bold border-b border-gray-700 pb-2 mt-8">2. OBJETO</h3>
-                    <p>BRO7VISION es una plataforma experimental de gamificación social ("Web App"). El acceso es gratuito. Los "Puntos Génesis" son una moneda virtual ficticia sin valor monetario real fuera de la plataforma durante la Fase 0.</p>
-                </div>
-            )}
-
-            {/* 3. PRIVACIDAD */}
-            {tab === 'privacy' && (
-                <div className="space-y-4">
-                    <h3 className="text-xl text-white font-bold border-b border-gray-700 pb-2">POLÍTICA DE PRIVACIDAD (GDPR)</h3>
-                    <p>En BRO7VISION nos tomamos muy en serio tu privacidad. Esta política explica cómo tratamos tus datos.</p>
-                    
-                    <h4 className="text-white font-bold mt-4">1. RESPONSABLE DEL TRATAMIENTO</h4>
-                    <p>El responsable es {INFO.owner}. Contacto: {INFO.email}.</p>
-
-                    <h4 className="text-white font-bold mt-4">2. QUÉ DATOS RECOGEMOS</h4>
-                    <ul className="list-disc pl-5 space-y-1 text-gray-400">
-                        <li><strong>Registro:</strong> Email y contraseña (encriptada).</li>
-                        <li><strong>Perfil:</strong> Alias, enlaces a redes sociales y preferencias visuales (configuración del HoloPrisma).</li>
-                        <li><strong>Actividad:</strong> Puntuaciones en juegos y saldo de puntos ficticios.</li>
-                    </ul>
-
-                    <h4 className="text-white font-bold mt-4">3. FINALIDAD</h4>
-                    <p>Gestionar tu cuenta de usuario, permitir el acceso a las funcionalidades de la web y guardar tu progreso en los juegos. No vendemos tus datos a terceros.</p>
-
-                    <h4 className="text-white font-bold mt-4">4. TUS DERECHOS</h4>
-                    <p>Puedes solicitar el acceso, rectificación o eliminación total de tu cuenta enviando un email a {INFO.email}.</p>
-                </div>
-            )}
-
-            {/* 4. COOKIES */}
-            {tab === 'cookies' && (
-                <div className="space-y-4">
-                    <h3 className="text-xl text-white font-bold border-b border-gray-700 pb-2">POLÍTICA DE COOKIES</h3>
-                    <p>Una cookie es un pequeño fichero de texto que se almacena en tu navegador.</p>
-
-                    <h4 className="text-white font-bold mt-4">COOKIES QUE USAMOS</h4>
-                    <div className="border border-gray-700 rounded p-4 bg-gray-900/50">
-                        <p className="text-cyan-400 font-bold">1. Técnicas (Necesarias)</p>
-                        <p className="mb-2">Son imprescindibles para que la web funcione (ej: mantener tu sesión iniciada con Supabase, recordar si has aceptado este aviso).</p>
-                        
-                        <p className="text-cyan-400 font-bold">2. Preferencias</p>
-                        <p>Para recordar el volumen de la radio o tu configuración visual.</p>
-                    </div>
-
-                    <p className="mt-4">Al no haber publicidad de terceros ni analíticas invasivas en esta Fase 0, no utilizamos cookies de rastreo publicitario.</p>
-                </div>
-            )}
-
-        </div>
       </div>
     </div>
   );

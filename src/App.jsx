@@ -592,12 +592,22 @@ function App() {
      <LegalBar onOpenLegal={() => setShowLegal(true)} />
      {showLegal && <LegalTerminal onClose={() => setShowLegal(false)} />}
      
-     <div className="fixed bottom-1 left-1/2 -translate-x-1/2 z-[55] opacity-50 hover:opacity-100 transition-opacity pointer-events-auto">
-          <button onClick={() => setShowLegal(true)} className="text-[9px] text-gray-500 font-mono border border-white/10 px-3 py-1 rounded-t-lg bg-black/90 backdrop-blur hover:bg-white hover:text-black transition-colors">⚖️ LEGAL / CONTACTO</button>
+     {/* 3. BOTÓN FLOTANTE PERMANENTE (Footer) */}
+     {/* Este es el botón nuevo color Cian Pandora */}
+     <div className="fixed bottom-0 left-1/2 -translate-x-1/2 z-[55] pointer-events-auto group">
+          <button 
+            onClick={() => setShowLegal(true)} 
+            className="text-[10px] md:text-xs font-bold font-mono px-6 py-2 rounded-t-xl bg-black/80 backdrop-blur-md 
+                       border-t border-x border-cyan-500/50 text-cyan-400 
+                       shadow-[0_-5px_20px_rgba(6,182,212,0.2)] 
+                       hover:text-white hover:bg-cyan-900/50 hover:shadow-[0_-5px_30px_rgba(6,182,212,0.6)] 
+                       transition-all duration-300"
+          >
+            ⚖️ LEGAL / CREADOR
+          </button>
      </div>
 
     </div> 
   );
 }
-
 export default App;
