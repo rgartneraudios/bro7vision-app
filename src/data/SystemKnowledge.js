@@ -85,7 +85,7 @@ Comercios pueden usar Coins para promoción interna o canjear a FIAT (Stripe).
 Buscamos Socios Estratégicos e Inversores (Angels/VCs) para gamificar la realidad y establecer la Moon Matrix antes del lanzamiento masivo.
 
 DATOS FINANCIEROS DE REFERENCIA (SIMULACIÓN):
-Paridad Base: 1 GÉNESIS = 0.01€.
+Paridad Base: 1 GÉNESIS = 0.001€.
 Ejemplo Precios (Aprox):
 NOVA: IN 0.0090 / OUT 0.0105
 PLENA: IN 0.0110 / OUT 0.0095
