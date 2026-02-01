@@ -22,8 +22,10 @@ import HoloArcade from './components/HoloArcade';
 import BioForest from './components/BioForest';
 import WebBotTerminal from './components/WebBotTerminal';
 import RacoonTerminal from './components/RacoonTerminal';
+import RealityTuner from './components/RealityTuner';
 
 function App() {
+  const [realityMode, setRealityMode] = useState(null); // null = mostrando el selector
   const [session, setSession] = useState(null);
   const [step, setStep] = useState(0); 
   const [intent, setIntent] = useState(null);
@@ -41,6 +43,8 @@ function App() {
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [showBooster, setShowBooster] = useState(false);
   const [isTeleporting, setIsTeleporting] = useState(false);
+  
+  
   
   const [teleportCoords, setTeleportCoords] = useState({ city: '', country: '' });
   const [searchQuery, setSearchQuery] = useState("");
@@ -249,45 +253,59 @@ function App() {
 
   return (
     <div className="relative w-full h-screen bg-black text-white overflow-hidden font-sans">
+      
+      {/* 1. CAPA DE FONDO (REALIDAD DINÁMICA) */}
       <div className="absolute inset-0 z-0">
-        {step === 0 && <BioForest videoUsers={hubVideos} 
-    balances={balances} 
-    setBalances={setBalances} 
-    session={session} />}
+        {step === 0 && (
+          !realityMode ? (
+            <RealityTuner onSelect={(mode) => setRealityMode(mode)} />
+          ) : (
+            <BioForest 
+              videoUsers={hubVideos} 
+              balances={balances} 
+              setBalances={setBalances} 
+              session={session}
+              realityMode={realityMode} 
+            />
+          )
+        )}
+
         {step === 1 && <video src="/portada.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover" />}
-        {step === 2 && <video key={intent} src={intent === 'ai' ? "/ai_bg.mp4" : intent === 'game' ? "/game_bg.mp4" : intent === 'lives' ? "/brolives.mp4" : intent === 'internal_search' ? "/racoonask.mp4" : intent === 'web_search' ? "/websearch.mp4" : getVideoForLocation(scope)} autoPlay loop muted playsInline className="w-full h-full object-cover animate-fadeIn" />}
+        
+        {step === 2 && (
+          <video 
+            key={intent} 
+            src={intent === 'ai' ? "/ai_bg.mp4" : intent === 'game' ? "/game_bg.mp4" : intent === 'lives' ? "/brolives.mp4" : intent === 'internal_search' ? "/racoonask.mp4" : intent === 'web_search' ? "/websearch.mp4" : getVideoForLocation(scope)} 
+            autoPlay loop muted playsInline 
+            className="w-full h-full object-cover animate-fadeIn" 
+          />
+        )}
       </div>
 
+      {/* 2. HUD SUPERIOR (WALLET Y STORIES) */}
       <div className="fixed top-4 left-4 md:top-8 md:left-8 z-[100] flex items-center gap-4">
           <WalletWidget balances={balances} onClick={() => setShowWalletModal(true)} />
           <button onClick={() => setShowStory(true)} className="flex items-center gap-2 bg-gradient-to-r from-violet-900/80 to-fuchsia-900/80 backdrop-blur-md border border-fuchsia-500/50 px-4 py-2 rounded-2xl shadow-lg animate-pulse hover:scale-105 transition-transform">
               <span className="text-xl">❄️</span>
-              <div className="hidden md:block text-left"><p className="text-[7px] text-fuchsia-300 font-bold uppercase">Stories</p><p className="text-xs font-black italic">ON AIR</p></div>
+              <div className="hidden md:block text-left">
+                <p className="text-[7px] text-fuchsia-300 font-bold uppercase">Stories</p>
+                <p className="text-xs font-black italic">ON AIR</p>
+              </div>
           </button>
       </div>
 
-      {/* --- SINTONIZADOR AMBIENTAL (BROTUNER) --- */}
-<div className="fixed bottom-4 left-4 z-[150] transition-all duration-500 origin-bottom-left 
-                scale-[0.65] hover:scale-100 opacity-40 hover:opacity-100">
-    <BroTuner />
-</div>
+      {/* 3. BROTUNER (HUD INFERIOR IZQUIERDA) */}
+      <div className="fixed bottom-4 left-4 z-[150] transition-all duration-500 origin-bottom-left scale-[0.65] hover:scale-100 opacity-40 hover:opacity-100">
+          <BroTuner />
+      </div>
+      
+      {/* 4. BOOSTER STUDIO & EXIT (SUPERIOR DERECHA) */}
+      <div className="absolute top-4 right-4 z-[100] flex flex-col items-end gap-2">
+          <button onClick={() => setShowBooster(true)} className="text-[12px] font-mono text-cyan-400 border border-cyan-500/50 px-4 py-1.5 rounded-full bg-black/60 backdrop-blur-md shadow-[0_0_15px_cyan/30] hover:bg-cyan-500 hover:text-black transition-all">[ BOOSTER STUDIO ]</button>
+          <button onClick={() => { supabase.auth.signOut(); setSession(null); }} className="text-[9px] text-red-500 font-bold opacity-60 hover:opacity-100">[ EXIT ]</button>
+      </div>
 
-{/* --- BOTONERA SUPERIOR DERECHA --- */}
-<div className="absolute top-4 right-4 z-[100] flex flex-col items-end gap-2">
-    <button 
-        onClick={() => setShowBooster(true)} 
-        className="text-[12px] font-mono text-cyan-400 border border-cyan-500/50 px-4 py-1.5 rounded-full bg-black/60 backdrop-blur-md shadow-[0_0_15px_cyan/30] hover:bg-cyan-500 hover:text-black transition-all"
-    >
-        [ BOOSTER STUDIO ]
-    </button>
-    <button 
-        onClick={() => { supabase.auth.signOut(); setSession(null); }} 
-        className="text-[9px] text-red-500 font-bold opacity-40 hover:opacity-100 transition-opacity"
-    >
-        [ EXIT ]
-    </button>
-</div>
-
+      {/* 5. SECCIÓN DE NAVEGACIÓN INTERNA (TELEPORTE / GPS) */}
       {step === 1 && (
         <div className="relative z-[500] h-full flex flex-col items-center justify-end pb-32 animate-zoomIn pointer-events-auto">
            <div className="flex flex-row gap-4 w-full max-w-2xl px-10">
@@ -298,39 +316,32 @@ function App() {
         </div>
       )}
 
+      {/* 6. NEXUS DASHBOARD (MODAL / OVERLAY) */}
       {step === 2 && (
         <>
           <div className="hidden md:block fixed top-40 right-10 z-50 transition-all duration-700"><HoloPrism customImages={prismImages} /></div>
-          
           <div className="hidden md:block fixed left-12 top-64 z-50">
              <BroLives playingCreator={playingCreator} isAudioPlaying={isAudioPlaying} onToggleAudio={handleTuneIn} />
           </div>
 
           {intent !== 'web_search' && intent !== 'internal_search' && (
               <NexusDashboard 
-  items={filteredItems} 
-  intent={intent} 
-  setIntent={setIntent} 
-  searchQuery={searchQuery} 
-  setSearchQuery={setSearchQuery}
-  onBack={() => setStep(0)} 
-  onTuneIn={handleTuneIn} 
-  onSelectShop={(item) => setSelectedCard(item)} 
-  onUserClick={setSelectedIdentity} 
-  onOpenVideo={handleOpenVideo} 
-  onGameWin={(amount) => {
-    setBalances(prev => {
-      const newTotal = prev.genesis + amount;
-      syncGenesisToDB(newTotal); // <--- ESTO ASEGURA EL DINERO EN SUPABASE
-      return { ...prev, genesis: newTotal };
-    });
-  }}
-  onOpenLog={setSelectedLog}
-/>
+                items={filteredItems} intent={intent} setIntent={setIntent} searchQuery={searchQuery} setSearchQuery={setSearchQuery}
+                onBack={() => setStep(0)} onTuneIn={handleTuneIn} onSelectShop={(item) => setSelectedCard(item)} onUserClick={setSelectedIdentity} 
+                onOpenVideo={handleOpenVideo} onGameWin={(amount) => {
+                  setBalances(prev => {
+                    const newTotal = prev.genesis + amount;
+                    syncGenesisToDB(newTotal);
+                    return { ...prev, genesis: newTotal };
+                  });
+                }}
+                onOpenLog={setSelectedLog}
+              />
           )}
         </>
       )}
 
+      {/* 7. WEB SEARCH & P2P */}
       {intent === 'web_search' && step === 2 && (
         <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
             <div className="w-full max-w-6xl absolute top-[10%] bottom-32 px-4 pointer-events-auto bg-[#050505] rounded-3xl overflow-hidden shadow-2xl border border-blue-900/50 animate-zoomIn">
@@ -339,31 +350,24 @@ function App() {
         </div>
       )}
 
-      {(step === 0 || step === 2) && (
-    /* CAMBIO: bottom-28 en móvil (antes 20) */
-    <div className="fixed bottom-40 md:bottom-12 left-1/2 -translate-x-1/2 z-[150] w-full max-w-[98%] md:max-w-6xl px-1 md:px-4 flex flex-col items-center pointer-events-auto">
-        <div className="flex flex-wrap justify-center items-center gap-1 md:gap-2 bg-black/90 backdrop-blur-2xl p-1.5 md:p-2 rounded-2xl border border-white/10 shadow-2xl">
-            
-            <button onClick={() => setStep(0)} className="px-2.5 py-2 md:px-5 md:py-3 text-[8px] md:text-[10px] font-black border border-white/10 text-cyan-400 rounded-xl hover:bg-cyan-500 hover:text-black transition-all">
-                🌲 FOREST
-            </button>
-
-            <div className="w-[1px] h-5 bg-white/10 mx-0.5"></div>
-
-            <button onClick={() => setStep(1)} className="px-2.5 py-2 md:px-5 md:py-3 text-[8px] md:text-[10px] font-black border border-white/10 text-white rounded-xl hover:bg-white hover:text-black transition-all">
-                📍 GPS
-            </button>
-
-            <div className="w-[1px] h-5 bg-white/10 mx-0.5"></div>
-
-            {['broshop', 'lives', 'ai', 'game', 'web_search', 'internal_search'].map(id => (
-                <button key={id} onClick={() => handleNavigation(id)} className={getButtonClass(id)}>
-                    {id === 'broshop' ? '🛒 SHOP' : id === 'lives' ? '📡 LIVES' : id === 'ai' ? '🤖 AI' : id === 'game' ? '🎮 GAMES' : id === 'web_search' ? '🌐 P2P' : '🔍 SEARCH'}
-                </button>
-            ))}
+      {/* 8. BOTONERA GLOBAL DE NAVEGACIÓN */}
+      {((step === 0 && realityMode) || step === 2) && (
+        <div className="fixed bottom-28 md:bottom-12 left-1/2 -translate-x-1/2 z-[150] w-full max-w-[98%] md:max-w-6xl px-1 md:px-4 flex flex-col items-center pointer-events-auto">
+            <div className="flex flex-wrap justify-center items-center gap-1 md:gap-2 bg-black/90 backdrop-blur-2xl p-1.5 md:p-2 rounded-2xl border border-white/10 shadow-2xl">
+                <button onClick={() => setStep(0)} className="px-2.5 py-2 md:px-5 md:py-3 text-[8px] md:text-[10px] font-black border border-white/10 text-cyan-400 rounded-xl hover:bg-cyan-500 hover:text-black transition-all">🌲 FOREST</button>
+                <div className="w-[1px] h-5 bg-white/10 mx-0.5"></div>
+                <button onClick={() => setStep(1)} className="px-2.5 py-2 md:px-5 md:py-3 text-[8px] md:text-[10px] font-black border border-white/10 text-white rounded-xl hover:bg-white hover:text-black transition-all">📍 GPS</button>
+                <div className="w-[1px] h-5 bg-white/10 mx-0.5"></div>
+                {['broshop', 'lives', 'ai', 'game', 'web_search', 'internal_search'].map(id => (
+                    <button key={id} onClick={() => handleNavigation(id)} className={getButtonClass(id)}>
+                        {id === 'broshop' ? '🛒 SHOP' : id === 'lives' ? '📡 LIVES' : id === 'ai' ? '🤖 AI' : id === 'game' ? '🎮 GAMES' : id === 'web_search' ? '🌐 P2P' : '🔍 SEARCH'}
+                    </button>
+                ))}
+            </div>
         </div>
-    </div>
-)}                     
+      )}                        
+
+      {/* 9. MODALES Y TERMINALES ADICIONALES */}
       {!cookiesAccepted && (
           <div className="fixed bottom-4 right-4 z-[400] max-w-[200px] bg-black/95 border border-cyan-500/30 p-3 rounded-xl shadow-2xl pointer-events-auto">
               <p className="text-gray-400 text-[9px] mb-2 font-mono uppercase">Protocolo de Cookies Activo.</p>
@@ -375,21 +379,15 @@ function App() {
           <button onClick={() => setShowLegal(true)} className="text-[10px] md:text-xs font-bold font-mono px-8 py-2.5 rounded-t-2xl bg-black/90 backdrop-blur-md border-t border-x border-cyan-500/50 text-cyan-400 shadow-[0_-5px_30px_rgba(6,182,212,0.3)] hover:text-white transition-all">⚖️ LEGAL / CREADOR</button>
       </div>
 
-      {selectedCard && (
-        <PaymentModal 
-            isOpen={!!selectedCard} onClose={() => setSelectedCard(null)} product={selectedCard} balances={balances} 
-            onConfirmPayment={(c, a, p) => setBalances(prev=>({...prev, [c]: (prev[c]||0)-a}))} onLaunch={handleLaunchAsset} 
-        />
-      )}
-      
+      {selectedCard && <PaymentModal isOpen={!!selectedCard} onClose={() => setSelectedCard(null)} product={selectedCard} balances={balances} onConfirmPayment={(c, a, p) => setBalances(prev=>({...prev, [c]: (prev[c]||0)-a}))} onLaunch={handleLaunchAsset} />}
       {showLegal && <LegalTerminal onClose={() => setShowLegal(false)} />}
       {showBooster && <BoosterModal onClose={() => setShowBooster(false)} />}
       {showStory && <StoryPlayer src="/brostories_demo.mp4" activePhase="nova" onClose={() => setShowStory(false)} onComplete={(amount) => setBalances(prev => ({...prev, genesis: prev.genesis + amount}))} />}
       
       {isTeleporting && (
-        <div className="fixed inset-0 bg-black/98 z-[600] flex items-center justify-center pointer-events-auto">
-            <div className="border border-fuchsia-500 p-12 bg-black text-center rounded-3xl">
-              <input type="text" autoFocus placeholder="COORDENADAS DE SALTO..." className="bg-transparent border-b-2 border-white text-2xl outline-none text-center font-black uppercase mb-10 w-full" onChange={(e) => setTeleportCoords({city: e.target.value})} onKeyDown={(e) => e.key === 'Enter' && (setScope(teleportCoords), setIsTeleporting(false), setStep(2))} />
+        <div className="fixed inset-0 bg-black/98 z-[600] flex items-center justify-center pointer-events-none">
+            <div className="border border-fuchsia-500 p-12 bg-black text-center rounded-3xl pointer-events-auto">
+              <input type="text" autoFocus placeholder="COORDENADAS..." className="bg-transparent border-b-2 border-white text-2xl outline-none text-center font-black uppercase mb-10 w-full" onChange={(e) => setTeleportCoords({city: e.target.value})} onKeyDown={(e) => e.key === 'Enter' && (setScope(teleportCoords), setIsTeleporting(false), setStep(2))} />
               <div className="flex gap-6 justify-center"><button onClick={() => setIsTeleporting(false)} className="text-gray-500 uppercase">CANCEL</button><button onClick={() => { setScope(teleportCoords); setIsTeleporting(false); setStep(2); }} className="bg-fuchsia-600 px-12 py-3 font-black uppercase">TELETRANSPORTE</button></div>
             </div>
         </div>
