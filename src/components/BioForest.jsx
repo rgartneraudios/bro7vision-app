@@ -72,17 +72,26 @@ const BioForest = ({ videoUsers, balances, setBalances, session }) => {
     setEchos([]);
     setEchoPool([]);
 
-    if (currentUser?.id && !currentUser.id.includes('master')) {
-        const fetchEchos = async () => {
+    // --- FIX ERROR 400: Guard clause para ID undefined o master ---
+    if (!currentUser?.id || currentUser.id.includes('master')) {
+        // Si es el video maestro o no hay ID, cargamos ecos de sistema
+        setEchoPool([
+            { id: 's1', author_alias: 'SISTEMA', text: 'SINTONIZANDO SEÑAL...' },
+            { id: 's2', author_alias: 'BOSQUE', text: 'ESPÍRITUS ACTIVOS' }
+        ]);
+        return; 
+    }
+
+    const fetchEchos = async () => {
+        try {
             const { data } = await supabase.from('bro_echos')
                 .select('*').eq('target_profile_id', currentUser.id)
                 .order('created_at', { ascending: false }).limit(20);
             if (data && data.length > 0) setEchoPool(data);
-            else setEchoPool([{ id: 's1', author_alias: 'SISTEMA', text: 'SINTONIZANDO SEÑAL...' }]);
-        };
-        fetchEchos();
-    }
-  }, [currentUser.id]);
+        } catch (e) { console.log("DB Offline o cargando..."); }
+    };
+    fetchEchos();
+}, [currentUser.id]);
 
   useEffect(() => {
     if (echoPool.length === 0) return;
@@ -206,34 +215,37 @@ const BioForest = ({ videoUsers, balances, setBalances, session }) => {
 
       <video src="/videos/bio_landing.mp4" autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-60 z-[1]" />
       
-      {/* PORTAL (BAJADO PARA MÓVIL) */}
-      <div className="absolute top-[45%] md:top-[42%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[20]">
-          <div className="relative w-[280px] h-[460px] md:w-[320px] md:h-[520px]">
-              <div className="absolute inset-0 border-2 border-white/10 rounded-[3rem] bg-black overflow-hidden shadow-[0_0_80px_rgba(0,0,0,1)]">
-                  <video 
-                    ref={videoRef} key={currentUser.id} 
-                    src={getCleanUrl(currentUser.video_file)} 
-                    autoPlay loop muted={isMuted} playsInline 
-                    className="w-full h-full object-cover bg-black"
-                    onTimeUpdate={() => setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100)}
-                  />
-                  <button onClick={() => setIsMuted(!isMuted)} className="absolute top-6 right-6 bg-black/60 p-2 rounded-full text-xs z-[30]">{isMuted ? '🔇' : '🔊'}</button>
-                  <div className="absolute bottom-0 left-0 w-full h-1.5 bg-white/10"><div className="h-full bg-cyan-500 shadow-[0_0_15px_cyan]" style={{ width: `${progress}%` }}></div></div>
-              </div>
+      {/* PORTAL: top-[35%] en móvil para subirlo y dejar espacio abajo */}
+<div className="absolute top-[35%] md:top-[42%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[20]">
+    <div className="relative w-[240px] h-[400px] md:w-[320px] md:h-[520px]">
+        <div className="absolute inset-0 border-2 border-white/10 rounded-[3rem] bg-black overflow-hidden shadow-[0_0_80px_rgba(0,0,0,1)]">
+            <video 
+              ref={videoRef} key={currentUser.id} 
+              src={getCleanUrl(currentUser.video_file)} 
+              autoPlay loop muted={isMuted} playsInline 
+              className="w-full h-full object-cover bg-black"
+              onTimeUpdate={() => setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100)}
+            />
+            <button onClick={() => setIsMuted(!isMuted)} className="absolute top-6 right-6 bg-black/60 p-2 rounded-full text-xs z-[30]">{isMuted ? '🔇' : '🔊'}</button>
+            <div className="absolute bottom-0 left-0 w-full h-1.5 bg-white/10"><div className="h-full bg-cyan-500 shadow-[0_0_15px_cyan]" style={{ width: `${progress}%` }}></div></div>
+        </div>
 
-              {/* BOTONERA */}
-              <div className="absolute -bottom-28 left-0 w-full flex flex-col items-center gap-4">
-                  <div className="flex gap-4">
-                      <button onClick={() => handleAction('halo')} className="px-6 py-3 bg-black/60 border border-white/10 rounded-2xl text-[10px] font-black hover:bg-cyan-500 hover:text-black transition-all">ENVIAR HALO</button>
-                      <button onClick={() => setShowEchoInput(true)} className="px-6 py-3 bg-black/60 border border-white/10 rounded-2xl text-[10px] font-black hover:bg-fuchsia-500 hover:text-black transition-all">EMITIR ECO</button>
-                  </div>
-                  <p className="text-[7px] text-white/30 font-bold tracking-[0.5em] uppercase">LINK ESTABLE: {currentUser.alias || "BRO"}</p>
-              </div>
+        {/* BOTONERA INTERNA (HALO/ECO): Más pegada al video en móvil (-bottom-16) */}
+        <div className="absolute -bottom-20 md:-bottom-28 left-0 w-full flex flex-col items-center gap-2 md:gap-4">
+            <div className="flex gap-2 md:gap-4">
+                <button onClick={() => handleAction('halo')} className="px-4 py-2 md:px-6 md:py-3 bg-black/80 border border-white/20 rounded-xl text-[9px] md:text-[10px] font-black hover:bg-cyan-500 hover:text-black transition-all shadow-xl">ENVIAR HALO</button>
+                <button onClick={() => setShowEchoInput(true)} className="px-4 py-2 md:px-6 md:py-3 bg-black/80 border border-white/20 rounded-xl text-[9px] md:text-[10px] font-black hover:bg-fuchsia-500 hover:text-black transition-all shadow-xl">EMITIR ECO</button>
+            </div>
+            <p className="text-[7px] text-white/30 font-bold tracking-[0.5em] uppercase hidden md:block">
+                LINK ESTABLE: {currentUser.alias || "BRO"}
+            </p>
+        </div>
 
-              <button onClick={() => setCurrentIndex(prev => prev - 1)} className="absolute -left-16 top-1/2 -translate-y-1/2 text-5xl opacity-20 hover:opacity-100 hover:scale-125 transition-all">‹</button>
-              <button onClick={() => setCurrentIndex(prev => prev + 1)} className="absolute -right-16 top-1/2 -translate-y-1/2 text-5xl opacity-20 hover:opacity-100 hover:scale-125 transition-all">›</button>
-          </div>
-      </div>
+        {/* FLECHAS: Más pequeñas en móvil */}
+        <button onClick={() => setCurrentIndex(prev => prev - 1)} className="absolute -left-10 md:-left-16 top-1/2 -translate-y-1/2 text-3xl md:text-5xl opacity-20 hover:opacity-100 transition-all">‹</button>
+        <button onClick={() => setCurrentIndex(prev => prev + 1)} className="absolute -right-10 md:-right-16 top-1/2 -translate-y-1/2 text-3xl md:text-5xl opacity-20 hover:opacity-100 transition-all">›</button>
+    </div>
+</div>
 
       {/* INPUT ECO */}
       {showEchoInput && (

@@ -44,55 +44,96 @@ const ScalextricPhaser = ({ onWin, difficulty }) => {
 
   // --- GENERADOR DE MATEMÁTICAS ---
   const generateMath = () => {
-      // AQUÍ HABÍA SONIDO ('f1_pit') -> ELIMINADO. SILENCIO TOTAL.
-
       let q, ans;
       
+      // === MODO ROOKIE (Familiar / 10-12 años) ===
+      // Estilo: 7 + 5 - 2 = ?  o  3 x 3 - 4 = ?
       if (difficulty === 'easy') {
           const type = Math.random();
+          
           if (type > 0.5) {
-              const n1 = Math.floor(Math.random() * 9) + 1;
-              const n2 = Math.floor(Math.random() * 9) + 1;
-              ans = n1 + n2;
-              q = `${n1} + ${n2}`;
+              // TIPO 1: Suma y Resta combinada (A + B - C)
+              // Ejemplo: 12 + 5 - 3
+              const n1 = Math.floor(Math.random() * 12) + 5;  // 5 a 16
+              const n2 = Math.floor(Math.random() * 8) + 2;   // 2 a 9
+              const n3 = Math.floor(Math.random() * 5) + 2;   // 2 a 6
+              
+              // Aseguramos que el resultado no sea negativo
+              ans = n1 + n2 - n3;
+              q = `${n1} + ${n2} - ${n3}`;
           } else {
-              const n1 = Math.floor(Math.random() * 4) + 2; 
-              const n2 = Math.floor(Math.random() * 9) + 1;
-              ans = n1 * n2;
-              q = `${n1} x ${n2}`;
+              // TIPO 2: Multiplicación pequeña y Resta (A x B - C)
+              // Ejemplo: 4 x 3 - 5
+              const n1 = Math.floor(Math.random() * 4) + 2;   // 2 a 5
+              const n2 = Math.floor(Math.random() * 5) + 2;   // 2 a 6
+              const sub = Math.floor(Math.random() * 5) + 1;  // 1 a 5
+              
+              ans = (n1 * n2) - sub;
+              // Si por azar da negativo o cero, lo arreglamos sumando en vez de restando
+              if (ans <= 0) {
+                  ans = (n1 * n2) + sub;
+                  q = `${n1} x ${n2} + ${sub}`;
+              } else {
+                  q = `${n1} x ${n2} - ${sub}`;
+              }
           }
-      } else {
+      } 
+      
+      // === MODO PRO (Adultos / Difícil) ===
+      // Estilo: (9x8)/2  o  (15/3)x5
+      else {
           const type = Math.random();
-          if (type < 0.3) {
-              const n1 = Math.floor(Math.random() * 8) + 5; 
-              const n2 = Math.floor(Math.random() * 8) + 5; 
-              ans = n1 * n2;
-              q = `${n1} x ${n2}`;
+          
+          if (type < 0.4) {
+              // TIPO 1: Multiplicación y División por 2
+              // Ejemplo: (8 x 5) / 2
+              // Truco: Uno de los números debe ser par para que la división sea exacta
+              const n1 = (Math.floor(Math.random() * 6) + 2) * 2; // Número par (4, 6, 8... 14)
+              const n2 = Math.floor(Math.random() * 8) + 3;       // 3 a 10
+              
+              ans = (n1 * n2) / 2;
+              q = `(${n1} x ${n2}) / 2`;
+              
           } else if (type < 0.7) {
-              const n1 = Math.floor(Math.random() * 60) + 20; 
-              const n2 = Math.floor(Math.random() * 60) + 20; 
-              ans = n1 + n2;
-              q = `${n1} + ${n2}`;
+              // TIPO 2: División primero, luego Multiplicación
+              // Ejemplo: (20 / 4) x 3
+              const divisor = Math.floor(Math.random() * 4) + 2; // 2, 3, 4, 5
+              const resultDiv = Math.floor(Math.random() * 8) + 2; // Resultado de la división
+              const dividend = divisor * resultDiv; // Calculamos el dividendo exacto
+              const multiplier = Math.floor(Math.random() * 8) + 2;
+              
+              ans = resultDiv * multiplier;
+              q = `(${dividend} / ${divisor}) x ${multiplier}`;
+              
           } else {
-              const m1 = Math.floor(Math.random() * 8) + 2;
-              const m2 = Math.floor(Math.random() * 8) + 2;
-              const sum = Math.floor(Math.random() * 20) + 5;
-              ans = (m1 * m2) + sum;
-              q = `(${m1} x ${m2}) + ${sum}`;
+              // TIPO 3: Multiplos de 10 (Rollo concurso TV)
+              // Ejemplo: (50 / 5) + 15
+              const base = (Math.floor(Math.random() * 8) + 2) * 10; // 20, 30... 90
+              const div = [2, 5, 10][Math.floor(Math.random() * 3)]; // Divisores fáciles
+              const sum = Math.floor(Math.random() * 15) + 5;
+              
+              ans = (base / div) + sum;
+              q = `(${base} / ${div}) + ${sum}`;
           }
       }
       
-      let w1 = ans + (Math.random() > 0.5 ? 1 : -1); 
-      let w2 = ans + (Math.random() > 0.5 ? 2 : -2);
+      // --- GENERADOR DE RESPUESTAS FALSAS (Opciones) ---
+      // Generamos variaciones cercanas para confundir
+      let w1 = ans + (Math.random() > 0.5 ? 2 : -2); 
+      let w2 = ans + (Math.random() > 0.5 ? 5 : -5); // Un poco más lejos
+      
+      // Evitar duplicados y negativos
       if (w1 === ans) w1 += 1;
-      if (w2 === ans) w2 -= 1;
-      if (w1 === w2) w2 += 2;
+      if (w2 === ans) w2 -= 3;
+      if (w1 === w2) w2 += 1;
+      if (w1 <= 0) w1 = ans + 3;
+      if (w2 <= 0) w2 = ans + 7;
 
       const opts = [ans, w1, w2].sort(() => Math.random() - 0.5);
       
       setQuestion({ text: q, answer: ans, options: opts });
   };
-
+  
   const handleAnswer = (val) => {
       if (val === question.answer) {
           setQuestion(null); 
@@ -118,10 +159,22 @@ const ScalextricPhaser = ({ onWin, difficulty }) => {
     callbacks: {
         postBoot: (game) => {
             phaserRef.current = game;
-            game.registry.set('difficulty', 'hard'); 
+            
+            // Aseguramos que la dificultad inicial se pase correctamente
+            game.registry.set('difficulty', difficulty); 
             game.registry.set('onPitStop', generateMath);
             game.registry.set('onWin', onWin);
             
+            // --- NUEVO: ESCUCHADOR DE AUDIO DESDE PHASER ---
+            game.events.on('playSound', (effect) => {
+                // Si no tienes un archivo 'beep.mp3', puedes hacer que solo suene en f1_start
+                if (effect === 'beep') {
+                    // Opcional: playSound('beep'); 
+                } else {
+                    playSound(effect); // Reproducirá 'f1_start' cuando Phaser lo pida
+                }
+            });
+
             game.events.on('updateHUD', (data) => {
                 setLiveRank(data.rank);
                 setLiveLap(data.lap);
@@ -135,8 +188,8 @@ const ScalextricPhaser = ({ onWin, difficulty }) => {
             });
         }
     }
-  }), []);
-
+  }), [difficulty]); // <--- IMPORTANTE: Añade [difficulty] aquí si quieres que se recargue si cambia, si no, déjalo []
+  
   return (
     <div className="w-full h-full flex items-center justify-center bg-black/90 rounded-xl overflow-hidden border-2 border-cyan-500/50 shadow-lg relative">
       

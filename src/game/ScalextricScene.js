@@ -74,6 +74,9 @@ export default class ScalextricScene extends Phaser.Scene {
         const texts = ['3', '2', '1', 'GO!'];
         let index = 0;
 
+        // Emitir sonido inicial (bip de cuenta atrás)
+        this.game.events.emit('playSound', 'beep'); // Asegúrate de tener beep.mp3 o usa otro
+
         const countdownText = this.add.text(CENTER_X, CENTER_Y, '3', {
             fontSize: '120px', fontStyle: 'bold', color: '#ffff00', stroke: '#000', strokeThickness: 8
         }).setOrigin(0.5).setDepth(200);
@@ -86,6 +89,8 @@ export default class ScalextricScene extends Phaser.Scene {
                 index++;
                 if (index < texts.length) {
                     countdownText.setText(texts[index]);
+                    
+                    // --- ANIMACIÓN ---
                     this.tweens.add({
                         targets: countdownText,
                         scale: { from: 0.8, to: 1.2 },
@@ -93,11 +98,18 @@ export default class ScalextricScene extends Phaser.Scene {
                         yoyo: true
                     });
 
+                    // --- LÓGICA DE AUDIO Y SALIDA ---
                     if (texts[index] === 'GO!') {
+                        // AQUÍ ESTÁ EL CAMBIO: Emitimos el sonido de salida
+                        this.game.events.emit('playSound', 'f1_start'); 
+                        
                         this.isRacing = true; 
                         this.time.delayedCall(1000, () => {
                             countdownText.destroy();
                         });
+                    } else {
+                        // Sonido para 2 y 1
+                         this.game.events.emit('playSound', 'beep');
                     }
                 } else {
                     timer.remove();
@@ -106,7 +118,6 @@ export default class ScalextricScene extends Phaser.Scene {
             repeat: 3
         });
     }
-
     createPaths() {
         this.trackPaths = [];
         for (let i = 0; i < 5; i++) {
