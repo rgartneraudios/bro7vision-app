@@ -354,8 +354,12 @@ function App() {
       {((step === 0 && realityMode) || step === 2) && (
         <div className="fixed bottom-28 md:bottom-12 left-1/2 -translate-x-1/2 z-[150] w-full max-w-[98%] md:max-w-6xl px-1 md:px-4 flex flex-col items-center pointer-events-auto">
             <div className="flex flex-wrap justify-center items-center gap-1 md:gap-2 bg-black/90 backdrop-blur-2xl p-1.5 md:p-2 rounded-2xl border border-white/10 shadow-2xl">
-                <button onClick={() => setStep(0)} className="px-2.5 py-2 md:px-5 md:py-3 text-[8px] md:text-[10px] font-black border border-white/10 text-cyan-400 rounded-xl hover:bg-cyan-500 hover:text-black transition-all">🌲 FOREST</button>
-                <div className="w-[1px] h-5 bg-white/10 mx-0.5"></div>
+                <button 
+    onClick={() => { setStep(0); setRealityMode(null); }} 
+    className="px-2.5 py-2 md:px-5 md:py-3 text-[8px] md:text-[10px] font-black border border-white/10 text-cyan-400 rounded-xl hover:bg-cyan-500 hover:text-black transition-all"
+>
+    🌐 REALITY
+</button>
                 <button onClick={() => setStep(1)} className="px-2.5 py-2 md:px-5 md:py-3 text-[8px] md:text-[10px] font-black border border-white/10 text-white rounded-xl hover:bg-white hover:text-black transition-all">📍 GPS</button>
                 <div className="w-[1px] h-5 bg-white/10 mx-0.5"></div>
                 {['broshop', 'lives', 'ai', 'game', 'web_search', 'internal_search'].map(id => (

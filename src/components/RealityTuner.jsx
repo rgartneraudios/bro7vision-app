@@ -3,11 +3,11 @@ import React from 'react';
 
 const RealityTuner = ({ onSelect }) => {
   const modes = [
-    { id: 'forest', name: 'GÉNESIS FOREST', desc: 'Bioluminiscencia Original', icon: '🌲', color: 'text-cyan-400' },
-    { id: 'blackhole', name: 'ECLIPSE', desc: 'Foco Total / Lujo Zenith', icon: '🌑', color: 'text-yellow-500' },
-    { id: 'winter', name: 'WINTER CABIN', desc: 'Calidez y Reflexión', icon: '🔥', color: 'text-orange-400' },
-    { id: 'summer', name: 'SUMMER REEF', desc: 'Inmersión y Calma', icon: '🌊', color: 'text-blue-400' },
-  ];
+  { id: 'forest', name: 'GÉNESIS FOREST', desc: 'Bioluminiscencia Original', icon: '🌲', color: 'text-cyan-400' },
+  { id: 'blackhole', name: 'ECLIPSE', desc: 'Sintonía Cinematográfica de Lujo', icon: '🌘', color: 'text-yellow-500' },
+  { id: 'winter', name: 'WINTER CABIN', desc: 'Calidez, Fuego y Reflexión', icon: '🔥', color: 'text-orange-400' },
+  { id: 'summer', name: 'SUMMER REEF', desc: 'Inmersión y Frescura Estival', icon: '🌊', color: 'text-blue-400' },
+];
 
   return (
     <div className="fixed inset-0 z-[1000] bg-black flex flex-col items-center justify-center p-6">

@@ -16,42 +16,49 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode }) 
 
   // --- 1. CONFIGURACIÓN VISUAL MAESTRA ---
   const config = useMemo(() => {
-    switch(realityMode) {
-      case 'blackhole': 
-      case 'hole': // Por si cambias el nombre en RealityTuner
-        return { 
-          video: '/videos/eclipse_mode.mp4', 
-          colors: ['text-[#FFD700]', 'text-[#F97316]', 'text-[#FFFFFF]'], 
-          font: 'font-serif italic tracking-widest',
-          border: 'border-[#C7AF38]/50 shadow-[0_0_40px_rgba(255,165,0,0.3)]',
-          reactionColor: 'orange' 
-        };
-      case 'winter': 
-        return { 
-          video: '/videos/winter_mode.mp4', 
-          colors: ['text-orange-400', 'text-red-400', 'text-yellow-200'], 
-          font: 'font-black tracking-tighter', 
-          border: 'border-orange-900/30 shadow-[0_0_30px_rgba(251,146,60,0.1)]', 
-          reactionColor: 'orange' // CAMBIO: Ahora invierno tiene halo de fuego
-        };
-      case 'summer': 
-        return { 
-          video: '/videos/summer_mode.mp4', 
-          colors: ['text-cyan-300', 'text-blue-400', 'text-emerald-200'], 
-          font: 'font-black tracking-tighter', 
-          border: 'border-cyan-400/30', 
-          reactionColor: 'cyan' 
-        };
-      default: 
-        return { 
-          video: '/videos/bio_landing.mp4', 
-          colors: ['text-cyan-400', 'text-fuchsia-400', 'text-yellow-400'], 
-          font: 'font-black tracking-tighter', 
-          border: 'border-white/10 shadow-[0_0_60px_rgba(0,0,0,1)]', 
-          reactionColor: 'cyan' 
-        };
-    }
-  }, [realityMode]);
+  switch(realityMode) {
+    case 'blackhole': 
+      return { 
+        video: '/videos/eclipse_mode.mp4', 
+        colors: ['text-[#FFD700]', 'text-[#F97316]', 'text-[#FFFFFF]'], 
+        font: 'font-serif italic tracking-widest',
+        border: 'border-[#C7AF38]/50 shadow-[0_0_40px_rgba(255,165,0,0.3)]',
+        reactionColor: 'orange',
+        labelClass: 'text-orange-500', // Color para el texto de abajo
+        labelText: 'ECLIPSE ZENITH'    // Texto personalizado
+      };
+    case 'winter': 
+      return { 
+        video: '/videos/winter_mode.mp4', 
+        colors: ['text-orange-400', 'text-red-400', 'text-yellow-200'], 
+        font: 'font-black tracking-tighter', 
+        border: 'border-orange-900/30 shadow-[0_0_30px_rgba(251,146,60,0.1)]', 
+        reactionColor: 'orange',
+        labelClass: 'text-orange-400',
+        labelText: 'WINTER CABIN'
+      };
+    case 'summer': 
+      return { 
+        video: '/videos/summer_mode.mp4', 
+        colors: ['text-cyan-300', 'text-blue-400', 'text-emerald-200'], 
+        font: 'font-black tracking-tighter', 
+        border: 'border-cyan-400/30', 
+        reactionColor: 'cyan',
+        labelClass: 'text-cyan-400',
+        labelText: 'SUMMER REEF'
+      };
+    default: 
+      return { 
+        video: '/videos/bio_landing.mp4', 
+        colors: ['text-cyan-400', 'text-fuchsia-400', 'text-yellow-400'], 
+        font: 'font-black tracking-tighter', 
+        border: 'border-white/10 shadow-[0_0_60px_rgba(0,0,0,1)]', 
+        reactionColor: 'cyan',
+        labelClass: 'text-cyan-400', // Antes era gris/opaco, ahora es Cyan vivo
+        labelText: 'GÉNESIS FOREST'
+      };
+  }
+}, [realityMode]);
 
   const forestStyles = `
     @keyframes spiritFade {
@@ -237,9 +244,9 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode }) 
                       <button onClick={() => handleAction('reaction')} className="px-6 py-3 bg-black/60 border border-white/10 rounded-2xl text-[10px] font-black hover:bg-white hover:text-black transition-all shadow-xl uppercase">ENVIAR SEÑAL</button>
                       <button onClick={() => setShowEchoInput(true)} className="px-6 py-3 bg-black/60 border border-white/10 rounded-2xl text-[10px] font-black hover:bg-white hover:text-black transition-all shadow-xl uppercase">EMITIR ECO</button>
                   </div>
-                  <p className={`text-[7px] font-bold tracking-[0.6em] uppercase ${config.reactionColor === 'orange' ? 'text-orange-500' : 'text-white/20'}`}>
-                    {realityMode.toUpperCase()} ATMOSPHERE // {currentUser.alias}
-                  </p>
+                  <p className={`text-[10px] md:text-[12px] font-black tracking-[0.3em] uppercase drop-shadow-lg ${config.labelClass}`}>
+    {config.labelText} <span className="opacity-40 mx-2">//</span> {currentUser.alias || "SISTEMA"}
+</p>
               </div>
 
               <button onClick={() => setCurrentIndex(prev => prev - 1)} className="absolute -left-16 top-1/2 -translate-y-1/2 text-5xl opacity-20 hover:opacity-100 transition-all">‹</button>
