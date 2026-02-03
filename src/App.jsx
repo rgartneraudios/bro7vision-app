@@ -1,4 +1,4 @@
-// src/App.jsx (FIX FINAL: MESSAGE TWIT RESTAURADO)
+// src/App.jsx (CORRECCIÓN: POSICIONAMIENTO Y VISIBILIDAD MÓVIL)
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from './supabaseClient';
@@ -25,7 +25,7 @@ import RacoonTerminal from './components/RacoonTerminal';
 import RealityTuner from './components/RealityTuner';
 
 function App() {
-  const [realityMode, setRealityMode] = useState(null); // null = mostrando el selector
+  const [realityMode, setRealityMode] = useState(null); 
   const [session, setSession] = useState(null);
   const [step, setStep] = useState(0); 
   const [intent, setIntent] = useState(null);
@@ -43,8 +43,6 @@ function App() {
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [showBooster, setShowBooster] = useState(false);
   const [isTeleporting, setIsTeleporting] = useState(false);
-  
-  
   
   const [teleportCoords, setTeleportCoords] = useState({ city: '', country: '' });
   const [searchQuery, setSearchQuery] = useState("");
@@ -73,7 +71,6 @@ function App() {
   useEffect(() => {
     const handleError = (e) => {
         if (audioRef.current.src) {
-            // Silencioso para no saturar consola, solo apagamos estado
             setIsAudioPlaying(false);
         }
     };
@@ -86,15 +83,13 @@ function App() {
   }, []);
   
   const syncGenesisToDB = async (newAmount) => {
-  if (!session?.user?.id) return;
-  const { error } = await supabase
-    .from('profiles')
-    .update({ genesis: newAmount })
-    .eq('id', session.user.id);
-  
-  if (error) console.error("Error al sincronizar Génesis:", error.message);
-  else console.log("Génesis guardados en la Nube:", newAmount);
-};
+    if (!session?.user?.id) return;
+    const { error } = await supabase
+      .from('profiles')
+      .update({ genesis: newAmount })
+      .eq('id', session.user.id);
+    if (error) console.error("Error al sincronizar Génesis:", error.message);
+  };
 
   const handleTuneIn = (creator) => {
     const rawUrl = creator.audioFile || creator.audio_file;
@@ -154,18 +149,13 @@ function App() {
       const { data: all } = await supabase.from('profiles').select('*');
       if (all) {
         const cards = all.map(u => {
-          // Filtro para mostrar solo gente con contenido
           if (!u.product_title && !u.service_title && !u.video_file && !u.audio_file) return null;
-          
           return {
             ...u, 
             id: u.id, 
             shopName: u.alias || 'Ciudadano', 
             name: u.product_title || u.service_title || u.alias,
-            
-            // --- AQUI ESTABA EL ERROR: AHORA SÍ LEEMOS EL MESSAGE TWIT ---
             message: u.twit_message || 'Emitiendo señal...', 
-            
             img: u.card_banner_url || u.banner_url, 
             avatar_url: u.avatar_url,
             audioFile: u.audio_file, 
@@ -184,16 +174,14 @@ function App() {
   }, [session, step]);
 
   const filteredItems = useMemo(() => {
-    // Inyectamos datos a los MOCKS para que no se vean vacíos
     const MOCKS_CON_PAGO = MASTER_DB.map(m => ({
         ...m, 
         hasProduct: true, 
         isAsset: false, 
         productData: { name: m.name, price: m.price || 15 }, 
         audioFile: m.audioFile || m.audio_file,
-        message: m.desc || "Simulación activa en la red..." // Fallback para Mocks
+        message: m.desc || "Simulación activa en la red..." 
     }));
-
     const ALL = [...realItems, ...MOCKS_CON_PAGO];
     return ALL.filter(item => {
       if (intent === 'ai' || intent === 'game' || intent === 'web_search' || intent === 'internal_search') return false;
@@ -230,7 +218,6 @@ function App() {
 
   const getButtonClass = (id) => {
     const isActive = intent === id && step === 2;
-    // CAMBIO: Padding reducido en móvil (px-3 py-2) y texto más pequeño
     const base = "px-3 py-2 md:px-5 md:py-3 text-[8px] md:text-[10px] font-black border rounded-xl transition-all ";
     
     if (!isActive) return base + "border-white/20 text-gray-400 hover:text-white";
@@ -254,7 +241,7 @@ function App() {
   return (
     <div className="relative w-full h-screen bg-black text-white overflow-hidden font-sans">
       
-      {/* 1. CAPA DE FONDO (REALIDAD DINÁMICA) */}
+      {/* 1. CAPA DE FONDO */}
       <div className="absolute inset-0 z-0">
         {step === 0 && (
           !realityMode ? (
@@ -269,9 +256,7 @@ function App() {
             />
           )
         )}
-
         {step === 1 && <video src="/portada.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover" />}
-        
         {step === 2 && (
           <video 
             key={intent} 
@@ -282,7 +267,7 @@ function App() {
         )}
       </div>
 
-      {/* 2. HUD SUPERIOR (WALLET Y STORIES) */}
+      {/* 2. HUD SUPERIOR */}
       <div className="fixed top-4 left-4 md:top-8 md:left-8 z-[100] flex items-center gap-4">
           <WalletWidget balances={balances} onClick={() => setShowWalletModal(true)} />
           <button onClick={() => setShowStory(true)} className="flex items-center gap-2 bg-gradient-to-r from-violet-900/80 to-fuchsia-900/80 backdrop-blur-md border border-fuchsia-500/50 px-4 py-2 rounded-2xl shadow-lg animate-pulse hover:scale-105 transition-transform">
@@ -293,19 +278,14 @@ function App() {
               </div>
           </button>
       </div>
-
-      {/* 3. BROTUNER (HUD INFERIOR IZQUIERDA) */}
-      <div className="fixed bottom-4 left-4 z-[150] transition-all duration-500 origin-bottom-left scale-[0.65] hover:scale-100 opacity-40 hover:opacity-100">
-          <BroTuner />
-      </div>
       
-      {/* 4. BOOSTER STUDIO & EXIT (SUPERIOR DERECHA) */}
+      {/* 3. BOOSTER Y EXIT */}
       <div className="absolute top-4 right-4 z-[100] flex flex-col items-end gap-2">
           <button onClick={() => setShowBooster(true)} className="text-[12px] font-mono text-cyan-400 border border-cyan-500/50 px-4 py-1.5 rounded-full bg-black/60 backdrop-blur-md shadow-[0_0_15px_cyan/30] hover:bg-cyan-500 hover:text-black transition-all">[ BOOSTER STUDIO ]</button>
           <button onClick={() => { supabase.auth.signOut(); setSession(null); }} className="text-[9px] text-red-500 font-bold opacity-60 hover:opacity-100">[ EXIT ]</button>
       </div>
 
-      {/* 5. SECCIÓN DE NAVEGACIÓN INTERNA (TELEPORTE / GPS) */}
+      {/* 4. SECCIÓN GPS (STEP 1) */}
       {step === 1 && (
         <div className="relative z-[500] h-full flex flex-col items-center justify-end pb-32 animate-zoomIn pointer-events-auto">
            <div className="flex flex-row gap-4 w-full max-w-2xl px-10">
@@ -316,32 +296,109 @@ function App() {
         </div>
       )}
 
-      {/* 6. NEXUS DASHBOARD (MODAL / OVERLAY) */}
-      {step === 2 && (
-        <>
-          <div className="hidden md:block fixed top-40 right-10 z-50 transition-all duration-700"><HoloPrism customImages={prismImages} /></div>
-          <div className="hidden md:block fixed left-12 top-64 z-50">
-             <BroLives playingCreator={playingCreator} isAudioPlaying={isAudioPlaying} onToggleAudio={handleTuneIn} />
+      {/* 5. TORRE DE CONTROL IZQUIERDA */}
+      
+      {/* A. COOKIES (BASE) - VISIBLE SIEMPRE SI NO ESTÁ ACEPTADA */}
+      {/* Z-Index muy alto (2001) para que nada lo tape */}
+      {!cookiesAccepted && (
+          <div className="fixed bottom-4 left-4 z-[2001] w-64 bg-black/95 border border-cyan-500/30 p-3 rounded-xl shadow-2xl pointer-events-auto animate-slideUp">
+              <p className="text-gray-400 text-[9px] mb-2 font-mono uppercase">Protocolo de Cookies Activo.</p>
+              <button onClick={() => setCookiesAccepted(true)} className="w-full py-1 bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 rounded-lg font-black text-[9px] hover:bg-cyan-500 hover:text-black transition-all">ACEPTAR</button>
           </div>
-
-          {intent !== 'web_search' && intent !== 'internal_search' && (
-              <NexusDashboard 
-                items={filteredItems} intent={intent} setIntent={setIntent} searchQuery={searchQuery} setSearchQuery={setSearchQuery}
-                onBack={() => setStep(0)} onTuneIn={handleTuneIn} onSelectShop={(item) => setSelectedCard(item)} onUserClick={setSelectedIdentity} 
-                onOpenVideo={handleOpenVideo} onGameWin={(amount) => {
-                  setBalances(prev => {
-                    const newTotal = prev.genesis + amount;
-                    syncGenesisToDB(newTotal);
-                    return { ...prev, genesis: newTotal };
-                  });
-                }}
-                onOpenLog={setSelectedLog}
-              />
-          )}
-        </>
       )}
 
-      {/* 7. WEB SEARCH & P2P */}
+      {/* B. BRO-LIVES (MEDIO) - SOLO PC */}
+      {/* hidden md:block: Se oculta en móvil, aparece en pantallas medianas/grandes */}
+      {step === 2 && (
+          <div className="hidden md:block fixed left-4 bottom-32 z-40 w-64 animate-fadeIn">
+              <div className="w-full relative z-10 transition-all hover:scale-105 origin-bottom-left">
+                  <BroLives 
+                      playingCreator={playingCreator} 
+                      isAudioPlaying={isAudioPlaying} 
+                      onToggleAudio={handleTuneIn} 
+                  />
+              </div>
+          </div>
+      )}
+
+      {/* 6. BRO-TUNER (RADIO) - POSICIONAMIENTO MÓVIL SOBRE LEGAL */}
+      <div className="fixed left-1/2 -translate-x-1/2 bottom-16 md:left-4 md:translate-x-0 md:bottom-64 z-[150]">
+          <BroTuner />
+      </div>
+      
+      {/* 7. NAVEGACIÓN (BOTONERA) */}
+{((step === 0 && realityMode) || step === 2) && (
+  <div className="fixed 
+    bottom-28 left-0 w-full px-2
+    md:bottom-4 md:right-6 md:left-auto md:w-36 md:max-w-none 
+    z-[150] flex justify-center items-center pointer-events-none transition-all duration-700">
+      
+      <div className="flex 
+        flex-row flex-nowrap overflow-x-auto no-scrollbar justify-center items-center gap-1.5 p-2
+        md:flex-col md:gap-2 md:p-3                                         
+        bg-black/80 backdrop-blur-2xl rounded-2xl md:rounded-[1.5rem] 
+        border border-white/10 shadow-2xl pointer-events-auto">
+          
+          <button onClick={() => { setStep(0); setRealityMode(null); }} className="flex-shrink-0 px-3 py-2 md:w-full flex items-center justify-center md:justify-between gap-2 text-[8px] md:text-[9px] font-black border border-white/10 text-cyan-400 rounded-lg hover:bg-cyan-500 hover:text-black transition-all group">
+              <span className="text-base">🌐</span>
+              <span className="hidden md:block tracking-widest group-hover:translate-x-1 transition-transform">REALITY</span>
+          </button>
+
+          <div className="w-[1px] h-5 md:w-full md:h-[1px] bg-white/10 mx-0.5 flex-shrink-0"></div>
+
+          <button onClick={() => setStep(1)} className="flex-shrink-0 px-3 py-2 md:w-full flex items-center justify-center md:justify-between gap-2 text-[8px] md:text-[9px] font-black border border-white/10 text-white rounded-lg hover:bg-white hover:text-black transition-all group">
+              <span className="text-base">📍</span>
+              <span className="hidden md:block tracking-widest group-hover:translate-x-1 transition-transform">GPS</span>
+          </button>
+
+          <div className="w-[1px] h-5 md:w-full md:h-[1px] bg-white/10 mx-0.5 flex-shrink-0"></div>
+
+          {['broshop', 'lives', 'ai', 'game', 'web_search', 'internal_search'].map(id => (
+              <button 
+                key={id} 
+                onClick={() => handleNavigation(id)} 
+                className={`${getButtonClass(id)} flex-shrink-0 md:w-full md:flex md:items-center md:justify-between md:gap-2 md:px-3 md:h-10 group text-[8px] md:text-[9px] rounded-lg`}
+              >
+                  <span className="text-base">
+                      {id === 'broshop' ? '🛒' : id === 'lives' ? '📡' : id === 'ai' ? '🤖' : id === 'game' ? '🎮' : id === 'web_search' ? '🌐' : '🔍'}
+                  </span>
+                  <span className="hidden md:block tracking-widest group-hover:translate-x-1 transition-transform">
+                      {id === 'broshop' ? 'SHOP' : id === 'lives' ? 'LIVES' : id === 'ai' ? 'AI' : id === 'game' ? 'GAMES' : id === 'web_search' ? 'P2P' : 'SEARCH'}
+                  </span>
+              </button>
+          ))}
+      </div>
+  </div>
+)}
+      {/* 8. HOLOPRISMA (SUBIDO EN PC) */}
+      {step === 2 && (
+        <div className="hidden md:flex fixed right-2 bottom-[750px] z-40 flex-col items-center w-24 animate-fadeIn">
+             <div className="scale-[1.1] origin-bottom-right relative z-20 transition-transform hover:scale-[1.15]">
+                  <HoloPrism customImages={prismImages} />
+             </div>
+        </div>
+      )}
+      {/* 7. DASHBOARD CENTRAL */}
+      {step === 2 && intent !== 'web_search' && intent !== 'internal_search' && (
+          <NexusDashboard 
+            items={filteredItems} intent={intent} setIntent={setIntent} 
+            searchQuery={searchQuery} setSearchQuery={setSearchQuery}
+            onBack={() => setStep(0)} onTuneIn={handleTuneIn} 
+            onSelectShop={(item) => setSelectedCard(item)} 
+            onUserClick={setSelectedIdentity} 
+            onOpenVideo={handleOpenVideo} 
+            onGameWin={(amount) => {
+              setBalances(prev => {
+                const newTotal = prev.genesis + amount;
+                syncGenesisToDB(newTotal);
+                return { ...prev, genesis: newTotal };
+              });
+            }}
+            onOpenLog={setSelectedLog}
+          />
+      )}
+
+      {/* PANTALLAS EXTRA */}
       {intent === 'web_search' && step === 2 && (
         <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
             <div className="w-full max-w-6xl absolute top-[10%] bottom-32 px-4 pointer-events-auto bg-[#050505] rounded-3xl overflow-hidden shadow-2xl border border-blue-900/50 animate-zoomIn">
@@ -350,35 +407,13 @@ function App() {
         </div>
       )}
 
-      {/* 8. BOTONERA GLOBAL DE NAVEGACIÓN */}
-      {((step === 0 && realityMode) || step === 2) && (
-        <div className="fixed bottom-28 md:bottom-12 left-1/2 -translate-x-1/2 z-[150] w-full max-w-[98%] md:max-w-6xl px-1 md:px-4 flex flex-col items-center pointer-events-auto">
-            <div className="flex flex-wrap justify-center items-center gap-1 md:gap-2 bg-black/90 backdrop-blur-2xl p-1.5 md:p-2 rounded-2xl border border-white/10 shadow-2xl">
-                <button 
-    onClick={() => { setStep(0); setRealityMode(null); }} 
-    className="px-2.5 py-2 md:px-5 md:py-3 text-[8px] md:text-[10px] font-black border border-white/10 text-cyan-400 rounded-xl hover:bg-cyan-500 hover:text-black transition-all"
->
-    🌐 REALITY
-</button>
-                <button onClick={() => setStep(1)} className="px-2.5 py-2 md:px-5 md:py-3 text-[8px] md:text-[10px] font-black border border-white/10 text-white rounded-xl hover:bg-white hover:text-black transition-all">📍 GPS</button>
-                <div className="w-[1px] h-5 bg-white/10 mx-0.5"></div>
-                {['broshop', 'lives', 'ai', 'game', 'web_search', 'internal_search'].map(id => (
-                    <button key={id} onClick={() => handleNavigation(id)} className={getButtonClass(id)}>
-                        {id === 'broshop' ? '🛒 SHOP' : id === 'lives' ? '📡 LIVES' : id === 'ai' ? '🤖 AI' : id === 'game' ? '🎮 GAMES' : id === 'web_search' ? '🌐 P2P' : '🔍 SEARCH'}
-                    </button>
-                ))}
-            </div>
-        </div>
-      )}                        
-
-      {/* 9. MODALES Y TERMINALES ADICIONALES */}
-      {!cookiesAccepted && (
-          <div className="fixed bottom-4 right-4 z-[400] max-w-[200px] bg-black/95 border border-cyan-500/30 p-3 rounded-xl shadow-2xl pointer-events-auto">
-              <p className="text-gray-400 text-[9px] mb-2 font-mono uppercase">Protocolo de Cookies Activo.</p>
-              <button onClick={() => setCookiesAccepted(true)} className="w-full py-1 bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 rounded-lg font-black text-[9px] hover:bg-cyan-500 hover:text-black">ACEPTAR</button>
+      {intent === 'internal_search' && step === 2 && (
+          <div className="absolute top-[15%] bottom-[25%] w-full max-w-5xl left-1/2 -translate-x-1/2 px-4 pointer-events-auto z-50 animate-zoomIn">
+            <RacoonTerminal searchQuery={searchQuery} />
           </div>
       )}
 
+      {/* MODALES GLOBALES */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 z-[2000] pointer-events-auto">
           <button onClick={() => setShowLegal(true)} className="text-[10px] md:text-xs font-bold font-mono px-8 py-2.5 rounded-t-2xl bg-black/90 backdrop-blur-md border-t border-x border-cyan-500/50 text-cyan-400 shadow-[0_-5px_30px_rgba(6,182,212,0.3)] hover:text-white transition-all">⚖️ LEGAL / CREADOR</button>
       </div>
@@ -402,12 +437,6 @@ function App() {
       {showWalletModal && <ConversionModal balances={balances} onClose={() => setShowWalletModal(false)} />}
       {selectedIdentity && <IdentityTerminal user={selectedIdentity} onClose={() => setSelectedIdentity(null)} />}
       {selectedLog && <BroLogViewer log={selectedLog} onClose={() => setSelectedLog(null)} />}
-
-      {intent === 'internal_search' && step === 2 && (
-          <div className="absolute top-[15%] bottom-[25%] w-full max-w-5xl left-1/2 -translate-x-1/2 px-4 pointer-events-auto z-50 animate-zoomIn">
-            <RacoonTerminal searchQuery={searchQuery} />
-          </div>
-      )}
     </div>
   );
 }

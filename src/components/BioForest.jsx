@@ -2,6 +2,13 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '../supabaseClient';
 
+// 1. GRILLA DE POSICIONES PARA ECOS (Evita que se encimen)
+const SLOTS = [
+    { x: 8, y: 20 }, { x: 10, y: 45 }, { x: 12, y: 70 }, // Izquierda
+    { x: 72, y: 20 }, { x: 70, y: 45 }, { x: 68, y: 70 }, // Derecha
+    { x: 30, y: 12 }, { x: 60, y: 12 }                    // Superiores
+];
+
 const BioForest = ({ videoUsers, balances, setBalances, session, realityMode }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
@@ -11,24 +18,23 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode }) 
   const [echoPool, setEchoPool] = useState([]); 
   const [showEchoInput, setShowEchoInput] = useState(false);
   const [echoText, setEchoText] = useState("");
+  const [nextSlot, setNextSlot] = useState(0);
 
   const videoRef = useRef(null);
 
-  // --- 1. CONFIGURACIÓN VISUAL MAESTRA ---
+  // --- CONFIGURACIÓN VISUAL MAESTRA ---
   const config = useMemo(() => {
-  switch(realityMode) {
-    case 'blackhole': 
-      return { 
+    switch(realityMode) {
+      case 'blackhole': return { 
         video: '/videos/eclipse_mode.mp4', 
         colors: ['text-[#FFD700]', 'text-[#F97316]', 'text-[#FFFFFF]'], 
         font: 'font-serif italic tracking-widest',
-        border: 'border-[#C7AF38]/50 shadow-[0_0_40px_rgba(255,165,0,0.3)]',
+        border: 'border-[#C7AF38]/50 shadow-[0_0_40px_rgba(199,175,56,0.3)]',
         reactionColor: 'orange',
-        labelClass: 'text-orange-500', // Color para el texto de abajo
-        labelText: 'ECLIPSE ZENITH'    // Texto personalizado
+        labelClass: 'text-orange-500',
+        labelText: 'ECLIPSE ZENITH'
       };
-    case 'winter': 
-      return { 
+      case 'winter': return { 
         video: '/videos/winter_mode.mp4', 
         colors: ['text-orange-400', 'text-red-400', 'text-yellow-200'], 
         font: 'font-black tracking-tighter', 
@@ -37,8 +43,7 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode }) 
         labelClass: 'text-orange-400',
         labelText: 'WINTER CABIN'
       };
-    case 'summer': 
-      return { 
+      case 'summer': return { 
         video: '/videos/summer_mode.mp4', 
         colors: ['text-cyan-300', 'text-blue-400', 'text-emerald-200'], 
         font: 'font-black tracking-tighter', 
@@ -47,18 +52,17 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode }) 
         labelClass: 'text-cyan-400',
         labelText: 'SUMMER REEF'
       };
-    default: 
-      return { 
+      default: return { 
         video: '/videos/bio_landing.mp4', 
         colors: ['text-cyan-400', 'text-fuchsia-400', 'text-yellow-400'], 
         font: 'font-black tracking-tighter', 
         border: 'border-white/10 shadow-[0_0_60px_rgba(0,0,0,1)]', 
         reactionColor: 'cyan',
-        labelClass: 'text-cyan-400', // Antes era gris/opaco, ahora es Cyan vivo
+        labelClass: 'text-cyan-400',
         labelText: 'GÉNESIS FOREST'
       };
-  }
-}, [realityMode]);
+    }
+  }, [realityMode]);
 
   const forestStyles = `
     @keyframes spiritFade {
@@ -93,6 +97,7 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode }) 
 
   const currentUser = displayUsers[((currentIndex % displayUsers.length) + displayUsers.length) % displayUsers.length];
 
+  // --- CARGA DE ECOS ---
   useEffect(() => {
     if (videoRef.current) videoRef.current.load();
     setEchos([]); setEchoPool([]);
@@ -106,45 +111,34 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode }) 
     }
   }, [currentUser.id]);
 
+  // --- RUEDA DE ECOS CON GRILLA ---
   useEffect(() => {
     if (echoPool.length === 0) return;
     const interval = setInterval(() => {
         const rawEcho = echoPool[Math.floor(Math.random() * echoPool.length)];
-        const isMobile = window.innerWidth < 768;
+        const coords = SLOTS[nextSlot];
+        setNextSlot((prev) => (prev + 1) % SLOTS.length);
         
-        // --- REAJUSTE DE COORDENADAS (MÁS AL CENTRO) ---
-        let x;
-        if (isMobile) {
-            x = Math.random() * 40 + 30;
-        } else {
-            // PC: Lado izquierdo (8-28%) o Lado derecho (68-82%) - Evitamos el 85-95%
-            x = Math.random() > 0.5 ? Math.random() * 20 + 8 : Math.random() * 14 + 68;
-        }
-        
-        const y = isMobile ? 75 : Math.random() * 60 + 10;
-        
-        setEchos(prev => [...prev.slice(-6), {
+        setEchos(prev => [...prev.slice(-7), {
             ...rawEcho,
             id: Date.now(),
-            x, y,
-            color: config.colors[Math.floor(Math.random() * config.colors.length)],
-            fontSize: rawEcho.text.length < 20 ? "text-xl md:text-3xl" : "text-sm md:text-lg"
+            x: coords.x, y: coords.y,
+            color: rawEcho.is_creator ? 'text-yellow-400 drop-shadow-[0_0_10px_gold]' : config.colors[Math.floor(Math.random() * config.colors.length)],
+            fontSize: rawEcho.text.length < 25 ? "text-xl md:text-3xl" : "text-sm md:text-lg"
         }]);
     }, 4500);
     return () => clearInterval(interval);
-  }, [echoPool, config]);
+  }, [echoPool, nextSlot, config]);
 
-  // --- FUNCIÓN DE ACCIÓN REFORZADA (FIX GÉNESIS) ---
+  // --- ACCIONES (HALO/ECO/GRACIAS) ---
   const handleAction = async (type) => {
     if (!balances || !session?.user?.id) return;
     const cost = 100;
-    if (balances.genesis < cost) { alert("NECESITAS 100 GÉNESIS"); return; }
+    if (balances.genesis < cost) { alert("SUEÑAS CON GÉNESIS... PERO NO TIENES"); return; }
     
     const newGenesis = balances.genesis - cost;
-    
-    // 1. Actualización Visual Inmediata
     setBalances(prev => ({ ...prev, genesis: newGenesis }));
-    const myAlias = session?.user?.user_metadata?.alias || 'CIUDADANO';
+    const myAlias = session?.user?.user_metadata?.alias || 'ANÓNIMO';
 
     if (type === 'reaction') {
         setActiveReaction({ from: myAlias, to: currentUser.alias || "BRO" });
@@ -154,29 +148,42 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode }) 
         setShowEchoInput(false);
     }
 
-    // 2. Persistencia Crítica (REFORZADA)
-    const { error } = await supabase.from('profiles').update({ genesis: newGenesis }).eq('id', session.user.id);
-    
-    if (error) {
-        console.error("Error al guardar puntos:", error.message);
-        // Opcional: podrías revertir el estado local si falla la DB, pero suele ser mejor dejarlo y re-intentar.
-    } else {
-        if (type === 'echo') {
-            const { data } = await supabase.from('bro_echos').insert([{ 
-                target_profile_id: currentUser.id, 
-                author_alias: myAlias, 
-                text: echoText.toUpperCase() 
-            }]).select();
-            if (data) setEchoPool(prev => [data[0], ...prev]);
-            setEchoText("");
-        }
+    await supabase.from('profiles').update({ genesis: newGenesis }).eq('id', session.user.id);
+    if (type === 'echo') {
+        const { data } = await supabase.from('bro_echos').insert([{ 
+            target_profile_id: currentUser.id, author_alias: myAlias, text: echoText.toUpperCase() 
+        }]).select();
+        if (data) setEchoPool(prev => [data[0], ...prev]);
+        setEchoText("");
     }
   };
 
+  const handleCreatorThanks = async (targetAlias = null) => {
+    const isPersonal = !!targetAlias;
+    const cost = isPersonal ? 10 : 0;
+    if (balances.genesis < cost) { alert("SIN SALDO"); return; }
+
+    const text = isPersonal ? `@${targetAlias} ¡GRACIAS POR TU APOYO!` : "¡GRACIAS A TODOS POR SINTONIZAR!";
+    const myAlias = session?.user?.user_metadata?.alias || 'CREADOR';
+
+    if (isPersonal) {
+        const newGenesis = balances.genesis - cost;
+        setBalances(prev => ({ ...prev, genesis: newGenesis }));
+        await supabase.from('profiles').update({ genesis: newGenesis }).eq('id', session.user.id);
+    }
+
+    const { data } = await supabase.from('bro_echos').insert([{ 
+        target_profile_id: currentUser.id, author_alias: myAlias, text: text, is_creator: true 
+    }]).select();
+
+    if (data) setEchoPool(prev => [{...data[0], is_creator: true}, ...prev]);
+  };
+
   return (
-    <div className={`absolute inset-0 z-0 overflow-hidden ${realityMode === 'blackhole' || realityMode === 'hole' ? 'bg-black' : 'bg-[#050505]'}`}>
+    <div className={`absolute inset-0 z-0 overflow-hidden ${realityMode === 'blackhole' ? 'bg-black' : 'bg-[#050505]'}`}>
       <style>{forestStyles}</style>
 
+      {/* FONDO DINÁMICO */}
       {config.video && (
         <video src={config.video} autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-60 z-[1]" />
       )}
@@ -187,7 +194,7 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode }) 
               <div key={echo.id} 
                 className={`absolute animate-spirit ${echo.color} ${config.font} text-center drop-shadow-[0_0_20px_rgba(0,0,0,1)] max-w-[250px] md:max-w-[400px]`} 
                 style={{ left: `${echo.x}%`, top: `${echo.y}%` }}>
-                  <p className="text-[8px] opacity-50 mb-1 font-black tracking-[0.5em]">{echo.author_alias}</p>
+                  <p className="text-[8px] opacity-60 mb-1 font-black tracking-[0.5em]">{echo.author_alias}</p>
                   <p className={`px-5 py-2 bg-black/40 backdrop-blur-[10px] rounded-3xl border border-white/5 break-words ${echo.fontSize}`}>
                     "{echo.text}"
                   </p>
@@ -195,29 +202,15 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode }) 
           ))}
       </div>
 
-      {/* NOTIFICACIÓN SUPERIOR (BANNER UNIVERSAL) */}
-      {activeReaction && (
-          <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[500] animate-fadeIn">
-              <div className={`bg-black/90 backdrop-blur-2xl border ${config.reactionColor === 'orange' ? 'border-orange-500/50' : 'border-cyan-500/50'} px-10 py-3 rounded-full shadow-2xl`}>
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white">
-                    <span className={config.reactionColor === 'orange' ? 'text-orange-400' : 'text-cyan-400'}>{activeReaction.from}</span> 
-                    <span className="mx-3 opacity-30">ENVIÓ SEÑAL A</span> 
-                    <span className={config.reactionColor === 'orange' ? 'text-orange-400' : 'text-cyan-400'}>{activeReaction.to}</span>
-                  </p>
-              </div>
-          </div>
-      )}
-
-      {/* REACCIÓN: HALO ADAPTATIVO */}
+      {/* REACCIÓN HALO */}
       {activeReaction && (
           <div className="fixed inset-0 pointer-events-none z-[400]">
               <div className="absolute bottom-10 right-[15%] animate-glowSwim">
                   <div className="relative w-48 h-48 flex items-center justify-center">
                       <div className={`absolute inset-0 ${config.reactionColor === 'orange' ? 'bg-orange-500/40' : 'bg-cyan-400/30'} rounded-full blur-[60px] animate-pulse`}></div>
                       <div className={`absolute w-32 h-32 ${config.reactionColor === 'orange' ? 'bg-yellow-200/40' : 'bg-white/20'} rounded-full blur-[40px]`}></div>
-                      <div className={`absolute w-14 h-14 bg-white rounded-full shadow-[0_0_50px_white]`}></div>
                       <div className="absolute w-full h-full animate-spin-slow">
-                           <div className={`absolute top-0 left-1/2 w-8 h-8 ${config.reactionColor === 'orange' ? 'bg-orange-400' : 'bg-white'} rounded-full blur-sm shadow-[0_0_20px_rgba(255,255,255,0.8)]`}></div>
+                           <div className={`absolute top-0 left-1/2 w-8 h-8 ${config.reactionColor === 'orange' ? 'bg-orange-400' : 'bg-white'} rounded-full blur-sm`}></div>
                            <div className={`absolute bottom-10 left-0 w-6 h-6 ${config.reactionColor === 'orange' ? 'bg-yellow-500' : 'bg-cyan-300'} rounded-full blur-sm`}></div>
                       </div>
                   </div>
@@ -225,9 +218,10 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode }) 
           </div>
       )}
 
-      {/* PORTAL CENTRAL */}
+      {/* PORTAL CENTRAL XL */}
       <div className="absolute top-[45%] md:top-[42%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[20]">
-          <div className="relative w-[280px] h-[460px] md:w-[320px] md:h-[520px]">
+          <div className="relative w-[280px] h-[460px] md:w-[380px] md:h-[600px] transition-all duration-500">
+              
               <div className={`absolute inset-0 border-2 rounded-[3.5rem] bg-black overflow-hidden ${config.border}`}>
                   <video 
                     ref={videoRef} key={currentUser.id} src={getCleanUrl(currentUser.video_file)} 
@@ -235,31 +229,40 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode }) 
                     onTimeUpdate={() => setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100)}
                   />
                   <button onClick={() => setIsMuted(!isMuted)} className="absolute top-6 right-6 bg-black/60 p-2 rounded-full text-xs z-[30]">{isMuted ? '🔇' : '🔊'}</button>
-                  <div className="absolute bottom-0 left-0 w-full h-1.5 bg-white/10"><div className={`h-full ${config.reactionColor === 'orange' ? 'bg-orange-500 shadow-[0_0_15px_orange]' : 'bg-cyan-500 shadow-[0_0_15px_cyan]'}`} style={{ width: `${progress}%` }}></div></div>
+                  <div className="absolute bottom-0 left-0 w-full h-1.5 bg-white/10">
+                    <div className={`h-full ${config.reactionColor === 'orange' ? 'bg-orange-500 shadow-[0_0_15px_orange]' : 'bg-cyan-500 shadow-[0_0_15px_cyan]'}`} style={{ width: `${progress}%` }}></div>
+                  </div>
               </div>
 
-              {/* BOTONERA */}
-              <div className="absolute -bottom-28 left-0 w-full flex flex-col items-center gap-4">
-                  <div className="flex gap-4">
-                      <button onClick={() => handleAction('reaction')} className="px-6 py-3 bg-black/60 border border-white/10 rounded-2xl text-[10px] font-black hover:bg-white hover:text-black transition-all shadow-xl uppercase">ENVIAR SEÑAL</button>
-                      <button onClick={() => setShowEchoInput(true)} className="px-6 py-3 bg-black/60 border border-white/10 rounded-2xl text-[10px] font-black hover:bg-white hover:text-black transition-all shadow-xl uppercase">EMITIR ECO</button>
+              {/* BOTONERA ADAPTATIVA */}
+              <div className="absolute -bottom-32 left-0 w-full flex flex-col items-center gap-4">
+                  <div className="flex gap-3">
+                      {session?.user?.id !== currentUser.id ? (
+                        <>
+                          <button onClick={() => handleAction('reaction')} className="px-6 py-3 bg-black/60 border border-white/10 rounded-2xl text-[10px] font-black hover:bg-white hover:text-black transition-all shadow-xl uppercase">ENVIAR SEÑAL</button>
+                          <button onClick={() => setShowEchoInput(true)} className="px-6 py-3 bg-black/60 border border-white/10 rounded-2xl text-[10px] font-black hover:bg-white hover:text-black transition-all shadow-xl uppercase">EMITIR ECO</button>
+                        </>
+                      ) : (
+                        <button onClick={() => handleCreatorThanks()} className="px-8 py-3 bg-yellow-500 text-black border border-white/20 rounded-2xl text-[10px] font-black hover:bg-white transition-all shadow-[0_0_20px_gold] uppercase">📢 DAR GRACIAS (GRATIS)</button>
+                      )}
                   </div>
                   <p className={`text-[10px] md:text-[12px] font-black tracking-[0.3em] uppercase drop-shadow-lg ${config.labelClass}`}>
-    {config.labelText} <span className="opacity-40 mx-2">//</span> {currentUser.alias || "SISTEMA"}
-</p>
+                      {config.labelText} <span className="opacity-40 mx-2">//</span> {currentUser.alias || "SISTEMA"}
+                  </p>
               </div>
 
-              <button onClick={() => setCurrentIndex(prev => prev - 1)} className="absolute -left-16 top-1/2 -translate-y-1/2 text-5xl opacity-20 hover:opacity-100 transition-all">‹</button>
-              <button onClick={() => setCurrentIndex(prev => prev + 1)} className="absolute -right-16 top-1/2 -translate-y-1/2 text-5xl opacity-20 hover:opacity-100 transition-all">›</button>
+              {/* NAV BUTTONS */}
+              <button onClick={() => setCurrentIndex(prev => prev - 1)} className="absolute -left-16 md:-left-24 top-1/2 -translate-y-1/2 text-5xl opacity-20 hover:opacity-100 transition-all">‹</button>
+              <button onClick={() => setCurrentIndex(prev => prev + 1)} className="absolute -right-16 md:-right-24 top-1/2 -translate-y-1/2 text-5xl opacity-20 hover:opacity-100 transition-all">›</button>
           </div>
       </div>
 
-      {/* INPUT ECO */}
+      {/* MODAL ECO */}
       {showEchoInput && (
           <div className="fixed inset-0 z-[1000] bg-black/98 flex items-center justify-center p-6 backdrop-blur-3xl">
               <div className="w-full max-w-sm text-center">
                   <input 
-                    autoFocus type="text" placeholder="MENSAJE A LA RED..." 
+                    autoFocus type="text" placeholder="SUSURRO AL UNIVERSO..." 
                     className={`w-full bg-transparent border-b-2 border-white/10 py-6 text-center text-white outline-none font-black text-2xl md:text-3xl uppercase focus:border-white transition-all ${realityMode === 'blackhole' ? 'font-serif italic' : ''}`}
                     value={echoText} onChange={(e) => setEchoText(e.target.value)}
                     maxLength={60}
@@ -276,4 +279,5 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode }) 
     </div>
   );
 };
+
 export default BioForest;
