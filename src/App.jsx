@@ -326,43 +326,46 @@ function App() {
           <BroTuner />
       </div>
       
-      {/* 7. NAVEGACIÓN (BOTONERA) */}
+      {/* 7. NAVEGACIÓN (BOTONERA OPTIMIZADA) */}
 {((step === 0 && realityMode) || step === 2) && (
   <div className="fixed 
-    bottom-28 left-0 w-full px-2
-    md:bottom-4 md:right-6 md:left-auto md:w-36 md:max-w-none 
+    bottom-28 left-0 w-full px-4
+    md:bottom-6 md:right-8 md:left-auto md:w-48 md:max-w-none 
     z-[150] flex justify-center items-center pointer-events-none transition-all duration-700">
       
       <div className="flex 
-        flex-row flex-nowrap overflow-x-auto no-scrollbar justify-center items-center gap-1.5 p-2
-        md:flex-col md:gap-2 md:p-3                                         
-        bg-black/80 backdrop-blur-2xl rounded-2xl md:rounded-[1.5rem] 
+        /* Configuración MÓVIL: Grid de 4 columnas exactas para 2 filas */
+        grid grid-cols-4 gap-2 p-3
+        /* Configuración PC: Vertical y más ancho (w-48) para las letras */
+        md:flex md:flex-col md:gap-2 md:p-4                                         
+        bg-black/90 backdrop-blur-2xl rounded-2xl md:rounded-[1.5rem] 
         border border-white/10 shadow-2xl pointer-events-auto">
           
-          <button onClick={() => { setStep(0); setRealityMode(null); }} className="flex-shrink-0 px-3 py-2 md:w-full flex items-center justify-center md:justify-between gap-2 text-[8px] md:text-[9px] font-black border border-white/10 text-cyan-400 rounded-lg hover:bg-cyan-500 hover:text-black transition-all group">
-              <span className="text-base">🌐</span>
-              <span className="hidden md:block tracking-widest group-hover:translate-x-1 transition-transform">REALITY</span>
+          {/* BOTÓN REALITY */}
+          <button onClick={() => { setStep(0); setRealityMode(null); }} 
+            className="col-span-1 md:w-full flex items-center justify-center md:justify-between gap-3 px-3 py-2.5 text-[10px] font-black border border-white/10 text-cyan-400 rounded-xl hover:bg-cyan-500 hover:text-black transition-all group">
+              <span className="text-xl md:text-base">🌐</span>
+              <span className="hidden md:block tracking-tighter group-hover:translate-x-1 transition-transform">REALITY</span>
           </button>
 
-          <div className="w-[1px] h-5 md:w-full md:h-[1px] bg-white/10 mx-0.5 flex-shrink-0"></div>
-
-          <button onClick={() => setStep(1)} className="flex-shrink-0 px-3 py-2 md:w-full flex items-center justify-center md:justify-between gap-2 text-[8px] md:text-[9px] font-black border border-white/10 text-white rounded-lg hover:bg-white hover:text-black transition-all group">
-              <span className="text-base">📍</span>
-              <span className="hidden md:block tracking-widest group-hover:translate-x-1 transition-transform">GPS</span>
+          {/* BOTÓN GPS */}
+          <button onClick={() => setStep(1)} 
+            className="col-span-1 md:w-full flex items-center justify-center md:justify-between gap-3 px-3 py-2.5 text-[10px] font-black border border-white/10 text-white rounded-xl hover:bg-white hover:text-black transition-all group">
+              <span className="text-xl md:text-base">📍</span>
+              <span className="hidden md:block tracking-tighter group-hover:translate-x-1 transition-transform">GPS</span>
           </button>
 
-          <div className="w-[1px] h-5 md:w-full md:h-[1px] bg-white/10 mx-0.5 flex-shrink-0"></div>
-
+          {/* Los demás botones (6 restantes para completar los 8 espacios en móvil) */}
           {['broshop', 'lives', 'ai', 'game', 'web_search', 'internal_search'].map(id => (
               <button 
                 key={id} 
                 onClick={() => handleNavigation(id)} 
-                className={`${getButtonClass(id)} flex-shrink-0 md:w-full md:flex md:items-center md:justify-between md:gap-2 md:px-3 md:h-10 group text-[8px] md:text-[9px] rounded-lg`}
+                className={`${getButtonClass(id)} col-span-1 md:w-full md:flex md:items-center md:justify-between md:gap-3 md:px-3 md:h-12 group text-[10px] rounded-xl flex items-center justify-center`}
               >
-                  <span className="text-base">
+                  <span className="text-xl md:text-base">
                       {id === 'broshop' ? '🛒' : id === 'lives' ? '📡' : id === 'ai' ? '🤖' : id === 'game' ? '🎮' : id === 'web_search' ? '🌐' : '🔍'}
                   </span>
-                  <span className="hidden md:block tracking-widest group-hover:translate-x-1 transition-transform">
+                  <span className="hidden md:block tracking-tighter group-hover:translate-x-1 transition-transform uppercase">
                       {id === 'broshop' ? 'SHOP' : id === 'lives' ? 'LIVES' : id === 'ai' ? 'AI' : id === 'game' ? 'GAMES' : id === 'web_search' ? 'P2P' : 'SEARCH'}
                   </span>
               </button>
