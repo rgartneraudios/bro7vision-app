@@ -321,51 +321,48 @@ function App() {
           </div>
       )}
 
-      {/* 6. BRO-TUNER (RADIO) - POSICIONAMIENTO MÓVIL SOBRE LEGAL */}
-      <div className="fixed left-1/2 -translate-x-1/2 bottom-16 md:left-4 md:translate-x-0 md:bottom-64 z-[150]">
-          <BroTuner />
-      </div>
+      {/* BRO-TUNER: Oculto en móvil (hidden) y visible en PC (md:block) */}
+<div className="hidden md:block fixed left-4 bottom-64 z-[150]">
+    <BroTuner />
+</div>
       
-      {/* 7. NAVEGACIÓN (BOTONERA OPTIMIZADA) */}
+      {/* 7. NAVEGACIÓN (FILA ÚNICA PARA MÓVIL) */}
 {((step === 0 && realityMode) || step === 2) && (
   <div className="fixed 
-    bottom-28 left-0 w-full px-4
-    md:bottom-6 md:right-8 md:left-auto md:w-48 md:max-w-none 
-    z-[150] flex justify-center items-center pointer-events-none transition-all duration-700">
+    bottom-8 left-0 w-full px-2
+    md:bottom-6 md:right-8 md:left-auto md:w-48 
+    z-[200] flex justify-center items-center pointer-events-none transition-all">
       
-      <div className="flex 
-        /* Configuración MÓVIL: Grid de 4 columnas exactas para 2 filas */
-        grid grid-cols-4 gap-2 p-3
-        /* Configuración PC: Vertical y más ancho (w-48) para las letras */
-        md:flex md:flex-col md:gap-2 md:p-4                                         
+      <div className="flex flex-row md:flex-col gap-1 p-2
         bg-black/90 backdrop-blur-2xl rounded-2xl md:rounded-[1.5rem] 
-        border border-white/10 shadow-2xl pointer-events-auto">
+        border border-white/10 shadow-2xl pointer-events-auto
+        overflow-x-auto no-scrollbar max-w-full"> {/* overflow-x para asegurar que quepan los 8 */}
           
           {/* BOTÓN REALITY */}
           <button onClick={() => { setStep(0); setRealityMode(null); }} 
-            className="col-span-1 md:w-full flex items-center justify-center md:justify-between gap-3 px-3 py-2.5 text-[10px] font-black border border-white/10 text-cyan-400 rounded-xl hover:bg-cyan-500 hover:text-black transition-all group">
+            className="flex-shrink-0 flex items-center justify-center p-2.5 md:p-3 text-[10px] font-black border border-white/10 text-cyan-400 rounded-xl hover:bg-cyan-500 hover:text-black transition-all group">
               <span className="text-xl md:text-base">🌐</span>
-              <span className="hidden md:block tracking-tighter group-hover:translate-x-1 transition-transform">REALITY</span>
+              <span className="hidden md:block ml-3">REALITY</span>
           </button>
 
           {/* BOTÓN GPS */}
           <button onClick={() => setStep(1)} 
-            className="col-span-1 md:w-full flex items-center justify-center md:justify-between gap-3 px-3 py-2.5 text-[10px] font-black border border-white/10 text-white rounded-xl hover:bg-white hover:text-black transition-all group">
+            className="flex-shrink-0 flex items-center justify-center p-2.5 md:p-3 text-[10px] font-black border border-white/10 text-white rounded-xl hover:bg-white hover:text-black transition-all group">
               <span className="text-xl md:text-base">📍</span>
-              <span className="hidden md:block tracking-tighter group-hover:translate-x-1 transition-transform">GPS</span>
+              <span className="hidden md:block ml-3">GPS</span>
           </button>
 
-          {/* Los demás botones (6 restantes para completar los 8 espacios en móvil) */}
+          {/* Los demás botones en la misma fila */}
           {['broshop', 'lives', 'ai', 'game', 'web_search', 'internal_search'].map(id => (
               <button 
                 key={id} 
                 onClick={() => handleNavigation(id)} 
-                className={`${getButtonClass(id)} col-span-1 md:w-full md:flex md:items-center md:justify-between md:gap-3 md:px-3 md:h-12 group text-[10px] rounded-xl flex items-center justify-center`}
+                className={`${getButtonClass(id)} flex-shrink-0 flex items-center justify-center p-2.5 md:p-3 text-[10px] rounded-xl group`}
               >
                   <span className="text-xl md:text-base">
                       {id === 'broshop' ? '🛒' : id === 'lives' ? '📡' : id === 'ai' ? '🤖' : id === 'game' ? '🎮' : id === 'web_search' ? '🌐' : '🔍'}
                   </span>
-                  <span className="hidden md:block tracking-tighter group-hover:translate-x-1 transition-transform uppercase">
+                  <span className="hidden md:block ml-3 uppercase">
                       {id === 'broshop' ? 'SHOP' : id === 'lives' ? 'LIVES' : id === 'ai' ? 'AI' : id === 'game' ? 'GAMES' : id === 'web_search' ? 'P2P' : 'SEARCH'}
                   </span>
               </button>
@@ -373,6 +370,7 @@ function App() {
       </div>
   </div>
 )}
+
       {/* 8. HOLOPRISMA (SUBIDO EN PC) */}
       {step === 2 && (
         <div className="hidden md:flex fixed right-2 bottom-[750px] z-40 flex-col items-center w-24 animate-fadeIn">
