@@ -86,7 +86,7 @@ const LiveGrid = ({ onTuneIn, onUserClick, onClose, onOpenVideo, onSelectShop })
   const filteredCreators = creators.filter(c => filter === 'ALL' || (c.role && c.role.includes(filter)));
 
   return ( 
-    <div className="absolute top-40 bottom-44 md:top-[15%] md:bottom-[15%] left-[10%] right-[5%] max-w-6xl mx-auto pointer-events-auto z-40 animate-zoomIn flex flex-col">
+    <div className="absolute top-40 bottom-44 md:top-[15%] md:bottom-[15%] left-0 right-0 max-w-6xl mx-auto pointer-events-auto z-40 animate-zoomIn flex flex-col px-4">
         
         {/* INYECCIÓN DE ESTILOS */}
         <style>{haloStyles}</style>
@@ -114,21 +114,29 @@ const LiveGrid = ({ onTuneIn, onUserClick, onClose, onOpenVideo, onSelectShop })
             </div>
         )}
 
-        {/* FILTROS */}
-        <div className="w-full flex justify-between items-center mb-4 bg-black/60 p-1.5 md:p-2 rounded-xl border border-white/10 backdrop-blur-md shrink-0">
+        {/* FILTROS CENTRADOS */}
+        <div className="relative w-full flex justify-center items-center mb-6 bg-black/60 p-1.5 md:p-2 rounded-xl border border-white/10 backdrop-blur-md shrink-0">
             <div className="flex gap-1 md:gap-2 overflow-x-auto no-scrollbar">
                 {['ALL', 'TALK', 'MUSIC', 'SHOP'].map(f => (
-                    <button key={f} onClick={() => setFilter(f)} className={`px-4 py-1.5 md:px-5 md:py-2 text-[9px] md:text-[10px] font-black uppercase rounded-lg border transition-all ${filter === f ? 'bg-white text-black border-white shadow-[0_0_20px_white]' : 'bg-transparent border-white/10 text-gray-500 hover:text-white'}`}>{f}</button>
+                    <button 
+                        key={f} 
+                        onClick={() => setFilter(f)} 
+                        className={`px-4 py-1.5 md:px-5 md:py-2 text-[9px] md:text-[10px] font-black uppercase rounded-lg border transition-all ${filter === f ? 'bg-white text-black border-white shadow-[0_0_20px_white]' : 'bg-transparent border-white/10 text-gray-500 hover:text-white'}`}
+                    >
+                        {f}
+                    </button>
                 ))}
             </div>
-            <button onClick={onClose} className="text-gray-500 text-[9px] font-black uppercase pr-3 pl-2 hover:text-white transition-colors">✕</button>
+            <button onClick={onClose} className="absolute right-3 text-gray-500 text-[9px] font-black uppercase hover:text-white transition-colors">✕</button>
         </div>
 
-        {/* GRID */}
+        {/* GRID CENTRADO */}
         <div className="w-full h-full overflow-y-auto custom-scrollbar px-1">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-4 pb-32"> 
+            {/* 'justify-items-center' asegura que si hay pocos elementos, también se vean centrados */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6 pb-32 justify-items-center">
                 {filteredCreators.map((creator) => (
-                    <div key={creator.id} className="group relative aspect-[3/4] bg-[#050505] rounded-xl md:rounded-2xl overflow-hidden border border-white/5 hover:border-cyan-500/50 transition-all duration-700 shadow-2xl">
+                    <div key={creator.id} className="group relative w-full aspect-[3/4] bg-[#050505] rounded-xl md:rounded-2xl overflow-hidden border border-white/5 hover:border-cyan-500/50 transition-all duration-700 shadow-2xl">
+                        {/* ... (Contenido de la tarjeta permanece igual) ... */}
                         <img src={creator.img} className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-20 transition-opacity" alt={creator.alias} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent"></div>
                         <div className="absolute top-2 right-2 bg-black/80 px-2 py-0.5 rounded text-[7px] text-cyan-400 font-bold border border-cyan-500/20 shadow-lg">📡 {creator.distance}</div>
@@ -139,7 +147,7 @@ const LiveGrid = ({ onTuneIn, onUserClick, onClose, onOpenVideo, onSelectShop })
                         </div>
                         
                         <div className="absolute bottom-2 left-2 right-2 flex flex-col gap-1 md:gap-1.5">
-                            <button onClick={() => triggerHalo(creator)} className="w-full py-1.5 bg-white text-black font-black text-[8px] uppercase rounded-lg hover:bg-cyan-400 hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-all active:scale-95 flex flex-col items-center leading-tight"><span>⚪ HALO</span><span className="text-[6px] opacity-60">100 GENS</span></button>
+                            <button onClick={() => triggerHalo(creator)} className="w-full py-1.5 bg-white text-black font-black text-[8px] uppercase rounded-lg hover:bg-cyan-400 transition-all active:scale-95 flex flex-col items-center leading-tight"><span>⚪ HALO</span><span className="text-[6px] opacity-60">100 GENS</span></button>
                             <div className="grid grid-cols-3 gap-1">
                                 <button onClick={() => onTuneIn(creator)} className="py-1.5 bg-red-600 text-white rounded-md text-[9px] hover:bg-red-500 shadow-lg">▶</button>
                                 {creator.video_file && <button onClick={() => onOpenVideo(creator)} className="py-1.5 bg-fuchsia-600 text-white rounded-md text-[9px] hover:bg-fuchsia-500 shadow-lg">🎥</button>}
@@ -154,7 +162,7 @@ const LiveGrid = ({ onTuneIn, onUserClick, onClose, onOpenVideo, onSelectShop })
             </div>
         </div>
     </div>
-  );
+);
 };
 
 export default LiveGrid;
