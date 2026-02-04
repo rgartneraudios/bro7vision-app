@@ -204,6 +204,24 @@ const handleDeleteAsset = async (assetId) => {
       setNewAsset({ title: '', url: '', type: 'video', price: 0 });
     }
   };
+  
+  const [questions, setQuestions] = useState([]);
+
+useEffect(() => {
+    const fetchQuestions = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            const { data } = await supabase.from('bro_echos')
+                .select('*')
+                .eq('target_profile_id', user.id)
+                .like('text', '%❓%') // Filtramos las que llevan el icono de pregunta
+                .order('created_at', { ascending: false });
+            if (data) setQuestions(data);
+        }
+    };
+    if (tab === 'intimo') fetchQuestions();
+}, [tab]);
+
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-fadeIn font-mono">
@@ -220,6 +238,7 @@ const handleDeleteAsset = async (assetId) => {
         <div className="flex border-b border-white/10 bg-black overflow-x-auto shrink-0">
             <button onClick={() => setTab('identity')} className={`flex-1 py-4 px-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${tab === 'identity' ? 'bg-white/10 text-white border-b-2 border-white' : 'text-gray-600'}`}>👤 Identidad</button>
             <button onClick={() => setTab('audio')} className={`flex-1 py-4 px-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${tab === 'audio' ? 'bg-white/10 text-white border-b-2 border-white' : 'text-gray-600'}`}>📡 Señal</button>
+            <button onClick={() => setTab('intimo')} className={`flex-1 py-4 px-4 text-[10px] font-bold uppercase tracking-widest ${tab === 'intimo' ? 'bg-white/10 text-fuchsia-400 border-b-2 border-fuchsia-500' : 'text-gray-600'}`}>💎 ÍNTIMO</button>
             <button onClick={() => setTab('market')} className={`flex-1 py-4 px-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${tab === 'market' ? 'bg-white/10 text-white border-b-2 border-white' : 'text-gray-600'}`}>🛒 Tienda</button>
             <button onClick={() => setTab('assets')} className={`flex-1 py-4 px-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${tab === 'assets' ? 'bg-white/10 text-white border-b-2 border-white' : 'text-blue-500'}`}>📦 Activos</button>
         </div>
@@ -337,7 +356,49 @@ const handleDeleteAsset = async (assetId) => {
                     </div>
                 </div>
             )}
+            
+            {/* TAB INTIMO */}
+            {tab === 'intimo' && (
+    <div className="space-y-6 animate-fadeIn">
+        <div className="bg-fuchsia-900/10 border border-fuchsia-500/20 p-4 rounded-xl">
+            <p className="text-[10px] text-fuchsia-400 font-black uppercase mb-4 tracking-widest">Atmósfera de la Suite</p>
+            
+            <select value={formData.intimo_bg || ""} onChange={e => setFormData({...formData, intimo_bg: e.target.value})} className="w-full bg-black border border-white/20 p-3 text-white text-xs rounded mb-4">
+                <option value="" disabled>--- SELECCIONAR AMBIENTE ---</option>
+                <option value="dormitorio">🛏️ DORMITORIO</option>
+                <option value="cocina">🍳 COCINA</option>
+                <option value="ducha">🚿 DUCHA</option>
+            </select>
 
+            <label className="text-[9px] text-orange-400 block mb-1 uppercase font-black">Respuesta en Bucle (Visor)</label>
+            <input type="text" value={formData.creator_loop_reply} onChange={e => setFormData({...formData, creator_loop_reply: e.target.value})} placeholder="Ej: Hola Maggie, ya subí la foto!" className="w-full bg-black border border-white/20 p-3 text-white text-xs rounded mb-6" />
+
+            <div className="border-t border-white/10 pt-4">
+                <p className="text-[10px] text-cyan-400 font-black uppercase mb-3">Redacción Editorial (BroLogViewer)</p>
+                <input type="text" value={formData.editorial_title} onChange={e => setFormData({...formData, editorial_title: e.target.value})} placeholder="TÍTULO DEL ARTÍCULO..." className="w-full bg-black border border-white/20 p-3 text-white text-xs font-bold rounded mb-2" />
+                <textarea value={formData.editorial_content} onChange={e => setFormData({...formData, editorial_content: e.target.value})} placeholder="Escribe el cuerpo del artículo..." className="w-full bg-black border border-white/20 p-3 text-white text-[11px] rounded h-32 mb-4" />
+                
+                <label className="text-[9px] text-gray-500 block mb-1 uppercase">Link Imagen Mostrador</label>
+                <input type="text" value={formData.showcase_url} onChange={e => setFormData({...formData, showcase_url: e.target.value})} className="w-full bg-black border border-white/20 p-3 text-white text-xs rounded" />
+            </div>
+        </div>
+
+        {/* 📥 EL BUZÓN DE PREGUNTAS (VISTA DEL CREADOR) */}
+        <div className="bg-black/40 p-4 rounded-xl border border-white/5">
+            <p className="text-[10px] text-gray-500 font-black uppercase mb-3">📥 Preguntas de la Audiencia</p>
+            <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
+                {questions.length > 0 ? questions.map(q => (
+                    <div key={q.id} className="bg-white/5 p-2 rounded border border-white/5">
+                        <p className="text-[8px] text-fuchsia-400 font-bold uppercase">@{q.author_alias}</p>
+                        <p className="text-[10px] text-gray-300">{q.text.replace('❓ PREGUNTA: ', '')}</p>
+                    </div>
+                )) : (
+                    <p className="text-[9px] italic text-gray-600">No hay preguntas nuevas...</p>
+                )}
+            </div>
+        </div>
+    </div>
+)}
             {/* TAB ACTIVOS (WEB BOT) */}
             {tab === 'assets' && (
                 <div className="space-y-6 animate-fadeIn">

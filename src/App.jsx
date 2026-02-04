@@ -14,7 +14,7 @@ import { getVideoForLocation } from './data/VideoMap';
 import BroLives from './components/BroLives';
 import BroLogViewer from './components/BroLogViewer';
 import HoloPrism from './components/HoloPrism';
-import IdentityTerminal from './components/IdentityTerminal';
+// import IdentityTerminal from './components/IdentityTerminal';
 import BoosterModal from './components/BoosterModal';
 import LegalTerminal from './components/LegalTerminal';
 import HoloProjector from './components/HoloProjector';
@@ -422,7 +422,25 @@ function App() {
       {selectedCard && <PaymentModal isOpen={!!selectedCard} onClose={() => setSelectedCard(null)} product={selectedCard} balances={balances} onConfirmPayment={(c, a, p) => setBalances(prev=>({...prev, [c]: (prev[c]||0)-a}))} onLaunch={handleLaunchAsset} />}
       {showLegal && <LegalTerminal onClose={() => setShowLegal(false)} />}
       {showBooster && <BoosterModal onClose={() => setShowBooster(false)} />}
-      {showStory && <StoryPlayer src="/brostories_demo.mp4" activePhase="nova" onClose={() => setShowStory(false)} onComplete={(amount) => setBalances(prev => ({...prev, genesis: prev.genesis + amount}))} />}
+      {showStory && (
+  <StoryPlayer 
+    src="/brostories_demo.mp4" 
+    activePhase="nova" 
+    onClose={() => setShowStory(false)} 
+    onComplete={(amount) => {
+      // 1. Calculamos el nuevo total
+      setBalances(prev => {
+        const newTotal = prev.genesis + amount;
+        
+        // 2. LLAMADA MAESTRA: Sincronizamos con Supabase para que se guarde
+        syncGenesisToDB(newTotal); 
+        
+        // 3. Actualizamos la visual de la Wallet
+        return { ...prev, genesis: newTotal };
+      });
+    }} 
+  />
+)}
       
       {isTeleporting && (
         <div className="fixed inset-0 bg-black/98 z-[600] flex items-center justify-center pointer-events-none">
@@ -433,11 +451,31 @@ function App() {
         </div>
       )}
       
-      {projectingUser && <HoloProjector videoUrl={projectingUser.video_file} user={projectingUser} onClose={() => setProjectingUser(null)} />}
+      {projectingUser && (
+  <HoloProjector 
+    videoUrl={projectingUser.video_file} 
+    user={projectingUser} 
+    balances={balances} 
+    setBalances={setBalances} 
+    session={session}
+    onClose={() => setProjectingUser(null)} 
+    onOpenLog={setSelectedLog}
+  />
+)}
+
+/>}
       {activeGame && <HoloArcade gameUrl={activeGame.url} title={activeGame.title} onClose={() => setActiveGame(null)} />}
       {showWalletModal && <ConversionModal balances={balances} onClose={() => setShowWalletModal(false)} />}
       {selectedIdentity && <IdentityTerminal user={selectedIdentity} onClose={() => setSelectedIdentity(null)} />}
-      {selectedLog && <BroLogViewer log={selectedLog} onClose={() => setSelectedLog(null)} />}
+      {selectedLog && (
+  <BroLogViewer 
+    log={selectedLog} 
+    balances={balances}           // Pasamos tu saldo
+    setBalances={setBalances}     // Función para actualizarlo
+    session={session}             // Tu identidad
+    onClose={() => setSelectedLog(null)} 
+  />
+)}
     </div>
   );
 }

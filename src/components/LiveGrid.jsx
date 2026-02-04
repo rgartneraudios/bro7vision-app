@@ -130,37 +130,62 @@ const LiveGrid = ({ onTuneIn, onUserClick, onClose, onOpenVideo, onSelectShop })
             <button onClick={onClose} className="absolute right-3 text-gray-500 text-[9px] font-black uppercase hover:text-white transition-colors">✕</button>
         </div>
 
-        {/* GRID CENTRADO */}
-        <div className="w-full h-full overflow-y-auto custom-scrollbar px-1">
-            {/* 'justify-items-center' asegura que si hay pocos elementos, también se vean centrados */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6 pb-32 justify-items-center">
-                {filteredCreators.map((creator) => (
-                    <div key={creator.id} className="group relative w-full aspect-[3/4] bg-[#050505] rounded-xl md:rounded-2xl overflow-hidden border border-white/5 hover:border-cyan-500/50 transition-all duration-700 shadow-2xl">
-                        {/* ... (Contenido de la tarjeta permanece igual) ... */}
-                        <img src={creator.img} className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-20 transition-opacity" alt={creator.alias} />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent"></div>
-                        <div className="absolute top-2 right-2 bg-black/80 px-2 py-0.5 rounded text-[7px] text-cyan-400 font-bold border border-cyan-500/20 shadow-lg">📡 {creator.distance}</div>
-                        
-                        <div className="absolute bottom-[100px] md:bottom-[110px] left-2 right-2 text-center">
-                            <h3 className="text-white font-black text-xs md:text-sm uppercase tracking-tighter leading-none mb-1 drop-shadow-md truncate">{creator.alias}</h3>
-                            <p className="text-[8px] md:text-[9px] text-gray-400 italic line-clamp-1 opacity-70">"{creator.desc}"</p>
-                        </div>
-                        
-                        <div className="absolute bottom-2 left-2 right-2 flex flex-col gap-1 md:gap-1.5">
-                            <button onClick={() => triggerHalo(creator)} className="w-full py-1.5 bg-white text-black font-black text-[8px] uppercase rounded-lg hover:bg-cyan-400 transition-all active:scale-95 flex flex-col items-center leading-tight"><span>⚪ HALO</span><span className="text-[6px] opacity-60">100 GENS</span></button>
-                            <div className="grid grid-cols-3 gap-1">
-                                <button onClick={() => onTuneIn(creator)} className="py-1.5 bg-red-600 text-white rounded-md text-[9px] hover:bg-red-500 shadow-lg">▶</button>
-                                {creator.video_file && <button onClick={() => onOpenVideo(creator)} className="py-1.5 bg-fuchsia-600 text-white rounded-md text-[9px] hover:bg-fuchsia-500 shadow-lg">🎥</button>}
-                                <button onClick={() => onUserClick(creator)} className="py-1.5 bg-cyan-600 text-white rounded-md text-[9px] hover:bg-cyan-500 shadow-lg">👤</button>
-                            </div>
-                            {creator.role.includes('SHOP') && (
-                                <button onClick={() => handleGoToShop(creator)} className="w-full py-1 bg-yellow-500/10 border border-yellow-500/40 text-yellow-500 font-black text-[7px] uppercase rounded hover:bg-yellow-500 hover:text-black transition-all">🛒 SHOP</button>
-                            )}
-                        </div>
+        {/* GRID CENTRADO CORREGIDO */}
+<div className="w-full h-full overflow-y-auto custom-scrollbar px-1">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6 pb-32 justify-items-center">
+        {filteredCreators.map((creator) => (
+            <div key={creator.id} className="group relative w-full aspect-[3/4] bg-[#050505] rounded-xl md:rounded-2xl overflow-hidden border border-white/5 hover:border-fuchsia-500/50 transition-all duration-700 shadow-2xl">
+                
+                {/* Imagen de fondo */}
+                <img src={creator.img} className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-20 transition-opacity" alt={creator.alias} />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent"></div>
+                
+                {/* Badge de Distancia */}
+                <div className="absolute top-2 right-2 bg-black/80 px-2 py-0.5 rounded text-[7px] text-cyan-400 font-bold border border-cyan-500/20 shadow-lg">📡 {creator.distance}</div>
+                
+                {/* Info del Creador (Subida un poco para dejar sitio a los botones nuevos) */}
+                <div className="absolute bottom-[115px] md:bottom-[125px] left-2 right-2 text-center">
+                    <h3 className="text-white font-black text-xs md:text-sm uppercase tracking-tighter leading-none mb-1 drop-shadow-md truncate">{creator.alias}</h3>
+                    <p className="text-[8px] md:text-[9px] text-gray-400 italic line-clamp-1 opacity-70">"{creator.desc}"</p>
+                </div>
+                
+                {/* NUEVA BOTONERA ESTRATÉGICA */}
+                <div className="absolute bottom-2 left-2 right-2 flex flex-col gap-1.5">
+                    
+                    {/* 1. BOTÓN DE ACCESO ÍNTIMO (EL GANCHO PRINCIPAL) */}
+                    {creator.video_file && (
+                        <button 
+                            onClick={() => onOpenVideo(creator)} 
+                            className="w-full py-2.5 bg-fuchsia-600 text-white font-black text-[9px] uppercase rounded-lg hover:bg-fuchsia-500 shadow-[0_0_15px_rgba(217,70,239,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2"
+                        >
+                            <span>🎥</span> ACCESO ÍNTIMO
+                        </button>
+                    )}
+
+                    {/* 2. FILA SECUNDARIA: AUDIO Y TIENDA */}
+                    <div className="grid grid-cols-2 gap-1.5">
+                        {/* Audio (BroLives) */}
+                        <button 
+                            onClick={() => onTuneIn(creator)} 
+                            className="py-2 bg-red-600 text-white rounded-md text-[9px] font-bold hover:bg-red-500 shadow-lg flex items-center justify-center gap-1"
+                        >
+                            <span>▶</span> AUDIO
+                        </button>
+
+                        {/* Tienda (Shop) */}
+                        <button 
+                            onClick={() => handleGoToShop(creator)} 
+                            className="py-2 bg-yellow-500/10 border border-yellow-500/40 text-yellow-500 rounded-md text-[9px] font-black hover:bg-yellow-500 hover:text-black transition-all flex items-center justify-center gap-1"
+                        >
+                            <span>🛒</span> SHOP
+                        </button>
                     </div>
-                ))}
+
+                </div>
             </div>
-        </div>
+        ))}
+    	</div>
+	</div>
     </div>
 );
 };

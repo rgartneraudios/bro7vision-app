@@ -84,7 +84,7 @@ const PaginatedDisplay = ({ items, onSelect, onTuneIn, onOpenVideo }) => {
                                 
                                 <div className="flex flex-col gap-1.5 w-full items-center px-1">
                                     {item.audioFile && <button onClick={(e) => {e.stopPropagation(); onTuneIn(item)}} className="w-full py-1 bg-red-600/80 rounded text-[9px] font-black text-white hover:bg-red-500 shadow-md">▶ AUDIO</button>}
-                                    {item.video_file && <button onClick={(e) => {e.stopPropagation(); onOpenVideo(item)}} className="w-full py-1 bg-fuchsia-600/80 rounded text-[9px] font-black text-white hover:bg-fuchsia-500 shadow-md">🎥 CAM</button>}
+                                    {item.video_file && <button onClick={(e) => {e.stopPropagation(); onOpenVideo(item)}} className="w-full py-1 bg-fuchsia-600/80 rounded text-[9px] font-black text-white hover:bg-fuchsia-500 shadow-md">ÍNTIMO</button>}
                                 </div>
 
                                 <span className="text-[6px] font-bold text-gray-400 uppercase tracking-tighter">
