@@ -21,7 +21,7 @@ const BoosterModal = ({ onClose }) => {
             
             {/* 1. BRO-DROPS (Logística & Campo) */}
             <div className="group border border-white/10 p-6 rounded-xl hover:border-orange-500 transition-all cursor-pointer bg-[#0a0a0a] relative overflow-hidden">
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none"></div>
+                <div className="absolute inset-0 bg-[url('/noise.png')] opacity-5 pointer-events-none"></div>
                 <div className="text-4xl mb-4 grayscale group-hover:grayscale-0 transition-all">🚛</div>
                 <h3 className="text-xl font-bold text-white mb-2 group-hover:text-orange-400">BRO-DROPS LOGISTICS</h3>
                 <p className="text-sm text-gray-400 mb-6">Gestión de cargas, rutas de camiones y "Tetris" de palets. Conecta origen con nodos urbanos.</p>
@@ -43,7 +43,7 @@ const BoosterModal = ({ onClose }) => {
 
             {/* 2. BRO-CLUSTERS (Servicios & Agrupación) */}
             <div className="group border border-white/10 p-6 rounded-xl hover:border-cyan-500 transition-all cursor-pointer bg-[#0a0a0a] relative overflow-hidden">
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none"></div>
+                <div className="absolute inset-0 bg-[url('/noise.png')] opacity-5 pointer-events-none"></div>
                 <div className="text-4xl mb-4 grayscale group-hover:grayscale-0 transition-all">🏘️</div>
                 <h3 className="text-xl font-bold text-white mb-2 group-hover:text-cyan-400">BRO-CLUSTERS</h3>
                 <p className="text-sm text-gray-400 mb-6">Ofertas de servicios agrupados. Lanza rondas vecinales para radiación, plagas o reformas.</p>

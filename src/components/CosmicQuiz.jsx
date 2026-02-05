@@ -314,7 +314,7 @@ const CosmicQuiz = ({ onWin }) => {
                       `}>
                           
                           {/* DECORACIÓN FONDO */}
-                          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none"></div>
+                          <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 pointer-events-none"></div>
 
                           {/* HEADER TÉCNICO */}
                           <div className="flex justify-between w-full mb-1 opacity-70 border-b border-white/10 pb-1">

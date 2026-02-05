@@ -45,7 +45,7 @@ const GenesisGate = () => {
   return (
     <div className="fixed inset-0 z-[999] bg-black flex items-center justify-center overflow-hidden font-mono">
       
-      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 pointer-events-none"></div>
       <div className="absolute inset-0 bg-gradient-to-b from-black via-[#050510] to-black"></div>
       
       <div className="relative z-10 w-full max-w-md p-8 border border-white/10 bg-black/80 backdrop-blur-xl rounded-2xl shadow-[0_0_100px_rgba(34,211,238,0.1)] animate-zoomIn">
