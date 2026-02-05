@@ -132,7 +132,7 @@ function App() {
       }
     }
   }, [playingCreator, isAudioPlaying]);
-
+  
   // --- DATA LOADING ---
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
@@ -210,11 +210,13 @@ function App() {
     setIntent(newIntent);
     const needsGPS = ['broshop', 'lives', 'internal_search'];
     if (needsGPS.includes(newIntent)) {
+         // Si scope es null, te manda al Step 1 (Mapa manual)
+         // Si el GPS falla, scope seguirá siendo null
          if (!scope) setStep(1); else setStep(2);
     } else {
         setStep(2);
     }
-  };
+};
 
   const getButtonClass = (id) => {
     const isActive = intent === id && step === 2;
@@ -282,7 +284,16 @@ function App() {
       {/* 3. BOOSTER Y EXIT */}
       <div className="absolute top-4 right-4 z-[100] flex flex-col items-end gap-2">
           <button onClick={() => setShowBooster(true)} className="text-[12px] font-mono text-cyan-400 border border-cyan-500/50 px-4 py-1.5 rounded-full bg-black/60 backdrop-blur-md shadow-[0_0_15px_cyan/30] hover:bg-cyan-500 hover:text-black transition-all">[ BOOSTER STUDIO ]</button>
-          <button onClick={() => { supabase.auth.signOut(); setSession(null); }} className="text-[9px] text-red-500 font-bold opacity-60 hover:opacity-100">[ EXIT ]</button>
+          <button 
+  onClick={async () => { 
+    await supabase.auth.signOut(); 
+    localStorage.clear(); // Limpiamos el rastro en el navegador
+    window.location.href = "/"; // Forzamos recarga a la raíz
+  }} 
+  className="..."
+>
+  [ EXIT ]
+</button>
       </div>
 
       {/* 4. SECCIÓN GPS (STEP 1) */}
@@ -463,7 +474,6 @@ function App() {
   />
 )}
 
-/>}
       {activeGame && <HoloArcade gameUrl={activeGame.url} title={activeGame.title} onClose={() => setActiveGame(null)} />}
       {showWalletModal && <ConversionModal balances={balances} onClose={() => setShowWalletModal(false)} />}
       {selectedIdentity && <IdentityTerminal user={selectedIdentity} onClose={() => setSelectedIdentity(null)} />}
