@@ -58,7 +58,7 @@ const StoryPlayer = ({ src, activePhase, onClose, onComplete }) => {
         />
 
         {/* OVERLAY: TEXTURA Y DEGRADADOS (Para que se lean los textos) */}
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 pointer-events-none mix-blend-overlay"></div>
+        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 pointer-events-none mix-blend-overlay"></div>
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 pointer-events-none"></div>
       </div>
 

@@ -300,7 +300,40 @@ function App() {
       {step === 1 && (
         <div className="relative z-[500] h-full flex flex-col items-center justify-end pb-32 animate-zoomIn pointer-events-auto">
            <div className="flex flex-row gap-4 w-full max-w-2xl px-10">
-              <button onClick={() => { setScope({ city: 'Local' }); setStep(2); }} className="flex-1 bg-black/80 border-2 border-cyan-400 py-4 rounded-2xl font-black text-cyan-400 hover:bg-cyan-500 hover:text-black transition-all">📍 SINTONIZAR GPS</button>
+              <button 
+  onClick={() => {
+    // 1. Verificamos si el navegador tiene "antena"
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          // ÉXITO: Guardamos coordenadas reales y entramos al Mall
+          setScope({ 
+            city: 'Local', 
+            lat: pos.coords.latitude, 
+            lon: pos.coords.longitude 
+          });
+          setStep(2);
+          console.log("📍 GPS Sintonizado");
+        },
+        (err) => {
+          // ERROR: (Usuario denegó permiso o fallo de señal)
+          console.warn("Señal GPS bloqueada");
+          // Entramos igual con un valor por defecto para que no se vea vacío
+          setScope({ city: 'Local', lat: 40.41, lon: -3.70 }); 
+          setStep(2);
+        },
+        { timeout: 10000 } // Esperamos 10 segundos al satélite
+      );
+    } else {
+      // Navegador antiguo sin GPS
+      setScope({ city: 'Local' });
+      setStep(2);
+    }
+  }} 
+  className="flex-1 bg-black/80 border-2 border-cyan-400 py-4 rounded-2xl font-black text-cyan-400 hover:bg-cyan-500 hover:text-black transition-all"
+>
+  📍 SINTONIZAR GPS
+</button>
               <button onClick={() => setIsTeleporting(true)} className="flex-1 bg-black/80 border-2 border-fuchsia-500 py-4 rounded-2xl font-black text-fuchsia-500 hover:bg-fuchsia-500 hover:text-black transition-all">🌀 TELETRANSPORTE</button>
            </div>
            <button onClick={() => setStep(0)} className="text-gray-500 text-[10px] mt-6 font-bold uppercase tracking-widest hover:text-white">❮ VOLVER AL HUB</button>
