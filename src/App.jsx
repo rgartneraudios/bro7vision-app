@@ -1,4 +1,4 @@
-// src/App.jsx (CORRECCIÓN: POSICIONAMIENTO Y VISIBILIDAD MÓVIL)
+// src/App.jsx (CORRECCIÓN: LOGICA GPS + ZIP CODE RESTAURADA)
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from './supabaseClient';
@@ -24,12 +24,30 @@ import WebBotTerminal from './components/WebBotTerminal';
 import RacoonTerminal from './components/RacoonTerminal';
 import RealityTuner from './components/RealityTuner';
 
+// --- UTILIDAD: CALCULAR DISTANCIA (Fórmula Haversine) ---
+// Esto permite calcular metros reales entre tu GPS y el del usuario (si tiene lat/long)
+const getDistanceFromLatLonInKm = (lat1, lon1, lat2, lon2) => {
+  if (!lat1 || !lon1 || !lat2 || !lon2) return 99999; // Distancia infinita si faltan datos
+  const R = 6371; // Radio de la tierra en km
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
+    Math.sin(dLon / 2) * Math.sin(dLon / 2); 
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
+  return R * c; // Distancia en km
+};
+
 function App() {
   const [realityMode, setRealityMode] = useState(null); 
   const [session, setSession] = useState(null);
   const [step, setStep] = useState(0); 
   const [intent, setIntent] = useState(null);
+  
+  // scope ahora guardará datos reales del GPS ({ lat, lng, zip, city, type: 'gps' })
   const [scope, setScope] = useState(null);
+  
   const [balances, setBalances] = useState({ genesis: 0, nova: 0, crescens: 0, plena: 0, decrescens: 0 });
   const [realItems, setRealItems] = useState([]);
   const [playingCreator, setPlayingCreator] = useState(null);
@@ -51,6 +69,9 @@ function App() {
   const [activeGame, setActiveGame] = useState(null);
   const [prismImages, setPrismImages] = useState(null);
   const [selectedLog, setSelectedLog] = useState(null);
+
+  // Estado de carga para el GPS
+  const [gpsLoading, setGpsLoading] = useState(false);
 
   const audioRef = useRef(new Audio());
 
@@ -161,6 +182,12 @@ function App() {
             audioFile: u.audio_file, 
             video_file: u.video_file, 
             isAsset: false,
+            // Pasamos datos de ubicación explícitamente para el filtro
+            latitude: u.latitude,
+            longitude: u.longitude,
+            zip_code: u.zip_code, // IMPORTANTE: El dato del BoosterModal
+            city: u.city,
+            country: u.country,
             productData: { name: u.product_title, price: u.product_price },
             hasProduct: !!u.product_title, 
             hasService: !!u.service_title,
@@ -173,6 +200,62 @@ function App() {
     fetchData();
   }, [session, step]);
 
+  // --- ACTIVACIÓN DEL GPS REAL ---
+  const handleActivateGPS = () => {
+    if (!navigator.geolocation) {
+      alert("Tu navegador no soporta geolocalización. Intenta con Chrome o Safari.");
+      return;
+    }
+
+    setGpsLoading(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        
+        // Objeto de ubicación base
+        let userLocation = { 
+          type: 'gps', 
+          lat, 
+          lng, 
+          city: 'Detectando...', 
+          zip: null 
+        };
+
+        // (OPCIONAL) Ingeniería inversa para obtener Código Postal desde coords
+        // Usamos OpenStreetMap (Nominatim) que es gratuito y no requiere API Key
+        try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+            const data = await response.json();
+            if (data && data.address) {
+                userLocation.city = data.address.city || data.address.town || data.address.village || 'Ubicación Desconocida';
+                userLocation.country = data.address.country;
+                // Intentamos capturar el Código Postal
+                userLocation.zip = data.address.postcode; 
+            }
+        } catch (err) {
+            console.warn("No se pudo obtener el nombre de la ciudad/zip, usando solo coordenadas.", err);
+            userLocation.city = "Coordenadas GPS";
+        }
+
+        setScope(userLocation); // Guardamos la ubicación REAL
+        setGpsLoading(false);
+        setStep(2); // Pasamos al Dashboard
+      },
+      (error) => {
+        setGpsLoading(false);
+        console.error("Error GPS:", error);
+        alert("No se pudo obtener tu ubicación. Verifica que el GPS esté activo.");
+        // Fallback a modo local sin datos
+        setScope({ city: 'Sin Señal', type: 'local_error' }); 
+        setStep(2);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
+  // --- FILTRADO INTELIGENTE (ZIP CODE + DISTANCIA) ---
   const filteredItems = useMemo(() => {
     const MOCKS_CON_PAGO = MASTER_DB.map(m => ({
         ...m, 
@@ -182,15 +265,55 @@ function App() {
         audioFile: m.audioFile || m.audio_file,
         message: m.desc || "Simulación activa en la red..." 
     }));
-    const ALL = [...realItems, ...MOCKS_CON_PAGO];
-    return ALL.filter(item => {
+    
+    let ALL = [...realItems, ...MOCKS_CON_PAGO];
+
+    // 1. Filtrar por intención (Tienda, Live, etc)
+    ALL = ALL.filter(item => {
       if (intent === 'ai' || intent === 'game' || intent === 'web_search' || intent === 'internal_search') return false;
       const types = Array.isArray(item.type) ? item.type : [item.type];
       if (intent === 'broshop') return types.includes('shop') || types.includes('product') || types.includes('service');
       if (intent === 'lives') return types.includes('live');
       return true;
     });
-  }, [intent, realItems]);
+
+    // 2. Lógica GPS / Distancia / Zip Code
+    if (scope && scope.type === 'gps') {
+        ALL = ALL.map(item => {
+            // Calculamos distancia si hay coordenadas
+            let dist = 99999;
+            if (item.latitude && item.longitude) {
+                dist = getDistanceFromLatLonInKm(scope.lat, scope.lng, item.latitude, item.longitude);
+            }
+            
+            // Puntuación de coincidencia (Score)
+            // 0 = Muy lejos, 1 = Misma Ciudad, 2 = Mismo Código Postal (Barrio), 3 = Coordenadas muy cerca
+            let matchScore = 0;
+
+            // Prioridad A: Coincidencia exacta de Código Postal (del BoosterModal)
+            if (scope.zip && item.zip_code && String(scope.zip) === String(item.zip_code)) {
+                matchScore = 2; 
+            } 
+            // Prioridad B: Coincidencia de Ciudad
+            else if (scope.city && item.city && item.city.toLowerCase().includes(scope.city.toLowerCase())) {
+                matchScore = 1;
+            }
+
+            // Prioridad C: Distancia física menor a 50km (si existen coords)
+            if (dist < 50) matchScore = 3; 
+
+            return { ...item, _dist: dist, _score: matchScore };
+        });
+
+        // Ordenamos: Primero los de mayor Score (cerca/zip), luego por distancia real si hay empate
+        ALL.sort((a, b) => {
+            if (b._score !== a._score) return b._score - a._score; // Primero el score más alto
+            return a._dist - b._dist; // Luego el más cercano en km
+        });
+    }
+
+    return ALL;
+  }, [intent, realItems, scope]);
 
   // --- NAVIGATION ---
   const handleLaunchAsset = (product) => {
@@ -290,50 +413,24 @@ function App() {
     localStorage.clear(); // Limpiamos el rastro en el navegador
     window.location.href = "/"; // Forzamos recarga a la raíz
   }} 
-  className="..."
+  className="text-[10px] font-mono text-red-500 hover:text-red-300"
 >
   [ EXIT ]
 </button>
       </div>
 
-      {/* 4. SECCIÓN GPS (STEP 1) */}
+      {/* 4. SECCIÓN GPS (STEP 1) - BOTÓN ARREGLADO */}
       {step === 1 && (
         <div className="relative z-[500] h-full flex flex-col items-center justify-end pb-32 animate-zoomIn pointer-events-auto">
            <div className="flex flex-row gap-4 w-full max-w-2xl px-10">
               <button 
-  onClick={() => {
-    // 1. Verificamos si el navegador tiene "antena"
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          // ÉXITO: Guardamos coordenadas reales y entramos al Mall
-          setScope({ 
-            city: 'Local', 
-            lat: pos.coords.latitude, 
-            lon: pos.coords.longitude 
-          });
-          setStep(2);
-          console.log("📍 GPS Sintonizado");
-        },
-        (err) => {
-          // ERROR: (Usuario denegó permiso o fallo de señal)
-          console.warn("Señal GPS bloqueada");
-          // Entramos igual con un valor por defecto para que no se vea vacío
-          setScope({ city: 'Local', lat: 40.41, lon: -3.70 }); 
-          setStep(2);
-        },
-        { timeout: 10000 } // Esperamos 10 segundos al satélite
-      );
-    } else {
-      // Navegador antiguo sin GPS
-      setScope({ city: 'Local' });
-      setStep(2);
-    }
-  }} 
-  className="flex-1 bg-black/80 border-2 border-cyan-400 py-4 rounded-2xl font-black text-cyan-400 hover:bg-cyan-500 hover:text-black transition-all"
->
-  📍 SINTONIZAR GPS
-</button>
+                onClick={handleActivateGPS} 
+                disabled={gpsLoading}
+                className={`flex-1 bg-black/80 border-2 border-cyan-400 py-4 rounded-2xl font-black text-cyan-400 hover:bg-cyan-500 hover:text-black transition-all ${gpsLoading ? 'opacity-50 cursor-wait' : ''}`}
+              >
+                 {gpsLoading ? '📡 BUSCANDO SEÑAL...' : '📍 SINTONIZAR GPS'}
+              </button>
+              
               <button onClick={() => setIsTeleporting(true)} className="flex-1 bg-black/80 border-2 border-fuchsia-500 py-4 rounded-2xl font-black text-fuchsia-500 hover:bg-fuchsia-500 hover:text-black transition-all">🌀 TELETRANSPORTE</button>
            </div>
            <button onClick={() => setStep(0)} className="text-gray-500 text-[10px] mt-6 font-bold uppercase tracking-widest hover:text-white">❮ VOLVER AL HUB</button>
