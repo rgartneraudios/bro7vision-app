@@ -81,32 +81,47 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode }) 
     .animate-spirit { animation: spiritFade 10s ease-in-out forwards; }
     
    
-    /* ANIMACIÓN GEMA DE PODER: Ascenso orgánico con zigzag suave */
- /* ASCENSO DEL REMOLINO */
-  @keyframes vortexRise {
-    0%   { transform: translateY(20vh) translateX(0) scale(0.4) rotate(0deg); opacity: 0; }
-    10%  { opacity: 1; transform: translateY(15vh) translateX(0) scale(0.5) rotate(-20deg); }
+   /* ANIMACIÓN GEMA DE ENERGÍA - TRAYECTO CIRCULAR */
+@keyframes vortexRise {
+    /* Inicio: Aparece desde la izquierda abajo */
+    0%   { 
+        transform: translate(-80vw, -30vh) scale(0.9) rotate(0deg); 
+        opacity: 0.8;
+        z-index: 200;
+    }
     
-    /* ZIGZAG INICIAL (movimiento libre) */
-    20%  { transform: translateY(5vh) translateX(30px) scale(0.7) rotate(-60deg); } 
-    30%  { transform: translateY(-10vh) translateX(-25px) scale(0.85) rotate(-100deg); } 
-    40%  { transform: translateY(-25vh) translateX(35px) scale(1) rotate(-140deg); }
-    50%  { transform: translateY(-40vh) translateX(-30px) scale(1.05) rotate(-180deg); }
+        
+    /* Punto 1: Izquierda abajo X20, Y80 */
+    15%  { 
+        transform: translate(-30vw, 0vh) scale(1.3) rotate(90deg);
+        z-index: 200;
+    }
     
-    /* EMPIEZA LA ATRACCIÓN - LA CURVA HACIA EL CENTRO */
-    60%  { transform: translateY(-52vh) translateX(-15px) scale(0.95) rotate(-220deg); }
-    70%  { transform: translateY(-62vh) translateX(-5px) scale(0.8) rotate(-260deg); }
+          
+    /* Punto 3: Derecha arriba X70, Y60 */
+    70%  { 
+        transform: translate(10vw, -35vh) scale(1.2) rotate(450deg);
+        z-index: 200;
+    }
     
-    /* TOTALMENTE ATRAÍDA - CAE HACIA EL VISOR */
-    80%  { transform: translateY(-70vh) translateX(0) scale(0.5) rotate(-300deg); }
-    88%  { transform: translateY(-76vh) translateX(0) scale(0.3) rotate(-330deg); opacity: 0.9; }
-    95%  { transform: translateY(-79vh) translateX(0) scale(0.15) rotate(-350deg); opacity: 0.6; }
-    100% { transform: translateY(-80vh) translateX(0) scale(0.05) rotate(-360deg); opacity: 0; }
-}
-  .animate-vortex { 
-    animation: vortexRise 7s ease-out forwards; 
+    /* Comienza a ir hacia el centro del visor */
+    80%  { 
+        transform: translate(5vw, -45vh) scale(0.9) rotate(540deg);
+        z-index: 200;
+    }
+    
+        
+    /* Punto final: Centro del visor X50, Y20 */
+    100% { 
+        transform: translate(-30vw, -60vh) scale(0.05) rotate(720deg);
+        z-index: 50;
+        opacity: 0.8;
+    }
 }
 
+.animate-vortex { 
+    animation: vortexRise 6s cubic-bezier(0.45, 0.05, 0.55, 0.95) forwards;
+}
   /* ROTACIÓN DEL REMOLINO (rápida y continua) */
   @keyframes vortexSpin {
       0% { transform: rotate(0deg) scale(1); }
@@ -440,14 +455,12 @@ const selectedColor = colors[Math.floor(Math.random() * colors.length)];
           ))}
       </div>
 
-      {/* REACCIÓN: MEDUSA DE LUZ (ZIG-ZAG + TIRONES) */}
+      {/* ENVIO: GEMMA DE ENERGIA REMOLINO*/}
       {activeReaction && (
     <>
-      {/* Inyectar estilos */}
       <style>{forestStyles}</style>
 
-          {(() => {
-          // Seleccionar color aleatorio
+      {(() => {
           const colors = [
               { name: "azul", primary: "#00127A", secondary: "#006AED", glow: "rgba(59,130,246,0.6)" },
               { name: "fucsia", primary: "#FF007D", secondary: "#f472b6", glow: "rgba(236,72,153,0.6)" },
@@ -461,7 +474,8 @@ const selectedColor = colors[Math.floor(Math.random() * colors.length)];
           const randomColor = colors[Math.floor(Math.random() * colors.length)];
           
           return (
-              <div className="fixed bottom-20 right-[15%] z-[9999] pointer-events-none animate-vortex">
+              /* CAMBIO CLAVE: Posición inicial desde abajo-derecha */
+              <div className="fixed bottom-4 right-[15%] z-[100] pointer-events-none animate-vortex">
                   <div className="relative flex flex-col items-center" style={{ mixBlendMode: 'screen' }}>
                       
                       {/* NÚCLEO DEL REMOLINO */}
@@ -473,7 +487,7 @@ const selectedColor = colors[Math.floor(Math.random() * colors.length)];
                               style={{ background: randomColor.glow }}
                           ></div>
                           
-                          {/* 2. REMOLINO PRINCIPAL (espiral grande) */}
+                          {/* 2. REMOLINO PRINCIPAL */}
                           <div className="absolute w-40 h-40 animate-spin-vortex">
                               <div 
                                   className="w-full h-full rounded-full opacity-90"
@@ -490,7 +504,7 @@ const selectedColor = colors[Math.floor(Math.random() * colors.length)];
                               ></div>
                           </div>
 
-                          {/* 3. REMOLINO SECUNDARIO (gira en sentido contrario) */}
+                          {/* 3. REMOLINO SECUNDARIO */}
                           <div className="absolute w-32 h-32 animate-spiral-counter">
                               <div 
                                   className="w-full h-full rounded-full opacity-90"
@@ -511,21 +525,19 @@ const selectedColor = colors[Math.floor(Math.random() * colors.length)];
                               className="absolute w-36 h-36 rounded-full animate-spin-vortex"
                               style={{
                                   border: `4px solid ${randomColor.secondary}`,
-				opacity: 0.7,
-				filter: 'blur(1px)',
+                                  opacity: 0.7,
+                                  filter: 'blur(1px)',
                                   animationDuration: '2s'
                               }}
                           ></div>
 
                           {/* 5. NÚCLEO CENTRAL BRILLANTE */}
                           <div className="relative w-20 h-20 flex items-center justify-center">
-                              {/* Resplandor del núcleo */}
                               <div 
                                   className="absolute w-24 h-24 rounded-full blur-[20px] opacity-80 animate-energy-pulse"
                                   style={{ background: randomColor.primary }}
                               ></div>
                               
-                              {/* Núcleo sólido */}
                               <div 
                                   className="absolute w-16 h-16 rounded-full"
                                   style={{ 
@@ -534,7 +546,6 @@ const selectedColor = colors[Math.floor(Math.random() * colors.length)];
                                   }}
                               ></div>
                               
-                              {/* Punto de luz blanco central */}
                               <div className="absolute w-6 h-6 bg-white rounded-full blur-[2px] shadow-[0_0_20px_white,0_0_40px_white]"></div>
                           </div>
 
@@ -569,7 +580,6 @@ const selectedColor = colors[Math.floor(Math.random() * colors.length)];
 
                       </div>
 
-
                       {/* PARTÍCULAS FLOTANTES */}
                       <div className="absolute inset-0 w-48 h-48 -left-6 -top-6">
                           {[...Array(10)].map((_, i) => (
@@ -596,7 +606,8 @@ const selectedColor = colors[Math.floor(Math.random() * colors.length)];
           );
       })()}
     </>
-)}           
+)} 
+          
       {/* VISOR CENTRAL */}
       <div onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} className="absolute top-[42%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[20]">
           <div className="relative w-[88vw] md:w-[380px] h-[55vh] md:h-[600px]">

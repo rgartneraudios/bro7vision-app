@@ -24,6 +24,108 @@ const backgroundVideo = `/videos/intimo_${bgKey}.mp4`;
     }
     return clean;
   };
+  
+  const energyStyles = ` 
+
+   /* ANIMACIÓN GEMA DE ENERGÍA - TRAYECTO CIRCULAR */
+@keyframes vortexRise {
+    /* Inicio: Aparece desde la izquierda abajo */
+    0%   { 
+        transform: translate(-80vw, -30vh) scale(0.9) rotate(0deg); 
+        opacity: 0.8;
+        z-index: 200;
+    }
+
+    /* Punto 1: Izquierda abajo X20, Y80 */
+    15%  { 
+        transform: translate(-30vw, 0vh) scale(1.3) rotate(90deg);
+        z-index: 200;
+    }
+        
+    /* Punto 3: Derecha arriba X70, Y60 */
+    70%  { 
+        transform: translate(10vw, -35vh) scale(1.2) rotate(450deg);
+        z-index: 200;
+    }
+    
+    /* Comienza a ir hacia el centro del visor */
+    80%  { 
+        transform: translate(5vw, -45vh) scale(0.9) rotate(540deg);
+        z-index: 200;
+    }
+      
+    /* Punto final: Centro del visor X50, Y20 */
+    100% { 
+        transform: translate(-30vw, -60vh) scale(0.05) rotate(720deg);
+        z-index: 50;
+        opacity: 0.8;
+    }
+}
+
+.animate-vortex { 
+    animation: vortexRise 6s cubic-bezier(0.45, 0.05, 0.55, 0.95) forwards;
+}
+  /* ROTACIÓN DEL REMOLINO (rápida y continua) */
+  @keyframes vortexSpin {
+      0% { transform: rotate(0deg) scale(1); }
+      100% { transform: rotate(360deg) scale(1.05); }
+  }
+  
+  .animate-spin-vortex { 
+      animation: vortexSpin 1.5s linear infinite; 
+  }
+
+  /* PULSO DE ENERGÍA */
+  @keyframes energyPulse {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.2); opacity: 1; }
+  }
+  
+  .animate-energy-pulse {
+      animation: energyPulse 2s ease-in-out infinite;
+  }
+
+  /* ESPIRALES GIRANDO EN SENTIDO CONTRARIO */
+  @keyframes spiralCounter {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(-360deg); }
+  }
+  
+  .animate-spiral-counter {
+      animation: spiralCounter 3s linear infinite;
+  }
+
+  /* PARTÍCULAS DE ENERGÍA */
+  @keyframes particleOrbit {
+      0% { transform: rotate(0deg) translateX(30px) scale(1); opacity: 1; }
+      100% { transform: rotate(360deg) translateX(30px) scale(0.5); opacity: 0; }
+  }
+  
+  .animate-particle-orbit {
+      animation: particleOrbit 2s ease-out infinite;
+  }
+
+  /* DESTELLOS INTERMITENTES */
+  @keyframes flare {
+      0%, 60%, 100% { opacity: 0; transform: scale(0.8); }
+      70% { opacity: 1; transform: scale(1.3); }
+  }
+  
+  .animate-flare {
+      animation: flare 3s ease-in-out infinite;
+  }
+`;   
+   const colors = [
+  "#00127A", // azul
+  "#FF007D", // fucsia
+  "#00FF48", // esmeralda
+  "#4D00FA", // violeta
+  "#facc15", // amarillo
+  "#CF0000", // rojo
+  "#00E1FF"  // cyan
+];
+
+const selectedColor = colors[Math.floor(Math.random() * colors.length)];
 
   const handleSendHalo = async () => {
     if (balances.genesis < 100) { alert("SIN GÉNESIS"); return; }
@@ -55,21 +157,158 @@ const backgroundVideo = `/videos/intimo_${bgKey}.mp4`;
         {/* VIDEO DE FONDO NATURAL (SIN CAPAS NEGRAS) */}
         <video src={backgroundVideo} autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover" />
 
-        {/* HALO MEDUSA */}
-        {activeReaction && (
-          <div className="fixed inset-0 pointer-events-none z-[100000]">
-              <div className="absolute bottom-10 right-[15%] animate-glowSwim">
-                  <div className="relative w-48 h-48 flex items-center justify-center">
-                      <div className="absolute inset-0 bg-white/20 rounded-full blur-[60px] animate-pulse"></div>
-                      <div className="absolute w-14 h-14 bg-white rounded-full shadow-[0_0_50px_white]"></div>
-                      <div className="absolute w-full h-full animate-spin-slow">
-                           <div className="absolute top-0 left-1/2 w-6 h-6 bg-white rounded-full blur-sm shadow-[0_0_20px_white]"></div>
+        {/* ENVIO: GEMMA DE ENERGIA REMOLINO*/}
+      {activeReaction && (
+    <>
+      <style>{energyStyles}</style>
+
+      {(() => {
+          const colors = [
+              { name: "azul", primary: "#00127A", secondary: "#006AED", glow: "rgba(59,130,246,0.6)" },
+              { name: "fucsia", primary: "#FF007D", secondary: "#f472b6", glow: "rgba(236,72,153,0.6)" },
+              { name: "esmeralda", primary: "#00FF48", secondary: "#00FFF2", glow: "rgba(16,185,129,0.6)" },
+              { name: "violeta", primary: "#4D00FA", secondary: "#7C4FFF", glow: "rgba(139,92,246,0.6)" },
+              { name: "amarillo", primary: "#facc15", secondary: "#FFFF00", glow: "rgba(250,204,21,0.6)" },
+              { name: "rojo", primary: "#CF0000", secondary: "#F70C0C", glow: "rgba(239,68,68,0.6)" },
+              { name: "cyan", primary: "#00E1FF", secondary: "#61C8FF", glow: "rgba(6,182,212,0.6)" }
+          ];
+          
+          const randomColor = colors[Math.floor(Math.random() * colors.length)];
+          
+          return (
+              /* CAMBIO CLAVE: Posición inicial desde abajo-derecha */
+              <div className="fixed bottom-4 right-[15%] z-[100] pointer-events-none animate-vortex">
+                  <div className="relative flex flex-col items-center" style={{ mixBlendMode: 'screen' }}>
+                      
+                      {/* NÚCLEO DEL REMOLINO */}
+                      <div className="relative w-36 h-36 flex items-center justify-center">
+                          
+                          {/* 1. AURA EXTERIOR GIRATORIA */}
+                          <div 
+                              className="absolute w-48 h-48 rounded-full blur-[40px] opacity-60 animate-energy-pulse"
+                              style={{ background: randomColor.glow }}
+                          ></div>
+                          
+                          {/* 2. REMOLINO PRINCIPAL */}
+                          <div className="absolute w-40 h-40 animate-spin-vortex">
+                              <div 
+                                  className="w-full h-full rounded-full opacity-90"
+                                  style={{
+                                      background: `conic-gradient(from 0deg, 
+                                          ${randomColor.primary}, 
+                                          ${randomColor.secondary}, 
+                                          transparent 40%, 
+                                          ${randomColor.primary} 60%, 
+                                          transparent 80%, 
+                                          ${randomColor.secondary})`,
+                                      filter: 'blur(4px)'
+                                  }}
+                              ></div>
+                          </div>
+
+                          {/* 3. REMOLINO SECUNDARIO */}
+                          <div className="absolute w-32 h-32 animate-spiral-counter">
+                              <div 
+                                  className="w-full h-full rounded-full opacity-90"
+                                  style={{
+                                      background: `conic-gradient(from 180deg, 
+                                          transparent, 
+                                          ${randomColor.secondary} 30%, 
+                                          transparent 50%, 
+                                          ${randomColor.primary} 70%, 
+                                          transparent)`,
+                                      filter: 'blur(3px)'
+                                  }}
+                              ></div>
+                          </div>
+
+                          {/* 4. ANILLO DE ENERGÍA */}
+                          <div 
+                              className="absolute w-36 h-36 rounded-full animate-spin-vortex"
+                              style={{
+                                  border: `4px solid ${randomColor.secondary}`,
+                                  opacity: 0.7,
+                                  filter: 'blur(1px)',
+                                  animationDuration: '2s'
+                              }}
+                          ></div>
+
+                          {/* 5. NÚCLEO CENTRAL BRILLANTE */}
+                          <div className="relative w-20 h-20 flex items-center justify-center">
+                              <div 
+                                  className="absolute w-24 h-24 rounded-full blur-[20px] opacity-80 animate-energy-pulse"
+                                  style={{ background: randomColor.primary }}
+                              ></div>
+                              
+                              <div 
+                                  className="absolute w-16 h-16 rounded-full"
+                                  style={{ 
+                                      background: `radial-gradient(circle, white 20%, ${randomColor.secondary} 50%, ${randomColor.primary} 100%)`,
+                                      boxShadow: `0 0 40px ${randomColor.glow}, 0 0 80px ${randomColor.glow}, 0 0 120px ${randomColor.glow}, 0 0 160px ${randomColor.glow}`
+                                  }}
+                              ></div>
+                              
+                              <div className="absolute w-6 h-6 bg-white rounded-full blur-[2px] shadow-[0_0_20px_white,0_0_40px_white]"></div>
+                          </div>
+
+                          {/* 6. DESTELLOS RADIALES */}
+                          {[0, 1, 2, 3].map((i) => (
+                              <div 
+                                  key={i}
+                                  className="absolute w-2 h-24 animate-flare"
+                                  style={{
+                                      background: `linear-gradient(to bottom, ${randomColor.secondary}, transparent)`,
+                                      transform: `rotate(${i * 90}deg)`,
+                                      transformOrigin: 'center',
+                                      filter: 'blur(2px)',
+                                      animationDelay: `${i * 0.5}s`
+                                  }}
+                              ></div>
+                          ))}
+
+                          {/* 7. PARTÍCULAS ORBITANDO */}
+                          {[0, 1, 2, 3, 4, 5].map((i) => (
+                              <div 
+                                  key={`particle-${i}`}
+                                  className="absolute animate-particle-orbit"
+                                  style={{ animationDelay: `${i * 0.3}s` }}
+                              >
+                                  <div 
+                                      className="w-2 h-2 rounded-full blur-[1px]"
+                                      style={{ background: i % 2 === 0 ? randomColor.primary : randomColor.secondary }}
+                                  ></div>
+                              </div>
+                          ))}
+
                       </div>
+
+                      {/* PARTÍCULAS FLOTANTES */}
+                      <div className="absolute inset-0 w-48 h-48 -left-6 -top-6">
+                          {[...Array(10)].map((_, i) => (
+                              <div 
+                                  key={`float-${i}`}
+                                  className="absolute animate-particle-orbit"
+                                  style={{
+                                      left: `${20 + Math.random() * 60}%`,
+                                      top: `${20 + Math.random() * 60}%`,
+                                      animationDelay: `${Math.random() * 2}s`,
+                                      animationDuration: `${2 + Math.random() * 2}s`
+                                  }}
+                              >
+                                  <div 
+                                      className="w-1 h-1 rounded-full blur-[1px]"
+                                      style={{ background: randomColor.secondary }}
+                                  ></div>
+                              </div>
+                          ))}
+                      </div>
+
                   </div>
               </div>
-          </div>
-        )}
-
+          );
+      })()}
+    </>
+)}
         {/* VISOR VERTICAL (FUSIÓN CREMA) */}
         <div className="relative z-20 h-[88vh] aspect-[9/16] rounded-[3.5rem] border-[3px] border-[#FFFDD0]/30 shadow-[0_0_40px_rgba(255,253,208,0.15)] flex flex-col overflow-hidden bg-black">
             
