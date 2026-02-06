@@ -123,7 +123,7 @@ const NexusDashboard = ({
                           <div className="px-3 py-1 bg-yellow-500 text-black text-[9px] font-bold uppercase rounded-full">140 GEN</div>
                       </div>
                       <div onClick={() => setSelectedGame('steps')} className="group bg-black/80 border border-indigo-500/30 p-6 rounded-2xl hover:border-indigo-500 hover:bg-indigo-900/20 cursor-pointer transition-all flex flex-col items-center gap-2">
-                          <div className="text-xl tracking-widest opacity-60">👺🦊🙏🐧</div>
+                          <div className="text-xl tracking-widest opacity-60">🐓🦈🐜🐧</div>
                           <h3 className="text-xl font-black text-white italic">Cruce Caminos</h3>
                           <div className="px-3 py-1 bg-indigo-500 text-white text-[9px] font-bold uppercase rounded-full">SOCIAL RPG</div>
                       </div>

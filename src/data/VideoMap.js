@@ -119,7 +119,7 @@ export const VIDEO_MAP = {
     "utrera": "/videos/interior_andaluz.mp4",
     
     // ZONA LA MANCHA (Castilla La Mancha) -> Llanuras, molinos, piedra seca
-    "toledo": "/videos/la_mancha_spain.mp4",
+    "toledo": "/videos/toledo.mp4",
     "albacete": "/videos/la_mancha_spain.mp4",
     "guadalajara": "/videos/la_mancha_spain.mp4",
     "talavera_de_la_reina": "/videos/la_mancha_spain.mp4",
