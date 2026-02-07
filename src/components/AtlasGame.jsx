@@ -72,9 +72,9 @@ const AtlasGame = ({ onWin, onClose }) => {
       if (y > 88) m = 0; 
       else if (y > 70) m = 1; 
       else if (y > 55) m = 3;
-      else if (y > 40) m = 5;
-      else if (y > 25) m = 7; 
-      else if (y > 12) m = 9; 
+      else if (y > 45) m = 5;
+      else if (y > 30) m = 7; 
+      else if (y > 18) m = 9; 
       else m = 10;  
             
       setMultiplier(m);
