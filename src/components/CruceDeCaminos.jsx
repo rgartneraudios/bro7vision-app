@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // <--- FIX: Añadido useRef
 import { SCENARIOS, EMOTIONAL_MATRIX } from '../data/CruceDeCaminosData';
 
 const BUTTON_SETS = {
@@ -25,7 +25,7 @@ const BUTTON_SETS = {
 const CruceDeCaminos = ({ onWin, onClose }) => {
     const [gameState, setGameState] = useState('CATEGORIES'); 
     const [selectedCategory, setSelectedCategory] = useState(null);
-    const [activeScenario, setActiveScenario] = useState(null); // ÚNICA DECLARACIÓN
+    const [activeScenario, setActiveScenario] = useState(null);
     const [step, setStep] = useState(1); 
     const [balance, setBalance] = useState(0);
     const [currentText, setCurrentText] = useState("");
@@ -34,8 +34,31 @@ const CruceDeCaminos = ({ onWin, onClose }) => {
     const [pendingReward, setPendingReward] = useState(0);
     const [shuffledButtons, setShuffledButtons] = useState([]);
 
-    const categories = ['TIENDA', 'CITAS', 'TRABAJO'];
+    // --- SISTEMA DE AUDIO GLOBAL ---
+    const audioRef = useRef(null);
 
+    useEffect(() => {
+        // Inicializamos el audio solo una vez
+        if (!audioRef.current) {
+            audioRef.current = new Audio('/audio/Cruce_de_Caminos.mp3');
+            audioRef.current.loop = true;
+            audioRef.current.volume = 0.4;
+        }
+
+        const playMusic = () => {
+            if (audioRef.current) {
+                audioRef.current.play().catch(e => console.log("Interacción necesaria"));
+            }
+        };
+
+        window.addEventListener('click', playMusic);
+        return () => {
+            if (audioRef.current) audioRef.current.pause();
+            window.removeEventListener('click', playMusic);
+        };
+    }, []);
+
+    const categories = ['TIENDA', 'CITAS', 'TRABAJO'];
     const shuffle = (array) => [...array].sort(() => Math.random() - 0.5);
 
     useEffect(() => {
@@ -122,11 +145,7 @@ const CruceDeCaminos = ({ onWin, onClose }) => {
             <h2 className="text-white font-mono font-black italic text-4xl mb-16 uppercase tracking-widest text-center">NUCLEO DE CRUCES</h2>
             <div className="grid grid-cols-3 gap-10 w-full max-w-5xl">
                 {categories.map((cat) => (
-                    <div 
-                        key={cat} 
-                        onClick={() => { setSelectedCategory(cat); setGameState('PREVIO'); }}
-                        className="group relative h-64 bg-indigo-900/10 border-2 border-indigo-500/30 rounded-3xl flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-900/20 transition-all duration-500 shadow-2xl"
-                    >
+                    <div key={cat} onClick={() => { setSelectedCategory(cat); setGameState('PREVIO'); }} className="group relative h-64 bg-indigo-900/10 border-2 border-indigo-500/30 rounded-3xl flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-900/20 transition-all duration-500 shadow-2xl">
                         <span className="text-white font-mono font-black text-2xl tracking-tighter group-hover:scale-110 transition-transform">{cat}</span>
                         <div className="absolute bottom-4 text-indigo-400 text-[9px] font-black tracking-[0.4em]">ACCEDER</div>
                     </div>
@@ -145,23 +164,12 @@ const CruceDeCaminos = ({ onWin, onClose }) => {
                     <div className="w-1/3 flex flex-col justify-center border-r border-white/10 pr-12 text-left h-full font-mono">
                         <p className="text-indigo-500 font-black text-xs tracking-widest mb-4 uppercase">[ {selectedCategory} ]</p>
                         <div className="space-y-6">
-                            <div>
-                                <p className="text-white font-black text-sm mb-1 uppercase tracking-tighter">1. El Equilibrio</p>
-                                <p className="text-gray-500 text-[10px] leading-relaxed">Vigila el termómetro central. No dejes que la tensión llegue a los extremos.</p>
-                            </div>
-                            <div>
-                                <p className="text-white font-black text-sm mb-1 uppercase tracking-tighter">2. Alquimia Emocional</p>
-                                <p className="text-gray-500 text-[10px] leading-relaxed">Las características de los animales te ayudarán a elegir mejor.</p>
-                            </div>
-                            <div>
-                                <p className="text-white font-black text-sm mb-1 uppercase tracking-tighter">3. PREMIOS COINS </p>
-                                <p className="text-gray-500 text-[10px] leading-relaxed">SI HAY FRACASO = -10 Génesis, EXITO = +50 Coins, SUPER EXITO = +100 Coins .</p>
-                            </div>
-
+                            <div><p className="text-white font-black text-sm mb-1 uppercase tracking-tighter">1. El Equilibrio</p><p className="text-gray-500 text-[10px] leading-relaxed">Vigila el termómetro central. No dejes que la tensión llegue a los extremos.</p></div>
+                            <div><p className="text-white font-black text-sm mb-1 uppercase tracking-tighter">2. Alquimia Emocional</p><p className="text-gray-500 text-[10px] leading-relaxed">Tus herramientas animales se mezclan. Elige por instinto puro.</p></div>
                         </div>
                     </div>
                     <div className="w-2/3 flex flex-col justify-center">
-                        <h2 className="text-white font-mono font-black italic text-3xl mb-12 uppercase tracking-tighter">Elige tu Cruce</h2>
+                        <h2 className="text-white font-mono font-black italic text-3xl mb-12 uppercase tracking-tighter text-center">Elige tu Cruce</h2>
                         <div className="grid grid-cols-3 gap-6 w-full aspect-[16/9]">
                             {filteredScenarios.map((sc) => (
                                 <div key={sc.id} onClick={() => selectScenario(sc)} className={`relative rounded-[2rem] overflow-hidden border-2 transition-all duration-500 ${sc.locked ? 'border-white/5 opacity-20' : 'border-indigo-500/40 hover:border-indigo-400 hover:scale-[1.03] cursor-pointer shadow-2xl'}`}>
@@ -181,12 +189,9 @@ const CruceDeCaminos = ({ onWin, onClose }) => {
             <div className="h-full aspect-[9/16] relative bg-neutral-950 flex flex-col items-center justify-between py-12 px-8 border-x border-white/5 shadow-2xl">
                 <div className="w-full text-center">
                     <p className="text-indigo-400 font-mono font-black text-[10px] tracking-[0.3em] mb-2 uppercase">[ System Log ]</p>
-                    <p className="text-white font-mono font-bold text-xs leading-tight tracking-wider uppercase">{activeScenario.context}</p>
+                    <p className="text-white font-mono font-bold text-xs md:text-sm leading-tight tracking-wider uppercase">{activeScenario.context}</p>
                 </div>
-             <img   
-                src={activeScenario.inicioImg} 
-                className="w-full h-3/5 object-cover rounded-xl border border-white/10 shadow-2xl" 
-                alt="Contexto" />
+                <img src={activeScenario.inicioImg} className="w-full h-3/5 object-cover rounded-xl border border-white/10" alt="" />
                 <div className="w-full flex flex-col items-center">
                     <div className="w-44 h-[1px] bg-white/10 rounded-full relative mb-12">
                         <div className="absolute h-4 w-4 bg-white rounded-full -top-[7.5px] shadow-[0_0_15px_white] transition-all duration-1000" style={{ left: `50%`, transform: 'translateX(-50%)' }} />
@@ -205,27 +210,42 @@ const CruceDeCaminos = ({ onWin, onClose }) => {
             <div className="h-full aspect-[9/16] relative bg-neutral-950 shadow-2xl overflow-hidden border-x border-white/5">
                 
                 {gameState === 'END' ? (
-                    <div className="w-full h-full relative animate-fadeIn flex flex-col items-center justify-between">
-                        <img src={finalImage} className="absolute inset-0 w-full h-full object-cover" alt="" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
-                        <div className="relative z-10 w-full p-8 bg-black/80 backdrop-blur-md border-b-2 border-indigo-500/50 shadow-2xl flex flex-col items-center animate-fadeInDown">
-                             <h3 className={`text-xl font-black italic uppercase tracking-tighter mb-2 ${pendingReward > 0 ? 'text-green-400' : 'text-red-500'}`}>
-                                {pendingReward === 100 ? '¡VENTA MAESTRA!' : (pendingReward > 0 ? 'TRATO CERRADO' : 'CLIENTE PERDIDO')}
-                            </h3>
-                            <div className="flex items-center gap-4">
-                                <span className="text-3xl animate-pulse">💠</span>
-                                <span className={`font-mono font-black text-6xl ${pendingReward > 0 ? 'text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.7)]' : 'text-gray-500'}`}>
-                                    {pendingReward > 0 ? '+' : ''}{pendingReward}
-                                </span>
+                    <div className="w-full h-full relative animate-fadeIn">
+                        {/* IMAGEN DE FONDO LIMPIA */}
+                        <img src={finalImage} className="absolute inset-0 w-full h-full object-cover" alt="Final" />
+                        
+                        {/* CAPA DE GRADIENTE SUTIL */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/30"></div>
+                        
+                        {/* HUD DE RECOMPENSA COMPACTO (ARRIBA A LA DERECHA) */}
+                        <div className="absolute top-6 right-4 z-20 animate-fadeInRight">
+                            <div className="bg-black/70 backdrop-blur-xl border border-indigo-500/50 p-3 rounded-2xl shadow-2xl flex flex-col items-center min-w-[110px]">
+                                <h3 className={`text-[10px] font-black italic uppercase tracking-tighter mb-1 ${pendingReward > 0 ? 'text-green-400' : 'text-red-500'}`}>
+                                    {pendingReward === 100 ? '¡MAESTRO!' : (pendingReward > 0 ? 'LOGRADO' : 'FALLIDO')}
+                                </h3>
+                                
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm">💠</span>
+                                    <span className={`font-mono font-black text-2xl ${pendingReward > 0 ? 'text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]' : 'text-gray-500'}`}>
+                                        {pendingReward > 0 ? '+' : ''}{pendingReward}
+                                    </span>
+                                </div>
+                                <p className="text-[7px] text-indigo-300 font-mono tracking-widest uppercase mt-1">GÉNESIS</p>
                             </div>
-                            <p className="text-[10px] text-indigo-300 font-mono tracking-[0.4em] mt-2 font-black uppercase tracking-widest">Génesis Actualizado</p>
                         </div>
-                        <div className="relative z-10 w-full p-12 flex justify-center">
-                            <button onClick={() => { onWin(pendingReward); onClose(); }} className="bg-white text-black hover:bg-indigo-500 hover:text-white transition-all hover:scale-105 px-16 py-5 rounded-full font-mono font-black uppercase text-[11px] tracking-[0.2em] shadow-2xl">RECLAMAR RECOMPENSA</button>
+
+                        {/* BOTÓN SALIR ABAJO */}
+                        <div className="absolute bottom-12 w-full flex justify-center px-8">
+                            <button 
+                                onClick={() => { onWin(pendingReward); onClose(); }} 
+                                className="bg-white text-black hover:bg-indigo-500 hover:text-white transition-all hover:scale-105 px-12 py-4 rounded-full font-mono font-black uppercase text-[10px] tracking-[0.2em] shadow-2xl border-b-4 border-gray-400 active:border-b-0 active:translate-y-1"
+                            >
+                                RECLAMAR RECOMPENSA
+                            </button>
                         </div>
                     </div>
                 ) : (
-                    <>
+                                    <>
                         <video key={activeScenario.videoSrc} autoPlay loop playsInline className="absolute inset-0 w-full h-full object-cover opacity-60 scale-105">
                             <source src={activeScenario.videoSrc} type="video/mp4" />
                         </video>
@@ -255,6 +275,8 @@ const CruceDeCaminos = ({ onWin, onClose }) => {
                 @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
                 @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
                 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+               @keyframes fadeInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+	      .animate-fadeInRight { animation: fadeInRight 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
                 .animate-fadeInUp { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
                 .animate-fadeInDown { animation: fadeInDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
                 .animate-fadeIn { animation: fadeIn 0.8s ease-out forwards; }

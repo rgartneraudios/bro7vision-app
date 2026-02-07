@@ -19,10 +19,11 @@ const AtlasGame = ({ onWin, onClose }) => {
 
   const getRiskColor = (m) => {
     if (m === 0) return '#ffffff';
-    if (m === 1) return '#e879f9';
+    if (m === 1) return '#8D00A3';
     if (m === 3) return '#06b6d4';
-    if (m === 5) return '#BD004E';
-    if (m === 7) return '#4FFF14';
+    if (m === 5) return '#FF0072';
+    if (m === 7) return '#0008FF';
+    if (m === 9) return '#4FFF14';
     return '#ff0000';
   };
 
@@ -67,14 +68,15 @@ const AtlasGame = ({ onWin, onClose }) => {
 
       setPlayer({ x, y, vx, vy });
 
-      let m = 0;
-      if (y > 80) m = 0; 
-      else if (y > 60) m = 1; 
-      else if (y > 45) m = 3;
-      else if (y > 30) m = 5;
-      else if (y > 15) m = 7; 
-      else m = 10;
-      
+     let m = 0;
+      if (y > 88) m = 0; 
+      else if (y > 70) m = 1; 
+      else if (y > 55) m = 3;
+      else if (y > 40) m = 5;
+      else if (y > 25) m = 7; 
+      else if (y > 12) m = 9; 
+      else m = 10;  
+            
       setMultiplier(m);
       setScore(s => s + m);
 
