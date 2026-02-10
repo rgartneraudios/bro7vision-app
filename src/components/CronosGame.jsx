@@ -652,7 +652,7 @@ const CronosGame = ({ onWin, onClose }) => {
              </>
           ) : (
              <>
-               <h1 className="text-red-600 font-black text-8xl italic mb-6">GAME OVER</h1>
+               <h1 className="text-red-600 font-black text-8xl italic mb-6">Gracias por participar !</h1>
                <div className="text-white text-2xl mb-8">
   		GÉNESIS OBTENIDOS: <span className="text-cyan-400">10</span>
 		</div>
