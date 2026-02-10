@@ -647,15 +647,15 @@ const CronosGame = ({ onWin, onClose }) => {
         <div className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center z-[20] animate-fadeIn">
           {gameState.current.cubes.every(c => c.status.startsWith('captured')) ? (
              <>
-               <h1 className="text-yellow-400 font-black text-8xl italic mb-6 shadow-yellow-500 drop-shadow-lg">¡VICTORIA!</h1>
+               <h1 className="text-yellow-400 font-black text-8xl italic mb-6 shadow-yellow-500 drop-shadow-lg">Has obtenido......</h1>
                <div className="text-white text-2xl mb-8">PUNTUACIÓN TOTAL: {score}</div>
              </>
           ) : (
              <>
                <h1 className="text-red-600 font-black text-8xl italic mb-6">GAME OVER</h1>
                <div className="text-white text-2xl mb-8">
-                 GÉNESIS ACUMULADOS: <span className={score >= 0 ? 'text-cyan-400' : 'text-red-500'}>{score}</span>
-               </div>
+  		GÉNESIS OBTENIDOS: <span className="text-cyan-400">10</span>
+		</div>
              </>
           )}
           <button onClick={handleClose} className="px-16 py-6 bg-white text-black font-black uppercase rounded-full text-2xl hover:bg-yellow-500">
