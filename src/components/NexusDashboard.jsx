@@ -14,6 +14,7 @@ import CosmicQuiz from './CosmicQuiz';
 import SevenGates from './SevenGates';
 import CruceDeCaminos from './CruceDeCaminos';
 import AtlasGame from './AtlasGame';
+import CronosGame from './CronosGame';
 
 const NexusDashboard = ({ 
     onSearch, searchQuery, setSearchQuery, 
@@ -122,16 +123,21 @@ const NexusDashboard = ({
                           <h3 className="text-xl font-black text-white italic">THE 7 GATES</h3>
                           <div className="px-3 py-1 bg-yellow-500 text-black text-[9px] font-bold uppercase rounded-full">140 GEN</div>
                       </div>
-                      <div onClick={() => setSelectedGame('steps')} className="group bg-black/80 border border-indigo-500/30 p-6 rounded-2xl hover:border-indigo-500 hover:bg-indigo-900/20 cursor-pointer transition-all flex flex-col items-center gap-2">
+                      <div onClick={() => setSelectedGame('steps')} className="group bg-black/80 border border-indigo-500/30 p-6 rounded-2xl 			hover:border-indigo-500 hover:bg-indigo-900/20 cursor-pointer transition-all flex flex-col items-center gap-2">
                           <div className="text-xl tracking-widest opacity-60">🐓🦈🐜🐧</div>
                           <h3 className="text-xl font-black text-white italic">Cruce Caminos</h3>
                           <div className="px-3 py-1 bg-indigo-500 text-white text-[9px] font-bold uppercase rounded-full">SOCIAL RPG</div>
                       </div>
-                      <div onClick={() => setSelectedGame('atlas')} className="group bg-black/80 border border-blue-500/30 p-6 rounded-2xl hover:border-blue-500 hover:bg-blue-900/20 cursor-pointer transition-all flex flex-col items-center gap-2">
+                      <div onClick={() => setSelectedGame('atlas')} className="group bg-black/80 border border-blue-500/30 p-6 rounded-2xl 				hover:border-blue-500 hover:bg-blue-900/20 cursor-pointer transition-all flex flex-col items-center gap-2">
                           <div className="text-4xl">☄️</div>
                           <h3 className="text-xl font-black text-white italic">3i-ATLAS</h3>
                           <div className="px-3 py-1 bg-blue-500 text-black text-[9px] font-bold uppercase rounded-full">100 GEN</div>
                       </div>
+                      <div onClick={() => setSelectedGame('cronos')} className="group bg-black/80 border border-orange-500/30 p-6 rounded-2xl 			hover:border-orange-500 hover:bg-orange-900/20 cursor-pointer transition-all flex flex-col items-center gap-2">
+   			 <div className="text-4xl">😄😡🤪🤬</div>
+    			<h3 className="text-xl font-black text-white italic">TELECRONOS</h3>
+    			<div className="px-3 py-1 bg-orange-500 text-black text-[9px] font-bold uppercase rounded-full">HASTA 180 GEN</div>
+		     </div>
                   </div> 
               )}
                             
@@ -176,7 +182,26 @@ const NexusDashboard = ({
                         <AtlasGame onWin={(amt) => onGameWin(amt)} onClose={() => setSelectedGame(null)} />
                     </div>
                 </div>
-              )}            
+              )} 
+              
+                  {/* RENDER CRONOS GAME */}
+		{selectedGame === 'cronos' && (
+    		<div className="w-full h-full relative flex items-center justify-center">
+        			{/* Botón para volver al menú de juegos */}
+       		 <button onClick={() => setSelectedGame(null)} className="absolute -top-8 left-0 text-white font-bold uppercase text-xs z-50 		pointer-events-auto">❮ MENU</button>
+        
+      		  {/* Contenedor del juego */}
+       		 <div className="w-full max-w-4xl h-full md:h-[600px] pointer-events-auto shadow-2xl rounded-xl overflow-hidden bg-black 		border border-orange-500/30">
+            	<CronosGame 
+                		onWin={(amt) => { 
+                    	onGameWin(amt); // Esto sincroniza los puntos con tu Supabase (vía App.jsx)
+                    setSelectedGame(null); 
+                	}} 
+                	onClose={() => setSelectedGame(null)} 
+            />
+        </div>
+    </div>
+)}       
           </div>
       )}
             
