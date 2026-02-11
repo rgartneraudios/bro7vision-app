@@ -44,6 +44,7 @@ function App() {
   const [session, setSession] = useState(null);
   const [step, setStep] = useState(0); 
   const [intent, setIntent] = useState(null);
+  const [isGuest, setIsGuest] = useState(false);
   
   // scope ahora guardará datos reales del GPS ({ lat, lng, zip, city, type: 'gps' })
   const [scope, setScope] = useState(null);
@@ -361,8 +362,26 @@ function App() {
     return [masterVideo, ...userVideos];
   }, [realItems]);
 
-  if (!session) return <GenesisGate />;
-
+   // INICIO SESION
+  if (!session && !isGuest) {
+    return (
+      <GenesisGate 
+        onGuestAccess={() => {
+          setIsGuest(true);
+          
+          // --- AQUÍ ESTÁ EL CAMBIO ---
+          setStep(0);           // Step 0 es la zona de Reality/Forest
+          setRealityMode(null); // Null fuerza a que salga el RealityTuner primero
+          
+          // Configuramos un Scope demo para que no falle el mapa
+          setScope({ city: 'Modo Visitante', type: 'demo' });
+          
+          // Les damos unos saldos falsos para que la UI se vea bonita (Marketing)
+          setBalances({ genesis: 500, nova: 20, crescens: 10, plena: 5, decrescens: 0 });
+        }} 
+      />
+    );
+  }
   return (
     <div className="relative w-full h-screen bg-black text-white overflow-hidden font-sans">
       
