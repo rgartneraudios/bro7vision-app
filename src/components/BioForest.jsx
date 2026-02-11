@@ -398,7 +398,7 @@ const selectedColor = colors[Math.floor(Math.random() * colors.length)];
       case 'blackhole': return { video: '/videos/eclipse_mode.mp4', colors: ['text-[#FFD700]', 'text-orange-400'], font: 'font-serif italic', border: 'border-[#C7AF38]/40 shadow-[0_0_40px_rgba(199,175,56,0.2)]', reactionColor: 'orange', labelClass: 'text-orange-500', labelText: 'ECLIPSE ZENITH', navColor: 'text-yellow-500' };
       case 'winter': return { video: '/videos/winter_mode.mp4', colors: ['text-orange-400', 'text-yellow-200'], font: 'font-black', border: 'border-orange-900/40 shadow-[0_0_30px_rgba(251,146,60,0.1)]', reactionColor: 'orange', labelClass: 'text-orange-400', labelText: 'WINTER CABIN', navColor: 'text-orange-500' };
       case 'summer': return { video: '/videos/summer_mode.mp4', colors: ['text-cyan-300', 'text-blue-400', 'text-emerald-200'], font: 'font-black tracking-tighter', border: 'border-cyan-400/30 shadow-[0_0_30px_rgba(34,211,238,0.2)]', reactionColor: 'cyan', labelClass: 'text-cyan-400', labelText: 'SUMMER REEF', navColor: 'text-cyan-300' };
-      default: return { video: '/videos/bio_landing.mp4', colors: ['text-cyan-400', 'text-fuchsia-400'], font: 'font-black', border: 'border-white/10 shadow-[0_0_60px_rgba(0,0,0,1)]', reactionColor: 'cyan', labelClass: 'text-cyan-400', labelText: 'GÉNESIS FOREST', navColor: 'text-cyan-400' };
+      default: return { video: '/videos/bioforest.mp4', colors: ['text-cyan-400', 'text-fuchsia-400'], font: 'font-black', border: 'border-white/10 shadow-[0_0_60px_rgba(0,0,0,1)]', reactionColor: 'cyan', labelClass: 'text-cyan-400', labelText: 'GÉNESIS FOREST', navColor: 'text-cyan-400' };
     }
   }, [realityMode]);
 

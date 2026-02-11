@@ -47,18 +47,16 @@ const GenesisGate = ({ onGuestAccess }) => {
     <div className="fixed inset-0 z-[999] bg-black flex items-center justify-center overflow-hidden font-mono text-white">
       
       {/* --- 1. FONDO DE VIDEO (CINE) --- */}
-      <div className="absolute inset-0 z-0">
+       <div className="absolute inset-0 z-0">
         <video 
-            src="/portada.mp4" 
+            src="/genesisgate.mp4" 
             autoPlay 
             loop 
             muted 
             playsInline 
-            className="w-full h-full object-cover opacity-90" // Opacidad para que se lea el texto
+            className="w-full h-full object-cover" 
         />
-        {/* Capa oscura para contraste */}
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"></div>
-      </div>
+       </div>
       
       {/* --- 2. TARJETA DE ACCESO --- */}
       <div className="relative z-10 w-full max-w-md p-8 border border-white/10 bg-black/60 backdrop-blur-xl rounded-2xl shadow-[0_0_100px_rgba(34,211,238,0.2)] animate-zoomIn">

@@ -404,7 +404,7 @@ function App() {
         {step === 2 && (
           <video 
             key={intent} 
-            src={intent === 'ai' ? "/ai_bg.mp4" : intent === 'game' ? "/game_bg.mp4" : intent === 'lives' ? "/brolives.mp4" : intent === 'internal_search' ? "/racoonask.mp4" : intent === 'web_search' ? "/websearch.mp4" : getVideoForLocation(scope)} 
+            src={intent === 'ai' ? "/ai_bg.mp4" : intent === 'game' ? "/game_bg.mp4" : intent === 'lives' ? "/brolives1.mp4" : intent === 'internal_search' ? "/racoonask.mp4" : intent === 'web_search' ? "/websearch.mp4" : getVideoForLocation(scope)} 
             autoPlay loop muted playsInline 
             className="w-full h-full object-cover animate-fadeIn" 
           />
