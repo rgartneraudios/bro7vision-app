@@ -12,7 +12,7 @@ const MOBILE_SLOTS = [
     { x: 10, y: 6 }, { x: 30, y: 4 }, { x: 50, y: 6 }, { x: 70, y: 4 }, { x: 90, y: 6 }
 ];
 
-const BioForest = ({ videoUsers, balances, setBalances, session, realityMode }) => {
+const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, onOpenProfile, selectedForestUser }) => { 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -68,6 +68,21 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode }) 
     };
     fetchMyAlias();
   }, [session]);
+  
+  // Este efecto busca al usuario del radar dentro de la lista del bosque
+useEffect(() => {
+  if (selectedForestUser && displayUsers.length > 0) {
+    const targetIndex = displayUsers.findIndex(u => u.id === selectedForestUser.id);
+    
+    if (targetIndex !== -1) {
+      setCurrentIndex(targetIndex);
+    } else {
+      // Opcional: Si el usuario no estaba en la lista original (hubVideos), 
+      // podrías forzar su inserción o simplemente manejar el error.
+      console.log("Usuario no encontrado en la lista actual del bosque");
+    }
+  }
+}, [selectedForestUser, displayUsers]);
 
   // --- ESTILOS ---
   // HE ACELERADO 'spin-slow' de 8s a 3s para que se note la rotación al subir
@@ -396,7 +411,7 @@ const selectedColor = colors[Math.floor(Math.random() * colors.length)];
   const config = useMemo(() => {
     switch(realityMode) {
       // --- MODOS EXISTENTES ---
-      case 'blackhole': // (Ojo: asegúrate que en RealityTuner el ID sea 'blackhole' o cambia esto a 'eclipse')
+      case 'eclipse': // (Ojo: asegúrate que en RealityTuner el ID sea 'blackhole' o cambia esto a 'eclipse')
         return { 
           video: '/videos/eclipse_mode.mp4', 
           colors: ['text-[#FFD700]', 'text-orange-400'], 
@@ -443,7 +458,7 @@ const selectedColor = colors[Math.floor(Math.random() * colors.length)];
           reactionColor: 'fuchsia', 
           labelClass: 'text-fuchsia-400', 
           labelText: 'CYBER SUITE 2046', 
-          navColor: 'text-purple-400' 
+          navColor: 'text-yellow-400' 
         };
 
       case 'cafe': // RAINY CAFE (COZY)
@@ -722,35 +737,48 @@ const selectedColor = colors[Math.floor(Math.random() * colors.length)];
       )}
   </div>
   
-              {/* BOTONERA ACCIÓN */}
-              <div className="absolute -bottom-36 md:-bottom-44 left-0 w-full flex flex-col items-center gap-3">
-                  <div className="flex gap-4">
-                      <button onClick={() => handleAction('reaction')} className="px-6 py-2.5 bg-white text-black rounded-xl text-[10px] font-black uppercase shadow-lg">SEÑAL</button>
-                      <button onClick={() => setShowEchoInput(true)} className="px-6 py-2.5 bg-black/90 border border-white/20 text-white rounded-xl text-[10px] font-black uppercase">ECO</button>
+              {/* BOTONERA ACCIÓN (MODIFICADA PARA 3 BOTONES) */}
+              <div className="absolute -bottom-36 md:-bottom-44 left-0 w-full flex flex-col items-center gap-3 z-50 pointer-events-auto">
+                  
+                  {/* Contenedor de botones: Usamos gap-2 para que entren bien en iPhone */}
+                  <div className="flex items-center justify-center gap-2 w-full max-w-[350px] px-4">
+                      
+                      {/* 1. HALO (Blanco/Energía) */}
+                      <button 
+                        onClick={() => handleAction('reaction')} 
+                        className="flex-1 py-3 bg-white text-black border border-white rounded-xl text-[9px] font-black uppercase shadow-[0_0_15px_rgba(255,255,255,0.4)] hover:scale-105 transition-transform"
+                      >
+                        ✨ HALO
+                      </button>
+
+                      {/* 2. ÍNTIMO (Fuchsia/Privado) */}
+                      <button 
+                        onClick={() => {
+                            // SI HAY UN USUARIO ACTIVO, ABRIMOS SU PERFIL
+                            if (currentUser) {
+                                onOpenProfile(currentUser);
+                            }
+                        }} 
+                        className="flex-1 py-3 bg-fuchsia-600 text-white border border-fuchsia-400 rounded-xl text-[9px] font-black uppercase shadow-[0_0_20px_rgba(217,70,239,0.5)] animate-pulse hover:scale-105 transition-transform"
+                      >
+                        🗝️ ÍNTIMO
+                      </button>
+                      
+                      {/* 3. ECO (Negro/Comentarios) */}
+                      <button 
+                        onClick={() => setShowEchoInput(true)} 
+                        className="flex-1 py-3 bg-black/90 border border-white/20 text-white rounded-xl text-[9px] font-black uppercase hover:bg-white/10 hover:border-white transition-colors"
+                      >
+                        💬 ECO
+                      </button>
                   </div>
-                  <p className={`text-[9px] md:text-[11px] font-black tracking-[0.4em] uppercase ${config.labelClass}`}>{config.labelText} // {currentUser.alias}</p>
-              </div>
-          </div>
-      </div>
 
-      {/* MODAL ECO SIMPLIFICADO */}
-  {showEchoInput && (
-      <div className="fixed inset-0 z-[1000] bg-black/98 flex items-center justify-center p-6 backdrop-blur-3xl">
-          <div className="w-full max-w-sm text-center">
-              <div className="flex gap-4 mb-12 justify-center">
-                  <button onClick={() => setEchoType('text')} className={`px-6 py-2 rounded-full text-[10px] font-black border transition-all ${echoType === 'text' ? 'bg-cyan-500 text-black border-cyan-400' : 'text-white/30 border-white/10'}`}>💬 TEXTO VISUAL</button>
-                  <button onClick={() => setEchoType('tts')} className={`px-6 py-2 rounded-full text-[10px] font-black border transition-all ${echoType === 'tts' ? 'bg-fuchsia-500 text-white border-fuchsia-400' : 'text-white/30 border-white/10'}`}>🤖 VOZ ROBOT</button>
+                  {/* ETIQUETA INFERIOR (MANTENIDA) */}
+                  <p className={`text-[9px] md:text-[11px] font-black tracking-[0.4em] uppercase ${config.labelClass} mt-1`}>
+                    {config.labelText} // {currentUser.alias}
+                  </p>
               </div>
-
-              <input autoFocus type="text" placeholder={echoType === 'text' ? "MENSAJE EN PANTALLA..." : "EL ROBOT DIRÁ..."} className="w-full bg-transparent border-b-2 border-white/10 py-6 text-center text-white outline-none font-black text-2xl uppercase focus:border-white transition-all" value={echoText} onChange={e => setEchoText(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAction('echo')} maxLength={60} />
-
-              <div className="mt-16 flex justify-between items-center px-4">
-                  <button onClick={() => setShowEchoInput(false)} className="text-gray-500 text-[10px] font-black uppercase">VOLVER</button>
-                  <button onClick={() => handleAction('echo')} className="bg-white text-black px-12 py-4 rounded-2xl font-black text-[11px] uppercase shadow-[0_0_30px_rgba(255,255,255,0.3)]">
-                      EMITIR ECO (100 G)
-                  </button>
-              </div>
-          </div>
+                        </div>
       </div>
   )}
   

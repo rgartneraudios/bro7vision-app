@@ -45,6 +45,9 @@ function App() {
   const [step, setStep] = useState(0); 
   const [intent, setIntent] = useState(null);
   const [isGuest, setIsGuest] = useState(false);
+  const [showRadar, setShowRadar] = useState(false); // Abrir/Cerrar buscador
+  const [radarQuery, setRadarQuery] = useState("");  // Lo que escribes
+  const [selectedForestUser, setSelectedForestUser] = useState(null);
   
   // scope ahora guardará datos reales del GPS ({ lat, lng, zip, city, type: 'gps' })
   const [scope, setScope] = useState(null);
@@ -396,7 +399,9 @@ function App() {
               balances={balances} 
               setBalances={setBalances} 
               session={session}
-              realityMode={realityMode} 
+              realityMode={realityMode}
+             onOpenProfile={(user) => setProjectingUser(user)}
+             selectedForestUser={selectedForestUser} // <--- NUEVA PROP
             />
           )
         )}
@@ -436,6 +441,108 @@ function App() {
 >
   [ EXIT ]
 </button>
+      </div>
+      
+      {/* 3B. RADAR DE CIUDADANOS (V3: REALES + INFLUENCERS DIGITALES) */}
+      <div className="fixed top-20 right-4 z-[200] flex flex-col items-end animate-fadeIn">
+          
+          <button 
+            onClick={() => setShowRadar(!showRadar)} 
+            className={`w-10 h-10 flex items-center justify-center rounded-full border transition-all shadow-[0_0_20px_rgba(0,0,0,0.8)] 
+            ${showRadar ? 'bg-cyan-500 text-black border-cyan-400' : 'bg-black/80 text-cyan-400 border-white/20 hover:border-cyan-400 backdrop-blur-md'}`}
+          >
+              🔍
+          </button>
+
+          {showRadar && (
+              <div className="mt-2 w-64 bg-black/95 border border-cyan-500/50 rounded-xl p-3 shadow-2xl backdrop-blur-xl animate-slideDown relative z-[201]">
+                  
+                  <input 
+                    autoFocus
+                    type="text" 
+                    placeholder="SINTONIZAR ALIAS..." 
+                    value={radarQuery}
+                    onChange={(e) => setRadarQuery(e.target.value)}
+                    className="w-full bg-white/5 border-b border-white/20 text-white text-[10px] font-black uppercase p-2 outline-none focus:border-cyan-500 transition-colors mb-2 rounded-t"
+                  />
+
+                  <div className="flex flex-col gap-1 max-h-64 overflow-y-auto custom-scrollbar">
+                      {(() => {
+                        // --- 1. DEFINIMOS TUS NODOS DIGITALES (INFLUENCERS) AQUÍ ---
+                        // Estos son los "Bots con Alma" que rellenan la red
+                        const DIGITAL_NODES = [
+                            { 
+                                id: 'node_larry', 
+                                alias: 'Larry The Observer', 
+                                role: 'CRONISTA', 
+                                avatar_url: 'https://i.pravatar.cc/150?u=larry', // Pon aquí sus fotos reales
+                                video_file: '/videos/larry_vlog.mp4', // Su video vertical
+                                isNode: true 
+                            },
+                            { 
+                                id: 'node_dj_ai', 
+                                alias: 'DJ CyberLoop', 
+                                role: 'MUSIC NODE', 
+                                avatar_url: 'https://i.pravatar.cc/150?u=dj', 
+                                video_file: '/videos/dj_set.mp4', 
+                                isNode: true 
+                            },
+                            { 
+                                id: 'node_gamer', 
+                                alias: 'Pixel Hunter', 
+                                role: 'GAMING', 
+                                avatar_url: 'https://i.pravatar.cc/150?u=gamer', 
+                                video_file: '/videos/game_clip.mp4', 
+                                isNode: true 
+                            }
+                            // ... AÑADE AQUÍ TUS MOCKS DE RELLENO ...
+                        ];
+
+                        // --- 2. FUSIÓN: REALES + NODOS ---
+                        const population = [...realItems, ...DIGITAL_NODES];
+
+                        // --- 3. FILTRO Y LÍMITE ---
+                        const results = population
+                            .filter(u => u.alias && u.alias.toLowerCase().includes(radarQuery.toLowerCase()))
+                            .slice(0, 6); 
+
+                        if (results.length === 0 && radarQuery) {
+                            return <p className="text-[8px] text-gray-500 text-center py-2">SIN SEÑAL...</p>;
+                        }
+
+                        return results.map(user => (
+                          <button 
+                            key={user.id}
+                            onClick={() => {
+                                // 1. Ponemos el paso en 0 (BioForest) por si el usuario estaba en el Dashboard
+        			setStep(0); 
+        			// 2. Pasamos el usuario seleccionado
+        			setSelectedForestUser(user);
+        			// 3. Cerramos radar
+        			setShowRadar(false);    
+        			setRadarQuery("");     
+                        }}
+                            className="flex items-center gap-3 p-2 rounded hover:bg-cyan-900/30 border border-transparent hover:border-cyan-500/30 text-left transition-all group"
+                          >
+                              {/* AVATAR */}
+                              <div className={`w-8 h-8 rounded-full overflow-hidden border shadow-sm shrink-0 bg-black ${user.isNode ? 'border-fuchsia-500/50' : 'border-white/10 group-hover:border-cyan-400'}`}>
+                                  <img src={user.avatar_url || '/default_avatar.png'} alt="av" className="w-full h-full object-cover" />
+                              </div>
+                              
+                              {/* INFO */}
+                              <div className="flex flex-col overflow-hidden">
+                                  <span className="text-[9px] font-bold text-white group-hover:text-cyan-400 truncate w-full flex items-center gap-1">
+                                      {user.alias} 
+                                      {user.isNode && <span className="text-[6px] bg-fuchsia-900 text-fuchsia-200 px-1 rounded">BOT</span>}
+                                  </span>
+                                  <span className="text-[7px] text-gray-500 uppercase">{user.role || 'CIUDADANO'}</span>
+                              </div>
+                          </button>
+                        ));
+                      })()}
+                  </div>
+              </div>
+          )}
       </div>
 
       {/* 4. SECCIÓN GPS (STEP 1) - BOTÓN ARREGLADO */}
