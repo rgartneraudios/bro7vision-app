@@ -737,13 +737,13 @@ const selectedColor = colors[Math.floor(Math.random() * colors.length)];
       )}
   </div>
   
-              {/* BOTONERA ACCIÓN (MODIFICADA PARA 3 BOTONES) */}
+              {/* --- 1. BOTONERA ACCIÓN (TRIPLE: HALO / ÍNTIMO / ECO) --- */}
               <div className="absolute -bottom-36 md:-bottom-44 left-0 w-full flex flex-col items-center gap-3 z-50 pointer-events-auto">
                   
-                  {/* Contenedor de botones: Usamos gap-2 para que entren bien en iPhone */}
+                  {/* Contenedor de botones */}
                   <div className="flex items-center justify-center gap-2 w-full max-w-[350px] px-4">
                       
-                      {/* 1. HALO (Blanco/Energía) */}
+                      {/* A. HALO */}
                       <button 
                         onClick={() => handleAction('reaction')} 
                         className="flex-1 py-3 bg-white text-black border border-white rounded-xl text-[9px] font-black uppercase shadow-[0_0_15px_rgba(255,255,255,0.4)] hover:scale-105 transition-transform"
@@ -751,10 +751,9 @@ const selectedColor = colors[Math.floor(Math.random() * colors.length)];
                         ✨ HALO
                       </button>
 
-                      {/* 2. ÍNTIMO (Fuchsia/Privado) */}
+                      {/* B. ÍNTIMO (EL NUEVO) */}
                       <button 
                         onClick={() => {
-                            // SI HAY UN USUARIO ACTIVO, ABRIMOS SU PERFIL
                             if (currentUser) {
                                 onOpenProfile(currentUser);
                             }
@@ -763,8 +762,8 @@ const selectedColor = colors[Math.floor(Math.random() * colors.length)];
                       >
                         🗝️ ÍNTIMO
                       </button>
-                      
-                      {/* 3. ECO (Negro/Comentarios) */}
+
+                      {/* C. ECO */}
                       <button 
                         onClick={() => setShowEchoInput(true)} 
                         className="flex-1 py-3 bg-black/90 border border-white/20 text-white rounded-xl text-[9px] font-black uppercase hover:bg-white/10 hover:border-white transition-colors"
@@ -773,15 +772,48 @@ const selectedColor = colors[Math.floor(Math.random() * colors.length)];
                       </button>
                   </div>
 
-                  {/* ETIQUETA INFERIOR (MANTENIDA) */}
+                  {/* ETIQUETA INFERIOR (LABEL) */}
                   <p className={`text-[9px] md:text-[11px] font-black tracking-[0.4em] uppercase ${config.labelClass} mt-1`}>
                     {config.labelText} // {currentUser.alias}
                   </p>
               </div>
-                        </div>
-      </div>
-  )}
-  
+          </div> 
+      </div> {/* <-- FIN DEL CONTENEDOR PRINCIPAL DEL VIDEO */}
+
+      {/* --- 2. MODAL ECO (RESTAURADO) --- */}
+      {/* Esto es lo que faltaba: la ventana que se abre al pulsar ECO */}
+      {showEchoInput && (
+          <div className="fixed inset-0 z-[1000] bg-black/98 flex items-center justify-center p-6 backdrop-blur-3xl animate-fadeIn">
+              <div className="w-full max-w-sm text-center">
+                  
+                  {/* SELECTOR TIPO: TEXTO vs ROBOT */}
+                  <div className="flex gap-4 mb-12 justify-center">
+                      <button onClick={() => setEchoType('text')} className={`px-6 py-2 rounded-full text-[10px] font-black border transition-all ${echoType === 'text' ? 'bg-cyan-500 text-black border-cyan-400' : 'text-white/30 border-white/10'}`}>💬 TEXTO VISUAL</button>
+                      <button onClick={() => setEchoType('tts')} className={`px-6 py-2 rounded-full text-[10px] font-black border transition-all ${echoType === 'tts' ? 'bg-fuchsia-500 text-white border-fuchsia-400' : 'text-white/30 border-white/10'}`}>🤖 VOZ ROBOT</button>
+                  </div>
+
+                  {/* INPUT */}
+                  <input 
+                    autoFocus 
+                    type="text" 
+                    placeholder={echoType === 'text' ? "MENSAJE EN PANTALLA..." : "EL ROBOT DIRÁ..."} 
+                    className="w-full bg-transparent border-b-2 border-white/10 py-6 text-center text-white outline-none font-black text-2xl uppercase focus:border-white transition-all" 
+                    value={echoText} 
+                    onChange={e => setEchoText(e.target.value)} 
+                    onKeyDown={e => e.key === 'Enter' && handleAction('echo')} 
+                    maxLength={60} 
+                  />
+
+                  {/* BOTONES ACCIÓN */}
+                  <div className="mt-16 flex justify-between items-center px-4">
+                      <button onClick={() => setShowEchoInput(false)} className="text-gray-500 text-[10px] font-black uppercase hover:text-white">VOLVER</button>
+                      <button onClick={() => handleAction('echo')} className="bg-white text-black px-12 py-4 rounded-2xl font-black text-[11px] uppercase shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:scale-105 transition-transform">
+                          EMITIR ECO (100 G)
+                      </button>
+                  </div>
+              </div>
+          </div>
+      )}  
       </div>
   );
 };
