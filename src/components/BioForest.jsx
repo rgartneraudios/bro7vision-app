@@ -395,13 +395,83 @@ const selectedColor = colors[Math.floor(Math.random() * colors.length)];
 
   const config = useMemo(() => {
     switch(realityMode) {
-      case 'blackhole': return { video: '/videos/eclipse_mode.mp4', colors: ['text-[#FFD700]', 'text-orange-400'], font: 'font-serif italic', border: 'border-[#C7AF38]/40 shadow-[0_0_40px_rgba(199,175,56,0.2)]', reactionColor: 'orange', labelClass: 'text-orange-500', labelText: 'ECLIPSE ZENITH', navColor: 'text-yellow-500' };
-      case 'winter': return { video: '/videos/winter_mode.mp4', colors: ['text-orange-400', 'text-yellow-200'], font: 'font-black', border: 'border-orange-900/40 shadow-[0_0_30px_rgba(251,146,60,0.1)]', reactionColor: 'orange', labelClass: 'text-orange-400', labelText: 'WINTER CABIN', navColor: 'text-orange-500' };
-      case 'summer': return { video: '/videos/summer_mode.mp4', colors: ['text-cyan-300', 'text-blue-400', 'text-emerald-200'], font: 'font-black tracking-tighter', border: 'border-cyan-400/30 shadow-[0_0_30px_rgba(34,211,238,0.2)]', reactionColor: 'cyan', labelClass: 'text-cyan-400', labelText: 'SUMMER REEF', navColor: 'text-cyan-300' };
-      default: return { video: '/videos/bioforest.mp4', colors: ['text-cyan-400', 'text-fuchsia-400'], font: 'font-black', border: 'border-white/10 shadow-[0_0_60px_rgba(0,0,0,1)]', reactionColor: 'cyan', labelClass: 'text-cyan-400', labelText: 'GÉNESIS FOREST', navColor: 'text-cyan-400' };
+      // --- MODOS EXISTENTES ---
+      case 'blackhole': // (Ojo: asegúrate que en RealityTuner el ID sea 'blackhole' o cambia esto a 'eclipse')
+        return { 
+          video: '/videos/eclipse_mode.mp4', 
+          colors: ['text-[#FFD700]', 'text-orange-400'], 
+          font: 'font-serif italic', 
+          border: 'border-[#C7AF38]/40 shadow-[0_0_40px_rgba(199,175,56,0.2)]', 
+          reactionColor: 'orange', 
+          labelClass: 'text-orange-500', 
+          labelText: 'ECLIPSE ZENITH', 
+          navColor: 'text-yellow-500' 
+        };
+      
+      case 'winter': 
+        return { 
+          video: '/videos/winter_mode.mp4', 
+          colors: ['text-orange-400', 'text-yellow-200'], 
+          font: 'font-black', 
+          border: 'border-orange-900/40 shadow-[0_0_30px_rgba(251,146,60,0.1)]', 
+          reactionColor: 'orange', 
+          labelClass: 'text-orange-400', 
+          labelText: 'WINTER CABIN', 
+          navColor: 'text-orange-500' 
+        };
+      
+      case 'summer': 
+        return { 
+          video: '/videos/summer_mode.mp4', 
+          colors: ['text-cyan-300', 'text-blue-400', 'text-emerald-200'], 
+          font: 'font-black tracking-tighter', 
+          border: 'border-cyan-400/30 shadow-[0_0_30px_rgba(34,211,238,0.2)]', 
+          reactionColor: 'cyan', 
+          labelClass: 'text-cyan-400', 
+          labelText: 'SUMMER REEF', 
+          navColor: 'text-cyan-300' 
+        };
+
+      // --- NUEVOS MODOS (FASE 1) ---
+      
+      case 'space': // CYBER PUNK ROOM
+        return { 
+          video: '/videos/room2046_mode.mp4', 
+          colors: ['text-fuchsia-500', 'text-purple-400', 'text-cyan-300'], // Paleta Synthwave
+          font: 'font-mono uppercase tracking-widest', // Fuente Tecnológica
+          border: 'border-fuchsia-500/50 shadow-[0_0_35px_rgba(217,70,239,0.25)]', // Brillo Neón Púrpura
+          reactionColor: 'fuchsia', 
+          labelClass: 'text-fuchsia-400', 
+          labelText: 'CYBER SUITE 2046', 
+          navColor: 'text-purple-400' 
+        };
+
+      case 'cafe': // RAINY CAFE (COZY)
+        return { 
+          video: '/videos/cafe_mode.mp4', 
+          colors: ['text-amber-300', 'text-stone-300', 'text-orange-100'], // Paleta Café/Cálida
+          font: 'font-serif italic tracking-wide', // Fuente Literaria/Elegante
+          border: 'border-amber-700/30 shadow-[0_0_30px_rgba(245,158,11,0.15)]', // Brillo Ámbar Suave
+          reactionColor: 'amber', 
+          labelClass: 'text-amber-400', 
+          labelText: 'NEXUS CAFÉ', 
+          navColor: 'text-amber-300' 
+        };
+
+      // --- DEFAULT (FOREST) ---
+      default: 
+        return { 
+          video: '/videos/bioforest.mp4', 
+          colors: ['text-cyan-400', 'text-fuchsia-400'], 
+          font: 'font-black', 
+          border: 'border-white/10 shadow-[0_0_60px_rgba(0,0,0,1)]', 
+          reactionColor: 'cyan', 
+          labelClass: 'text-cyan-400', 
+          labelText: 'GÉNESIS FOREST', 
+          navColor: 'text-cyan-400' 
+        };
     }
   }, [realityMode]);
-
   useEffect(() => { if (audioPool.length > 0 && isRadioReady) { handlePlayTribe(); } }, [currentTribeIndex, audioPool, isRadioReady]);
   
   // --- CORRECCIÓN ANIMACIÓN VISUAL ---
