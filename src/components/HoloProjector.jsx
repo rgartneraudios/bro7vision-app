@@ -1,5 +1,5 @@
 // src/components/HoloProjector.jsx
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react'; 
 import { supabase } from '../supabaseClient';
 
 const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose, onOpenLog }) => {
@@ -9,7 +9,40 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
   const [activeReaction, setActiveReaction] = useState(null);
   const [question, setQuestion] = useState("");
   
+  // --- LÓGICA MULTICANAL ---
+  const videoPlaylist = useMemo(() => {
+    return [
+        user.video_file,
+        user.video_file_2,
+        user.video_file_3
+    ].filter(url => url && url.trim() !== ""); // Filtramos solo los que tengan link
+  }, [user]);
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
   const videoRef = useRef(null);
+  
+   // Gestos Móvil
+  const touchStart = useRef(0);
+  const touchEnd = useRef(0);
+
+  const nextVideo = () => {
+    setCurrentIndex((prev) => (prev + 1) % videoPlaylist.length);
+  };
+
+  const prevVideo = () => {
+    setCurrentIndex((prev) => (prev > 0 ? prev - 1 : videoPlaylist.length - 1));
+  };
+
+  const handleTouchStart = (e) => { touchStart.current = e.targetTouches[0].clientX; };
+  const handleTouchMove = (e) => { touchEnd.current = e.targetTouches[0].clientX; };
+  const handleTouchEnd = () => {
+    if (!touchStart.current || !touchEnd.current) return;
+    const distance = touchStart.current - touchEnd.current;
+    if (distance > 70) nextVideo();
+    if (distance < -70) prevVideo();
+    touchStart.current = 0; touchEnd.current = 0;
+  };
 
   // --- 1. SELECCIÓN DE VIDEO DE FONDO (NATURAL) ---
   const bgKey = user.intimo_bg && user.intimo_bg !== "" ? user.intimo_bg : 'dormitorio';
@@ -309,17 +342,52 @@ const selectedColor = colors[Math.floor(Math.random() * colors.length)];
       })()}
     </>
 )}
-        {/* VISOR VERTICAL (FUSIÓN CREMA) */}
-        <div className="relative z-20 h-[88vh] aspect-[9/16] rounded-[3.5rem] border-[3px] border-[#FFFDD0]/30 shadow-[0_0_40px_rgba(255,253,208,0.15)] flex flex-col overflow-hidden bg-black">
-            
-            <video 
-                ref={videoRef}
-                src={getCleanUrl(videoUrl)} 
-                autoPlay loop playsInline muted={isMuted}
-                className="absolute inset-0 w-full h-full object-cover" 
-                onTimeUpdate={() => setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100)}
-            />
 
+       {/* CONTENEDOR RELATIVO PARA AGRUPAR VISOR + FLECHAS */}
+<div className="relative z-20 flex items-center justify-center">
+
+    {/* FLECHAS NAVEGACIÓN PC (Pegadas al visor) */}
+    {videoPlaylist.length > 1 && (
+        <>
+            <button 
+                onClick={prevVideo} 
+                className="hidden md:flex absolute -left-20 lg:-left-24 z-[100] w-14 h-14 items-center justify-center bg-black/60 backdrop-blur-md rounded-full text-white border border-white/10 text-4xl hover:bg-black/80 transition-all shadow-2xl hover:scale-110 active:scale-90"
+            >
+                ‹
+            </button>
+            <button 
+                onClick={nextVideo} 
+                className="hidden md:flex absolute -right-20 lg:-right-24 z-[100] w-14 h-14 items-center justify-center bg-black/60 backdrop-blur-md rounded-full text-white border border-white/10 text-4xl hover:bg-black/80 transition-all shadow-2xl hover:scale-110 active:scale-90"
+            >
+                ›
+            </button>
+        </>
+    )}
+
+    {/* VISOR VERTICAL (Mantenemos tus clases originales) */}
+    <div 
+        onTouchStart={handleTouchStart} 
+        onTouchMove={handleTouchMove} 
+        onTouchEnd={handleTouchEnd}
+        className="relative h-[88vh] aspect-[9/16] rounded-[3.5rem] border-[3px] border-[#FFFDD0]/30 shadow-[0_0_40px_rgba(255,253,208,0.15)] flex flex-col overflow-hidden bg-black"
+    >
+        <video 
+            ref={videoRef}
+            key={currentIndex} 
+            src={getCleanUrl(videoPlaylist[currentIndex])} 
+            autoPlay loop playsInline muted={isMuted}
+            className="absolute inset-0 w-full h-full object-cover animate-fadeIn" 
+            onTimeUpdate={() => setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100)}
+        />
+        
+            {/* INDICADOR DE CANAL (Sutil arriba) */}
+            {videoPlaylist.length > 1 && (
+                <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50">
+                    <span className="bg-black/60 backdrop-blur-xl px-3 py-1 rounded-full border border-white/10 text-[8px] text-white font-black tracking-[0.2em] uppercase">
+                        SINTONÍA 0{currentIndex + 1}
+                    </span>
+                </div>
+            )}
             {/* RESPUESTA DEL CREADOR (BUCLE) - Flota sobre el video */}
             <div className="absolute top-32 left-0 w-full px-6 z-30 pointer-events-none">
                 <div className="animate-spirit">
@@ -419,6 +487,7 @@ const selectedColor = colors[Math.floor(Math.random() * colors.length)];
             @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
             .animate-spin-slow { animation: spin-slow 8s linear infinite; }
         `}</style>
+    </div>
     </div>
   );
 };

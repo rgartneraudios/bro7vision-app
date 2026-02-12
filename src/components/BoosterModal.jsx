@@ -51,12 +51,15 @@ const BoosterModal = ({ onClose }) => {
   // --- FORM DATA (Aquí vive todo lo demás: Holo, Productos, Perfil) ---
   const [formData, setFormData] = useState({
     alias: '', avatar_url: '', banner_url: '', card_banner_url: '',
-    twit_message: '', role: '', audio_file: '', bcast_file: '', video_file: '',
+    twit_message: '', role: '', audio_file: '', bcast_file: '',
+    video_file: '',   // <--- Video 1
+    video_file_2: '', // <--- Video 2
+    video_file_3: '', // <--- Video 3
     holo_1: '', holo_2: '', holo_3: '', holo_4: '',
     product_title: '', product_desc: '', product_price: '', product_url: '',
     service_title: '', service_desc: '', service_price: '', service_url: ''
   });
-
+  
   const ROLES = [
       { id: 'MUSIC', label: '🎵 MUSIC' },
       { id: 'TALK', label: '🎙️ TALK' },
@@ -352,7 +355,16 @@ useEffect(() => {
                     <div className="space-y-4">
                         <div><label className="text-[9px] text-cyan-400 font-bold block mb-1">📡 SEÑAL AUDIO LIVE (URL MP3/Dropbox)</label><input type="text" value={formData.audio_file} onChange={e=>setFormData({...formData, audio_file:e.target.value})} className="w-full bg-black border border-white/20 p-2 text-white text-[10px] font-mono" /></div>
                         
-                        <div><label className="text-[9px] text-fuchsia-400 font-bold block mb-1">🎥 SEÑAL HOLO-TV (URL Video MP4)</label><input type="text" value={formData.video_file} onChange={e=>setFormData({...formData, video_file:e.target.value})} className="w-full bg-black border border-white/20 p-2 text-white text-[10px] font-mono" /></div>
+                        <div>
+  <label className="text-[9px] text-cyan-400 font-bold block mb-1 uppercase">Video Principal (Forest)</label>
+  <input type="text" value={formData.video_file} onChange={e=>setFormData({...formData, video_file:e.target.value})} className="w-full bg-black border border-white/20 p-2 text-white text-[10px] mb-4" />
+  
+  <label className="text-[9px] text-yellow-500 font-bold block mb-1 uppercase">Video Alternativo 2</label>
+  <input type="text" value={formData.video_file_2} onChange={e=>setFormData({...formData, video_file_2:e.target.value})} className="w-full bg-black border border-white/20 p-2 text-white text-[10px] mb-4" />
+  
+  <label className="text-[9px] text-fuchsia-500 font-bold block mb-1 uppercase">Video Alternativo 3</label>
+  <input type="text" value={formData.video_file_3} onChange={e=>setFormData({...formData, video_file_3:e.target.value})} className="w-full bg-black border border-white/20 p-2 text-white text-[10px] mb-4" />
+</div>                        
                     </div>
                 </div>
             )}
