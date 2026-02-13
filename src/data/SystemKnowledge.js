@@ -81,7 +81,43 @@ Comercios pueden usar Coins para promoción interna o canjear a FIAT (Stripe).
 - CLUSTERS: Megáfono barrial para economía colaborativa (agrupar trabajos, avisos locales).
 - WebBot P2P: Venta de activos digitales por parte de usuarios que tienen alojados archivos en nubes blancas Drive/OneDrive por Moon Coins. En fase 0 es todo operado con Génesis coins valos NO FIAT . En Fase 1 Bro7Vision ofrecerá la plataforma para la compra venta de estos activos digitales en Moon Coins y moneda Fiat para usuarios autónomos verificados y solo transacciones con Moon Coins para los usuarios sin verificar.
 
-5. LLAMADA A LA ACCIÓN
+5.PREGUNTAS Y RESPUESTAS
+
+¿Qué tipo de contenido puedo subir?
+Música propia con Licencia Creative Commons 4.0, Música sin Copyright, Podcasts, Arte visual, Ofertas comerciales
+
+¿Cómo se hace para subir contenido?
+En Booster Modal en la sección "Señal" puedes subir el link de audio y hasta 3 links de video, que tengas ya subidos a  plataformas como Dropbox , Discord, o por medio de tu NAS via Cloudfare. De ahí copias los links para publicar en BRO7VISION. Para las imágenes, puedes usar plataformas como Postimages.com  En este caso debes elegir el link de "Enlace directo" ya que hay varios.
+
+¿Puedo vender productos hoy?
+En Fase 0 (Génesis), las actividades comerciales directas están cerradas. Usa tu Profile Card como escaparate y redirige a tus redes externas.
+
+¿Necesito verificarme?
+Fase 0: NO es necesario.
+Fase 1: SÍ. Para operar como comercio, deberás verificar tu identidad (Autónomo/Empresa).
+
+¿Que son las Moon Coins?
+Monedas digitales sincronizadas con la Luna. Para comprar Mentions y enviar Halos de Luz. Las puedes comprar o ganar dentro de BRO7VISION jugando en el sector Games o viendo Publicidad en nuestro sector de Brostories. 
+
+¿Qué es BroStories y BroTuner?
+Radio multicanal con estilos curados y publicidad no intrusiva.
+
+¿Puedo tener más de un perfil?
+Actualmente, se asigna una única Identidad Digitalpor Ciudadano (Email).
+Sin embargo, tu perfil es Híbrido: puedes actuar como Creador, Comercio y Usuario a la vez desde la misma cuenta, configurando tus roles en el Booster Studio.
+
+¿Qué es un Halo de Luz?
+Es la evolución del "Like". No es solo un clic, es un obsequio de Energía que envías a un Creador o Comercio.
+Tiene Coste: Enviarlo te cuesta 100 Puntos Génesis. Son valiosos, cuídalos!
+Tiene Recompensa: Esos puntos se transfieren directamente al Creador como agradecimiento.
+ Filosofía: Economía circular. Tú ganas puntos explorando y los usas para apoyar el contenido libre que te gusta. Sin intermediarios.
+ 
+ ¿Qué son los Ecos de texto y audio?
+ Los Ecos es la evolución de los comentarios. Para evitar a los bots los ecos tanto de texto o de audio tienen un coste de 100 puntos Génesis. Son valiosos, cuídalos!
+ Tiene Recompensa: Esos puntos se transfieren directamente al Creador como agradecimiento.
+ Filosofía: Economía circular. Tú ganas puntos explorando y los usas para apoyar el contenido libre que te gusta. Sin intermediarios.
+
+6. LLAMADA A LA ACCIÓN
 Buscamos Socios Estratégicos e Inversores (Angels/VCs) para gamificar la realidad y establecer la Moon Matrix antes del lanzamiento masivo.
 
 DATOS FINANCIEROS DE REFERENCIA (SIMULACIÓN):

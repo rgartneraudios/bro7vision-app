@@ -50,7 +50,7 @@ const RacoonTerminal = ({ searchQuery }) => {
                                     <span className="text-orange-500 text-2xl">+</span>
                                 </summary>
                                 <div className="text-gray-300 text-sm md:text-base mt-4 leading-relaxed pl-4 border-l-2 border-orange-500">
-                                    <p>En el<strong>Booster Modal</strong>, en la sección "Señal" puedes subir el link de audio y el link de video, que tengas preparado. Solo se permite subir un link por vez, o sea que tendrás mostrar el contenido que sea más apto para tu día a día, y puedes repetirlo cuando gustes.Actualmente pudes subir tus videos o audios a la Plataforma de Dropbox , Discord, o por medio de tu NAS via Cloudfare. De ahí copias los links para publicar en BRO7VISION. Para las imágenes, trabajamos con la Plataforma Postimages.com Debes elegir el link de Enlace directo.</p>
+                                    <p>En <strong>Booster Modal</strong>, en la sección "Señal" puedes subir el link de audio y hasta 3 links de video, que tengas ya subidos a  plataformas como Dropbox , Discord, o por medio de tu NAS via Cloudfare. De ahí copias los links para publicar en BRO7VISION. Para las imágenes, puedes usar plataformas como Postimages.com  En este caso debes elegir el link de "Enlace directo" ya que hay varios.</p>
                                 </div>
                             </details>
 
@@ -71,20 +71,19 @@ const RacoonTerminal = ({ searchQuery }) => {
                                 </summary>
                                 <div className="text-gray-300 text-sm md:text-base mt-4 leading-relaxed pl-4 border-l-2 border-orange-500">
                                     <p><strong>Fase 0:</strong> NO es necesario.</p>
-                                    <p className="mt-2"><strong>Fase 1:</strong> SÍ. Para ganar <em>Credits Live</em> y operar como comercio, deberás verificar tu identidad (Autónomo/Empresa).</p>
+                                    <p className="mt-2"><strong>Fase 1:</strong> SÍ. Para operar como comercio, deberás verificar tu identidad (Autónomo/Empresa).</p>
                                 </div>
                             </details>
 
                             <details className="bg-white/5 p-5 rounded-lg cursor-pointer group open:bg-white/10 transition-all border border-transparent open:border-orange-500/30">
                                 <summary className="font-bold text-white text-lg md:text-xl uppercase group-hover:text-orange-400 transition-colors list-none flex justify-between items-center">
-                                    <span>Economía: Moon Coins vs Credits Live</span>
+                                    <span>Economía: ¿Que son las Moon Coins?</span>
                                     <span className="text-orange-500 text-2xl">+</span>
                                 </summary>
                                 <div className="text-gray-300 text-sm md:text-base mt-4 leading-relaxed pl-4 border-l-2 border-orange-500">
                                     <ul className="space-y-3">
-                                        <li><strong className="text-yellow-400">🌕 MOON COINS:</strong> Monedas digitales sincronizadas con la Luna. Para comprar Mentions y enviar Halos de Luz.</li>
-                                        <li><strong className="text-green-400">💵 CREDITS LIVE:</strong> Créditos FIAT que ganas como creador por publicidad. Canjeables por dinero real( Fase 1).</li>
-                                    </ul>
+                                        <li><strong className="text-yellow-400">🌕 MOON COINS:</strong> Monedas digitales sincronizadas con la Luna. Para comprar Mentions y enviar Halos de Luz. Las puedes comprar o ganar dentro de BRO7VISION jugando en el sector Games o viendo Publicidad en nuestro sector de Brostories..</li>
+				</ul>
                                 </div>
                             </details>
 
@@ -125,6 +124,17 @@ const RacoonTerminal = ({ searchQuery }) => {
                                    </ul>
                                 </div>
                             </details>
+                            
+                            <details className="bg-white/5 p-5 rounded-lg cursor-pointer group open:bg-white/10 transition-all border border-transparent open:border-orange-500/30">
+                                <summary className="font-bold text-white text-lg md:text-xl uppercase group-hover:text-orange-400 transition-colors list-none flex justify-between items-center">
+                                    <span>¿Qué son los Ecos de texto y audio?</span>
+                                    <span className="text-orange-500 text-2xl">+</span>
+                                </summary>
+                                <div className="text-gray-300 text-sm md:text-base mt-4 leading-relaxed pl-4 border-l-2 border-orange-500">
+                                    <p>Los Ecos son la evolución de los comentarios. Para evitar a los bots, los ecos tanto de texto o de audio, tienen un 				coste de 100 puntos Génesis. Son valiosos, cuídalos!.</p>
+                                   </div>
+                            </details>
+
 	
                             
                         </div>
