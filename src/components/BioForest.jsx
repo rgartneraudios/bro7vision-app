@@ -407,86 +407,119 @@ const selectedColor = colors[Math.floor(Math.random() * colors.length)];
         setAudioPool([{ id: 'a1', author_alias: 'SISTEMA', text: '[TTS] SINTONIZANDO SEÑAL...' }]);
     }
   }, [currentUser]);
+  
+  const getTimeSuffix = () => {
+    const hour = new Date().getHours();
+    if (hour >= 7 && hour < 15) return 'D'; // Día / Mañana
+    if (hour >= 15 && hour < 21) return 'T'; // Tarde
+    return 'N'; // Noche
+};
 
   const config = useMemo(() => {
+    const time = getTimeSuffix();
+
     switch(realityMode) {
-      // --- MODOS EXISTENTES ---
-      case 'eclipse': // (Ojo: asegúrate que en RealityTuner el ID sea 'blackhole' o cambia esto a 'eclipse')
+      // --- CATEGORÍA EARTH (EL PRESENTE) ---
+      case 'solo_earth':
+        return { 
+          video: time === 'D' ? '/videos/solo_earth_1.mp4' : time === 'T' ? '/videos/solo_earth_2.mp4' : '/videos/solo_earth_3.mp4', 
+          colors: ['text-emerald-400', 'text-cyan-300'], 
+          font: 'font-sans font-bold', 
+          border: 'border-emerald-500/30 shadow-[0_0_40px_rgba(16,185,129,0.15)]', 
+          reactionColor: 'emerald', 
+          labelClass: 'text-emerald-400', 
+          labelText: `SOLO EARTH // ${time === 'D' ? 'MORNING' : time === 'T' ? 'AFTERNOON' : 'NIGHT'}`, 
+          navColor: 'text-emerald-500' 
+        };
+
+      case 'band_earth':
+        return { 
+          video: time === 'D' ? '/videos/band_earth_1.mp4' : time === 'T' ? '/videos/band_earth_2.mp4' : '/videos/band_earth_3.mp4', 
+          colors: ['text-blue-400', 'text-indigo-300'], 
+          font: 'font-sans font-black', 
+          border: 'border-blue-500/30 shadow-[0_0_40px_rgba(59,130,246,0.2)]', 
+          reactionColor: 'blue', 
+          labelClass: 'text-blue-400', 
+          labelText: 'BAND EARTH ', 
+          navColor: 'text-blue-400' 
+        };
+
+      // --- CATEGORÍA FANTASY (EL ESCAPISMO) ---
+      case 'solo_fantasy':
+        return { 
+          video: time === 'D' ? '/videos/solo_fantasy_1.mp4' : time === 'T' ? '/videos/solo_fantasy_2.mp4' : '/videos/solo_fantasy_3.mp4', 
+          colors: ['text-cyan-400', 'text-fuchsia-400'], 
+          font: 'font-mono tracking-widest', 
+          border: 'border-cyan-500/30 shadow-[0_0_40px_rgba(6,182,212,0.2)]', 
+          reactionColor: 'cyan', 
+          labelClass: 'text-cyan-400', 
+          labelText: 'SOLO FANTASY', 
+          navColor: 'text-cyan-400' 
+        };
+
+      case 'band_fantasy':
+        return { 
+          video: time === 'D' ? '/videos/band_fantasy_1.mp4' : time === 'T' ? '/videos/band_fantasy_2.mp4' : '/videos/band_fantasy_3.mp4', 
+          colors: ['text-fuchsia-500', 'text-purple-300'], 
+          font: 'font-mono uppercase', 
+          border: 'border-fuchsia-500/40 shadow-[0_0_50px_rgba(217,70,239,0.25)]', 
+          reactionColor: 'fuchsia', 
+          labelClass: 'text-fuchsia-400', 
+          labelText: 'BAND FANTASY', 
+          navColor: 'text-fuchsia-500' 
+        };
+
+      // --- CATEGORÍA CINEMA (EL TIEMPO) ---
+      case 'solo_cinema':
+        return { 
+          video: time === 'D' ? '/videos/solo_cinema_1.mp4' : time === 'T' ? '/videos/solo_cinema_2.mp4' : '/videos/solo_cinema_3.mp4', 
+          colors: ['text-amber-500', 'text-orange-300'], 
+          font: 'font-serif italic', 
+          border: 'border-amber-600/30 shadow-[0_0_40px_rgba(245,158,11,0.2)]', 
+          reactionColor: 'amber', 
+          labelClass: 'text-amber-500', 
+          labelText: 'SOLO CINEMA ', 
+          navColor: 'text-amber-600' 
+        };
+
+      case 'band_cinema':
+        return { 
+          video: time === 'D' ? '/videos/band_cinema_1.mp4' : time === 'T' ? '/videos/band_cinema_2.mp4' : '/videos/band_cinema_3.mp4', 
+          colors: ['text-orange-400', 'text-yellow-200'], 
+          font: 'font-serif font-black uppercase', 
+          border: 'border-orange-500/40 shadow-[0_0_40px_rgba(251,146,60,0.2)]', 
+          reactionColor: 'orange', 
+          labelClass: 'text-orange-400', 
+          labelText: 'BAND CINEMA ', 
+          navColor: 'text-orange-500' 
+        };
+
+      // --- MODO ECLIPSE (EL NEXO) ---
+      case 'eclipse':
         return { 
           video: '/videos/eclipse_mode.mp4', 
-          colors: ['text-[#FFD700]', 'text-orange-400'], 
-          font: 'font-serif italic', 
-          border: 'border-[#C7AF38]/40 shadow-[0_0_40px_rgba(199,175,56,0.2)]', 
+          colors: ['text-yellow-500', 'text-orange-200'], 
+          font: 'font-serif italic font-bold', 
+          border: 'border-yellow-600/40 shadow-[0_0_50px_rgba(234,179,8,0.3)]', 
           reactionColor: 'orange', 
-          labelClass: 'text-orange-500', 
+          labelClass: 'text-yellow-500', 
           labelText: 'ECLIPSE ZENITH', 
           navColor: 'text-yellow-500' 
         };
-      
-      case 'winter': 
+
+      default:
         return { 
-          video: '/videos/winter_mode.mp4', 
-          colors: ['text-orange-400', 'text-yellow-200'], 
+          video: '/videos/eclipse_mode.mp4', 
+          colors: ['text-cyan-400', 'text-white'], 
           font: 'font-black', 
-          border: 'border-orange-900/40 shadow-[0_0_30px_rgba(251,146,60,0.1)]', 
-          reactionColor: 'orange', 
-          labelClass: 'text-orange-400', 
-          labelText: 'WINTER CABIN', 
-          navColor: 'text-orange-500' 
-        };
-      
-      case 'summer': 
-        return { 
-          video: '/videos/summer_mode.mp4', 
-          colors: ['text-cyan-300', 'text-blue-400', 'text-emerald-200'], 
-          font: 'font-black tracking-tighter', 
-          border: 'border-cyan-400/30 shadow-[0_0_30px_rgba(34,211,238,0.2)]', 
+          border: 'border-white/10 shadow-[0_0_30px_rgba(0,0,0,0.5)]', 
           reactionColor: 'cyan', 
           labelClass: 'text-cyan-400', 
-          labelText: 'SUMMER REEF', 
-          navColor: 'text-cyan-300' 
-        };
-
-      // --- NUEVOS MODOS (FASE 1) ---
-      
-      case 'space': // CYBER PUNK ROOM
-        return { 
-          video: '/videos/room2046_mode.mp4', 
-          colors: ['text-fuchsia-500', 'text-purple-400', 'text-cyan-300'], // Paleta Synthwave
-          font: 'font-mono uppercase tracking-widest', // Fuente Tecnológica
-          border: 'border-fuchsia-500/50 shadow-[0_0_35px_rgba(217,70,239,0.25)]', // Brillo Neón Púrpura
-          reactionColor: 'fuchsia', 
-          labelClass: 'text-fuchsia-400', 
-          labelText: 'CYBER SUITE 2046', 
-          navColor: 'text-yellow-400' 
-        };
-
-      case 'cafe': // RAINY CAFE (COZY)
-        return { 
-          video: '/videos/cafe_mode.mp4', 
-          colors: ['text-amber-300', 'text-stone-300', 'text-orange-100'], // Paleta Café/Cálida
-          font: 'font-serif italic tracking-wide', // Fuente Literaria/Elegante
-          border: 'border-amber-700/30 shadow-[0_0_30px_rgba(245,158,11,0.15)]', // Brillo Ámbar Suave
-          reactionColor: 'amber', 
-          labelClass: 'text-amber-400', 
-          labelText: 'NEXUS CAFÉ', 
-          navColor: 'text-amber-300' 
-        };
-
-      // --- DEFAULT (FOREST) ---
-      default: 
-        return { 
-          video: '/videos/bioforest.mp4', 
-          colors: ['text-cyan-400', 'text-fuchsia-400'], 
-          font: 'font-black', 
-          border: 'border-white/10 shadow-[0_0_60px_rgba(0,0,0,1)]', 
-          reactionColor: 'cyan', 
-          labelClass: 'text-cyan-400', 
-          labelText: 'GÉNESIS FOREST', 
+          labelText: 'GENESIS NODE', 
           navColor: 'text-cyan-400' 
         };
     }
-  }, [realityMode]);
+}, [realityMode]);  
   useEffect(() => { if (audioPool.length > 0 && isRadioReady) { handlePlayTribe(); } }, [currentTribeIndex, audioPool, isRadioReady]);
   
   // --- CORRECCIÓN ANIMACIÓN VISUAL ---

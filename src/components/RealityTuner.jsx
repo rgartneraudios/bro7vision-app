@@ -2,97 +2,95 @@ import React from 'react';
 
 const RealityTuner = ({ onSelect }) => {
 
-  // CONFIGURACIÓN DE LAS REALIDADES (AQUÍ AÑADES LAS NUEVAS)
   const REALITIES = [
-    { 
-      id: 'forest', 
-      title: 'GÉNESIS FOREST', 
-      desc: 'Bioluminiscencia Original', 
-      icon: '🌲',
-      color: 'text-cyan-400' 
-    },
-    { 
-      id: 'eclipse', 
-      title: 'ECLIPSE', 
-      desc: 'Sintonía Cinematográfica de Lujo', 
-      icon: '🌑',
-      color: 'text-yellow-500' 
-    },
-    { 
-      id: 'winter', 
-      title: 'WINTER CABIN', 
-      desc: 'Calidez, Fuego y Reflexión', 
-      icon: '🔥',
-      color: 'text-orange-400' 
-    },
-    { 
-      id: 'summer', 
-      title: 'SUMMER REEF', 
-      desc: 'Inmersión y Frescura Estival', 
-      icon: '🌊',
-      color: 'text-blue-400' 
-    },
-    // --- LAS NUEVAS JOYAS ---
-    { 
-      id: 'space', 
-      title: 'CYBER SUITE', 
-      desc: 'Atmósfera Neon & Sci-Fi', 
-      icon: '🚀',
-      color: 'text-fuchsia-500' 
-    },
-    { 
-      id: 'cafe', 
-      title: 'NEXUS CAFÉ', 
-      desc: 'Lluvia, Vlogs y Relax', 
-      icon: '☕',
-      color: 'text-amber-200' 
-    }
+    // EL ESTADO BASE / NEUTRAL
+    { id: 'eclipse', title: 'ECLIPSE ZENITH', desc: 'Sintonía de Lujo y Sobriedad', icon: '🌑', color: 'border-yellow-500/50', text: 'text-yellow-400', glow: 'shadow-yellow-500/20', group: 'NEUTRAL' },
+    
+    // GRUPO SOLO
+    { id: 'solo_earth', title: 'SOLO EARTH', desc: 'Sincronía Vital', icon: '🌍', color: 'border-emerald-500/50', text: 'text-emerald-400', glow: 'shadow-emerald-500/20', group: 'SOLO' },
+    { id: 'solo_fantasy', title: 'SOLO FANTASY', desc: 'Exploración Estelar', icon: '🪐', color: 'border-cyan-500/50', text: 'text-cyan-400', glow: 'shadow-cyan-500/20', group: 'SOLO' },
+    { id: 'solo_cinema', title: 'SOLO CINEMA', desc: 'Viajero del Tiempo', icon: '⏳', color: 'border-amber-500/50', text: 'text-amber-400', glow: 'shadow-amber-500/20', group: 'SOLO' },
+    
+    // GRUPO BAND
+    { id: 'band_earth', title: 'BAND EARTH', desc: 'Nexo Ciudadano', icon: '🏙️', color: 'border-blue-500/50', text: 'text-blue-400', glow: 'shadow-blue-500/20', group: 'BAND' },
+    { id: 'band_fantasy', title: 'BAND FANTASY', desc: 'Alien Lounge', icon: '👾', color: 'border-fuchsia-500/50', text: 'text-fuchsia-400', glow: 'shadow-fuchsia-500/20', group: 'BAND' },
+    { id: 'band_cinema', title: 'BAND CINEMA', desc: 'El Ágora', icon: '🏛️', color: 'border-orange-500/50', text: 'text-orange-400', glow: 'shadow-orange-500/20', group: 'BAND' },
   ];
 
-  return (
-    <div className="absolute inset-0 z-[100] bg-black flex flex-col items-center justify-center animate-fadeIn">
+  const renderCard = (mode, isLarge = false) => (
+    <button 
+      key={mode.id}
+      onClick={() => onSelect(mode.id)}
+      className={`group relative bg-black/40 border-2 ${mode.color} rounded-2xl p-6 transition-all duration-300 hover:scale-[1.03] hover:bg-black/20 shadow-xl ${mode.glow} flex flex-col items-center text-center ${isLarge ? 'md:max-w-md mx-auto' : ''}`}
+    >
+      <div className="flex justify-between items-center w-full mb-4">
+        <span className="text-3xl filter drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">{mode.icon}</span>
+        <span className={`text-[9px] font-black uppercase ${mode.text} tracking-[0.2em]`}>{mode.group}</span>
+      </div>
       
-      {/* CABECERA */}
-      <div className="text-center mb-12">
-        <h2 className="text-4xl md:text-5xl font-black tracking-[0.5em] text-white mb-2">
+      <h3 className="text-xl font-black text-white italic tracking-tighter mb-1 uppercase group-hover:text-white transition-colors">
+        {mode.title}
+      </h3>
+      <p className="text-[10px] text-gray-400 font-mono uppercase tracking-widest opacity-80">
+        {mode.desc}
+      </p>
+
+      {/* Brillo interno sutil */}
+      <div className={`absolute inset-0 opacity-0 group-hover:opacity-10 bg-gradient-to-t from-white to-transparent transition-opacity rounded-2xl`}></div>
+    </button>
+  );
+
+  return (
+    <div className="absolute inset-0 z-[100] bg-[#020202] flex flex-col items-center justify-center p-6 animate-fadeIn overflow-y-auto custom-scrollbar">
+      
+      {/* TITULO SUPERIOR */}
+      <div className="text-center mb-8">
+        <h2 className="text-5xl md:text-6xl font-black tracking-[0.5em] text-white">
             BRO<span className="text-cyan-400">7</span>VISION
         </h2>
-        <p className="text-[10px] text-gray-500 uppercase tracking-widest">SINTONIZA TU FRECUENCIA DE NAVEGACIÓN</p>
+        <p className="text-[10px] text-gray-500 uppercase tracking-[0.4em] mt-3 font-bold opacity-60">SINTONIZA TU FRECUENCIA DE REALIDAD</p>
       </div>
 
-      {/* GRID DE REALIDADES (3 COLUMNAS EN PC, 1 EN MÓVIL) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-6xl px-8">
+      <div className="w-full max-w-6xl space-y-10">
         
-        {REALITIES.map((mode, index) => (
-            <button 
-                key={mode.id}
-                onClick={() => onSelect(mode.id)}
-                className="group relative bg-[#080808] border border-white/5 hover:border-white/20 rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02] overflow-hidden"
-            >
-                {/* Efecto Hover Sutil */}
-                <div className={`absolute inset-0 opacity-0 group-hover:opacity-5 bg-gradient-to-br from-white to-transparent transition-opacity`}></div>
+        {/* NIVEL 1: EL ECLIPSE (LA BASE) */}
+        <div className="flex justify-center">
+            <div className="w-full md:w-1/3">
+                {renderCard(REALITIES.find(r => r.id === 'eclipse'), true)}
+            </div>
+        </div>
 
-                <div className="flex flex-col items-center text-center relative z-10">
-                    <div className="flex justify-between w-full mb-4">
-                        <span className="text-2xl filter grayscale group-hover:grayscale-0 transition-all">{mode.icon}</span>
-                        <span className={`text-[9px] font-black uppercase ${mode.color}`}>MODO 0{index + 1}</span>
-                    </div>
-                    
-                    <h3 className="text-xl font-black text-white italic tracking-tighter mb-1 group-hover:text-cyan-400 transition-colors">
-                        {mode.title}
-                    </h3>
-                    <p className="text-[10px] text-gray-500 font-mono">
-                        {mode.desc}
-                    </p>
-                </div>
-            </button>
-        ))}
+        {/* NIVEL 2: MODOS SOLO */}
+        <div className="space-y-4">
+            <div className="flex items-center gap-4 opacity-40">
+                <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-emerald-500"></div>
+                <p className="text-[9px] text-emerald-500 font-black tracking-[0.5em]">CONTIGO MISMO (SOLO)</p>
+                <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-emerald-500"></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {REALITIES.filter(r => r.group === 'SOLO').map(mode => renderCard(mode))}
+            </div>
+        </div>
+
+        {/* NIVEL 3: MODOS BAND */}
+        <div className="space-y-4">
+            <div className="flex items-center gap-4 opacity-40">
+                <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-blue-500"></div>
+                <p className="text-[9px] text-blue-500 font-black tracking-[0.5em]">EN COMPAÑÍA (BAND)</p>
+                <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-blue-500"></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {REALITIES.filter(r => r.group === 'BAND').map(mode => renderCard(mode))}
+            </div>
+        </div>
 
       </div>
 
       {/* FOOTER */}
-      <div className="mt-12 opacity-50 text-[9px] text-gray-600 font-mono">
-          SELECCIONA ENTORNO PARA INICIAR MOTOR DE VIDEO
+      <div className="mt-12 text-center">
+          <p className="text-[8px] text-gray-600 font-mono tracking-[0.3em] uppercase animate-pulse">
+            Sincronía Circadiana v1.0 | Motor de Video Activo
+          </p>
       </div>
 
     </div>

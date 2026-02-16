@@ -16,6 +16,9 @@ const MOCK_CREATORS = [
         id: 'bot2', alias: 'Ana_Talks', role: 'TALK', 
         img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80',
         distance: '500km', desc: 'Debate: Futuro AI', isReal: false,
+        // AQUI ESTÁ EL VIDEO DE PRUEBA (Un loop de neón de Dropbox)
+        video_file: "https://www.dropbox.com/scl/fi/zf4ajqdda2rco012v642i/Juan-Platzi.mp4?rlkey=3nqpn2i2b6v7us85tmdowf0jz&st=7vxno8ub&dl=0",
+        product_title: 'Pack Samples Techno', product_price: 15,
         holo_1: "/images/prism_1.jpg", holo_2: "/images/prism_2.jpg", holo_3: "/images/prism_3.jpg", holo_4: "/images/prism_4.jpg"
     }
 ];

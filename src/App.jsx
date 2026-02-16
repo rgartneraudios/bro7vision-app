@@ -476,7 +476,7 @@ function App() {
                                 alias: 'Larry The Observer', 
                                 role: 'CRONISTA', 
                                 avatar_url: 'https://i.pravatar.cc/150?u=larry', // Pon aquí sus fotos reales
-                                video_file: '/videos/larry_vlog.mp4', // Su video vertical
+                                video_file: 'https://www.dropbox.com/scl/fi/zf4ajqdda2rco012v642i/Juan-Platzi.mp4?rlkey=3nqpn2i2b6v7us85tmdowf0jz&st=7vxno8ub&dl=0', // Su video vertical
                                 isNode: true 
                             },
                             { 
