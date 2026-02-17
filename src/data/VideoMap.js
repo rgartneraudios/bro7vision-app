@@ -218,6 +218,7 @@ export const VIDEO_MAP = {
     // América
     "estados_unidos": "/videos/estados_unidos.mp4",
     "mexico": "/videos/mexico.mp4",
+    "mejico": "/videos/mexico.mp4",
     "argentina": "/videos/argentina.mp4",
     "brasil": "/videos/brasil.mp4",
     
@@ -234,6 +235,8 @@ export const VIDEO_MAP = {
     "francia": "/videos/francia.mp4",
     "italia": "/videos/italia.mp4",
     "austria": "/videos/austria.mp4",
+    "españa": "/videos/spain.mp4",
+    "espana": "/videos/spain.mp4",
     "reino_unido": "/videos/london.mp4", // Usamos London para UK
 
         
@@ -261,7 +264,6 @@ export const VIDEO_MAP = {
     "monaco": "/videos/global.mp4",
     "andorra": "/videos/global.mp4",
     "portugal": "/videos/global.mp4",
-    "espana": "/videos/global.mp4",
     "grecia": "/videos/global.mp4",
     "malta": "/videos/global.mp4",
     "chipre": "/videos/global.mp4",
