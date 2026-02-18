@@ -12,6 +12,7 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.90.1",
+    "hls.js": "^1.6.15",
     "phaser": "^3.90.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
