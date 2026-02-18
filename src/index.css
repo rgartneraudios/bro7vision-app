@@ -183,3 +183,17 @@ img {
 .-rotate-x-90 { transform: rotateX(-90deg); }
 .translate-z-\[64px\] { transform: translateZ(64px); }
 .-translate-z-\[64px\] { transform: translateZ(-64px); }
+
+/* Animación para el destello elegante del botón Premium */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 3s infinite;
+}

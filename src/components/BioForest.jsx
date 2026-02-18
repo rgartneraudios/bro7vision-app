@@ -107,25 +107,41 @@ useEffect(() => {
 
     if (isHLS) {
         if (Hls.isSupported()) {
-            const hls = new Hls({
-                // Esto ayuda a que no se rompa si el canal tarda en responder
-                manifestLoadingMaxRetry: 4,
-                levelLoadingMaxRetry: 4,
-                xhrSetup: function (xhr, url) {
-                    xhr.withCredentials = false; // Importante para evitar líos de cookies
-                }
-            });
-            hls.loadSource(playUrl);
-            hls.attachMedia(video);
-                        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                console.log("✅ HLS Cargado correctamente");
-                video.play().catch(e => console.error("❌ Error en play():", e));
-            });
-            hls.on(Hls.Events.ERROR, (event, data) => {
-                if (data.fatal) console.error("🚨 Error fatal HLS:", data.type);
-            });
-            hlsRef.current = hls;
-        } 
+    const hls = new Hls({
+        enableWorker: true,
+        xhrSetup: function (xhr, url) {
+            // Este es el truco: le decimos al servidor que no envíe credenciales
+            // para que sea una petición "anónima" y no bloquee por dominio
+            xhr.withCredentials = false; 
+        },
+        // Reintentos automáticos si el servidor da error temporal
+        manifestLoadingMaxRetry: 10,
+        manifestLoadingRetryDelay: 1000,
+    });
+    
+    hls.loadSource(playUrl);
+    hls.attachMedia(video);
+    
+    // Si hay un error de red, intenta recargar automáticamente
+    hls.on(Hls.Events.ERROR, function (event, data) {
+        if (data.fatal) {
+            switch (data.type) {
+                case Hls.ErrorTypes.NETWORK_ERROR:
+                    console.log("Reintentando conexión de red...");
+                    hls.startLoad();
+                    break;
+                case Hls.ErrorTypes.MEDIA_ERROR:
+                    console.log("Error de media, intentando recuperar...");
+                    hls.recoverMediaError();
+                    break;
+                default:
+                    hls.destroy();
+                    break;
+            }
+        }
+    });
+    hlsRef.current = hls;
+} 
         else if (video.canPlayType('application/vnd.apple.mpegurl')) {
             // Safari / iOS nativo
             video.src = playUrl;
@@ -505,49 +521,42 @@ useEffect(() => {
             }
         }}
         >
-            {/* ETIQUETA SUPERIOR */}
-<p className={`text-[8px] mb-1 uppercase tracking-[0.4em] font-black 
+           {/* ETIQUETA SUPERIOR: ORO ELÉCTRICO */}
+<p className={`text-[8px] mb-1 uppercase tracking-[0.5em] font-black 
     ${isAd 
-        ? 'text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]' 
+        ? 'text-[#FFD700] drop-shadow-[0_0_8px_rgba(255,215,0,0.6)]' 
         : 'opacity-80 ' + randomNeon.text}
 `}>
     {isAd ? '⚡ HYPER ZAP' : `@${echo.author_alias}`}
 </p>
 
-{/* CUERPO DEL ECO */}
+{/* CUERPO DEL ECO: CRISTAL NEGRO CON BORDE DUAL */}
 <div className={`
     border backdrop-blur-3xl transition-all duration-700
     ${isAd 
-        ? 'px-5 py-2.5 rounded-[2rem] bg-black/80 border-white/20 text-white font-medium shadow-[0_0_20px_rgba(255,255,255,0.1),_inset_0_0_15px_rgba(255,255,255,0.05)] border-[1px]' 
+        ? 'px-5 py-2.5 rounded-[2rem] bg-[#0C0C1C]/50 border-[#E3DDB1]/30 text-white font-medium shadow-[0_0_20px_rgba(0,0,0,0.9),inset_0_0_10px_rgba(255,215,0,0.05)] border-[1px]' 
         : `px-7 py-3 rounded-[2.5rem] bg-black/90 border ${randomNeon.border} ${randomNeon.text} ${randomNeon.glow}`
     }
 `}>
-    <span className={isAd ? "text-xs md:text-base tracking-tight text-slate-200" : "text-xs md:text-lg"}>
+    {/* TEXTO CON UN LIGERO RESPLANDOR BLANCO PARA QUE SE LEA FÁCIL */}
+    <span className={isAd ? "text-xs md:text-base tracking-wide text-white drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]" : "text-xs md:text-lg"}>
         "{echo.text}"
     </span>
     
     {isAd && (
-        /* BOTÓN CON DEGRADADO ANIMADO (Tornasol) */
-        <div className="mt-1.5 relative group overflow-hidden py-1 px-4 rounded-full border border-white/30 animate-pulse shadow-lg bg-gradient-to-r from-indigo-500 via-purple-500 via-pink-500 to-cyan-500 bg-[length:200%_200%] animate-[gradient_3s_ease_infinite]">
-            <span className="text-[9px] text-white font-black tracking-widest uppercase relative z-10">
+        /* BOTÓN: FUSIÓN DE TUS ESFERAS CON EL NEÓN */
+        <div className="mt-2 relative overflow-hidden py-1.5 px-5 rounded-full border border-[#DED590]/50 group
+            bg-gradient-to-r from-amber-200/20 via-yellow-300/20 to-amber-100/20 shadow-[0_0_15px_rgba(251,191,36,0.2)]">
+            
+            {/* El destello (usa el mismo CSS que pusimos en index.css) */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-shimmer" />
+            
+            <span className="text-[9px] text-[#FFD700] font-black tracking-[0.3em] uppercase relative z-10 drop-shadow-[0_0_3px_rgba(255,215,0,0.5)]">
                 ENTRAR ▶
             </span>
         </div>
     )}
 </div>
-
-{/* CSS ADICIONAL (Agrega esto en tu archivo de estilos globales o dentro de un tag <style>) */}
-<style jsx>{`
-  @keyframes gradient {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-  .animate-gradient {
-    animation: gradient 3s ease infinite;
-  }
-`}</style>
-
             {!isAd && (
                 <button onClick={() => handleReport(echo.id)} className="pointer-events-auto opacity-0 group-hover:opacity-100 absolute -top-4 -right-4 bg-red-600/20 p-2 rounded-full text-[8px] hover:bg-red-600 transition-all">⚠️</button>
             )}

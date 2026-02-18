@@ -8,27 +8,21 @@ export const TV_NODES = [
     is_tv: true
   },
   {
-    id: 'tv_nasa',
-    alias: 'NASA TV (OFICIAL)',
-    video_file: 'https://ntv1.akamaized.net/hls/live/2014049/NASA-NTV1-HLS/master.m3u8',
+    id: 'tv_telesur',
+    alias: 'TELESUR',
+    video_file: 'https://telesur.blustream.tv/live/telesur/playlist.m3u8',
     is_tv: true
   },
   {
-    id: 'tv_dw_es',
-    alias: 'DW ESPAÑOL',
-    video_file: 'https://dwamdstream-lh.akamaihd.net/i/dwstream_es@530327/master.m3u8',
+    id: 'tv_rt_doc',
+    alias: 'RT DOCUMENTARY',
+    video_file: 'https://rt-esp.akamaized.net/hls/live/2014741/rtesp/master.m3u8',
     is_tv: true
   },
   {
-    id: 'tv_redbull',
-    alias: 'RED BULL TV',
-    video_file: 'https://rbmn-live.akamaized.net/hls/live/590945/6283132478001/master.m3u8',
-    is_tv: true
-  },
-  {
-    id: 'tv_info_news',
-    alias: 'EURONEWS ES',
-    video_file: 'https://euronews-euronews-es-1-es.rakuten.wurl.tv/playlist.m3u8',
+    id: 'tv_sin_filtros',
+    alias: 'SIN FILTROS TV',
+    video_file: 'https://mpro-live.shoutca.st/live/sf.m3u8',
     is_tv: true
   }
 ];
