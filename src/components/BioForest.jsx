@@ -502,32 +502,32 @@ useEffect(() => {
         }}
         >
             {/* ETIQUETA SUPERIOR */}
-            <p className={`text-[8px] mb-1 uppercase tracking-[0.4em] font-black 
-                ${isAd ? 'text-white drop-shadow-[0_0_8px_white]' : 'opacity-80 ' + randomNeon.text}
-            `}>
-                {isAd ? '⚡ HYPER ZAP' : `@${echo.author_alias}`}
-            </p>
+<p className={`text-[8px] mb-1 uppercase tracking-[0.4em] font-black 
+    ${isAd ? 'text-[#FFD700] drop-shadow-[0_0_5px_rgba(255,215,0,0.5)]' : 'opacity-80 ' + randomNeon.text}
+`}>
+    {isAd ? '⚡ HYPER ZAP' : `@${echo.author_alias}`}
+</p>
 
-            {/* CUERPO DEL ECO */}
-            <div className={`
-                border backdrop-blur-3xl transition-all duration-500
-                ${isAd 
-                    ? 'px-5 py-2.5 rounded-[2rem] bg-[#07070F]/95 border-fuchsia-500 text-[#F5F5DC] font-black shadow-[0_0_25px_rgba(6,182,212,0.6)] border-2' 
-                    : `px-7 py-3 rounded-[2.5rem] bg-black/90 border ${randomNeon.border} ${randomNeon.text} ${randomNeon.glow}`
-                }
-            `}>
-                <span className={isAd ? "text-xs md:text-base tracking-tight" : "text-xs md:text-lg"}>
-                    "{echo.text}"
-                </span>
-                
-                {isAd && (
-                    <div className="mt-1.5 bg-[#D946EF] py-1 px-4 rounded-full shadow-md border border-fuchsia-300 animate-pulse">
-                        <span className="text-[9px] text-yellow-300 font-black tracking-tighter italic uppercase">
-                            ENTRAR ▶
-                        </span>
-                    </div>
-                )}
-            </div>
+{/* CUERPO DEL ECO */}
+<div className={`
+    border backdrop-blur-3xl transition-all duration-500
+    ${isAd 
+        ? 'px-5 py-2.5 rounded-[2rem] bg-black/90 border-[#FFD700]/40 text-white font-medium shadow-[0_0_30px_rgba(212,175,55,0.2)] border-[1.5px]' 
+        : `px-7 py-3 rounded-[2.5rem] bg-black/80 border ${randomNeon.border} ${randomNeon.text} ${randomNeon.glow}`
+    }
+`}>
+    <span className={isAd ? "text-xs md:text-base tracking-tight leading-relaxed italic" : "text-xs md:text-lg"}>
+        "{echo.text}"
+    </span>
+    
+    {isAd && (
+        <div className="mt-1.5 bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] py-1 px-4 rounded-full shadow-lg border-t border-white/30 animate-pulse">
+            <span className="text-[9px] text-black font-black tracking-widest italic uppercase">
+                ENTRAR ▶
+            </span>
+        </div>
+    )}
+</div>
 
             {!isAd && (
                 <button onClick={() => handleReport(echo.id)} className="pointer-events-auto opacity-0 group-hover:opacity-100 absolute -top-4 -right-4 bg-red-600/20 p-2 rounded-full text-[8px] hover:bg-red-600 transition-all">⚠️</button>
