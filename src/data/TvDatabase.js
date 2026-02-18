@@ -8,27 +8,27 @@ export const TV_NODES = [
     is_tv: true
   },
   {
-    id: 'tv_bloomberg',
-    alias: 'BLOOMBERG TV',
-    video_file: 'https://liveproduseast.global.ssl.fastly.net/btv/desktop/us_live.m3u8',
+    id: 'tv_nasa',
+    alias: 'NASA TV (OFICIAL)',
+    video_file: 'https://ntv1.akamaized.net/hls/live/2014049/NASA-NTV1-HLS/master.m3u8',
     is_tv: true
   },
   {
-    id: 'tv_skynews',
-    alias: 'SKY NEWS',
-    video_file: 'https://skynews-skynews-main-at.samsung.wurl.tv/playlist.m3u8',
+    id: 'tv_dw_es',
+    alias: 'DW ESPAÑOL',
+    video_file: 'https://dwamdstream-lh.akamaihd.net/i/dwstream_es@530327/master.m3u8',
     is_tv: true
   },
   {
-    id: 'tv_claro',
-    alias: 'CLARO SPORTS',
-    video_file: 'https://clarosports-clarosports-1-mx.samsung.wurl.tv/playlist.m3u8',
+    id: 'tv_redbull',
+    alias: 'RED BULL TV',
+    video_file: 'https://rbmn-live.akamaized.net/hls/live/590945/6283132478001/master.m3u8',
     is_tv: true
   },
   {
-    id: 'tv_milenio',
-    alias: 'MILENIO TV (MX)',
-    video_file: 'https://milenio-tv.pdtv.live/milenio/index.m3u8',
+    id: 'tv_info_news',
+    alias: 'EURONEWS ES',
+    video_file: 'https://euronews-euronews-es-1-es.rakuten.wurl.tv/playlist.m3u8',
     is_tv: true
   }
 ];

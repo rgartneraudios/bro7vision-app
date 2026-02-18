@@ -108,12 +108,16 @@ useEffect(() => {
     if (isHLS) {
         if (Hls.isSupported()) {
             const hls = new Hls({
-                enableWorker: true,
-                lowLatencyMode: true,
+                // Esto ayuda a que no se rompa si el canal tarda en responder
+                manifestLoadingMaxRetry: 4,
+                levelLoadingMaxRetry: 4,
+                xhrSetup: function (xhr, url) {
+                    xhr.withCredentials = false; // Importante para evitar líos de cookies
+                }
             });
             hls.loadSource(playUrl);
             hls.attachMedia(video);
-            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        hls.on(Hls.Events.MANIFEST_PARSED, () => {
                 console.log("✅ HLS Cargado correctamente");
                 video.play().catch(e => console.error("❌ Error en play():", e));
             });
@@ -503,31 +507,46 @@ useEffect(() => {
         >
             {/* ETIQUETA SUPERIOR */}
 <p className={`text-[8px] mb-1 uppercase tracking-[0.4em] font-black 
-    ${isAd ? 'text-[#FFD700] drop-shadow-[0_0_5px_rgba(255,215,0,0.5)]' : 'opacity-80 ' + randomNeon.text}
+    ${isAd 
+        ? 'text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]' 
+        : 'opacity-80 ' + randomNeon.text}
 `}>
     {isAd ? '⚡ HYPER ZAP' : `@${echo.author_alias}`}
 </p>
 
 {/* CUERPO DEL ECO */}
 <div className={`
-    border backdrop-blur-3xl transition-all duration-500
+    border backdrop-blur-3xl transition-all duration-700
     ${isAd 
-        ? 'px-5 py-2.5 rounded-[2rem] bg-black/90 border-[#FFD700]/40 text-white font-medium shadow-[0_0_30px_rgba(212,175,55,0.2)] border-[1.5px]' 
-        : `px-7 py-3 rounded-[2.5rem] bg-black/80 border ${randomNeon.border} ${randomNeon.text} ${randomNeon.glow}`
+        ? 'px-5 py-2.5 rounded-[2rem] bg-black/80 border-white/20 text-white font-medium shadow-[0_0_20px_rgba(255,255,255,0.1),_inset_0_0_15px_rgba(255,255,255,0.05)] border-[1px]' 
+        : `px-7 py-3 rounded-[2.5rem] bg-black/90 border ${randomNeon.border} ${randomNeon.text} ${randomNeon.glow}`
     }
 `}>
-    <span className={isAd ? "text-xs md:text-base tracking-tight leading-relaxed italic" : "text-xs md:text-lg"}>
+    <span className={isAd ? "text-xs md:text-base tracking-tight text-slate-200" : "text-xs md:text-lg"}>
         "{echo.text}"
     </span>
     
     {isAd && (
-        <div className="mt-1.5 bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] py-1 px-4 rounded-full shadow-lg border-t border-white/30 animate-pulse">
-            <span className="text-[9px] text-black font-black tracking-widest italic uppercase">
+        /* BOTÓN CON DEGRADADO ANIMADO (Tornasol) */
+        <div className="mt-1.5 relative group overflow-hidden py-1 px-4 rounded-full border border-white/30 animate-pulse shadow-lg bg-gradient-to-r from-indigo-500 via-purple-500 via-pink-500 to-cyan-500 bg-[length:200%_200%] animate-[gradient_3s_ease_infinite]">
+            <span className="text-[9px] text-white font-black tracking-widest uppercase relative z-10">
                 ENTRAR ▶
             </span>
         </div>
     )}
 </div>
+
+{/* CSS ADICIONAL (Agrega esto en tu archivo de estilos globales o dentro de un tag <style>) */}
+<style jsx>{`
+  @keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .animate-gradient {
+    animation: gradient 3s ease infinite;
+  }
+`}</style>
 
             {!isAd && (
                 <button onClick={() => handleReport(echo.id)} className="pointer-events-auto opacity-0 group-hover:opacity-100 absolute -top-4 -right-4 bg-red-600/20 p-2 rounded-full text-[8px] hover:bg-red-600 transition-all">⚠️</button>
