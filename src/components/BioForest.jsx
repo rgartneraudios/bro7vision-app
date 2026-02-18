@@ -17,7 +17,7 @@ const MOBILE_SLOTS = [
 
 const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, onOpenProfile, selectedForestUser }) => { 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
   const [activeReaction, setActiveReaction] = useState(null);
   
@@ -45,8 +45,9 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
   const [realUserAlias, setRealUserAlias] = useState("");
 
   const videoRef = useRef(null);
-  const hlsRef = useRef(null); // <--- REFERENCIA PARA EL MOTOR HLS
-  const audioTribeRef = useRef(new Audio());
+  const bgVideoRef = useRef(null); // <--- ESTA ES LA QUE TE FALTA Y DA ERROR 500
+  const hlsRef = useRef(null);
+    const audioTribeRef = useRef(new Audio());
   const audioTimeoutRef = useRef(null);
   const touchStart = useRef(0);
   const touchEnd = useRef(0);
@@ -93,71 +94,77 @@ useEffect(() => {
   // ESTE ES EL BLOQUE NUEVO PARA QUE LA TV FUNCIONE EN PC
   useEffect(() => {
     const video = videoRef.current;
+    const bgVideo = bgVideoRef.current; // Puede ser null si estás en modo TV
+    
+    // Si no hay usuario o el video principal no está listo, no hacemos nada
     if (!video || !currentUser) return;
 
-    const playUrl = getCleanUrl(currentUser.video_file || "");
-    const isHLS = playUrl.includes('.m3u8');
+    // Función auxiliar local para evitar problemas de hoisting
+    const cleanUrl = (url) => {
+        if (!url) return "";
+        let clean = url.trim();
+        if (clean.includes('dropbox.com')) {
+            clean = clean.replace('www.dropbox.com', 'dl.dropboxusercontent.com')
+                         .replace('dropbox.com', 'dl.dropboxusercontent.com')
+                         .replace('?dl=0', '')
+                         .replace('&dl=0', '');
+            return clean.includes('?') ? `${clean}&raw=1` : `${clean}?raw=1`;
+        }
+        return clean;
+    };
 
-    console.log("📺 Intentando sintonizar:", currentUser.alias, "URL:", playUrl);
+    const rawUrl = currentUser.video_file || "";
+    const playUrl = cleanUrl(rawUrl);
 
+    // 1. Limpieza de HLS previo
     if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
     }
 
+    const isHLS = playUrl.includes('.m3u8');
+
+    // Limpiamos el source del fondo si vamos a cambiar de canal, para evitar parpadeos
+    if (bgVideo && isHLS) {
+        bgVideo.pause();
+        bgVideo.src = "";
+    }
+
     if (isHLS) {
-        if (Hls.isSupported()) {
-    const hls = new Hls({
-        enableWorker: true,
-        xhrSetup: function (xhr, url) {
-            // Este es el truco: le decimos al servidor que no envíe credenciales
-            // para que sea una petición "anónima" y no bloquee por dominio
-            xhr.withCredentials = false; 
-        },
-        // Reintentos automáticos si el servidor da error temporal
-        manifestLoadingMaxRetry: 10,
-        manifestLoadingRetryDelay: 1000,
-    });
-    
-    hls.loadSource(playUrl);
-    hls.attachMedia(video);
-    
-    // Si hay un error de red, intenta recargar automáticamente
-    hls.on(Hls.Events.ERROR, function (event, data) {
-        if (data.fatal) {
-            switch (data.type) {
-                case Hls.ErrorTypes.NETWORK_ERROR:
-                    console.log("Reintentando conexión de red...");
-                    hls.startLoad();
-                    break;
-                case Hls.ErrorTypes.MEDIA_ERROR:
-                    console.log("Error de media, intentando recuperar...");
-                    hls.recoverMediaError();
-                    break;
-                default:
-                    hls.destroy();
-                    break;
-            }
-        }
-    });
-    hlsRef.current = hls;
-} 
-        else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            // Safari / iOS nativo
+        // --- MODO TV (HLS) ---
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
             video.src = playUrl;
-            video.addEventListener('loadedmetadata', () => {
+            video.play().catch(() => {});
+        } else if (Hls.isSupported()) {
+            const hls = new Hls();
+            hls.loadSource(playUrl);
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
                 video.play().catch(() => {});
             });
+            hlsRef.current = hls;
         }
     } else {
-        // Video Normal
-        video.src = playUrl;
-        video.load();
+        // --- MODO VIDEO NORMAL (MP4/Dropbox) ---
+        // Verificamos si el src ha cambiado para no recargar en loop
+        if (video.src !== playUrl && video.src !== window.location.origin + playUrl) {
+            video.src = playUrl;
+            video.load();
+            video.play().catch(() => {});
+
+            // Solo activamos el espejo si el elemento existe (no es TV)
+            if (bgVideo) {
+                bgVideo.src = playUrl; 
+                bgVideo.load();
+                bgVideo.muted = true; // Aseguramos mute
+                bgVideo.play().catch(() => {});
+            }
+        }
     }
 
     video.muted = isMuted;
-}, [currentUser, isMuted]); // <--- Añadimos isMuted aquí también
-
+    
+  }, [currentUser, isMuted]);  
   // --- ESTILOS ---
   const forestStyles = `
     @keyframes spiritFade {
@@ -195,21 +202,16 @@ useEffect(() => {
   const getCleanUrl = (url) => {
     if (!url) return "";
     let clean = url.trim();
-
-    // 1. Si es Dropbox, aplicamos la magia de Dropbox
+    
     if (clean.includes('dropbox.com')) {
         clean = clean.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '').replace('&dl=0', '');
         return clean.includes('?') ? `${clean}&raw=1` : `${clean}?raw=1`;
     }
-
-    // 2. IMPORTANTE: Si es TV (.m3u8), NO TOCAMOS NADA. 
-    // Devolvemos la URL tal cual para no romper los parámetros de seguridad.
-    if (clean.includes('.m3u8')) {
-        return clean;
-    }
-
+    
+    // Si no es dropbox, NO lo toques.
     return clean;
 };
+
   // --- LÓGICA DE GRABACIÓN DE AUDIO ---
   const startRecording = async () => {
     try {
@@ -610,40 +612,50 @@ useEffect(() => {
     </>
 )} 
           
-      {/* --- BLOQUE MAESTRO MARAVILLA: VISOR + TV + 3 BOTONES ECO --- */}
+      {/* --- BLOQUE MAESTRO MARAVILLA: VISOR + TV + EFECTO ESPEJO --- */}
       <div onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} className="absolute top-[42%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[20]">
           <div className="relative w-[88vw] md:w-[380px] h-[55vh] md:h-[600px]">
-              <div className={`absolute inset-0 border-2 rounded-[3.5rem] bg-black overflow-hidden ${config.border} flex items-center justify-center`}>
-                  
-                  {/* 1. MAQUILLAJE NEÓN (Aura Ambilight) para TV */}
-                  {currentUser && isTvMode && (
-                    <div className="absolute inset-0 z-0 opacity-40 blur-[40px] scale-150 pointer-events-none">
-                       {/* Fondo decorativo estático o negro para TV */}
-                       <div className="w-full h-full bg-indigo-900/30"></div>
-                    </div>
-                  )}
+             <div className={`absolute inset-0 border-2 rounded-[3.5rem] bg-black overflow-hidden ${config.border} flex items-center justify-center`}>
+    
+    {/* 1. EL ESPEJO (Background) - Solo para videos que no son TV */}
+    {!isTvMode && (
+      <video 
+        ref={bgVideoRef}
+        className="absolute inset-0 w-full h-full object-cover scale-150 blur-[40px] opacity-50 saturate-150 pointer-events-none z-0"
+        muted
+        loop
+        playsInline
+      />
+    )}
 
-                  {/* 2. VIDEO PRINCIPAL (Con soporte HLS inyectado por efecto) */}
-                  <video 
-                    ref={videoRef} 
-                    key={currentUser.id} 
-                    // NOTA: 'src' se asigna en el useEffect, pero dejamos poster
+    {/* 2. MAQUILLAJE PARA TV (Si es TV, usamos un aura de color fija) */}
+    {isTvMode && (
+      <div className="absolute inset-0 z-0 opacity-30 blur-[60px] scale-150 pointer-events-none bg-gradient-to-t from-blue-900 via-lila-900 to-white-pink"></div>
+    )}
+
+    {/* 3. CAPA DE OSCURIDAD INTERMEDIA */}
+    <div className="absolute inset-0 bg-black/20 z-[5] pointer-events-none" />
+
+    {/* 4. VIDEO PRINCIPAL */}
+    <video 
+      ref={videoRef} 
+      key={currentUser.id}  
                     poster={currentUser.poster || ""}
                     autoPlay 
-                    loop={!isTvMode} // TV es stream, no loop
+                    loop={!isTvMode} 
                     muted={isMuted} 
                     playsInline 
                     className={`relative z-10 transition-all duration-700 
-                      ${isTvMode ? 'w-full h-auto aspect-video object-contain bg-black' : 'w-full h-full object-cover'}`} 
+        ${isTvMode ? 'w-full h-auto aspect-video object-contain bg-black' : 'w-full h-full object-cover'}`}  
                     onTimeUpdate={() => videoRef.current && setProgress((videoRef.current.currentTime / (videoRef.current.duration || 100)) * 100)} 
                   />
 
-                  {/* 3. BOTÓN MUTE */}
+                  {/* 5. BOTÓN MUTE */}
                   <button onClick={() => setIsMuted(!isMuted)} className="absolute top-6 right-6 bg-black/60 backdrop-blur-md p-3 rounded-full text-lg z-[150]">
                       {isMuted ? '🔇' : '🔊'}
                   </button>
                   
-                  {/* 4. BARRA DE PROGRESO (Solo si no es TV) */}
+                  {/* 6. BARRA DE PROGRESO */}
                   {!isTvMode && (
                     <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10 z-[150]">
                         <div className={`h-full transition-all duration-300 ${config.reactionColor === 'orange' ? 'bg-orange-500' : 'bg-cyan-500'}`} style={{ width: `${progress}%` }}></div>
