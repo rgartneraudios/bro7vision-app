@@ -196,17 +196,20 @@ useEffect(() => {
     if (!url) return "";
     let clean = url.trim();
 
-    // SOLO para Dropbox aplicamos limpieza
+    // 1. Si es Dropbox, aplicamos la magia de Dropbox
     if (clean.includes('dropbox.com')) {
-        clean = clean.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '').replace('&dl=0', '');
+        clean = clean.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '').replace('&dl=0', '');
         return clean.includes('?') ? `${clean}&raw=1` : `${clean}?raw=1`;
     }
 
-    // Para TV (.m3u8), la mandamos DIRECTA. 
-    // Si el canal es bueno, cargará solo. Si tiene seguridad extrema, no cargará ni con proxy.
+    // 2. IMPORTANTE: Si es TV (.m3u8), NO TOCAMOS NADA. 
+    // Devolvemos la URL tal cual para no romper los parámetros de seguridad.
+    if (clean.includes('.m3u8')) {
+        return clean;
+    }
+
     return clean;
 };
-
   // --- LÓGICA DE GRABACIÓN DE AUDIO ---
   const startRecording = async () => {
     try {
