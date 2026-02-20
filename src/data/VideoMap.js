@@ -9,6 +9,7 @@ export const VIDEO_MAP = {
     "paris": "/videos/paris.mp4",
     "nueva_york": "/videos/ny.mp4",
     "tokyo": "/videos/tokyo.mp4",
+    "tokio": "/videos/tokyo.mp4",
     "londres": "/videos/london.mp4",
         
     // --- ESPAÑA (AGRUPACIÓN REGIONAL "MOCHILA") ---
@@ -177,6 +178,23 @@ export const VIDEO_MAP = {
     "elda": "/videos/levante.mp4",
     "vila_real": "/videos/levante.mp4",
     
+    // Provincia de Alicante (> 50.000 hab)
+    "alicante": "/videos/levante.mp4",
+    "elche": "/videos/levante.mp4",
+    "torrevieja": "/videos/levante.mp4",
+    "orihuela": "/videos/levante.mp4",
+    "benidorm": "/videos/levante.mp4",
+    "alcoy": "/videos/levante.mp4",
+    "san_vicente_del_raspeig": "/videos/levante.mp4",
+    "elda": "/videos/levante.mp4",
+    "denia": "/videos/levante.mp4",
+    
+    // Región de Murcia (Ciudades > 50.000 hab)
+    "murcia": "/videos/levante.mp4",
+    "cartagena": "/videos/levante.mp4",
+    "lorca": "/videos/levante.mp4",
+    "molina_de_segura": "/videos/levante.mp4",
+  
    // Castilla y León
     "valladolid": "/videos/oeste.mp4",
     "burgos": "/videos/oeste.mp4",

@@ -20,7 +20,7 @@ import LegalTerminal from './components/LegalTerminal';
 import HoloProjector from './components/HoloProjector';
 import HoloArcade from './components/HoloArcade';
 import BioForest from './components/BioForest';
-import WebBotTerminal from './components/WebBotTerminal';
+//  import WebBotTerminal from './components/WebBotTerminal';
 import RacoonTerminal from './components/RacoonTerminal';
 import RealityTuner from './components/RealityTuner';
 
@@ -274,7 +274,7 @@ function App() {
 
     // 1. Filtrar por intención (Tienda, Live, etc)
     ALL = ALL.filter(item => {
-      if (intent === 'ai' || intent === 'game' || intent === 'web_search' || intent === 'internal_search') return false;
+      if (intent === 'ai' || intent === 'game' || intent === 'internal_search') return false;
       const types = Array.isArray(item.type) ? item.type : [item.type];
       if (intent === 'broshop') return types.includes('shop') || types.includes('product') || types.includes('service');
       if (intent === 'lives') return types.includes('live');
@@ -354,7 +354,6 @@ function App() {
     if (id === 'lives') return base + "bg-red-600 text-white border-red-500 shadow-[0_0_15px_red]";
     if (id === 'ai') return base + "bg-purple-600 text-white border-purple-500 shadow-[0_0_15px_purple]";
     if (id === 'game') return base + "bg-green-500 text-black border-green-400 shadow-[0_0_15px_green]";
-    if (id === 'web_search') return base + "bg-blue-500 text-white border-blue-400 shadow-[0_0_15px_blue]";
     if (id === 'internal_search') return base + "bg-orange-500 text-black border-orange-400 shadow-[0_0_15px_orange]";
     return base + "bg-white text-black";
   };
@@ -409,7 +408,7 @@ function App() {
         {step === 2 && (
           <video 
             key={intent} 
-            src={intent === 'ai' ? "/ai_bg.mp4" : intent === 'game' ? "/game_bg.mp4" : intent === 'lives' ? "/brolives1.mp4" : intent === 'internal_search' ? "/racoonask.mp4" : intent === 'web_search' ? "/websearch.mp4" : getVideoForLocation(scope)} 
+            src={intent === 'ai' ? "/ai_bg.mp4" : intent === 'game' ? "/game_bg.mp4" : intent === 'lives' ? "/brolives1.mp4" : intent === 'internal_search' ? "/racoonask.mp4" : getVideoForLocation(scope)} 
             autoPlay loop muted playsInline 
             className="w-full h-full object-cover animate-fadeIn" 
           />
@@ -620,17 +619,17 @@ function App() {
           </button>
 
           {/* Los demás botones en la misma fila */}
-          {['broshop', 'lives', 'ai', 'game', 'web_search', 'internal_search'].map(id => (
+          {['broshop', 'lives', 'ai', 'game', 'internal_search'].map(id => (
               <button 
                 key={id} 
                 onClick={() => handleNavigation(id)} 
                 className={`${getButtonClass(id)} flex-shrink-0 flex items-center justify-center p-2.5 md:p-3 text-[10px] rounded-xl group`}
               >
                   <span className="text-xl md:text-base">
-                      {id === 'broshop' ? '🛒' : id === 'lives' ? '📡' : id === 'ai' ? '🤖' : id === 'game' ? '🎮' : id === 'web_search' ? '🌐' : '🔍'}
+                      {id === 'broshop' ? '🛒' : id === 'lives' ? '📡' : id === 'ai' ? '🤖' : id === 'game' ? '🎮'  : '🔍'}
                   </span>
                   <span className="hidden md:block ml-3 uppercase">
-                      {id === 'broshop' ? 'SHOP' : id === 'lives' ? 'LIVES' : id === 'ai' ? 'AI' : id === 'game' ? 'GAMES' : id === 'web_search' ? 'P2P' : 'SEARCH'}
+                      {id === 'broshop' ? 'SHOP' : id === 'lives' ? 'RADIO' : id === 'ai' ? 'AI' : id === 'game' ? 'GAMES'  : 'ASK'}
                   </span>
               </button>
           ))}
@@ -647,11 +646,19 @@ function App() {
         </div>
       )}
       {/* 7. DASHBOARD CENTRAL */}
-      {step === 2 && intent !== 'web_search' && intent !== 'internal_search' && (
+      {step === 2 && intent !== 'internal_search' && (
           <NexusDashboard 
-            items={filteredItems} intent={intent} setIntent={setIntent} 
-            searchQuery={searchQuery} setSearchQuery={setSearchQuery}
-            onBack={() => setStep(0)} onTuneIn={handleTuneIn} 
+            items={filteredItems} 
+            intent={intent}
+           scope={scope}
+            setIntent={setIntent} 
+            searchQuery={searchQuery} 
+            setSearchQuery={setSearchQuery}
+            // --- AQUÍ ESTÁ EL ARREGLO DEL ERROR ROJO ---
+            onSearch={() => console.log("Búsqueda ejecutada: ", searchQuery)} 
+            // -------------------------------------------
+            onBack={() => setStep(0)} 
+            onTuneIn={handleTuneIn} 
             onSelectShop={(item) => setSelectedCard(item)} 
             onUserClick={setSelectedIdentity} 
             onOpenVideo={handleOpenVideo} 
@@ -665,16 +672,9 @@ function App() {
             onOpenLog={setSelectedLog}
           />
       )}
-
+      
       {/* PANTALLAS EXTRA */}
-      {intent === 'web_search' && step === 2 && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
-            <div className="w-full max-w-6xl absolute top-[10%] bottom-32 px-4 pointer-events-auto bg-[#050505] rounded-3xl overflow-hidden shadow-2xl border border-blue-900/50 animate-zoomIn">
-                <WebBotTerminal onClose={() => setIntent('broshop')} onSelectAsset={(asset) => setSelectedCard({...asset, isAsset: true})} />
-            </div>
-        </div>
-      )}
-
+      
       {intent === 'internal_search' && step === 2 && (
           <div className="absolute top-[15%] bottom-[25%] w-full max-w-5xl left-1/2 -translate-x-1/2 px-4 pointer-events-auto z-50 animate-zoomIn">
             <RacoonTerminal searchQuery={searchQuery} />

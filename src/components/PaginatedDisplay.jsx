@@ -1,5 +1,16 @@
-// src/components/PaginatedDisplay.jsx (FIX: MESSAGE DISPLAY)
 import React, { useState, useEffect } from 'react';
+
+// MAPA DE COLORES NEÓN
+const NEON_MAP = {
+    cyan: '#00E1FF', 
+    fuchsia: '#FF007D', 
+    yellow: '#FFD700', 
+    green: '#00FF48', 
+    blue: '#006AED', 
+    red: '#FF1A1A', 
+    orange: '#FF8000', 
+    white: '#FFFFFF'
+};
 
 const PaginatedDisplay = ({ items, onSelect, onTuneIn, onOpenVideo }) => {
   const [startIndex, setStartIndex] = useState(0);
@@ -11,6 +22,11 @@ const PaginatedDisplay = ({ items, onSelect, onTuneIn, onOpenVideo }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const getNeonColor = (item) => {
+    const energy = item.card_color ? item.card_color.split('-')[0] : 'cyan';
+    return NEON_MAP[energy] || NEON_MAP.cyan; 
+  };
+
   if (!items || items.length === 0) return null;
 
   const visibleItems = [];
@@ -21,84 +37,126 @@ const PaginatedDisplay = ({ items, onSelect, onTuneIn, onOpenVideo }) => {
   const nextSlide = () => { if (totalItems > itemsPerPage) setStartIndex((prev) => (prev + 1) % totalItems); };
   const prevSlide = () => { if (totalItems > itemsPerPage) setStartIndex((prev) => (prev - 1 + totalItems) % totalItems); };
 
-  const getDualStyle = (colorString) => {
-      let energy = 'cyan'; let matter = 'void';
-      if (colorString && colorString.includes('-')) { [energy, matter] = colorString.split('-'); }
-      const bgMap = { void: 'bg-black', carbon: 'bg-[#1a1a1a]', cobalt: 'bg-[#102040]', wine: 'bg-[#2d0b0b]', crimson: 'bg-[#350505]' };
-      const energyMap = {
-          cyan: 'border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.2)]',
-          fuchsia: 'border-fuchsia-500 shadow-[0_0_15px_rgba(232,121,249,0.2)]',
-          yellow: 'border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.2)]',
-          green: 'border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.2)]'
-      };
-      return { container: `${bgMap[matter] || 'bg-black'} border-2 ${energyMap[energy] || energyMap.cyan}` };
-  };
-
   return (
-    <div className="w-full h-full flex flex-row items-center justify-center gap-2 md:gap-4 px-2 md:px-0 relative">
-        <button onClick={prevSlide} className="shrink-0 w-10 h-10 md:w-12 md:h-12 bg-black/80 border border-white/30 rounded-full flex items-center justify-center hover:bg-white hover:text-black z-[70] transition-all">‹</button>
+    <div className="w-full flex flex-row items-center justify-center gap-1 md:gap-4 px-1 md:px-0 relative pointer-events-none">
+        
+        <style>{`
+          @keyframes floatGem {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+          }
+          .glass-shine {
+            background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 40%);
+          }
+        `}</style>
 
-        <div className="flex-1 max-w-5xl">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* BOTÓN IZQUIERDO */}
+        <button onClick={prevSlide} className="shrink-0 w-8 h-8 md:w-12 md:h-12 bg-black/60 border border-cyan-500 text-cyan-400 rounded-full flex items-center justify-center hover:bg-cyan-400 hover:text-black z-[100] transition-all pointer-events-auto shadow-[0_0_15px_cyan] backdrop-blur-md">❮</button>
+
+        {/* GRID DE GEMAS */}
+        <div className="flex-1 max-w-6xl">
+            <div className={`grid gap-4 md:gap-8 ${itemsPerPage === 2 ? 'grid-cols-2' : 'grid-cols-4'}`}>
                 {visibleItems.map((item, index) => {
-                    const style = getDualStyle(item.neonColor);
-                    // LÓGICA DE TEXTO DE RESPALDO PARA EL MENSAJE
-                    const displayMessage = item.message || item.desc || "Estado no disponible...";
+                    const neonColor = getNeonColor(item);
+                    const displayMessage = item.twit_message || item.message || "Señal activa...";
+                    const price = item.productData?.price || item.serviceData?.price || item.price || "--";
+                    
+                    const floatDelay = `${index * 0.2}s`; 
+                    const floatDuration = `${5 + (index % 2)}s`; 
 
                     return (
-                        <div key={`${item.id}-${index}`} onClick={() => onSelect(item)} className={`relative w-full h-[160px] md:h-[180px] flex flex-row rounded-xl overflow-hidden cursor-pointer ${style.container} transition-all duration-300 hover:scale-[1.02]`}>
-                            <img src={item.img} className="absolute inset-0 w-full h-full object-cover opacity-20" alt="card-bg" />
-                            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent"></div>
+                        <div 
+                            key={`${item.id}-${index}`} 
+                            onClick={() => onSelect(item)} 
+                            className="relative group flex flex-col justify-between rounded-[2rem] overflow-hidden cursor-pointer transition-all duration-500 pointer-events-auto"
+                            style={{
+                                border: `2px solid ${neonColor}`,
+                                boxShadow: `
+                                    0 0 15px ${neonColor}, 
+                                    inset 0 0 30px ${neonColor}30
+                                `,
+                                // Fondo base oscuro pero transparente
+                                background: `radial-gradient(circle at 50% 50%, #000 20%, #000 100%)`, 
+                                height: window.innerWidth < 768 ? '240px' : '340px',
+                                animation: `floatGem ${floatDuration} ease-in-out infinite`,
+                                animationDelay: floatDelay
+                            }}
+                        >
+                            {/* 1. BRILLO SUPERIOR (Efecto Cristal) */}
+                            <div className="absolute inset-0 glass-shine pointer-events-none z-20"></div>
 
-                            {/* --- CONTENIDO PRINCIPAL --- */}
-                            <div className="relative z-10 flex flex-1 flex-row items-center p-3 gap-3">
-                                {/* Avatar */}
-                                <div className="relative shrink-0">
-                                    <img src={item.avatar_url} className="w-14 h-14 md:w-16 md:h-16 rounded-full border border-white/20 object-cover shadow-lg bg-black" alt="av" />
+                            {/* 2. IMAGEN DE FONDO (FULL COLOR SIEMPRE) */}
+                            <div className="absolute inset-0 z-0">
+                                {/* Eliminado 'grayscale' y subido 'opacity' al 50% base, 70% hover */}
+                                {item.img && <img src={item.img} alt="bg" className="w-full h-full object-cover opacity-50 group-hover:opacity-70 transition-opacity duration-500" />}
+                                {/* Gradiente suave para que el texto resalte sobre la foto colorida */}
+                                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/90"></div>
+                            </div>
+
+                            {/* 3. CABECERA FLOTANTE (Esquinas) */}
+                            <div className="absolute top-3 left-3 z-30">
+                                <div className="p-[1px] rounded-full bg-black/50 backdrop-blur-md shadow-lg" style={{ border: `1px solid ${neonColor}` }}>
+                                    <img src={item.avatar_url} className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover" alt="av" />
                                 </div>
+                            </div>
+                            <div className="absolute top-4 right-4 z-30 bg-black/60 px-2 py-1 rounded-md backdrop-blur-sm border border-white/10 shadow-[0_0_10px_black]">
+                                <h3 className="text-[8px] md:text-[9px] font-black uppercase text-white tracking-widest">
+                                    {item.alias}
+                                </h3>
+                            </div>
+
+                            {/* 4. CENTRO: EL MENSAJE NEÓN */}
+                            <div className="absolute inset-0 z-20 flex items-center justify-center px-4 pointer-events-none mt-4">
+                                <p 
+                                    className="text-white font-black italic text-center leading-tight text-sm md:text-xl line-clamp-4 drop-shadow-[0_2px_4px_rgba(0,0,0,1)]"
+                                    style={{ 
+                                        textShadow: `0 0 15px ${neonColor}`,
+                                        color: '#fff' 
+                                    }}
+                                >
+                                    "{displayMessage}"
+                                </p>
+                            </div>
+
+                            {/* 5. FOOTER */}
+                            <div className="absolute bottom-0 w-full z-30 p-3 flex flex-col gap-2">
                                 
-                                <div className="flex flex-col flex-1 min-w-0 justify-center px-1">
-                                    <span className="text-[10px] md:text-xs font-black text-white/60 uppercase tracking-[0.2em] mb-1">
-                                        {item.shopName}
-                                    </span>
-                                    
-                                    <h3 className="text-white font-black text-xl md:text-xl uppercase leading-none tracking-tighter italic truncate mb-2 drop-shadow-md">
+                                {/* Fila: Nombre Producto + Precio */}
+                                <div className="flex justify-between items-end px-1 pb-1 mb-1 border-b border-white/20">
+                                    <h2 className="text-white font-bold text-[10px] md:text-xs uppercase tracking-wide truncate max-w-[60%] shadow-black drop-shadow-md">
                                         {item.name}
-                                    </h3>
-                                    
-                                    {/* MESSAGE TWIT VISIBLE */}
-                                    <p className="text-gray-200 text-xs md:text-sm font-medium italic leading-snug line-clamp-3 opacity-90">
-                                        "{displayMessage}"
-                                    </p>
+                                    </h2>
+                                    <span className="text-xl md:text-2xl font-black font-mono text-white drop-shadow-[0_2px_2px_rgba(0,0,0,1)]" style={{ textShadow: `0 0 10px ${neonColor}` }}>
+                                        {price}€
+                                    </span>
+                                </div>
+
+                                {/* Botonera */}
+                                <div className="flex gap-2 justify-between">
+                                    {item.audioFile ? (
+                                        <button onClick={(e) => { e.stopPropagation(); onTuneIn(item); }} className="flex-1 py-2 bg-black/90 border border-red-500 text-red-500 hover:bg-red-600 hover:text-black rounded-lg text-[8px] font-black uppercase transition-all shadow-[0_0_10px_rgba(220,38,38,0.3)] hover:shadow-[0_0_20px_red]">
+                                            ▶ AUDIO
+                                        </button>
+                                    ) : <div className="flex-1"></div>}
+
+                                    {item.video_file && (
+                                        <button onClick={(e) => { e.stopPropagation(); onOpenVideo(item); }} className="flex-1 py-2 bg-black/90 border border-fuchsia-500 text-fuchsia-500 hover:bg-fuchsia-600 hover:text-black rounded-lg text-[8px] font-black uppercase transition-all shadow-[0_0_10px_rgba(192,38,211,0.3)] hover:shadow-[0_0_20px_fuchsia]">
+                                            ÍNTIMO
+                                        </button>
+                                    )}
                                 </div>
                             </div>
 
-                            {/* --- BARRA LATERAL --- */}
-                            <div className="relative z-10 w-[70px] md:w-[85px] bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center border-l border-white/10 gap-2">
-                                <div className="text-center">
-                                    <p className="text-[6px] text-gray-400 font-bold uppercase tracking-widest">PVP</p>
-                                    <p className="text-base md:text-lg font-black text-white font-mono leading-none">
-                                        {item.productData?.price || item.serviceData?.price || item.price || "--"}€
-                                    </p>
-                                </div>
-                                
-                                <div className="flex flex-col gap-1.5 w-full items-center px-1">
-                                    {item.audioFile && <button onClick={(e) => {e.stopPropagation(); onTuneIn(item)}} className="w-full py-1 bg-red-600/80 rounded text-[9px] font-black text-white hover:bg-red-500 shadow-md">▶ AUDIO</button>}
-                                    {item.video_file && <button onClick={(e) => {e.stopPropagation(); onOpenVideo(item)}} className="w-full py-1 bg-fuchsia-600/80 rounded text-[9px] font-black text-white hover:bg-fuchsia-500 shadow-md">ÍNTIMO</button>}
-                                </div>
-
-                                <span className="text-[6px] font-bold text-gray-400 uppercase tracking-tighter">
-                                    {item.distance}
-                                </span>
-                            </div>
                         </div>
                     );
                 })}
             </div>
         </div>
 
-        <button onClick={nextSlide} className="shrink-0 w-10 h-10 md:w-12 md:h-12 bg-black/80 border border-white/30 rounded-full flex items-center justify-center hover:bg-white hover:text-black z-[70] transition-all">›</button>
+        {/* BOTÓN DERECHO */}
+        <button onClick={nextSlide} className="shrink-0 w-8 h-8 md:w-12 md:h-12 bg-black/60 border border-cyan-500 text-cyan-400 rounded-full flex items-center justify-center hover:bg-cyan-400 hover:text-black z-[100] transition-all pointer-events-auto shadow-[0_0_15px_cyan] backdrop-blur-md">❯</button>
     </div>
   );
 };
+
 export default PaginatedDisplay;

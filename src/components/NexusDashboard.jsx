@@ -6,6 +6,7 @@ import RacoonTerminal from './RacoonTerminal';
 import CommunityTicker from './CommunityTicker'; 
 import { askGemini } from '../services/gemini'; 
 import PaginatedDisplay from './PaginatedDisplay'; 
+import CityLocationBanner from './CityLocationBanner';
 
 // JUEGOS
 import NeonReact from './NeonReact'; 
@@ -22,7 +23,8 @@ const NexusDashboard = ({
     onBack, onGameWin, onOpenLog, 
     onSelectShop, onTuneIn, onUserClick,
     items,
-    onOpenVideo
+    onOpenVideo,
+    scope 
 }) => {
 
   const [currentLogIndex, setCurrentLogIndex] = useState(0);
@@ -55,44 +57,51 @@ const NexusDashboard = ({
   const isGameMode = intent === 'game';
   const isAIMode = intent === 'ai';
   const isLiveMode = intent === 'lives';
-  const isWebMode = intent === 'web_search'; 
-  const isInternalMode = intent === 'internal_search';
   const isCardMode = (intent === 'broshop' || intent === 'product' || intent === 'service');
-  const showFeed = !isGameMode && !isAIMode && !isLiveMode && !isWebMode && !isInternalMode;
-  const showSearchBar = !isGameMode && !isAIMode && !isLiveMode && !isWebMode;
+  const showSearchBar = !isGameMode && !isAIMode && !isLiveMode;
 
-  const handleLogClick = () => { onOpenLog({ title: MOCK_LOGS[currentLogIndex], category: "ENSAYO", author: "Editorial_Bot" }); };
+  const handleLogClick = () => { 
+      // Al pinchar el texto, abrimos el blog correspondiente
+      onOpenLog({ title: MOCK_LOGS[currentLogIndex], category: "MERCANTIL", author: "Sistema" }); 
+  };
+  
+  // --- LOGICA PARA EL NOMBRE DE LA CIUDAD ---
+  // Si scope es null, ponemos "RED GLOBAL". Si no, la ciudad.
+  const cityName = scope?.city || "RED GLOBAL";
+  const displayCity = cityName === "Detectando..." ? "SINTONIZANDO..." : cityName;
 
   return (
-    <div className="absolute inset-0 z-40 flex flex-col items-center justify-center pointer-events-none">
+    <div className="absolute inset-0 z-40 flex flex-col items-center justify-center pointer-events-none font-mono">
       
-      {!isGameMode && !isAIMode && !isWebMode && (
-          <div className="absolute top-16 md:top-0 w-full z-30"> 
-             <CommunityTicker onUserClick={onUserClick} />
-          </div>
-      )}
-
-      {/* FEED (Oculto en móvil) */}
-      {showFeed && (
-          <div onClick={handleLogClick} className="hidden md:flex absolute top-[16%] left-1/2 -translate-x-1/2 w-full max-w-4xl justify-center z-30 px-4">
-            <div className="w-full text-center pointer-events-auto cursor-pointer transition-all hover:scale-105">
-                <div className="bg-black/40 backdrop-blur-md border-y border-cyan-500/30 py-3 md:py-4 px-6 md:px-10 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-                    <p className="text-[8px] md:text-xs text-cyan-400 uppercase tracking-[0.3em] mb-1 md:mb-2 animate-pulse">⚡ BRO-LOGS FEED</p>
-                    <h2 className="text-lg md:text-3xl text-white font-thin italic tracking-wide animate-fadeIn leading-tight">"{MOCK_LOGS[currentLogIndex]}"</h2>
-                </div>
+      {/* 1. SECTOR SUPERIOR: FEED DE NOTICIAS (ALEATORIO / TENTADOR) */}
+      {isCardMode && (
+          <div onClick={handleLogClick} className="absolute top-20 md:top-8 w-full max-w-4xl px-4 z-50 pointer-events-auto cursor-pointer animate-slideDown">
+            <div className="bg-black/40 backdrop-blur-md border-y border-cyan-500/20 py-3 text-center transition-all hover:scale-105">
+                <p className="text-[8px] text-cyan-400 font-black uppercase tracking-[0.4em] mb-1 animate-pulse">⚡ BRO-LOGS FEED</p>
+                <h2 className="text-sm md:text-xl text-white font-thin italic tracking-wide">"{MOCK_LOGS[currentLogIndex]}"</h2>
             </div>
           </div>
       )}
 
-      {/* --- FIX 1: TARJETAS (LIMITADAS VERTICALMENTE) --- */}
-      {/* top-[14%] para separarlas un poco del ticker */}
-      {/* bottom-[28%] ahora pueden bajar más porque el buscador se quitó de en medio */}
-      {isCardMode && (
-          <div className="absolute top-[14%] md:top-[22%] bottom-[28%] md:bottom-[20%] w-full z-50 pointer-events-auto animate-zoomIn">
-               <PaginatedDisplay items={items} onSelect={onSelectShop} onTuneIn={onTuneIn} onOpenVideo={onOpenVideo} />
+      {/* 2. COMMUNITY TICKER: SOLO EN TERMINAL AI */}
+      {isAIMode && (
+          <div className="absolute top-0 w-full z-30 pointer-events-auto"> 
+             <CommunityTicker onUserClick={onUserClick} />
           </div>
-                )}            
-     
+      )}
+
+      {/* 3. VÓRTICE DE BURBUJAS (PAGINATED DISPLAY) */}
+      {isCardMode && (
+        // CAMBIO: items-start y padding-top (pt) para subirlas
+        <div className="absolute inset-0 z-40 pointer-events-none animate-zoomIn flex flex-col items-center justify-start pt-48 md:pt-40">
+             <PaginatedDisplay 
+                items={items} 
+                onSelect={onSelectShop} 
+                onOpenVideo={onOpenVideo} 
+             />
+        </div>
+      )}   
+
       {/* ... (SECCIÓN DE JUEGOS Y AI - SIN CAMBIOS) ... */}
       {isGameMode && (      
           <div className="absolute top-[5%] bottom-40 md:bottom-[15%] w-full max-w-6xl px-4 pointer-events-auto z-[200] flex items-center justify-center animate-zoomIn">
@@ -207,7 +216,7 @@ const NexusDashboard = ({
             
       {/* 5. IA CONECTADA (GEMINI PRO + AGENTE MAPACHE + EXTERNAL LINKS) */}
 {isAIMode && (
-  <div className="absolute top-[10%] bottom-[20%] w-full max-w-6xl px-4 pointer-events-auto z-50 animate-zoomIn">
+  <div className="absolute top-[16%] bottom-[20%] w-full max-w-6xl px-4 pointer-events-auto z-50 animate-zoomIn">
       <div className={`w-full h-full bg-[#050505]/95 backdrop-blur-xl border-2 rounded-2xl p-0 font-mono shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col relative overflow-hidden transition-colors duration-500 ${aiModeType === 'chat' ? 'border-cyan-500 shadow-cyan-500/20' : 'border-fuchsia-500 shadow-fuchsia-500/20'}`}>
           
           {/* CABECERA DE PESTAÑAS */}
@@ -358,20 +367,26 @@ const NexusDashboard = ({
             </div>
         </div>
   </div>
-)}          
-      {/* 6. OTROS MODOS */}
-      {isLiveMode && <LiveGrid onTuneIn={onTuneIn} onSelectShop={onSelectShop} onUserClick={onUserClick} onClose={() => setIntent('product')} onOpenVideo={onOpenVideo} />}
+)}  
+      {/* 6. MODO RADIO (RADIO GEOLOCALIZADA) */}
+      {isLiveMode && <LiveGrid onTuneIn={onTuneIn} onSelectShop={onSelectShop} onUserClick={onUserClick} onClose={() => setIntent('broshop')} onOpenVideo={onOpenVideo} />}
       
-      {/* --- FIX 2: BUSCADOR EN EL 24% INFERIOR (ENTRE TARJETAS Y BOTONERA) --- */}
-      <div className="absolute bottom-[24%] md:bottom-32 w-full max-w-5xl px-4 pointer-events-auto flex flex-col items-center gap-4 z-[20000]">
+      {(intent === 'broshop' || intent === 'lives') && (
+  <CityLocationBanner scope={scope} />
+)}
+      
+                  
+      {/* --- BUSCADOR (FIX 2: YA LO TIENES, SOLO ASEGURA QUE ESTÉ DEBAJO) --- */}
+      <div className="absolute bottom-[16%] md:bottom-12 w-full max-w-5xl px-4 pointer-events-auto flex flex-col items-center gap-4 z-[20000]">
         {showSearchBar && (
-            <div className="flex items-center bg-black/90 rounded-full border-2 border-white/10 h-10 md:h-16 w-full max-w-3xl shadow-2xl">
+            <div className="flex items-center bg-black/90 rounded-full border-2 border-white/10 h-10 md:h-16 w-full max-w-3xl shadow-2xl backdrop-blur-md">
                 <span className="pl-4 md:pl-6 text-gray-500 text-lg md:text-xl">🔍</span>
                 <input type="text" placeholder="Busca en la Red Bro7..." className="w-full bg-transparent text-white px-3 md:px-4 py-1 md:py-2 focus:outline-none font-bold text-xs md:text-lg placeholder-gray-700" onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && onSearch()} />
-                <button onClick={onSearch} className="mr-1 md:mr-2 bg-white text-black px-4 md:px-6 py-1.5 md:py-2 rounded-full font-black text-[9px] md:text-xs uppercase hover:bg-cyan-400 transition-colors">GO</button>
+                <button onClick={onSearch} className="mr-1 md:mr-2 bg-white text-black px-4 md:px-6 py-1.5 md:py-2 rounded-full font-black text-[9px] md:text-xs uppercase hover:bg-cyan-400 transition-colors shadow-[0_0_15px_white]">GO</button>
             </div>
         )}
       </div>
+
     </div>
   );
 };
