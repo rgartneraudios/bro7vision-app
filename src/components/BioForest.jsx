@@ -683,17 +683,40 @@ useEffect(() => {
                   <button onClick={() => setCurrentTribeIndex(p => (p + 1) % audioPool.length)} className={`hover:scale-125 transition-all text-2xl ${config.navColor}`}>❯</button>
               </div>
   
-              {/* BOTONERA ACCIÓN */}
-              <div className="absolute -bottom-36 md:-bottom-44 left-0 w-full flex flex-col items-center gap-3 z-50 pointer-events-auto">
-                  <div className="flex items-center justify-center gap-2 w-full max-w-[350px] px-4">
-                      <button onClick={() => handleAction('reaction')} className="flex-1 py-3 bg-white text-black border border-white rounded-xl text-[9px] font-black uppercase shadow-[0_0_15px_rgba(255,255,255,0.4)] hover:scale-105 transition-transform">✨ HALO</button>
-                      <button onClick={() => { if (currentUser) { onOpenProfile(currentUser); } }} className="flex-1 py-3 bg-fuchsia-600 text-white border border-fuchsia-400 rounded-xl text-[9px] font-black uppercase shadow-[0_0_20px_rgba(217,70,239,0.5)] animate-pulse">🗝️ ÍNTIMO</button>
-                      <button onClick={() => setShowEchoInput(true)} className="flex-1 py-3 bg-black/90 border border-white/20 text-white rounded-xl text-[9px] font-black uppercase">💬 ECO</button>
-                  </div>
-                  <p className={`text-[9px] md:text-[11px] font-black tracking-[0.4em] uppercase ${config.labelClass} mt-1`}>
-                    {config.labelText} // {currentUser.alias}
-                  </p>
-              </div>
+              {/* BOTONERA ACCIÓN - VERSIÓN SUAVE (SIN PUNTAS) */}
+<div className="absolute -bottom-36 md:-bottom-44 left-0 w-full flex flex-col items-center gap-3 z-50 pointer-events-auto">
+    
+    {/* Esta es la "capa sombra" pero con bordes redondeados como el visor */}
+    <div className="absolute inset-x-2 -inset-y-4 bg-black/60 backdrop-blur-md rounded-[3rem] -z-10 shadow-[0_0_30px_rgba(0,0,0,0.5)]"></div>
+
+    <div className="flex items-center justify-center gap-2 w-full max-w-[350px] px-4">
+        {/* Botón HALO */}
+        <button onClick={() => handleAction('reaction')} className="flex-1 py-3 bg-white text-black border border-white rounded-xl text-[9px] font-black uppercase shadow-[0_0_15px_rgba(255,255,255,0.4)] hover:scale-105 transition-transform">
+            ✨ HALO
+        </button>
+
+        {/* Botón ÍNTIMO - TEXTO BLANCO CON GLOW ROJO */}
+        <button 
+            onClick={() => { if (currentUser) { onOpenProfile(currentUser); } }} 
+            className="flex-1 py-3 bg-black text-white border-2 border-[#ff003c] rounded-xl text-[9px] font-black uppercase 
+                       shadow-[0_0_15px_rgba(255,0,60,0.6),inset_0_0_8px_rgba(255,0,60,0.4)] 
+                       hover:shadow-[0_0_25px_rgba(255,0,60,0.9),inset_0_0_12px_rgba(255,0,60,0.6)] 
+                       hover:scale-105 transition-all animate-pulse"
+        >
+            <span className="drop-shadow-[0_0_5px_rgba(255,0,60,0.8)]">🗝️ ÍNTIMO</span>
+        </button>
+                
+        {/* Botón ECO */}
+        <button onClick={() => setShowEchoInput(true)} className="flex-1 py-3 bg-black/90 border border-white/20 text-white rounded-xl text-[9px] font-black uppercase">
+            💬 ECO
+        </button>
+    </div>
+
+    {/* Texto inferior */}
+    <p className={`relative z-10 text-[9px] md:text-[11px] font-black tracking-[0.4em] uppercase ${config.labelClass} mt-1 drop-shadow-lg`}>
+        {config.labelText} // {currentUser.alias}
+    </p>
+</div>
           </div> 
       </div> 
 

@@ -152,39 +152,45 @@ const LiveGrid = ({ onTuneIn, onUserClick, onClose, onOpenVideo, onSelectShop })
                     <p className="text-[8px] md:text-[9px] text-gray-400 italic line-clamp-1 opacity-70">"{creator.desc}"</p>
                 </div>
                 
-                {/* NUEVA BOTONERA ESTRATÉGICA */}
-                <div className="absolute bottom-2 left-2 right-2 flex flex-col gap-1.5">
-                    
-                    {/* 1. BOTÓN DE ACCESO ÍNTIMO (EL GANCHO PRINCIPAL) */}
-                    {creator.video_file && (
-                        <button 
-                            onClick={() => onOpenVideo(creator)} 
-                            className="w-full py-2.5 bg-fuchsia-600 text-white font-black text-[9px] uppercase rounded-lg hover:bg-fuchsia-500 shadow-[0_0_15px_rgba(217,70,239,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2"
-                        >
-                            <span>🎥</span> ACCESO ÍNTIMO
-                        </button>
-                    )}
+                {/* NUEVA BOTONERA ESTRATÉGICA - ESTILO NEÓN MULTICOLOR */}
+<div className="absolute bottom-2 left-2 right-2 flex flex-col gap-1.5">
+    
+    {/* 1. BOTÓN DE ACCESO ÍNTIMO (ROJO NEÓN) */}
+    {creator.video_file && (
+        <button 
+            onClick={() => onOpenVideo(creator)} 
+            className="w-full py-2.5 bg-black text-white border-2 border-[#ff003c] rounded-xl text-[9px] font-black uppercase 
+                       shadow-[0_0_15px_rgba(255,0,60,0.5),inset_0_0_8px_rgba(255,0,60,0.3)] 
+                       hover:shadow-[0_0_20px_rgba(255,0,60,0.8)] transition-all active:scale-95 flex items-center justify-center gap-2 animate-pulse"
+        >
+            <span className="drop-shadow-[0_0_5px_rgba(255,0,60,0.8)]">🎥 ACCESO ÍNTIMO</span>
+        </button>
+    )}
 
-                    {/* 2. FILA SECUNDARIA: AUDIO Y TIENDA */}
-                    <div className="grid grid-cols-2 gap-1.5">
-                        {/* Audio (BroLives) */}
-                        <button 
-                            onClick={() => onTuneIn(creator)} 
-                            className="py-2 bg-red-600 text-white rounded-md text-[9px] font-bold hover:bg-red-500 shadow-lg flex items-center justify-center gap-1"
-                        >
-                            <span>▶</span> AUDIO
-                        </button>
+    {/* 2. FILA SECUNDARIA: AUDIO (VERDE) Y TIENDA (ORO) */}
+    <div className="grid grid-cols-2 gap-1.5">
+        
+        {/* Audio (CYAN NEÓN) */}
+<button 
+    onClick={() => onTuneIn(creator)} 
+    className="py-2 bg-black text-white border-2 border-[#00f2ff] rounded-xl text-[9px] font-black uppercase 
+               shadow-[0_0_15px_rgba(0,242,255,0.5),inset_0_0_8px_rgba(0,242,255,0.3)] 
+               hover:shadow-[0_0_20px_rgba(0,242,255,0.8)] transition-all flex items-center justify-center gap-1"
+>
+    <span className="drop-shadow-[0_0_5px_rgba(0,242,255,0.8)]">▶ AUDIO</span>
+</button>
 
-                        {/* Tienda (Shop) */}
-                        <button 
-                            onClick={() => handleGoToShop(creator)} 
-                            className="py-2 bg-yellow-500/10 border border-yellow-500/40 text-yellow-500 rounded-md text-[9px] font-black hover:bg-yellow-500 hover:text-black transition-all flex items-center justify-center gap-1"
-                        >
-                            <span>🛒</span> SHOP
-                        </button>
-                    </div>
-
-                </div>
+        {/* Tienda (ORO NEÓN) */}
+        <button 
+            onClick={() => handleGoToShop(creator)} 
+            className="py-2 bg-black text-white border-2 border-[#facc15] rounded-xl text-[9px] font-black uppercase 
+                       shadow-[0_0_15px_rgba(250,204,21,0.4),inset_0_0_8px_rgba(250,204,21,0.2)] 
+                       hover:shadow-[0_0_20px_rgba(250,204,21,0.7)] transition-all flex items-center justify-center gap-1"
+        >
+            <span className="drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]">🛒 SHOP</span>
+        </button>
+    </div>
+</div>
             </div>
         ))}
     	</div>
