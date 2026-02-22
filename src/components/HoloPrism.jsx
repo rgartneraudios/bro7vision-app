@@ -18,7 +18,7 @@ const HoloPrism = ({ customImages }) => {
 
   return (
   <div className="fixed top-4 right-4 md:top-[2%] md:right-[2%] z-[50] pointer-events-none perspective-[1000px] scale-45 md:scale-75 lg:scale-90 origin-top-right">
-         <div className="relative w-32 h-56 animate-spin-slow-3d" style={{ transformStyle: 'preserve-3d' }}>
+         <div className="relative w-48 h-72 animate-spin-slow-3d" style={{ transformStyle: 'preserve-3d' }}>
           {imagesToShow.map((img, index) => {
              let transform = '';
              let borderColor = '';
