@@ -222,7 +222,7 @@ useEffect(() => {
             if (data) setQuestions(data);
         }
     };
-    if (tab === 'intimo') fetchQuestions();
+    if (tab === 'santuario') fetchQuestions();
 }, [tab]);
 
 
@@ -241,7 +241,7 @@ useEffect(() => {
         <div className="flex border-b border-white/10 bg-black overflow-x-auto shrink-0">
             <button onClick={() => setTab('identity')} className={`flex-1 py-4 px-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${tab === 'identity' ? 'bg-white/10 text-white border-b-2 border-white' : 'text-gray-600'}`}>👤 Identidad</button>
             <button onClick={() => setTab('audio')} className={`flex-1 py-4 px-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${tab === 'audio' ? 'bg-white/10 text-white border-b-2 border-white' : 'text-gray-600'}`}>📡 Señal</button>
-            <button onClick={() => setTab('intimo')} className={`flex-1 py-4 px-4 text-[10px] font-bold uppercase tracking-widest ${tab === 'intimo' ? 'bg-white/10 text-fuchsia-400 border-b-2 border-fuchsia-500' : 'text-gray-600'}`}>💎 ÍNTIMO</button>
+            <button onClick={() => setTab('santuario')} className={`flex-1 py-4 px-4 text-[10px] font-bold uppercase tracking-widest ${tab === 'santuario' ? 'bg-white/10 text-fuchsia-400 border-b-2 border-fuchsia-500' : 'text-gray-600'}`}>⛩️ SANTUARIO</button>
             <button onClick={() => setTab('market')} className={`flex-1 py-4 px-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${tab === 'market' ? 'bg-white/10 text-white border-b-2 border-white' : 'text-gray-600'}`}>🛒 Tienda</button>
             <button onClick={() => setTab('assets')} className={`flex-1 py-4 px-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${tab === 'assets' ? 'bg-white/10 text-white border-b-2 border-white' : 'text-blue-500'}`}>📦 Activos</button>
         </div>
@@ -369,13 +369,13 @@ useEffect(() => {
                 </div>
             )}
             
-            {/* TAB INTIMO */}
-            {tab === 'intimo' && (
+            {/* TAB SANTUARIO */}
+            {tab === 'santuario' && (
     <div className="space-y-6 animate-fadeIn">
         <div className="bg-fuchsia-900/10 border border-fuchsia-500/20 p-4 rounded-xl">
             <p className="text-[10px] text-fuchsia-400 font-black uppercase mb-4 tracking-widest">Atmósfera de la Suite</p>
             
-            <select value={formData.intimo_bg || ""} onChange={e => setFormData({...formData, intimo_bg: e.target.value})} className="w-full bg-black border border-white/20 p-3 text-white text-xs rounded mb-4">
+            <select value={formData.santuario_bg || ""} onChange={e => setFormData({...formData, santuario_bg: e.target.value})} className="w-full bg-black border border-white/20 p-3 text-white text-xs rounded mb-4">
                 <option value="" disabled>--- SELECCIONAR AMBIENTE ---</option>
                 <option value="dormitorio">🛏️ DORMITORIO</option>
                 <option value="cocina">🍳 COCINA</option>

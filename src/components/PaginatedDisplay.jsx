@@ -140,9 +140,12 @@ const PaginatedDisplay = ({ items, onSelect, onTuneIn, onOpenVideo }) => {
                                     ) : <div className="flex-1"></div>}
 
                                     {item.video_file && (
-                                        <button onClick={(e) => { e.stopPropagation(); onOpenVideo(item); }} className="flex-1 py-2 bg-black/90 border border-fuchsia-500 text-fuchsia-500 hover:bg-fuchsia-600 hover:text-black rounded-lg text-[8px] font-black uppercase transition-all shadow-[0_0_10px_rgba(192,38,211,0.3)] hover:shadow-[0_0_20px_fuchsia]">
-                                            ÍNTIMO
-                                        </button>
+                                        <button 
+  			onClick={(e) => { e.stopPropagation(); onOpenVideo(item); }} 
+  			className="flex-1 py-2 bg-black/90 border border-[#00ff9f] text-[#00ff9f] hover:bg-[#00ff9f] hover:text-black rounded-lg 			text-[8px] font-black uppercase transition-all shadow-[0_0_10px_rgba(0,255,159,0.3)] hover:shadow-[0_0_20px_#00ff9f]"
+			>
+    			⛩️ SANTUARIO
+			</button>
                                     )}
                                 </div>
                             </div>

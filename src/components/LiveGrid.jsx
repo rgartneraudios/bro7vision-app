@@ -155,18 +155,17 @@ const LiveGrid = ({ onTuneIn, onUserClick, onClose, onOpenVideo, onSelectShop })
                 {/* NUEVA BOTONERA ESTRATÉGICA - ESTILO NEÓN MULTICOLOR */}
 <div className="absolute bottom-2 left-2 right-2 flex flex-col gap-1.5">
     
-    {/* 1. BOTÓN DE ACCESO ÍNTIMO (ROJO NEÓN) */}
+    {/* 1. BOTÓN DE ⛩️ SANTUARIO - VERSIÓN VIOLETA MÍSTICO */}
     {creator.video_file && (
         <button 
             onClick={() => onOpenVideo(creator)} 
-            className="w-full py-2.5 bg-black text-white border-2 border-[#ff003c] rounded-xl text-[9px] font-black uppercase 
-                       shadow-[0_0_15px_rgba(255,0,60,0.5),inset_0_0_8px_rgba(255,0,60,0.3)] 
-                       hover:shadow-[0_0_20px_rgba(255,0,60,0.8)] transition-all active:scale-95 flex items-center justify-center gap-2 animate-pulse"
+            className="w-full py-2.5 bg-black text-white border-2 border-[#bc13fe] rounded-xl text-[9px] font-black uppercase 
+                       shadow-[0_0_15px_rgba(188,19,254,0.4),inset_0_0_8px_rgba(188,19,254,0.2)] 
+                       hover:shadow-[0_0_20px_rgba(188,19,254,0.7)] transition-all active:scale-95 flex items-center justify-center gap-2"
         >
-            <span className="drop-shadow-[0_0_5px_rgba(255,0,60,0.8)]">🎥 ACCESO ÍNTIMO</span>
+            <span className="drop-shadow-[0_0_5px_rgba(188,19,254,0.8)]">⛩️ SANTUARIO</span>
         </button>
     )}
-
     {/* 2. FILA SECUNDARIA: AUDIO (VERDE) Y TIENDA (ORO) */}
     <div className="grid grid-cols-2 gap-1.5">
         

@@ -695,17 +695,17 @@ useEffect(() => {
             ✨ HALO
         </button>
 
-        {/* Botón ÍNTIMO - TEXTO BLANCO CON GLOW ROJO */}
+       {/* Botón SANTUARIO - TEXTO BLANCO CON GLOW VIOLETA */}
         <button 
             onClick={() => { if (currentUser) { onOpenProfile(currentUser); } }} 
-            className="flex-1 py-3 bg-black text-white border-2 border-[#ff003c] rounded-xl text-[9px] font-black uppercase 
-                       shadow-[0_0_15px_rgba(255,0,60,0.6),inset_0_0_8px_rgba(255,0,60,0.4)] 
-                       hover:shadow-[0_0_25px_rgba(255,0,60,0.9),inset_0_0_12px_rgba(255,0,60,0.6)] 
+            className="flex-1 py-3 bg-black text-white border-2 border-[#bf00ff] rounded-xl text-[9px] font-black uppercase 
+                       shadow-[0_0_15px_rgba(191,0,255,0.6),inset_0_0_8px_rgba(191,0,255,0.4)] 
+                       hover:shadow-[0_0_25px_rgba(191,0,255,0.9),inset_0_0_12px_rgba(191,0,255,0.6)] 
                        hover:scale-105 transition-all animate-pulse"
         >
-            <span className="drop-shadow-[0_0_5px_rgba(255,0,60,0.8)]">🗝️ ÍNTIMO</span>
+            <span className="drop-shadow-[0_0_8px_rgba(191,0,255,0.9)]">⛩️ SANTUARIO</span>
         </button>
-                
+                        
         {/* Botón ECO */}
         <button onClick={() => setShowEchoInput(true)} className="flex-1 py-3 bg-black/90 border border-white/20 text-white rounded-xl text-[9px] font-black uppercase">
             💬 ECO
