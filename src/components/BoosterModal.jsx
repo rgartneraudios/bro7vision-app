@@ -380,11 +380,11 @@ useEffect(() => {
     onChange={e => setFormData({...formData, intimo_bg: e.target.value})} 
     className="w-full bg-black border border-white/20 p-3 text-white text-xs rounded mb-4"
 >
-    <option value="" disabled>--- SELECCIONAR AMBIENTE ---</option>
-    <option value="dormitorio">🛏️ DORMITORIO</option>
-    <option value="cocina">🍳 COCINA</option>
-    <option value="ducha">🚿 DUCHA</option>
-    <option value="salon">🍵 SALÓN</option> 
+    <option value="" disabled>--- SELECCIONAR ATMÓSFERA ---</option>
+    <option value="salon">🍵 SALÓN PREMIUM (Classic)</option>
+    <option value="cocina">🍳 COCINA GOURMET (Classic)</option>
+    <option value="dormitorio">🌌 CYBER SUITE (Furry Style)</option>
+    <option value="ducha">✨ LLUVIA BIO-FOREST (Therian Style)</option> 
 </select>
 
             <label className="text-[9px] text-orange-400 block mb-1 uppercase font-black">Respuesta en Bucle (Visor)</label>
