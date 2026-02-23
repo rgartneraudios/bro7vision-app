@@ -45,7 +45,7 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
   };
 
   // --- 1. SELECCIÓN DE VIDEO DE FONDO (NATURAL) ---
-  const bgKey = user.intimo_bg && user.intimo_bg !== "" ? user.intimo_bg : 'dormitorio';
+  const bgKey = user.intimo_bg && user.intimo_bg !== "" ? user.intimo_bg : 'salon';
 const backgroundVideo = `/videos/intimo_${bgKey}.mp4`;
 
   const getCleanUrl = (url) => {

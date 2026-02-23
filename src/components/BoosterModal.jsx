@@ -380,6 +380,7 @@ useEffect(() => {
                 <option value="dormitorio">🛏️ DORMITORIO</option>
                 <option value="cocina">🍳 COCINA</option>
                 <option value="ducha">🚿 DUCHA</option>
+               <option value="ducha">🍵 SALON</option>
             </select>
 
             <label className="text-[9px] text-orange-400 block mb-1 uppercase font-black">Respuesta en Bucle (Visor)</label>
