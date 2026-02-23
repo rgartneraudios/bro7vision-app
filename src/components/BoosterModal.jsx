@@ -384,7 +384,7 @@ useEffect(() => {
     <option value="salon">🍵 SALÓN PREMIUM (Classic)</option>
     <option value="cocina">🍳 COCINA GOURMET (Classic)</option>
     <option value="dormitorio">🌌 CYBER SUITE (Furry Style)</option>
-    <option value="ducha">✨ LLUVIA BIO-FOREST (Therian Style)</option> 
+    <option value="ducha">✨ LLUVIA BIO-FOREST (Therian Suite)</option> 
 </select>
 
             <label className="text-[9px] text-orange-400 block mb-1 uppercase font-black">Respuesta en Bucle (Visor)</label>
