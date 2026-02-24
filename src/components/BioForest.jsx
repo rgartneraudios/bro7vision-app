@@ -57,7 +57,7 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
     const DJ_NEON = { 
         id: 'bot1', 
         alias: 'Dj_Neon', 
-        video_file: "https://dl.dropboxusercontent.com/scl/fi/sbubsg1n7vxluup8efp59/DJ-Neon.mp4?rlkey=6rcdr6hkya9xkk049wdhnxnx7&raw=1" 
+        video_file: "https://www.dropbox.com/scl/fi/7mwqgp1nw2uoccojy8q68/Bro7Vision-01.mp4?rlkey=lq6r57aand98srt27wntma8bp&st=irkmq91s&dl=0" 
     };
     
     // Fusión total: Usuarios Reales + DJ Neon + Canales de TV
