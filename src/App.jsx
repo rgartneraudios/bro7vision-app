@@ -314,18 +314,28 @@ function App() {
         </div>
       )}
 
-      {showStory && (
-  <div className="fixed inset-0 z-[200]">
-    <StoryPlayer 
-      onClose={() => setShowStory(false)} 
-      balances={balances} 
-      setBalances={setBalances}
-      // El StoryPlayer necesita saber que es modo Ads para el contador
-      isAdsMode={true} 
-    />
-  </div>
-)}
-
+     {showStory && (
+        <div className="fixed inset-0 z-[200] bg-black">
+          <StoryPlayer 
+            src="/brostories_demo.mp4"   // <--- FALTABA EL VIDEO
+            activePhase="nova"           // <--- FALTABA ESTO (CRÍTICO PARA EL COLOR)
+            balances={balances} 
+            setBalances={setBalances}
+            isAdsMode={true} 
+            onClose={() => setShowStory(false)} 
+            onComplete={(amount) => {
+                // Lógica de recompensa recuperada
+                setBalances(prev => {
+                    const newTotal = prev.genesis + amount;
+                    // Si tienes una función syncGenesisToDB úsala aquí, si no, actualiza solo local
+                    // syncGenesisToDB(newTotal); 
+                    return { ...prev, genesis: newTotal };
+                });
+            }} 
+          />
+        </div>
+      )}
+      
       {showWalletModal && <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-xl"><ConversionModal balances={balances} setBalances={setBalances} onClose={() => setShowWalletModal(false)} /></div>}
       {showBooster && <div className="fixed inset-0 z-[200] bg-black/80 flex items-center justify-center"><BoosterModal onClose={() => setShowBooster(false)} /></div>}
       
