@@ -1,3 +1,5 @@
+// src/components/TerminalShop.jsx
+
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 
 const parsePrice = (p) => {
@@ -36,13 +38,12 @@ export const SECTION = {
   assets:   { primary:'#00E5FF', glow:'rgba(0,229,255,0.6)', label:'ACTIVOS P2P' },
 };
 
-const SELECTED_COLOR = '#FFF';
-
 /* ── Producto (Rectángulo Sólido con Borde Neón) ── */
 const Bubble = ({ item, sc, inCart, qty, onAdd, onPreview, idx }) => {
   const [pop, setPop] = useState(false);
   const click = () => {
-    if (!inCart) { onPreview(item); return; }
+    // Si es el producto principal o ya está en carrito, añadir directo. Si no, preview.
+    if (!inCart && item.id !== 'main') { onPreview(item); return; }
     setPop(true); onAdd(item); setTimeout(()=>setPop(false),300);
   };
   
@@ -51,14 +52,12 @@ const Bubble = ({ item, sc, inCart, qty, onAdd, onPreview, idx }) => {
   return (
     <div className="ts-bubble" onClick={click} style={{
       display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
-      width: 170, height: 130, // Forma rectangular
-      borderRadius: 16, // Bordes redondeados
-      background: baseColor, // FONDO SÓLIDO (NO NEGRO)
-      border: `3px solid #FFF`, // Borde blanco
-      boxShadow: `0 0 18px ${baseColor}`, // Resplandor neón del color base
+      width: 170, height: 130, borderRadius: 16,
+      background: baseColor, border: `3px solid #FFF`,
+      boxShadow: `0 0 18px ${baseColor}`,
       animation: `floatCard ${4 + (idx%3)}s ease-in-out infinite${pop?',popIn 0.2s ease':''}`,
       position: 'relative', flexShrink: 0, padding: '12px 16px',
-      color: '#000' // Texto negro para lectura perfecta
+      color: '#000'
     }}>
       {inCart && (
         <span style={{position:'absolute',top:-10,right:-10,width:28,height:28,borderRadius:'50%',
@@ -146,7 +145,8 @@ const CalendarScreen = ({ onBack, sc }) => (
 
 /* ── TerminalShop Principal ── */
 const TerminalShop = ({ initialItem, onUpdateTotal, activeSection }) => {
-  const [cart,    setCart]    = useState({});
+  // 1. FIX DE LÓGICA: Si hay initialItem, el carrito nace con el item 'main' (que es el initialItem mapeado abajo)
+  const [cart,    setCart]    = useState(initialItem ? { 'main': 1 } : {});
   const [search,  setSearch]  = useState('');
   const [preview, setPreview] = useState(null);
   const [screen,  setScreen]  = useState('main');
@@ -155,6 +155,7 @@ const TerminalShop = ({ initialItem, onUpdateTotal, activeSection }) => {
   const mainPrice = parsePrice(initialItem?.price);
 
   const INVENTORY = useMemo(()=>[
+    // Mapeamos el item que llega desde fuera al ID 'main'
     {id:'main',name:initialItem?.name||'Producto Base',price:mainPrice, cat:'PRINCIPAL',section:'products'},
     {id:'b1', name:'Zapatillas',             price:15.00, cat:'ROPA',     section:'products'},
     {id:'b2', name:'PlayStation 5',          price:499.00,cat:'GAMING',   section:'products'},
@@ -232,7 +233,7 @@ const TerminalShop = ({ initialItem, onUpdateTotal, activeSection }) => {
                 }}/>
             </div>
 
-            {/* Botón Carrito Normal (Centrado, no gigante) */}
+            {/* Botones Carrito y Programar */}
             <div style={{display:'flex', justifyContent:'center', gap: 16}}>
                 <button onClick={()=>setScreen('cart')} className="ts-btn" style={{
                 padding:'14px 40px',borderRadius:12,

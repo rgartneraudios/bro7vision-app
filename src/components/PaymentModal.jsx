@@ -1,3 +1,5 @@
+// src/components/PaymentModal.jsx
+
 import React, { useState } from 'react';
 import { MOON_MATRIX } from '../data/MoonMatrix';
 import TerminalShop, { TERMINAL_CSS, SECTION } from './TerminalShop';
@@ -44,8 +46,10 @@ const COINS = [
   { key:'decrescens', emoji:'🌗', color:'#F97316', glow:'rgba(249,115,22,0.8)', label:'DECRESC.' },
 ];
 
-const PaymentModal = ({ isOpen, onClose, product, balances, currentPhase, onConfirmPayment, onLaunch }) => {
-  if (!isOpen || !product) return null;
+const PaymentModal = ({ isOpen, onClose, card, balances, currentPhase, onConfirmPayment, onLaunch }) => {
+  // Aseguramos que 'product' existe (viene como 'card' desde App.jsx)
+  const product = card;
+  if (!product) return null;
 
   const [activeTab,          setActiveTab]          = useState('products');
   const [dynamicTotal,       setDynamicTotal]       = useState(0);
@@ -58,14 +62,14 @@ const PaymentModal = ({ isOpen, onClose, product, balances, currentPhase, onConf
 
   const selCoinData = COINS.find(c=>c.key===selectedCoin) || COINS[2];
 
-  /* ── Tarjetas Lunas Horizontales (FLEX: 1 PARA LLENAR EL ESPACIO) ── */
+  /* ── Tarjetas Lunas Horizontales ── */
   const MoonCard = ({ coin }) => {
     const isSel   = selectedCoin===coin.key;
     const userBal = balances?.[coin.key] || 0;
 
     return (
       <div className="pm-moon pm-moon-card" onClick={()=>setSelectedCoin(coin.key)} style={{
-        flex: 1, // <--- Esto hace que crezcan y eliminen el espacio vacío
+        flex: 1, 
         width:'100%', padding:'16px 20px', borderRadius:16,
         background: coin.color,
         filter: isSel ? 'brightness(1) saturate(1.1)' : 'brightness(0.5) saturate(0.8)',
@@ -96,7 +100,7 @@ const PaymentModal = ({ isOpen, onClose, product, balances, currentPhase, onConf
       <style>{MODAL_CSS}</style>
 
       {/* Fondo cristalino */}
-      <div style={{position:'fixed',inset:0,zIndex:100,display:'flex',alignItems:'center',justifyContent:'center',padding:'16px',animation:'fadeBack 0.3s ease'}}>
+      <div style={{position:'fixed',inset:0,zIndex:3000,display:'flex',alignItems:'center',justifyContent:'center',padding:'16px',animation:'fadeBack 0.3s ease'}}>
         <div onClick={onClose} style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.65)',backdropFilter:'blur(12px)'}}/>
 
         {/* CONTENEDOR PRINCIPAL */}
@@ -116,7 +120,7 @@ const PaymentModal = ({ isOpen, onClose, product, balances, currentPhase, onConf
                 <img src={product.avatar_url||product.img} style={{width:'100%',height:'100%',objectFit:'cover'}} onError={e=>e.target.src='https://placehold.co/100/121218/FFD000?text=B7'} alt="av"/>
               </div>
               <div>
-                <div style={{fontSize:22,fontWeight:700,fontFamily:'Chakra Petch,sans-serif',color:'#fff',textTransform:'uppercase',letterSpacing:'0.05em'}}>BROVÍSION 7</div>
+                <div style={{fontSize:22,fontWeight:700,fontFamily:'Chakra Petch,sans-serif',color:'#fff',textTransform:'uppercase',letterSpacing:'0.05em'}}>{product.name}</div>
               </div>
             </div>
             <button className="pm-close" onClick={onClose} style={{background:'rgba(255,255,255,0.1)',border:'none',color:'#fff',fontFamily:'Rajdhani,sans-serif',fontWeight:700,fontSize:14,padding:'10px 20px',borderRadius:10,textTransform:'uppercase'}}>✕ CERRAR</button>
@@ -145,19 +149,18 @@ const PaymentModal = ({ isOpen, onClose, product, balances, currentPhase, onConf
 
             {/* ── LUNAS (PANEL IZQUIERDO AMPLIADO) ── */}
             <div className="pm-left" style={{
-              flex: 1, maxWidth: 360, // Ancho generoso
+              flex: 1, maxWidth: 360, 
               borderRight:'2px solid rgba(255,255,255,0.05)', background:'rgba(0,0,0,0.3)', 
               display:'flex',flexDirection:'column', padding:'24px', gap:16, overflowY:'auto',
             }}>
-              <div style={{fontSize:14,fontFamily:'Rajdhani',fontWeight:700,color:'#aaa',textTransform:'uppercase',letterSpacing:'0.1em'}}>TIPO DE MONEDA</div>
-              {/* Aquí las lunas se expanden ocupando todo gracias al flex: 1 del componente MoonCard */}
+              <div style={{fontSize:14,fontFamily:'Rajdhani',fontWeight:700,color:'#aaa',textTransform:'uppercase',letterSpacing:'0.1em'}}>MÉTODO DE PAGO</div>
               {COINS.map(coin=><MoonCard key={coin.key} coin={coin}/>)}
             </div>
 
-            {/* ── TERMINAL SHOP (CENTRO CUADRADO/COMPACTO) ── */}
+            {/* ── TERMINAL SHOP (CENTRO) ── */}
             <div className="pm-center" style={{
-              flex: '0 0 auto', width: '100%', maxWidth: 680, // Limita el ancho para que parezca una terminal cuadrada central
-              margin: '0 auto', // Centra la terminal en el medio
+              flex: '0 0 auto', width: '100%', maxWidth: 680,
+              margin: '0 auto',
               overflow:'hidden', display:'flex',flexDirection:'column'
             }}>
                 <TerminalShop initialItem={product} onUpdateTotal={setDynamicTotal} activeSection={activeTab} />
@@ -165,13 +168,12 @@ const PaymentModal = ({ isOpen, onClose, product, balances, currentPhase, onConf
 
             {/* ── CONTROLES Y STRIPE (PANEL DERECHO AMPLIADO) ── */}
             <div className="pm-right" style={{
-              flex: 1, maxWidth: 360, // Simetría con el panel izquierdo
+              flex: 1, maxWidth: 360,
               borderLeft:'2px solid rgba(255,255,255,0.05)', background:'rgba(0,0,0,0.3)', 
               display:'flex',flexDirection:'column', padding:'24px', gap:16, overflowY:'auto',
             }}>
               <div style={{fontSize:14,fontFamily:'Rajdhani',fontWeight:700,color:'#aaa',textTransform:'uppercase',letterSpacing:'0.1em'}}>TIPO DE ENTREGA</div>
               
-              {/* RECOGER (flex:1 para rellenar igual que lunas) */}
               <button className="pm-btn pm-ctrl-btn" onClick={()=>setDeliveryMode('pickup')} style={{
                 flex: 1, width:'100%',padding:'16px',borderRadius:16, background: '#00E5FF',
                 filter: deliveryMode==='pickup' ? 'brightness(1)' : 'brightness(0.5)',
@@ -181,7 +183,6 @@ const PaymentModal = ({ isOpen, onClose, product, balances, currentPhase, onConf
                 boxShadow: deliveryMode==='pickup' ? '0 0 24px rgba(0,229,255,0.6)' : 'none', minHeight: 80
               }}><span style={{fontSize:28}}>⚡</span> RECOGER TIENDA</button>
 
-              {/* ENVÍO (flex:1) */}
               <button className="pm-btn pm-ctrl-btn" onClick={()=>setDeliveryMode('delivery')} style={{
                 flex: 1, width:'100%',padding:'16px',borderRadius:16, background: '#FF6B00',
                 filter: deliveryMode==='delivery' ? 'brightness(1)' : 'brightness(0.5)',
@@ -196,7 +197,6 @@ const PaymentModal = ({ isOpen, onClose, product, balances, currentPhase, onConf
                 <div style={{fontSize:36,fontWeight:700,fontFamily:'Chakra Petch',color:'#fff'}}>{baseFiatTotal.toFixed(2)}€</div>
               </div>
 
-              {/* PAGAR COINS (flex:1) */}
               <button className="pm-btn pm-ctrl-btn" onClick={()=>onConfirmPayment(selectedCoin, 0, product)} style={{
                 flex: 1, width:'100%',padding:'16px',borderRadius:16, background:'#FF2EF7',color:'#000', border:'3px solid #FFF',
                 fontFamily:'Chakra Petch,sans-serif',fontSize:20,fontWeight:700, textTransform:'uppercase',
@@ -205,7 +205,6 @@ const PaymentModal = ({ isOpen, onClose, product, balances, currentPhase, onConf
                 {selCoinData.emoji} PAGAR COINS
               </button>
 
-              {/* STRIPE RECUPERADO (flex:1) */}
               <button className="pm-btn pm-ctrl-btn" onClick={()=>onConfirmPayment('stripe', baseFiatTotal, product)} style={{
                 flex: 1, width:'100%',padding:'16px',borderRadius:16, background:'#6366F1',color:'#FFF', border:'3px solid #FFF',
                 fontFamily:'Chakra Petch,sans-serif',fontSize:20,fontWeight:700, textTransform:'uppercase',

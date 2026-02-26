@@ -61,19 +61,16 @@ const NexusDashboard = ({
   const showSearchBar = !isGameMode && !isAIMode && !isLiveMode;
 
   const handleLogClick = () => { 
-      // Al pinchar el texto, abrimos el blog correspondiente
       onOpenLog({ title: MOCK_LOGS[currentLogIndex], category: "MERCANTIL", author: "Sistema" }); 
   };
   
-  // --- LOGICA PARA EL NOMBRE DE LA CIUDAD ---
-  // Si scope es null, ponemos "RED GLOBAL". Si no, la ciudad.
   const cityName = scope?.city || "RED GLOBAL";
   const displayCity = cityName === "Detectando..." ? "SINTONIZANDO..." : cityName;
 
   return (
     <div className="absolute inset-0 z-40 flex flex-col items-center justify-center pointer-events-none font-mono">
       
-      {/* 1. SECTOR SUPERIOR: FEED DE NOTICIAS (ALEATORIO / TENTADOR) */}
+      {/* 1. SECTOR SUPERIOR: FEED DE NOTICIAS */}
       {isCardMode && (
           <div onClick={handleLogClick} className="absolute top-20 md:top-8 w-full max-w-4xl px-4 z-50 pointer-events-auto cursor-pointer animate-slideDown">
             <div className="bg-black/40 backdrop-blur-md border-y border-cyan-500/20 py-3 text-center transition-all hover:scale-105">
@@ -83,7 +80,7 @@ const NexusDashboard = ({
           </div>
       )}
 
-      {/* 2. COMMUNITY TICKER: SOLO EN TERMINAL AI */}
+      {/* 2. COMMUNITY TICKER */}
       {isAIMode && (
           <div className="absolute top-0 w-full z-30 pointer-events-auto"> 
              <CommunityTicker onUserClick={onUserClick} />
@@ -92,21 +89,23 @@ const NexusDashboard = ({
 
       {/* 3. VÓRTICE DE BURBUJAS (PAGINATED DISPLAY) */}
       {isCardMode && (
-        // CAMBIO: items-start y padding-top (pt) para subirlas
         <div className="absolute inset-0 z-40 pointer-events-none animate-zoomIn flex flex-col items-center justify-start pt-48 md:pt-40">
              <PaginatedDisplay 
                 items={items} 
                 onSelect={onSelectShop} 
                 onOpenVideo={onOpenVideo} 
+                // CABLE CONECTADO: Aquí faltaba onTuneIn
+                onTuneIn={onTuneIn}
              />
         </div>
       )}   
 
-      {/* ... (SECCIÓN DE JUEGOS Y AI - SIN CAMBIOS) ... */}
+      {/* 4. SECCIÓN DE JUEGOS */}
       {isGameMode && (      
           <div className="absolute top-[5%] bottom-40 md:bottom-[15%] w-full max-w-6xl px-4 pointer-events-auto z-[200] flex items-center justify-center animate-zoomIn">
               {!selectedGame && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl overflow-y-auto max-h-full custom-scrollbar p-2">
+                       {/* ... (Tus juegos se mantienen igual) ... */}
                       <div onClick={() => setSelectedGame('neon')} className="group bg-black/80 border border-fuchsia-500/30 p-6 rounded-2xl hover:border-fuchsia-500 hover:bg-fuchsia-900/20 cursor-pointer transition-all flex flex-col items-center gap-2">
                           <div className="text-4xl">🧠</div>
                           <h3 className="text-xl font-black text-white italic">NEON MEMORY</h3>
@@ -132,21 +131,21 @@ const NexusDashboard = ({
                           <h3 className="text-xl font-black text-white italic">THE 7 GATES</h3>
                           <div className="px-3 py-1 bg-yellow-500 text-black text-[9px] font-bold uppercase rounded-full">140 GEN</div>
                       </div>
-                      <div onClick={() => setSelectedGame('steps')} className="group bg-black/80 border border-indigo-500/30 p-6 rounded-2xl 			hover:border-indigo-500 hover:bg-indigo-900/20 cursor-pointer transition-all flex flex-col items-center gap-2">
+                      <div onClick={() => setSelectedGame('steps')} className="group bg-black/80 border border-indigo-500/30 p-6 rounded-2xl hover:border-indigo-500 hover:bg-indigo-900/20 cursor-pointer transition-all flex flex-col items-center gap-2">
                           <div className="text-xl tracking-widest opacity-60">🐓🦈🐜🐧</div>
                           <h3 className="text-xl font-black text-white italic">THERIANS</h3>
                           <div className="px-3 py-1 bg-indigo-500 text-white text-[9px] font-bold uppercase rounded-full">SOCIAL RPG</div>
                       </div>
-                      <div onClick={() => setSelectedGame('atlas')} className="group bg-black/80 border border-blue-500/30 p-6 rounded-2xl 				hover:border-blue-500 hover:bg-blue-900/20 cursor-pointer transition-all flex flex-col items-center gap-2">
+                      <div onClick={() => setSelectedGame('atlas')} className="group bg-black/80 border border-blue-500/30 p-6 rounded-2xl hover:border-blue-500 hover:bg-blue-900/20 cursor-pointer transition-all flex flex-col items-center gap-2">
                           <div className="text-4xl">☄️</div>
                           <h3 className="text-xl font-black text-white italic">3i-ATLAS</h3>
                           <div className="px-3 py-1 bg-blue-500 text-black text-[9px] font-bold uppercase rounded-full">100 GEN</div>
                       </div>
-                      <div onClick={() => setSelectedGame('cronos')} className="group bg-black/80 border border-orange-500/30 p-6 rounded-2xl 			hover:border-orange-500 hover:bg-orange-900/20 cursor-pointer transition-all flex flex-col items-center gap-2">
-   			 <div className="text-4xl">😄😡🤪🤬</div>
-    			<h3 className="text-xl font-black text-white italic">TELECRONOS</h3>
-    			<div className="px-3 py-1 bg-orange-500 text-black text-[9px] font-bold uppercase rounded-full">HASTA 180 GEN</div>
-		     </div>
+                      <div onClick={() => setSelectedGame('cronos')} className="group bg-black/80 border border-orange-500/30 p-6 rounded-2xl hover:border-orange-500 hover:bg-orange-900/20 cursor-pointer transition-all flex flex-col items-center gap-2">
+                         <div className="text-4xl">😄😡🤪🤬</div>
+                         <h3 className="text-xl font-black text-white italic">TELECRONOS</h3>
+                         <div className="px-3 py-1 bg-orange-500 text-black text-[9px] font-bold uppercase rounded-full">HASTA 180 GEN</div>
+                     </div>
                   </div> 
               )}
                             
@@ -192,191 +191,103 @@ const NexusDashboard = ({
                     </div>
                 </div>
               )} 
-              
-                  {/* RENDER CRONOS GAME */}
-		{selectedGame === 'cronos' && (
-    		<div className="w-full h-full relative flex items-center justify-center">
-        			{/* Botón para volver al menú de juegos */}
-       		 <button onClick={() => setSelectedGame(null)} className="absolute -top-8 left-0 text-white font-bold uppercase text-xs z-50 		pointer-events-auto">❮ MENU</button>
-        
-      		  {/* Contenedor del juego */}
-       		 <div className="w-full max-w-4xl h-full md:h-[600px] pointer-events-auto shadow-2xl rounded-xl overflow-hidden bg-black 		border border-orange-500/30">
-            	<CronosGame 
-                		onWin={(amt) => { 
-                    	onGameWin(amt); // Esto sincroniza los puntos con tu Supabase (vía App.jsx)
-                    setSelectedGame(null); 
-                	}} 
-                	onClose={() => setSelectedGame(null)} 
-            />
-        </div>
-    </div>
-)}       
+              {selectedGame === 'cronos' && (
+                <div className="w-full h-full relative flex items-center justify-center">
+                    <button onClick={() => setSelectedGame(null)} className="absolute -top-8 left-0 text-white font-bold uppercase text-xs z-50 pointer-events-auto">❮ MENU</button>
+                    <div className="w-full max-w-4xl h-full md:h-[600px] pointer-events-auto shadow-2xl rounded-xl overflow-hidden bg-black border border-orange-500/30">
+                        <CronosGame onWin={(amt) => { onGameWin(amt); setSelectedGame(null); }} onClose={() => setSelectedGame(null)} />
+                    </div>
+                </div>
+              )}       
           </div>
       )}
             
-      {/* 5. IA CONECTADA (GEMINI PRO + AGENTE MAPACHE + EXTERNAL LINKS) */}
-{isAIMode && (
-  <div className="absolute top-[16%] bottom-[20%] w-full max-w-6xl px-4 pointer-events-auto z-50 animate-zoomIn">
-      <div className={`w-full h-full bg-[#050505]/95 backdrop-blur-xl border-2 rounded-2xl p-0 font-mono shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col relative overflow-hidden transition-colors duration-500 ${aiModeType === 'chat' ? 'border-cyan-500 shadow-cyan-500/20' : 'border-fuchsia-500 shadow-fuchsia-500/20'}`}>
-          
-          {/* CABECERA DE PESTAÑAS */}
-          <div className="flex justify-between items-center bg-black/80 border-b border-white/10">
-              <div className="flex flex-1">
-                  {/* PESTAÑA 1: CHAT GENERAL */}
-                  <button onClick={() => setAiModeType('chat')} className={`flex-1 py-4 text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${aiModeType === 'chat' ? 'bg-cyan-950/50 text-cyan-400 border-b-2 border-cyan-500' : 'text-gray-500 hover:text-white'}`}>
-                      💬 BRO7VISION-GEMINI-CHAT
-                  </button>
-                  
-                  {/* PESTAÑA 2: AGENTE MAPACHE (ORÁCULO) */}
-                  <button onClick={() => setAiModeType('oracle')} className={`flex-1 py-4 text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${aiModeType === 'oracle' ? 'bg-fuchsia-950/50 text-fuchsia-400 border-b-2 border-fuchsia-500' : 'text-gray-500 hover:text-white'}`}>
-                      🦝 AGENTE MAPACHE
-                  </button>
-              </div>
-          </div>
-
-          {/* ÁREA DE CONTENIDO */}
-          <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-gradient-to-b from-black via-[#0a1014] to-black">
-                {/* RESPUESTA AI */}
-                {aiResponse ? (
-                    <div className={`text-sm md:text-lg leading-relaxed typing-effect font-medium ${aiModeType === 'chat' ? 'text-cyan-100' : 'text-fuchsia-100'}`}>
-                        <span className={`font-bold mr-2 text-xl ${aiModeType === 'chat' ? 'text-cyan-500' : 'text-fuchsia-500'}`}>{'>'}</span>
-                        {aiResponse}
-                    </div>
-                ) : (
-                    // PANTALLA DE ESPERA (VISUALES)
-                    <div className="h-full flex flex-col items-center justify-center opacity-60">
-                        {aiModeType === 'chat' ? (
-                            /* MODO CHAT: MAPACHE + ROBOT */
-                            <>
-                                <div className="flex gap-4 text-7xl md:text-8xl mb-6 filter drop-shadow-[0_0_20px_rgba(6,182,212,0.6)]">
-                                    <span className="animate-bounce delay-700">🦝</span>
-                                    <span className="animate-pulse">🤖</span>
-                                </div>
-                                <p className="text-cyan-400 tracking-[0.2em] md:tracking-[0.3em] text-xs md:text-sm font-bold uppercase text-center px-4">
-                                    BROVISION <span className="text-white">&</span> GEMINI JUNTOS
-                                </p>
-                            </>
+      {/* 5. IA CONECTADA */}
+      {isAIMode && (
+          <div className="absolute top-[16%] bottom-[20%] w-full max-w-6xl px-4 pointer-events-auto z-50 animate-zoomIn">
+              {/* ... (Tu código de AI se mantiene igual) ... */}
+              <div className={`w-full h-full bg-[#050505]/95 backdrop-blur-xl border-2 rounded-2xl p-0 font-mono shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col relative overflow-hidden transition-colors duration-500 ${aiModeType === 'chat' ? 'border-cyan-500 shadow-cyan-500/20' : 'border-fuchsia-500 shadow-fuchsia-500/20'}`}>
+                  {/* ... (Todo el contenido de AI igual) ... */}
+                  <div className="flex justify-between items-center bg-black/80 border-b border-white/10">
+                      <div className="flex flex-1">
+                          <button onClick={() => setAiModeType('chat')} className={`flex-1 py-4 text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${aiModeType === 'chat' ? 'bg-cyan-950/50 text-cyan-400 border-b-2 border-cyan-500' : 'text-gray-500 hover:text-white'}`}>💬 BRO7VISION-GEMINI-CHAT</button>
+                          <button onClick={() => setAiModeType('oracle')} className={`flex-1 py-4 text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${aiModeType === 'oracle' ? 'bg-fuchsia-950/50 text-fuchsia-400 border-b-2 border-fuchsia-500' : 'text-gray-500 hover:text-white'}`}>🦝 AGENTE MAPACHE</button>
+                      </div>
+                  </div>
+                  <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-gradient-to-b from-black via-[#0a1014] to-black">
+                        {aiResponse ? (
+                            <div className={`text-sm md:text-lg leading-relaxed typing-effect font-medium ${aiModeType === 'chat' ? 'text-cyan-100' : 'text-fuchsia-100'}`}>
+                                <span className={`font-bold mr-2 text-xl ${aiModeType === 'chat' ? 'text-cyan-500' : 'text-fuchsia-500'}`}>{'>'}</span>{aiResponse}
+                            </div>
                         ) : (
-                            /* MODO ORÁCULO: SOLO MAPACHE CON DOCUMENTOS */
-                            <>
-                                <div className="flex gap-4 text-7xl md:text-8xl mb-6 filter drop-shadow-[0_0_20px_rgba(217,70,239,0.6)]">
-                                    <span className="animate-bounce">🦝</span>
-                                    <span className="text-6xl animate-pulse">📜</span>
-                                </div>
-                                <p className="text-fuchsia-400 tracking-[0.2em] md:tracking-[0.3em] text-xs md:text-sm font-bold uppercase text-center px-4">
-                                    EL MAPACHE TE INFORMA
-                                </p>
-                                <p className="text-gray-500 text-[10px] mt-2 uppercase">SOBRE BRO7VISION, MOON COINS Y LARRY</p>
-                            </>
+                            <div className="h-full flex flex-col items-center justify-center opacity-60">
+                                {aiModeType === 'chat' ? (
+                                    <>
+                                        <div className="flex gap-4 text-7xl md:text-8xl mb-6 filter drop-shadow-[0_0_20px_rgba(6,182,212,0.6)]"><span className="animate-bounce delay-700">🦝</span><span className="animate-pulse">🤖</span></div>
+                                        <p className="text-cyan-400 tracking-[0.2em] md:tracking-[0.3em] text-xs md:text-sm font-bold uppercase text-center px-4">BROVISION <span className="text-white">&</span> GEMINI JUNTOS</p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="flex gap-4 text-7xl md:text-8xl mb-6 filter drop-shadow-[0_0_20px_rgba(217,70,239,0.6)]"><span className="animate-bounce">🦝</span><span className="text-6xl animate-pulse">📜</span></div>
+                                        <p className="text-fuchsia-400 tracking-[0.2em] md:tracking-[0.3em] text-xs md:text-sm font-bold uppercase text-center px-4">EL MAPACHE TE INFORMA</p>
+                                        <p className="text-gray-500 text-[10px] mt-2 uppercase">SOBRE BRO7VISION, MOON COINS Y LARRY</p>
+                                    </>
+                                )}
+                            </div>
+                        )}
+                        {isLoadingAI && <div className={`mt-4 text-xs animate-pulse font-mono ${aiModeType === 'chat' ? 'text-cyan-400' : 'text-fuchsia-400'}`}>PROCESANDO DATOS... ▊▊▊</div>}
+                    </div>
+                    <div className={`p-4 bg-black border-t flex flex-col gap-2 ${aiModeType === 'chat' ? 'border-cyan-500/30' : 'border-fuchsia-500/30'}`}>
+                        <input type="text" placeholder={cooldown > 0 ? `❄️ ENFRIANDO (${cooldown}s)...` : (aiModeType === 'chat' ? "Habla con Tars & Mapache..." : "Pregunta al Agente Mapache...")} disabled={cooldown > 0 || dailyCount >= MAX_DAILY_MSG} className={`flex-1 bg-[#0a0a0a] border p-4 rounded-xl outline-none transition-all ${aiModeType === 'chat' ? 'text-cyan-100 border-cyan-900/50 placeholder-cyan-900 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.2)]' : 'text-fuchsia-100 border-fuchsia-900/50 placeholder-fuchsia-900 focus:border-fuchsia-500 focus:shadow-[0_0_15px_rgba(217,70,239,0.2)]'} ${cooldown > 0 ? 'cursor-not-allowed opacity-50' : ''}`} onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    const val = e.target.value;
+                                    if(!val) return;
+                                    if (cooldown > 0) return;
+                                    if (dailyCount >= MAX_DAILY_MSG) { setAiResponse("⛔ CUPO DIARIO AGOTADO. Vuelve mañana, ciudadano."); return; }
+                                    setIsLoadingAI(true); setAiResponse(null); e.target.value = '';
+                                    setCooldown(10);
+                                    const timer = setInterval(() => { setCooldown((prev) => { if (prev <= 1) { clearInterval(timer); return 0; } return prev - 1; }); }, 1000);
+                                    const newCount = dailyCount + 1; setDailyCount(newCount);
+                                    const today = new Date().toDateString(); localStorage.setItem('bro7_ai_usage', JSON.stringify({ date: today, count: newCount }));
+                                    askGemini(val, aiModeType).then(res => { setAiResponse(res); setIsLoadingAI(false); });
+                                }
+                            }} />
+                        <div className="flex justify-between text-[10px] font-mono uppercase px-2 mt-1">
+                            <span className={cooldown > 0 ? "text-red-500 animate-pulse font-bold" : "text-gray-500"}>{cooldown > 0 ? `❄️ RECALENTADO: ${cooldown}s` : (aiModeType === 'chat' ? '🟢 SISTEMA ONLINE' : '🟣 AGENTE ONLINE')}</span>
+                            <span className={aiModeType === 'chat' ? "text-cyan-600" : "text-fuchsia-600"}>CRÉDITOS DIARIOS: <span className={dailyCount >= MAX_DAILY_MSG ? "text-red-500 font-black" : "text-white font-bold"}>{MAX_DAILY_MSG - dailyCount}</span> / {MAX_DAILY_MSG}</span>
+                        </div>
+                        {aiModeType === 'chat' && (
+                            <div className="flex flex-wrap justify-center gap-2 pt-2 border-t border-white/5 mt-2">
+                                <button onClick={() => window.open('https://aistudio.google.com/', '_blank')} className="flex items-center gap-1 bg-white/10 text-white border border-white/20 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-white hover:text-black hover:scale-105 transition-all">🧠 AI STUDIO</button>
+                                <button onClick={() => window.open('https://playground.bfl.ai/image/generate', '_blank')} className="flex items-center gap-1 bg-white text-black px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-fuchsia-400 hover:scale-105 transition-all">⚡ FLUX</button>
+                                <button onClick={() => window.open('https://www.meta.ai/', '_blank')} className="flex items-center gap-1 bg-[#0064e0] text-white border border-transparent px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:brightness-125 hover:scale-105 transition-all">♾️ META</button>
+                                <button onClick={() => window.open('https://grok.com/', '_blank')} className="flex items-center gap-1 bg-black border border-white/30 text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-white hover:text-black hover:scale-105 transition-all">⬛ GROK</button>
+                                <button onClick={() => window.open('https://app.reve.com/', '_blank')} className="flex items-center gap-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white border border-transparent px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:brightness-110 hover:scale-105 transition-all">🔮 REVE</button>
+                                <button onClick={() => window.open('https://www.recraft.ai/', '_blank')} className="flex items-center gap-1 bg-gradient-to-r from-orange-500 to-red-600 text-white border border-transparent px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:brightness-110 hover:scale-105 transition-all">🎨 RECRAFT</button>
+                            </div>
                         )}
                     </div>
-                )}
-                {isLoadingAI && <div className={`mt-4 text-xs animate-pulse font-mono ${aiModeType === 'chat' ? 'text-cyan-400' : 'text-fuchsia-400'}`}>PROCESANDO DATOS... ▊▊▊</div>}
-            </div>
-
-            {/* INPUT DE TEXTO + BARRA DE CRÉDITOS (COMPARTIDA) */}
-            <div className={`p-4 bg-black border-t flex flex-col gap-2 ${aiModeType === 'chat' ? 'border-cyan-500/30' : 'border-fuchsia-500/30'}`}>
-                
-                <input 
-                    type="text" 
-                    placeholder={cooldown > 0 ? `❄️ ENFRIANDO (${cooldown}s)...` : (aiModeType === 'chat' ? "Habla con Tars & Mapache..." : "Pregunta al Agente Mapache...")}
-                    disabled={cooldown > 0 || dailyCount >= MAX_DAILY_MSG}
-                    className={`
-                        flex-1 bg-[#0a0a0a] border p-4 rounded-xl outline-none transition-all 
-                        ${aiModeType === 'chat' 
-                            ? 'text-cyan-100 border-cyan-900/50 placeholder-cyan-900 focus:border-cyan-500 focus:shadow-[0_0_15px_rgba(6,182,212,0.2)]' 
-                            : 'text-fuchsia-100 border-fuchsia-900/50 placeholder-fuchsia-900 focus:border-fuchsia-500 focus:shadow-[0_0_15px_rgba(217,70,239,0.2)]'
-                        }
-                        ${cooldown > 0 ? 'cursor-not-allowed opacity-50' : ''}
-                    `}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                            const val = e.target.value;
-                            if(!val) return;
-                            if (cooldown > 0) return;
-                            
-                            // LIMITADOR DE CRÉDITOS
-                            if (dailyCount >= MAX_DAILY_MSG) {
-                                setAiResponse("⛔ CUPO DIARIO AGOTADO. Vuelve mañana, ciudadano.");
-                                return;
-                            }
-
-                            setIsLoadingAI(true);
-                            setAiResponse(null);
-                            e.target.value = '';
-
-                            // Timer Logic
-                            setCooldown(10);
-                            const timer = setInterval(() => {
-                                setCooldown((prev) => { if (prev <= 1) { clearInterval(timer); return 0; } return prev - 1; });
-                            }, 1000);
-                            
-                            // CONTADOR COMPARTIDO (INCREMENTA SIEMPRE)
-                            const newCount = dailyCount + 1;
-                            setDailyCount(newCount);
-                            const today = new Date().toDateString();
-                            localStorage.setItem('bro7_ai_usage', JSON.stringify({ date: today, count: newCount }));
-
-                            // LLAMADA A LA API
-                            askGemini(val, aiModeType).then(res => { setAiResponse(res); setIsLoadingAI(false); });
-                        }
-                    }}
-                />
-
-                {/* --- BARRA DE ESTADO (CRÉDITOS RESTANTES) --- */}
-                <div className="flex justify-between text-[10px] font-mono uppercase px-2 mt-1">
-                    <span className={cooldown > 0 ? "text-red-500 animate-pulse font-bold" : "text-gray-500"}>
-                        {cooldown > 0 ? `❄️ RECALENTADO: ${cooldown}s` : (aiModeType === 'chat' ? '🟢 SISTEMA ONLINE' : '🟣 AGENTE ONLINE')}
-                    </span>
-                    <span className={aiModeType === 'chat' ? "text-cyan-600" : "text-fuchsia-600"}>
-                        CRÉDITOS DIARIOS: <span className={dailyCount >= MAX_DAILY_MSG ? "text-red-500 font-black" : "text-white font-bold"}>
-                            {MAX_DAILY_MSG - dailyCount}
-                        </span> / {MAX_DAILY_MSG}
-                    </span>
-                </div>
-                
-                {/* FOOTER EXTERNO (SOLO EN MODO CHAT) */}
-                {aiModeType === 'chat' && (
-                    <div className="flex flex-wrap justify-center gap-2 pt-2 border-t border-white/5 mt-2">
-                        {/* GOOGLE AI STUDIO */}
-                        <button onClick={() => window.open('https://aistudio.google.com/', '_blank')} className="flex items-center gap-1 bg-white/10 text-white border border-white/20 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-white hover:text-black hover:scale-105 transition-all">
-                            🧠 AI STUDIO
-                        </button>
-                        {/* FLUX */}
-                        <button onClick={() => window.open('https://playground.bfl.ai/image/generate', '_blank')} className="flex items-center gap-1 bg-white text-black px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-fuchsia-400 hover:scale-105 transition-all">
-                            ⚡ FLUX
-                        </button>
-                        {/* META */}
-                        <button onClick={() => window.open('https://www.meta.ai/', '_blank')} className="flex items-center gap-1 bg-[#0064e0] text-white border border-transparent px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:brightness-125 hover:scale-105 transition-all">
-                            ♾️ META
-                        </button>
-                        {/* GROK */}
-                        <button onClick={() => window.open('https://grok.com/', '_blank')} className="flex items-center gap-1 bg-black border border-white/30 text-white px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-white hover:text-black hover:scale-105 transition-all">
-                            ⬛ GROK
-                        </button>
-                        {/* REVE */}
-                        <button onClick={() => window.open('https://app.reve.com/', '_blank')} className="flex items-center gap-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white border border-transparent px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:brightness-110 hover:scale-105 transition-all">
-                            🔮 REVE
-                        </button>
-                        {/* RECRAFT */}
-                        <button onClick={() => window.open('https://www.recraft.ai/', '_blank')} className="flex items-center gap-1 bg-gradient-to-r from-orange-500 to-red-600 text-white border border-transparent px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest hover:brightness-110 hover:scale-105 transition-all">
-                            🎨 RECRAFT
-                        </button>
-                    </div>
-                )}
-            </div>
-        </div>
-  </div>
-)}  
+              </div>
+          </div>
+      )}  
+      
       {/* 6. MODO RADIO (RADIO GEOLOCALIZADA) */}
-      {isLiveMode && <LiveGrid onTuneIn={onTuneIn} onSelectShop={onSelectShop} onUserClick={onUserClick} onClose={() => setIntent('broshop')} onOpenVideo={onOpenVideo} />}
+      {isLiveMode && (
+         <LiveGrid 
+            items={items} // CABLE CONECTADO: Aquí faltaba items
+            onTuneIn={onTuneIn} 
+            onSelectShop={onSelectShop} 
+            onUserClick={onUserClick} 
+            onClose={() => setIntent('broshop')} 
+            onOpenVideo={onOpenVideo} 
+         />
+      )}
       
       {(intent === 'broshop' || intent === 'lives') && (
-  <CityLocationBanner scope={scope} />
-)}
-      
+        <CityLocationBanner scope={scope} />
+      )}
                   
-      {/* --- BUSCADOR (FIX 2: YA LO TIENES, SOLO ASEGURA QUE ESTÉ DEBAJO) --- */}
+      {/* --- BUSCADOR --- */}
       <div className="absolute bottom-[16%] md:bottom-12 w-full max-w-5xl px-4 pointer-events-auto flex flex-col items-center gap-4 z-[20000]">
         {showSearchBar && (
             <div className="flex items-center bg-black/90 rounded-full border-2 border-white/10 h-10 md:h-16 w-full max-w-3xl shadow-2xl backdrop-blur-md">

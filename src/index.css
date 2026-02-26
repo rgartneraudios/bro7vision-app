@@ -198,3 +198,25 @@ img {
   animation: shimmer 3s infinite;
 }
 
+/* Paneles laterales tipo "Drawer" */
+.side-panel {
+  @apply fixed top-0 h-full w-64 bg-black/40 backdrop-blur-md border-white/10 transition-all duration-500 z-[60];
+}
+
+.side-panel-left { left: -256px; border-right-width: 1px; }
+.side-panel-left.open { left: 0; }
+
+.side-panel-right { right: -256px; border-left-width: 1px; }
+.side-panel-right.open { right: 0; }
+
+/* Efecto Zoom en el visor de BioForest */
+.visor-zoom {
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  touch-action: manipulation;
+}
+.visor-zoom:active {
+  transform: scale(1.1); /* Feedback táctil rápido */
+}
+.visor-expanded {
+  transform: scale(1.5); /* El zoom real */
+}
