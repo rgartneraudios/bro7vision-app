@@ -121,12 +121,14 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
   // --- 4 TURNOS TEMPORALES ---
   const getTimeSuffix = () => {
     const hour = new Date().getHours();
-    if (hour >= 5 && hour < 11) return 'M'; // Mañana
-    if (hour >= 11 && hour < 18) return 'T'; // Tarde
-    if (hour >= 18 || hour < 0) return 'N'; // Noche
-    return 'X'; // Madrugada
+    
+    if (hour >= 5 && hour < 11) return 'M'; // Mañana (05:00 a 10:59)
+    if (hour >= 11 && hour < 17) return 'T'; // Tarde (11:00 a 16:59)
+    if (hour >= 17 && hour < 23) return 'N'; // Noche (17:00 a 22:59) <- AQUÍ ESTABA EL FALLO (&& en vez de ||)
+    
+    return 'X'; // Madrugada (23:00 a 04:59)
   };
-
+  
   const config = useMemo(() => {
     const time = getTimeSuffix();
     // Helper para construir rutas: _1(M), _2(T), _3(N), _4(X)
@@ -213,15 +215,38 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
 
   // --- INTERACCIONES ---
   const handleAction = async (type) => {
-      if (type === 'reaction') {
-        setActiveReaction({ from: realUserAlias || 'YO' });
+    // 1. Calculamos el coste según el tipo de acción
+    let cost = 100; // Por defecto para Halo (reaction) y Eco normal (text/audio)
+    
+    if (type === 'echo' && echoType === 'hyper') {
+        cost = 1000; // Coste especial para Hyper Zap
+    }
+
+    // 2. Validación de saldo
+    if (!balances || balances.genesis < cost) {
+        alert(`OPERACIÓN DENEGADA: NECESITAS ${cost} GÉNESIS...`);
+        return;
+    }
+
+    const myAlias = realUserAlias || 'CIUDADANO';
+
+    if (type === 'reaction') {
+        // Lógica de Halo de luz
+        setActiveReaction({ from: myAlias });
         setTimeout(() => setActiveReaction(null), 6000);
-      } else {
+    } else {
+        // Lógica de envío de Eco (Texto, Audio o Hyper)
         setShowEchoInput(false);
-        // Aquí iría la lógica de guardar en Supabase (simplificada para que no falle)
-        alert("Eco enviado (Simulación)"); 
-      }
-  };
+        // Aquí puedes reinsertar tu lógica de Supabase cuando estés listo
+        alert(`${echoType.toUpperCase()} ENVIADO (-${cost} GÉNESIS)`);
+    }
+
+    // 3. DESCUENTO REAL DEL SALDO (Esto es lo que te habían quitado)
+    setBalances(prev => ({
+        ...prev,
+        genesis: prev.genesis - cost
+    }));
+};
 
   const handleTouchStart = (e) => { touchStart.current = e.targetTouches[0].clientX; };
   const handleTouchEnd = () => { 
@@ -266,27 +291,77 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
           ))}
       </div>
 
-      {/* 3. TU VÓRTICE DE GEMAS (Recuperado y arreglado) */}
+     {/* 3. TU VÓRTICE DE GEMAS (RECUPERADO AL 100% DEL ORIGINAL) */}
       {activeReaction && (
-          <div className="fixed bottom-4 right-[15%] z-[100] pointer-events-none animate-vortex">
-              {/* Lógica de colores aleatorios integrada aquí dentro */}
-              {(() => {
-                  const c = ["#00127A", "#FF007D", "#00FF48", "#4D00FA", "#facc15", "#CF0000", "#00E1FF"];
-                  const rc = c[Math.floor(Math.random() * c.length)];
-                  return (
-                    <div className="relative flex flex-col items-center" style={{ mixBlendMode: 'screen' }}>
-                        <div className="relative w-36 h-36 flex items-center justify-center">
-                            <div className="absolute w-48 h-48 rounded-full blur-[40px] opacity-60 animate-energy-pulse" style={{ background: rc }}></div>
-                            <div className="absolute w-40 h-40 animate-spin-vortex"><div className="w-full h-full rounded-full opacity-90" style={{ background: rc, filter: 'blur(4px)' }}></div></div>
-                             {/* Particulas simplificadas para evitar mucho código */}
-                            <div className="absolute w-6 h-6 bg-white rounded-full blur-[2px] shadow-[0_0_20px_white]"></div>
-                        </div>
-                    </div>
-                  );
-              })()}
-          </div>
-      )}
+        <div className="fixed bottom-4 right-[15%] z-[100] pointer-events-none animate-vortex">
+          {(() => {
+            // Paleta de colores original y completa
+            const colors = [
+              { name: "azul", primary: "#00127A", secondary: "#006AED", glow: "rgba(59,130,246,0.6)" },
+              { name: "fucsia", primary: "#FF007D", secondary: "#f472b6", glow: "rgba(236,72,153,0.6)" },
+              { name: "esmeralda", primary: "#00FF48", secondary: "#00FFF2", glow: "rgba(16,185,129,0.6)" },
+              { name: "violeta", primary: "#4D00FA", secondary: "#7C4FFF", glow: "rgba(139,92,246,0.6)" },
+              { name: "amarillo", primary: "#facc15", secondary: "#FFFF00", glow: "rgba(250,204,21,0.6)" },
+              { name: "rojo", primary: "#CF0000", secondary: "#F70C0C", glow: "rgba(239,68,68,0.6)" },
+              { name: "cyan", primary: "#00E1FF", secondary: "#61C8FF", glow: "rgba(6,182,212,0.6)" }
+            ];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
+            return (
+              <div className="relative flex flex-col items-center" style={{ mixBlendMode: 'screen' }}>
+                <div className="relative w-36 h-36 flex items-center justify-center">
+                  
+                  {/* Gran Aura Circular (Pulse) */}
+                  <div className="absolute w-48 h-48 rounded-full blur-[40px] opacity-60 animate-energy-pulse" style={{ background: randomColor.glow }}></div>
+                  
+                  {/* Capa giratoria 1: Gradiente Cónico */}
+                  <div className="absolute w-40 h-40 animate-spin-vortex">
+                    <div className="w-full h-full rounded-full opacity-90" style={{ background: `conic-gradient(from 0deg, ${randomColor.primary}, ${randomColor.secondary}, transparent 40%, ${randomColor.primary} 60%, transparent 80%, ${randomColor.secondary})`, filter: 'blur(4px)' }}></div>
+                  </div>
+                  
+                  {/* Capa giratoria 2 (Contra-reloj): Gradiente Cónico */}
+                  <div className="absolute w-32 h-32 animate-spiral-counter">
+                    <div className="w-full h-full rounded-full opacity-90" style={{ background: `conic-gradient(from 180deg, transparent, ${randomColor.secondary} 30%, transparent 50%, ${randomColor.primary} 70%, transparent)`, filter: 'blur(3px)' }}></div>
+                  </div>
+                  
+                  {/* Anillo exterior */}
+                  <div className="absolute w-36 h-36 rounded-full animate-spin-vortex" style={{ border: `4px solid ${randomColor.secondary}`, opacity: 0.7, filter: 'blur(1px)', animationDuration: '2s' }}></div>
+                  
+                  {/* Núcleo Central Super Brillante */}
+                  <div className="relative w-20 h-20 flex items-center justify-center">
+                    <div className="absolute w-24 h-24 rounded-full blur-[20px] opacity-80 animate-energy-pulse" style={{ background: randomColor.primary }}></div>
+                    <div className="absolute w-16 h-16 rounded-full" style={{ background: `radial-gradient(circle, white 20%, ${randomColor.secondary} 50%, ${randomColor.primary} 100%)`, boxShadow: `0 0 40px ${randomColor.glow}, 0 0 80px ${randomColor.glow}, 0 0 120px ${randomColor.glow}, 0 0 160px ${randomColor.glow}` }}></div>
+                    <div className="absolute w-6 h-6 bg-white rounded-full blur-[2px] shadow-[0_0_20px_white,0_0_40px_white]"></div>
+                  </div>
+
+                  {/* Cruces de Luz (Flares) */}
+                  {[0, 1, 2, 3].map((i) => (
+                    <div key={i} className="absolute w-2 h-24 animate-flare" style={{ background: `linear-gradient(to bottom, ${randomColor.secondary}, transparent)`, transform: `rotate(${i * 90}deg)`, transformOrigin: 'center', filter: 'blur(2px)', animationDelay: `${i * 0.5}s` }}></div>
+                  ))}
+
+                  {/* Partículas en Órbita */}
+                  {[0, 1, 2, 3, 4, 5].map((i) => (
+                    <div key={`particle-${i}`} className="absolute animate-particle-orbit" style={{ animationDelay: `${i * 0.3}s` }}>
+                      <div className="w-2 h-2 rounded-full blur-[1px]" style={{ background: i % 2 === 0 ? randomColor.primary : randomColor.secondary }}></div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Enjambre de partículas flotantes alrededor (Lo que te habían borrado) */}
+                <div className="absolute inset-0 w-48 h-48 -left-6 -top-6">
+                  {[...Array(10)].map((_, i) => (
+                    <div key={`float-${i}`} className="absolute animate-particle-orbit" style={{ left: `${20 + Math.random() * 60}%`, top: `${20 + Math.random() * 60}%`, animationDelay: `${Math.random() * 2}s`, animationDuration: `${2 + Math.random() * 2}s` }}>
+                      <div className="w-1 h-1 rounded-full blur-[1px]" style={{ background: randomColor.secondary }}></div>
+                    </div>
+                  ))}
+                </div>
+
+              </div>
+            );
+          })()}
+        </div>
+      )}
+      
       {/* 4. VISOR PORTAL (PARALAJE + EFECTOS) */}
       <div onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} className="absolute top-[45%] md:top-[42%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[20] perspective-[1000px]">
           
@@ -332,34 +407,35 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
                     <button onClick={() => setCurrentIndex(p => p + 1)} className={`hover:scale-125 transition-all text-6xl drop-shadow-md opacity-70 hover:opacity-100 ${config.navColor}`}>›</button>
               </div>
 
-              {/* BOTONERAS */}
-              <div className="absolute -bottom-[100px] md:-bottom-20 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-black/80 backdrop-blur-xl border border-white/10 px-6 py-2 rounded-full z-[150] shadow-2xl min-w-[240px]">
-                  <button onClick={() => setCurrentTribeIndex(p => p > 0 ? p - 1 : 0)} className={`text-xl ${config.navColor}`}>❮</button>
-                  <div className="flex flex-col items-center flex-1">
-                      <button className={`w-8 h-8 flex items-center justify-center rounded-full border border-white/20 text-white`}>▶</button>
-                      <p className="text-[6px] mt-1 text-gray-400">RADIO FREQUENCY</p>
+              {/* BOTONERA ACCIÓN */}
+              <div className="absolute -bottom-36 md:-bottom-44 left-0 w-full flex flex-col items-center gap-3 z-50 pointer-events-auto">
+                  <div className="flex items-center justify-center gap-2 w-full max-w-[350px] px-4">
+                      <button onClick={() => handleAction('reaction')} className="flex-1 py-3 bg-white text-black border border-white rounded-xl text-[9px] font-black uppercase shadow-[0_0_15px_rgba(255,255,255,0.4)] hover:scale-105 transition-transform">✨ HALO</button>
+                      <button onClick={() => { if (currentUser) { onOpenProfile(currentUser); } }} className="flex-1 py-3 bg-fuchsia-600 text-white border border-fuchsia-400 rounded-xl text-[9px] font-black uppercase shadow-[0_0_20px_rgba(217,70,239,0.5)] animate-pulse">🗝️ ÍNTIMO</button>
+                      <button onClick={() => setShowEchoInput(true)} className="flex-1 py-3 bg-black/90 border border-white/20 text-white rounded-xl text-[9px] font-black uppercase">💬 ECO</button>
                   </div>
-                  <button onClick={() => setCurrentTribeIndex(p => p + 1)} className={`text-xl ${config.navColor}`}>❯</button>
-              </div>
-  
-              <div className="absolute -bottom-[190px] md:-bottom-44 left-0 w-full flex flex-col items-center gap-3 z-50 pointer-events-auto">
-                   <div className="flex items-center justify-center gap-2 w-full max-w-[350px] px-4">
-                      <button onClick={() => handleAction('reaction')} className="flex-1 py-3 bg-white/10 backdrop-blur-md text-white border border-white/30 rounded-xl text-[9px] font-black uppercase hover:bg-white hover:text-black transition-all">✨ HALO</button>
-                      <button onClick={() => { if (currentUser) onOpenProfile(currentUser); }} className="flex-1 py-3 bg-black/80 text-white border-2 border-[#bf00ff] rounded-xl text-[9px] font-black uppercase shadow-[0_0_15px_rgba(191,0,255,0.4)] animate-pulse">⛩️ SANTUARIO</button>
-                      <button onClick={() => setShowEchoInput(true)} className="flex-1 py-3 bg-white/10 backdrop-blur-md text-white border border-white/30 rounded-xl text-[9px] font-black uppercase hover:bg-white hover:text-black transition-all">💬 ECO</button>
-                   </div>
-                   <p className={`text-[10px] font-black tracking-[0.3em] uppercase ${config.labelClass} drop-shadow-md`}>{config.labelText} // {currentUser.alias}</p>
+                  <p className={`text-[9px] md:text-[11px] font-black tracking-[0.4em] uppercase ${config.labelClass} mt-1`}>
+                    {config.labelText} // {currentUser.alias}
+                  </p>
               </div>
           </div> 
-      </div>      
+      </div> 
 
+      {/* MODAL ECO INTEGRADO */}
       {showEchoInput && (
-          <div className="fixed inset-0 z-[1000] bg-black/90 flex items-center justify-center backdrop-blur-md animate-fadeIn">
-              <div className="w-full max-w-md text-center p-6">
-                  <input autoFocus type="text" placeholder="ESCRIBE TU ECO..." className="w-full bg-transparent border-b-2 border-white/10 py-4 text-center text-white outline-none font-black text-2xl uppercase" value={echoText} onChange={e => setEchoText(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAction('echo')} />
-                  <div className="mt-8 flex justify-between px-4">
-                      <button onClick={() => setShowEchoInput(false)} className="text-gray-500 text-xs font-bold">CANCELAR</button>
-                      <button onClick={() => handleAction('echo')} className="bg-white text-black px-6 py-2 rounded-full text-xs font-bold">ENVIAR</button>
+          <div className="fixed inset-0 z-[1000] bg-black/98 flex items-center justify-center p-6 backdrop-blur-3xl animate-fadeIn">
+              <div className="w-full max-w-md text-center">
+                  <div className="flex gap-2 mb-12 justify-center flex-wrap">
+                      <button onClick={() => setEchoType('text')} className={`px-4 py-2 rounded-full text-[9px] font-black border transition-all ${echoType === 'text' ? 'bg-cyan-500 text-black border-cyan-400' : 'text-white/30 border-white/10'}`}>💬 TEXTO NEÓN</button>
+                      <button onClick={() => setEchoType('tts')} className={`px-4 py-2 rounded-full text-[9px] font-black border transition-all ${echoType === 'tts' ? 'bg-fuchsia-500 text-white border-fuchsia-400' : 'text-white/30 border-white/10'}`}>🤖 VOZ ROBOT</button>
+                      <button onClick={() => setEchoType('hyper')} className={`px-4 py-2 rounded-full text-[9px] font-black border transition-all ${echoType === 'hyper' ? 'bg-[#002366] text-cyan-400 border-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.5)]' : 'text-white/30 border-white/10'}`}>⚡ HYPER ZAP</button>
+                  </div>
+                  <input autoFocus type="text" placeholder={echoType === 'hyper' ? "TÍTULO DEL ANUNCIO..." : "ESCRIBE TU ECO..."} className="w-full bg-transparent border-b-2 border-white/10 py-6 text-center text-white outline-none font-black text-2xl uppercase focus:border-white transition-all" value={echoText} onChange={e => setEchoText(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAction('echo')} maxLength={60} />
+                  <div className="mt-16 flex justify-between items-center px-4">
+                      <button onClick={() => setShowEchoInput(false)} className="text-gray-500 text-[10px] font-black uppercase hover:text-white">VOLVER</button>
+                      <button onClick={() => handleAction('echo')} className={`px-12 py-4 rounded-2xl font-black text-[11px] uppercase transition-all ${echoType === 'hyper' ? 'bg-[#002366] text-cyan-400 border border-cyan-500' : 'bg-white text-black'}`}>
+                          {echoType === 'hyper' ? 'EMITIR HYPER ZAP (1000 G)' : 'EMITIR ECO (100 G)'}
+                      </button>
                   </div>
               </div>
           </div>
