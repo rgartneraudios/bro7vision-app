@@ -46,7 +46,32 @@ function App() {
   // Paneles Laterales
   const [isLeftOpen, setIsLeftOpen] = useState(false);
   const [isRightOpen, setIsRightOpen] = useState(false);
+  
+  // --- LÓGICA PARA REGISTRAR COINS DE JUEGOS ---
+  const handleGameWin = async (amount) => {
+  // 1. Calculamos el nuevo total basándonos en el balance actual
+  const newTotal = balances.genesis + amount;
 
+  // 2. Actualizamos el estado visual (lo que ves en pantalla)
+  setBalances(prev => ({
+    ...prev,
+    genesis: newTotal
+  }));
+
+  // 3. ¡EL PASO CRUCIAL! Guardar en la base de datos 
+  if (session?.user?.id) {
+    const { error } = await supabase
+      .from('profiles') // O el nombre de tu tabla de usuarios/balances
+      .update({ genesis: newTotal })
+      .eq('id', session.user.id);
+
+    if (error) {
+      console.error('Error al sincronizar con la base de datos:', error);
+    } else {
+      console.log('Balance sincronizado permanentemente');
+    }
+  }
+};
   // --- LÓGICA DE NAVEGACIÓN ---
   const handleNavigation = (targetIntent) => {
     setIntent(targetIntent);
@@ -256,6 +281,7 @@ function App() {
               intent={intent} 
               scope={scope} 
               onBack={() => setStep(0)} 
+             onGameWin={handleGameWin}
               
               // CABLE 1: AUDIO (Cuando le dan al botón rojo en la tarjeta)
               onTuneIn={(user) => setAudioUser(user)} 

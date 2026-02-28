@@ -220,3 +220,22 @@ img {
 .visor-expanded {
   transform: scale(1.5); /* El zoom real */
 }
+
+@keyframes spinHologram {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(360deg); }
+}
+
+.animate-holo-spin {
+  animation: spinHologram 20s linear infinite; /* 20s es la velocidad, ajusta a tu gusto */
+  transform-style: preserve-3d;
+}
+
+@keyframes spinHologram {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(360deg);
+  }
+}

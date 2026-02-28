@@ -58,7 +58,7 @@ const NexusDashboard = ({
   const isAIMode = intent === 'ai';
   const isLiveMode = intent === 'lives';
   const isCardMode = (intent === 'broshop' || intent === 'product' || intent === 'service');
-  const showSearchBar = !isGameMode && !isAIMode && !isLiveMode;
+  const showSearchBar = !isGameMode && !isAIMode;
 
   const handleLogClick = () => { 
       onOpenLog({ title: MOCK_LOGS[currentLogIndex], category: "MERCANTIL", author: "Sistema" }); 

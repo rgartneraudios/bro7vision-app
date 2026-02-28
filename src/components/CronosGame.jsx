@@ -618,20 +618,25 @@ const CronosGame = ({ onWin, onClose }) => {
   useEffect(() => { if (gameOver && assets.current.audios.loop) assets.current.audios.loop.pause(); }, [gameOver]);
 
   const handleClose = () => {
-    // SIEMPRE pasar el score actual
-    // Si es positivo: suma génesis
-    // Si es negativo: resta génesis (ej: -20 significa que perdiste 20 génesis)
-    console.log('CronosGame - Score final:', score); // Debug
-    onWin(score);
+    // 1. Verificamos si realmente ganó (capturó todos los cubos)
+    const hasWonAll = gameState.current.cubes.every(c => c.status.startsWith('captured'));
+    
+    // 2. Si ganó, enviamos el score acumulado. Si no, enviamos los 10 de participación.
+    const finalAmount = hasWonAll ? score : 10; 
+    
+    console.log('Telecronos - Enviando puntos:', finalAmount);
+    onWin(finalAmount); // Esto ahora sí enviará los 10 puntos al App.jsx
 
-    // Parar audio explícitamente antes de cerrar
+    // Limpieza de audio
     if (assets.current.audios.loop) { 
-      assets.current.audios.loop.pause(); 
+      assets.current.audios.loop.pause();
       assets.current.audios.loop.currentTime = 0; 
     }
-    onClose();
+    
+    // Llamada al cierre
+    if (onClose) onClose();
   };
-
+  
   return ReactDOM.createPortal(
     <div className="fixed inset-0 bg-black flex items-center justify-center select-none" style={{ zIndex: 2147483647 }}>
       {!gameStarted && (
