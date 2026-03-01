@@ -91,11 +91,11 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
   const touchEnd = useRef(0);
 
   const displayUsers = useMemo(() => {
-    const DJ_NEON = {
-      id:'bot1', alias:'Dj_Neon',
-      video_file:"https://www.dropbox.com/scl/fi/7mwqgp1nw2uoccojy8q68/Bro7Vision-01.mp4?rlkey=lq6r57aand98srt27wntma8bp&st=irkmq91s&dl=0"
+    const LAP_STEEL = {
+      id:'bot1', alias:'Lap_Steel',
+      video_file:"https://www.dropbox.com/scl/fi/zsey9jh7tzzvx3bksllwm/Celestial_Drift-master.mp4?rlkey=dhph8iy6ji2s4av4cshi5lq5q&st=bwnz7v2d&dl=0"
     };
-    return videoUsers?.length > 0 ? [...videoUsers,DJ_NEON,...TV_NODES] : [DJ_NEON,...TV_NODES];
+    return videoUsers?.length > 0 ? [...videoUsers,LAP_STEEL,...TV_NODES] : [LAP_STEEL,...TV_NODES];
   }, [videoUsers]);
 
   const currentUser = useMemo(() => displayUsers[currentIndex % displayUsers.length], [displayUsers,currentIndex]);

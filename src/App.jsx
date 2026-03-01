@@ -7,7 +7,7 @@ import PaymentModal from './components/PaymentModal';
 import NexusDashboard from './components/NexusDashboard';
 import StoryPlayer from './components/StoryPlayer'; 
 import BroTuner from './components/BroTuner';
-import BroLives from './components/BroLives'; // COMPONENTE RECUPERADO
+import BroLives from './components/BroLives'; 
 import { MASTER_DB } from './data/database';
 import { getVideoForLocation } from './data/VideoMap';
 import BroLogViewer from './components/BroLogViewer';
@@ -245,18 +245,30 @@ function App() {
           <div className="mt-10 w-full">
           </div>
 
-          <div className="w-full flex flex-col gap-1 mt-4">
+         <div className="w-full flex flex-col gap-1 mt-4">
             <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest text-right mb-2 font-mono">Navegación</p>
-            {['gps', 'broshop', 'lives', 'internal_search', 'ai', 'game'].map(id => (
-              <button key={id} onClick={() => handleNavigation(id)} className="w-full flex justify-between items-center p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 group transition-all">
+            
+            {[
+              { id: 'gps',             label: 'GPS / RUTA',       icon: '📍' },
+              { id: 'broshop',         label: 'BROSHOP',          icon: '🛒' },
+              { id: 'lives',           label: 'AUDIO & LIVES',    icon: '📡' },
+              { id: 'internal_search', label: 'AVISOS',           icon: '🤖' }, 
+              { id: 'ai',              label: 'GUÍA / ACCESS AI', icon: '🦝' },
+              { id: 'game',            label: 'GAMES',            icon: '🎮' }
+            ].map((item) => (
+              <button 
+                key={item.id} 
+                onClick={() => handleNavigation(item.id)} 
+                className="w-full flex justify-between items-center p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 group transition-all"
+              >
                 <span className="text-[10px] font-black uppercase tracking-widest group-hover:text-cyan-400">
-                    {id === 'internal_search' ? 'ASK TERMINAL' : id}
+                    {item.label}
                 </span>
-                <span className="text-lg">{id === 'gps' ? '📍' : id === 'broshop' ? '🛒' : id === 'lives' ? '📡' : id === 'internal_search' ? '🦝' : id === 'ai' ? '🤖' : '🎮'}</span>
+                <span className="text-lg">{item.icon}</span>
               </button>
             ))}
           </div>
-
+          
           <button onClick={() => setShowBooster(true)} className="w-full p-4 border border-cyan-500/30 bg-cyan-500/10 rounded-2xl text-cyan-400 font-mono text-[10px] hover:bg-cyan-500 hover:text-black mt-4">[ BOOSTER STUDIO ]</button>
           
             {/* BOTÓN BRO STORIES */}
@@ -325,8 +337,26 @@ function App() {
 
       {/* 7. ASK TERMINAL */}
       {intent === 'internal_search' && step === 2 && (
-        <div className="fixed inset-0 z-[120]"><RacoonTerminal onBack={() => setStep(0)} /></div>
-      )}
+  <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/10 backdrop-blur-[2px]">
+    <RacoonTerminal 
+       // CAMBIO CLAVE AQUÍ: De 'onBack' a 'onClose'
+       onClose={() => { setStep(0); setIntent(null); }} 
+       
+       session={session}
+       balances={balances}
+       setBalances={setBalances}
+       onNavigateToSantuario={(targetUserId) => {
+           const targetUser = realItems.find(u => u.id === targetUserId);
+           if (targetUser) {
+               setProjectingUser(targetUser);
+               setIntent(null); // Esto cierra la terminal automáticamente al viajar
+           } else {
+               alert("Usuario no encontrado en local.");
+           }
+       }}
+    />
+  </div>
+)}
 
       {/* 8. MODALES Y SANTUARIO */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 z-[100]"><button onClick={() => setShowLegal(true)} className="text-[9px] font-black px-10 py-2 rounded-t-xl bg-black/80 border-t border-x border-white/10 text-gray-500 hover:text-cyan-400 transition-all uppercase tracking-widest">⚖️ Legal / Creador</button></div>
