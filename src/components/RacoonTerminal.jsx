@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient'; // Asegúrate que la ruta sea correcta
+import { askGemini } from '../services/gemini'; 
 
 const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToSantuario }) => {
   const [tab, setTab] = useState('avisos'); // Por defecto vamos al negocio
@@ -7,6 +8,8 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
   const [newAviso, setNewAviso] = useState({ type: 'DEMANDA', title: '', content: '' });
   const [loading, setLoading] = useState(false);
   const [aiQuery, setAiQuery] = useState('');
+  const [aiResponse, setAiResponse] = useState(null); // Guardará el texto del Mapache
+  const [isAiLoading, setIsAiLoading] = useState(false); // Para mostrar "Cargando..."
   
   // Estado para controlar qué avisos ha desbloqueado este usuario (para no cobrarle doble)
   const [unlockedAvisos, setUnlockedAvisos] = useState([]);
@@ -16,16 +19,23 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
     fetchAvisos();
   }, []);
 
+  // --- 1. REPARACIÓN DE FETCH AVISOS ---
   const fetchAvisos = async () => {
     const { data, error } = await supabase
       .from('avisos')
       .select('*')
-.gt('expires_at', new Date().toISOString()) // Solo trae los que expiran en el futuro
-.order('created_at', { ascending: false });
-  };
+      // .gt('expires_at', new Date().toISOString()) // <-- TE RECOMIENDO COMENTAR ESTO TEMPORALMENTE hasta estar seguro de que funciona
+      .order('created_at', { ascending: false });
 
+    if (error) {
+      console.error("Error al descargar avisos:", error);
+    } else if (data) {
+      setAvisos(data); // ¡ESTA ES LA LÍNEA CLAVE QUE FALTABA!
+    }
+  };
+  
   // --- LÓGICA DE PUBLICAR (COBRAR 200) ---
-  const handlePublish = async () => {
+    const handlePublish = async () => {
     if (balances.genesis < 200) {
       alert("⚠️ SALDO INSUFICIENTE. Necesitas 200 Génesis.");
       return;
@@ -35,33 +45,41 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
 
     setLoading(true);
 
-    // 1. Obtener alias del usuario (para mostrarlo en el aviso)
+    // 1. Obtener alias del usuario
     const { data: profile } = await supabase.from('profiles').select('alias').eq('id', session.user.id).single();
 
-    // 2. Insertar Aviso
+    // CREAMOS UNA FECHA DE CADUCIDAD (Ej: 7 días a partir de hoy)
+    const expireDate = new Date();
+    expireDate.setDate(expireDate.getDate() + 7);
+
+    // 2. Insertar Aviso en Supabase
     const { error } = await supabase.from('avisos').insert([{
       user_id: session.user.id,
       author_alias: profile?.alias || 'Anon',
       type: newAviso.type,
       title: newAviso.title,
       content: newAviso.content,
-      tags: [], // Aquí la IA podría rellenar tags automáticamente
-      cost_to_reveal: 200
+      tags: [], 
+      cost_to_reveal: 200,
+      expires_at: expireDate.toISOString() // <-- AÑADIMOS LA FECHA AQUÍ
     }]);
 
-    if (!error) {
-      // 3. Cobrar
+    if (error) {
+      console.error("Error al publicar en Supabase:", error);
+      alert("Hubo un error al publicar el aviso.");
+    } else {
+      // 3. Cobrar solo si no hubo error
       const newBalance = balances.genesis - 200;
       setBalances({ ...balances, genesis: newBalance });
       await supabase.from('profiles').update({ genesis: newBalance }).eq('id', session.user.id);
       
       setNewAviso({ type: 'DEMANDA', title: '', content: '' });
-      fetchAvisos();
+      fetchAvisos(); // Volvemos a descargar la lista para que aparezca el nuevo
       alert("✅ AVISO PUBLICADO (-200 GEN)");
     }
+    
     setLoading(false);
   };
-
   // --- LÓGICA DE DESBLOQUEAR CONTACTO (COBRAR 200) ---
   const handleUnlock = async (aviso) => {
     if (balances.genesis < 200) {
@@ -85,13 +103,24 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
     }
   };
 
-  // --- LÓGICA IA BROKER (Simulada para Fase 0) ---
+  // --- LÓGICA IA BROKER (Conectada a la UI) ---
   const handleAiBroker = async () => {
-      // AQUÍ IRÍA LA LLAMADA A TU API GEMINI "BROKER"
-      // Prompt: "Filtra el array de avisos buscando lo que pide el usuario..."
-      alert(`🦝 MAPACHE BROKER:\n"Estoy buscando en la base de datos ofertas sobre '${aiQuery}'..."\n(Esta función conectará con tu API)`);
-  };
+      if (!aiQuery.trim()) return;
 
+      setIsAiLoading(true); // Encendemos el "Cargando"
+      setAiResponse(null); // Limpiamos la respuesta anterior por si acaso
+
+      try {
+          const respuesta = await askGemini(aiQuery, 'broker', avisos);
+          setAiResponse(respuesta); // Guardamos la respuesta de Gemini
+      } catch (error) {
+          console.error("Error en Broker:", error);
+          setAiResponse("⚠️ ERROR: Conexión con el núcleo del Broker interrumpida.");
+      } finally {
+          setIsAiLoading(false); // Apagamos el "Cargando"
+      }
+  };
+    
   return (
     <div className="w-full h-full flex items-center justify-center p-4 md:p-10 relative z-50">
         
@@ -123,14 +152,51 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
                                     type="text" 
                                     value={aiQuery}
                                     onChange={(e) => setAiQuery(e.target.value)}
+                                    // Añadimos el onKeyDown para poder buscar pulsando "Enter"
+                                    onKeyDown={(e) => e.key === 'Enter' && handleAiBroker()}
                                     placeholder="Pregunta al Broker Mapache (Ej: Busco Ingeniero...)" 
                                     className="flex-1 bg-black border border-orange-500/50 rounded-xl px-4 py-3 text-orange-200 placeholder-gray-600 focus:outline-none focus:shadow-[0_0_15px_rgba(249,115,22,0.4)]"
                                 />
-                                <button onClick={handleAiBroker} className="bg-orange-600 text-black font-black px-4 rounded-xl hover:bg-orange-500 transition-colors uppercase text-xs">
-                                    🤖 Buscar
+                                <button 
+                                    onClick={handleAiBroker} 
+                                    disabled={isAiLoading}
+                                    className="bg-orange-600 text-black font-black px-4 rounded-xl hover:bg-orange-500 transition-colors uppercase text-xs disabled:opacity-50"
+                                >
+                                    {isAiLoading ? '⏳' : '🤖 Buscar'}
                                 </button>
                             </div>
 
+                            {/* --- NUEVO: PANEL DE RESPUESTA DE LA IA --- */}
+                            {(isAiLoading || aiResponse) && (
+                                <div className="mb-6 p-4 rounded-xl border border-orange-500/50 bg-[#1a0b02] backdrop-blur-sm relative animate-fadeIn shadow-[0_0_15px_rgba(249,115,22,0.15)]">
+                                    {/* Botón para cerrar la respuesta */}
+                                    {!isAiLoading && (
+                                        <button 
+                                            onClick={() => setAiResponse(null)} 
+                                            className="absolute top-2 right-3 text-gray-500 hover:text-orange-500 font-bold"
+                                        >
+                                            ✕
+                                        </button>
+                                    )}
+                                    
+                                    <div className="flex items-start gap-4">
+                                        <div className="text-3xl mt-1">🦝</div>
+                                        <div className="flex-1">
+                                            <h4 className="text-orange-500 font-bold text-xs uppercase mb-1 tracking-wider">Broker Mapache</h4>
+                                            {isAiLoading ? (
+                                                <p className="text-gray-400 text-sm animate-pulse font-mono">
+                                                    Analizando base de datos de avisos...
+                                                </p>
+                                            ) : (
+                                                <p className="text-gray-200 text-sm font-mono whitespace-pre-line leading-relaxed">
+                                                    {aiResponse}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            
                             {/* LISTADO */}
                             {avisos.length === 0 ? (
                                 <div className="text-center text-gray-600 mt-20">No hay avisos aún. Sé el primero.</div>

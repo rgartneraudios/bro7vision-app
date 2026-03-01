@@ -15,7 +15,7 @@ import BoosterModal from './components/BoosterModal';
 import LegalTerminal from './components/LegalTerminal';
 import HoloProjector from './components/HoloProjector';
 import BioForest from './components/BioForest';
-import RacoonTerminal from './components/RacoonTerminal';
+ import RacoonTerminal from './components/RacoonTerminal';
 import RealityTuner from './components/RealityTuner';
 import HoloPrism from './components/HoloPrism';
 
@@ -285,31 +285,33 @@ function App() {
       <button onClick={() => setIsRightOpen(!isRightOpen)} className={`fixed top-1/2 -translate-y-1/2 right-0 z-[100] h-24 w-8 bg-black/60 backdrop-blur-md border border-white/20 rounded-l-2xl flex items-center justify-center transition-all ${isRightOpen ? 'right-64' : 'right-0'}`}><span className="text-fuchsia-400 text-xs">{isRightOpen ? '▶' : '◀'}</span></button>
 
       {/* 5. DASHBOARD CENTRAL */}
-{step === 2 && intent !== 'internal_search' && (
+      {/* 👇 BORRAMOS EL intent !== 'internal_search' 👇 */}
+      {step === 2 && (
         <div className="relative z-50 w-full h-full flex items-center justify-center pointer-events-none p-4">
           <div className="w-full max-w-6xl h-full md:h-auto pointer-events-auto overflow-y-auto">
             <NexusDashboard 
-              items={filteredItems} 
-              intent={intent} 
+              intent={intent}
+              setIntent={setIntent}
+              items={realItems}
               scope={scope} 
               onBack={() => setStep(0)} 
-             onGameWin={handleGameWin}
+              onGameWin={handleGameWin}
+              step={step}
+              setStep={setStep}
+              session={session}
+              balances={balances}
+              setBalances={setBalances}
+              realItems={realItems}
+              setProjectingUser={setProjectingUser}
               
-              // CABLE 1: AUDIO (Cuando le dan al botón rojo en la tarjeta)
               onTuneIn={(user) => setAudioUser(user)} 
-              
-              // CABLE 2: VIDEO (Botón Santuario)
               onOpenVideo={(user) => setProjectingUser(user)} 
-              
-              // CABLE 3: COMPRA (Click en la tarjeta -> PaymentModal)
               onSelectShop={(card) => setSelectedCard(card)} 
-              
               onOpenLog={setSelectedLog} 
             />
           </div>
         </div>
-      )}
-      
+      )}      
       {/* HOLOPRISMA RECUPERADO (Solo en BroShop o Lives) */}
       {step === 2 && (intent === 'broshop' || intent === 'lives') && ( 
         <div className="hidden md:flex fixed right-16 top-[16%] -translate-y-1/2 z-[40] flex-col items-center w-24 animate-fadeIn pointer-events-none">
@@ -335,30 +337,7 @@ function App() {
         </div>
       )}
 
-      {/* 7. ASK TERMINAL */}
-      {intent === 'internal_search' && step === 2 && (
-  <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/10 backdrop-blur-[2px]">
-    <RacoonTerminal 
-       // CAMBIO CLAVE AQUÍ: De 'onBack' a 'onClose'
-       onClose={() => { setStep(0); setIntent(null); }} 
-       
-       session={session}
-       balances={balances}
-       setBalances={setBalances}
-       onNavigateToSantuario={(targetUserId) => {
-           const targetUser = realItems.find(u => u.id === targetUserId);
-           if (targetUser) {
-               setProjectingUser(targetUser);
-               setIntent(null); // Esto cierra la terminal automáticamente al viajar
-           } else {
-               alert("Usuario no encontrado en local.");
-           }
-       }}
-    />
-  </div>
-)}
-
-      {/* 8. MODALES Y SANTUARIO */}
+      {/* 7. MODALES Y SANTUARIO */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 z-[100]"><button onClick={() => setShowLegal(true)} className="text-[9px] font-black px-10 py-2 rounded-t-xl bg-black/80 border-t border-x border-white/10 text-gray-500 hover:text-cyan-400 transition-all uppercase tracking-widest">⚖️ Legal / Creador</button></div>
       
       {showLegal && (

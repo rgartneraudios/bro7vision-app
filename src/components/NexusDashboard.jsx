@@ -24,7 +24,15 @@ const NexusDashboard = ({
     onSelectShop, onTuneIn, onUserClick,
     items,
     onOpenVideo,
-    scope 
+    scope,
+    // 👇 ¡AÑADE ESTAS VARIABLES NUEVAS AQUÍ! 👇
+    step, 
+    setStep,
+    session,
+    balances,
+    setBalances,
+    realItems,
+    setProjectingUser
 }) => {
 
   const [currentLogIndex, setCurrentLogIndex] = useState(0);
@@ -320,6 +328,31 @@ const NexusDashboard = ({
       {(intent === 'broshop' || intent === 'lives') && (
         <CityLocationBanner scope={scope} />
       )}
+      
+       {/* 7. ASK TERMINAL */}
+      {intent === 'internal_search' && step === 2 && (
+  <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/10 backdrop-blur-[2px]">
+    <RacoonTerminal 
+       // CAMBIO CLAVE AQUÍ: De 'onBack' a 'onClose'
+       onClose={() => { setStep(0); setIntent(null); }} 
+       
+       session={session}
+       balances={balances}
+       setBalances={setBalances}
+       onNavigateToSantuario={(targetUserId) => {
+           const targetUser = realItems.find(u => u.id === targetUserId);
+           if (targetUser) {
+               setProjectingUser(targetUser);
+               setIntent(null); // Esto cierra la terminal automáticamente al viajar
+           } else {
+               alert("Usuario no encontrado en local.");
+           }
+       }}
+    />
+  </div>
+)}
+
+      
                   
       {/* --- BUSCADOR --- */}
       <div className="absolute bottom-[16%] md:bottom-12 w-full max-w-5xl px-4 pointer-events-auto flex flex-col items-center gap-4 z-[20000]">
