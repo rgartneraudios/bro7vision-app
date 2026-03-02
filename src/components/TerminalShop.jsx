@@ -1,6 +1,7 @@
 // src/components/TerminalShop.jsx
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { askGemini } from '../services/gemini';
 
 const parsePrice = (p) => {
   if (typeof p === 'number') return p;
@@ -150,7 +151,52 @@ const TerminalShop = ({ initialItem, onUpdateTotal, activeSection }) => {
   const [search,  setSearch]  = useState('');
   const [preview, setPreview] = useState(null);
   const [screen,  setScreen]  = useState('main');
+  
+  const [mapacheMsg, setMapacheMsg] = useState(null); // Mensaje hablado
+  const [isThinking, setIsThinking] = useState(false); // Estado de carga
+  const [aiIds, setAiIds] = useState(null); // Guarda los productos que Mapache sugiere
+  
+  const handleMapacheSearch = async (e) => {
+    if (e.key === 'Enter' && search.trim() !== '') {
+      setIsThinking(true);
+      setMapacheMsg(null);
+      setAiIds(null); // Limpiamos búsquedas anteriores de IA
+      
+      try {
+        const inventorySummary = INVENTORY.map(item => ({ id: item.id, name: item.name, cat: item.cat }));
+        
+        const rawResponse = await askGemini(search, 'shop_assistant', {
+            rules: initialItem?.mapache_rules || '',
+            inventory: inventorySummary
+        });
 
+        console.log("Respuesta RAW Gemini:", rawResponse); // Si fallara, esto en la consola F12 nos dice por qué
+
+        // MAGIA ANTI-ERRORES: Buscamos solo lo que está entre llaves { }
+        const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
+        
+        if (!jsonMatch) {
+            throw new Error("Gemini no devolvió un JSON válido.");
+        }
+
+        const aiData = JSON.parse(jsonMatch[0]); // Parseamos solo el bloque limpio
+
+        setMapacheMsg(aiData.message || "Aquí tienes, bro.");
+        
+        // Si nos da IDs, los guardamos para filtrar la pantalla
+        if (aiData.suggested_ids && Array.isArray(aiData.suggested_ids)) {
+            setAiIds(aiData.suggested_ids);
+        }
+
+      } catch (error) {
+         console.error("Error parseando IA:", error);
+         setMapacheMsg("🔌 Bzzrt... Ha habido un cruce de cables. Pídemelo con otras palabras, bro.");
+      } finally {
+         setIsThinking(false);
+         setSearch(''); // Limpiamos la barra de texto
+      }
+    }
+  };
   const sc = SECTION[activeSection] || SECTION.products;
   const mainPrice = parsePrice(initialItem?.price);
 
@@ -167,13 +213,23 @@ const TerminalShop = ({ initialItem, onUpdateTotal, activeSection }) => {
     {id:'d1', name:'Libro Digital PDF',      price:12.00, cat:'DIGITAL',  section:'assets'},
     {id:'d2', name:'Curso Online',           price:45.00, cat:'DIGITAL',  section:'assets'},
   ],[initialItem,mainPrice]);
+  
+  
 
-  const filtered = useMemo(()=>INVENTORY.filter(p=>{
-    const ms=!search||p.name.toLowerCase().includes(search.toLowerCase())||p.cat.toLowerCase().includes(search.toLowerCase());
-    const mn=search?true:p.section===activeSection;
-    return ms&&mn;
-  }),[INVENTORY,search,activeSection]);
-
+  const filtered = useMemo(() => {
+    // 1. SI MAPACHE HABLÓ Y DIO IDs, MOSTRAMOS SOLO ESOS PRODUCTOS
+    if (aiIds && aiIds.length > 0) {
+        return INVENTORY.filter(p => aiIds.includes(p.id));
+    }
+    
+    // 2. SI NO HAY IA, FUNCIONA EL FILTRO NORMAL (Por pestañas o barra)
+    return INVENTORY.filter(p => {
+        const ms = !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.cat.toLowerCase().includes(search.toLowerCase());
+        const mn = search ? true : p.section === activeSection;
+        return ms && mn;
+    });
+  }, [INVENTORY, search, activeSection, aiIds]);
+  
   useEffect(()=>{
     let t=0; INVENTORY.forEach(p=>{t+=p.price*(cart[p.id]||0);}); onUpdateTotal(t);
   },[cart,INVENTORY,onUpdateTotal]);
@@ -199,8 +255,34 @@ const TerminalShop = ({ initialItem, onUpdateTotal, activeSection }) => {
 
       {screen==='main' && (
         <>
+          {/* NUEVO: Mensaje de Mapache (Aparece si hay respuesta) */}
+          {(mapacheMsg || isThinking) && (
+             <div style={{
+                 margin: '20px 24px 0', padding: '16px', background: 'rgba(255,46,247,0.1)', 
+                 border: '2px solid #FF2EF7', borderRadius: '12px', display: 'flex', gap: '16px',
+                 alignItems: 'center', boxShadow: '0 0 20px rgba(255,46,247,0.3)', animation: 'popIn 0.3s ease'
+             }}>
+                 <span style={{fontSize: '32px'}}>🦝</span>
+                 <div style={{fontFamily: 'Chakra Petch, sans-serif', color: '#FFF', fontSize: '16px', fontWeight: 600}}>
+                     {isThinking ? (
+                         <span className="animate-pulse text-fuchsia-400">Mapache está revisando el almacén...</span>
+                     ) : (
+                         mapacheMsg
+                     )}
+                 </div>
+                 {/* Botón para borrar la búsqueda y el mensaje */}
+                 {!isThinking && (
+    	<button onClick={() => { setMapacheMsg(null); setAiIds(null); }} style={{
+        marginLeft: 'auto', background: 'transparent', border: '1px solid #FF2EF7', color: '#FF2EF7',
+        padding: '4px 10px', borderRadius: '6px', cursor: 'pointer', fontFamily: 'Rajdhani', fontWeight: 'bold'
+    	}}>✖</button>
+	)}
+             </div>
+          )}
+
           {/* Zona Principal de Productos (Arriba) */}
           <div className="ts-zone" style={{flex:1,overflowY:'auto',padding:'24px 16px',display:'flex',flexWrap:'wrap',gap:20,justifyContent:'center', alignContent:'flex-start'}}>
+            {/* AQUÍ VAMOS A FILTRAR TAMBIÉN POR LOS MENSAJES DE IA */}
             {filtered.length===0
               ? <div style={{width:'100%',textAlign:'center',paddingTop:60,color:'rgba(255,255,255,0.3)',fontFamily:'Rajdhani',fontSize:20,fontWeight:600}}>SIN RESULTADOS</div>
               : filtered.map((item,i)=>(
@@ -212,42 +294,60 @@ const TerminalShop = ({ initialItem, onUpdateTotal, activeSection }) => {
           </div>
 
           {/* Buscador y Controles (Abajo) */}
-          <div style={{ flexShrink:0, padding:'16px 24px', borderTop:'2px solid rgba(255,255,255,0.05)', display:'flex', flexDirection:'column', gap:16 }}>
+          <div style={{ flexShrink:0, padding:'20px 24px', borderTop:'2px solid rgba(255,255,255,0.05)', display:'flex', flexDirection:'column', gap:16, background:'rgba(0,0,0,0.4)' }}>
             
-            {/* Buscador */}
+            {/* Botón de Catálogo Visual */}
+            {initialItem?.catalog_url && (
+                <button 
+                    onClick={() => window.open(initialItem.catalog_url, '_blank')}
+                    className="ts-btn" 
+                    style={{
+                        width: '100%', padding:'12px', borderRadius:10,
+                        background:'rgba(14, 165, 233, 0.1)', border:'2px solid #0EA5E9',
+                        color:'#0EA5E9', fontFamily:'Chakra Petch,sans-serif',fontSize:14,fontWeight:700,
+                        textTransform:'uppercase', letterSpacing: '0.1em',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10
+                    }}
+                >
+                    <span>👁️</span> ABRIR HOLO-CATÁLOGO (VER FOTOS) ↗
+                </button>
+            )}
+
+            {/* Buscador de Mapache */}
             <div style={{
               display:'flex',alignItems:'center',gap:12,
-              background:'rgba(0,0,0,0.6)', border:`2px solid rgba(255,255,255,0.1)`,
-              borderRadius:12,padding:'12px 20px', 
+              background:'rgba(0,0,0,0.6)', border:`2px solid ${isThinking ? '#FF2EF7' : 'rgba(255,255,255,0.1)'}`,
+              borderRadius:12,padding:'12px 20px', transition: 'all 0.3s ease'
             }}>
-              <span style={{color:sc.primary,fontSize:20}}>⌕</span>
+              <span style={{color:sc.primary,fontSize:22}} className={isThinking ? 'animate-bounce' : ''}>🦝</span> 
               <input
                 type="text"
-                placeholder={`BUSCAR...`}
+                placeholder={`Dile a Mapache qué buscas y pulsa ENTER...`}
                 value={search}
                 onChange={e=>setSearch(e.target.value)}
+                onKeyDown={handleMapacheSearch} // <--- ¡AQUÍ ESTÁ LA MAGIA!
                 className="ts-search-input"
                 style={{
                   flex:1,background:'transparent',border:'none',outline:'none',color:'#fff', 
-                  fontFamily:'Rajdhani,sans-serif',fontSize:16,fontWeight:600,textTransform:'uppercase'
+                  fontFamily:'Rajdhani,sans-serif',fontSize:16,fontWeight:600
                 }}/>
             </div>
-
+            
             {/* Botones Carrito y Programar */}
             <div style={{display:'flex', justifyContent:'center', gap: 16}}>
                 <button onClick={()=>setScreen('cart')} className="ts-btn" style={{
-                padding:'14px 40px',borderRadius:12,
+                flex: 1, padding:'14px 20px',borderRadius:12,
                 background: cartCount>0 ? '#FFD000' : 'rgba(255,255,255,0.05)',
                 border:`2px solid ${cartCount>0 ? '#FFF' : 'rgba(255,255,255,0.2)'}`,
                 color: cartCount>0 ? '#000' : '#fff',
-                fontFamily:'Chakra Petch,sans-serif',fontSize:18,fontWeight:700,
+                fontFamily:'Chakra Petch,sans-serif',fontSize:16,fontWeight:700,
                 textTransform:'uppercase', boxShadow: cartCount>0 ? '0 0 20px rgba(255,208,0,0.6)' : 'none'
                 }}>🛒 CARRITO {cartCount>0?`(${cartCount})`:''}</button>
 
                 {activeSection==='services' && (
                 <button onClick={()=>setScreen('calendar')} className="ts-btn" style={{
-                    padding:'14px 40px',borderRadius:12, background:'#FF6B00', border:'2px solid #FFF',
-                    color:'#000', fontFamily:'Chakra Petch,sans-serif',fontSize:18,fontWeight:700,
+                    flex: 1, padding:'14px 20px',borderRadius:12, background:'#FF6B00', border:'2px solid #FFF',
+                    color:'#000', fontFamily:'Chakra Petch,sans-serif',fontSize:16,fontWeight:700,
                     textTransform:'uppercase', boxShadow:'0 0 20px rgba(255,107,0,0.6)'
                 }}>📅 PROGRAMAR</button>
                 )}

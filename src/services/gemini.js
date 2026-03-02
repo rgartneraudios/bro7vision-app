@@ -8,7 +8,7 @@ const API_KEY = rawKey.replace(/['"]+/g, '').trim();
 
 const genAI = new GoogleGenerativeAI(API_KEY);
 
-// IMPORTANTE: Añadimos contextData = null en los parámetros para que el Broker pueda recibir los avisos
+// IMPORTANTE: Añadimos contextData = null en los parámetros para que el Broker y Mapache puedan recibir datos
 export const askGemini = async (prompt, mode = 'chat', contextData = null) => {
   try {
     // ¡LA CLAVE! El modelo se declara DENTRO de la función y usamos el flash-latest
@@ -34,7 +34,6 @@ export const askGemini = async (prompt, mode = 'chat', contextData = null) => {
     } 
     else if (mode === 'broker') {
         // --- MODO 2: BROKER (EL CEREBRO PARA LOS AVISOS) 👔 ---
-        // Convertimos los avisos recibidos en texto para que la IA los lea
         const avisosString = contextData ? JSON.stringify(contextData) : "No hay avisos.";
         
         systemInstruction = `
@@ -51,8 +50,37 @@ export const askGemini = async (prompt, mode = 'chat', contextData = null) => {
           4. Si no hay nada, sugiere: "No hay nada activo. Deberías publicar una DEMANDA por 200 Génesis."
         `;
     } 
+    else if (mode === 'shop_assistant') {
+        // --- MODO 3: MAPACHE TENDERO (BROSHOP) 🦝 ---
+        const rules = contextData?.rules || "El comercio no ha dejado reglas específicas. Atiende con normalidad.";
+        const inventoryString = contextData?.inventory ? JSON.stringify(contextData.inventory) : "[]";
+
+        systemInstruction = `
+          ACTÚA COMO: Mapache, el asistente de ventas callejero, astuto y colega de BRO7VISION.
+          
+          INVENTARIO DISPONIBLE (SOLO PUEDES VENDER ESTO):
+          ${inventoryString}
+
+          REGLAS Y ESTRATEGIA DEL DUEÑO DEL COMERCIO:
+          ${rules}
+
+          INSTRUCCIONES:
+          1. Analiza lo que el cliente quiere comprar.
+          2. Busca en el INVENTARIO DISPONIBLE los artículos que coincidan.
+          3. Aplica las REGLAS DEL DUEÑO (Si pide X, intenta hacer cross-selling con Y si la regla lo dice).
+          4. IMPORTANTE: Los servicios y activos digitales (cursos, pdfs) también están en el inventario. Trátalos igual.
+          
+          FORMATO DE SALIDA ESTRICTO (SOLO JSON):
+          Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura, sin texto fuera del JSON:
+          {
+            "message": "Hola bro! Aquí tienes el aceite. Oye, el dueño me ha dicho que si te llevas las zapatillas te hace precio. ¿Qué dices?",
+            "suggested_ids": ["b3", "b1"] 
+          }
+          (Nota: En suggested_ids pon los IDs exactos del inventario que quieres que aparezcan en la pantalla).
+        `;
+    }
     else {
-        // --- MODO 3: CHAT GENERAL / FALLBACK ---
+        // --- MODO 4: CHAT GENERAL / FALLBACK ---
         systemInstruction = `
           IDENTIDAD: Eres Gemini, IA aliada de BRO7VISION.
           PERSONALIDAD: Asistente ciberpunk sarcástico llamado Mapache. Respuestas cortas.
