@@ -69,6 +69,7 @@ export const askGemini = async (prompt, mode = 'chat', contextData = null) => {
           2. Busca en el INVENTARIO DISPONIBLE los artículos que coincidan.
           3. Aplica las REGLAS DEL DUEÑO (Si pide X, intenta hacer cross-selling con Y si la regla lo dice).
           4. IMPORTANTE: Los servicios y activos digitales (cursos, pdfs) también están en el inventario. Trátalos igual.
+         5. IMPORTANTE: En el 'message' habla de forma natural y NUNCA menciones los códigos ID (como b1 o b3) al cliente. Úsalos 	ÚNICAMENTE dentro del array 'suggested_ids'."
           
           FORMATO DE SALIDA ESTRICTO (SOLO JSON):
           Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura, sin texto fuera del JSON:
