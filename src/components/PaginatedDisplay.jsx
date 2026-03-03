@@ -102,7 +102,7 @@ const PaginatedDisplay = ({ items, onSelect, onTuneIn, onOpenVideo }) => {
                                             onClick={(e) => { e.stopPropagation(); onTuneIn(item); }} 
                                             className="flex-1 py-2 bg-black/90 border border-red-500 text-red-500 hover:bg-red-600 hover:text-black rounded-lg text-[8px] font-black uppercase transition-all shadow-[0_0_10px_rgba(220,38,38,0.3)] hover:shadow-[0_0_20px_red]"
                                         >
-                                            ▶ AUDIO
+                                            🎧 AUDIO
                                         </button>
                                     ) : <div className="flex-1 bg-white/5 rounded-lg"></div>}
 
@@ -111,7 +111,7 @@ const PaginatedDisplay = ({ items, onSelect, onTuneIn, onOpenVideo }) => {
                                             onClick={(e) => { e.stopPropagation(); onOpenVideo(item); }} 
                                             className="flex-1 py-2 bg-black/90 border border-[#00ff9f] text-[#00ff9f] hover:bg-[#00ff9f] hover:text-black rounded-lg text-[8px] font-black uppercase transition-all shadow-[0_0_10px_rgba(0,255,159,0.3)] hover:shadow-[0_0_20px_#00ff9f]"
                                         >
-                                            ⛩️ SANTUARIO
+                                            ☝️ PHONE HOME
                                         </button>
                                     )}
                                 </div>

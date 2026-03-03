@@ -427,7 +427,7 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
             <div className="flex items-center justify-center gap-2 w-full max-w-[350px] px-4">
               <button onClick={()=>handleAction('reaction')} className="flex-1 py-3 bg-white text-black border border-white rounded-xl text-[9px] font-black uppercase shadow-[0_0_15px_rgba(255,255,255,0.4)] hover:scale-105 transition-transform">✨ HALO</button>
               <button onClick={()=>{if(currentUser)onOpenProfile(currentUser);}} className="flex-1 py-3 bg-black text-white border-2 border-[#bf00ff] rounded-xl text-[9px] font-black uppercase shadow-[0_0_15px_rgba(191,0,255,0.6),inset_0_0_8px_rgba(191,0,255,0.4)] hover:scale-105 transition-all animate-pulse">
-                <span className="drop-shadow-[0_0_8px_rgba(191,0,255,0.9)]">⛩️ SANTUARIO</span>
+                <span className="drop-shadow-[0_0_8px_rgba(191,0,255,0.9)]">☝️ PHONE HOME</span>
               </button>
               <button onClick={()=>setShowEchoInput(true)} className="flex-1 py-3 bg-black/90 border border-white/20 text-white rounded-xl text-[9px] font-black uppercase">💬 ECO</button>
             </div>

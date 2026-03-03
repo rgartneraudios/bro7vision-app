@@ -250,11 +250,11 @@ function App() {
             
             {[
               { id: 'gps',             label: 'GPS / RUTA',       icon: '📍' },
-              { id: 'broshop',         label: 'BROSHOP',          icon: '🛒' },
-              { id: 'lives',           label: 'AUDIO & LIVES',    icon: '📡' },
-              { id: 'internal_search', label: 'AVISOS',           icon: '🤖' }, 
-              { id: 'ai',              label: 'GUÍA / ACCESS AI', icon: '🦝' },
-              { id: 'game',            label: 'GAMES',            icon: '🎮' }
+              { id: 'broshop',         label: 'BROSHOP',          icon: '🛒🦝' },
+              { id: 'lives',           label: 'AUDIO & LIVES',    icon: '🎧' },
+              { id: 'internal_search', label: 'AVISOS',           icon: '📋' }, 
+              { id: 'ai',              label: 'GUÍA / ACCESS AI', icon: '🦝🤖' },
+              { id: 'game',            label: 'GAMES',            icon: '🖱️' }
             ].map((item) => (
               <button 
                 key={item.id} 
@@ -337,7 +337,7 @@ function App() {
         </div>
       )}
 
-      {/* 7. MODALES Y SANTUARIO */}
+      {/* 7. MODALES Y PHONE HOME */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 z-[100]"><button onClick={() => setShowLegal(true)} className="text-[9px] font-black px-10 py-2 rounded-t-xl bg-black/80 border-t border-x border-white/10 text-gray-500 hover:text-cyan-400 transition-all uppercase tracking-widest">⚖️ Legal / Creador</button></div>
       
       {showLegal && (
@@ -374,7 +374,7 @@ function App() {
       {showWalletModal && <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-xl"><ConversionModal balances={balances} setBalances={setBalances} onClose={() => setShowWalletModal(false)} /></div>}
       {showBooster && <div className="fixed inset-0 z-[200] bg-black/80 flex items-center justify-center"><BoosterModal onClose={() => setShowBooster(false)} /></div>}
       
-      {/* SANTUARIO / HOLOPROJECTOR */}
+      {/* PHONE HOME / HOLOPROJECTOR */}
       {projectingUser && (
   <HoloProjector 
     videoUrl={projectingUser.video_file || projectingUser.videoUrl} 

@@ -155,7 +155,7 @@ const LiveGrid = ({ onTuneIn, onUserClick, onClose, onOpenVideo, onSelectShop })
                 {/* NUEVA BOTONERA ESTRATÉGICA - ESTILO NEÓN MULTICOLOR */}
 <div className="absolute bottom-2 left-2 right-2 flex flex-col gap-1.5">
     
-    {/* 1. BOTÓN DE ⛩️ SANTUARIO - VERSIÓN VIOLETA MÍSTICO */}
+    {/* 1. BOTÓN DE ☝️ PHONE HOME - VERSIÓN VIOLETA MÍSTICO */}
     {creator.video_file && (
         <button 
             onClick={() => onOpenVideo(creator)} 
@@ -163,7 +163,7 @@ const LiveGrid = ({ onTuneIn, onUserClick, onClose, onOpenVideo, onSelectShop })
                        shadow-[0_0_15px_rgba(188,19,254,0.4),inset_0_0_8px_rgba(188,19,254,0.2)] 
                        hover:shadow-[0_0_20px_rgba(188,19,254,0.7)] transition-all active:scale-95 flex items-center justify-center gap-2"
         >
-            <span className="drop-shadow-[0_0_5px_rgba(188,19,254,0.8)]">⛩️ SANTUARIO</span>
+            <span className="drop-shadow-[0_0_5px_rgba(188,19,254,0.8)]">☝️ PHONE HOME</span>
         </button>
     )}
     {/* 2. FILA SECUNDARIA: AUDIO (VERDE) Y TIENDA (ORO) */}
@@ -176,7 +176,7 @@ const LiveGrid = ({ onTuneIn, onUserClick, onClose, onOpenVideo, onSelectShop })
                shadow-[0_0_15px_rgba(0,242,255,0.5),inset_0_0_8px_rgba(0,242,255,0.3)] 
                hover:shadow-[0_0_20px_rgba(0,242,255,0.8)] transition-all flex items-center justify-center gap-1"
 >
-    <span className="drop-shadow-[0_0_5px_rgba(0,242,255,0.8)]">▶ AUDIO</span>
+    <span className="drop-shadow-[0_0_5px_rgba(0,242,255,0.8)]">🎧 AUDIO</span>
 </button>
 
         {/* Tienda (ORO NEÓN) */}
@@ -186,7 +186,7 @@ const LiveGrid = ({ onTuneIn, onUserClick, onClose, onOpenVideo, onSelectShop })
                        shadow-[0_0_15px_rgba(250,204,21,0.4),inset_0_0_8px_rgba(250,204,21,0.2)] 
                        hover:shadow-[0_0_20px_rgba(250,204,21,0.7)] transition-all flex items-center justify-center gap-1"
         >
-            <span className="drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]">🛒 SHOP</span>
+            <span className="drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]">🦝 BROSHOP</span>
         </button>
     </div>
 </div>

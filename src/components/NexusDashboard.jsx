@@ -339,7 +339,7 @@ const NexusDashboard = ({
        session={session}
        balances={balances}
        setBalances={setBalances}
-       onNavigateToSantuario={(targetUserId) => {
+       onNavigateToPhoneHome={(targetUserId) => {
            const targetUser = realItems.find(u => u.id === targetUserId);
            if (targetUser) {
                setProjectingUser(targetUser);

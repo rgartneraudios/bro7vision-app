@@ -185,7 +185,7 @@ const BoosterModal = ({ onClose }) => {
   useEffect(() => {
       const fetchQuestions = async () => {
           const { data: { user } } = await supabase.auth.getUser();
-          if (user && tab === 'santuario') {
+          if (user && tab === 'Phone Home') {
               const { data } = await supabase.from('bro_echos').select('*').eq('target_profile_id', user.id).like('text', '%❓%').order('created_at', { ascending: false });
               if (data) setQuestions(data);
           }
@@ -211,9 +211,9 @@ const BoosterModal = ({ onClose }) => {
             <div className="flex md:flex-col border-b md:border-b-0 md:border-r border-white/10 bg-black overflow-x-auto md:w-48 shrink-0">
                 <button onClick={() => setTab('identity')} className={`flex-1 md:flex-none text-left py-4 px-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${tab === 'identity' ? 'bg-white/10 text-white md:border-r-2 border-b-2 md:border-b-0 border-white' : 'text-gray-600'}`}>👤 Identidad</button>
                 <button onClick={() => setTab('audio')} className={`flex-1 md:flex-none text-left py-4 px-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${tab === 'audio' ? 'bg-white/10 text-white md:border-r-2 border-b-2 md:border-b-0 border-white' : 'text-gray-600'}`}>📡 Señal</button>
-                <button onClick={() => setTab('santuario')} className={`flex-1 md:flex-none text-left py-4 px-4 text-[10px] font-bold uppercase tracking-widest ${tab === 'santuario' ? 'bg-white/10 text-fuchsia-400 md:border-r-2 border-b-2 md:border-b-0 border-fuchsia-500' : 'text-gray-600'}`}>⛩️ SANTUARIO</button>
-                <button onClick={() => setTab('market')} className={`flex-1 md:flex-none text-left py-4 px-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${tab === 'market' ? 'bg-yellow-500/10 text-yellow-400 md:border-r-2 border-b-2 md:border-b-0 border-yellow-500' : 'text-gray-600'}`}>🛒 Tienda / IA</button>
-                <button onClick={() => setTab('assets')} className={`flex-1 md:flex-none text-left py-4 px-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${tab === 'assets' ? 'bg-white/10 text-white md:border-r-2 border-b-2 md:border-b-0 border-white' : 'text-blue-500'}`}>📦 Activos P2P</button>
+                <button onClick={() => setTab('Phone Home')} className={`flex-1 md:flex-none text-left py-4 px-4 text-[10px] font-bold uppercase tracking-widest ${tab === 'Phone Home' ? 'bg-white/10 text-fuchsia-400 md:border-r-2 border-b-2 md:border-b-0 border-fuchsia-500' : 'text-gray-600'}`}>☝️ PHONE HOME</button>
+                <button onClick={() => setTab('market')} className={`flex-1 md:flex-none text-left py-4 px-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${tab === 'market' ? 'bg-yellow-500/10 text-yellow-400 md:border-r-2 border-b-2 md:border-b-0 border-yellow-500' : 'text-gray-600'}`}>🛒🦝 Tienda / IA</button>
+                <button onClick={() => setTab('assets')} className={`flex-1 md:flex-none text-left py-4 px-4 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${tab === 'assets' ? 'bg-white/10 text-white md:border-r-2 border-b-2 md:border-b-0 border-white' : 'text-blue-500'}`}>📦🦝 Activos P2P</button>
             </div>
 
             {/* ÁREA DE CONTENIDO */}
@@ -302,8 +302,8 @@ const BoosterModal = ({ onClose }) => {
                     </div>
                 )}
                 
-                {/* ⛩️ SANTUARIO */}
-                {tab === 'santuario' && (
+                {/* ☝️ PHONE HOME */}
+                {tab === 'Phone Home' && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fadeIn">
                         <div className="bg-fuchsia-900/10 border border-fuchsia-500/20 p-4 rounded-xl">
                             <p className="text-[10px] text-fuchsia-400 font-black uppercase mb-4 tracking-widest">Atmósfera de la Suite</p>
