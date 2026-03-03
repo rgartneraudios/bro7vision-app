@@ -37,27 +37,30 @@ Bloque Localizado (Con GPS o selección manual de ciudad/país)
 Sectores orientados al comercio, los servicios y la economía del entorno físico del usuario:
 * LIVE GRID — Tarjetas de creadores de audio y lives.
 * Audios grabados y lives de audio vía link.
-* Acceso directo a Santuario desde cada tarjeta.
+* Acceso directo a Phone Home desde cada tarjeta.
 * BROSHOP — Tarjetas de productos y servicios.
 * Al hacer clic en una tarjeta, se accede a la terminal de compra (PaymentModal).
-* También incluye acceso a audios y a Santuario.
+* También incluye acceso a audios y a Phone Home.
 * AVISOS — Terminal de 3 servicios distintos. (Avisos-Drop-Clusters)
 * AVISOS se centra en anunciar la búsqueda y ofrecimiento de profesionales y/o servicios para conectar entre los usuarios. Y también albergan los servicios futuros DROP (logística agrícola en Packs) y CLUSTERS (economía colaborativa barrial). Ambos actualmente cerrados.
 
 
-Santuario — El Punto de Convergencia
-REALITY, LIVE GRID y BROSHOP llevan todos al Santuario mediante un botón directo. Es el espacio íntimo y de conversión del ecosistema.
+PHONE HOME — El Punto de Convergencia--(Guiño la frase de: ET, Phone Home)
+REALITY, LIVE GRID y BROSHOP llevan todos al Phone Home mediante un botón directo. Es el espacio de hogar y de conversión del ecosistema.
 Espacio de refugio para el creador y sus seguidores, con atmósfera hogareña y videos de fondo temáticos: Cocina, Salón, Dormitorio Cyberpunk, Therians Suite con Lluvia Bio-luminiscente en Bosque.
-Desde Santuario el usuario puede ir a BROSHOP (PaymentModal/terminal de productos), a VLOGS del creador y enviar Halos de Luz o mensajes directos.
+Desde Phone Home el usuario puede ir a BROSHOP (PaymentModal/terminalShop), a VLOGS del creador y enviar Halos de Luz o mensajes directos.
 
 
 VLOGS
 Bitácora escrita editable por el creador. Permite incluir presentaciones de Google Slides e imágenes mientras se emite audio, video o lives. Ideal para mostrar catálogos de productos La audiencia puede consultar informes e imágenes en tiempo real.
 
 
-PaymentModal — Terminal de Productos
-Terminal de venta de productos y servicios (activa solo en Fase 1). Se accede desde las tarjetas de BROSHOP y desde Santuario. En estudio: gestión de licencias exclusivas de ciertos productos.
-
+BROSHOP— Terminal de Productos Fisicos/ Servicios / Activos digitales. 
+Terminal de venta de productos y servicios (activa solo en Fase 1). Se accede desde las tarjetas de BroShop , desde Phone Home y desde Live Grid. 
+Ahora BroShop tienen un acceso directo a catálogos del profesional o Comercio. 
+Se gestiona colocando un link desde la pestaña de Tienda en Booster Modal. 
+La terminal de BroShop te ofrecerá un visor para el Catálogo para que puedas conocer las imágenes de los artículos y sus características. (Preferiblemente se crea un PDF, se sube a Google Drive con permisos para lector y BroShop te mostrará el PDF ya abierto con opción a ampliarlo a Pantalla completa. 
+En estudio: gestión de licencias exclusivas de ciertos productos, 
 
 3. IDENTIDAD Y ESCAPARATE SOCIAL
 Booster Studio
@@ -76,7 +79,7 @@ Sistema de micro-mensajería social integrado en cada tarjeta de usuario dentro 
 Puntos Génesis
 Moneda de reputación de la Fase 0. Se acumulan interactuando con la plataforma y se convertirán en Moon Coins al inicio de la Fase 1.
 Halos de Luz
-Gemas resplandecientes que los fans envían a los creadores desde Reality y Santuario. Cuestan 100 Puntos Génesis en Fase 0. En Fase 1 tendrán valor en Moon Coins, generando ingresos reales para los creadores y actuando como filtro anti-bots.
+Gemas resplandecientes que los fans envían a los creadores desde Reality y Phone Home. Cuestan 100 Puntos Génesis en Fase 0. En Fase 1 tendrán valor en Moon Coins, generando ingresos reales para los creadores y actuando como filtro anti-bots.
 Sistema ECO y Hyper Zap
 * ECO Text y ECO Audio: comentarios verificados en Reality. Coste: 100 Génesis.
 * Hyper Zap Text: promoción interna de canales dentro de Reality. Coste: 1.000 Génesis.
