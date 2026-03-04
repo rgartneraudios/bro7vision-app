@@ -18,8 +18,16 @@ BRO7VISION es un ecosistema ciudadano digital con estética Neon y Bio-luminisce
 3. LOS 5 ROLES DEL ECOSISTEMA
 A. CIUDADANO (Usuario Estándar): Navega, juega, consume contenido y gana Puntos Génesis.
 B. CREADOR DE CONTENIDO (Video Estándar): Sube videos en formato vertical que se emiten en Reality y en su Phone Home. Tienen un máximo de 3 videos alojados e intercambiables. En Fase 0 los enlazan vía link de Dropbox. En Fase 1 se subirán directamente a los servidores de la plataforma.
-C. DIRECTOR DE ESCENA (Creador de Atmósferas): Artistas visuales que crean los fondos de video para el sistema Reality. Si un fondo es patrocinado, el Director gana el 40% de los ingresos (Brovision el 60%, ya que requiere menos edición).
-D. STORYTELLER (Creador BroStories): Creadores de contenido publicitario y narrativo. Venden "Plantillas" a marcas y se llevan el 70% de los ingresos.
+C. DIRECTOR DE ESCENA (Creador de Atmósferas): 
+  - Filosofía: Usuarios que utilizan IA (Midjourney, Runway, etc.) para crear los fondos de video del sistema Reality. 
+  - Regla Anti-Fraude (Cero Marcas): Los Directores NO pueden subir videos que contengan logos, textos comerciales o productos evidentes. Su trabajo es 100% estético y atmosférico. 
+  - Monetización (40/60): Si una marca decide patrocinar el fondo de un Director, el Director gana el 40% de los ingresos (BROVISION retiene el 60% por alojamiento, ancho de banda y gestión comercial). El Alias del Director aparecerá en los créditos.
+
+E. ANUNCIANTE (Marcas/Comercios): Compran atención visual y espacios inmersivos. Tienen varias formas de anunciarse en los fondos de REALITY:
+  - Patrocinio de Autor: Pagan por usar el fondo creado por un Director de Escena (el sistema reparte 40/60).
+  - Anuncio Directo (100% BROVISION): La marca trae su propio video estético/mudo. Al no usar arte de la comunidad, el 100% del pago va para BROVISION.
+  - Franjas Flexibles: Pueden comprar turnos completos (Mañana, Tarde, Crepúsculo, Noche) o negociar fracciones de horas específicas.
+  - "Takeover Global" (Dominio Total): Producto publicitario Premium. La marca paga una tarifa alta para estar en los 7 escenarios de Reality al mismo tiempo. Así, aunque el usuario cambie de sala, la marca asegura su visibilidad al 100%.D. STORYTELLER (Creador BroStories): Creadores de contenido publicitario y narrativo. Venden "Plantillas" a marcas y se llevan el 70% de los ingresos.
 E. ANUNCIANTE (Marcas/Comercios): Compran atención. Pueden patrocinar los videos de fondo de manera exclusiva en todos los escenarios a la vez, o comprar espacios específicos con "Preguntas Trampa" para asegurar que los humanos (no bots) vean su anuncio.
 
 4. ARQUITECTURA: BLOQUE GLOBAL (Sin GPS - Alcance Mundial)
