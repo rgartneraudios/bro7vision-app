@@ -83,11 +83,26 @@ const DirectorAccess = ({ onBack }) => {
           </div>
 
           <div>
-            <label className="block text-[10px] text-emerald-500 uppercase font-bold mb-1">Portfolio Link (YouTube/Vimeo/Behance)</label>
-            <input type="url" required placeholder="https://..." value={portfolio} onChange={e=>setPortfolio(e.target.value)}
-              className="w-full bg-black border border-emerald-500/30 text-emerald-100 p-3 rounded focus:border-emerald-400 outline-none" />
+            <label className="block text-[10px] text-emerald-500 uppercase font-bold mb-1">
+              Muestra tu Visión (Link a Drive, Discord, Instagram, Behance...)
+            </label>
+            <input 
+              type="url" 
+              required 
+              placeholder="https://..." 
+              value={portfolio} 
+              onChange={e=>setPortfolio(e.target.value)}
+              className="w-full bg-black border border-emerald-500/30 text-emerald-100 p-3 rounded focus:border-emerald-400 outline-none placeholder-emerald-900/50" 
+            />
+            {/* NUEVO MENSAJE DE AYUDA INCLUSIVO */}
+            <p className="mt-2 text-[9px] text-gray-400 flex items-center gap-2">
+              <span>🦝</span> 
+              <span>
+                ¿No tienes web? No pasa nada. Si usas AI, sube tus muestras a una carpeta de Drive o pásanos tu usuario de Discord. 
+                <span className="text-emerald-400 cursor-pointer hover:underline ml-1">Pregúntale a Mapache en GUIA si tienes dudas.</span>
+              </span>
+            </p>
           </div>
-
           <button disabled={loading} className="w-full py-4 mt-4 bg-emerald-600 hover:bg-emerald-500 text-black font-black uppercase tracking-widest transition-all rounded shadow-lg shadow-emerald-500/20 disabled:opacity-50">
             {loading ? 'PROCESANDO...' : 'SOLICITAR CLAQUETA'}
           </button>
