@@ -19,10 +19,10 @@ BRO7VISION es un ecosistema ciudadano digital con estética Neon y Bio-luminisce
 A. CIUDADANO (Usuario Estándar): Navega, juega, consume contenido y gana Puntos Génesis.
 B. CREADOR DE CONTENIDO (Video Estándar): Sube videos en formato vertical que se emiten en Reality y en su Phone Home. Tienen un máximo de 3 videos alojados e intercambiables. En Fase 0 los enlazan vía link de Dropbox. En Fase 1 se subirán directamente a los servidores de la plataforma.
 C. DIRECTOR DE ESCENA (Creador de Atmósferas): 
-  - Filosofía: Usuarios que utilizan IA (Midjourney, Runway, etc.) para crear los fondos de video del sistema Reality. 
-  - Regla Anti-Fraude (Cero Marcas): Los Directores NO pueden subir videos que contengan logos, textos comerciales o productos evidentes. Su trabajo es 100% estético y atmosférico. 
-  - Monetización (40/60): Si una marca decide patrocinar el fondo de un Director, el Director gana el 40% de los ingresos (BROVISION retiene el 60% por alojamiento, ancho de banda y gestión comercial). El Alias del Director aparecerá en los créditos.
-
+  - Filosofía: Usuarios que utilizan IA (Midjourney, Runway, Kling, Flux, etc.) para crear los fondos de video del sistema Reality. No necesitan ser profesionales, solo tener imaginación y visión.
+  - Proceso de Subida y Moderación IA: Los videos subidos NO se publican inmediatamente en Reality. Todos los archivos pasan por un estricto filtro de revisión automatizado utilizando la Inteligencia Artificial de Google.
+  - Regla Anti-Fraude (Cero Marcas y Contenido Limpio): La IA de Google escanea el video para bloquear automáticamente contenido prohibido (NSFW, violencia) y hacer cumplir la regla de "Cero Marcas". El arte debe ser 100% estético y atmosférico. Si la IA detecta logos, textos comerciales o productos (intentos de publicidad encubierta), el video será rechazado.
+  - Monetización (40/60): Si el video es aprobado y una marca decide patrocinar ese fondo durante un turno (Mañana, Tarde, Crepúsculo, Noche), el Director gana el 40% de los ingresos. BROVISION retiene el 60% por el coste de servidores, revisión comercial y alojamiento. El Alias del Director siempre aparecerá en los créditos en pantalla.
 E. ANUNCIANTE (Marcas/Comercios): Compran atención visual y espacios inmersivos. Tienen varias formas de anunciarse en los fondos de REALITY:
   - Patrocinio de Autor: Pagan por usar el fondo creado por un Director de Escena (el sistema reparte 40/60).
   - Anuncio Directo (100% BROVISION): La marca trae su propio video estético/mudo. Al no usar arte de la comunidad, el 100% del pago va para BROVISION.
