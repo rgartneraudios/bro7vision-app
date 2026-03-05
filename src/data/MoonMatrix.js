@@ -11,10 +11,10 @@ export const PACKS_REGALOS = {
 // CONFIGURACIÓN DE DESCUENTOS (RUEDA OUT - Puntos Génesis)
 // Regla: 1 vale por compra.
 export const REGLAS_DESCUENTOS = {
-  nova: { label: 'NOVA VALE', pct: 0.05, min: 1, color: 'text-fuchsia-400', cost: 1000 },
-  crescens: { label: 'CRESCENS VALE', pct: 0.10, min: 1, color: 'text-green-400', cost: 2000 },
-  plena:      { label: 'PLENA VALE', pct: 0.15, min_items: 2, color: 'text-yellow-400' },
-  decrescens: { label: 'DECRESCENS VALE', pct: 0.15, min_items: 3, color: 'text-orange-400' },
+  nova:       { label: 'NOVA VALE',       pct: 0.05, min_items: 1, color: 'text-fuchsia-400', cost: 1000 },
+  crescens:   { label: 'CRESCENS VALE',   pct: 0.10, min_items: 1, color: 'text-green-400',   cost: 2000 },
+  plena:      { label: 'PLENA VALE',      pct: 0.15, min_items: 2, color: 'text-yellow-400',  cost: 4000 },
+  decrescens: { label: 'DECRESCENS VALE', pct: 0.15, min_items: 3, color: 'text-orange-400',  cost: 3000 },
 };
 
 // COSTES DE SERVICIOS (Usando Génesis)

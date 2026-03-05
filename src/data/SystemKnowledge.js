@@ -69,28 +69,35 @@ Más de 10 canales libres de derechos (licencia CC 4.0), creados con IA o por el
 [INSTRUCCIÓN PARA LA IA SOBRE LARRY: Larry es un ciudadano común, reflexivo, observador y un poco quejoso sobre las conductas sociales y las trampas de internet. Si te preguntan por él, usa este extracto para entender su personalidad:
 "Hola, soy Larry... Hago caminatas por la ciudad, me gusta contemplar sus movimientos. El otro día me topé con una madre y sus tres hijos ocupando toda la acera sin percatarse de mí... Tuve la sensación de que para ella el mundo debía ir a su ritmo. No quiero dramatizar, pero siempre ves algo... Además, me molesta la publicidad encubierta en internet, como supermercados pagando por críticas falsas para generar debate y ventas. Me sorprende la inocencia de la gente..."]
 
-8. ECONOMÍA MOON MATRIX (FASE 1) - SISTEMA DE RECOMPENSAS
+8. ECONOMÍA MOON MATRIX (FASE 1) - SISTEMA DE RECOMPENSAS Y DESCUENTOS
 El ecosistema NO utiliza criptomonedas ni dinero virtual convertible para cumplir con las normativas legales (evitando regulaciones MiCA y leyes de juego). Utiliza un sistema de lealtad (Puntos Génesis) y venta de "Packs de Activos Digitales" sincronizados con la psicología de las fases reales de la luna (en Luna Llena el consumo y el volumen crecen).
 
-A. LA RUEDA OUT (Moon Descuentos para Usuarios):
+A. MOON VALES (Moon Descuentos para Usuarios):
 Los usuarios acumulan "Puntos Génesis" jugando, viendo publicidad o interactuando. Estos puntos se canjean por "Moon Descuentos" (Vales) para usar en la BroShop. Los usuarios pueden acumular un inventario de estos vales en su Wallet (ej: tener guardados 2 Nova, 5 Crescens, 1 Plena, etc.). Las condiciones de descuento son:
-  🌑 NOVA Descuento (Luna Nueva): 5% de descuento en 1 artículo.
-  🌓 CRESCENS Descuento (Cuarto Creciente): 10% de descuento en 1 artículo.
-  🌕 PLENA Descuento (Luna Llena): 15% de descuento SIEMPRE QUE se compren 2 artículos o más. (Aprovecha el impulso consumista de la luna llena).
-  🌗 DECRESCENS Descuento (Cuarto Menguante): 15% de descuento SIEMPRE QUE se compren 3 artículos o más.
+  🌑 NOVA VALE (Luna Nueva): 5% de descuento en 1 artículo.
+  🌓 CRESCENS VALE (Cuarto Creciente): 10% de descuento en 1 artículo.
+  🌕 PLENA VALE (Luna Llena): 15% de descuento SIEMPRE QUE se compren 2 artículos o más. (Aprovecha el impulso consumista de la luna llena).
+  🌗 DECRESCENS VALE (Cuarto Menguante): 15% de descuento SIEMPRE QUE se compren 3 artículos o más.
 * Operativa en la Terminal BroShop: En la pasarela de pago, el usuario visualizará el saldo (BAL) de vales que posee de cada fase lunar. 
 * Regla Estricta Comercial: El consumidor SOLO puede hacer uso de UN (1) vale de descuento por compra. Al activarlo, el sistema le resta un (1) vale de su inventario, aplica el % de descuento al carrito, y el usuario paga el total restante de manera Standard con dinero real (FIAT / Paypal / Stripe).
 
-B. LA RUEDA IN (Moon Regalos / Packs de Activos):
+B. MOON PACKS (Moon Regalos / Packs de Activos):
 Los usuarios compran packs con dinero real (PayPal/Tarjeta) para obtener activos de la plataforma (Halos de Luz, Eco Text, Hyper Zap). El precio y el volumen del pack crecen a medida que la luna se llena. 
 (Valor base interno: Halo=0.05€ | EcoText=0.015€ | HyperZap=0.05€).
-  🌑 NOVA Regalos (9,00 €): 100 Halos + 100 Eco Text + 50 Hyper Zap.
-  🌓 CRESCENS Regalos (9,50 €): 110 Halos + 100 Eco Text + 50 Hyper Zap.
-  🌕 PLENA Regalos (11,00 €): 130 Halos + 100 Eco Text + 60 Hyper Zap. (El pack más grande y con más Halos).
-  🌗 DECRESCENS Regalos (10,50 €): 120 Halos + 100 Eco Text + 60 Hyper Zap.
+  🌑 NOVA PACK (9,00 €): 100 Halos + 100 Eco Text + 50 Hyper Zap.
+  🌓 CRESCENS PACK (9,50 €): 110 Halos + 100 Eco Text + 50 Hyper Zap.
+  🌕 PLENA PACK (11,00 €): 130 Halos + 100 Eco Text + 60 Hyper Zap. (El pack más grande y con más Halos).
+  🌗 DECRESCENS PACK (10,50 €): 120 Halos + 100 Eco Text + 60 Hyper Zap.
 
 C. MONETIZACIÓN DE CREADORES Y RETIRADA FIAT:
 Cuando los creadores reciben "Halos de Luz" (gemas de 0.05€) de parte de sus fans, acumulan saldo en su perfil. Periódicamente, los creadores (actuando como profesionales/autónomos) emiten una factura a BROVISION por sus servicios de creación de contenido. BROVISION les paga en dinero real (FIAT) vía PayPal, tras descontar la comisión de la plataforma. Este flujo B2B (Business to Business) asegura 100% de legalidad comercial.
+
+BROVISION se queda un 40% de los Halos donados paga pagar gastos de servidores y demás infraestructura y el Creador se queda en este caso con un 60 %- 
+
+D. Quema de ECOS Y HYPER
+
+Pensando en que existe la posibilidad de que haya Usuarios que no usen los Eco Text o los Hyper Zap por diversos motivos, se pensó en la quema de Ecos y Hyper Zaps para transformarlos en Halos de Luz para regalar al creador. 
+La quema se hace por 180 Ecos -> 50 Halos y 70 Zaps -> 50 Halos (sabiendo que requiere comprar más de un pack para la quema).
 
 9. TECNOLOGÍA IA Y ROADMAP
 * Booster Studio: Herramienta donde el usuario configura su "HoloPrisma" (avatar 3D de 4 imágenes verticales).

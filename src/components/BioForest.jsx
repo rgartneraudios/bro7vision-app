@@ -66,11 +66,7 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
   const [progress, setProgress] = useState(0);
   const [activeReaction, setActiveReaction] = useState(null);
   const [visualEchos, setVisualEchos] = useState([]);
-  const [audioPool, setAudioPool] = useState([]);
   const [floatingEchos, setFloatingEchos] = useState([]);
-  const [currentTribeIndex, setCurrentTribeIndex] = useState(0);
-  const [isPlayingTribe, setIsPlayingTribe] = useState(false);
-  const [isRadioReady, setIsRadioReady] = useState(false);
   const [visorScale, setVisorScale] = useState(1);
   const [mousePos, setMousePos] = useState({x:0,y:0});
   const [showEchoInput, setShowEchoInput] = useState(false);
@@ -86,7 +82,6 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
   const videoRef = useRef(null);
   const bgVideoRef = useRef(null);
   const hlsRef = useRef(null);
-  const audioTribeRef = useRef(new Audio());
   const touchStart = useRef(0);
   const touchEnd = useRef(0);
 
@@ -159,40 +154,48 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
         video.src=playUrl;video.muted=isMuted;video.load();video.play().catch(()=>{});
       }
     }
-    setVisualEchos([]);setAudioPool([]);setFloatingEchos([]);
-    setIsRadioReady(false);setIsPlayingTribe(false);
+    setVisualEchos([]);setFloatingEchos([]);
   },[currentUser]); // SOLO currentUser
 
   // FIX AUDIO — Efecto B: mute sin recargar
   useEffect(()=>{ if(videoRef.current) videoRef.current.muted=isMuted; },[isMuted]);
 
-  // Fetch ecos completo con Hyper Zap
+  // Fetch ecos completo con Hyper Zap (VERSIÓN LIMPIA SIN AUDIO)
   useEffect(()=>{
     if(!currentUser?.id)return;
     const fetch=async()=>{
+      // Comprobamos si es un usuario real (UUID) o de prueba
       const isUUID=/^[0-9a-f]{8}/i.test(currentUser.id);
-      const{data:ads}=await supabase.from('bro_echos').select('*').eq('is_sponsored',true).limit(10);
-      let finalVisual=ads||[],finalAudio=[];
+      
+      // 1. Traemos los Anuncios / Hyper Zaps (Visuales)
+      const {data:ads} = await supabase.from('bro_echos').select('*').eq('is_sponsored',true).limit(10);
+      let finalVisual = ads || [];
+
       if(isUUID){
         const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
-        const{data:userEchos}=await supabase.from('bro_echos').select('*')
+        
+        // 2. Traemos los Ecos normales de las últimas 24h
+        const {data:userEchos} = await supabase.from('bro_echos').select('*')
           .eq('target_profile_id',currentUser.id).eq('is_sponsored',false)
           .gt('created_at',yesterday.toISOString()).lt('reports_count',3)
           .order('created_at',{ascending:false}).limit(30);
+          
         if(userEchos){
-          finalVisual=[...finalVisual,...userEchos.filter(e=>!e.audio_link&&!e.text?.includes('[TTS]'))];
-          finalAudio=userEchos.filter(e=>e.audio_link||e.text?.includes('[TTS]'));
+          // Filtramos para añadir SOLO los de texto. 
+          // (Mantenemos el filtro !audio_link y ![TTS] por si quedaron audios viejos en tu base de datos, para que no rompan la pantalla)
+          finalVisual = [...finalVisual, ...userEchos.filter(e => !e.audio_link && !e.text?.includes('[TTS]'))];
         }
       } else {
-        finalVisual=[...finalVisual,{id:'s1',author_alias:'SISTEMA',text:'MODO SIMULACIÓN'}];
-        finalAudio=[{id:'a1',author_alias:'SISTEMA',text:'[TTS] SINTONIZANDO SEÑAL...'}];
+        // Modo visitante/simulación
+        finalVisual = [...finalVisual, {id:'s1', author_alias:'SISTEMA', text:'MODO SIMULACIÓN'}];
       }
+      
+      // 3. Actualizamos la pantalla SOLO con los ecos visuales
       setVisualEchos(finalVisual);
-      setAudioPool(finalAudio.length>0?finalAudio:[{id:'a1',author_alias:'SISTEMA',text:'[TTS] BIENVENIDO A LA RED'}]);
     };
+    
     fetch();
   },[currentUser]);
-
   // Ecos flotantes con lógica Hyper Zap 25%
   useEffect(()=>{
     if(!visualEchos||visualEchos.length===0)return;
@@ -221,13 +224,9 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
   const handleReport=async(echoId)=>{
     if(!confirm("¿Reportar este mensaje como inapropiado?"))return;
     await supabase.rpc('increment_report',{row_id:echoId});
-    alert("Reporte enviado. Gracias por limpiar el bosque.");
-    setAudioPool(prev=>prev.filter(e=>e.id!==echoId));
-    setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
+   alert("Reporte enviado. Gracias por limpiar el bosque.");
+setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
   };
-
-  const handlePlayTribe=()=>{};
-  const toggleRadio=()=>{};
 
   const handleAction=async(type)=>{
     const cost=echoType==='hyper'?1000:100;
@@ -239,10 +238,9 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
     } else {
       const ecoData={target_profile_id:currentUser.id,author_alias:myAlias,advertiser_id:session.user.id,text:echoText.toUpperCase(),is_sponsored:echoType==='hyper',created_at:new Date()};
       const{data}=await supabase.from('bro_echos').insert([ecoData]).select();
-      if(data){
+     if(data){
         const newEcho=data[0];
-        if(echoType==='text'||echoType==='hyper')setVisualEchos(prev=>[newEcho,...prev]);
-        else setAudioPool(prev=>[newEcho,...prev]);
+        setVisualEchos(prev=>[newEcho,...prev]);
       }
       setShowEchoInput(false);setEchoText("");
     }
@@ -280,10 +278,17 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
       {/* 1. FONDO con paralaje */}
       {config.video && (
         <div className="absolute inset-0 z-[1] transition-transform duration-300 ease-out will-change-transform" style={{transform:bgTransform}}>
-          <video src={config.video} autoPlay loop muted playsInline className="w-full h-full object-cover opacity-80"/>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30"/>
+          <video 
+            src={config.video} 
+            autoPlay 
+            loop 
+            muted 
+            playsInline 
+            className="w-full h-full object-cover"
+          />
+          {/* EL GRADIENTE HA SIDO ELIMINADO AQUÍ */}
         </div>
-      )}
+      )}  
 
       {/* 2. ECOS FLOTANTES completos */}
       <div className="absolute inset-0 z-[10] pointer-events-none">
@@ -373,7 +378,7 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
               {isTvMode&&(
                 <div className="absolute inset-0 z-0 opacity-30 blur-[60px] scale-150 pointer-events-none bg-gradient-to-t from-blue-900 via-purple-900 to-pink-900"/>
               )}
-              <div className="absolute inset-0 bg-black/20 z-[5] pointer-events-none"/>
+            
               {/* VIDEO — sin prop muted, lo controla efecto B */}
               <video ref={videoRef} key={currentUser.id} poster={currentUser.poster||""} autoPlay loop={!isTvMode} playsInline
                      className={`relative z-10 transition-all duration-700 ${isTvMode?'w-full h-auto aspect-video object-contain bg-black':'w-full h-full object-cover'}`}
@@ -409,19 +414,7 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
             </div>
           </div>
 
-          {/* REPRODUCTOR TRIBU */}
-          <div className="absolute bottom-2 md:-bottom-20 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-black/90 backdrop-blur-none border border-white/10 px-6 py-2 rounded-full z-[150] shadow-2xl min-w-[240px]">
-            <button onClick={()=>setCurrentTribeIndex(p=>(p>0?p-1:audioPool.length-1))} className={`hover:scale-125 transition-all text-2xl ${config.navColor}`}>❮</button>
-            <div className="flex flex-col items-center flex-1">
-              <button onClick={toggleRadio} className={`w-9 h-9 flex items-center justify-center rounded-full border border-white/20 transition-all ${isPlayingTribe?'bg-white text-black scale-110':'text-white'}`}>
-                {isPlayingTribe?'⏸':'▶'}
-              </button>
-              <p className="text-[6px] text-gray-500 font-bold mt-1 uppercase tracking-tighter">@{audioPool[currentTribeIndex]?.author_alias||'SIN SEÑAL'}</p>
-            </div>
-            <button onClick={()=>setCurrentTribeIndex(p=>(p+1)%audioPool.length)} className={`hover:scale-125 transition-all text-2xl ${config.navColor}`}>❯</button>
-          </div>
-
-          {/* BOTONERA */}
+          {/* BOTONERA (Se mantiene intacta) */}
           <div className="absolute -bottom-28 md:-bottom-44 left-0 w-full flex flex-col items-center gap-3 z-50 pointer-events-auto">
             <div className="absolute inset-x-2 -inset-y-4 bg-black/60 backdrop-blur-md rounded-[3rem] -z-10 shadow-[0_0_30px_rgba(0,0,0,0.5)]"/>
             <div className="flex items-center justify-center gap-2 w-full max-w-[350px] px-4">
@@ -432,35 +425,68 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
               <button onClick={()=>setShowEchoInput(true)} className="flex-1 py-3 bg-black/90 border border-white/20 text-white rounded-xl text-[9px] font-black uppercase">💬 ECO</button>
             </div>
             <p className={`relative z-10 text-[9px] md:text-[11px] font-black tracking-[0.4em] uppercase ${config.labelClass} mt-1 drop-shadow-lg`}>
-              {config.labelText} // {currentUser.alias}
+              {config.labelText} // {currentUser?.alias || 'ANÓNIMO'}
             </p>
           </div>
 
         </div>
       </div>
 
-      {/* MODAL ECO */}
-      {showEchoInput&&(
-        <div className="fixed inset-0 z-[1000] bg-black/98 flex items-center justify-center p-6 backdrop-blur-none">
-          <div className="w-full max-w-md text-center">
-            <div className="flex gap-2 mb-12 justify-center flex-wrap">
-              <button onClick={()=>setEchoType('text')}  className={`px-4 py-2 rounded-full text-[9px] font-black border transition-all ${echoType==='text' ?'bg-cyan-500 text-black border-cyan-400':'text-white/30 border-white/10'}`}>💬 TEXTO NEÓN</button>
-              <button onClick={()=>setEchoType('tts')}   className={`px-4 py-2 rounded-full text-[9px] font-black border transition-all ${echoType==='tts'  ?'bg-fuchsia-500 text-white border-fuchsia-400':'text-white/30 border-white/10'}`}>🤖 VOZ ROBOT</button>
-              <button onClick={()=>setEchoType('hyper')} className={`px-4 py-2 rounded-full text-[9px] font-black border transition-all ${echoType==='hyper'?'bg-[#002366] text-cyan-400 border-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.5)]':'text-white/30 border-white/10'}`}>⚡ HYPER ZAP</button>
-            </div>
-            <input autoFocus type="text" placeholder={echoType==='hyper'?"TÍTULO DEL ANUNCIO...":"ESCRIBE TU ECO..."}
-                   className="w-full bg-transparent border-b-2 border-white/10 py-6 text-center text-white outline-none font-black text-2xl uppercase focus:border-white transition-all"
-                   value={echoText} onChange={e=>setEchoText(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleAction('echo')} maxLength={60}/>
-            <div className="mt-16 flex justify-between items-center px-4">
-              <button onClick={()=>setShowEchoInput(false)} className="text-gray-500 text-[10px] font-black uppercase hover:text-white">VOLVER</button>
-              <button onClick={()=>handleAction('echo')} className={`px-12 py-4 rounded-2xl font-black text-[11px] uppercase transition-all ${echoType==='hyper'?'bg-[#002366] text-cyan-400 border border-cyan-500':'bg-white text-black'}`}>
-                {echoType==='hyper'?'EMITIR HYPER ZAP (1000 G)':'EMITIR ECO (100 G)'}
+      {/* MODAL ECO (UI Mejorada y Centrada) */}
+      {showEchoInput && (
+        <div className="fixed inset-0 z-[1000] bg-black/95 backdrop-blur-md flex items-center justify-center p-6 animate-fadeIn">
+          <div className="w-full max-w-md text-center relative flex flex-col items-center">
+            
+            {/* BOTONES SUPERIORES (Centrados) */}
+            <div className="flex gap-4 mb-12 justify-center w-full">
+              <button 
+                onClick={() => setEchoType('text')}  
+                className={`flex-1 max-w-[160px] py-3 rounded-full text-[10px] font-black border tracking-widest transition-all ${echoType === 'text' ? 'bg-cyan-500 text-black border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.4)]' : 'text-white/40 border-white/10 hover:text-white/80'}`}
+              >
+                💬 TEXTO NEÓN
+              </button>
+              <button 
+                onClick={() => setEchoType('hyper')} 
+                className={`flex-1 max-w-[160px] py-3 rounded-full text-[10px] font-black border tracking-widest transition-all ${echoType === 'hyper' ? 'bg-[#002366] text-cyan-400 border-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.6)]' : 'text-white/40 border-white/10 hover:text-white/80'}`}
+              >
+                ⚡ HYPER ZAP
               </button>
             </div>
+            
+            {/* ZONA DE INPUT (Más visible) */}
+            <input 
+              autoFocus 
+              type="text" 
+              placeholder={echoType === 'hyper' ? "TÍTULO DEL ANUNCIO..." : "ESCRIBE TU ECO..."}
+              className="w-full bg-transparent border-b-2 border-white/20 py-6 text-center text-white outline-none font-black text-2xl md:text-3xl uppercase focus:border-cyan-400 transition-colors drop-shadow-lg"
+              value={echoText} 
+              onChange={e => setEchoText(e.target.value)} 
+              onKeyDown={e => e.key === 'Enter' && handleAction('echo')} 
+              maxLength={60}
+            />
+            
+            {/* BOTONES INFERIORES (Apilados y Centrados) */}
+            <div className="mt-16 flex flex-col items-center gap-6 w-full">
+              <button 
+                onClick={() => handleAction('echo')} 
+                className={`w-full max-w-[280px] py-4 rounded-2xl font-black text-[12px] tracking-widest uppercase transition-all shadow-xl hover:scale-105 ${echoType === 'hyper' ? 'bg-cyan-600 text-white border border-cyan-400 shadow-cyan-600/30' : 'bg-white text-black shadow-white/20'}`}
+              >
+                {echoType === 'hyper' ? 'EMITIR HYPER ZAP (1000 G)' : 'EMITIR ECO (100 G)'}
+              </button>
+              
+              <button 
+                onClick={() => setShowEchoInput(false)} 
+                className="text-gray-500 text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors"
+              >
+                [ VOLVER ]
+              </button>
+            </div>
+
           </div>
         </div>
       )}
-    </div>
+            
+         </div>
   );
 };
 
