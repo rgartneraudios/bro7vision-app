@@ -1,7 +1,7 @@
 // src/components/PaymentModal.jsx
 
 import React, { useState } from 'react';
-import { MOON_MATRIX } from '../data/MoonMatrix';
+import { PACKS_REGALOS, REGLAS_DESCUENTOS } from '../data/MoonMatrix';
 import TerminalShop, { TERMINAL_CSS, SECTION } from './TerminalShop';
 
 const parsePrice = (input) => {
@@ -46,31 +46,40 @@ const COINS = [
   { key:'decrescens', emoji:'🌗', color:'#F97316', glow:'rgba(249,115,22,0.8)', label:'DECRESC.' },
 ];
 
-const PaymentModal = ({ isOpen, onClose, card, balances, currentPhase, onConfirmPayment, onLaunch }) => {
-  // Aseguramos que 'product' existe (viene como 'card' desde App.jsx)
+const PaymentModal = ({ isOpen, onClose, card, balances, currentPhase, onConfirmPayment }) => {
   const product = card;
   if (!product) return null;
 
-  const [activeTab,          setActiveTab]          = useState('products');
-  const [dynamicTotal,       setDynamicTotal]       = useState(0);
-  const [deliveryMode,       setDeliveryMode]       = useState('pickup');
-  const [selectedCoin,       setSelectedCoin]       = useState(currentPhase||'plena');
+  const [activeTab, setActiveTab] = useState('products');
+  const [dynamicTotal, setDynamicTotal] = useState(0);
+  const [deliveryMode, setDeliveryMode] = useState('pickup');
+  
+  // ESTE ES EL CAMBIO CLAVE:
+  // En lugar de selectedCoin, ahora seleccionamos el VALE (nova, plena, etc)
+  const [selectedVale, setSelectedVale] = useState(null); 
 
   const sc = SECTION[activeTab] || SECTION.products;
-  const baseFiatTotal   = parsePrice(dynamicTotal) + (deliveryMode==='delivery' ? 2.00 : 0);
-  const activePhaseOut  = MOON_MATRIX?.[currentPhase||'plena']?.OUT || 1;
+  const baseFiatTotal = parsePrice(dynamicTotal) + (deliveryMode === 'delivery' ? 2.00 : 0);
 
-  const selCoinData = COINS.find(c=>c.key===selectedCoin) || COINS[2];
+  // Lógica: Aplicar descuento del vale seleccionado
+  const getDescuento = (valeKey) => {
+    if (!valeKey || !balances?.vales?.[valeKey]) return 0;
+    const regla = REGLAS_DESCUENTOS[valeKey];
+    // Aquí puedes añadir la lógica de min_items si quieres ser estricto
+    return regla.pct; 
+  };
 
-  /* ── Tarjetas Lunas Horizontales ── */
+  const pct = getDescuento(selectedVale);
+  const totalFinal = baseFiatTotal * (1 - pct);
+
+  /* ── Tarjetas Lunas Horizontales (MANTENIENDO TU DISEÑO) ── */
   const MoonCard = ({ coin }) => {
-    const isSel   = selectedCoin===coin.key;
-    const userBal = balances?.[coin.key] || 0;
-
-    return (
-      <div className="pm-moon pm-moon-card" onClick={()=>setSelectedCoin(coin.key)} style={{
-        flex: 1, 
-        width:'100%', padding:'16px 20px', borderRadius:16,
+    const isSel = selectedVale === coin.key;
+    const userBal = balances?.vales?.[coin.key] || 0; // Leemos vales desde balances.vales
+    
+     return (
+      <div className="pm-moon pm-moon-card" onClick={() => setSelectedVale(isSel ? null : coin.key)} style={{
+        flex: 1, width:'100%', padding:'16px 20px', borderRadius:16,
         background: coin.color,
         filter: isSel ? 'brightness(1) saturate(1.1)' : 'brightness(0.5) saturate(0.8)',
         border: `3px solid ${isSel ? '#FFF' : 'transparent'}`,
@@ -82,19 +91,19 @@ const PaymentModal = ({ isOpen, onClose, card, balances, currentPhase, onConfirm
             <span style={{fontSize:36, lineHeight:1}}>{coin.emoji}</span>
             <div style={{display:'flex', flexDirection:'column', alignItems:'flex-start'}}>
                 <span style={{fontSize:18,fontFamily:'Rajdhani,sans-serif',fontWeight:800,textTransform:'uppercase'}}>{coin.label}</span>
-                <span style={{fontSize:14,fontFamily:'Rajdhani,sans-serif',fontWeight:600,opacity:0.8}}>BAL: {userBal}</span>
+                <span style={{fontSize:14,fontFamily:'Rajdhani,sans-serif',fontWeight:600,opacity:0.8}}>VALES: {userBal}</span>
             </div>
         </div>
         
         <div style={{background:'rgba(255,255,255,0.4)', padding:'6px 12px', borderRadius:10}}>
             <span style={{fontSize:20,fontWeight:800,fontFamily:'Chakra Petch,sans-serif'}}>
-                {(baseFiatTotal * (MOON_MATRIX?.[coin.key]?.OUT || 1)).toFixed(2)}€
+                {pct > 0 && selectedVale === coin.key ? `-${(pct*100)}%` : 'DCTO'}
             </span>
         </div>
       </div>
     );
   };
-
+  
   return (
     <>
       <style>{MODAL_CSS}</style>
@@ -197,20 +206,22 @@ const PaymentModal = ({ isOpen, onClose, card, balances, currentPhase, onConfirm
                 <div style={{fontSize:36,fontWeight:700,fontFamily:'Chakra Petch',color:'#fff'}}>{baseFiatTotal.toFixed(2)}€</div>
               </div>
 
-              <button className="pm-btn pm-ctrl-btn" onClick={()=>onConfirmPayment(selectedCoin, 0, product)} style={{
-                flex: 1, width:'100%',padding:'16px',borderRadius:16, background:'#FF2EF7',color:'#000', border:'3px solid #FFF',
-                fontFamily:'Chakra Petch,sans-serif',fontSize:20,fontWeight:700, textTransform:'uppercase',
-                boxShadow:`0 0 24px rgba(255,46,247,0.8)`, display:'flex', alignItems:'center', justifyContent:'center', gap:10, minHeight: 80
-              }}>
-                {selCoinData.emoji} PAGAR COINS
-              </button>
+              <button className="pm-btn pm-ctrl-btn" onClick={() => onConfirmPayment(selectedVale, totalFinal, product)} style={{
+  flex: 1, width:'100%',padding:'16px',borderRadius:16, background: selectedVale ? '#FF2EF7' : '#444',
+  color:'#000', border:'3px solid #FFF',
+  fontFamily:'Chakra Petch,sans-serif',fontSize:20,fontWeight:700, textTransform:'uppercase',
+  boxShadow: selectedVale ? `0 0 24px rgba(255,46,247,0.8)` : 'none', 
+  display:'flex', alignItems:'center', justifyContent:'center', gap:10, minHeight: 80
+}}>
+  {selectedVale ? `USAR VALE ${selectedVale.toUpperCase()}` : 'SIN VALE'}
+</button>
 
               <button className="pm-btn pm-ctrl-btn" onClick={()=>onConfirmPayment('stripe', baseFiatTotal, product)} style={{
                 flex: 1, width:'100%',padding:'16px',borderRadius:16, background:'#6366F1',color:'#FFF', border:'3px solid #FFF',
                 fontFamily:'Chakra Petch,sans-serif',fontSize:20,fontWeight:700, textTransform:'uppercase',
                 boxShadow:`0 0 24px rgba(99,102,241,0.8)`, display:'flex', alignItems:'center', justifyContent:'center', gap:10, minHeight: 80
               }}>
-                💳 PAGAR STRIPE
+                {totalFinal.toFixed(2)}€ PAGAR TOTAL
               </button>
             </div>
 

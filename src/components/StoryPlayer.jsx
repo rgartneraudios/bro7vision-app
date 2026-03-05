@@ -1,7 +1,7 @@
 // src/components/StoryPlayer.jsx (VERSIÓN CINE FULL SCREEN)
 
 import React, { useState, useEffect, useRef } from 'react';
-import { MOON_MATRIX } from '../data/MoonMatrix';
+import { PACKS_REGALOS, REGLAS_DESCUENTOS } from '../data/MoonMatrix';
 
 const StoryPlayer = ({ src, activePhase, onClose, onComplete }) => {
   const videoRef = useRef(null);
