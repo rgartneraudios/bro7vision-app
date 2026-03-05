@@ -29,7 +29,6 @@ function App() {
   const [radarQuery, setRadarQuery] = useState("");
   const [selectedForestUser, setSelectedForestUser] = useState(null);
   const [scope, setScope] = useState(null);
-  const [balances, setBalances] = useState({ genesis: 0, nova: 0, crescens: 0, plena: 0, decrescens: 0 });
   const [realItems, setRealItems] = useState([]);
   const [selectedCard, setSelectedCard] = useState(null); // Para PaymentModal
   const [showStory, setShowStory] = useState(false);
@@ -42,6 +41,19 @@ function App() {
   const [selectedLog, setSelectedLog] = useState(null);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [audioUser, setAudioUser] = useState(null);
+  
+  const [balances, setBalances] = useState({
+  genesis: 493230,
+  vales: {
+    nova: 0,
+    crescens: 0,
+    plena: 0,
+    decrescens: 0
+  },
+  eco: 200,    // Aquí tus Ecos
+  halos: 50,   // Aquí tus Halos
+  zap: 10      // Aquí tus Zaps
+});
 
   // Paneles Laterales
   const [isLeftOpen, setIsLeftOpen] = useState(false);

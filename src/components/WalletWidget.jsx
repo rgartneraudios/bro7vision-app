@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { PACKS_REGALOS, REGLAS_DESCUENTOS } from '../data/MoonMatrix';
 
-const WalletWidget = ({ balances, onClick }) => {
+const WalletWidget = ({ balances, onClick, onOpenConversion }) => {
   const [activeTab, setActiveTab] = useState('activos'); // 'activos' | 'vales'
 
   return (
@@ -17,8 +17,16 @@ const WalletWidget = ({ balances, onClick }) => {
           <button onClick={() => setActiveTab('vales')} className={`text-[9px] px-2 py-1 rounded ${activeTab === 'vales' ? 'bg-cyan-500 text-black' : 'bg-white/10'}`}>VALES</button>
         </div>
       </div>
-
+      
+      <button 
+    onClick={onClick} // <-- Asegúrate de que aquí pone onClick, que es la prop que pasas desde App.jsx
+    className="w-full mt-4 py-2 border border-cyan-500/30 rounded-lg text-[9px] font-black text-cyan-500 uppercase tracking-[0.2em] hover:bg-cyan-500 hover:text-black transition-all"
+>
+    GESTIONAR CARTERA
+</button>
+    
       {/* CONTENIDO */}
+      
       <div className="p-4 bg-[#0a0a0a]/60">
         {activeTab === 'activos' ? (
           <div className="grid grid-cols-3 gap-2 text-center">

@@ -76,8 +76,8 @@ A. LA RUEDA OUT (Moon Descuentos para Usuarios):
 Los usuarios acumulan "Puntos Génesis" jugando, viendo publicidad o interactuando. Estos puntos se canjean por "Moon Descuentos" (Vales) para usar en la BroShop. Los usuarios pueden acumular un inventario de estos vales en su Wallet (ej: tener guardados 2 Nova, 5 Crescens, 1 Plena, etc.). Las condiciones de descuento son:
   🌑 NOVA Descuento (Luna Nueva): 5% de descuento en 1 artículo.
   🌓 CRESCENS Descuento (Cuarto Creciente): 10% de descuento en 1 artículo.
-  🌕 PLENA Descuento (Luna Llena): 15% de descuento SIEMPRE QUE se compren 3 artículos o más. (Aprovecha el impulso consumista de la luna llena).
-  🌗 DECRESCENS Descuento (Cuarto Menguante): 15% de descuento SIEMPRE QUE se compren 2 artículos o más.
+  🌕 PLENA Descuento (Luna Llena): 15% de descuento SIEMPRE QUE se compren 2 artículos o más. (Aprovecha el impulso consumista de la luna llena).
+  🌗 DECRESCENS Descuento (Cuarto Menguante): 15% de descuento SIEMPRE QUE se compren 3 artículos o más.
 * Operativa en la Terminal BroShop: En la pasarela de pago, el usuario visualizará el saldo (BAL) de vales que posee de cada fase lunar. 
 * Regla Estricta Comercial: El consumidor SOLO puede hacer uso de UN (1) vale de descuento por compra. Al activarlo, el sistema le resta un (1) vale de su inventario, aplica el % de descuento al carrito, y el usuario paga el total restante de manera Standard con dinero real (FIAT / Paypal / Stripe).
 
