@@ -25,6 +25,7 @@ const NexusDashboard = ({
     items,
     onOpenVideo,
     scope,
+    onHoverCard,
     // 👇 ¡AÑADE ESTAS VARIABLES NUEVAS AQUÍ! 👇
     step, 
     setStep,
@@ -318,10 +319,10 @@ const NexusDashboard = ({
          <LiveGrid 
             items={items} // CABLE CONECTADO: Aquí faltaba items
             onTuneIn={onTuneIn} 
-            onSelectShop={onSelectShop} 
-            onUserClick={onUserClick} 
+            onSelectShop={onSelectShop}
             onClose={() => setIntent('broshop')} 
             onOpenVideo={onOpenVideo} 
+            onUserClick={onHoverCard}
          />
       )}
       

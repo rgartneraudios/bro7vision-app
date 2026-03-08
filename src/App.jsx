@@ -41,6 +41,7 @@ function App() {
   const [selectedLog, setSelectedLog] = useState(null);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [audioUser, setAudioUser] = useState(null);
+  const [activePrismUser, setActivePrismUser] = useState(null);
   
   const [balances, setBalances] = useState({
   genesis: 493230,
@@ -86,18 +87,22 @@ function App() {
 };
   // --- LÓGICA DE NAVEGACIÓN ---
   const handleNavigation = (targetIntent) => {
-    setIntent(targetIntent);
+    console.log("Navegando a:", targetIntent); // <--- Mira si esto sale en la consola al hacer click
+    setIntent(targetIntent);;
     setIsLeftOpen(false);
     setIsRightOpen(false);
     
-    // Sectores que requieren GPS
-    const needsLocation = ['gps','broshop', 'lives', 'internal_search'];
-    if (needsLocation.includes(targetIntent) && !scope) {
-      setStep(1); // Página de los Osos
+    // Si el usuario clica específicamente en 'gps', forzamos el paso 1
+    if (targetIntent === 'gps') {
+        setStep(1); 
+    } 
+    // Para el resto, mantenemos la lógica de si tiene scope o no
+    else if (['broshop', 'lives', 'internal_search'].includes(targetIntent) && !scope) {
+        setStep(1);
     } else {
-      setStep(2); // Dashboard
+        setStep(2);
     }
-  };
+};
 
   const handleActivateGPS = () => {
     setGpsLoading(true);
@@ -143,17 +148,41 @@ function App() {
   }, [session, step]);
 
   const filteredItems = useMemo(() => {
-    let ALL = [...realItems, ...MASTER_DB.map(m => ({...m, hasProduct: true, productData: {name: m.name, price: m.price || 15}}))];
-    if (intent === 'broshop') return ALL.filter(i => i.type.includes('shop'));
-    if (intent === 'lives') return ALL.filter(i => i.type.includes('live'));
-    return ALL;
-  }, [intent, realItems]);
+    // 1. Mapear items de Supabase (realItems)
+    const supabaseItems = realItems.map(u => ({
+      ...u,
+      id: u.id,
+      name: u.product_title || u.alias,
+      img: u.card_banner_url || u.banner_url || '/default.png', // Fallback
+      price: u.price || 0,
+      type: u.video_file ? ['shop', 'live'] : ['shop'],
+      source: 'supabase'
+    }));
 
+    // 2. Mapear items de MASTER_DB
+    const masterItems = MASTER_DB.map(m => ({
+      ...m,
+      id: m.id,
+      name: m.name,
+      img: m.img || '/default.png', // Asegura que la propiedad sea 'img' siempre
+      price: m.price || 15,
+      type: m.type || ['shop'],
+      source: 'master'
+    }));
+
+    const ALL = [...supabaseItems, ...masterItems];
+
+    // 3. Filtrar
+    if (intent === 'broshop') return ALL.filter(i => i.type?.includes('shop'));
+    if (intent === 'lives') return ALL.filter(i => i.type?.includes('live'));
+    
+    return ALL;
+  }, [intent, realItems]);  
   const hubVideos = useMemo(() => [
     { alias: "BRO MASTER", video_file: "/videos/Chica_forest.mp4", id: "master_01" },
     ...realItems.filter(i => i.video_file)
   ], [realItems]);
-
+  
   if (!session && !isGuest) {
     return <GenesisGate onGuestAccess={() => { setIsGuest(true); setStep(0); setRealityMode(null); setBalances({ genesis: 500, nova: 20 }); }} />;
   }
@@ -296,15 +325,15 @@ function App() {
       <button onClick={() => setIsLeftOpen(!isLeftOpen)} className={`fixed top-1/2 -translate-y-1/2 left-0 z-[100] h-24 w-8 bg-black/60 backdrop-blur-md border border-white/20 rounded-r-2xl flex items-center justify-center transition-all ${isLeftOpen ? 'left-64' : 'left-0'}`}><span className="text-cyan-400 text-xs">{isLeftOpen ? '◀' : '▶'}</span></button>
       <button onClick={() => setIsRightOpen(!isRightOpen)} className={`fixed top-1/2 -translate-y-1/2 right-0 z-[100] h-24 w-8 bg-black/60 backdrop-blur-md border border-white/20 rounded-l-2xl flex items-center justify-center transition-all ${isRightOpen ? 'right-64' : 'right-0'}`}><span className="text-fuchsia-400 text-xs">{isRightOpen ? '▶' : '◀'}</span></button>
 
-      {/* 5. DASHBOARD CENTRAL */}
-      {/* 👇 BORRAMOS EL intent !== 'internal_search' 👇 */}
+      {/* 5. DASHBOARD CENTRAL */} 
       {step === 2 && (
         <div className="relative z-50 w-full h-full flex items-center justify-center pointer-events-none p-4">
           <div className="w-full max-w-6xl h-full md:h-auto pointer-events-auto overflow-y-auto">
             <NexusDashboard 
               intent={intent}
               setIntent={setIntent}
-              items={realItems}
+              items={filteredItems}
+             onHoverCard={(user) => setActivePrismUser(user)}
               scope={scope} 
               onBack={() => setStep(0)} 
               onGameWin={handleGameWin}
@@ -320,15 +349,17 @@ function App() {
               onOpenVideo={(user) => setProjectingUser(user)} 
               onSelectShop={(card) => setSelectedCard(card)} 
               onOpenLog={setSelectedLog} 
+             onHoverCard={(user) => setActivePrismUser(user)} 
             />
           </div>
         </div>
       )}      
       {/* HOLOPRISMA RECUPERADO (Solo en BroShop o Lives) */}
       {step === 2 && (intent === 'broshop' || intent === 'lives') && ( 
-        <div className="hidden md:flex fixed right-16 top-[16%] -translate-y-1/2 z-[40] flex-col items-center w-24 animate-fadeIn pointer-events-none">
+        <div className="hidden md:flex fixed right-2 top-[6%] -translate-y-1/2 z-[40] flex-col items-center w-24 animate-fadeIn pointer-events-none">
              <div className="scale-[1.1] origin-bottom-right relative z-20 transition-transform hover:scale-[1.15]">
-                  <HoloPrism /> 
+                  <HoloPrism user={activePrismUser} /> 
+                 <HoloPrism user={activePrismUser} />
              </div>
         </div>
       )}
@@ -349,7 +380,7 @@ function App() {
         </div>
       )}
 
-      {/* 7. MODALES Y PHONE HOME */}
+      {/* 7. MODALES Y TELEFONO CASA */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 z-[100]"><button onClick={() => setShowLegal(true)} className="text-[9px] font-black px-10 py-2 rounded-t-xl bg-black/80 border-t border-x border-white/10 text-gray-500 hover:text-cyan-400 transition-all uppercase tracking-widest">⚖️ Legal / Creador</button></div>
       
       {showLegal && (
@@ -386,7 +417,7 @@ function App() {
       {showWalletModal && <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-xl"><ConversionModal balances={balances} setBalances={setBalances} onClose={() => setShowWalletModal(false)} /></div>}
       {showBooster && <div className="fixed inset-0 z-[200] bg-black/80 flex items-center justify-center"><BoosterModal onClose={() => setShowBooster(false)} /></div>}
       
-      {/* PHONE HOME / HOLOPROJECTOR */}
+      {/* TELEFONO CASA / HOLOPROJECTOR */}
       {projectingUser && (
   <HoloProjector 
     videoUrl={projectingUser.video_file || projectingUser.videoUrl} 

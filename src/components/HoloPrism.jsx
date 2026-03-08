@@ -1,7 +1,5 @@
-// src/components/HoloPrism.jsx
 import React from 'react';
 
-// Imágenes locales por defecto (Asegúrate de que existen en public/images/)
 const DEFAULT_IMGS = [
     "/images/prism_1.jpg", 
     "/images/prism_2.jpg", 
@@ -9,17 +7,29 @@ const DEFAULT_IMGS = [
     "/images/prism_4.jpg"
 ];
 
-const HoloPrism = ({ customImages }) => {
-  // Verificamos si llegan imágenes. Si no, usamos las locales.
-  const hasImages = customImages && customImages.length === 4 && customImages[0];
-  const imagesToShow = hasImages ? customImages : DEFAULT_IMGS;
+const HoloPrism = ({ user }) => {
+  let images = DEFAULT_IMGS; // Por defecto
 
-  console.log("💎 PRISMA RENDERIZANDO:", imagesToShow); // <--- DEBUG: MIRA ESTO EN CONSOLA
-
+  if (user) {
+    // 1. ¿Tiene el formato MASTER_DB (array)?
+    if (user.holo_images && Array.isArray(user.holo_images)) {
+      images = user.holo_images;
+    } 
+    // 2. ¿Tiene el formato Supabase (campos individuales)?
+    else if (user.holo_1 || user.holo_2 || user.holo_3 || user.holo_4) {
+      images = [
+        user.holo_1 || DEFAULT_IMGS[0],
+        user.holo_2 || DEFAULT_IMGS[1],
+        user.holo_3 || DEFAULT_IMGS[2],
+        user.holo_4 || DEFAULT_IMGS[3]
+      ];
+    }
+  }
+    
   return (
-  <div className="fixed top-4 right-4 md:top-[2%] md:right-[2%] z-[50] pointer-events-none perspective-[1000px] scale-45 md:scale-75 lg:scale-90 origin-top-right">
-         <div className="relative w-48 h-80 animate-spin-slow-3d" style={{ transformStyle: 'preserve-3d' }}>
-          {imagesToShow.map((img, index) => {
+    <div className="fixed top-4 right-4 md:top-[2%] md:right-[2%] z-[50] pointer-events-none perspective-[1000px] scale-45 md:scale-75 lg:scale-90 origin-top-right">
+       <div className="relative w-48 h-80 animate-spin-slow-3d" style={{ transformStyle: 'preserve-3d' }}>
+          {images.map((img, index) => {
              let transform = '';
              let borderColor = '';
              
@@ -30,17 +40,7 @@ const HoloPrism = ({ customImages }) => {
 
              return (
                 <div key={index} className={`absolute inset-0 bg-black/20 border-2 ${borderColor} overflow-hidden shadow-[0_0_15px_rgba(0,0,0,0.5)]`} style={{ transform }}>
-                   <img 
-                      src={img} 
-                      alt={`Holo ${index}`} 
-                      // IMPORTANTE: SIN crossOrigin NI referrerPolicy para máxima compatibilidad
-                      onError={(e) => {
-                          console.error("❌ Fallo al cargar imagen prisma:", img);
-                          e.target.onerror = null; 
-                          e.target.src = DEFAULT_IMGS[index]; // Si falla, usa la local
-                      }}
-                      className="w-full h-full object-cover opacity-100" 
-                   />
+                   <img src={img} alt={`Holo ${index}`} className="w-full h-full object-cover opacity-100" />
                 </div>
              );
           })}

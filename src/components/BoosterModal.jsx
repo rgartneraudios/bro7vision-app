@@ -170,7 +170,7 @@ const BoosterModal = ({ onClose }) => {
   useEffect(() => {
       const fetchQuestions = async () => {
           const { data: { user } } = await supabase.auth.getUser();
-          if (user && tab === 'Phone Home') {
+          if (user && tab === 'Telefono Casa') {
               const { data } = await supabase.from('bro_echos').select('*').eq('target_profile_id', user.id).like('text', '%❓%').order('created_at', { ascending: false });
               if (data) setQuestions(data);
           }
@@ -206,7 +206,7 @@ const BoosterModal = ({ onClose }) => {
                 {[
                     { id: 'identity', label: '👤 Identidad', color: 'cyan' },
                     { id: 'audio', label: '📡 Señal', color: 'fuchsia' },
-                    { id: 'Phone Home', label: '☝️ Phone Home', color: 'yellow' },
+                    { id: 'Telefono Casa', label: '☝️ Telefono Casa', color: 'yellow' },
                     { id: 'market', label: '🛒🦝 Tienda & IA', color: 'green' },
                     { id: 'assets', label: '💾🦝 Archivos Digitales', color: 'blue' }
                 ].map((item) => (
@@ -322,8 +322,8 @@ const BoosterModal = ({ onClose }) => {
                     </div>
                 )}
                 
-                {/* ☝️ PHONE HOME */}
-                {tab === 'Phone Home' && (
+                {/* ☝️ TELEFONO CASA */}
+                {tab === 'Telefono Casa' && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fadeIn">
                         <div className={`${CardStyle} border-fuchsia-500/20 bg-fuchsia-900/5`}>
                             <p className="text-sm text-fuchsia-300 font-bold mb-4 tracking-wider">🏠 ATMÓSFERA DE LA SUITE</p>

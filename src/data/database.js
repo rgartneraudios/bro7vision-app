@@ -6,8 +6,7 @@ export const MASTER_DB = [
     // --- 1. COMERCIOS (PRODUCTOS) ---
     { 
       id: "shop_carrefour", 
-      type: ["product", "shop"], 
-      mentionLevel: 1, 
+      type: ["product", "shop"],
       distance: "200m",
       name: "Aceite Oliva 1L", 
       shopName: "Carrefour Express",
@@ -29,7 +28,6 @@ export const MASTER_DB = [
     { 
       id: "shop_mediamarkt", 
       type: ["product", "shop"],
-      mentionLevel: 2, 
       distance: "2.5km",
       name: "Sony PlayStation 5", 
       shopName: "MediaMarkt",
@@ -51,7 +49,6 @@ export const MASTER_DB = [
     { 
       id: "shop_apple", 
       type: ["product", "shop"],
-      mentionLevel: 2, 
       distance: "Global",
       name: "iPhone 16 Pro", 
       shopName: "Apple",
@@ -73,7 +70,6 @@ export const MASTER_DB = [
     { 
       id: "shop_manolo", 
       type: ["product", "shop"],
-      mentionLevel: 1,
       distance: "500m",
       name: "Aceite Oliva Virgen 1L", 
       shopName: "Tienda de Manolo",
@@ -95,8 +91,7 @@ export const MASTER_DB = [
     // --- 2. SERVICIOS (PROFESIONALES) ---
     { 
       id: "serv_lorena", 
-      type: ["service", "shop"], 
-      mentionLevel: 2,
+      type: ["service", "shop"],
       distance: "1.5km",
       name: "Lorena Legal", 
       shopName: "Despacho Sánchez",
@@ -118,7 +113,6 @@ export const MASTER_DB = [
     { 
       id: "serv_rutero", 
       type: ["service", "shop"],
-      mentionLevel: 1,
       distance: "12km",
       name: "Menú del Día", 
       shopName: "Gasolinera El Rutero",
@@ -140,8 +134,7 @@ export const MASTER_DB = [
     // --- 3. CREADORES ---
     { 
       id: "creator_ana", 
-      type: ["creator", "live", "service"], 
-      mentionLevel: 2, 
+      type: ["creator", "live", "service"],
       distance: "Online",
       name: "Debate: Futuro 5G", 
       shopName: "Ana_Tech",      
@@ -162,17 +155,11 @@ export const MASTER_DB = [
       img: "https://i.pravatar.cc/150?u=a",
       avatar_url: "https://i.pravatar.cc/150?u=a",
       slides_url: "https://docs.google.com/presentation/...", 
-      logs: [{ title: 'ENSAYO: "La Caída del Bitcoin"', category: 'OPINIÓN', author: 'Ana_Tech' }],
-      top_20: [
-          { id: 1, title: 'Track: Neon Tears', author: 'Suno AI' },
-          { id: 2, title: 'Live: Chef Paco', author: 'Chef_Paco' }
-      ]
-    },
-    
+      logs: [{ title: 'ENSAYO: "La Caída del Bitcoin"', category: 'OPINIÓN', author: 'Ana_Tech' }]
+     },
     { 
       id: "creator_paco", 
       type: ["creator", "live", "shop"], 
-      mentionLevel: 1, 
       distance: "Online",
       name: "Cocinando en vivo", 
       shopName: "Chef_Paco",
@@ -193,14 +180,11 @@ export const MASTER_DB = [
       img: "https://i.pravatar.cc/150?u=b",
       avatar_url: "https://i.pravatar.cc/150?u=b",
       slides_url: "", 
-      logs: [],
-      top_20: []
+      logs: []
     },
-
     { 
       id: "creator_crypto", 
-      type: ["creator", "live", "service"], 
-      mentionLevel: 1, 
+      type: ["creator", "live", "service"],
       distance: "Online",
       name: "Análisis Nova Coin", 
       shopName: "CryptoBro",
@@ -221,7 +205,72 @@ export const MASTER_DB = [
       img: "https://i.pravatar.cc/150?u=c",
       avatar_url: "https://i.pravatar.cc/150?u=c",
       slides_url: "", 
+      logs: []
+    },
+        { 
+      id: "bro_master", 
+      alias: "BRO MASTER",
+     type:['shop', 'live'], // 🏷️ Dile en qué sectores quieres que aparezca
+      category: "Finanzas",
+      price: "100€", 
+      moonPrice: "10.000 🌑",
+      message: "Asesoría 1 a 1.",
+      offerText: "🔴 EN VIVO",
+      isLive: true,
+      viewers: 340, 
+      audioFile: "/audio/channel_24.mp3",
+      neonColor: "cyan-emerald",
+      img: "https://i.pravatar.cc/150?u=c",
+      avatar_url: "https://i.pravatar.cc/150?u=c",
+      slides_url: "", 
       logs: [],
-      top_20: []
-    }
+      lat: 40.6168,       // 📍 Vital para que salga en el mapa del LiveGrid / Shop
+      lng: -3.2038,       // 📍 Vital para que salga en el mapa
+      holo_images:['img1.jpg', 'img2.jpg', 'img3.jpg', 'img4.jpg'] // 🧊 Vital para que el Prisma gire
+    },
+{ 
+        id: 'bot1', 
+        alias: 'Horizon',
+       type:['shop', 'live'], // 🏷️ Dile en qué sectores quieres que aparezca
+        role: 'MUSIC_SHOP', 
+        img: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&q=80',
+        distance: '1200km', 
+        desc: 'Techno from Berlin',
+         isReal: false,
+        video_file: "https://www.dropbox.com/scl/fi/pj7bp86qefs79batr6pzw/Horizon.mp4?rlkey=w6hamek4kqu7j50rn046s5ola&st=2nfq570t&dl=0",
+        audio_file: "https://www.dropbox.com/scl/fi/ia07nfc29x6sgm9urdhb5/Horizon_s_Embrace-1.mp3?rlkey=mz13iiczo5ugiqwarkup81nd8&st=0bqapo6t&dl=1",
+        product_title: 'Pack Samples Techno', 
+        product_price: 15,
+        lat: 40.4166,       // 📍 Vital para que salga en el mapa del LiveGrid / Shop
+        lng: -3.7034,       // 📍 Vital para que salga en el mapa
+        holo_images:['img1.jpg', 'img2.jpg', 'img3.jpg', 'img4.jpg'] // 🧊 Vital para que el Prisma gire    
+    },
+    { 
+        id: 'bot2',
+        alias: 'Ana_Talks',
+       type:['shop', 'live'], // 🏷️ Dile en qué sectores quieres que aparezca
+        role: 'TALK', 
+        img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80',
+        distance: '500km', 
+        desc: 'Debate: Futuro AI', 
+        isReal: false,
+        video_file: "https://www.dropbox.com/scl/fi/p1u2yfgurdxm23h16z4go/FURRIES-TEAM-VID02.mp4?  	rlkey=xfq5dcabdfjwudmtpjxe5r11d&st=m8xtm9if&dl=0",
+        product_title: 'Pack Samples Techno', 
+        product_price: 15,
+        lat: 40.4188,       // 📍 Vital para que salga en el mapa del LiveGrid / Shop
+        lng: -3.7048,       // 📍 Vital para que salga en el mapa
+        holo_images:['img1.jpg', 'img2.jpg', 'img3.jpg', 'img4.jpg'] // 🧊 Vital para que el Prisma gire
+      },
+   {
+    id: "bot3",
+    alias: "Lap_Steel",
+    type:['shop', 'live'], // 🏷️ Dile en qué sectores quieres que aparezca
+    role: "MUSIC",
+    img: '/images/steel_5.png',
+    video_file: "https://www.dropbox.com/scl/fi/zsey9jh7tzzvx3bksllwm/Celestial_Drift-master.mp4?rlkey=dhph8iy6ji2s4av4cshi5lq5q&st=4lfzcqt7&dl=0",
+    audioFile: "/audio/Celestial_Echoes.mp3",
+    lat: 40.4530,
+    lng: -3.6883,
+    holo_images: ['/images/steel_1.png', '/images/steel_2.png', '/images/steel_3.png', '/images/steel_4.png']
+  }
 ];

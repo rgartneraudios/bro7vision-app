@@ -1,32 +1,10 @@
 // src/components/LiveGrid.jsx
-import React, { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient';
+import React, { useState } from 'react';
 
-const MOCK_CREATORS = [
-    { 
-        id: 'bot1', alias: 'Dj_Neon', role: 'MUSIC_SHOP', 
-        img: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&q=80',
-        distance: '1200km', desc: 'Techno from Berlin', isReal: false,
-        // AQUI ESTÁ EL VIDEO DE PRUEBA (Un loop de neón de Dropbox)
-        video_file: "https://www.dropbox.com/scl/fi/sbubsg1n7vxluup8efp59/DJ-Neon.mp4?rlkey=6rcdr6hkya9xkk049wdhnxnx7&st=zreglrau&dl=0",
-        product_title: 'Pack Samples Techno', product_price: 15,
-        holo_1: "/images/prism_1.jpg", holo_2: "/images/prism_2.jpg", holo_3: "/images/prism_3.jpg", holo_4: "/images/prism_4.jpg"
-    },
-    { 
-        id: 'bot2', alias: 'Ana_Talks', role: 'TALK', 
-        img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80',
-        distance: '500km', desc: 'Debate: Futuro AI', isReal: false,
-        // AQUI ESTÁ EL VIDEO DE PRUEBA (Un loop de neón de Dropbox)
-        video_file: "https://www.dropbox.com/scl/fi/zf4ajqdda2rco012v642i/Juan-Platzi.mp4?rlkey=3nqpn2i2b6v7us85tmdowf0jz&st=7vxno8ub&dl=0",
-        product_title: 'Pack Samples Techno', product_price: 15,
-        holo_1: "/images/prism_1.jpg", holo_2: "/images/prism_2.jpg", holo_3: "/images/prism_3.jpg", holo_4: "/images/prism_4.jpg"
-    }
-];
-
-const LiveGrid = ({ onTuneIn, onUserClick, onClose, onOpenVideo, onSelectShop }) => {
-  const [creators, setCreators] = useState(MOCK_CREATORS);
+const LiveGrid = ({ items, onTuneIn, onUserClick, onClose, onOpenVideo, onSelectShop }) => {
+  // Ya no necesitamos 'creators', usamos directamente 'items' que viene de App.jsx
   const [filter, setFilter] = useState('ALL'); 
-  const [activeHalo, setActiveHalo] = useState(null); 
+  const[activeHalo, setActiveHalo] = useState(null); 
 
   // --- ESTILOS DEL HALO (MEDUSA) INYECTADOS ---
   const haloStyles = `
@@ -43,50 +21,30 @@ const LiveGrid = ({ onTuneIn, onUserClick, onClose, onOpenVideo, onSelectShop })
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   `;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const { data } = await supabase.from('profiles').select('*');
-      if (data) {
-        const realUsers = data.map(u => ({
-            ...u,
-            id: u.id,
-            alias: u.alias || 'Usuario', 
-            role: u.role || 'CITIZEN',
-            img: u.banner_url || u.avatar_url || 'https://placehold.co/400x500/000000/FFFFFF/png?text=No+Signal',
-            distance: u.city || 'Online',
-            desc: u.twit_message || 'Emitiendo señal...',
-            isReal: true,
-            product_title: u.product_title,
-            product_price: u.product_price
-        }));
-        setCreators([...realUsers, ...MOCK_CREATORS]);
-      }
-    };    
-    fetchData();
-  }, []);
-
   const triggerHalo = (creator) => {
-      setActiveHalo(creator.alias.toUpperCase());
+      setActiveHalo(creator.alias?.toUpperCase() || 'CREADOR');
       setTimeout(() => setActiveHalo(null), 6000); 
   };
 
   const handleGoToShop = (creator) => {
       const shopItem = {
           ...creator,
-          name: creator.product_title || 'Producto Genérico',
+          name: creator.product_title || creator.name || 'Producto Genérico',
           shopName: creator.alias,
-          img: creator.img,
+          img: creator.img || creator.banner_url || creator.avatar_url,
           isAsset: false,
           hasProduct: true,
           productData: { 
               name: creator.product_title || 'Servicio Creator', 
-              price: creator.product_price || 10 
+              price: creator.product_price || creator.price || 10 
           }
       };
       onSelectShop(shopItem);
   };
 
-  const filteredCreators = creators.filter(c => filter === 'ALL' || (c.role && c.role.includes(filter)));
+  // 🛡️ Filtramos directamente sobre la variable 'items' (con un seguro por si viene vacía)
+  const safeItems = Array.isArray(items) ? items :[];
+  const filteredCreators = safeItems.filter(c => filter === 'ALL' || (c.role && c.role.includes(filter)));
 
   return ( 
     <div className="absolute top-40 bottom-44 md:top-[15%] md:bottom-[15%] left-0 right-0 max-w-6xl mx-auto pointer-events-auto z-40 animate-zoomIn flex flex-col px-4">
@@ -139,57 +97,70 @@ const LiveGrid = ({ onTuneIn, onUserClick, onClose, onOpenVideo, onSelectShop })
         {filteredCreators.map((creator) => (
             <div key={creator.id} className="group relative w-full aspect-[3/4] bg-[#050505] rounded-xl md:rounded-2xl overflow-hidden border border-white/5 hover:border-fuchsia-500/50 transition-all duration-700 shadow-2xl">
                 
-                {/* Imagen de fondo */}
-                <img src={creator.img} className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-20 transition-opacity" alt={creator.alias} />
+                {/* Imagen de fondo (Con fallback por si no tiene foto) */}
+                <img 
+                    src={creator.img || creator.banner_url || creator.avatar_url || 'https://placehold.co/400x500/000000/FFFFFF/png?text=No+Signal'} 
+                    className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-20 transition-opacity" 
+                    alt={creator.alias || 'Usuario'} 
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent"></div>
                 
                 {/* Badge de Distancia */}
-                <div className="absolute top-2 right-2 bg-black/80 px-2 py-0.5 rounded text-[7px] text-cyan-400 font-bold border border-cyan-500/20 shadow-lg">📡 {creator.distance}</div>
+                <div className="absolute top-2 right-2 bg-black/80 px-2 py-0.5 rounded text-[7px] text-cyan-400 font-bold border border-cyan-500/20 shadow-lg">📡 {creator.city || creator.distance || 'Online'}</div>
                 
-                {/* Info del Creador (Subida un poco para dejar sitio a los botones nuevos) */}
+                {/* Info del Creador */}
                 <div className="absolute bottom-[115px] md:bottom-[125px] left-2 right-2 text-center">
                     <h3 className="text-white font-black text-xs md:text-sm uppercase tracking-tighter leading-none mb-1 drop-shadow-md truncate">{creator.alias}</h3>
-                    <p className="text-[8px] md:text-[9px] text-gray-400 italic line-clamp-1 opacity-70">"{creator.desc}"</p>
+                    <p className="text-[8px] md:text-[9px] text-gray-400 italic line-clamp-1 opacity-70">"{creator.desc || creator.twit_message || 'Emitiendo...'}"</p>
                 </div>
                 
                 {/* NUEVA BOTONERA ESTRATÉGICA - ESTILO NEÓN MULTICOLOR */}
 <div className="absolute bottom-2 left-2 right-2 flex flex-col gap-1.5">
     
-    {/* 1. BOTÓN DE ☝️ PHONE HOME - VERSIÓN VIOLETA MÍSTICO */}
-    {creator.video_file && (
+    {/* 1. BOTÓN DE ☝️ TELEFONO CASA - VERSIÓN VIOLETA MÍSTICO */}
+    {(creator.video_file || creator.casa_video) && (
         <button 
+            // 💡 NOTA: Al hacer hover, activamos el prisma. Al hacer click, abre el video
+            onMouseEnter={() => { if (typeof onUserClick === 'function') onUserClick(creator); }}
             onClick={() => onOpenVideo(creator)} 
             className="w-full py-2.5 bg-black text-white border-2 border-[#bc13fe] rounded-xl text-[9px] font-black uppercase 
                        shadow-[0_0_15px_rgba(188,19,254,0.4),inset_0_0_8px_rgba(188,19,254,0.2)] 
                        hover:shadow-[0_0_20px_rgba(188,19,254,0.7)] transition-all active:scale-95 flex items-center justify-center gap-2"
         >
-            <span className="drop-shadow-[0_0_5px_rgba(188,19,254,0.8)]">☝️ PHONE HOME</span>
+            <span className="drop-shadow-[0_0_5px_rgba(188,19,254,0.8)]">☝️ TELÉFONO CASA</span>
         </button>
     )}
-    {/* 2. FILA SECUNDARIA: AUDIO (VERDE) Y TIENDA (ORO) */}
-    <div className="grid grid-cols-2 gap-1.5">
-        
-        {/* Audio (CYAN NEÓN) */}
-<button 
-    onClick={() => onTuneIn(creator)} 
-    className="py-2 bg-black text-white border-2 border-[#00f2ff] rounded-xl text-[9px] font-black uppercase 
-               shadow-[0_0_15px_rgba(0,242,255,0.5),inset_0_0_8px_rgba(0,242,255,0.3)] 
-               hover:shadow-[0_0_20px_rgba(0,242,255,0.8)] transition-all flex items-center justify-center gap-1"
->
-    <span className="drop-shadow-[0_0_5px_rgba(0,242,255,0.8)]">🎧 AUDIO</span>
-</button>
+    
+    {/* 2. FILA SECUNDARIA: AUDIO (VERDE), TIENDA (ORO) Y HALO (FUCSIA) */}
+<div className="grid grid-cols-3 gap-1.5"> {/* Cambié a grid-cols-3 para que quepan 3 */}
+    
+    {/* Audio */}
+    <button 
+        onMouseEnter={() => { if (typeof onUserClick === 'function') onUserClick(creator); }}
+        onClick={() => onTuneIn(creator)} 
+        className="py-2 bg-black text-white border-2 border-[#00f2ff] rounded-xl text-[9px] font-black uppercase shadow-[0_0_10px_rgba(0,242,255,0.3)] hover:shadow-[0_0_15px_rgba(0,242,255,0.6)] transition-all flex items-center justify-center"
+    >
+        🎧
+    </button>
 
-        {/* Tienda (ORO NEÓN) */}
-        <button 
-            onClick={() => handleGoToShop(creator)} 
-            className="py-2 bg-black text-white border-2 border-[#facc15] rounded-xl text-[9px] font-black uppercase 
-                       shadow-[0_0_15px_rgba(250,204,21,0.4),inset_0_0_8px_rgba(250,204,21,0.2)] 
-                       hover:shadow-[0_0_20px_rgba(250,204,21,0.7)] transition-all flex items-center justify-center gap-1"
-        >
-            <span className="drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]">🦝 BROSHOP</span>
-        </button>
-    </div>
-</div>
+    {/* Tienda */}
+    <button 
+        onMouseEnter={() => { if (typeof onUserClick === 'function') onUserClick(creator); }}
+        onClick={() => handleGoToShop(creator)} 
+        className="py-2 bg-black text-white border-2 border-[#facc15] rounded-xl text-[9px] font-black uppercase shadow-[0_0_10px_rgba(250,204,21,0.3)] hover:shadow-[0_0_15px_rgba(250,204,21,0.6)] transition-all flex items-center justify-center"
+    >
+        🦝
+    </button>
+
+    {/* BOTÓN MEDUSA (HALO) */}
+    <button 
+        onMouseEnter={() => { if (typeof onUserClick === 'function') onUserClick(creator); }}
+        onClick={() => triggerHalo(creator)} 
+        className="py-2 bg-black text-white border-2 border-[#ff00ff] rounded-xl text-[9px] font-black uppercase shadow-[0_0_10px_rgba(255,0,255,0.3)] hover:shadow-[0_0_15px_rgba(255,0,255,0.6)] transition-all flex items-center justify-center"
+    >
+        ✈️
+    </button>
+</div></div>
             </div>
         ))}
     	</div>

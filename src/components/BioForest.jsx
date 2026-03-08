@@ -86,13 +86,21 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
   const touchEnd = useRef(0);
 
   const displayUsers = useMemo(() => {
-    const LAP_STEEL = {
-      id:'bot1', alias:'Lap_Steel',
-      video_file:"https://www.dropbox.com/scl/fi/zsey9jh7tzzvx3bksllwm/Celestial_Drift-master.mp4?rlkey=dhph8iy6ji2s4av4cshi5lq5q&st=bwnz7v2d&dl=0"
-    };
-    return videoUsers?.length > 0 ? [...videoUsers,LAP_STEEL,...TV_NODES] : [LAP_STEEL,...TV_NODES];
-  }, [videoUsers]);
+    // 1. Tomamos los usuarios que vienen de App.jsx (Aquí ya vendrán Lap_Steel, Bro Master, etc. desde MASTER_DB)
+    const safeUsers = videoUsers?.length > 0 ? videoUsers : [];
+    
+    // 2. Los juntamos con los nodos de TV (Si también quieres pasar los TV_NODES al MASTER_DB en el futuro, ¡sería aún mejor!)
+    const combined = [...safeUsers, ...TV_NODES];
 
+    // 3. 🛡️ ESCUDO ANTI-ERRORES: Si por algún motivo la base de datos tarda en cargar y el array está vacío, 
+    // ponemos un "fantasma" para que el carrusel (currentIndex % length) no dé error matemático (0 dividido entre 0).
+    if (combined.length === 0) {
+      return [{ id: 'loading_01', alias: 'SINTONIZANDO...', video_file: '' }];
+    }
+
+    return combined;
+  }, [videoUsers]); // Ya no dependemos de nada interno, solo de lo que nos pasen.
+  
   const currentUser = useMemo(() => displayUsers[currentIndex % displayUsers.length], [displayUsers,currentIndex]);
 
   // Paralaje — solo fondo
@@ -270,6 +278,46 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
     {border:'border-emerald-400',text:'text-emerald-400',glow:'shadow-[0_0_10px_rgba(52,211,153,0.5)]' },
     {border:'border-violet-500', text:'text-violet-400', glow:'shadow-[0_0_10px_rgba(139,92,246,0.5)]' }
   ];
+  
+  const LiquidSVGFilter = () => (
+  <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+    <defs>
+      <filter id="liquid-border" x="-20%" y="-20%" width="140%" height="140%">
+        {/* Genera el ruido orgánico animado */}
+        <feTurbulence
+          id="turbulence"
+          type="turbulence"
+          baseFrequency="0.018 0.022"
+          numOctaves="3"
+          seed="2"
+          result="noise"
+        >
+          {/* La animación cambia el seed continuamente → olas vivas */}
+          <animate
+            attributeName="baseFrequency"
+            values="0.018 0.022; 0.025 0.015; 0.018 0.022"
+            dur="6s"
+            repeatCount="indefinite"
+          />
+        </feTurbulence>
+
+        {/* Desplaza los píxeles del borde según el ruido */}
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="noise"
+          scale="10"
+          xChannelSelector="R"
+          yChannelSelector="G"
+          result="displaced"
+        />
+
+        {/* Recorta para que el efecto solo viva en el borde,
+            no distorsione el contenido interior del visor */}
+        <feComposite in="displaced" in2="SourceGraphic" operator="atop" />
+      </filter>
+    </defs>
+  </svg>
+);
 
   return (
     <div className="absolute inset-0 z-0 bg-black overflow-hidden select-none font-mono">
@@ -420,7 +468,7 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
             <div className="flex items-center justify-center gap-2 w-full max-w-[350px] px-4">
               <button onClick={()=>handleAction('reaction')} className="flex-1 py-3 bg-white text-black border border-white rounded-xl text-[9px] font-black uppercase shadow-[0_0_15px_rgba(255,255,255,0.4)] hover:scale-105 transition-transform">✨ HALO</button>
               <button onClick={()=>{if(currentUser)onOpenProfile(currentUser);}} className="flex-1 py-3 bg-black text-white border-2 border-[#bf00ff] rounded-xl text-[9px] font-black uppercase shadow-[0_0_15px_rgba(191,0,255,0.6),inset_0_0_8px_rgba(191,0,255,0.4)] hover:scale-105 transition-all animate-pulse">
-                <span className="drop-shadow-[0_0_8px_rgba(191,0,255,0.9)]">☝️ PHONE HOME</span>
+                <span className="drop-shadow-[0_0_8px_rgba(191,0,255,0.9)]">☝️ TELEFONO CASA</span>
               </button>
               <button onClick={()=>setShowEchoInput(true)} className="flex-1 py-3 bg-black/90 border border-white/20 text-white rounded-xl text-[9px] font-black uppercase">💬 ECO</button>
             </div>
