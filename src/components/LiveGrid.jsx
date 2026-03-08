@@ -7,7 +7,9 @@ const LiveGrid = ({ items, onTuneIn, onUserClick, onClose, onOpenVideo, onSelect
   const[activeHalo, setActiveHalo] = useState(null); 
 
   // --- ESTILOS DEL HALO (MEDUSA) INYECTADOS ---
+  // --- ESTILOS INYECTADOS DIRECTAMENTE AL DOM ---
   const haloStyles = `
+    /* ESTILOS DEL HALO (Los que ya tenías) */
     @keyframes glowSwim { 
         0% { transform: translateY(0) translateX(0) scale(0.5); opacity: 0; } 
         15% { opacity: 1; scale: 1; }
@@ -19,8 +21,40 @@ const LiveGrid = ({ items, onTuneIn, onUserClick, onClose, onOpenVideo, onSelect
     .animate-glowSwim { animation: glowSwim 5.5s ease-in-out forwards; }
     .animate-spin-slow { animation: spin 8s linear infinite; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-  `;
 
+    /* 🌟 1. SCROLLBAR NEÓN CYAN/FUCSIA (Para la lista de creadores) 🌟 */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 8px; /* Ancho de la barra vertical */
+        height: 8px; /* Alto si hay horizontal */
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(5, 5, 5, 0.5); /* Fondo semitransparente oscuro */
+        border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #00f2ff; /* Cyan Neón brillante */
+        border-radius: 10px;
+        border: 1px solid #000; /* Borde negrito para que resalte */
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #bc13fe; /* Al pasar el ratón se vuelve Fucsia */
+    }
+    /* Soporte para Firefox */
+    .custom-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: #00f2ff rgba(5, 5, 5, 0.5);
+    }
+
+    /* 👻 2. OCULTAR SCROLLBAR (Para los botones de filtro ALL, TALK, etc) 👻 */
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none; /* Edge antiguo */
+        scrollbar-width: none; /* Firefox */
+    }
+  `;
+  
   const triggerHalo = (creator) => {
       setActiveHalo(creator.alias?.toUpperCase() || 'CREADOR');
       setTimeout(() => setActiveHalo(null), 6000); 
@@ -92,9 +126,8 @@ const LiveGrid = ({ items, onTuneIn, onUserClick, onClose, onOpenVideo, onSelect
         </div>
 
         {/* GRID CENTRADO CORREGIDO */}
-<div className="w-full h-full overflow-y-auto custom-scrollbar px-1">
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6 pb-32 justify-items-center">
-        {filteredCreators.map((creator) => (
+        <div className="w-full flex-1 min-h-0 overflow-y-auto custom-scrollbar px-1">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6 pb-48 justify-items-center">{filteredCreators.map((creator) => (
             <div key={creator.id} className="group relative w-full aspect-[3/4] bg-[#050505] rounded-xl md:rounded-2xl overflow-hidden border border-white/5 hover:border-fuchsia-500/50 transition-all duration-700 shadow-2xl">
                 
                 {/* Imagen de fondo (Con fallback por si no tiene foto) */}
@@ -108,12 +141,19 @@ const LiveGrid = ({ items, onTuneIn, onUserClick, onClose, onOpenVideo, onSelect
                 {/* Badge de Distancia */}
                 <div className="absolute top-2 right-2 bg-black/80 px-2 py-0.5 rounded text-[7px] text-cyan-400 font-bold border border-cyan-500/20 shadow-lg">📡 {creator.city || creator.distance || 'Online'}</div>
                 
-                {/* Info del Creador */}
-                <div className="absolute bottom-[115px] md:bottom-[125px] left-2 right-2 text-center">
-                    <h3 className="text-white font-black text-xs md:text-sm uppercase tracking-tighter leading-none mb-1 drop-shadow-md truncate">{creator.alias}</h3>
-                    <p className="text-[8px] md:text-[9px] text-gray-400 italic line-clamp-1 opacity-70">"{creator.desc || creator.twit_message || 'Emitiendo...'}"</p>
-                </div>
-                
+               {/* Info del Creador - Ajustado */}
+<div className="absolute bottom-24 left-2 right-2 text-center">
+    <h3 className="text-white font-black text-xs md:text-sm uppercase tracking-tighter truncate drop-shadow-md mb-1">
+        {creator.alias}
+    </h3>
+    
+    {/* Contenedor con altura mínima para que no salte el layout */}
+    <div className="bg-black/50 backdrop-blur-sm rounded px-2 py-1 min-h-[30px] flex items-center justify-center">
+        <p className="text-[10px] md:text-[11px] font-bold text-[#FFD700] italic leading-tight line-clamp-2 text-center drop-shadow-[0_0_4px_rgba(255,215,0,0.8)]">
+            "{creator.twit_message || creator.desc || 'Emitiendo...'}"
+        </p>
+    </div>
+</div>           
                 {/* NUEVA BOTONERA ESTRATÉGICA - ESTILO NEÓN MULTICOLOR */}
 <div className="absolute bottom-2 left-2 right-2 flex flex-col gap-1.5">
     

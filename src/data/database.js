@@ -231,11 +231,12 @@ export const MASTER_DB = [
 { 
         id: 'bot1', 
         alias: 'Horizon',
-       type:['shop', 'live'], // 🏷️ Dile en qué sectores quieres que aparezca
+        type:['shop', 'live'], // 🏷️ Dile en qué sectores quieres que aparezca
         role: 'MUSIC_SHOP', 
-        img: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&q=80',
+        img: '/images/orq_5.jpg',
         distance: '1200km', 
         desc: 'Techno from Berlin',
+        twit_message: 'La mejor música de Films',
          isReal: false,
         video_file: "https://www.dropbox.com/scl/fi/pj7bp86qefs79batr6pzw/Horizon.mp4?rlkey=w6hamek4kqu7j50rn046s5ola&st=2nfq570t&dl=0",
         audio_file: "https://www.dropbox.com/scl/fi/ia07nfc29x6sgm9urdhb5/Horizon_s_Embrace-1.mp3?rlkey=mz13iiczo5ugiqwarkup81nd8&st=0bqapo6t&dl=1",
@@ -243,23 +244,24 @@ export const MASTER_DB = [
         product_price: 15,
         lat: 40.4166,       // 📍 Vital para que salga en el mapa del LiveGrid / Shop
         lng: -3.7034,       // 📍 Vital para que salga en el mapa
-        holo_images:['img1.jpg', 'img2.jpg', 'img3.jpg', 'img4.jpg'] // 🧊 Vital para que el Prisma gire    
+        holo_images: ['/images/orq_1.jpg', '/images/orq_2.jpg', '/images/orq_3.jpg', '/images/orq_4.jpg']
     },
     { 
         id: 'bot2',
         alias: 'Ana_Talks',
        type:['shop', 'live'], // 🏷️ Dile en qué sectores quieres que aparezca
         role: 'TALK', 
-        img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80',
+        img: '/images/ana5.jpg',
         distance: '500km', 
-        desc: 'Debate: Futuro AI', 
+        desc: 'Debate: Influencers', 
         isReal: false,
         video_file: "https://www.dropbox.com/scl/fi/p1u2yfgurdxm23h16z4go/FURRIES-TEAM-VID02.mp4?  	rlkey=xfq5dcabdfjwudmtpjxe5r11d&st=m8xtm9if&dl=0",
         product_title: 'Pack Samples Techno', 
         product_price: 15,
+        audioFile: "/audio/Influencers__anatalks.mp3",
         lat: 40.4188,       // 📍 Vital para que salga en el mapa del LiveGrid / Shop
         lng: -3.7048,       // 📍 Vital para que salga en el mapa
-        holo_images:['img1.jpg', 'img2.jpg', 'img3.jpg', 'img4.jpg'] // 🧊 Vital para que el Prisma gire
+        holo_images:['/images/ana1.jpg', '/images/ana2.jpg', '/images/ana3.jpg', '/images/ana4.jpg'] // 🧊 Vital para que el Prisma gire
       },
    {
     id: "bot3",
@@ -267,6 +269,7 @@ export const MASTER_DB = [
     type:['shop', 'live'], // 🏷️ Dile en qué sectores quieres que aparezca
     role: "MUSIC",
     img: '/images/steel_5.png',
+    twit_message: 'Lap Steel te da Paz',
     video_file: "https://www.dropbox.com/scl/fi/zsey9jh7tzzvx3bksllwm/Celestial_Drift-master.mp4?rlkey=dhph8iy6ji2s4av4cshi5lq5q&st=4lfzcqt7&dl=0",
     audioFile: "/audio/Celestial_Echoes.mp3",
     lat: 40.4530,

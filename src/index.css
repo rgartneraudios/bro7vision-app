@@ -238,4 +238,66 @@ img {
   to {
     transform: rotateY(360deg);
   }
+  
+  /* Esto es lo único que debería ser necesario para ocultar el scroll en todo el proyecto */
+.no-scrollbar::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* =======================================================
+   1. SCROLLBAR NEÓN GLOBAL (LA BARRA DERECHA DEL NAVEGADOR)
+   Esto afecta a toda la página web (Edge, Chrome, Opera, Safari)
+   ======================================================= */
+
+/* Firefox (es un poco especial, solo acepta colores sólidos, sin brillo) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #00f2ff #050505;
+}
+
+/* El ancho de la barra global */
+::-webkit-scrollbar {
+  width: 8px; 
+  height: 8px; /* Para barras horizontales globales */
+  background-color: #050505; /* Fondo casi negro */
+}
+
+/* El carril por donde baja la barra */
+::-webkit-scrollbar-track {
+  background-color: #050505;
+  border-left: 1px solid rgba(0, 242, 255, 0.1); /* Línea sutil cyberpunk */
+}
+
+/* La barrita que el usuario arrastra (El Neón Cyan) */
+::-webkit-scrollbar-thumb {
+  background-color: #00f2ff; /* Color Cyan de tu web */
+  border-radius: 10px;
+  border: 1px solid #000; /* Separador para que se vea pro */
+}
+
+/* Cuando el usuario pasa el ratón por la barra (Cambia a Violeta/Fucsia) */
+::-webkit-scrollbar-thumb:hover {
+  background-color: #bc13fe; 
+  border: 1px solid #fff;
+}
+
+
+/* =======================================================
+   2. REGLA PARA TU CLASE "no-scrollbar" (OCULTA BARRAS INTERNAS)
+   Esto hace que el pedazo de código que me enviaste funcione
+   ======================================================= */
+@layer utilities {
+  /* Oculta en Edge, Chrome, Safari */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Oculta en Firefox e IE */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
 }

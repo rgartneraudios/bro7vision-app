@@ -646,7 +646,7 @@ const CronosGame = ({ onWin, onClose }) => {
       )}
       <canvas ref={canvasRef} width={WIDTH} height={HEIGHT} className="max-w-full max-h-full object-contain" />
       <button onClick={handleClose} className="absolute top-10 right-10 text-white/40 hover:text-white font-black text-xl uppercase tracking-widest">❮ EXIT</button>
-      <div className="absolute top-10 left-16 text-cyan-400 font-black text-6xl italic drop-shadow-2xl">GÉNESIS: {score}</div>
+      <div className="absolute top-6 left-16 text-cyan-400 font-black text-5xl italic drop-shadow-2xl">GÉNESIS: {score}</div>
       
       {gameOver && (
         <div className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center z-[20] animate-fadeIn">
@@ -669,17 +669,47 @@ const CronosGame = ({ onWin, onClose }) => {
         </div>
       )}
       
-      <div className="absolute left-10 bottom-10 w-80 text-white/70 text-lg leading-relaxed z-[15]"> <h2 className="text-yellow-400 font-black text-3xl mb-4">TELECRONOS</h2> <p> Telecronos es un modelo beta. Si gusta, lanzaremos una versión premium con más niveles y mecánicas.
+   {/* 🌟 INYECTAMOS EL SCROLL AMARILLO DIRECTO EN EL JUEGO 🌟 */}
+      <style>{`
+        .cronos-scroll::-webkit-scrollbar { width: 4px; }
+        .cronos-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); border-radius: 10px; }
+        .cronos-scroll::-webkit-scrollbar-thumb { background: #facc15; border-radius: 10px; box-shadow: 0 0 8px #facc15; }
+        .cronos-scroll::-webkit-scrollbar-thumb:hover { background: #fff; }
+        .cronos-scroll { scrollbar-width: thin; scrollbar-color: #facc15 rgba(0,0,0,0.5); }
+      `}</style>
 
-Activa los cubos para obtener las 9 gemas (20 Génesis cada una).
-Al activar un cubo, se abre su portal. Entra rápido: si un enemigo entra antes, pierdes esa gema.
-
-Los enemigos rojos te matan al contacto.
-Los portales abiertos absorben enemigos y los convierten en fantasmas.
-Los fantasmas no matan, pero si te atraviesan te quitan 10 Génesis.
-
-La estrategia ideal es abrir portales para transformar a los enemigos y sobrevivir mientras acumulas Génesis.
-Usa las flechas de dirección para mover al jugador por el laberinto.  </p> </div>
+      {/* PANEL HUD: Más angosto, centrado verticalmente a la izquierda */}
+      <div className="absolute left-2 md:left-12 top-[15%] md:top-[20%] w-48 md:w-56 bg-black/80 backdrop-blur-md p-4 rounded-xl border border-yellow-500/30 shadow-[0_0_30px_rgba(0,0,0,0.9)] z-[20] flex flex-col"> 
+        
+        <h2 className="text-yellow-400 font-black text-lg md:text-2xl mb-3 uppercase tracking-widest drop-shadow-md border-b border-yellow-500/20 pb-2">
+            TELECRONOS
+        </h2> 
+        
+        {/* TEXTO: Fuente más pequeña y con más altura máxima */}
+        <div className="text-gray-300 text-[10px] md:text-[12.5px] leading-relaxed max-h-[60vh] overflow-y-auto cronos-scroll pr-3 flex flex-col gap-3 font-mono">
+            <p>
+                <span className="text-yellow-400 font-bold block mb-0.5">INFO:</span> 
+                Telecronos es un modelo beta. Si gusta, lanzaremos versión premium con más niveles.
+            </p>
+            <p>
+                <span className="text-cyan-400 font-bold block mb-0.5">OBJETIVO:</span> 
+                Activa los cubos para obtener 9 gemas <span className="text-fuchsia-400">(20 Génesis c/u)</span>. Entra rápido al portal antes que el enemigo.
+            </p>
+            <p>
+                <span className="text-red-500 font-bold block mb-0.5">PELIGRO:</span> 
+                Los enemigos rojos te matan al contacto.
+            </p>
+            <p>
+                <span className="text-purple-400 font-bold block mb-0.5">MECÁNICA:</span> 
+                Los portales absorben enemigos y los hacen fantasmas. Los fantasmas te quitan 10 Génesis al cruzarlos.
+            </p>
+            <p>
+                <span className="text-green-400 font-bold block mb-0.5">ESTRATEGIA:</span> 
+                Abre portales, transforma enemigos y sobrevive. Usa las flechas para moverte.
+            </p>
+        </div>
+        
+      </div>
       
     </div>, document.body
   );
