@@ -158,7 +158,7 @@ const LiveGrid = ({ items, onTuneIn, onUserClick, onClose, onOpenVideo, onSelect
         onClick={() => triggerHalo(creator)} 
         className="py-2 bg-black text-white border-2 border-[#ff00ff] rounded-xl text-[9px] font-black uppercase shadow-[0_0_10px_rgba(255,0,255,0.3)] hover:shadow-[0_0_15px_rgba(255,0,255,0.6)] transition-all flex items-center justify-center"
     >
-        ✈️
+        🌩️
     </button>
 </div></div>
             </div>

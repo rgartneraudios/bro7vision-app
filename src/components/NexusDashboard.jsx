@@ -26,7 +26,6 @@ const NexusDashboard = ({
     onOpenVideo,
     scope,
     onHoverCard,
-    // 👇 ¡AÑADE ESTAS VARIABLES NUEVAS AQUÍ! 👇
     step, 
     setStep,
     session,
@@ -79,22 +78,22 @@ const NexusDashboard = ({
   return (
     <div className="absolute inset-0 z-40 flex flex-col items-center justify-center pointer-events-none font-mono">
       
-      {/* 1. SECTOR SUPERIOR: FEED DE NOTICIAS */}
-      {isCardMode && (
-          <div onClick={handleLogClick} className="absolute top-20 md:top-8 w-full max-w-4xl px-4 z-50 pointer-events-auto cursor-pointer animate-slideDown">
-            <div className="bg-black/40 backdrop-blur-md border-y border-cyan-500/20 py-3 text-center transition-all hover:scale-105">
-                <p className="text-[8px] text-cyan-400 font-black uppercase tracking-[0.4em] mb-1 animate-pulse">⚡ BRO-LOGS FEED</p>
-                <h2 className="text-sm md:text-xl text-white font-thin italic tracking-wide">"{MOCK_LOGS[currentLogIndex]}"</h2>
-            </div>
-          </div>
-      )}
+  {/*1. ESTO ES EL TICKER (SIEMPRE ARRIBA) */}
+<div className="absolute top-0 md:top-0 w-full px-4 z-[60] pointer-events-none">
+  <div className="max-w-4xl mx-auto pointer-events-auto">
+     <CommunityTicker onUserClick={onUserClick} />
+  </div>
+</div>
 
-      {/* 2. COMMUNITY TICKER */}
-      {isAIMode && (
-          <div className="absolute top-0 w-full z-30 pointer-events-auto"> 
-             <CommunityTicker onUserClick={onUserClick} />
-          </div>
-      )}
+{/* 2. SECTOR SUPERIOR: FEED DE NOTICIAS */}
+{isCardMode && (
+  <div onClick={handleLogClick} className="absolute top-20 md:top-20 w-full max-w-4xl px-4 z-50 pointer-events-auto cursor-pointer">
+     <div className="bg-black/40 backdrop-blur-md border-y border-cyan-500/20 py-3 text-center">
+        <p className="text-[8px] text-cyan-400 font-black uppercase tracking-[0.4em] mb-1 animate-pulse">⚡ BRO-LOGS FEED</p>
+        <h2 className="text-sm md:text-xl text-white font-thin italic tracking-wide">"{MOCK_LOGS[currentLogIndex]}"</h2>
+     </div>
+  </div>
+)}
 
       {/* 3. VÓRTICE DE BURBUJAS (PAGINATED DISPLAY) */}
       {isCardMode && (
@@ -314,18 +313,22 @@ const NexusDashboard = ({
               </div>
           </div>
       )}      
-      {/* 6. MODO RADIO (RADIO GEOLOCALIZADA) */}
-      {isLiveMode && (
-         <LiveGrid 
-            items={items} // CABLE CONECTADO: Aquí faltaba items
-            onTuneIn={onTuneIn} 
-            onSelectShop={onSelectShop}
-            onClose={() => setIntent('broshop')} 
-            onOpenVideo={onOpenVideo} 
-            onUserClick={onHoverCard}
-         />
-      )}
-      
+     
+     {/* 6. MODO RADIO (RADIO GEOLOCALIZADA) */}
+{/* Aquí NO le pongas el Ticker, el Ticker ya está arriba de todo gracias al bloque de arriba */}
+{isLiveMode && (
+   <div className="z-50">
+     <LiveGrid 
+        items={items} 
+        onTuneIn={onTuneIn} 
+        onSelectShop={onSelectShop}
+        onClose={() => setIntent('broshop')} 
+        onOpenVideo={onOpenVideo} 
+        onUserClick={onHoverCard}
+     />
+   </div>
+)}
+        
       {(intent === 'broshop' || intent === 'lives') && (
         <CityLocationBanner scope={scope} />
       )}
