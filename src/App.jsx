@@ -425,6 +425,7 @@ function App() {
     balances={balances} 
     setBalances={setBalances} 
     session={session}
+     onOpenLog={setSelectedLog} 
     onClose={() => setProjectingUser(null)} 
   />
 )}
