@@ -271,6 +271,7 @@ export const MASTER_DB = [
     img: '/images/steel_5.png',
     twit_message: 'Lap Steel te da Paz',
     video_file: "https://www.dropbox.com/scl/fi/zsey9jh7tzzvx3bksllwm/Celestial_Drift-master.mp4?rlkey=dhph8iy6ji2s4av4cshi5lq5q&st=4lfzcqt7&dl=0",
+    video_file_219: "/videos/Steel-219.mp4",
     audioFile: "/audio/Celestial_Echoes.mp3",
     lat: 40.4530,
     lng: -3.6883,

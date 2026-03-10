@@ -1,5 +1,5 @@
 // src/components/HoloProjector219.jsx
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect} from 'react';
 import { supabase } from '../supabaseClient';
 
 const HoloProjector219 = ({ user, balances, setBalances, session, onClose, onOpenLog }) => {
@@ -146,18 +146,18 @@ const HoloProjector219 = ({ user, balances, setBalances, session, onClose, onOpe
         }}
       >
         {/* VIDEO PRINCIPAL */}
-        <video
-          ref={videoRef}
-          src={getCleanUrl(user.video_file)}
-          autoPlay loop playsInline muted={isMuted}
-          className="absolute inset-0 w-full h-full object-cover animate-fadeIn"
-          onTimeUpdate={() => {
-            if (videoRef.current?.duration) {
-              setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100);
-            }
-          }}
-        />
-
+<video
+  ref={videoRef}
+  // 👇 Intenta cargar el 21:9, si está vacío carga el normal como respaldo
+  src={getCleanUrl(user.video_file_219 || user.video_file)} 
+  autoPlay loop playsInline muted={isMuted}
+  className="absolute inset-0 w-full h-full object-cover animate-fadeIn"
+  onTimeUpdate={() => {
+    if (videoRef.current?.duration) {
+      setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100);
+    }
+  }}
+/>
         {/* MENSAJE DEL CREADOR FLOTANTE */}
         <div className="absolute top-3 left-0 w-full px-5 z-30 pointer-events-none">
           <div className="animate-spirit">

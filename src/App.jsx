@@ -15,6 +15,8 @@ import BoosterModal from './components/BoosterModal';
 import LegalTerminal from './components/LegalTerminal';
 import HoloProjector from './components/HoloProjector';
 import BioForest from './components/BioForest';
+import ChannelEste from './components/ChannelEste';
+import ChannelOeste from './components/ChannelOeste';
  import RacoonTerminal from './components/RacoonTerminal';
 import RealityTuner from './components/RealityTuner';
 import HoloPrism from './components/HoloPrism';
@@ -38,6 +40,7 @@ function App() {
   const [isTeleporting, setIsTeleporting] = useState(false);
   const [teleportCoords, setTeleportCoords] = useState({ city: '' });
   const [projectingUser, setProjectingUser] = useState(null);
+  const [is219Mode, setIs219Mode] = useState(false); 
   const [selectedLog, setSelectedLog] = useState(null);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [audioUser, setAudioUser] = useState(null);
@@ -178,11 +181,38 @@ function App() {
     
     return ALL;
   }, [intent, realItems]);  
-  const hubVideos = useMemo(() => [
-    { alias: "BRO MASTER", video_file: "/videos/Chica_forest.mp4", id: "master_01" },
-    ...realItems.filter(i => i.video_file)
-  ], [realItems]);
   
+  const hubVideos = useMemo(() => {
+    // 1. Mapear los Mocks de MASTER_DB para que tengan la misma estructura que los reales
+    const masterVideos = MASTER_DB
+      .filter(m => m.video_file) // Aseguramos que tengan video
+      .map(m => ({
+        ...m,
+        id: m.id,
+        alias: m.name || m.alias,
+        video_file: m.video_file,
+        source: 'master'
+      }));
+
+    // 2. Mapear los de Supabase (realItems)
+    const supabaseVideos = realItems
+      .filter(i => i.video_file)
+      .map(i => ({
+        ...i,
+        alias: i.alias,
+        video_file: i.video_file,
+        id: i.id,
+        source: 'supabase'
+      }));
+
+    // 3. Unir todo
+    return [
+      { alias: "BRO MASTER", video_file: "/videos/Chica_forest.mp4", id: "master_01" },
+      ...masterVideos,
+      ...supabaseVideos
+    ];
+  }, [realItems]); // Solo se recalcula cuando cambian los usuarios de Supabase
+    
   if (!session && !isGuest) {
     return <GenesisGate onGuestAccess={() => { setIsGuest(true); setStep(0); setRealityMode(null); setBalances({ genesis: 500, nova: 20 }); }} />;
   }
@@ -191,12 +221,15 @@ function App() {
     <div className="relative w-full h-screen bg-black text-white overflow-hidden font-sans">
       
       {/* 1. FONDO DE VIDEOS */}
-      <div className="absolute inset-0 z-0">
-        {step === 0 && (
-          !realityMode ? <RealityTuner onSelect={setRealityMode} /> : 
-          <BioForest videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={setProjectingUser} selectedForestUser={selectedForestUser} />
-        )}
-        {step === 1 && <video src="/portada.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover" />}
+<div className="absolute inset-0 z-0">
+  {step === 0 && !projectingUser && (  // 👈 añade && !projectingUser
+    !realityMode ? <RealityTuner onSelect={setRealityMode} /> :
+    realityMode === 'este'  ? <ChannelEste  videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={setProjectingUser} selectedForestUser={selectedForestUser} /> :
+    realityMode === 'oeste' ? <ChannelOeste videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={setProjectingUser} selectedForestUser={selectedForestUser} /> :
+    <BioForest videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={setProjectingUser} selectedForestUser={selectedForestUser} />
+  )}
+  
+          {step === 1 && <video src="/portada.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover" />}
         {step === 2 && (
           <video 
             key={intent} 
@@ -417,19 +450,23 @@ function App() {
       {showWalletModal && <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-xl"><ConversionModal balances={balances} setBalances={setBalances} onClose={() => setShowWalletModal(false)} /></div>}
       {showBooster && <div className="fixed inset-0 z-[200] bg-black/80 flex items-center justify-center"><BoosterModal onClose={() => setShowBooster(false)} /></div>}
       
-      {/* TELEFONO CASA / HOLOPROJECTOR */}
-      {projectingUser && (
+      {/* TELEFONO CASA / HOLOPROJECTOR (VERTICAL) */}
+{projectingUser && !is219Mode && (
   <HoloProjector 
     videoUrl={projectingUser.video_file || projectingUser.videoUrl} 
     user={projectingUser} 
     balances={balances} 
     setBalances={setBalances} 
     session={session}
-     onOpenLog={setSelectedLog} 
-    onClose={() => setProjectingUser(null)} 
+    onOpenLog={setSelectedLog} 
+    onClose={() => {
+      setProjectingUser(null);
+      setIs219Mode(false); // Reseteamos por si acaso
+    }} 
+    onGoTo219={() => setIs219Mode(true)} // 👈 LE PASAMOS ESTA NUEVA PROP
   />
 )}
-      
+
       {/* TERMINAL SHOP (PAGOS) */}
       {selectedCard && (
   <PaymentModal 

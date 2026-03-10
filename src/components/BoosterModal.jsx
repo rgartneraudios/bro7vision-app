@@ -186,7 +186,7 @@ const BoosterModal = ({ onClose }) => {
   return (
     // CONTENEDOR PRINCIPAL CON FONDO DEEP NEBULA
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-fadeIn font-sans">
-      <div className="absolute inset-0 bg-[#020617]/90 backdrop-blur-xl transition-all" onClick={onClose}></div>
+      <div className="absolute inset-0 bg-[#040714]/90 backdrop-blur-xl transition-all" onClick={onClose}></div>
       
       {/* VENTANA MODAL BIOLUMINISCENTE */}
       <div className="relative z-10 w-full max-w-5xl bg-[#050b14] border border-cyan-500/30 rounded-3xl shadow-[0_0_50px_rgba(6,182,212,0.15)] overflow-hidden flex flex-col h-[90vh]">
@@ -306,18 +306,22 @@ const BoosterModal = ({ onClose }) => {
                             
                             <div className="space-y-4 pt-4 border-t border-white/5">
                                 <div>
-                                    <label className={LabelStyle}>🎬 Video Principal (Forest)</label>
+                                    <label className={LabelStyle}>🎬 VIDEO PRINCIPAL (Forest y Teléfono Casa)</label>
                                     <input type="text" value={formData.video_file} onChange={e=>setFormData({...formData, video_file:e.target.value})} className={InputStyle} />
                                 </div>
                                 <div>
-                                    <label className="text-xs font-bold text-yellow-400 mb-1 ml-1 block">⚡ Video Alternativo 2</label>
+                                    <label className="text-xs font-bold text-yellow-400 mb-1 ml-1 block">⚡ Video Teléfono Casa 2</label>
                                     <input type="text" value={formData.video_file_2} onChange={e=>setFormData({...formData, video_file_2:e.target.value})} className={`${InputStyle} border-yellow-500/20 focus:border-yellow-400`} />
                                 </div>
                                 <div>
-                                    <label className="text-xs font-bold text-fuchsia-400 mb-1 ml-1 block">🔮 Video Alternativo 3</label>
+                                    <label className="text-xs font-bold text-fuchsia-400 mb-1 ml-1 block">🔮 Video Teléfono Casa 3</label>
                                     <input type="text" value={formData.video_file_3} onChange={e=>setFormData({...formData, video_file_3:e.target.value})} className={`${InputStyle} border-fuchsia-500/20 focus:border-fuchsia-400`} />
                                 </div>
-                            </div>                        
+                             <div>
+                              <label className="text-xs font-bold text-orange-400 mb-1 ml-1 block">🎬 PISO 219 (Video a 21:9)</label>
+       			 <input type="text" value={formData.video_file_219} onChange={e=>setFormData({...formData, video_file_219:e.target.value})} className={`${InputStyle} border-orange-500/20 focus:border-orange-400`} />
+    				</div>
+                               </div>                        
                         </div>
                     </div>
                 )}

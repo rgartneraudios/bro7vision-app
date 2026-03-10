@@ -1,5 +1,5 @@
 // src/components/BioForest.jsx
-// VERSIÓN COMPLETA: Nihilanth + Fix Audio + Fix Touch + Ecos completos + Hyper Zap + Tribu
+// VERSIÓN COMPLETA: Nihilanth + Fix Audio + Fix Touch + Ecos completos + Hyper Zap
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '../supabaseClient';
@@ -54,9 +54,9 @@ const FOREST_STYLES = `
 `;
 
 const PC_SLOTS = [
-    {x:5,y:25},{x:7,y:50},{x:14,y:75},
+    {x:5,y:25},{x:7,y:50},{x:84,y:75},
     {x:72,y:45},{x:75,y:35},{x:75,y:80},
-    {x:15,y:3},{x:80,y:3},{x:5,y:80},
+    {x:15,y:3},{x:80,y:3},{x:75,y:70},
 ];
 const MOBILE_SLOTS = [{x:28,y:67},{x:8,y:4},{x:28,y:6},{x:28,y:15}];
 
@@ -68,7 +68,6 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
   const [visualEchos, setVisualEchos] = useState([]);
   const [floatingEchos, setFloatingEchos] = useState([]);
   const [visorScale, setVisorScale] = useState(1);
-  const [mousePos, setMousePos] = useState({x:0,y:0});
   const [showEchoInput, setShowEchoInput] = useState(false);
   const [echoType, setEchoType] = useState('text');
   const [echoText, setEchoText] = useState("");
@@ -84,7 +83,9 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
   const hlsRef = useRef(null);
   const touchStart = useRef(0);
   const touchEnd = useRef(0);
-
+  
+  
+   
   const displayUsers = useMemo(() => {
     // 1. Tomamos los usuarios que vienen de App.jsx (Aquí ya vendrán Lap_Steel, Bro Master, etc. desde MASTER_DB)
     const safeUsers = videoUsers?.length > 0 ? videoUsers : [];
@@ -102,21 +103,58 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
   }, [videoUsers]); // Ya no dependemos de nada interno, solo de lo que nos pasen.
   
   const currentUser = useMemo(() => displayUsers[currentIndex % displayUsers.length], [displayUsers,currentIndex]);
+  
+  useEffect(()=>{
+    const video=videoRef.current;
+    const bgVideo=bgVideoRef.current;
+    if(!video||!currentUser)return;
 
-  // Paralaje — solo fondo
-  useEffect(() => {
-    const onMove = (e) => setMousePos({x:(e.clientX/window.innerWidth)*2-1, y:(e.clientY/window.innerHeight)*2-1});
-    const onOri  = (e) => { if(!e.gamma) return; setMousePos({x:Math.min(Math.max(e.gamma/45,-1),1), y:Math.min(Math.max(e.beta/45,-1),1)}); };
-    window.addEventListener('mousemove',onMove);
-    if(window.DeviceOrientationEvent) window.addEventListener('deviceorientation',onOri);
-    return () => { window.removeEventListener('mousemove',onMove); window.removeEventListener('deviceorientation',onOri); };
-  },[]);
+    // 👇 NUEVO: pausa antes de cambiar
+    video.pause();
 
-  const getTimeSuffix = () => { const h=new Date().getHours(); if(h>=7&&h<15)return'D'; if(h>=15&&h<21)return'T'; return'N'; };
+    const playUrl=cleanUrl(currentUser.video_file||"");
+    if(hlsRef.current){hlsRef.current.destroy();hlsRef.current=null;}
+    const isHLS=playUrl.includes('.m3u8');
+    if(isHLS){
+      if(video.canPlayType('application/vnd.apple.mpegurl')){video.src=playUrl;video.muted=isMuted;video.play().catch(()=>{});}
+      else if(Hls.isSupported()){const hls=new Hls();hls.loadSource(playUrl);hls.attachMedia(video);hls.on(Hls.Events.MANIFEST_PARSED,()=>{video.muted=isMuted;video.play().catch(()=>{});});hlsRef.current=hls;}
+    } else {
+      const same=video.src===playUrl||video.src===window.location.origin+playUrl;
+      if(!same){
+        video.pause();video.src="";video.load();
+        video.src=playUrl;video.muted=isMuted;video.load();video.play().catch(()=>{});
+      }
+    }
+    setVisualEchos([]);setFloatingEchos([]);
+
+    // 👇 NUEVO: cleanup al desmontar o cambiar usuario
+    return () => {
+      video.pause();
+      video.src = "";
+      video.load();
+      }
+  if (bgVideo) {
+    bgVideo.pause();
+    bgVideo.src = "";
+    bgVideo.load();
+  }
+  if (hlsRef.current) {
+    hlsRef.current.destroy();
+    hlsRef.current = null;
+  }
+  },[currentUser]);
+
+  const getTimeSuffix = () => { 
+  const h = new Date().getHours(); 
+  if(h >= 5  && h < 11) return '1';  // 05-11
+  if(h >= 11 && h < 17) return '2';  // 11-17
+  if(h >= 17 && h < 23) return '3';  // 17-23
+  return '4';                         // 23-05
+};
 
   const config = useMemo(() => {
     const t=getTimeSuffix();
-    const v=(n)=>`/videos/${n}_${t==='D'?1:t==='T'?2:3}.mp4`;
+    const v = (n) => `/videos/${n}_${t}.mp4`;
     switch(realityMode){
       case 'solo_earth':   return {video:v('solo_earth'),  colors:['text-emerald-600','text-cyan-300'],  reactionColor:'emerald',labelClass:'text-emerald-600',labelText:'SOLO EARTH',  navColor:'text-emerald-500'};
       case 'band_earth':   return {video:v('band_earth'),  colors:['text-blue-400','text-indigo-300'],   reactionColor:'blue',   labelClass:'text-blue-400',   labelText:'BAND EARTH',  navColor:'text-blue-400'   };
@@ -269,7 +307,6 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
   };
 
   const isTvMode=currentUser&&(currentUser.isTv||currentUser.is_tv);
-  const bgTransform=`translate(${mousePos.x*-30}px,${mousePos.y*-20}px) scale(1.1)`;
   const portalTransform=`scale(${visorScale})`; // visor fijo, sin paralaje
 
   const neonColors=[
@@ -325,7 +362,7 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
 
       {/* 1. FONDO con paralaje */}
       {config.video && (
-        <div className="absolute inset-0 z-[1] transition-transform duration-300 ease-out will-change-transform" style={{transform:bgTransform}}>
+        <div className="absolute inset-0 z-[1] transition-transform duration-300 ease-out will-change-transform" >
           <video 
             src={config.video} 
             autoPlay 
@@ -334,7 +371,6 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
             playsInline 
             className="w-full h-full object-cover"
           />
-          {/* EL GRADIENTE HA SIDO ELIMINADO AQUÍ */}
         </div>
       )}  
 
@@ -376,6 +412,7 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
       {/* 3. VÓRTICE GEMAS */}
       {activeReaction&&(
         <div className="fixed bottom-4 right-[15%] z-[100] pointer-events-none animate-vortex">
+          {/* ... (código del vórtice intacto) ... */}
           {(()=>{
             const pal=[
               {primary:"#00127A",secondary:"#006AED",glow:"rgba(59,130,246,0.6)"},
@@ -412,72 +449,94 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
       )}
 
       {/* 4. VISOR PORTAL — NIHILANTH */}
-      <div onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}
-           className="absolute top-[45%] md:top-[42%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[20]"
-           style={{perspective:'2000px'}}>
-        <div className="relative w-[58vw] aspect-[9/16] md:w-[320px] md:h-[568px] md:aspect-auto flex items-center justify-center"
-             style={{transformStyle:'preserve-3d'}}>
-
-          {/* NÚCLEO VISOR ESTÁTICO */}
-          <div className="relative w-full h-full z-[10]"
-               style={{transform:portalTransform,transformStyle:'preserve-3d'}}
-               onDoubleClick={()=>setVisorScale(1)}>
-            <div className="relative w-full h-full rounded-[3.5rem] overflow-hidden visor-border bg-black flex items-center justify-center">
-              {isTvMode&&(
-                <div className="absolute inset-0 z-0 opacity-30 blur-[60px] scale-150 pointer-events-none bg-gradient-to-t from-blue-900 via-purple-900 to-pink-900"/>
-              )}
-            
-              {/* VIDEO — sin prop muted, lo controla efecto B */}
-              <video ref={videoRef} key={currentUser.id} poster={currentUser.poster||""} autoPlay loop={!isTvMode} playsInline
-                     className={`relative z-10 transition-all duration-700 ${isTvMode?'w-full h-auto aspect-video object-contain bg-black':'w-full h-full object-cover'}`}
-                     onTimeUpdate={()=>videoRef.current&&setProgress((videoRef.current.currentTime/(videoRef.current.duration||100))*100)}/>
-              {/* BOTÓN MUTE dentro del overflow — nunca cae fuera */}
-              <button onClick={(e)=>{e.stopPropagation();setIsMuted(p=>!p);}}
-                      className="absolute top-4 right-4 bg-black/60 backdrop-blur-md p-3 rounded-full text-lg z-[150] border border-white/20 hover:bg-white/20 transition-all">
-                {isMuted?'🔇':'🔊'}
-              </button>
-              {!isTvMode&&(
-                <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10 z-[150]">
-                  <div className={`h-full transition-all duration-300 ${config.reactionColor==='orange'?'bg-orange-500':'bg-cyan-500'}`} style={{width:`${progress}%`}}/>
-                </div>
-              )}
-            </div>
+<div onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}
+     className="absolute top-[45%] md:top-[52%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[20]"
+     style={{perspective:'2000px'}}>
+  
+  {/* MÁS LARGO HACIA ABAJO: aumenté md:h-[82vh] y subí el top a 52% */}
+  <div className="relative w-[62vw] aspect-[9/19] md:w-[360px] md:h-[82vh] md:max-h-[950px] md:aspect-auto flex items-center justify-center overflow-visible"
+     style={{transformStyle:'preserve-3d'}}>
+     
+    {/* NÚCLEO VISOR ESTÁTICO */}
+    <div className="relative w-full h-full z-[10]"
+         style={{transform:portalTransform,transformStyle:'preserve-3d'}}
+         onDoubleClick={()=>setVisorScale(1)}>
+      <div className="relative w-full h-full rounded-[3.5rem] overflow-hidden visor-border bg-black flex items-center justify-center">
+        {isTvMode&&(
+          <div className="absolute inset-0 z-0 opacity-30 blur-[60px] scale-150 pointer-events-none bg-gradient-to-t from-blue-900 via-purple-900 to-pink-900"/>
+        )}
+      
+        <video ref={videoRef} key={currentUser.id} poster={currentUser.poster||""} autoPlay loop={!isTvMode} playsInline
+               className={`relative z-10 transition-all duration-700 ${isTvMode?'w-full h-auto aspect-video object-contain bg-black':'w-full h-full object-cover'}`}
+               onTimeUpdate={()=>videoRef.current&&setProgress((videoRef.current.currentTime/(videoRef.current.duration||100))*100)}/>
+        
+        <button onClick={(e)=>{e.stopPropagation();setIsMuted(p=>!p);}}
+                className="absolute top-4 right-4 bg-black/60 backdrop-blur-md p-3 rounded-full text-lg z-[150] border border-white/20 hover:bg-white/20 transition-all">
+          {isMuted?'🔇':'🔊'}
+        </button>
+        {!isTvMode&&(
+          <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10 z-[150]">
+            <div className={`h-full transition-all duration-300 ${config.reactionColor==='orange'?'bg-orange-500':'bg-cyan-500'}`} style={{width:`${progress}%`}}/>
           </div>
+        )}
+      </div>
+    </div>
 
-          {/* ORBES PC */}
-          <div className="hidden md:flex absolute top-1/2 -left-20 -translate-y-1/2 z-[100] flex-col items-center cursor-pointer group orb-float"
-               onClick={()=>setCurrentIndex(p=>p>0?p-1:displayUsers.length-1)}>
-            <div className={`w-14 h-14 rounded-full flex items-center justify-center relative orb-glow transition-transform group-hover:scale-110 ${config.colors[0]}`} style={{color:'currentColor'}}>
-              <div className="absolute inset-0 bg-current opacity-20 blur-xl rounded-full"/>
-              <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-slow"/>
-              <span className="text-3xl font-black text-white relative z-10 pb-1">‹</span>
-            </div>
-          </div>
-          <div className="hidden md:flex absolute top-1/2 -right-20 -translate-y-1/2 z-[100] flex-col items-center cursor-pointer group orb-float"
-               style={{animationDelay:'1.5s'}} onClick={()=>setCurrentIndex(p=>p+1)}>
-            <div className={`w-14 h-14 rounded-full flex items-center justify-center relative orb-glow transition-transform group-hover:scale-110 ${config.colors[0]}`} style={{color:'currentColor'}}>
-              <div className="absolute inset-0 bg-current opacity-20 blur-xl rounded-full"/>
-              <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-reverse"/>
-              <span className="text-3xl font-black text-white relative z-10 pb-1">›</span>
-            </div>
-          </div>
+    <div className="hidden md:flex absolute bottom-[-20px] left-1/2 -translate-x-1/2 z-[100] flex-row items-center gap-8">
+  
+  	{/* ORBE ANTERIOR */}
+  	<div style={{ transform: 'translateX(-200px)' }}>
+    	<div className="cursor-pointer group orb-float"
+         onClick={()=>setCurrentIndex(p=>p>0?p-1:displayUsers.length-1)}>
+      	<div className={`w-14 h-14 rounded-full flex items-center justify-center relative orb-glow transition-transform group-	hover:scale-110 ${config.colors[0]}`} style={{color:'currentColor'}}>
+        <div className="absolute inset-0 bg-current opacity-20 blur-xl rounded-full"/>
+        <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-slow"/>
+        <span className="text-3xl font-black text-white relative z-10 pb-1">‹</span>
+      </div>
+    </div>
+  </div>
 
-          {/* BOTONERA (Se mantiene intacta) */}
-          <div className="absolute -bottom-28 md:-bottom-44 left-0 w-full flex flex-col items-center gap-3 z-50 pointer-events-auto">
-            <div className="absolute inset-x-2 -inset-y-4 bg-black/60 backdrop-blur-md rounded-[3rem] -z-10 shadow-[0_0_30px_rgba(0,0,0,0.5)]"/>
-            <div className="flex items-center justify-center gap-2 w-full max-w-[350px] px-4">
-              <button onClick={()=>handleAction('reaction')} className="flex-1 py-3 bg-white text-black border border-white rounded-xl text-[9px] font-black uppercase shadow-[0_0_15px_rgba(255,255,255,0.4)] hover:scale-105 transition-transform">✨ HALO</button>
-              <button onClick={()=>{if(currentUser)onOpenProfile(currentUser);}} className="flex-1 py-3 bg-black text-white border-2 border-[#bf00ff] rounded-xl text-[9px] font-black uppercase shadow-[0_0_15px_rgba(191,0,255,0.6),inset_0_0_8px_rgba(191,0,255,0.4)] hover:scale-105 transition-all animate-pulse">
-                <span className="drop-shadow-[0_0_8px_rgba(191,0,255,0.9)]">☝️ TELEFONO CASA</span>
-              </button>
-              <button onClick={()=>setShowEchoInput(true)} className="flex-1 py-3 bg-black/90 border border-white/20 text-white rounded-xl text-[9px] font-black uppercase">💬 ECO</button>
-            </div>
-            <p className={`relative z-10 text-[9px] md:text-[11px] font-black tracking-[0.4em] uppercase ${config.labelClass} mt-1 drop-shadow-lg`}>
-              {config.labelText} // {currentUser?.alias || 'ANÓNIMO'}
-            </p>
-          </div>
+  	{/* ORBE SIGUIENTE */}
+  	<div style={{ transform: 'translateX(200px)' }}>
+    	<div className="cursor-pointer group orb-float"
+         style={{animationDelay:'1.5s'}}
+         onClick={()=>setCurrentIndex(p=>p+1)}>
+      	<div className={`w-14 h-14 rounded-full flex items-center justify-center relative orb-glow transition-transform group-	hover:scale-110 ${config.colors[0]}`} style={{color:'currentColor'}}>
+        <div className="absolute inset-0 bg-current opacity-20 blur-xl rounded-full"/>
+        <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-reverse"/>
+        <span className="text-3xl font-black text-white relative z-10 pb-1">›</span>
+      </div>
+    </div>
+  </div>
 
+	</div>
+  	</div>
+</div>
+
+      {/* 5. NUEVO FOOTER: SOMBREADO + BOTONES + CREADOR */}
+      {/* Añadimos pointer-events-none al contenedor general, pero auto a los botones para que los clics funcionen sin bloquear la pantalla */}
+      <div className="absolute bottom-0 left-0 w-full flex flex-col md:flex-row justify-between items-center md:items-end px-4 py-6 md:px-[10%] md:py-8 z-[150] pointer-events-none bg-gradient-to-t from-black/90 via-black/60 to-transparent">
+        
+        {/* IZQUIERDA: Botonera */}
+        <div className="flex items-center justify-center gap-3 w-full md:w-auto pointer-events-auto mb-4 md:mb-0">
+          <button onClick={()=>handleAction('reaction')} className="px-5 py-3 md:py-4 bg-white text-black border border-white rounded-xl text-[9px] md:text-[11px] font-black uppercase shadow-[0_0_15px_rgba(255,255,255,0.4)] hover:scale-105 transition-transform">
+            ✨ HALO
+          </button>
+          <button onClick={()=>{if(currentUser)onOpenProfile(currentUser);}} className="px-5 py-3 md:py-4 bg-black text-white border-2 border-[#bf00ff] rounded-xl text-[9px] md:text-[11px] font-black uppercase shadow-[0_0_15px_rgba(191,0,255,0.6),inset_0_0_8px_rgba(191,0,255,0.4)] hover:scale-105 transition-all animate-pulse">
+            <span className="drop-shadow-[0_0_8px_rgba(191,0,255,0.9)]">☝️ TELEFONO CASA</span>
+          </button>
+          <button onClick={()=>setShowEchoInput(true)} className="px-6 py-3 md:py-4 bg-black/90 border border-white/20 text-white rounded-xl text-[9px] md:text-[11px] font-black uppercase hover:bg-white/10 transition-colors">
+            💬 ECO
+          </button>
         </div>
+
+        {/* DERECHA: Nombre / Alias */}
+        <div className="pointer-events-auto bg-black/40 backdrop-blur-md px-6 py-3 rounded-xl border border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
+          <p className={`text-[10px] md:text-[12px] font-black tracking-[0.4em] uppercase ${config.labelClass} drop-shadow-lg text-center`}>
+            {config.labelText} <span className="text-white/40 mx-2">//</span> {currentUser?.alias || 'ANÓNIMO'}
+          </p>
+        </div>
+        
       </div>
 
       {/* MODAL ECO (UI Mejorada y Centrada) */}
@@ -485,47 +544,27 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
         <div className="fixed inset-0 z-[1000] bg-black/95 backdrop-blur-md flex items-center justify-center p-6 animate-fadeIn">
           <div className="w-full max-w-md text-center relative flex flex-col items-center">
             
-            {/* BOTONES SUPERIORES (Centrados) */}
             <div className="flex gap-4 mb-12 justify-center w-full">
-              <button 
-                onClick={() => setEchoType('text')}  
-                className={`flex-1 max-w-[160px] py-3 rounded-full text-[10px] font-black border tracking-widest transition-all ${echoType === 'text' ? 'bg-cyan-500 text-black border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.4)]' : 'text-white/40 border-white/10 hover:text-white/80'}`}
-              >
+              <button onClick={() => setEchoType('text')} className={`flex-1 max-w-[160px] py-3 rounded-full text-[10px] font-black border tracking-widest transition-all ${echoType === 'text' ? 'bg-cyan-500 text-black border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.4)]' : 'text-white/40 border-white/10 hover:text-white/80'}`}>
                 💬 TEXTO NEÓN
               </button>
-              <button 
-                onClick={() => setEchoType('hyper')} 
-                className={`flex-1 max-w-[160px] py-3 rounded-full text-[10px] font-black border tracking-widest transition-all ${echoType === 'hyper' ? 'bg-[#002366] text-cyan-400 border-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.6)]' : 'text-white/40 border-white/10 hover:text-white/80'}`}
-              >
+              <button onClick={() => setEchoType('hyper')} className={`flex-1 max-w-[160px] py-3 rounded-full text-[10px] font-black border tracking-widest transition-all ${echoType === 'hyper' ? 'bg-[#002366] text-cyan-400 border-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.6)]' : 'text-white/40 border-white/10 hover:text-white/80'}`}>
                 ⚡ HYPER ZAP
               </button>
             </div>
             
-            {/* ZONA DE INPUT (Más visible) */}
             <input 
-              autoFocus 
-              type="text" 
-              placeholder={echoType === 'hyper' ? "TÍTULO DEL ANUNCIO..." : "ESCRIBE TU ECO..."}
+              autoFocus type="text" placeholder={echoType === 'hyper' ? "TÍTULO DEL ANUNCIO..." : "ESCRIBE TU ECO..."}
               className="w-full bg-transparent border-b-2 border-white/20 py-6 text-center text-white outline-none font-black text-2xl md:text-3xl uppercase focus:border-cyan-400 transition-colors drop-shadow-lg"
-              value={echoText} 
-              onChange={e => setEchoText(e.target.value)} 
-              onKeyDown={e => e.key === 'Enter' && handleAction('echo')} 
-              maxLength={60}
+              value={echoText} onChange={e => setEchoText(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAction('echo')} maxLength={60}
             />
             
-            {/* BOTONES INFERIORES (Apilados y Centrados) */}
             <div className="mt-16 flex flex-col items-center gap-6 w-full">
-              <button 
-                onClick={() => handleAction('echo')} 
-                className={`w-full max-w-[280px] py-4 rounded-2xl font-black text-[12px] tracking-widest uppercase transition-all shadow-xl hover:scale-105 ${echoType === 'hyper' ? 'bg-cyan-600 text-white border border-cyan-400 shadow-cyan-600/30' : 'bg-white text-black shadow-white/20'}`}
-              >
+              <button onClick={() => handleAction('echo')} className={`w-full max-w-[280px] py-4 rounded-2xl font-black text-[12px] tracking-widest uppercase transition-all shadow-xl hover:scale-105 ${echoType === 'hyper' ? 'bg-cyan-600 text-white border border-cyan-400 shadow-cyan-600/30' : 'bg-white text-black shadow-white/20'}`}>
                 {echoType === 'hyper' ? 'EMITIR HYPER ZAP (1000 G)' : 'EMITIR ECO (100 G)'}
               </button>
               
-              <button 
-                onClick={() => setShowEchoInput(false)} 
-                className="text-gray-500 text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors"
-              >
+              <button onClick={() => setShowEchoInput(false)} className="text-gray-500 text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">
                 [ VOLVER ]
               </button>
             </div>
@@ -534,7 +573,7 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
         </div>
       )}
             
-         </div>
+    </div>
   );
 };
 
