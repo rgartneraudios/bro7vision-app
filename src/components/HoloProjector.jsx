@@ -10,8 +10,21 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
   const [activeReaction, setActiveReaction] = useState(null);
   const [question, setQuestion] = useState("");
   const [show219, setShow219] = useState(false);
+  const [videoIndex, setVideoIndex] = useState(0); // 0: Principal, 1: Teléfono 2, 2: Piso 219
 
   const videoRef = useRef(null);
+  
+  
+// Dentro de tu componente, antes del return
+const videos = [
+    user.video_file,        // Video 1
+    user.video_file_2,      // Video 2
+    user.video_file_3     // Video 3
+];
+
+const nextVideo = () => setVideoIndex((prev) => (prev + 1) % videos.length);
+const prevVideo = () => setVideoIndex((prev) => (prev - 1 + videos.length) % videos.length);
+
 
   // --- VIDEO DE FONDO ---
   const bgKey = user.intimo_bg && user.intimo_bg !== "" ? user.intimo_bg : 'salon';
@@ -156,19 +169,34 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
           })()}
         </>
       )}
+      
+      {/* FLECHAS DE NAVEGACIÓN NEÓN */}
+<button 
+  onClick={prevVideo} 
+  className="absolute left-[calc(46%-220px)] top-1/2 -translate-y-1/2 z-40 w-12 h-12 flex items-center justify-center rounded-full bg-white/5 backdrop-blur-md border border-white/20 hover:bg-white/20 hover:border-fuchsia-400 hover:shadow-[0_0_15px_rgba(232,121,249,0.5)] transition-all duration-300 text-white"
+>
+  <span className="text-xl">❮</span>
+</button>
+
+<button 
+  onClick={nextVideo} 
+  className="absolute right-[calc(46%-220px)] top-1/2 -translate-y-1/2 z-40 w-12 h-12 flex items-center justify-center rounded-full bg-white/5 backdrop-blur-md border border-white/20 hover:bg-white/20 hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(34,211,238,0.5)] transition-all duration-300 text-white"
+>
+  <span className="text-xl">❯</span>
+</button>      
 
       {/* VISOR VERTICAL */}
       <div className="relative z-20 flex items-center justify-center">
         <div
           className="relative h-[88vh] aspect-[9/16] rounded-[3.5rem] border-[3px] border-[#FFFDD0]/30 shadow-[0_0_40px_rgba(255,253,208,0.15)] flex flex-col overflow-hidden bg-black"
         >
-          <video
-            ref={videoRef}
-            src={getCleanUrl(user.video_file)}
-            autoPlay loop playsInline muted={isMuted}
-            className="absolute inset-0 w-full h-full object-cover"
-            onTimeUpdate={() => setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100)}
-          />
+         <video
+    ref={videoRef}
+    src={getCleanUrl(videos[videoIndex])} // <--- Cambiado para ser dinámico
+    autoPlay loop playsInline muted={isMuted}
+    className="absolute inset-0 w-full h-full object-cover"
+    onTimeUpdate={() => setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100)}
+	/>
 
           {/* MENSAJE DEL CREADOR */}
           <div className="absolute top-32 left-0 w-full px-6 z-30 pointer-events-none">

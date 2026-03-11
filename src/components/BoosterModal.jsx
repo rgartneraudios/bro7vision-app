@@ -48,6 +48,7 @@ const BoosterModal = ({ onClose }) => {
     alias: '', avatar_url: '', banner_url: '', card_banner_url: '',
     twit_message: '', role: '', audio_file: '', bcast_file: '',
     video_file: '', video_file_2: '', video_file_3: '',
+    video_file_219: '', 
     holo_1: '', holo_2: '', holo_3: '', holo_4: '',
     catalog_url: '', mapache_rules: '',
     intimo_bg: '', creator_loop_reply: '', editorial_title: '', editorial_content: '', showcase_url: ''
@@ -70,20 +71,31 @@ const BoosterModal = ({ onClose }) => {
               setCity(profile.city || '');
               setZipCode(profile.zip_code || '');
               setFormData({
-                alias: profile.alias || user.user_metadata.alias || '',
-                role: profile.role || '', avatar_url: profile.avatar_url || '',
-                banner_url: profile.banner_url || '', card_banner_url: profile.card_banner_url || '',
-                twit_message: profile.twit_message || '', audio_file: profile.audio_file || '',
-                bcast_file: profile.bcast_file || '', video_file: profile.video_file || '',
-                video_file_2: profile.video_file_2 || '', video_file_3: profile.video_file_3 || '',
-                holo_1: profile.holo_1 || '', holo_2: profile.holo_2 || '',
-                holo_3: profile.holo_3 || '', holo_4: profile.holo_4 || '',
-                catalog_url: profile.catalog_url || '', mapache_rules: profile.mapache_rules || '',
-                intimo_bg: profile.intimo_bg || '', creator_loop_reply: profile.creator_loop_reply || '',
-                editorial_title: profile.editorial_title || '', editorial_content: profile.editorial_content || '',
-                showcase_url: profile.showcase_url || ''
-              });
-            }
+  		alias: profile.alias || user.user_metadata.alias || '',
+  		role: profile.role || '', 
+  		avatar_url: profile.avatar_url || '',
+  		banner_url: profile.banner_url || '', 
+  		card_banner_url: profile.card_banner_url || '',
+ 		 twit_message: profile.twit_message || '', 
+  		audio_file: profile.audio_file || '',
+  		bcast_file: profile.bcast_file || '', 
+  		video_file: profile.video_file || '',
+ 		 video_file_2: profile.video_file_2 || '', 
+  		video_file_3: profile.video_file_3 || '',
+  		video_file_219: profile.video_file_219 || '', // <--- ¡AGREGA ESTA LÍNEA AQUÍ!
+  		holo_1: profile.holo_1 || '', 
+  		holo_2: profile.holo_2 || '',
+  		holo_3: profile.holo_3 || '', 
+  		holo_4: profile.holo_4 || '',
+  		catalog_url: profile.catalog_url || '', 
+  		mapache_rules: profile.mapache_rules || '',
+  		intimo_bg: profile.intimo_bg || '', 
+  		creator_loop_reply: profile.creator_loop_reply || '',
+  		editorial_title: profile.editorial_title || '', 
+  		editorial_content: profile.editorial_content || '',
+  		showcase_url: profile.showcase_url || ''
+		});
+            	}
             const { data: assetData } = await supabase.from('assets').select('*').eq('owner_id', user.id);
             if (assetData) setAssets(assetData);
           }
