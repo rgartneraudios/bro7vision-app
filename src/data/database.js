@@ -211,22 +211,23 @@ export const MASTER_DB = [
       id: "bro_master", 
       alias: "BRO MASTER",
      type:['shop', 'live'], // 🏷️ Dile en qué sectores quieres que aparezca
-      category: "Finanzas",
+      category: "Podcast",
+      role: 'TALK', 
       price: "100€", 
       moonPrice: "10.000 🌑",
-      message: "Asesoría 1 a 1.",
       offerText: "🔴 EN VIVO",
       isLive: true,
       viewers: 340, 
-      audioFile: "/audio/channel_24.mp3",
+      audioFile: "/audio/IA_y_el_fin_de_los_cursos_caros__Tu_universidad_personal_gratis.mp3",
+      video_file: "https://www.dropbox.com/scl/fi/wycofc6ej3l9ux3jkzm43/La_migraci-n_de_la_atenci-n_a_la_IA.mp4?rlkey=ya5cl4sfv7971j2qkhgqh16bj&st=3q1bhmfw&dl=0",
+     twit_message: 'AI_El Fin de los Cursos',
       neonColor: "cyan-emerald",
-      img: "https://i.pravatar.cc/150?u=c",
-      avatar_url: "https://i.pravatar.cc/150?u=c",
+      img: '/images/yam5.jpg',
       slides_url: "", 
       logs: [],
       lat: 40.6168,       // 📍 Vital para que salga en el mapa del LiveGrid / Shop
       lng: -3.2038,       // 📍 Vital para que salga en el mapa
-      holo_images:['img1.jpg', 'img2.jpg', 'img3.jpg', 'img4.jpg'] // 🧊 Vital para que el Prisma gire
+      holo_images:['/images/yam1.jpg', '/images/yam2.jpg', '/images/yam3.jpg', '/images/yam4.jpg'] // 🧊 Vital para que el Prisma gire
     },
 { 
         id: 'bot1', 
@@ -248,20 +249,20 @@ export const MASTER_DB = [
     },
     { 
         id: 'bot2',
-        alias: 'Ana_Talks',
+        alias: 'Esferas que hablan',
        type:['shop', 'live'], // 🏷️ Dile en qué sectores quieres que aparezca
         role: 'TALK', 
-        img: '/images/ana5.jpg',
+        img: '/images/eqh5.jpg',
         distance: '500km', 
         desc: 'Debate: Influencers', 
         isReal: false,
-        video_file: "https://www.dropbox.com/scl/fi/p1u2yfgurdxm23h16z4go/FURRIES-TEAM-VID02.mp4?  	rlkey=xfq5dcabdfjwudmtpjxe5r11d&st=m8xtm9if&dl=0",
+        video_file: "https://www.dropbox.com/scl/fi/yjfrugxmn0incditna1sq/EQH-Br-colis-y-Domuts.mp4?rlkey=vci6lu900qn0wkjlko4r6ofp7&st=a4c2v172&dl=0",
         product_title: 'Pack Samples Techno', 
         product_price: 15,
-        audioFile: "/audio/Influencers__anatalks.mp3",
+        audioFile: "/audio/Influencers__eqh.mp3",
         lat: 40.4188,       // 📍 Vital para que salga en el mapa del LiveGrid / Shop
         lng: -3.7048,       // 📍 Vital para que salga en el mapa
-        holo_images:['/images/ana1.jpg', '/images/ana2.jpg', '/images/ana3.jpg', '/images/ana4.jpg'] // 🧊 Vital para que el Prisma gire
+        holo_images:['/images/eqh1.jpg', '/images/eqh2.jpg', '/images/eqh3.jpg', '/images/eqh4.jpg'] // 🧊 Vital para que el Prisma gire
       },
    {
     id: "bot3",
