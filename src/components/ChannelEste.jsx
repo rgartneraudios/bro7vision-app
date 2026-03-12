@@ -285,7 +285,7 @@ const BG_VIDEO = `/videos/este_bg_${getTimeSuffix()}.mp4`;
 
        {/* ORBE ANTERIOR */}
 <div className="absolute z-[110] cursor-pointer group animate-orb-float"
-     style={{ right: '440px', bottom: '30px' }}
+     style={{ right: '530px', bottom: '30px' }}
      onClick={() => setCurrentIndex(p => p > 0 ? p - 1 : displayUsers.length - 1)}>
   <div className="w-14 h-14 rounded-full flex items-center justify-center relative animate-orb-glow transition-transform group-hover:scale-110 text-white">
     <div className="absolute inset-0 bg-white opacity-10 blur-xl rounded-full"/>
@@ -296,7 +296,7 @@ const BG_VIDEO = `/videos/este_bg_${getTimeSuffix()}.mp4`;
 
 {/* ORBE SIGUIENTE */}
 <div className="absolute z-[110] cursor-pointer group animate-orb-float"
-     style={{ right: '530px', bottom: '30px', animationDelay: '1.5s' }}
+     style={{ right: '440px', bottom: '30px', animationDelay: '1.5s' }}
      onClick={() => setCurrentIndex(p => p + 1)}>
   <div className="w-14 h-14 rounded-full flex items-center justify-center relative animate-orb-glow transition-transform group-hover:scale-110 text-white">
     <div className="absolute inset-0 bg-white opacity-10 blur-xl rounded-full"/>

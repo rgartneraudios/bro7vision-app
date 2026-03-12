@@ -10,7 +10,7 @@ const ConversionModal = ({ balances, activePhase, onClose }) => {
       <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" onClick={onClose}></div>
 
       {/* CONTENEDOR PRINCIPAL: Más compacto en PC, adaptado a móvil */}
-      <div className="relative w-full max-w-5xl bg-[#0a0a0a] border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl flex flex-col md:flex-row h-[90vh] md:h-[620px]">
+      <div className="relative w-full max-w-5xl bg-[#0a0a0a] border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl flex flex-col md:flex-row h-[90vh] md:h-[720px]">
         
         {/* SIDEBAR */}
         <div className="w-full md:w-[280px] flex-shrink-0 bg-[#111] border-b md:border-b-0 md:border-r border-white/5 p-4 md:p-6 flex flex-col overflow-y-auto md:overflow-hidden">

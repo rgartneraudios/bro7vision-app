@@ -1,7 +1,7 @@
 // src/components/StoryPlayer.jsx (VERSIÓN CINE FULL SCREEN)
 
 import React, { useState, useEffect, useRef } from 'react';
-import { PACKS_REGALOS, REGLAS_DESCUENTOS } from '../data/MoonMatrix';
+import { PACKS_REGALOS, REGLAS_DESCUENTOS, MOON_MATRIX } from '../data/MoonMatrix';
 
 const StoryPlayer = ({ src, activePhase, onClose, onComplete }) => {
   const videoRef = useRef(null);
@@ -11,7 +11,13 @@ const StoryPlayer = ({ src, activePhase, onClose, onComplete }) => {
 
   // Configuración de la Recompensa
   const TOTAL_REWARD = 50; 
-  const phaseData = MOON_MATRIX[activePhase];
+  // CAMBIA POR ESTO (Definimos un valor por defecto si no encuentra la fase):
+const phaseData = MOON_MATRIX[activePhase] || {
+  label: 'N/A',
+  color: 'gray', // color de respaldo
+  borderColor: 'border-gray-500',
+  textColor: 'text-gray-400'
+};
 
   useEffect(() => {
     const video = videoRef.current;
