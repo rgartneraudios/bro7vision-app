@@ -256,7 +256,7 @@ export const MASTER_DB = [
         distance: '500km', 
         desc: 'Debate: Influencers', 
         isReal: false,
-        video_file: "https://www.dropbox.com/scl/fi/yjfrugxmn0incditna1sq/EQH-Br-colis-y-Domuts.mp4?rlkey=vci6lu900qn0wkjlko4r6ofp7&st=a4c2v172&dl=0",
+        video_file: "https://www.dropbox.com/scl/fi/2h5pijwo8yblvfyt7tbsr/EQH-Br-colis-y-Domuts.mp4?rlkey=oaoti22h5adkoo7phjuclevoc&st=gjp80k55&dl=0",
         product_title: 'Pack Samples Techno', 
         product_price: 15,
         audioFile: "/audio/Influencers__eqh.mp3",

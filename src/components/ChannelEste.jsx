@@ -54,6 +54,50 @@ const ESTE_STYLES = `
     .animate-flare { animation: flare 3s ease-in-out infinite; }
     @keyframes shimmer { 100%{transform:translateX(100%)} }
     .animate-shimmer { animation: shimmer 2s infinite; }
+    
+     /* El contenedor de la órbita le da la perspectiva 3D */
+.orbita-cometa-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 140%;  /* Más ancho que el botón */
+  height: 280%; /* Mucho más alto, al inclinarlo se verá como un óvalo horizontal */
+  pointer-events: none;
+  /* Aquí está el truco: centramos, inclinamos (rotateX) y animamos el giro (rotateZ) */
+  animation: girar-orbita 4s linear infinite;
+}
+
+/* La línea del recorrido (trazo fino) */
+.orbita-trazo {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px dashed rgba(0, 255, 255, 0.4); /* Trazo definido, no borroso */
+}
+
+/* La cabeza del cometa (un punto brillante) */
+.orbita-cabeza {
+  position: absolute;
+  top: -3px; /* Se alinea con el borde superior */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  background-color: #00ffff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px 2px #00ffff, 0 0 20px #00ffff; /* Brillo del cometa */
+}
+
+@keyframes girar-orbita {
+  0% {
+    transform: translate(-50%, -50%) rotateX(75deg) rotateZ(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotateX(75deg) rotateZ(360deg);
+  }
+}
+
+    
 `;
 
 const ESTE_PC_SLOTS     = [{x:4,y:12},{x:6,y:35},{x:30,y:58},{x:40,y:6},{x:45,y:72},{x:50,y:45}];
@@ -94,6 +138,7 @@ const ChannelEste = ({ videoUsers, balances, setBalances, session, realityMode, 
   const [realUserAlias, setRealUserAlias] = useState('');
   const [visualEchos,   setVisualEchos]   = useState([]);
   const [floatingEchos, setFloatingEchos] = useState([]);
+  const [isOrbitando, setIsOrbitando] = useState(false);
 
   const videoRefPC  = useRef(null);
   const videoRefMob = useRef(null);
@@ -108,7 +153,90 @@ const ChannelEste = ({ videoUsers, balances, setBalances, session, realityMode, 
     return combined.length===0?[{id:'loading_01',alias:'SINTONIZANDO...',video_file:''}]:combined;
   }, [videoUsers]);
 
-  const currentUser = useMemo(()=>displayUsers[currentIndex%displayUsers.length],[displayUsers,currentIndex]);
+  // 1. Definimos el usuario que vemos en pantalla
+  const currentUser = useMemo(() => displayUsers[currentIndex % displayUsers.length], [displayUsers,currentIndex]);
+  const creatorId = currentUser?.id; 
+
+  // 🛡️ ESCUDO ANTI-MOCKS: Creamos una variable para saber si el creador es de mentira.
+  // Asumimos que los IDs reales de Supabase (UUID) tienen 36 caracteres. 
+  // Si tus Mocks tienen IDs cortos (como 'tv_node_1' o 'loading_01'), esto los detecta al instante.
+  // (Si tus mocks tienen otro formato, puedes cambiar esta condición).
+  const isRealCreator = creatorId && creatorId.length > 20; 
+  
+  // 🛡️ ESCUDO DE SESIÓN: Comprobamos si el que mira la pantalla está logueado
+  const isRealViewer = session?.user?.id;
+
+  // ==========================================
+  // 2. USEEFFECT: LEER DE SUPABASE (Protegido)
+  // ==========================================
+  useEffect(() => {
+    const comprobarEstadoOrbita = async () => {
+      // Si no hay usuario en pantalla, o es un Mock, o el espectador es anónimo -> No consultamos a Supabase
+      if (!currentUser || !isRealCreator || !isRealViewer) {
+        setIsOrbitando(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('user_creators_orbits') 
+          .select('is_orbiting')
+          .eq('user_id', session.user.id) // El ID del espectador real
+          .eq('creator_id', creatorId)    // El ID del creador real
+          .single();
+
+        if (data) {
+          setIsOrbitando(data.is_orbiting);
+        } else {
+          setIsOrbitando(false);
+        }
+      } catch (err) {
+        // Ignoramos el error si simplemente no encontró resultados (código PGRST116)
+        if (err.code !== 'PGRST116') {
+           console.log("Error al comprobar órbita:", err);
+        }
+      }
+    };
+
+    comprobarEstadoOrbita();
+  }, [currentUser, creatorId, session, isRealCreator, isRealViewer]); 
+
+
+  // ==========================================
+  // 3. LA FUNCIÓN DEL CLIC (Protegida)
+  // ==========================================
+  const handleOrbitar = async (e) => {
+    e.stopPropagation();
+    
+    // 1. Cambiamos la UI visualmente SIEMPRE (para que el cometa salga aunque sea un Mock)
+    const nuevoEstado = !isOrbitando;
+    setIsOrbitando(nuevoEstado); 
+
+    // 2. Si es un Mock o un espectador anónimo, terminamos aquí. No tocamos la base de datos.
+    if (!isRealCreator || !isRealViewer) {
+      console.log("Órbita simulada (Es un Mock o usuario anónimo). No se guarda en BD.");
+      return; 
+    }
+
+    // 3. Si ambos son reales, guardamos en Supabase
+    try {
+      const { error } = await supabase
+        .from('user_creators_orbits') 
+        .upsert({
+          user_id: session.user.id, 
+          creator_id: creatorId,     
+          is_orbiting: nuevoEstado,
+          updated_at: new Date()
+        }, { onConflict: 'user_id,creator_id' }); 
+
+      if (error) throw error;
+      console.log(nuevoEstado ? "Guardado: Has empezado a orbitar" : "Guardado: Has dejado la órbita");
+
+    } catch (error) {
+      console.error("Error al guardar la órbita en BD:", error);
+      setIsOrbitando(!nuevoEstado); // Si falla internet o la BD, deshacemos el giro del cometa visualmente
+    }
+  }; 
 
   const getTimeSuffix = () => {
   const h = new Date().getHours();
@@ -314,10 +442,22 @@ const BG_VIDEO = `/videos/este_bg_${getTimeSuffix()}.mp4`;
                  className={`relative z-10 transition-all duration-700 ${isTvMode?'w-full h-auto aspect-video object-contain bg-black':'w-full h-full object-cover'}`}
                  onTimeUpdate={()=>videoRefPC.current&&setProgress((videoRefPC.current.currentTime/(videoRefPC.current.duration||100))*100)}/>
 
-          <button onClick={(e)=>{e.stopPropagation();setIsMuted(p=>!p);}}
-                  className="absolute top-8 right-8 bg-black/60 backdrop-blur-md p-3 rounded-full text-lg z-[150] border border-white/20 hover:bg-white/20 transition-all">
-            {isMuted?'🔇':'🔊'}
-          </button>
+          {/* Esquina Inferior Izquierda: Volumen */}
+<button onClick={(e)=>{e.stopPropagation();setIsMuted(p=>!p);}}
+        className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md p-3 rounded-full text-lg z-[150] border border-white/20 hover:bg-white/20 transition-all">
+  {isMuted?'🔇':'🔊'}
+</button>
+
+{/* Esquina Inferior Derecha: El botón de Órbita (Cometa) */}
+<button 
+  onClick={handleOrbitar} 
+  // Añadimos absolute, bottom-4, right-4 y un z-index alto para que esté dentro del visor
+  className={`absolute bottom-4 right-4 p-3 rounded-full border transition-all z-[150] ${
+    isOrbitando ? 'bg-cyan-500/20 border-cyan-400 shadow-[0_0_10px_cyan]' : 'bg-black/60 backdrop-blur-md border-white/20 hover:bg-white/20'
+  }`}
+>
+  {isOrbitando ? '☄️' : '🛸'}
+</button>
         </div>
       </div>
       
@@ -377,11 +517,20 @@ const BG_VIDEO = `/videos/este_bg_${getTimeSuffix()}.mp4`;
           </button>
 
           {/* NOMBRE AL LADO DE LOS BOTONES */}
-          <div className="bg-black/40 backdrop-blur-md px-6 py-3 md:py-4 rounded-xl border border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.5)] ml-2">
-            <p className="text-[10px] md:text-[12px] font-black tracking-[0.4em] uppercase text-cyan-400 drop-shadow-lg text-center">
-              CANAL ESTE <span className="text-white/40 mx-2">//</span> {currentUser?.alias||'ANÓNIMO'}
-            </p>
-          </div>
+<div className="relative pointer-events-auto bg-black/40 backdrop-blur-md px-6 py-3 md:py-4 rounded-xl border border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.5)] ml-2 flex items-center justify-center">
+  
+  {/* LA ÓRBITA DEL COMETA */}
+  {isOrbitando && (
+      <div className="orbita-cometa-container z-0">
+          <div className="orbita-trazo"></div>
+          <div className="orbita-cabeza"></div>
+      </div>
+  )}
+
+  <p className="relative z-10 text-[10px] md:text-[12px] font-black tracking-[0.4em] uppercase text-cyan-400 drop-shadow-lg text-center">
+    CANAL ESTE <span className="text-white/40 mx-2">//</span> {currentUser?.alias||'ANÓNIMO'}
+  </p>
+</div>
 
         </div>
       </div>

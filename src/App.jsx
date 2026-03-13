@@ -217,6 +217,28 @@ function App() {
     return <GenesisGate onGuestAccess={() => { setIsGuest(true); setStep(0); setRealityMode(null); setBalances({ genesis: 500, nova: 20 }); }} />;
   }
 
+const handleReportIssue = async () => {
+  const currentScene = realityMode || 'lobby';
+  
+  const { data, error } = await supabase
+    .from('reports_board')
+    .insert([
+      { 
+        user_id: session?.user?.id || null, // null si es invitado
+        scene: currentScene,
+        reason: 'Reporte ciudadano',
+        status: 'pendiente'
+      }
+    ]);
+
+  if (error) {
+    console.error("Error al reportar:", error);
+    alert("Hubo un problema enviando el reporte.");
+  } else {
+    alert("Reporte enviado a la central de seguridad.");
+  }
+};
+
   return (
     <div className="relative w-full h-screen bg-black text-white overflow-hidden font-sans">
       
@@ -350,6 +372,17 @@ function App() {
               <span className="text-xl">❄️</span>
               <span className="text-[10px] font-black italic">BRO STORIES</span>
           </button>  
+          
+          {/* Debajo de tus botones de navegación actuales, dentro de la puerta derecha */}
+<button 
+  onClick={() => handleReportIssue()} 
+  className="w-full flex justify-between items-center p-4 bg-red-900/20 border border-red-500/30 rounded-2xl hover:bg-red-500/20 group transition-all mt-4"
+>
+  <span className="text-[10px] font-black uppercase tracking-widest text-red-400 group-hover:text-white">
+      REPORTAR INCIDENCIA
+  </span>
+  <span className="text-lg">🚩</span>
+</button>
           
           <button onClick={async () => { await supabase.auth.signOut(); localStorage.clear(); window.location.href = "/"; }} className="mt-auto text-red-500 font-mono text-[10px] underline">[ DISCONNECT ]</button>
         </div>

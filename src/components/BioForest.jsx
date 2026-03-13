@@ -51,14 +51,57 @@ const FOREST_STYLES = `
     .orb-glow { animation: pulse-orb 2s ease-in-out infinite; }
     @keyframes orb-float { 0%,100%{transform:translateY(0px) scale(1)} 50%{transform:translateY(-6px) scale(1.06)} }
     .orb-float { animation: orb-float 3s ease-in-out infinite; }
+    
+   /* El contenedor de la órbita le da la perspectiva 3D */
+.orbita-cometa-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 140%;  /* Más ancho que el botón */
+  height: 280%; /* Mucho más alto, al inclinarlo se verá como un óvalo horizontal */
+  pointer-events: none;
+  /* Aquí está el truco: centramos, inclinamos (rotateX) y animamos el giro (rotateZ) */
+  animation: girar-orbita 4s linear infinite;
+}
+
+/* La línea del recorrido (trazo fino) */
+.orbita-trazo {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px dashed rgba(0, 255, 255, 0.4); /* Trazo definido, no borroso */
+}
+
+/* La cabeza del cometa (un punto brillante) */
+.orbita-cabeza {
+  position: absolute;
+  top: -3px; /* Se alinea con el borde superior */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  background-color: #00ffff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px 2px #00ffff, 0 0 20px #00ffff; /* Brillo del cometa */
+}
+
+@keyframes girar-orbita {
+  0% {
+    transform: translate(-50%, -50%) rotateX(75deg) rotateZ(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotateX(75deg) rotateZ(360deg);
+  }
+}
+    
 `;
 
 const PC_SLOTS = [
     {x:5,y:25},{x:7,y:50},{x:84,y:75},
-    {x:72,y:45},{x:75,y:35},{x:75,y:80},
+    {x:72,y:45},{x:75,y:35},{x:75,y:70},
     {x:15,y:3},{x:80,y:3},{x:75,y:70},
 ];
-const MOBILE_SLOTS = [{x:28,y:67},{x:8,y:4},{x:28,y:6},{x:28,y:15}];
+const ESTE_MOBILE_SLOTS = [{x:6,y:2},{x:45,y:4},{x:25,y:75}];
 
 const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, onOpenProfile, selectedForestUser }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -77,15 +120,14 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
   const [recordingTime, setRecordingTime] = useState(0);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
-
+  const [isOrbitando, setIsOrbitando] = useState(false);
+  
   const videoRef = useRef(null);
   const bgVideoRef = useRef(null);
   const hlsRef = useRef(null);
   const touchStart = useRef(0);
   const touchEnd = useRef(0);
-  
-  
-   
+
   const displayUsers = useMemo(() => {
     // 1. Tomamos los usuarios que vienen de App.jsx (Aquí ya vendrán Lap_Steel, Bro Master, etc. desde MASTER_DB)
     const safeUsers = videoUsers?.length > 0 ? videoUsers : [];
@@ -102,7 +144,90 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
     return combined;
   }, [videoUsers]); // Ya no dependemos de nada interno, solo de lo que nos pasen.
   
+  // 1. Definimos el usuario que vemos en pantalla
   const currentUser = useMemo(() => displayUsers[currentIndex % displayUsers.length], [displayUsers,currentIndex]);
+  const creatorId = currentUser?.id; 
+
+  // 🛡️ ESCUDO ANTI-MOCKS: Creamos una variable para saber si el creador es de mentira.
+  // Asumimos que los IDs reales de Supabase (UUID) tienen 36 caracteres. 
+  // Si tus Mocks tienen IDs cortos (como 'tv_node_1' o 'loading_01'), esto los detecta al instante.
+  // (Si tus mocks tienen otro formato, puedes cambiar esta condición).
+  const isRealCreator = creatorId && creatorId.length > 20; 
+  
+  // 🛡️ ESCUDO DE SESIÓN: Comprobamos si el que mira la pantalla está logueado
+  const isRealViewer = session?.user?.id;
+
+  // ==========================================
+  // 2. USEEFFECT: LEER DE SUPABASE (Protegido)
+  // ==========================================
+  useEffect(() => {
+    const comprobarEstadoOrbita = async () => {
+      // Si no hay usuario en pantalla, o es un Mock, o el espectador es anónimo -> No consultamos a Supabase
+      if (!currentUser || !isRealCreator || !isRealViewer) {
+        setIsOrbitando(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('user_creators_orbits') 
+          .select('is_orbiting')
+          .eq('user_id', session.user.id) // El ID del espectador real
+          .eq('creator_id', creatorId)    // El ID del creador real
+          .single();
+
+        if (data) {
+          setIsOrbitando(data.is_orbiting);
+        } else {
+          setIsOrbitando(false);
+        }
+      } catch (err) {
+        // Ignoramos el error si simplemente no encontró resultados (código PGRST116)
+        if (err.code !== 'PGRST116') {
+           console.log("Error al comprobar órbita:", err);
+        }
+      }
+    };
+
+    comprobarEstadoOrbita();
+  }, [currentUser, creatorId, session, isRealCreator, isRealViewer]); 
+
+
+  // ==========================================
+  // 3. LA FUNCIÓN DEL CLIC (Protegida)
+  // ==========================================
+  const handleOrbitar = async (e) => {
+    e.stopPropagation();
+    
+    // 1. Cambiamos la UI visualmente SIEMPRE (para que el cometa salga aunque sea un Mock)
+    const nuevoEstado = !isOrbitando;
+    setIsOrbitando(nuevoEstado); 
+
+    // 2. Si es un Mock o un espectador anónimo, terminamos aquí. No tocamos la base de datos.
+    if (!isRealCreator || !isRealViewer) {
+      console.log("Órbita simulada (Es un Mock o usuario anónimo). No se guarda en BD.");
+      return; 
+    }
+
+    // 3. Si ambos son reales, guardamos en Supabase
+    try {
+      const { error } = await supabase
+        .from('user_creators_orbits') 
+        .upsert({
+          user_id: session.user.id, 
+          creator_id: creatorId,     
+          is_orbiting: nuevoEstado,
+          updated_at: new Date()
+        }, { onConflict: 'user_id,creator_id' }); 
+
+      if (error) throw error;
+      console.log(nuevoEstado ? "Guardado: Has empezado a orbitar" : "Guardado: Has dejado la órbita");
+
+    } catch (error) {
+      console.error("Error al guardar la órbita en BD:", error);
+      setIsOrbitando(!nuevoEstado); // Si falla internet o la BD, deshacemos el giro del cometa visualmente
+    }
+  }; 
   
   useEffect(()=>{
     const video=videoRef.current;
@@ -111,7 +236,7 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
 
     // 👇 NUEVO: pausa antes de cambiar
     video.pause();
-
+    
     const playUrl=cleanUrl(currentUser.video_file||"");
     if(hlsRef.current){hlsRef.current.destroy();hlsRef.current=null;}
     const isHLS=playUrl.includes('.m3u8');
@@ -470,10 +595,23 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
                className={`relative z-10 transition-all duration-700 ${isTvMode?'w-full h-auto aspect-video object-contain bg-black':'w-full h-full object-cover'}`}
                onTimeUpdate={()=>videoRef.current&&setProgress((videoRef.current.currentTime/(videoRef.current.duration||100))*100)}/>
         
-        <button onClick={(e)=>{e.stopPropagation();setIsMuted(p=>!p);}}
-                className="absolute top-4 right-4 bg-black/60 backdrop-blur-md p-3 rounded-full text-lg z-[150] border border-white/20 hover:bg-white/20 transition-all">
-          {isMuted?'🔇':'🔊'}
-        </button>
+        {/* Esquina Inferior Izquierda: Volumen */}
+<button onClick={(e)=>{e.stopPropagation();setIsMuted(p=>!p);}}
+        className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md p-3 rounded-full text-lg z-[150] border border-white/20 hover:bg-white/20 transition-all">
+  {isMuted?'🔇':'🔊'}
+</button>
+
+{/* Esquina Inferior Derecha: El botón de Órbita (Cometa) */}
+<button 
+  onClick={handleOrbitar} 
+  // Añadimos absolute, bottom-4, right-4 y un z-index alto para que esté dentro del visor
+  className={`absolute bottom-4 right-4 p-3 rounded-full border transition-all z-[150] ${
+    isOrbitando ? 'bg-cyan-500/20 border-cyan-400 shadow-[0_0_10px_cyan]' : 'bg-black/60 backdrop-blur-md border-white/20 hover:bg-white/20'
+  }`}
+>
+  {isOrbitando ? '☄️' : '🛸'}
+</button>
+        
         {!isTvMode&&(
           <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10 z-[150]">
             <div className={`h-full transition-all duration-300 ${config.reactionColor==='orange'?'bg-orange-500':'bg-cyan-500'}`} style={{width:`${progress}%`}}/>
@@ -530,13 +668,23 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
           </button>
         </div>
 
-        {/* DERECHA: Nombre / Alias */}
-        <div className="pointer-events-auto bg-black/40 backdrop-blur-md px-6 py-3 rounded-xl border border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
-          <p className={`text-[10px] md:text-[12px] font-black tracking-[0.4em] uppercase ${config.labelClass} drop-shadow-lg text-center`}>
-            {config.labelText} <span className="text-white/40 mx-2">//</span> {currentUser?.alias || 'ANÓNIMO'}
-          </p>
-        </div>
-        
+      {/* DERECHA: Nombre / Alias */}
+<div className="relative pointer-events-auto bg-black/40 backdrop-blur-md px-6 py-3 rounded-xl border border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.5)] flex items-center justify-center">
+  
+  {/* LA ÓRBITA DEL COMETA (Solo visible si isOrbitando es true) */}
+  {isOrbitando && (
+      <div className="orbita-cometa-container z-0">
+          <div className="orbita-trazo"></div>
+          <div className="orbita-cabeza"></div>
+      </div>
+  )}
+
+  {/* TU TEXTO ORIGINAL RECUPERADO (con relative y z-10 añadidos) */}
+  <p className={`relative z-10 text-[10px] md:text-[12px] font-black tracking-[0.4em] uppercase ${config.labelClass} drop-shadow-lg text-center`}>
+    {config.labelText} <span className="text-white/40 mx-2">//</span> {currentUser?.alias || 'ANÓNIMO'}
+  </p>
+  
+</div>     
       </div>
 
       {/* MODAL ECO (UI Mejorada y Centrada) */}
