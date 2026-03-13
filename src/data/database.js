@@ -272,6 +272,8 @@ export const MASTER_DB = [
     img: '/images/steel_5.png',
     twit_message: 'Lap Steel te da Paz',
     video_file: "https://www.dropbox.com/scl/fi/zsey9jh7tzzvx3bksllwm/Celestial_Drift-master.mp4?rlkey=dhph8iy6ji2s4av4cshi5lq5q&st=4lfzcqt7&dl=0",
+    video_file_2: "https://www.dropbox.com/scl/fi/itjht280zzxqbjjlizkdm/Dusty_Horizon_Echoes-master.mp4?rlkey=86lro183wwe51lkvs6wxlajsm&st=2c0l13bb&dl=0",
+    video_file_3: "https://www.dropbox.com/scl/fi/mux6xea4ijniuwtui07ks/Horizon_s_Embrace-master.mp4?rlkey=io6s7zwbe50fhzla6dns6ddpw&st=8dijo4cp&dl=0",
     video_file_219: "/videos/Steel-219.mp4",
     audioFile: "/audio/Celestial_Echoes.mp3",
     lat: 40.4530,
