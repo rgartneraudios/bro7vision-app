@@ -71,22 +71,26 @@ const OESTE_STYLES = `
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 1px dashed rgba(0, 255, 255, 0.4); /* Trazo definido, no borroso */
+  /* CAMBIO 1: Aumentamos opacidad y añadimos una sombra sutil para separar la línea del fondo */
+  border: 1.5px dashed rgba(0, 255, 255, 0.8); 
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8)); /* Esto hace que la línea se vea aunque el fondo sea blanco */
 }
 
 /* La cabeza del cometa (un punto brillante) */
 .orbita-cabeza {
   position: absolute;
-  top: -3px; /* Se alinea con el borde superior */
+  top: -4px; /* Ajuste leve para compensar el tamaño */
   left: 50%;
   transform: translateX(-50%);
-  width: 6px;
-  height: 6px;
-  background-color: #00ffff;
+  /* CAMBIO 2: Ligeramente más grande para que sea un punto de atención real */
+  width: 8px;
+  height: 8px;
+  background-color: #ffffff; /* El centro blanco puro da sensación de luz intensa */
+  border: 2px solid #00ffff; /* Borde cian para mantener el color */
   border-radius: 50%;
-  box-shadow: 0 0 10px 2px #00ffff, 0 0 20px #00ffff; /* Brillo del cometa */
+  /* CAMBIO 3: Sombra más cerrada y definida (menos blur, más intensidad) */
+  box-shadow: 0 0 8px 2px #00ffff; 
 }
-
 @keyframes girar-orbita {
   0% {
     transform: translate(-50%, -50%) rotateX(75deg) rotateZ(0deg);
