@@ -26,23 +26,27 @@ const MATTER_COLORS = [
 ];
 
 const BoosterModal = ({ onClose }) => {
+  // 1. ESTADOS PRINCIPALES
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState('identity'); 
   
+  // 2. ESTADOS DE PERFIL
   const [country, setCountry] = useState('');
   const [city, setCity] = useState('');
   const [zipCode, setZipCode] = useState('');
-  
   const [energyColor, setEnergyColor] = useState('cyan');
   const [matterColor, setMatterColor] = useState('void');
-  
   const [isMerchant, setIsMerchant] = useState(false);
-  const [assets, setAssets] = useState([]); 
   
-  // Estados para los formularios
+  // 3. ESTADOS DE FORMULARIOS Y ARCHIVOS
+  const [assets, setAssets] = useState([]); 
   const [newAsset, setNewAsset] = useState({ title: '', url: '', type: 'video', price: 0 });
   const [newProduct, setNewProduct] = useState({ title: '', desc: '', price: 0, url: '', sizes: '', colors: '' });
   const [newService, setNewService] = useState({ title: '', desc: '', price: 0, url: '' });
+  const [questions, setQuestions] = useState([]);
+
+  // 4. ESTADOS DE RADAR (Métricas)
+  const [followerCount, setFollowerCount] = useState(0);
 
   const [formData, setFormData] = useState({
     alias: '', avatar_url: '', banner_url: '', card_banner_url: '',
@@ -56,6 +60,14 @@ const BoosterModal = ({ onClose }) => {
   
   const ROLES = [{ id: 'MUSIC', label: '🎵 Music' }, { id: 'TALK', label: '🎙️ Talk' }, { id: 'SHOP', label: '📦 Shop' }, { id: 'SERVICE', label: '🤝 Service' }];
 
+  // ESTILOS COMUNES (COMPONENTES REUTILIZABLES EFECTO CRISTAL)
+  const InputStyle = "w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all";
+  const LabelStyle = "text-xs font-bold text-gray-300 uppercase tracking-widest mb-2 block";
+  const CardStyle = "bg-blue-950/10 backdrop-blur-xl border border-white/10 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]";
+
+  // --- EFECTOS (USE EFFECTS) ---
+
+  // A) CARGAR PERFIL Y ARCHIVOS (Al abrir la terminal)
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -71,31 +83,31 @@ const BoosterModal = ({ onClose }) => {
               setCity(profile.city || '');
               setZipCode(profile.zip_code || '');
               setFormData({
-  		alias: profile.alias || user.user_metadata.alias || '',
-  		role: profile.role || '', 
-  		avatar_url: profile.avatar_url || '',
-  		banner_url: profile.banner_url || '', 
-  		card_banner_url: profile.card_banner_url || '',
- 		 twit_message: profile.twit_message || '', 
-  		audio_file: profile.audio_file || '',
-  		bcast_file: profile.bcast_file || '', 
-  		video_file: profile.video_file || '',
- 		 video_file_2: profile.video_file_2 || '', 
-  		video_file_3: profile.video_file_3 || '',
-  		video_file_219: profile.video_file_219 || '', // <--- ¡AGREGA ESTA LÍNEA AQUÍ!
-  		holo_1: profile.holo_1 || '', 
-  		holo_2: profile.holo_2 || '',
-  		holo_3: profile.holo_3 || '', 
-  		holo_4: profile.holo_4 || '',
-  		catalog_url: profile.catalog_url || '', 
-  		mapache_rules: profile.mapache_rules || '',
-  		intimo_bg: profile.intimo_bg || '', 
-  		creator_loop_reply: profile.creator_loop_reply || '',
-  		editorial_title: profile.editorial_title || '', 
-  		editorial_content: profile.editorial_content || '',
-  		showcase_url: profile.showcase_url || ''
-		});
-            	}
+                alias: profile.alias || user.user_metadata.alias || '',
+                role: profile.role || '', 
+                avatar_url: profile.avatar_url || '',
+                banner_url: profile.banner_url || '', 
+                card_banner_url: profile.card_banner_url || '',
+                twit_message: profile.twit_message || '', 
+                audio_file: profile.audio_file || '',
+                bcast_file: profile.bcast_file || '', 
+                video_file: profile.video_file || '',
+                video_file_2: profile.video_file_2 || '', 
+                video_file_3: profile.video_file_3 || '',
+                video_file_219: profile.video_file_219 || '',
+                holo_1: profile.holo_1 || '', 
+                holo_2: profile.holo_2 || '',
+                holo_3: profile.holo_3 || '', 
+                holo_4: profile.holo_4 || '',
+                catalog_url: profile.catalog_url || '', 
+                mapache_rules: profile.mapache_rules || '',
+                intimo_bg: profile.intimo_bg || '', 
+                creator_loop_reply: profile.creator_loop_reply || '',
+                editorial_title: profile.editorial_title || '', 
+                editorial_content: profile.editorial_content || '',
+                showcase_url: profile.showcase_url || ''
+              });
+            }
             const { data: assetData } = await supabase.from('assets').select('*').eq('owner_id', user.id);
             if (assetData) setAssets(assetData);
           }
@@ -104,13 +116,53 @@ const BoosterModal = ({ onClose }) => {
     loadData();
   }, []);
 
+  // B) CARGAR BUZÓN (Si entra a Telefono Casa)
+  useEffect(() => {
+      const fetchQuestions = async () => {
+          if (tab === 'Telefono Casa') {
+              const { data: { user } } = await supabase.auth.getUser();
+              if (user) {
+                  const { data } = await supabase.from('bro_echos').select('*').eq('target_profile_id', user.id).like('text', '%❓%').order('created_at', { ascending: false });
+                  if (data) setQuestions(data);
+              }
+          }
+      };
+      fetchQuestions();
+  }, [tab]);
+
+  // C) CARGAR RADAR Y ÓRBITAS (Si entra a la pestaña Metrics)
+  useEffect(() => {
+      const fetchOrbitsData = async () => {
+          if (tab === 'metrics') {
+              const { data: { user } } = await supabase.auth.getUser();
+              if (user) {
+                  const { count, error } = await supabase
+                      .from('user_creators_orbits')
+                      .select('*', { count: 'exact', head: true })
+                      .eq('creator_id', user.id) // Busca a los que te orbitan a ti
+                      .eq('is_orbiting', true);
+
+                  if (!error) {
+                      setFollowerCount(count || 0);
+                  } else {
+                      console.error("Error en radar:", error);
+                  }
+              }
+          }
+      };
+      fetchOrbitsData();
+  }, [tab]);
+
+
+  // --- FUNCIONES (BOTONES) ---
+
   const toggleRole = (roleId) => {
       let currentRoles = formData.role ? String(formData.role).split(',') : [];
       if (currentRoles.includes(roleId)) currentRoles = currentRoles.filter(r => r !== roleId);
       else currentRoles.push(roleId);
       setFormData({ ...formData, role: currentRoles.join(',') });
   };
-
+ 
   const handleSave = async () => {
     try {
       setLoading(true);
@@ -133,7 +185,7 @@ const BoosterModal = ({ onClose }) => {
     }
   };   
 
-  // CRUD Functions
+  // CRUD Functions (Archivos y Tienda)
   const handleDeleteItem = async (itemId) => {
     if (!window.confirm("¿Desintegrar este ítem del sistema?")) return;
     const { error } = await supabase.from('assets').delete().eq('id', itemId);
@@ -174,53 +226,51 @@ const BoosterModal = ({ onClose }) => {
     if (data) { setAssets([...assets, data[0]]); setNewService({ title: '', desc: '', price: 0, url: '' }); }
   };
 
+  // Filtros para la pestaña de Tienda
   const physicalProducts = assets.filter(a => a.asset_type === 'product');
   const serviceItems = assets.filter(a => a.asset_type === 'service');
   const digitalAssets = assets.filter(a => !['product', 'service'].includes(a.asset_type));
 
-  const [questions, setQuestions] = useState([]);
-  useEffect(() => {
-      const fetchQuestions = async () => {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user && tab === 'Telefono Casa') {
-              const { data } = await supabase.from('bro_echos').select('*').eq('target_profile_id', user.id).like('text', '%❓%').order('created_at', { ascending: false });
-              if (data) setQuestions(data);
-          }
-      };
-      fetchQuestions();
-  }, [tab]);
-
-  // ESTILOS COMUNES (COMPONENTES REUTILIZABLES)
-  const InputStyle = "w-full bg-[#0f172a] border border-cyan-500/20 text-white placeholder-gray-500 text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_15px_rgba(34,211,238,0.2)] transition-all";
-  const LabelStyle = "text-xs font-bold text-cyan-300/80 mb-1 ml-1 block tracking-wide";
-  const CardStyle = "bg-[#0f172a]/60 backdrop-blur-sm border border-cyan-500/10 p-6 rounded-3xl shadow-lg";
-
   return (
-    // CONTENEDOR PRINCIPAL CON FONDO DEEP NEBULA
+    // CONTENEDOR PRINCIPAL
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-fadeIn font-sans">
-      <div className="absolute inset-0 bg-[#040714]/90 backdrop-blur-xl transition-all" onClick={onClose}></div>
       
-      {/* VENTANA MODAL BIOLUMINISCENTE */}
-      <div className="relative z-10 w-full max-w-5xl bg-[#050b14] border border-cyan-500/30 rounded-3xl shadow-[0_0_50px_rgba(6,182,212,0.15)] overflow-hidden flex flex-col h-[90vh]">
+      {/* 1. EL ESPACIO PROFUNDO (Video 100% Nítido, sin capas oscuras ni opacidad) */}
+      <video 
+        autoPlay loop muted playsInline 
+        className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
+      >
+        <source src="/videos/deep_space.mp4" type="video/mp4" />
+      </video>
+
+      {/* Capa invisible solo para poder hacer clic fuera y cerrar */}
+      <div className="absolute inset-0 bg-transparent z-0" onClick={onClose}></div>
+      
+      {/* 2. VENTANA MODAL (Cristal Puro / Glassmorphism) */}
+      <div className="relative z-10 w-full max-w-6xl bg-black/10 backdrop-blur-[25px] border border-white/20 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col h-[90vh]">
         
-        {/* HEADER GLOW */}
-        <div className="bg-[#020617] border-b border-cyan-500/20 p-5 flex justify-between items-center shrink-0">
+        {/* HEADER CRISTALINO */}
+        <div className="bg-white/5 border-b border-white/10 p-5 flex justify-between items-center shrink-0">
             <h2 className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-400 font-bold text-lg flex items-center gap-3 tracking-wider">
-               <span className="text-2xl drop-shadow-[0_0_5px_rgba(34,211,238,0.8)]">✨</span> BOOSTER STUDIO
+               <span className="text-2xl drop-shadow-[0_0_5px_rgba(34,211,238,0.8)]">✨</span> BOOSTER STUDIO TERMINAL
             </h2>
             <button onClick={onClose} className="text-gray-400 hover:text-white hover:rotate-90 transition-transform duration-300 text-xl">✕</button>
         </div>
 
-        <div className="flex flex-col md:flex-row flex-1 overflow-hidden bg-gradient-to-b from-[#050b14] to-[#020617]">
+        {/* CONTENEDOR CENTRAL SIN DEGRADADOS AZULES */}
+        <div className="flex flex-col md:flex-row flex-1 overflow-hidden bg-transparent">
             
-            {/* SIDEBAR NAVEGACIÓN (Cápsulas) */}
-            <div className="flex md:flex-col border-b md:border-b-0 md:border-r border-cyan-500/10 bg-[#020617]/50 p-3 gap-2 overflow-x-auto md:w-56 shrink-0">
-                {[
+            {/* SIDEBAR NAVEGACIÓN (Fondo de cristal oscuro) */}
+            <div className="flex md:flex-col border-b md:border-b-0 md:border-r border-white/10 bg-black/10 p-3 gap-2 overflow-x-auto md:w-64 shrink-0 z-20">
+            
+                       {[
                     { id: 'identity', label: '👤 Identidad', color: 'cyan' },
                     { id: 'audio', label: '📡 Señal', color: 'fuchsia' },
                     { id: 'Telefono Casa', label: '☝️ Telefono Casa', color: 'yellow' },
                     { id: 'market', label: '🛒🦝 Tienda & IA', color: 'green' },
-                    { id: 'assets', label: '💾🦝 Archivos Digitales', color: 'blue' }
+                    { id: 'assets', label: '💾🦝 Archivos Digitales', color: 'blue' },
+                    // NUEVA PESTAÑA DE MÉTRICAS Y ÓRBITAS
+                    { id: 'metrics', label: '🛰️ Órbita & Radar', color: 'orange' } 
                 ].map((item) => (
                     <button 
                         key={item.id}
@@ -228,15 +278,15 @@ const BoosterModal = ({ onClose }) => {
                         className={`text-left py-3 px-5 text-xs font-bold rounded-2xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap
                         ${tab === item.id 
                             ? `bg-gradient-to-r from-${item.color}-500/20 to-transparent text-${item.color}-300 border border-${item.color}-500/30 shadow-[0_0_15px_rgba(0,0,0,0.3)] translate-x-1` 
-                            : 'text-gray-500 hover:bg-white/5 hover:text-white'}`}
+                            : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}
                     >
                         {item.label}
                     </button>
                 ))}
             </div>
-
+            
             {/* ÁREA DE CONTENIDO */}
-            <div className="p-8 overflow-y-auto custom-scrollbar flex-1">
+            <div className="p-8 overflow-y-auto custom-scrollbar flex-1 relative z-10">
                 
                 {/* 👤 IDENTIDAD */}
                 {tab === 'identity' && (
@@ -341,7 +391,7 @@ const BoosterModal = ({ onClose }) => {
                 {/* ☝️ TELEFONO CASA */}
                 {tab === 'Telefono Casa' && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fadeIn">
-                        <div className={`${CardStyle} border-fuchsia-500/20 bg-fuchsia-900/5`}>
+                        <div className={`${CardStyle} border-fuchsia-500/20 bg-fuchsia-900/3`}>
                             <p className="text-sm text-fuchsia-300 font-bold mb-4 tracking-wider">🏠 ATMÓSFERA DE LA SUITE</p>
                             
                             <select value={formData.intimo_bg || ""} onChange={e => setFormData({...formData, intimo_bg: e.target.value})} className={`${InputStyle} appearance-none cursor-pointer mb-6`}>
@@ -366,7 +416,7 @@ const BoosterModal = ({ onClose }) => {
                         </div>
 
                         {/* BUZÓN */}
-                        <div className="bg-[#020617]/50 p-6 rounded-3xl border border-white/5 h-full flex flex-col shadow-inner">
+                        <div className="bg-[#020617]/20 p-6 rounded-3xl border border-white/5 h-full flex flex-col shadow-inner">
                             <p className="text-xs text-gray-400 font-bold uppercase mb-4 tracking-widest text-center">📥 Preguntas de la Audiencia</p>
                             <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3">
                                 {questions.length > 0 ? questions.map(q => (
@@ -444,7 +494,7 @@ const BoosterModal = ({ onClose }) => {
                                 <input type="text" value={formData.catalog_url} onChange={e=>setFormData({...formData, catalog_url: e.target.value})} placeholder="https://docs.google.com/presentation/..." className={`${InputStyle} border-blue-500/30 focus:border-blue-400 bg-black/40`} />
                             </div>
 
-                            <div className="flex-1 bg-[#020617]/80 border border-white/5 rounded-3xl p-5 overflow-hidden flex flex-col">
+                            <div className="flex-1 bg-[#020617]/20 border border-white/5 rounded-3xl p-5 overflow-hidden flex flex-col">
                                 <h3 className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-4 flex justify-between">
                                     <span>Inventario Activo</span>
                                     <span>{physicalProducts.length + serviceItems.length} items</span>
@@ -480,7 +530,7 @@ const BoosterModal = ({ onClose }) => {
                 {/* 📦 ARCHIVOS DIGITALES */}
                 {tab === 'assets' && (
                     <div className="space-y-6 max-w-4xl mx-auto animate-fadeIn">
-                        <div className="bg-[#0f172a]/80 p-6 rounded-3xl border border-blue-500/20 shadow-[0_0_30px_rgba(59,130,246,0.1)]">
+                        <div className="bg-[#0f172a]/20 p-6 rounded-3xl border border-blue-500/10 shadow-[0_0_30px_rgba(59,130,246,0.1)]">
                             <div className="flex justify-between items-center mb-6">
                                 <p className="text-xs font-bold text-blue-300 uppercase tracking-widest">Gestión de Archivos Digitales </p>
                                 <button onClick={() => setIsMerchant(!isMerchant)} className={`px-4 py-2 text-[10px] font-bold rounded-full border transition-all ${isMerchant ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'bg-transparent border-gray-600 text-gray-400'}`}>
@@ -518,16 +568,105 @@ const BoosterModal = ({ onClose }) => {
                         </div>
                     </div>
                 )}
+
+                {/* ========================================================= */}
+                {/* 🛰️ NUEVA SECCIÓN: ÓRBITA Y RADAR (MÉTRICAS) */}
+                {/* ========================================================= */}
+                {tab === 'metrics' && (
+                    <div className="space-y-8 animate-fadeIn max-w-5xl mx-auto">
+                        
+                        {/* HEADER DE LA SECCIÓN */}
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="w-12 h-12 rounded-full border border-orange-500/50 flex items-center justify-center bg-orange-500/10 shadow-[0_0_20px_rgba(249,115,22,0.3)] animate-[spin_10s_linear_infinite]">
+                                <span className="animate-[spin_10s_linear_infinite_reverse] text-2xl">☄️</span>
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-black text-orange-400 tracking-widest uppercase drop-shadow-lg">Radar de Sistema</h3>
+                                <p className="text-xs text-orange-200/50 font-bold tracking-widest">MONITOR DE TRÁFICO Y RETENCIÓN</p>
+                            </div>
+                        </div>
+
+                        {/* HUD MÉTRICAS (Fase 0) */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            
+                            {/* Card Tiempo (OFFLINE EN FASE 0) */}
+                            <div className="bg-black/20 backdrop-blur-md border border-white/5 p-6 rounded-3xl relative overflow-hidden opacity-60 grayscale cursor-not-allowed">
+                                <div className="absolute inset-0 bg-[url('/scanline.png')] opacity-10 mix-blend-overlay"></div>
+                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Total Visualización</p>
+                                <div className="mt-2">
+                                    <span className="bg-cyan-900/40 text-cyan-400 text-[10px] font-bold px-3 py-1 rounded-full border border-cyan-500/20 uppercase tracking-widest">
+                                        🔒 Desbloqueo Fase 1
+                                    </span>
+                                </div>
+                                <p className="text-[10px] text-gray-600 mt-4 border-t border-white/5 pt-2">Requiere Motor de Video Nativo.</p>
+                            </div>
+
+                            {/* Card Hyper Zap (OFFLINE EN FASE 0) */}
+                            <div className="bg-black/20 backdrop-blur-md border border-white/5 p-6 rounded-3xl relative overflow-hidden opacity-60 grayscale cursor-not-allowed">
+                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Tráfico Hyper Zap</p>
+                                <div className="mt-2">
+                                    <span className="bg-fuchsia-900/40 text-fuchsia-400 text-[10px] font-bold px-3 py-1 rounded-full border border-fuchsia-500/20 uppercase tracking-widest">
+                                        🔒 Desbloqueo Fase 1
+                                    </span>
+                                </div>
+                                <p className="text-[10px] text-gray-600 mt-4 border-t border-white/5 pt-2">Requiere Módulo de Tráfico.</p>
+                            </div>
+
+                            {/* Card Órbitas (ACTIVA 100% REAL) */}
+                            <div className="bg-black/20 backdrop-blur-md border border-orange-500/30 p-6 rounded-3xl relative overflow-hidden group hover:border-orange-400 transition-colors shadow-[0_0_15px_rgba(249,115,22,0.1)]">
+                                <div className="absolute -right-4 -top-4 text-6xl opacity-10 group-hover:opacity-20 transition-opacity">🛰️</div>
+                                <div className="absolute top-2 right-4 w-2 h-2 rounded-full bg-orange-500 animate-pulse shadow-[0_0_8px_rgba(249,115,22,1)]"></div>
+                                
+                                <p className="text-[10px] text-orange-400 font-bold uppercase tracking-widest mb-2">Naves en Órbita</p>
+                                <p className="text-4xl font-black text-white drop-shadow-[0_0_10px_rgba(249,115,22,0.5)]">
+                                    {/* AQUI INYECTAMOS EL DATO REAL DE SUPABASE */}
+                                    {followerCount} 
+                                </p>
+                                <p className="text-[10px] text-gray-300 mt-2 border-t border-white/10 pt-2">Usuarios en seguimiento (En vivo).</p>
+                            </div>
+                        </div>
+                        
+                        {/* LISTA DE USUARIOS EN ÓRBITA */}
+                        <div className="mt-8 bg-black/20 backdrop-blur-md border border-white/10 p-6 rounded-3xl flex flex-col h-80 shadow-inner">
+                            <h3 className="text-xs text-gray-300 font-bold uppercase tracking-widest mb-6 flex justify-between items-center border-b border-white/10 pb-4">
+                                <span>Constelación Activa (Seguidores)</span>
+                                <span className="bg-orange-500/20 text-orange-300 border border-orange-500/30 px-3 py-1 rounded-full text-[10px]">EN DIRECTO</span>
+                            </h3>
+                            
+                            <div className="flex-1 overflow-y-auto custom-scrollbar grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pr-2">
+                                {/* MOCKUP DE SEGUIDORES */}
+                                {[1, 2, 3, 4, 5, 6].map((orbit) => (
+                                    <div key={orbit} className="flex items-center gap-4 bg-white/5 hover:bg-white/10 transition-colors p-3 rounded-2xl border border-white/10 group">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-fuchsia-500 p-[2px]">
+                                            <div className="w-full h-full bg-black rounded-full flex items-center justify-center overflow-hidden">
+                                                <span className="text-xs">👾</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-200 group-hover:text-white transition-colors">Usuario_Neón_{orbit}</p>
+                                            <p className="text-[9px] text-orange-400 uppercase tracking-wider">Órbita Estable</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                    </div>
+                )}
+
             </div>
         </div>
         
-        {/* FOOTER */}
-        <div className="p-5 border-t border-cyan-500/10 bg-[#020617] flex justify-end gap-4 shrink-0">
-            <button onClick={onClose} className="text-gray-500 text-xs px-6 py-3 font-bold uppercase hover:text-white transition-all">Cancelar</button>
-            <button onClick={handleSave} disabled={loading} className="bg-white text-black font-bold uppercase text-xs px-8 py-3 rounded-full hover:bg-cyan-300 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(34,211,238,0.6)]">
-                {loading ? 'Procesando...' : 'GUARDAR SISTEMA'}
+        {/* ========================================================= */}
+        {/* FOOTER CRISTALINO */}
+        {/* ========================================================= */}
+        <div className="p-5 border-t border-white/10 bg-black/10 backdrop-blur-3xl flex justify-end gap-4 shrink-0 relative z-20">
+            <button onClick={onClose} className="text-gray-300 text-xs px-6 py-3 font-bold uppercase hover:text-white transition-all hover:bg-white/5 rounded-full">Desconectar</button>
+            <button onClick={handleSave} disabled={loading} className="bg-white/90 text-black font-bold uppercase text-xs px-8 py-3 rounded-full hover:bg-white hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+                {loading ? 'Sincronizando...' : 'ACTUALIZAR NÚCLEO'}
             </button>
         </div>
+
       </div>
     </div>
   );
