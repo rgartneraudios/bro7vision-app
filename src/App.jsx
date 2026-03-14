@@ -122,6 +122,8 @@ function App() {
         setGpsLoading(false); setScope({ city: 'Sintonía Manual', type: 'demo' }); setStep(2); 
     });
   };
+  
+  
 
   // --- SINCRONIZACIÓN DE DATOS ---
   useEffect(() => {
@@ -239,6 +241,8 @@ const handleReportIssue = async () => {
   }
 };
 
+
+
   return (
     <div className="relative w-full h-screen bg-black text-white overflow-hidden font-sans">
       
@@ -322,7 +326,7 @@ const handleReportIssue = async () => {
    {/* AUDIO TOOLS (BROLIVES + TUNER) */}
 <div className="mt-auto flex flex-col w-full pb-10">
               <div className="w-full px-4 mb-4">
-                  <p className="text-[8px] text-gray-500 font-bold uppercase mb-2 tracking-widest ml-1">Live Audio Player</p>
+                  <p className="text-[8px] text-gray-500 font-bold uppercase mb-2 tracking-widest ml-1">Audio & Lives Player</p>
                   
                   {/* AQUÍ PASAMOS EL ESTADO DEL AUDIO */}
                   <BroLives 

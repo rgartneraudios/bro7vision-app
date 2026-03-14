@@ -437,31 +437,32 @@ const BG_VIDEO = `/videos/este_bg_${getTimeSuffix()}.mp4`;
   </div>
 </div>
 
-        {/* VISOR ESTE - OCUPA EL 100% DEL ALTO */}
-        <div className="relative bg-black este-visor overflow-hidden w-[400px] h-[94vh]">
-          {isTvMode&&<div className="absolute inset-0 z-0 opacity-30 blur-[60px] scale-150 pointer-events-none bg-gradient-to-t from-blue-900 via-purple-900 to-pink-900"/>}
-
-          <video ref={videoRefPC} key={`pc_${currentUser?.id}`} poster={currentUser?.poster||''}
-                 autoPlay loop={!isTvMode} playsInline
-                 className={`relative z-10 transition-all duration-700 ${isTvMode?'w-full h-auto aspect-video object-contain bg-black':'w-full h-full object-cover'}`}
-                 onTimeUpdate={()=>videoRefPC.current&&setProgress((videoRefPC.current.currentTime/(videoRefPC.current.duration||100))*100)}/>
 
           {/* Esquina Inferior Izquierda: Volumen */}
 <button onClick={(e)=>{e.stopPropagation();setIsMuted(p=>!p);}}
-        className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md p-3 rounded-full text-lg z-[150] border border-white/20 hover:bg-white/20 transition-all">
+        className="absolute bottom-8 left-4 bg-black/60 backdrop-blur-md p-3 rounded-full text-lg z-[150] border border-white/20 hover:bg-white/20 transition-all">
   {isMuted?'🔇':'🔊'}
 </button>
 
 {/* Esquina Inferior Derecha: El botón de Órbita (Cometa) */}
 <button 
   onClick={handleOrbitar} 
-  // Añadimos absolute, bottom-4, right-4 y un z-index alto para que esté dentro del visor
-  className={`absolute bottom-4 right-4 p-3 rounded-full border transition-all z-[150] ${
+  className={`absolute bottom-8 right-4 p-3 rounded-full border transition-all z-[150] ${
     isOrbitando ? 'bg-cyan-500/20 border-cyan-400 shadow-[0_0_10px_cyan]' : 'bg-black/60 backdrop-blur-md border-white/20 hover:bg-white/20'
   }`}
 >
   {isOrbitando ? '☄️' : '🛸'}
 </button>
+
+
+        {/* VISOR ESTE - OCUPA EL 100% DEL ALTO */}
+        <div className="relative bg-black este-visor overflow-hidden w-[420px] h-[94vh]">
+          {isTvMode&&<div className="absolute inset-0 z-0 opacity-30 blur-[60px] scale-150 pointer-events-none bg-gradient-to-t from-blue-900 via-purple-900 to-pink-900"/>}
+
+          <video ref={videoRefPC} key={`pc_${currentUser?.id}`} poster={currentUser?.poster||''}
+                 autoPlay loop={!isTvMode} playsInline
+                 className={`relative z-10 transition-all duration-700 ${isTvMode?'w-full h-auto aspect-video object-contain bg-black':'w-full h-full object-cover'}`}
+                 onTimeUpdate={()=>videoRefPC.current&&setProgress((videoRefPC.current.currentTime/(videoRefPC.current.duration||100))*100)}/>
         </div>
       </div>
       

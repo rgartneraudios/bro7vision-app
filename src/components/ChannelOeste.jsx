@@ -71,26 +71,22 @@ const OESTE_STYLES = `
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  /* CAMBIO 1: Aumentamos opacidad y añadimos una sombra sutil para separar la línea del fondo */
-  border: 1.5px dashed rgba(0, 255, 255, 0.8); 
-  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8)); /* Esto hace que la línea se vea aunque el fondo sea blanco */
+  border: 1px dashed rgba(0, 255, 255, 0.4); /* Trazo definido, no borroso */
 }
 
 /* La cabeza del cometa (un punto brillante) */
 .orbita-cabeza {
   position: absolute;
-  top: -4px; /* Ajuste leve para compensar el tamaño */
+  top: -3px; /* Se alinea con el borde superior */
   left: 50%;
   transform: translateX(-50%);
-  /* CAMBIO 2: Ligeramente más grande para que sea un punto de atención real */
-  width: 8px;
-  height: 8px;
-  background-color: #ffffff; /* El centro blanco puro da sensación de luz intensa */
-  border: 2px solid #00ffff; /* Borde cian para mantener el color */
+  width: 6px;
+  height: 6px;
+  background-color: #00ffff;
   border-radius: 50%;
-  /* CAMBIO 3: Sombra más cerrada y definida (menos blur, más intensidad) */
-  box-shadow: 0 0 8px 2px #00ffff; 
+  box-shadow: 0 0 10px 2px #00ffff, 0 0 20px #00ffff; /* Brillo del cometa */
 }
+
 @keyframes girar-orbita {
   0% {
     transform: translate(-50%, -50%) rotateX(75deg) rotateZ(0deg);
@@ -410,32 +406,22 @@ const BG_VIDEO = `/videos/oeste_bg_${getTimeSuffix()}.mp4`;
       <div className="absolute top-0 left-12 h-full z-[30] hidden md:flex items-center justify-start"
            onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
 
-        {/* VISOR OESTE - OCUPA EL 100% DEL ALTO */}
-        <div className="relative bg-black oeste-visor overflow-hidden w-[400px] h-[94vh]">
-          {isTvMode&&<div className="absolute inset-0 z-0 opacity-30 blur-[60px] scale-150 pointer-events-none bg-gradient-to-t from-blue-900 via-purple-900 to-pink-900"/>}
-
-          <video ref={videoRefPC} key={`pc_${currentUser?.id}`} poster={currentUser?.poster||''}
-                 autoPlay loop={!isTvMode} playsInline
-                 className={`relative z-10 transition-all duration-700 ${isTvMode?'w-full h-auto aspect-video object-contain bg-black':'w-full h-full object-cover'}`}
-                 onTimeUpdate={()=>videoRefPC.current&&setProgress((videoRefPC.current.currentTime/(videoRefPC.current.duration||100))*100)}/>
-
-          {/* Esquina Inferior Izquierda: Volumen */}
+{/* Esquina Inferior Izquierda: Volumen */}
 <button onClick={(e)=>{e.stopPropagation();setIsMuted(p=>!p);}}
-        className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md p-3 rounded-full text-lg z-[150] border border-white/20 hover:bg-white/20 transition-all">
+        className="absolute bottom-8 left-4 bg-black/60 backdrop-blur-md p-3 rounded-full text-lg z-[150] border border-white/20 hover:bg-white/20 transition-all">
   {isMuted?'🔇':'🔊'}
 </button>
 
 {/* Esquina Inferior Derecha: El botón de Órbita (Cometa) */}
 <button 
   onClick={handleOrbitar} 
-  // Añadimos absolute, bottom-4, right-4 y un z-index alto para que esté dentro del visor
-  className={`absolute bottom-4 right-4 p-3 rounded-full border transition-all z-[150] ${
+  className={`absolute bottom-8 right-4 p-3 rounded-full border transition-all z-[150] ${
     isOrbitando ? 'bg-cyan-500/20 border-cyan-400 shadow-[0_0_10px_cyan]' : 'bg-black/60 backdrop-blur-md border-white/20 hover:bg-white/20'
   }`}
 >
   {isOrbitando ? '☄️' : '🛸'}
 </button>
-        </div>
+
 
       {/* ORBE ANTERIOR (←) — derecha del visor, footer */}
   <div className="absolute z-[110] cursor-pointer group animate-orb-float"
@@ -458,6 +444,17 @@ const BG_VIDEO = `/videos/oeste_bg_${getTimeSuffix()}.mp4`;
       <span className="text-2xl font-black text-white relative z-10">→</span>
     </div>
   </div>
+  
+    {/* VISOR OESTE - OCUPA EL 100% DEL ALTO */}
+        <div className="relative bg-black oeste-visor overflow-hidden w-[420px] h-[94vh]">
+          {isTvMode&&<div className="absolute inset-0 z-0 opacity-30 blur-[60px] scale-150 pointer-events-none bg-gradient-to-t from-blue-900 via-purple-900 to-pink-900"/>}
+
+          <video ref={videoRefPC} key={`pc_${currentUser?.id}`} poster={currentUser?.poster||''}
+                 autoPlay loop={!isTvMode} playsInline
+                 className={`relative z-10 transition-all duration-700 ${isTvMode?'w-full h-auto aspect-video object-contain bg-black':'w-full h-full object-cover'}`}
+                 onTimeUpdate={()=>videoRefPC.current&&setProgress((videoRefPC.current.currentTime/(videoRefPC.current.duration||100))*100)}/>
+ </div>
+
   
         </div>
       

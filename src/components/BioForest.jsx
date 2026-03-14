@@ -233,46 +233,6 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
     }
   }; 
   
-  useEffect(()=>{
-    const video=videoRef.current;
-    const bgVideo=bgVideoRef.current;
-    if(!video||!currentUser)return;
-
-    // 👇 NUEVO: pausa antes de cambiar
-    video.pause();
-    
-    const playUrl=cleanUrl(currentUser.video_file||"");
-    if(hlsRef.current){hlsRef.current.destroy();hlsRef.current=null;}
-    const isHLS=playUrl.includes('.m3u8');
-    if(isHLS){
-      if(video.canPlayType('application/vnd.apple.mpegurl')){video.src=playUrl;video.muted=isMuted;video.play().catch(()=>{});}
-      else if(Hls.isSupported()){const hls=new Hls();hls.loadSource(playUrl);hls.attachMedia(video);hls.on(Hls.Events.MANIFEST_PARSED,()=>{video.muted=isMuted;video.play().catch(()=>{});});hlsRef.current=hls;}
-    } else {
-      const same=video.src===playUrl||video.src===window.location.origin+playUrl;
-      if(!same){
-        video.pause();video.src="";video.load();
-        video.src=playUrl;video.muted=isMuted;video.load();video.play().catch(()=>{});
-      }
-    }
-    setVisualEchos([]);setFloatingEchos([]);
-
-    // 👇 NUEVO: cleanup al desmontar o cambiar usuario
-    return () => {
-      video.pause();
-      video.src = "";
-      video.load();
-      }
-  if (bgVideo) {
-    bgVideo.pause();
-    bgVideo.src = "";
-    bgVideo.load();
-  }
-  if (hlsRef.current) {
-    hlsRef.current.destroy();
-    hlsRef.current = null;
-  }
-  },[currentUser]);
-
   const getTimeSuffix = () => { 
   const h = new Date().getHours(); 
   if(h >= 5  && h < 11) return '1';  // 05-11
@@ -493,6 +453,7 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
       {config.video && (
         <div className="absolute inset-0 z-[1] transition-transform duration-300 ease-out will-change-transform" >
           <video 
+          ref={bgVideoRef} 
             src={config.video} 
             autoPlay 
             loop 
@@ -579,14 +540,48 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
 
       {/* 4. VISOR PORTAL — NIHILANTH */}
 <div onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}
-     className="absolute top-[45%] md:top-[52%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[20]"
+     className="absolute top-[45%] md:top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[20]"
      style={{perspective:'2000px'}}>
-  
-  {/* MÁS LARGO HACIA ABAJO: aumenté md:h-[82vh] y subí el top a 52% */}
-  <div className="relative w-[62vw] aspect-[9/19] md:w-[360px] md:h-[82vh] md:max-h-[950px] md:aspect-auto flex items-center justify-center overflow-visible"
+
+  {/* ORBE ANTERIOR */}
+  <div className="hidden md:block absolute z-[110] cursor-pointer group orb-float"
+       style={{ left: '-70px', bottom: '-40px' }}
+       onClick={()=>setCurrentIndex(p=>p>0?p-1:displayUsers.length-1)}>
+    <div className={`w-14 h-14 rounded-full flex items-center justify-center relative orb-glow transition-transform group-hover:scale-110 ${config.colors[0]}`} style={{color:'currentColor'}}>
+      <div className="absolute inset-0 bg-current opacity-20 blur-xl rounded-full"/>
+      <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-slow"/>
+      <span className="text-3xl font-black text-white relative z-10 pb-1">‹</span>
+    </div>
+  </div>
+
+  {/* ORBE SIGUIENTE */}
+  <div className="hidden md:block absolute z-[110] cursor-pointer group orb-float"
+       style={{ right: '-70px', bottom: '-40px', animationDelay:'1.5s' }}
+       onClick={()=>setCurrentIndex(p=>p+1)}>
+    <div className={`w-14 h-14 rounded-full flex items-center justify-center relative orb-glow transition-transform group-hover:scale-110 ${config.colors[0]}`} style={{color:'currentColor'}}>
+      <div className="absolute inset-0 bg-current opacity-20 blur-xl rounded-full"/>
+      <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-reverse"/>
+      <span className="text-3xl font-black text-white relative z-10 pb-1">›</span>
+    </div>
+  </div>
+
+  {/* BOTÓN MUTE */}
+  <button onClick={(e)=>{e.stopPropagation();setIsMuted(p=>!p);}}
+    className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md p-3 rounded-full text-lg z-[200] border border-white/20 hover:bg-white/20 transition-all">
+    {isMuted?'🔇':'🔊'}
+  </button>
+
+  {/* BOTÓN ORBITA */}
+  <button onClick={handleOrbitar}
+    className={`absolute bottom-4 right-4 p-3 rounded-full border transition-all z-[200] ${
+      isOrbitando ? 'bg-cyan-500/20 border-cyan-400 shadow-[0_0_10px_cyan]' : 'bg-black/60 backdrop-blur-md border-white/20 hover:bg-white/20'
+    }`}>
+    {isOrbitando ? '☄️' : '🛸'}
+  </button>
+
+  {/* VISOR AL FINAL */}
+  <div className="relative w-[62vw] aspect-[9/19] md:w-[400px] md:h-[82vh] md:max-h-[950px] md:aspect-auto flex items-center justify-center overflow-visible"
      style={{transformStyle:'preserve-3d'}}>
-     
-    {/* NÚCLEO VISOR ESTÁTICO */}
     <div className="relative w-full h-full z-[10]"
          style={{transform:portalTransform,transformStyle:'preserve-3d'}}
          onDoubleClick={()=>setVisorScale(1)}>
@@ -594,28 +589,15 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
         {isTvMode&&(
           <div className="absolute inset-0 z-0 opacity-30 blur-[60px] scale-150 pointer-events-none bg-gradient-to-t from-blue-900 via-purple-900 to-pink-900"/>
         )}
-      
-        <video ref={videoRef} key={currentUser.id} poster={currentUser.poster||""} autoPlay loop={!isTvMode} playsInline
-               className={`relative z-10 transition-all duration-700 ${isTvMode?'w-full h-auto aspect-video object-contain bg-black':'w-full h-full object-cover'}`}
-               onTimeUpdate={()=>videoRef.current&&setProgress((videoRef.current.currentTime/(videoRef.current.duration||100))*100)}/>
-        
-        {/* Esquina Inferior Izquierda: Volumen */}
-<button onClick={(e)=>{e.stopPropagation();setIsMuted(p=>!p);}}
-        className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md p-3 rounded-full text-lg z-[150] border border-white/20 hover:bg-white/20 transition-all">
-  {isMuted?'🔇':'🔊'}
-</button>
-
-{/* Esquina Inferior Derecha: El botón de Órbita (Cometa) */}
-<button 
-  onClick={handleOrbitar} 
-  // Añadimos absolute, bottom-4, right-4 y un z-index alto para que esté dentro del visor
-  className={`absolute bottom-4 right-4 p-3 rounded-full border transition-all z-[150] ${
-    isOrbitando ? 'bg-cyan-500/20 border-cyan-400 shadow-[0_0_10px_cyan]' : 'bg-black/60 backdrop-blur-md border-white/20 hover:bg-white/20'
-  }`}
->
-  {isOrbitando ? '☄️' : '🛸'}
-</button>
-        
+        <video 
+          ref={videoRef} 
+          poster={currentUser.poster||""} 
+          autoPlay 
+          loop={!isTvMode} 
+          playsInline
+          className={`relative z-10 transition-all duration-700 ${isTvMode?'w-full h-auto aspect-video object-contain bg-black':'w-full h-full object-cover'}`}
+          onTimeUpdate={()=>videoRef.current&&setProgress((videoRef.current.currentTime/(videoRef.current.duration||100))*100)}
+        />
         {!isTvMode&&(
           <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10 z-[150]">
             <div className={`h-full transition-all duration-300 ${config.reactionColor==='orange'?'bg-orange-500':'bg-cyan-500'}`} style={{width:`${progress}%`}}/>
@@ -623,38 +605,9 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
         )}
       </div>
     </div>
-
-    <div className="hidden md:flex absolute bottom-[-20px] left-1/2 -translate-x-1/2 z-[100] flex-row items-center gap-8">
-  
-  	{/* ORBE ANTERIOR */}
-  	<div style={{ transform: 'translateX(-200px)' }}>
-    	<div className="cursor-pointer group orb-float"
-         onClick={()=>setCurrentIndex(p=>p>0?p-1:displayUsers.length-1)}>
-      	<div className={`w-14 h-14 rounded-full flex items-center justify-center relative orb-glow transition-transform group-	hover:scale-110 ${config.colors[0]}`} style={{color:'currentColor'}}>
-        <div className="absolute inset-0 bg-current opacity-20 blur-xl rounded-full"/>
-        <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-slow"/>
-        <span className="text-3xl font-black text-white relative z-10 pb-1">‹</span>
-      </div>
-    </div>
   </div>
 
-  	{/* ORBE SIGUIENTE */}
-  	<div style={{ transform: 'translateX(200px)' }}>
-    	<div className="cursor-pointer group orb-float"
-         style={{animationDelay:'1.5s'}}
-         onClick={()=>setCurrentIndex(p=>p+1)}>
-      	<div className={`w-14 h-14 rounded-full flex items-center justify-center relative orb-glow transition-transform group-	hover:scale-110 ${config.colors[0]}`} style={{color:'currentColor'}}>
-        <div className="absolute inset-0 bg-current opacity-20 blur-xl rounded-full"/>
-        <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-reverse"/>
-        <span className="text-3xl font-black text-white relative z-10 pb-1">›</span>
-      </div>
-    </div>
-  </div>
-
-	</div>
-  	</div>
 </div>
-
       {/* 5. NUEVO FOOTER: SOMBREADO + BOTONES + CREADOR */}
       {/* Añadimos pointer-events-none al contenedor general, pero auto a los botones para que los clics funcionen sin bloquear la pantalla */}
       <div className="absolute bottom-0 left-0 w-full flex flex-col md:flex-row justify-between items-center md:items-end px-4 py-6 md:px-[10%] md:py-8 z-[150] pointer-events-none bg-gradient-to-t from-black/90 via-black/60 to-transparent">

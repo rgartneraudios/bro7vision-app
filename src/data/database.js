@@ -219,7 +219,7 @@ export const MASTER_DB = [
       isLive: true,
       viewers: 340, 
       audioFile: "/audio/IA_y_el_fin_de_los_cursos_caros__Tu_universidad_personal_gratis.mp3",
-      video_file: "https://www.dropbox.com/scl/fi/wycofc6ej3l9ux3jkzm43/La_migraci-n_de_la_atenci-n_a_la_IA.mp4?rlkey=ya5cl4sfv7971j2qkhgqh16bj&st=3q1bhmfw&dl=0",
+      video_file: "https://www.dropbox.com/scl/fi/zgrh7a1ikczvr12i2go4y/Mapache-Guia.mp4?rlkey=ormq2dkuoeceq6idcytxf52nb&st=48fq9kbn&dl=0",
      twit_message: 'AI_El Fin de los Cursos',
       neonColor: "cyan-emerald",
       img: '/images/yam5.jpg',
