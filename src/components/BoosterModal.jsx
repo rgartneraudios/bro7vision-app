@@ -184,6 +184,37 @@ const BoosterModal = ({ onClose }) => {
       setLoading(false);
     }
   };   
+  
+  // --- SECUENCIA DE AUTODESTRUCCIÓN (BORRAR CUENTA) ---
+  const handleDeleteAccount = async () => {
+    const alert1 = window.confirm("🚨 ¡ALERTA ROJA! 🚨\n¿Estás absolutamente seguro de que quieres desintegrar tu identidad de BRO7VISION?");
+    if (!alert1) return;
+    
+    const alert2 = window.confirm("Esta acción NO se puede deshacer. Perderás tus Puntos Génesis, Halos de Luz, Moon Vales y tu HoloPrisma desaparecerá del ciberespacio. ¿Proceder?");
+    if (!alert2) return;
+
+    try {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No se detectó un usuario en la terminal.");
+
+      // 1. Borramos el perfil de la base de datos pública
+      await supabase.from('profiles').delete().eq('id', user.id);
+      
+      // 2. Intentamos ejecutar la función interna de borrado de Supabase (si la tienes configurada)
+      await supabase.rpc('delete_user');
+
+      // 3. Cerramos su sesión y lo enviamos al vacío
+      await supabase.auth.signOut();
+      alert("🌌 Secuencia completada. Tu identidad ha sido desintegrada. Volviendo a la Tierra...");
+      window.location.href = '/'; // Lo devuelve al inicio
+
+    } catch (error) {
+      alert("❌ Error en la desintegración: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // CRUD Functions (Archivos y Tienda)
   const handleDeleteItem = async (itemId) => {
@@ -315,6 +346,25 @@ const BoosterModal = ({ onClose }) => {
                                 </div>
                             </div>
                         </div>
+                        
+                        {/* --- 💬 MENSAJE DE ESTADO (TWIT) --- */}
+                            <div className={`${CardStyle} border-cyan-500/20`}>
+                                <label className={LabelStyle}>💬 MENSAJE CORTO (TWIT RADAR)</label>
+                                <div className="relative">
+                                    <input 
+                                        type="text" 
+                                        maxLength={60} 
+                                        placeholder="Ej: 'Encontré unas llaves', 'Oferta Flash', 'Hola Barrio'..." 
+                                        value={formData.twit_message || ''} 
+                                        onChange={e => setFormData({...formData, twit_message: e.target.value})} 
+                                        className={`${InputStyle} pr-14`} 
+                                    />
+                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-cyan-500/70 font-bold">
+                                        {(formData.twit_message || '').length}/60
+                                    </span>
+                                </div>
+                                <p className="text-[10px] text-gray-500 mt-2">Este mensaje es interceptado por el Community Feed y visible en tu tarjeta.</p>
+                            </div>
 
                         <div className="space-y-6">
                             <div className={CardStyle}>
@@ -349,6 +399,19 @@ const BoosterModal = ({ onClose }) => {
                                     <input type="text" placeholder="Cara Derecha URL" value={formData.holo_4} onChange={e=>setFormData({...formData, holo_4:e.target.value})} className={InputStyle} />
                                 </div>
                             </div>
+                            
+                            {/* --- ZONA DE PELIGRO: BORRAR CUENTA --- */}
+                            <div className="bg-red-950/20 backdrop-blur-xl border border-red-500/30 p-6 rounded-3xl mt-6 shadow-[0_0_20px_rgba(239,68,68,0.15)]">
+                                <h3 className="text-sm text-red-400 font-bold mb-2 flex items-center gap-2">🚨 ZONA DE RIESGO</h3>
+                                <p className="text-xs text-gray-400 mb-4">Desintegrar tu identidad borrará tus Puntos, Vales y tu HoloPrisma de forma irreversible.</p>
+                                <button 
+                                    onClick={handleDeleteAccount}
+                                    className="w-full py-3 px-4 bg-red-600/10 hover:bg-red-600/90 text-red-400 hover:text-white text-xs font-bold uppercase tracking-widest rounded-xl border border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.8)] transition-all duration-300 flex justify-center items-center gap-2"
+                                >
+                                    <span>☠️</span> Iniciar Autodestrucción
+                                </button>
+                            </div>
+                            
                         </div>
                     </div>
                 )}

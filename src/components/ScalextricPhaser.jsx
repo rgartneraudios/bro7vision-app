@@ -225,7 +225,7 @@ const ScalextricPhaser = ({ onWin, difficulty }) => {
               </div>
 
               <div className="bg-[#111] border border-white/20 p-6 rounded-2xl text-center mb-8 shadow-2xl">
-                  <p className="text-sm text-gray-300 mb-6">Responde rápido para ganar. BROVISION es el Coche azul Nº 7 del medio</p>
+                  <p className="text-sm text-gray-300 mb-6">Responde rápido para ganar. Tu Coche es el azul Nº 7 del medio. Son 6 vueltas</p>
                   <div className="grid grid-cols-5 gap-4 text-xs font-mono mb-4 border-y border-white/10 py-4">
                       <div><span className="text-yellow-400 text-lg block">50</span>1º</div>
                       <div><span className="text-gray-300 text-lg block">40</span>2º</div>
