@@ -13,6 +13,10 @@ const FOREST_STYLES = `
         85% { opacity: 1; transform: translateY(-12px); filter: blur(0px); }
         100% { opacity: 0; transform: translateY(-35px); filter: blur(10px); }
     }
+    
+    @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.animate-ticker { animation: ticker 25s linear infinite; }
+    
     .animate-spirit { animation: spiritFade 10s ease-in-out forwards; }
     @keyframes vortexRise {
         0%   { transform: translate(-80vw,-30vh) scale(0.9) rotate(0deg); opacity:0.8; }
@@ -105,7 +109,14 @@ const PC_SLOTS = [
     {x:72,y:45},{x:75,y:35},{x:75,y:70},
     {x:15,y:3},{x:80,y:3},{x:75,y:70},
 ];
-const MOBILE_SLOTS = [{x:6,y:2},{x:45,y:4},{x:25,y:75}];
+const MOBILE_SLOTS = [{x:5,y:75}, {x:50,y:75}];
+
+// HYPER ZAP — zonas derecha, para no pisarse
+const HYPER_PC_SLOTS = [
+  {x:72,y:15},{x:75,y:40},{x:70,y:55},
+  {x:78,y:28},{x:73,y:55},{x:16,y:70},
+];
+const HYPER_MOBILE_SLOTS = [{x:20,y:2}];
 
 const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, onOpenProfile, selectedForestUser }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -113,7 +124,8 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
   const [progress, setProgress] = useState(0);
   const [activeReaction, setActiveReaction] = useState(null);
   const [visualEchos, setVisualEchos] = useState([]);
-  const [floatingEchos, setFloatingEchos] = useState([]);
+  const [floatingEcos, setFloatingEcos] = useState([]);        // se reinicia con el video ✅
+  const [floatingHyperZaps, setFloatingHyperZaps] = useState([]); // persiste al scrollear ✅
   const [visorScale, setVisorScale] = useState(1);
   const [showEchoInput, setShowEchoInput] = useState(false);
   const [echoType, setEchoType] = useState('text');
@@ -125,6 +137,13 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const [isOrbitando, setIsOrbitando] = useState(false);
+  
+  // TEMPORAL — quitar en producción
+const [tickerEchos, setTickerEchos] = useState([
+  { id: 1, text: 'vaya tela lo que hay que oír', author_alias: 'anonx77' },
+  { id: 2, text: 'no coincido en nada, en nada eh', author_alias: 'critixx' },
+  { id: 3, text: 'uff brutal pero pa mal', author_alias: 'user4421' },
+]);
   
   const videoRef = useRef(null);
   const bgVideoRef = useRef(null);
@@ -289,11 +308,23 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
         video.src=playUrl;video.muted=isMuted;video.load();video.play().catch(()=>{});
       }
     }
-    setVisualEchos([]);setFloatingEchos([]);
+    setVisualEchos([]);setFloatingEcos([]); // solo resetea Eco Text, los HyperZap sobreviven
   },[currentUser]); // SOLO currentUser
 
   // FIX AUDIO — Efecto B: mute sin recargar
   useEffect(()=>{ if(videoRef.current) videoRef.current.muted=isMuted; },[isMuted]);
+  
+  // NAVEGACIÓN TECLADO / D-PAD SMART TV ← nuevo
+useEffect(()=>{
+  const handleKey=(e)=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowDown')
+      setCurrentIndex(p=>p+1);
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp')
+      setCurrentIndex(p=>p>0?p-1:displayUsers.length-1);
+  };
+  window.addEventListener('keydown',handleKey);
+  return()=>window.removeEventListener('keydown',handleKey);
+},[displayUsers]);
 
   // Fetch ecos completo con Hyper Zap (VERSIÓN LIMPIA SIN AUDIO)
   useEffect(()=>{
@@ -333,31 +364,35 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
   },[currentUser]);
   
   
-  // Ecos flotantes con lógica Hyper Zap 25%
   useEffect(()=>{
-    if(!visualEchos||visualEchos.length===0)return;
-    let slot=0;
-    const interval=setInterval(()=>{
-      setFloatingEchos(prev=>{
-        const ads=visualEchos.filter(e=>e.is_sponsored);
-        const normals=visualEchos.filter(e=>!e.is_sponsored);
-        const isAdTime=Math.random()>0.75;
-        let echo;
-        if(isAdTime){
-          echo=ads.length>0?ads[Math.floor(Math.random()*ads.length)]:{id:'SYSTEM_AD',is_sponsored:true,author_alias:'BROVISION TV',text:'🔴 ¿QUIERES VER TV EN VIVO? HAZ CLIC AQUÍ',target_index:0};
-        } else {
-          echo=normals.length>0?normals[Math.floor(Math.random()*normals.length)]:visualEchos[Math.floor(Math.random()*visualEchos.length)];
-        }
-        const mob=window.innerWidth<768;
-        const slots=mob?MOBILE_SLOTS:PC_SLOTS;
-        const coords=slots[slot%slots.length];
-        slot++;
-        return [...prev.slice(-2),{...echo,id:Date.now()+Math.random(),x:coords.x,y:coords.y}];
-      });
-    },4500);
-    return()=>clearInterval(interval);
-  },[visualEchos]);
+  if(!visualEchos||visualEchos.length===0)return;
+  let slot=0;
+  const interval=setInterval(()=>{
+    const ads=visualEchos.filter(e=>e.is_sponsored);
+    const normals=visualEchos.filter(e=>!e.is_sponsored);
+    const mob=window.innerWidth<768;
+    const slots=mob?MOBILE_SLOTS:PC_SLOTS;
+    const coords = (mob ? MOBILE_SLOTS : PC_SLOTS)[slot % (mob ? MOBILE_SLOTS : PC_SLOTS).length];
+    const hyperSlots = mob ? HYPER_MOBILE_SLOTS : HYPER_PC_SLOTS;
+    const hyperCoords = hyperSlots[slot % hyperSlots.length];
+    slot++;
 
+    // ECO TEXT → se reinicia con el video
+    if(normals.length>0){
+      const echo=normals[Math.floor(Math.random()*normals.length)];
+      setFloatingEcos(prev=>[...prev.slice(-2),{...echo,id:Date.now()+Math.random(),x:coords.x,y:coords.y}]);
+    }
+
+    // HYPER ZAP → 25% del tiempo, persiste
+    if(Math.random()>0.75){
+      const ad=ads.length>0
+        ?ads[Math.floor(Math.random()*ads.length)]
+        :{id:'SYSTEM_AD',is_sponsored:true,author_alias:'BROVISION TV',text:'🔴 ¿QUIERES VER TV EN VIVO? HAZ CLIC AQUÍ',target_index:0};
+      setFloatingHyperZaps(prev=>[...prev.slice(-1),{...ad,id:Date.now()+Math.random(),x:hyperCoords .x,y:hyperCoords .y}]);
+    }
+  },4500);
+  return()=>clearInterval(interval);
+},[visualEchos]);
   const handleReport=async(echoId)=>{
     if(!confirm("¿Reportar este mensaje como inapropiado?"))return;
     await supabase.rpc('increment_report',{row_id:echoId});
@@ -447,6 +482,7 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
   </svg>
 );
 
+
   return (
     <div className="absolute inset-0 z-0 bg-black overflow-hidden select-none font-mono">
       <style>{FOREST_STYLES}</style>
@@ -467,40 +503,50 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
       )}  
 
       {/* 2. ECOS FLOTANTES completos */}
-      <div className="absolute inset-0 z-[10] pointer-events-none">
-        {floatingEchos.map((echo)=>{
-          const isAd=echo.is_sponsored===true;
-          const neon=neonColors[Math.floor(Math.random()*neonColors.length)];
-          return (
-            <div key={echo.id}
-                 className={`absolute animate-spirit text-center group transition-all ${isAd?'z-[60] pointer-events-auto cursor-pointer scale-110':'pointer-events-none z-[40]'}`}
-                 style={{left:`${echo.x}%`,top:`${echo.y}%`}}
-                 onClick={()=>{
-                   if(!isAd)return;
-                   const adv=videoUsers.find(u=>u.id===echo.advertiser_id);
-                   if(adv){displayUsers.splice(currentIndex+1,0,{...adv,id:`zap_${Date.now()}`,is_zap:true});setCurrentIndex(currentIndex+1);}
-                   else setCurrentIndex(0);
-                 }}>
-              <p className={`text-[8px] mb-1 uppercase tracking-[0.5em] font-black ${isAd?'text-[#FFD700] drop-shadow-[0_0_8px_rgba(255,215,0,0.6)]':'opacity-80 '+neon.text}`}>
-                {isAd?'⚡ HYPER ZAP':`@${echo.author_alias}`}
-              </p>
-              <div className={`border backdrop-blur-none transition-all duration-700 ${isAd
-                ?'px-5 py-2.5 rounded-[2rem] bg-[#0C0C1C]/50 border-[#E3DDB1]/30 text-white font-medium shadow-[0_0_20px_rgba(0,0,0,0.9),inset_0_0_10px_rgba(255,215,0,0.05)]'
-                :`px-7 py-3 rounded-[2.5rem] bg-black/90 border ${neon.border} ${neon.text} ${neon.glow}`}`}>
-                <span className={isAd?"text-xs md:text-base tracking-wide text-white drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]":"text-xs md:text-lg"}>"{echo.text}"</span>
-                {isAd&&(
-                  <div className="mt-2 relative overflow-hidden py-1.5 px-5 rounded-full border border-[#DED590]/50 bg-gradient-to-r from-amber-200/20 via-yellow-300/20 to-amber-100/20 shadow-[0_0_15px_rgba(251,191,36,0.2)]">
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-shimmer"/>
-                    <span className="text-[9px] text-[#FFD700] font-black tracking-[0.3em] uppercase relative z-10">ENTRAR ▶</span>
-                  </div>
-                )}
-              </div>
-              {!isAd&&<button onClick={()=>handleReport(echo.id)} className="pointer-events-auto opacity-0 group-hover:opacity-100 absolute -top-4 -right-4 bg-red-600/20 p-2 rounded-full text-[8px] hover:bg-red-600 transition-all">⚠️</button>}
-            </div>
-          );
-        })}
+      {/* ECO TEXT — dentro del flujo normal, se reinicia con el video */}
+<div className="absolute inset-0 z-[10] pointer-events-none">
+  {floatingEcos.map((echo)=>{
+    const neon=neonColors[Math.floor(Math.random()*neonColors.length)];
+    return (
+      <div key={echo.id}
+           className="absolute animate-spirit text-center pointer-events-none z-[40]"
+           style={{left:`${echo.x}%`,top:`${echo.y}%`}}>
+        <p className={`text-[8px] mb-1 uppercase tracking-[0.5em] font-black opacity-80 ${neon.text}`}>
+          @{echo.author_alias}
+        </p>
+        <div className={`border backdrop-blur-none px-7 py-3 rounded-[2.5rem] bg-black/90 border ${neon.border} ${neon.text} ${neon.glow}`}>
+          <span className="text-xs md:text-lg">"{echo.text}"</span>
+        </div>
+        <button onClick={()=>handleReport(echo.id)} className="pointer-events-auto opacity-0 group-hover:opacity-100 absolute -top-4 -right-4 bg-red-600/20 p-2 rounded-full text-[8px] hover:bg-red-600 transition-all">⚠️</button>
       </div>
+    );
+  })}
+</div>
 
+{/* HYPER ZAP — fixed al viewport, NO se reinicia con scroll */}
+<div className="pointer-events-none">
+  {floatingHyperZaps.map((echo)=>(
+    <div key={echo.id}
+         className="fixed animate-spirit text-center z-[60] pointer-events-auto cursor-pointer scale-110"
+         style={{left:`${echo.x}%`,top:`${echo.y}%`}}
+         onClick={()=>{
+           const adv=videoUsers.find(u=>u.id===echo.advertiser_id);
+           if(adv){displayUsers.splice(currentIndex+1,0,{...adv,id:`zap_${Date.now()}`,is_zap:true});setCurrentIndex(currentIndex+1);}
+           else setCurrentIndex(0);
+         }}>
+      <p className="text-[8px] mb-1 uppercase tracking-[0.5em] font-black text-[#FFD700] drop-shadow-[0_0_8px_rgba(255,215,0,0.6)]">
+        ⚡ HYPER ZAP
+      </p>
+      <div className="px-5 py-2.5 rounded-[2rem] bg-[#0C0C1C]/50 border border-[#E3DDB1]/30 text-white font-medium shadow-[0_0_20px_rgba(0,0,0,0.9),inset_0_0_10px_rgba(255,215,0,0.05)]">
+        <span className="text-xs md:text-base tracking-wide text-white drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]">"{echo.text}"</span>
+        <div className="mt-2 relative overflow-hidden py-1.5 px-5 rounded-full border border-[#DED590]/50 bg-gradient-to-r from-amber-200/20 via-yellow-300/20 to-amber-100/20 shadow-[0_0_15px_rgba(251,191,36,0.2)]">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-shimmer"/>
+          <span className="text-[9px] text-[#FFD700] font-black tracking-[0.3em] uppercase relative z-10">ENTRAR ▶</span>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
       {/* 3. VÓRTICE GEMAS */}
       {activeReaction&&(
         <div className="fixed bottom-4 right-[15%] z-[100] pointer-events-none animate-vortex">
@@ -542,12 +588,12 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
 
       {/* 4. VISOR PORTAL — NIHILANTH */}
 <div onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}
-     className="absolute top-[45%] md:top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[20]"
+     className="absolute top-[45%] md:top-[48%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[20]"
      style={{perspective:'2000px'}}>
 
   {/* ORBE ANTERIOR */}
   <div className="hidden md:block absolute z-[110] cursor-pointer group orb-float"
-       style={{ left: '-70px', bottom: '-40px' }}
+       style={{ left: '-130px', bottom: '-40px' }}
        onClick={()=>setCurrentIndex(p=>p>0?p-1:displayUsers.length-1)}>
     <div className={`w-14 h-14 rounded-full flex items-center justify-center relative orb-glow transition-transform group-hover:scale-110 ${config.colors[0]}`} style={{color:'currentColor'}}>
       <div className="absolute inset-0 bg-current opacity-20 blur-xl rounded-full"/>
@@ -558,7 +604,7 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
 
   {/* ORBE SIGUIENTE */}
   <div className="hidden md:block absolute z-[110] cursor-pointer group orb-float"
-       style={{ right: '-70px', bottom: '-40px', animationDelay:'1.5s' }}
+       style={{ right: '-130px', bottom: '-40px', animationDelay:'1.5s' }}
        onClick={()=>setCurrentIndex(p=>p+1)}>
     <div className={`w-14 h-14 rounded-full flex items-center justify-center relative orb-glow transition-transform group-hover:scale-110 ${config.colors[0]}`} style={{color:'currentColor'}}>
       <div className="absolute inset-0 bg-current opacity-20 blur-xl rounded-full"/>
@@ -642,9 +688,32 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
   <p className={`relative z-10 text-[10px] md:text-[12px] font-black tracking-[0.4em] uppercase ${config.labelClass} drop-shadow-lg text-center`}>
     {config.labelText} <span className="text-white/40 mx-2">//</span> {currentUser?.alias || 'ANÓNIMO'}
   </p>
-  
 </div>     
+
+{/* INFIERNO TICKER */}
+{tickerEchos?.length > 0 && (
+  <div className="absolute bottom-[36px] left-1/2 -translate-x-1/2 w-[62vw] md:w-[460px] z-[150] overflow-hidden pointer-events-none">
+  {/* FUEGOS ARRIBA */}
+  <div className="text-[11px] leading-none tracking-[-2px] opacity-70">
+    🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+    </div>
+    <div className="text-[8px] text-red-500/60 font-black tracking-widest uppercase mb-0.5 px-1">⬇ INFIERNO</div>
+    <div className="relative h-[28px] rounded-lg overflow-hidden border border-red-900/40"
+         style={{background:'linear-gradient(90deg,#3f0000ee,#1a0000fa,#3f0000ee)'}}>
+      <div className="absolute inset-0 flex items-center animate-ticker whitespace-nowrap">
+        {[...tickerEchos,...tickerEchos].map((e,i)=>(
+          <span key={i} className="text-[12px] text-yellow-300/90 font-mono mx-6">
+            "{e.text}" <span className="text-red-300/90">—@{e.author_alias}</span>
+            <span className="text-red-900/50 mx-4">//</span>
+          </span>
+        ))}
       </div>
+    </div>
+  </div>
+)}
+
+      </div>
+      
 
       {/* MODAL ECO (UI Mejorada y Centrada) */}
       {showEchoInput && (
@@ -671,7 +740,7 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
                 {echoType === 'hyper' ? 'EMITIR HYPER ZAP (1000 G)' : 'EMITIR ECO (100 G)'}
               </button>
               
-              <button onClick={() => setShowEchoInput(false)} className="text-gray-500 text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">
+              <button onClick={() => setShowEchoInput(false)} className="text-gray-500 text-[12px] font-black uppercase tracking-widest hover:text-white transition-colors">
                 [ VOLVER ]
               </button>
             </div>

@@ -398,6 +398,17 @@ const handleGoToShop = (user) => {
   </span>
   <span className="text-lg">🚩</span>
 </button>
+
+{/* LEGAL */}
+<button 
+  onClick={() => setShowLegal(true)} 
+  className="w-full flex justify-between items-center p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 group transition-all"
+>
+  <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-cyan-400">
+    LEGAL / CREADOR
+  </span>
+  <span className="text-lg">⚖️</span>
+</button>
           
           <button onClick={async () => { await supabase.auth.signOut(); localStorage.clear(); window.location.href = "/"; }} className="mt-auto text-red-500 font-mono text-[10px] underline">[ DISCONNECT ]</button>
         </div>
@@ -462,9 +473,8 @@ const handleGoToShop = (user) => {
       )}
 
       {/* 7. MODALES Y TELEFONO CASA */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 z-[100]"><button onClick={() => setShowLegal(true)} className="text-[9px] font-black px-10 py-2 rounded-t-xl bg-black/80 border-t border-x border-white/10 text-gray-500 hover:text-cyan-400 transition-all uppercase tracking-widest">⚖️ Legal / Creador</button></div>
       
-      {showLegal && (
+            {showLegal && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/95 p-4 backdrop-blur-md">
           <div className="w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col border border-white/10 rounded-3xl bg-zinc-950 shadow-2xl">
              <div className="p-6 border-b border-white/10 flex justify-between items-center bg-black"><span className="text-cyan-400 font-mono text-xs">LEGAL_TERMINAL_V1.0</span><button onClick={() => setShowLegal(false)} className="text-white text-2xl">×</button></div>
@@ -473,6 +483,7 @@ const handleGoToShop = (user) => {
         </div>
       )}
 
+     
      {showStory && (
         <div className="fixed inset-0 z-[200] bg-black">
           <StoryPlayer 

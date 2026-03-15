@@ -40,6 +40,11 @@ const OESTE_STYLES = `
     80%  { transform: translate(5vw,-75vh)   scale(0.9) rotate(540deg);              }
     100% { transform: translate(-70vw,-60vh) scale(0.05) rotate(720deg); opacity:0.8;}
   }
+  
+  @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.animate-ticker { animation: ticker 25s linear infinite; 
+}
+  
   .animate-vortex { animation: vortexRise 6s cubic-bezier(0.45,0.05,0.55,0.95) forwards; }
     @keyframes vortexSpin { 0%{transform:rotate(0deg) scale(1)} 100%{transform:rotate(360deg) scale(1.05)} }
     .animate-spin-vortex { animation: vortexSpin 1.5s linear infinite; }
@@ -98,8 +103,15 @@ const OESTE_STYLES = `
  
 `;
 
-const OESTE_PC_SLOTS     = [{x:35,y:6},{x:48,y:12},{x:52,y:35},{x:70,y:45},{x:68,y:70},{x:6,y:70}];
-const OESTE_MOBILE_SLOTS = [{x:6,y:2},{x:45,y:4},{x:25,y:75}];
+const PC_SLOTS     = [{x:35,y:6},{x:48,y:12},{x:52,y:35},{x:70,y:45},{x:68,y:70},{x:6,y:70}];
+const MOBILE_SLOTS = [{x:5,y:75}, {x:50,y:75}];
+
+// HYPER ZAP — zonas derecha, para no pisarse
+const HYPER_PC_SLOTS = [
+  {x:72,y:15},{x:75,y:40},{x:70,y:65},
+  {x:78,y:28},{x:73,y:55},{x:76,y:80},
+];
+const HYPER_MOBILE_SLOTS = [{x:20,y:2}];
 
 const neonColors = [
   {border:'border-cyan-400',    text:'text-cyan-400',    glow:'shadow-[0_0_10px_rgba(34,211,238,0.5)]'  },
@@ -130,8 +142,17 @@ const ChannelOeste = ({ videoUsers, balances, setBalances, session, realityMode,
   const [echoText,      setEchoText]      = useState('');
   const [realUserAlias, setRealUserAlias] = useState('');
   const [visualEchos,   setVisualEchos]   = useState([]);
-  const [floatingEchos, setFloatingEchos] = useState([]);
+  const [floatingEcos, setFloatingEcos] = useState([]);        // se reinicia con el video ✅
+  const [floatingHyperZaps, setFloatingHyperZaps] = useState([]); // persiste al scrollear ✅
+  
   const [isOrbitando, setIsOrbitando] = useState(false);
+  
+  // TEMPORAL — quitar en producción
+const [tickerEchos, setTickerEchos] = useState([
+  { id: 1, text: 'vaya tela lo que hay que oír', author_alias: 'anonx77' },
+  { id: 2, text: 'no coincido en nada, en nada eh', author_alias: 'critixx' },
+  { id: 3, text: 'uff brutal pero pa mal', author_alias: 'user4421' },
+]);
 
   const videoRefPC  = useRef(null);
   const videoRefMob = useRef(null);
@@ -262,9 +283,8 @@ const BG_VIDEO = `/videos/oeste_bg_${getTimeSuffix()}.mp4`;
     // Al video de Móvil le pasamos 'true' (silenciado) si estamos en PC.
     loadVideo(videoRefMob.current, url, !isMobile ? true : isMuted, hlsRefMob);
 
-    setVisualEchos([]); 
-    setFloatingEchos([]);
-  }, [currentUser]);
+    setVisualEchos([]);setFloatingEcos([]); // solo resetea Eco Text, los HyperZap sobreviven
+    }, [currentUser]);
   
   useEffect(() => {
     const handleResize = () => {
@@ -280,6 +300,19 @@ const BG_VIDEO = `/videos/oeste_bg_${getTimeSuffix()}.mp4`;
 
     return () => window.removeEventListener('resize', handleResize);
   }, [isMuted]);
+  
+   // NAVEGACIÓN TECLADO / D-PAD SMART TV ← nuevo
+useEffect(()=>{
+  const handleKey=(e)=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowDown')
+      setCurrentIndex(p=>p+1);
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp')
+      setCurrentIndex(p=>p>0?p-1:displayUsers.length-1);
+  };
+  window.addEventListener('keydown',handleKey);
+  return()=>window.removeEventListener('keydown',handleKey);
+},[displayUsers]);
+
   
   useEffect(()=>{
     if(!session?.user?.id)return;
@@ -309,21 +342,34 @@ const BG_VIDEO = `/videos/oeste_bg_${getTimeSuffix()}.mp4`;
   },[currentUser]);
 
   useEffect(()=>{
-    if(!visualEchos?.length)return;
-    let slot=0;
-    const iv=setInterval(()=>{
-      setFloatingEchos(prev=>{
-        const ads=visualEchos.filter(e=>e.is_sponsored),normals=visualEchos.filter(e=>!e.is_sponsored);
-        const echo=Math.random()>0.75
-          ?(ads.length>0?ads[Math.floor(Math.random()*ads.length)]:{id:'SYS',is_sponsored:true,author_alias:'BROVISION TV',text:'🔴 EN VIVO',target_index:0})
-          :(normals.length>0?normals[Math.floor(Math.random()*normals.length)]:visualEchos[0]);
-        const mob=window.innerWidth<768,slots=mob?OESTE_MOBILE_SLOTS:OESTE_PC_SLOTS,coords=slots[slot%slots.length];
-        slot++;
-        return [...prev.slice(-2),{...echo,id:Date.now()+Math.random(),x:coords.x,y:coords.y}];
-      });
-    },4500);
-    return()=>clearInterval(iv);
-  },[visualEchos]);
+  if(!visualEchos||visualEchos.length===0)return;
+  let slot=0;
+  const interval=setInterval(()=>{
+    const ads=visualEchos.filter(e=>e.is_sponsored);
+    const normals=visualEchos.filter(e=>!e.is_sponsored);
+    const mob=window.innerWidth<768;
+    const slots=mob?MOBILE_SLOTS:PC_SLOTS;
+    const coords = (mob ? MOBILE_SLOTS : PC_SLOTS)[slot % (mob ? MOBILE_SLOTS : PC_SLOTS).length];
+    const hyperSlots = mob ? HYPER_MOBILE_SLOTS : HYPER_PC_SLOTS;
+    const hyperCoords = hyperSlots[slot % hyperSlots.length];
+    slot++;
+
+    // ECO TEXT → se reinicia con el video
+    if(normals.length>0){
+      const echo=normals[Math.floor(Math.random()*normals.length)];
+      setFloatingEcos(prev=>[...prev.slice(-2),{...echo,id:Date.now()+Math.random(),x:coords.x,y:coords.y}]);
+    }
+
+    // HYPER ZAP → 25% del tiempo, persiste
+    if(Math.random()>0.75){
+      const ad=ads.length>0
+        ?ads[Math.floor(Math.random()*ads.length)]
+        :{id:'SYSTEM_AD',is_sponsored:true,author_alias:'BROVISION TV',text:'🔴 ¿QUIERES VER TV EN VIVO? HAZ CLIC AQUÍ',target_index:0};
+      setFloatingHyperZaps(prev=>[...prev.slice(-1),{...ad,id:Date.now()+Math.random(),x:hyperCoords .x,y:hyperCoords .y}]);
+    }
+  },4500);
+  return()=>clearInterval(interval);
+},[visualEchos]);
 
   const handleTouchStart=(e)=>{if(e.target.closest('button'))return;touchStart.current=e.targetTouches[0].clientX;};
   const handleTouchMove =(e)=>{if(e.target.closest('button'))return;touchEnd.current  =e.targetTouches[0].clientX;};
@@ -366,40 +412,50 @@ const BG_VIDEO = `/videos/oeste_bg_${getTimeSuffix()}.mp4`;
        className="absolute inset-0 w-full h-full object-cover z-[1]"/>
        
       {/* 2. ECOS FLOTANTES completos */}
-      <div className="absolute inset-0 z-[10] pointer-events-none">
-        {floatingEchos.map((echo)=>{
-          const isAd=echo.is_sponsored===true;
-          const neon=neonColors[Math.floor(Math.random()*neonColors.length)];
-          return (
-            <div key={echo.id}
-                 className={`absolute animate-spirit text-center group transition-all ${isAd?'z-[60] pointer-events-auto cursor-pointer scale-110':'pointer-events-none z-[40]'}`}
-                 style={{left:`${echo.x}%`,top:`${echo.y}%`}}
-                 onClick={()=>{
-                   if(!isAd)return;
-                   const adv=videoUsers.find(u=>u.id===echo.advertiser_id);
-                   if(adv){displayUsers.splice(currentIndex+1,0,{...adv,id:`zap_${Date.now()}`,is_zap:true});setCurrentIndex(currentIndex+1);}
-                   else setCurrentIndex(0);
-                 }}>
-              <p className={`text-[8px] mb-1 uppercase tracking-[0.5em] font-black ${isAd?'text-[#FFD700] drop-shadow-[0_0_8px_rgba(255,215,0,0.6)]':'opacity-80 '+neon.text}`}>
-                {isAd?'⚡ HYPER ZAP':`@${echo.author_alias}`}
-              </p>
-              <div className={`border backdrop-blur-none transition-all duration-700 ${isAd
-                ?'px-5 py-2.5 rounded-[2rem] bg-[#0C0C1C]/50 border-[#E3DDB1]/30 text-white font-medium shadow-[0_0_20px_rgba(0,0,0,0.9),inset_0_0_10px_rgba(255,215,0,0.05)]'
-                :`px-7 py-3 rounded-[2.5rem] bg-black/90 border ${neon.border} ${neon.text} ${neon.glow}`}`}>
-                <span className={isAd?"text-xs md:text-base tracking-wide text-white drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]":"text-xs md:text-lg"}>"{echo.text}"</span>
-                {isAd&&(
-                  <div className="mt-2 relative overflow-hidden py-1.5 px-5 rounded-full border border-[#DED590]/50 bg-gradient-to-r from-amber-200/20 via-yellow-300/20 to-amber-100/20 shadow-[0_0_15px_rgba(251,191,36,0.2)]">
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-shimmer"/>
-                    <span className="text-[9px] text-[#FFD700] font-black tracking-[0.3em] uppercase relative z-10">ENTRAR ▶</span>
-                  </div>
-                )}
-              </div>
-              {!isAd&&<button onClick={()=>handleReport(echo.id)} className="pointer-events-auto opacity-0 group-hover:opacity-100 absolute -top-4 -right-4 bg-red-600/20 p-2 rounded-full text-[8px] hover:bg-red-600 transition-all">⚠️</button>}
-            </div>
-          );
-        })}
+      {/* ECO TEXT — dentro del flujo normal, se reinicia con el video */}
+<div className="absolute inset-0 z-[10] pointer-events-none">
+  {floatingEcos.map((echo)=>{
+    const neon=neonColors[Math.floor(Math.random()*neonColors.length)];
+    return (
+      <div key={echo.id}
+           className="absolute animate-spirit text-center pointer-events-none z-[40]"
+           style={{left:`${echo.x}%`,top:`${echo.y}%`}}>
+        <p className={`text-[8px] mb-1 uppercase tracking-[0.5em] font-black opacity-80 ${neon.text}`}>
+          @{echo.author_alias}
+        </p>
+        <div className={`border backdrop-blur-none px-7 py-3 rounded-[2.5rem] bg-black/90 border ${neon.border} ${neon.text} ${neon.glow}`}>
+          <span className="text-xs md:text-lg">"{echo.text}"</span>
+        </div>
+        <button onClick={()=>handleReport(echo.id)} className="pointer-events-auto opacity-0 group-hover:opacity-100 absolute -top-4 -right-4 bg-red-600/20 p-2 rounded-full text-[8px] hover:bg-red-600 transition-all">⚠️</button>
       </div>
-      
+    );
+  })}
+</div>
+
+{/* HYPER ZAP — fixed al viewport, NO se reinicia con scroll */}
+<div className="pointer-events-none">
+  {floatingHyperZaps.map((echo)=>(
+    <div key={echo.id}
+         className="fixed animate-spirit text-center z-[60] pointer-events-auto cursor-pointer scale-110"
+         style={{left:`${echo.x}%`,top:`${echo.y}%`}}
+         onClick={()=>{
+           const adv=videoUsers.find(u=>u.id===echo.advertiser_id);
+           if(adv){displayUsers.splice(currentIndex+1,0,{...adv,id:`zap_${Date.now()}`,is_zap:true});setCurrentIndex(currentIndex+1);}
+           else setCurrentIndex(0);
+         }}>
+      <p className="text-[8px] mb-1 uppercase tracking-[0.5em] font-black text-[#FFD700] drop-shadow-[0_0_8px_rgba(255,215,0,0.6)]">
+        ⚡ HYPER ZAP
+      </p>
+      <div className="px-5 py-2.5 rounded-[2rem] bg-[#0C0C1C]/50 border border-[#E3DDB1]/30 text-white font-medium shadow-[0_0_20px_rgba(0,0,0,0.9),inset_0_0_10px_rgba(255,215,0,0.05)]">
+        <span className="text-xs md:text-base tracking-wide text-white drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]">"{echo.text}"</span>
+        <div className="mt-2 relative overflow-hidden py-1.5 px-5 rounded-full border border-[#DED590]/50 bg-gradient-to-r from-amber-200/20 via-yellow-300/20 to-amber-100/20 shadow-[0_0_15px_rgba(251,191,36,0.2)]">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-shimmer"/>
+          <span className="text-[9px] text-[#FFD700] font-black tracking-[0.3em] uppercase relative z-10">ENTRAR ▶</span>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>      
       {/* ══════════════════════════════════════════════════════════════
           PC — VISOR GIGANTE (TECHO A SUELO) AL LADO IZQUIERDO
           ══════════════════════════════════════════════════════════════ */}
@@ -539,10 +595,34 @@ const BG_VIDEO = `/videos/oeste_bg_${getTimeSuffix()}.mp4`;
           <div className="relative w-full h-full overflow-hidden bg-black oeste-visor">
             <video ref={videoRefMob} key={`mob_${currentUser?.id}`} poster={currentUser?.poster||''}
                    autoPlay loop={!isTvMode} playsInline className="w-full h-full object-cover"
-                   onTimeUpdate={()=>videoRefMob.current&&setProgress((videoRefMob.current.currentTime/(videoRefMob.current.duration||100))*100)}/>
-          </div>
-        </div>
+                   onTimeUpdate={()=>videoRefMob.current&&setProgress((videoRefMob.current.currentTime/(videoRefMob.current.duration||100))*100)}/>   
+          </div>          
+        </div> 
       </div>
+
+ {/* INFIERNO TICKER */}
+{tickerEchos?.length > 0 && (
+    <div className="absolute bottom-[36px] left-[47%] -translate-x-1/2 w-[62vw] md:w-[440px] z-[150] overflow-hidden pointer-events-none">
+      {/* FUEGOS ARRIBA */}
+  <div className="text-[11px] leading-none tracking-[-2px] opacity-70">
+    🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+    </div>
+    <div className="text-[8px] text-red-500/60 font-black tracking-widest uppercase mb-0.5 px-1">⬇ INFIERNO</div>
+    <div className="relative h-[28px] rounded-lg overflow-hidden border border-red-900/40"
+         style={{background:'linear-gradient(90deg,#3f0000ee,#1a0000fa,#3f0000ee)'}}>
+      <div className="absolute inset-0 flex items-center animate-ticker whitespace-nowrap">
+        {[...tickerEchos,...tickerEchos].map((e,i)=>(
+           <span key={i} className="text-[12px] text-yellow-300/90 font-mono mx-6">
+            "{e.text}" <span className="text-red-300/90">—@{e.author_alias}</span>
+            <span className="text-red-900/50 mx-4">//</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  </div>
+)}
+
+
 
       {/* ══ MODAL ECO ══ */}
       {showEchoInput&&(
