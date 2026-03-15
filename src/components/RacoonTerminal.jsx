@@ -10,6 +10,7 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
   const [aiQuery, setAiQuery] = useState('');
   const [aiResponse, setAiResponse] = useState(null); // Guardará el texto del Mapache
   const [isAiLoading, setIsAiLoading] = useState(false); // Para mostrar "Cargando..."
+  const [mobileView, setMobileView] = useState('lista'); // 'lista' o 'publicar'
   
   // Estado para controlar qué avisos ha desbloqueado este usuario (para no cobrarle doble)
   const [unlockedAvisos, setUnlockedAvisos] = useState([]);
@@ -122,16 +123,16 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
   };
     
   return (
-    <div className="w-full h-full flex items-center justify-center p-4 md:p-10 relative z-50">
+   <div className="w-full h-full flex items-center justify-center relative">
         
         {/* BOTÓN CERRAR FLOTANTE (Para evitar Full Screen atrapado) */}
         <button onClick={onClose} className="absolute top-4 right-4 z-[60] bg-red-500 text-white w-8 h-8 rounded-full font-bold hover:scale-110 transition-transform">×</button>
 
-        <div className="w-full max-w-5xl h-[85vh] bg-[#080808]/95 backdrop-blur-md border border-orange-500/30 rounded-3xl overflow-hidden flex flex-col font-mono shadow-[0_0_50px_rgba(249,115,22,0.2)] animate-zoomIn">
+        <div className="w-full max-w-5xl h-full bg-[#080808]/95 backdrop-blur-md border border-orange-500/30 rounded-3xl overflow-hidden flex flex-col font-mono shadow-[0_0_50px_rgba(249,115,22,0.2)] animate-zoomIn">
             
             {/* HEADER TABS */}
-            <div className="flex border-b border-white/10 bg-black/80 shrink-0">
-                <button onClick={() => setTab('avisos')} className={`flex-1 py-4 text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${tab === 'avisos' ? 'text-orange-400 bg-orange-900/20 border-b-2 border-orange-500' : 'text-gray-500 hover:text-white'}`}>📢 TABLÓN AVISOS</button>
+            <div className="flex flex-wrap border-b border-white/10 bg-black/80 shrink-0">
+              <button onClick={() => setTab('avisos')} className={`flex-1 py-4 text-[10px] md:text-sm font-bold uppercase tracking-widest transition-all ${tab === 'avisos' ? 'text-orange-400 bg-orange-900/20 border-b-2 border-orange-500' : 'text-gray-500 hover:text-white'}`}>📢 TABLÓN AVISOS</button>
                 <button onClick={() => setTab('drops')} className={`flex-1 py-4 text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${tab === 'drops' ? 'text-orange-400 bg-orange-900/20 border-b-2 border-orange-500' : 'text-gray-500 hover:text-white'}`}>📦 DROPS</button>
                 <button onClick={() => setTab('faq')} className={`flex-1 py-4 text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${tab === 'faq' ? 'text-orange-400 bg-orange-900/20 border-b-2 border-orange-500' : 'text-gray-500 hover:text-white'}`}>❓ FAQ / AYUDA</button>
             </div>
@@ -142,9 +143,15 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
                 {/* --- TAB AVISOS --- */}
                 {tab === 'avisos' && (
                     <div className="absolute inset-0 flex flex-col md:flex-row">
+                    
+                    {/* TOGGLE SOLO EN MÓVIL */}
+    <div className="flex md:hidden border-b border-white/10 shrink-0">
+        <button onClick={() => setMobileView('lista')} className={`flex-1 py-2 text-[10px] font-bold uppercase ${mobileView === 'lista' ? 'text-orange-400 border-b-2 border-orange-500' : 'text-gray-500'}`}>📢 Ver Avisos</button>
+        <button onClick={() => setMobileView('publicar')} className={`flex-1 py-2 text-[10px] font-bold uppercase ${mobileView === 'publicar' ? 'text-orange-400 border-b-2 border-orange-500' : 'text-gray-500'}`}>✏️ Publicar</button>
+    </div>
                         
                         {/* LEFT: LISTA DE AVISOS */}
-                        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4">
+                        <div className={`${mobileView === 'lista' ? 'flex' : 'hidden'} md:flex flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4 flex-col`}>
                             
                             {/* BARRA BÚSQUEDA IA */}
                             <div className="flex gap-2 mb-6 sticky top-0 z-10">
@@ -223,7 +230,7 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
                                                 <span className="text-xs text-orange-500 font-bold">[ ES TUYO ]</span>
                                             ) : unlockedAvisos.includes(aviso.id) ? (
                                                 <button className="bg-green-500 text-black text-xs font-black px-4 py-2 rounded-lg hover:scale-105 transition-transform">
-                                                    📩 IR A SANTUARIO
+                                                    📩 IR A TELEFONO CASA
                                                 </button>
                                             ) : (
                                                 <button onClick={() => handleUnlock(aviso)} className="bg-white/10 text-orange-400 border border-orange-500/30 text-xs font-black px-4 py-2 rounded-lg hover:bg-orange-500 hover:text-black transition-all flex items-center gap-2">
@@ -237,7 +244,7 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
                         </div>
 
                         {/* RIGHT: PANEL CREAR (Solo Desktop o Toggle en Mobile) */}
-                        <div className="w-full md:w-1/3 bg-black/40 border-l border-white/10 p-6 flex flex-col">
+                        <div className={`${mobileView === 'publicar' ? 'flex' : 'hidden'} md:flex w-full md:w-1/3 bg-black/40 border-l border-white/10 p-6 flex-col`}>
                             <h3 className="text-orange-500 font-black text-xl mb-4 uppercase">Publicar Aviso</h3>
                             <div className="flex gap-2 mb-4">
                                 <button onClick={() => setNewAviso({...newAviso, type: 'DEMANDA'})} className={`flex-1 py-2 text-xs font-bold rounded ${newAviso.type === 'DEMANDA' ? 'bg-blue-600 text-white' : 'bg-white/10 text-gray-500'}`}>BUSCO (Demanda)</button>

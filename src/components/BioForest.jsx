@@ -105,7 +105,7 @@ const PC_SLOTS = [
     {x:72,y:45},{x:75,y:35},{x:75,y:70},
     {x:15,y:3},{x:80,y:3},{x:75,y:70},
 ];
-const ESTE_MOBILE_SLOTS = [{x:6,y:2},{x:45,y:4},{x:25,y:75}];
+const MOBILE_SLOTS = [{x:6,y:2},{x:45,y:4},{x:25,y:75}];
 
 const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, onOpenProfile, selectedForestUser }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -331,6 +331,8 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
     
     fetch();
   },[currentUser]);
+  
+  
   // Ecos flotantes con lógica Hyper Zap 25%
   useEffect(()=>{
     if(!visualEchos||visualEchos.length===0)return;

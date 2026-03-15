@@ -45,16 +45,23 @@ const CommunityTicker = ({ onUserClick }) => {
     <div className=" pointer-events-auto z-40 w-full max-w-4xl animate-slideDown px-4 mt-2">
         
         <div 
-            onClick={() => onUserClick && onUserClick(msg)}
-            className={`
-                relative 
-                bg-black/60 backdrop-blur-md  /* <--- CAMBIO: Transparencia al 60% */
-                border border-${msg.card_color || 'cyan'}-500/50 
-                rounded-full py-2 px-5 shadow-[0_0_30px_rgba(0,0,0,0.3)] cursor-pointer
-                flex items-center gap-4 transition-all 
-                hover:scale-105 hover:bg-black/80 hover:border-${msg.card_color || 'cyan'}-400 group
-            `}
-        >
+    // Si el msg tiene 'id', es real (base de datos), si no, es FAKE.
+    onClick={() => {
+        if (msg.id && onUserClick) {
+            onUserClick(msg); // Esto avisa al Padre: "Abre el HoloProyector de este usuario"
+        }
+    }}
+    className={`
+        relative 
+        ${msg.id ? 'cursor-pointer' : 'cursor-default'} /* Solo cambia a cursor pointer si es real */
+        bg-black/60 backdrop-blur-md 
+        border border-${msg.card_color || 'cyan'}-500/50 
+        rounded-full py-2 px-5 shadow-[0_0_30px_rgba(0,0,0,0.3)]
+        flex items-center gap-4 transition-all 
+        ${msg.id ? 'hover:scale-105 hover:bg-black/80 hover:border-' + (msg.card_color || 'cyan') + '-400 group' : ''}
+    `}
+>
+
             {/* AVATAR */}
             <div className={`w-10 h-10 rounded-full bg-${msg.card_color || 'cyan'}-500 flex items-center justify-center font-black text-black text-sm shrink-0 border border-white/20 shadow-lg`}>
                 {msg.alias[0].toUpperCase()}

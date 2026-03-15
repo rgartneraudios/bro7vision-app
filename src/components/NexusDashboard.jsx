@@ -32,6 +32,7 @@ const NexusDashboard = ({
     balances,
     setBalances,
     realItems,
+    onOpenProjector,
     setProjectingUser
 }) => {
 
@@ -81,8 +82,21 @@ const NexusDashboard = ({
   {/*1. ESTO ES EL TICKER (SIEMPRE ARRIBA) */}
 <div className="absolute top-0 md:top-0 w-full px-4 z-[60] pointer-events-none">
   <div className="max-w-4xl mx-auto pointer-events-auto">
-     <CommunityTicker onUserClick={onUserClick} />
-  </div>
+     <CommunityTicker 
+    onUserClick={(msg) => {
+        // Buscamos el usuario completo en 'realItems' (que ya tienes en el Dashboard)
+        // para que no falten datos (video_file, etc.)
+        const fullUser = realItems.find(item => item.id === msg.id);
+        
+        if (fullUser) {
+            // Ahora pasamos el usuario completo a la función de abrir video
+            onOpenVideo(fullUser); 
+        } else {
+            console.warn("Usuario no encontrado en la lista cargada");
+        }
+    }} 
+/>
+      </div>
 </div>
 
 {/* 2. SECTOR SUPERIOR: FEED DE NOTICIAS */}
@@ -340,32 +354,7 @@ const NexusDashboard = ({
         
       {(intent === 'broshop' || intent === 'lives') && (
         <CityLocationBanner scope={scope} />
-      )}
-      
-       {/* 7. ASK TERMINAL */}
-      {intent === 'internal_search' && step === 2 && (
-  <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/10 backdrop-blur-[2px]">
-    <RacoonTerminal 
-       // CAMBIO CLAVE AQUÍ: De 'onBack' a 'onClose'
-       onClose={() => { setStep(0); setIntent(null); }} 
-       
-       session={session}
-       balances={balances}
-       setBalances={setBalances}
-       onNavigateToPhoneHome={(targetUserId) => {
-           const targetUser = realItems.find(u => u.id === targetUserId);
-           if (targetUser) {
-               setProjectingUser(targetUser);
-               setIntent(null); // Esto cierra la terminal automáticamente al viajar
-           } else {
-               alert("Usuario no encontrado en local.");
-           }
-       }}
-    />
-  </div>
-)}
-
-      
+      )}      
                   
       {/* --- BUSCADOR --- */}
       <div className="absolute bottom-[16%] md:bottom-12 w-full max-w-5xl px-4 pointer-events-auto flex flex-col items-center gap-4 z-[20000]">

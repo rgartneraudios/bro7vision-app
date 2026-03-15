@@ -17,7 +17,7 @@ import HoloProjector from './components/HoloProjector';
 import BioForest from './components/BioForest';
 import ChannelEste from './components/ChannelEste';
 import ChannelOeste from './components/ChannelOeste';
- import RacoonTerminal from './components/RacoonTerminal';
+import RacoonTerminal from './components/RacoonTerminal';
 import RealityTuner from './components/RealityTuner';
 import HoloPrism from './components/HoloPrism';
 
@@ -45,6 +45,8 @@ function App() {
   const [gpsLoading, setGpsLoading] = useState(false);
   const [audioUser, setAudioUser] = useState(null);
   const [activePrismUser, setActivePrismUser] = useState(null);
+  const [activeUser, setActiveUser] = useState(null); // Usuario del proyector
+  const [isShopOpen, setIsShopOpen] = useState(false); // Estado de la tienda
   
   const [balances, setBalances] = useState({
   genesis: 493230,
@@ -241,7 +243,16 @@ const handleReportIssue = async () => {
   }
 };
 
+// Función para abrir el TelefonoCasa HoloProyector
+const handleOpenProjector = (user) => {
+    setActiveUser(user);
+};
 
+// Función para abrir la tienda (la que querías conectar)
+const handleGoToShop = (user) => {
+  setProjectingUser(null);        // Cierra el HoloProjector
+  setSelectedCard(user);          // 👈 Guarda el usuario para abrir su PaymentModal
+};
 
   return (
     <div className="relative w-full h-screen bg-black text-white overflow-hidden font-sans">
@@ -414,10 +425,10 @@ const handleReportIssue = async () => {
               setBalances={setBalances}
               realItems={realItems}
               setProjectingUser={setProjectingUser}
-              
+              onOpenProjector={(user) => setProjectingUser(user)} 
               onTuneIn={(user) => setAudioUser(user)} 
               onOpenVideo={(user) => setProjectingUser(user)} 
-              onSelectShop={(card) => setSelectedCard(card)} 
+              handleGoToShop={handleGoToShop} 
               onOpenLog={setSelectedLog} 
              onHoverCard={(user) => setActivePrismUser(user)} 
             />
@@ -492,13 +503,14 @@ const handleReportIssue = async () => {
   <HoloProjector 
     videoUrl={projectingUser.video_file || projectingUser.videoUrl} 
     user={projectingUser} 
+    handleGoToShop={handleGoToShop}
     balances={balances} 
     setBalances={setBalances} 
     session={session}
     onOpenLog={setSelectedLog} 
     onClose={() => {
-      setProjectingUser(null);
-      setIs219Mode(false); // Reseteamos por si acaso
+     setProjectingUser(null);
+    setIs219Mode(false); // Reseteamos por si acaso
     }} 
     onGoTo219={() => setIs219Mode(true)} // 👈 LE PASAMOS ESTA NUEVA PROP
   />
@@ -512,6 +524,25 @@ const handleReportIssue = async () => {
     setBalances={setBalances}
     onClose={() => setSelectedCard(null)} 
   />
+)}
+
+{/* En App.jsx, junto al BroLogViewer */}
+{intent === 'internal_search' && step === 2 && (
+  <div className="fixed inset-x-0 top-[10%] bottom-[16%] z-[90] pointer-events-auto mx-auto max-w-5xl px-4">
+    <RacoonTerminal 
+      onClose={() => { setStep(0); setIntent(null); }}
+      session={session}
+      balances={balances}
+      setBalances={setBalances}
+      onNavigateToSantuario={(targetUserId) => {
+        const targetUser = realItems.find(u => u.id === targetUserId);
+        if (targetUser) {
+          setProjectingUser(targetUser);
+          setIntent(null);
+        }
+      }}
+    />
+  </div>
 )}
       
       {selectedLog && <BroLogViewer log={selectedLog} onClose={() => setSelectedLog(null)} />}

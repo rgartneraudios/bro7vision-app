@@ -3,7 +3,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import HoloProjector219 from './HoloProjector219';
 
-const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose, onOpenLog }) => {
+const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose, handleGoToShop, onOpenLog }) => {
   const [activeTab, setActiveTab] = useState(null);
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -12,8 +12,7 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
   const [show219, setShow219] = useState(false);
   const [videoIndex, setVideoIndex] = useState(0); // 0: Principal, 1: Teléfono 2, 2: Piso 219
 
-  const videoRef = useRef(null);
-  
+  const videoRef = useRef(null);  
   
 // Dentro de tu componente, antes del return
 const videos = [
@@ -117,6 +116,10 @@ const prevVideo = () => setVideoIndex((prev) => (prev - 1 + videos.length) % vid
       />
     );
   }
+
+// Dentro de HoloProjector.jsx
+console.log("¿Qué es handleGoToShop?", handleGoToShop);
+console.log("Mis props actuales:", { videoUrl, user, balances, setBalances, session, onClose, handleGoToShop, onOpenLog });
 
   return (
     <div className="fixed inset-0 z-[99999] bg-black overflow-hidden flex items-center justify-center font-mono">
@@ -264,14 +267,20 @@ const prevVideo = () => setVideoIndex((prev) => (prev - 1 + videos.length) % vid
               </button>
 
               {/* 4. TIENDA */}
-              <button
-                onClick={() => window.open(user.product_url, '_blank')}
-                className="flex-1 flex flex-col items-center gap-1 text-yellow-500"
-              >
-                <span className="text-xl">🦝</span>
-                <span className="text-[7px] font-black uppercase">Tienda</span>
-              </button>
-
+ 		<button
+  onClick={() => {
+    console.log("Intentando ejecutar handleGoToShop con:", user);
+    if (typeof handleGoToShop === 'function') {
+      handleGoToShop(user);
+    } else {
+      console.error("handleGoToShop no es una función en este momento:", handleGoToShop);
+    }
+  }}
+  className="flex-1 flex flex-col items-center gap-1 text-yellow-500"
+>
+  <span className="text-xl">🦝</span>
+  <span className="text-[7px] font-black uppercase">Tienda</span>
+</button>
             </div>
 
             <div className="px-6 pb-6 h-[calc(100%-6rem)] overflow-y-auto custom-scrollbar">
