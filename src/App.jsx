@@ -439,7 +439,7 @@ const handleGoToShop = (user) => {
               onOpenProjector={(user) => setProjectingUser(user)} 
               onTuneIn={(user) => setAudioUser(user)} 
               onOpenVideo={(user) => setProjectingUser(user)} 
-              handleGoToShop={handleGoToShop} 
+              handleGoToShop={handleGoToShop}
               onOpenLog={setSelectedLog} 
              onHoverCard={(user) => setActivePrismUser(user)} 
             />

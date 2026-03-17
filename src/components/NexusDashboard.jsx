@@ -19,7 +19,7 @@ import CronosGame from './CronosGame';
 
 const NexusDashboard = ({ 
     onSearch, searchQuery, setSearchQuery, 
-    intent, setIntent, 
+    intent, setIntent, handleGoToShop,
     onBack, onGameWin, onOpenLog, 
     onSelectShop, onTuneIn, onUserClick,
     items,
@@ -114,7 +114,7 @@ const NexusDashboard = ({
         <div className="absolute inset-0 z-40 pointer-events-none animate-zoomIn flex flex-col items-center justify-start pt-48 md:pt-40">
              <PaginatedDisplay 
                 items={items} 
-                onSelect={onSelectShop} 
+                onSelect={handleGoToShop} 
                 onOpenVideo={onOpenVideo} 
                 // CABLE CONECTADO: Aquí faltaba onTuneIn
                 onTuneIn={onTuneIn}
@@ -344,7 +344,7 @@ const NexusDashboard = ({
      <LiveGrid 
         items={items} 
         onTuneIn={onTuneIn} 
-        onSelectShop={onSelectShop}
+        onSelectShop={handleGoToShop}
         onClose={() => setIntent('broshop')} 
         onOpenVideo={onOpenVideo} 
         onUserClick={onHoverCard}
