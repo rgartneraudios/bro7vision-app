@@ -106,15 +106,15 @@ const FOREST_STYLES = `
 
 const PC_SLOTS = [
     {x:5,y:25},{x:7,y:50},{x:80,y:75},
-    {x:72,y:45},{x:75,y:35},{x:75,y:70},
+    {x:62,y:10},{x:75,y:25},{x:75,y:70},
     {x:15,y:3},{x:80,y:3},{x:75,y:70},
 ];
 const MOBILE_SLOTS = [{x:5,y:75}, {x:50,y:75}];
 
 // HYPER ZAP — zonas derecha, para no pisarse
 const HYPER_PC_SLOTS = [
-  {x:72,y:15},{x:75,y:40},{x:70,y:55},
-  {x:78,y:28},{x:73,y:55},{x:16,y:70},
+  {x:72,y:15},{x:75,y:40},{x:75,y:55},
+  {x:78,y:28},{x:23,y:55},{x:16,y:70},
 ];
 const HYPER_MOBILE_SLOTS = [{x:20,y:2}];
 

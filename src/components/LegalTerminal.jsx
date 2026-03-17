@@ -40,21 +40,34 @@ const LegalTerminal = ({ onClose }) => {
            </p>
 
            {/* DATOS DE CONTACTO VISIBLES */}
-           <div className="w-full mt-auto mb-4 bg-white/5 rounded-xl p-4 border border-white/10">
-              <p className="text-[9px] text-gray-500 uppercase tracking-widest mb-2">Contacto Oficial</p>
-              
-              {/* Email en texto plano y visible */}
-              <p className="text-cyan-400 font-mono font-bold text-sm md:text-base break-all selection:bg-cyan-500 selection:text-black">
-                ehgartnerrober@gmail.com
-              </p>
-              
-              <div className="w-full h-[1px] bg-white/10 my-3"></div>
-              
-              {/* Link a LinkedIn (Opcional, si tienes la URL ponla aquí) */}
-              <a href="https://www.linkedin.com/in/rober-ehgartner-74a10a124/" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-white hover:underline transition-colors">
-                 LinkedIn Profile &rarr;
-              </a>
-           </div>
+<div className="w-full mt-auto mb-4 bg-white/5 rounded-xl p-5 border border-white/10">
+   <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-4">Contacto Oficial</p>
+   
+   <div className="space-y-4">
+      {/* Contacto General - Color Cian Neón */}
+      <div>
+         <p className="text-[8px] text-cyan-400 uppercase tracking-widest mb-1">General</p>
+         <p className="text-cyan-400 font-mono font-bold text-sm drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]">contacto@bro7vision.com</p>
+      </div>
+
+      {/* Fundadores - Color Rosa Neón */}
+      <div>
+         <p className="text-[8px] text-pink-400 uppercase tracking-widest mb-1">Fundadores</p>
+         <p className="text-pink-400 font-mono font-bold text-sm drop-shadow-[0_0_8px_rgba(244,114,182,0.6)]">fundadores@bro7vision.com</p>
+      </div>
+
+      {/* Inversores - Color Azul Eléctrico Neón */}
+      <div>
+         <p className="text-[8px] text-blue-400 uppercase tracking-widest mb-1">Inversores</p>
+         <p className="text-blue-400 font-mono font-bold text-sm drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]">bro7vision@bro7vision.com</p>
+      </div>
+   </div>
+   
+   <div className="w-full h-[1px] bg-white/10 my-6"></div>
+   <a href="https://www.linkedin.com/in/rober-ehgartner-74a10a124/" target="_blank" className="text-[10px] text-gray-400 hover:text-white underline transition-all">
+      LinkedIn Profile &rarr;
+   </a>
+</div>
         </div>
 
         {/* === COLUMNA DERECHA: TEXTO LEGAL === */}
@@ -65,28 +78,27 @@ const LegalTerminal = ({ onClose }) => {
            
            <div className="overflow-y-auto custom-scrollbar pr-4 space-y-6 text-gray-400 text-xs font-mono leading-relaxed text-justify">
               <section>
-                <h4 className="text-white font-bold mb-2">1. FINALIDAD DEL ECOSISTEMA</h4>
-                <p>BRO7VISION es una plataforma experimental de gamificación (PWA). Fase 0 (Génesis) es un entorno de simulación sin transacciones financieras reales vinculadas a moneda fiduciaria obligatoria.</p>
-              </section>
+  <h4 className="text-cyan-300 font-bold mb-2">1. NATURALEZA DEL ECOSISTEMA</h4>
+  <p>BRO7VISION es una plataforma experimental de gamificación social en fase Beta privada. La Fase 0 (Génesis) es un entorno de simulación diseñado para el entrenamiento de usuarios y validación técnica, exento de transacciones financieras con moneda fiduciaria.</p>
+</section>
 
-              <section>
-                <h4 className="text-white font-bold mb-2">2. PRIVACIDAD Y DATOS</h4>
-                <p>No vendemos tus datos. Utilizamos Supabase para autenticación segura. Tu ubicación GPS (si la activas) se procesa en tu dispositivo para mostrar contenido local y no se almacena históricamente en nuestros servidores.</p>
-              </section>
+<section>
+  <h4 className="text-cyan-300 font-bold mb-2">2. PRIVACIDAD Y SEGURIDAD</h4>
+  <p>Priorizamos tu privacidad. Utilizamos Supabase para una autenticación segura y cifrada. Los datos de geolocalización (si son activados) se procesan exclusivamente en el dispositivo del usuario para optimizar la experiencia local y no se almacenan de forma persistente en nuestros servidores.</p>
+</section>
 
-              <section>
-                <h4 className="text-white font-bold mb-2">3. ECONOMÍA SIMULADA</h4>
-                <p>Los "Puntos Génesis" y "Moon Coins" son activos digitales de entretenimiento. No constituyen criptomonedas ni títulos valores regulados por la CNMV en esta fase.</p>
-              </section>
+<section>
+  <h4 className="text-cyan-300 font-bold mb-2">3. ECONOMÍA DIGITAL</h4>
+  <p>Los "Puntos Génesis", "Moon Vales" y "Moon Packs" constituyen un sistema cerrado de lealtad y gamificación interna. No representan criptomonedas, activos financieros, ni valores regulables bajo la normativa de la CNMV o MiCA en su estado actual de simulación.</p>
+</section>
 
-              <section>
-                <h4 className="text-white font-bold mb-2">4. PROPIEDAD INTELECTUAL</h4>
-                <p>El código, diseño "Neón Bioluminiscente" y conceptos (Moon Matrix, HoloPrisma) son propiedad intelectual de RGartner. El contenido subido por usuarios pertenece a sus autores.</p>
-              </section>
-              
+<section>
+  <h4 className="text-cyan-300 font-bold mb-2">4. PROPIEDAD INTELECTUAL</h4>
+  <p>La arquitectura del sistema, el diseño visual "Neón Bioluminiscente" y los conceptos de la "Moon Matrix" son propiedad intelectual exclusiva de RGartner. Todo contenido generado por los usuarios sigue siendo propiedad de sus respectivos autores bajo licencia de uso dentro del ecosistema.</p>
+</section>              
               <div className="pt-8 text-center opacity-50">
                   <p>Bro7Vision © {new Date().getFullYear()}</p>
-                  <p>Hecho a mano + IA Copilot</p>
+                  <p>Hecho a mano + IA</p>
               </div>
            </div>
         </div>
