@@ -28,11 +28,13 @@ PUERTA LATERAL DERECHA:
 BOTONERA: Botonera de navegación hacia otros sectores. GPS/Ruta, Brohop,Audio & Lives, Avisos, Guia / Acces AI, Games.
 BOOSTER STUDIO: Botón para acceder a Booster Studio donde el usuario puede gestionar sus archivos ,y personalizar su perfil y dejar datos adicionales. 
 BROSTORIES: Botón para acceder a Brostories y ganar génesis viendo publicidad inmersiva. 
+INCIDENCIAS; Se creó un botón para avisar sobre incidencias en la página.
+LEGAL/CREADOR: Un botón para acceder al apartado legar y enviar emails al Creador de la App RGartner. En él hay información legal y también tiene las tres direcciones email para enviar por distintos niveles: Inversores brovision arroba brovision .com, fundadores arroba brovision. com y contacto arroba brovision. com.
 DISCONNET: Botón para desconectar de la App.
 
 SECTORES: 
 
--LEGAL/CREADOR: Un botón para acceder al apartado legar y enviar emails al Creador de la App RGartner. 
+
 REALITY : Selección de 7 distintos escenarios para navegar por el Bioforest. 
 BIOFOREST: Desde Reality se accede a Bioforest que es una navegación de videos de forma global sin geolocalización. Debajo del Visor central hay tres botones. Botones para enviar los Halos de Luz, botón para ir a Teléfono Casa y Botón para mandar Eco text e Hyper Zaps.
 TELEFONO CASA: Sector personalizado del creador de videos. El creador elige distintos fondos según gustos. Puedes enviar Halos de luz en el botón que hay en el interior del Visor central. En la parte inferior del Visor tienes para enviarle un mensaje privado al creador. Pueder acceder a imágenes y a su Blog y a su Catálogo que aparece en el BROSHOP. 
@@ -74,7 +76,8 @@ E. ANUNCIANTE (Marcas/Comercios): Compran atención. Pueden patrocinar los video
   - Turnos: Los fondos rotan en 4 franjas: Mañana, Tarde, Crepúsculo y Noche.
   - Publicidad en Fase 1: Los fondos serán espacios publicitarios MUDOS para acompañar al creador central.
   - Sistemas Anti-Bots: 
-    > Eco Text / Eco Audio: Comentarios verificados (Coste: 100 Génesis).
+    > Eco Text : Comentarios verificados (Coste: 100 Génesis).
+    > Infierno: Son Eco Text que fueron filtrados por la IA y clasificado como comentario negativo, que , por consiguiente todos esos comentarios van a la casilla Infierno. Son comentarios de quejas o que dan mal rollo. Pero no son comentarios ilegales, los comentarios ilegales son bloqueados por la IA. 
     > Hyper Zap Text: Promoción interna de canales (Coste: 1.000 Génesis, reemplaza al antiguo sistema de menciones L1-L4).
     > Halos de Luz: Regalos/gemas para los creadores (Coste: 100 Génesis).
 * BROSTORIES (Publicidad Gamificada): Contenido inmersivo de video o audio. El espectador gana coins si responde correctamente a una "Pregunta Trampa" (ej: ¿De qué color era el coche?), garantizando atención humana real.
@@ -141,5 +144,34 @@ La quema se hace por 180 Ecos -> 50 Halos y 70 Zaps -> 50 Halos (sabiendo que re
 * Booster Studio: Herramienta donde el usuario configura su "HoloPrisma" (avatar 3D de 4 imágenes verticales).
 * IA Accesible: Acceso directo integrado a Google AI Studio, Flux, Meta, Grok, Recraft y Reve.
 * BroStories Estacionales: Contenido alineado con las 4 estaciones (Invierno, Primavera, Verano, Otoño) para sincronizar lanzamientos comerciales.
+
+10 MENSAJE DEL VIDEO DE MAPACHE GUIA
+
+Hola, si estás viéndome ahora mismo, doy por hecho de que ya has elegido uno de los 9 escenarios que te has encontrado en la página anterior. Ahora dime. En donde me encuentro?. Estoy a la derecha en el Canal Este?. Estoy a la izquierda en el Canal Oeste?. O estoy en el centro?. 
+Te cuento que en todos los escenarios, las funcionalidades son las mismas, solo cambia la ubicación del visor. Bonito, verdad?.
+Ahora Brovísion se encuentra en Fase 0. Que significa esto? Que estamos en fase de pruebas y todavía no hemos iniciado actividades comerciales, que se iniciarán en Fase 1. Mientras tanto, puedes registrarte en la web y echarle un vistazo a todas sus funciones y ganar puntos Génesis, que aunque hoy no tengan valor, serán canjeados en el futuro por vales de descuento en las tiendas que se adhieran a Brovísion. Dónde ganamos esos puntos Génesis? ya te contaré. Es que primero, quiero describirte las funcionalidades de éstos escenarios. 
+Aquí debajo, al pie del visor, vas a encontrar un control de mute y el botón orbitar. Si pulsas el botón de Orbitar, aparecerá un pequeño holograma a pie de la pantalla y activarás la función equivalente a seguir en otras redes sociales. Con esto, ya estaremos orbitando juntos y encontraremos más fácil el contenido de nuestros creadores favoritos. Los videos que ves de fondo son peculiares en sus temáticas y además son rotativos en turnos. Esto significa que si entras en otros horarios verás otro tipo de videos que acompañan el recorrido del día. 
+
+A pie de página también verás los botones de Halo, Teléfono Casa, Ecos y la casilla Infierno. Los Halos de Luz son gemas de energía que puedes enviar como regalo a tus creadores favoritos. Tienen un valor de 100 génesis por envío. Te recuerdo que si te registras cómo bienvenida tendrás mil génesis de regalo para que puedas probar estas funciones y además ya te digo que puedes ganar más puntos en otros sectores. Prueba enviarme un Halo y verás lo divertido que es.
+Bien, Al lado tenemos al botón Teléfono Casa que ya te contaré y al su lado está el botón de Eco, que es el encargado de los Eco text, y el mensaje Hyper Zap.
+
+Eco text son los comentarios que vez flotar en forma de burbuja por el video de fondo. También cuestan 100 génesis enviarlos. Con esta medida, dejamos a muchos mensajes bots en el camino. Y la casilla Infierno?. éste es un lugar reservado para comentarios negativos permitidos luego de un previo filtro de la IA. Es una medida que se tomó por respeto al creador y a su vez, a la libertad de expresión. Esto no significa que se permitan ese tipo de expresiones que infringen la ley. Me refiero a que los Ecos que flotan serán los halagos mientras que los comentarios quejas y similares estarán en Infierno. Céntrate en lo positivo, y no verás a tus comentarios prenderse fuego!.
+Los Hyper zap son algo más. Son las otras burbujas que ves flotando, y que son acristaladas con un botón de letras amarillas. Sirve para promocionar tu video en el tránsito de videos de otros creadores. Si tu mensaje genera curiosidad a la audiencia, ellos pulsarán tu Hyper zap y los llevará a tu video. Hyper Zap tiene un valor de mil génesis. 
+Si pulsas Teléfono Casa , te lleva al canal del Creador. En ese sitio podrás acceder al contenido exclusivo de él. Encontrarás vídeos verticales y horizontales e incluso su Blog, y acceso a su tienda con catálogo. 
+
+Ahora vamos a las puertas laterales. Si pulsas el interruptor lateral izquierdo se abrirá una puerta lateral. Arriba de todo tiene un wallet o cartera digital donde te mostrará tus puntos génesis acumulados. Recuerda que todo los génesis que sumes, podrás canjearlos en la Fase 1 por descuentos en negocios adheridos. También podrás gestionar el resto de activos digitales como los Halos de Luz, Eco text y Hyper Zap. 
+Debajo de la Cartera verás un botón de regreso al selector de Reality para cambiar escenarios y por debajo un buscador de creadores de contenido, o temáticas. 
+Por debajo llegamos al reproductor de audio del sector Audio and Lives que por defecto está apagado. Y debajo nos queda el Bro tuner, que es una terminal de audio con varios Canales. Tienes distintos estilos de música, historias y Podcast. En Fase 0 es contenido exclusivo de Brovísion hecho con AI. Escucha a Larry!, que tiene cosas para contar.
+Ahora nos vamos al lateral derecho. Nos saltamos un momento la botonera para mencionarte que debajo está el Booster Studio. Pulsando ese botón encontrarás todo lo referente a gestionar tu Perfil. 
+Por debajo del Booster está el botón de Bro Stories. Son pequeños video historias donde al verlos podrás ganar puntos génesis. En Fase 0 Bro Stories está en modo simulación, pero ya puedes pillar génesis en él.
+Por debajo de Bro Stories hay un botón para incidencias, el botón Legal  y más abajo, un botón para desconectarte del sitio. 
+Vamos a la botonera!, que es lo último que nos queda. Mira, el sector GPS, Broshop, Audio y Lives y Avisos trabajan conjuntamente por geolocalización. En GPS tienes la opción de geolocalizarte desde tu zona 0 o elegir Teletransportarte a la localidad o Pais que desees. 
+Una vez que estés geolocalizado o elegido alguna localidad específica, podrás acceder a las tarjetas de Broshop, que es un Marketplace donde conectaremos empresas, comercios y profesionales para que puedas adquirir productos físicos, digitales y servicios, usando tus vales de descuento. Esto en Fase 1, en Fase 0 que es de pruebas verás funciones limitadas. Lo mismo sucede con el sector de audio y Lives y Avisos. Uno es un sector para los audios de los creadores y otro es una terminal de avisos entre usuarios que será muy útil para conseguir cosas. 
+Y llegando al final del paseo nos queda el sector de videojuegos, donde te recomiendo que le eches un vistazo. No son juegos que digas, oh! que juego!. Pero tienen su puntito de vicio y además, salvo él memory que es un clásico, el resto son originales de Brovísion. Son juegos muy divertidos y lo más importante. Ganas puntos génesis!. Por último el sector Guía, donde me visto de agente Mapache dentro de una terminal donde podrás preguntarme más cosas sobre Brovísion y también tienes a modo de cortesía, accesos directos a distintas web de IA de relevancia. 
+Brovísion está ahora en Fase 0. Si eres creador de contenido, o tienes una empresa o comercio, o eres un profesional de servicios. O por esas cosas de la vida, eres un todoterreno y reúnes todas las condiciones, te invito a que te unas a nosotros. En Fase 1, con el inicio de actividades, podrás ganar dinero a través de los regalos que te hagan los usuarios que te orbíten. Podrás ganar dinero creando videos en el Bro stories, o con videos de Fondo. SI! esos que estás viendo ahora mismo!. Compartiremos beneficios!. Y por supuesto inauguraremos el Marketplace y demás funciones. 
+
+Y ahora presta atención. Brovísion está seleccionando a nuestros 100 Creadores Fundadores. Si te unes a esta primera ola, te llevarás la insignia de Ciudadano Fundador en tu perfil, prioridad máxima en nuestro buscador y un Pack de Bienvenida de 5.000 Génesis para empezar a dominar el ecosistema antes que nadie. Queremos que los mejores talentos crezcan con nosotros, porque cuando encendamos el motor comercial en Fase 1, nuestros Fundadores serán los primeros en empezar a facturar. Si eres un creador de contenido, una marca o un profesional, ¡es tu momento! Regístrate, explora, y escríbenos a nuestro email que está en el botón legal, con el asunto 'Candidato Fundador'. ¡Te estamos esperando!. Para ser Creador Fundador, solo debes cumplir con nuestros términos de servicio y políticas de edad vigentes. Buscamos perfiles profesionales y todoterrenos que estén listos para facturar en Fase 1.
+Y si quieres dominar BROVISION, pásate por mi Teléfono Casa. Allí subiré una serie de tutoriales donde te enseñaré trucos secretos para maximizar tus puntos Génesis y configurar tu Booster Studio como un profesional. ¡Nos vemos en el interior!.
+
 ===========================================================
 `;
