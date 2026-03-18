@@ -1,10 +1,10 @@
 // src/components/BoosterModal.jsx
-// (ESTILO ACTUALIZADO: BIOLUMINISCENTE NEÓN + UI AMIGABLE)
+// (ESTILO: BIOLUMINISCENTE NEÓN + UI AMIGABLE + REEMPLAZO SEGURO DE ARCHIVOS)
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
-// Colores de Energía (Brillantes para botones)
+// Colores de Energía
 const ENERGY_COLORS = [
     { id: 'cyan', hex: 'bg-cyan-400 shadow-[0_0_10px_#22d3ee]', name: 'CYAN' }, 
     { id: 'fuchsia', hex: 'bg-fuchsia-400 shadow-[0_0_10px_#e879f9]', name: 'MAGENTA' },
@@ -15,7 +15,7 @@ const ENERGY_COLORS = [
     { id: 'white', hex: 'bg-white shadow-[0_0_15px_white]', name: 'BLANCO' }
 ];
 
-// Colores de Materia (Profundos)
+// Colores de Materia
 const MATTER_COLORS = [
     { id: 'void', hex: 'bg-[#050b14]', name: 'ABISMO' }, 
     { id: 'carbon', hex: 'bg-[#1e293b]', name: 'CARBONO' },
@@ -29,6 +29,7 @@ const BoosterModal = ({ onClose }) => {
   // 1. ESTADOS PRINCIPALES
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState('identity'); 
+  const [isAdmin, setIsAdmin] = useState(false); 
   
   // 2. ESTADOS DE PERFIL
   const [country, setCountry] = useState('');
@@ -44,30 +45,26 @@ const BoosterModal = ({ onClose }) => {
   const [newProduct, setNewProduct] = useState({ title: '', desc: '', price: 0, url: '', sizes: '', colors: '' });
   const [newService, setNewService] = useState({ title: '', desc: '', price: 0, url: '' });
   const [questions, setQuestions] = useState([]);
-
-  // 4. ESTADOS DE RADAR (Métricas)
   const [followerCount, setFollowerCount] = useState(0);
 
   const [formData, setFormData] = useState({
     alias: '', avatar_url: '', banner_url: '', card_banner_url: '',
     twit_message: '', role: '', audio_file: '', bcast_file: '',
     video_file: '', video_file_2: '', video_file_3: '',
-    video_file_219: '', 
-    holo_1: '', holo_2: '', holo_3: '', holo_4: '',
-    catalog_url: '', mapache_rules: '',
-    intimo_bg: '', creator_loop_reply: '', editorial_title: '', editorial_content: '', showcase_url: ''
+    video_file_219: '', holo_1: '', holo_2: '', holo_3: '', holo_4: '',
+    catalog_url: '', mapache_rules: '', intimo_bg: '', creator_loop_reply: '', 
+    editorial_title: '', editorial_content: '', showcase_url: '',
+    admin_reality_bg: '', admin_game_img: '' 
   });
   
   const ROLES = [{ id: 'MUSIC', label: '🎵 Music' }, { id: 'TALK', label: '🎙️ Talk' }, { id: 'SHOP', label: '📦 Shop' }, { id: 'SERVICE', label: '🤝 Service' }];
 
-  // ESTILOS COMUNES (COMPONENTES REUTILIZABLES EFECTO CRISTAL)
+  // ESTILOS COMUNES
   const InputStyle = "w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all";
   const LabelStyle = "text-xs font-bold text-gray-300 uppercase tracking-widest mb-2 block";
   const CardStyle = "bg-blue-950/10 backdrop-blur-xl border border-white/10 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]";
 
-  // --- EFECTOS (USE EFFECTS) ---
-
-  // A) CARGAR PERFIL Y ARCHIVOS (Al abrir la terminal)
+  // --- EFECTOS ---
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -76,6 +73,8 @@ const BoosterModal = ({ onClose }) => {
             const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
             if (profile) {
               setIsMerchant(profile.is_merchant || false);
+              if (profile.is_admin === true) setIsAdmin(true);
+
               const colors = (profile.card_color || 'cyan-void').split('-');
               setEnergyColor(colors[0] || 'cyan');
               setMatterColor(colors[1] || 'void');
@@ -84,27 +83,16 @@ const BoosterModal = ({ onClose }) => {
               setZipCode(profile.zip_code || '');
               setFormData({
                 alias: profile.alias || user.user_metadata.alias || '',
-                role: profile.role || '', 
-                avatar_url: profile.avatar_url || '',
-                banner_url: profile.banner_url || '', 
-                card_banner_url: profile.card_banner_url || '',
-                twit_message: profile.twit_message || '', 
-                audio_file: profile.audio_file || '',
-                bcast_file: profile.bcast_file || '', 
-                video_file: profile.video_file || '',
-                video_file_2: profile.video_file_2 || '', 
-                video_file_3: profile.video_file_3 || '',
-                video_file_219: profile.video_file_219 || '',
-                holo_1: profile.holo_1 || '', 
-                holo_2: profile.holo_2 || '',
-                holo_3: profile.holo_3 || '', 
-                holo_4: profile.holo_4 || '',
-                catalog_url: profile.catalog_url || '', 
-                mapache_rules: profile.mapache_rules || '',
-                intimo_bg: profile.intimo_bg || '', 
-                creator_loop_reply: profile.creator_loop_reply || '',
-                editorial_title: profile.editorial_title || '', 
-                editorial_content: profile.editorial_content || '',
+                role: profile.role || '', avatar_url: profile.avatar_url || '',
+                banner_url: profile.banner_url || '', card_banner_url: profile.card_banner_url || '',
+                twit_message: profile.twit_message || '', audio_file: profile.audio_file || '',
+                bcast_file: profile.bcast_file || '', video_file: profile.video_file || '',
+                video_file_2: profile.video_file_2 || '', video_file_3: profile.video_file_3 || '',
+                video_file_219: profile.video_file_219 || '', holo_1: profile.holo_1 || '', 
+                holo_2: profile.holo_2 || '', holo_3: profile.holo_3 || '', holo_4: profile.holo_4 || '',
+                catalog_url: profile.catalog_url || '', mapache_rules: profile.mapache_rules || '',
+                intimo_bg: profile.intimo_bg || '', creator_loop_reply: profile.creator_loop_reply || '',
+                editorial_title: profile.editorial_title || '', editorial_content: profile.editorial_content || '',
                 showcase_url: profile.showcase_url || ''
               });
             }
@@ -115,7 +103,7 @@ const BoosterModal = ({ onClose }) => {
     };
     loadData();
   }, []);
-
+  
   // B) CARGAR BUZÓN (Si entra a Telefono Casa)
   useEffect(() => {
       const fetchQuestions = async () => {
@@ -261,26 +249,128 @@ const BoosterModal = ({ onClose }) => {
   const physicalProducts = assets.filter(a => a.asset_type === 'product');
   const serviceItems = assets.filter(a => a.asset_type === 'service');
   const digitalAssets = assets.filter(a => !['product', 'service'].includes(a.asset_type));
+  
+  // 1. Subir (Igual que antes, conectando a tu R2)
+  const handleUploadUniversal = async (e, fieldName) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const isVideo = file.type.includes('video');
+    const maxSize = isVideo ? 1500 * 1024 * 1024 : 10 * 1024 * 1024; 
+    if (file.size > maxSize) {
+      alert(`¡Archivo muy pesado! Máximo ${isVideo ? '1500MB' : '10MB'} permitido.`);
+      return;
+    }
+  
+    setLoading(true);
+    try {
+      // 1. Creamos un nombre de archivo ÚNICO y FIJO (quitando espacios por si acaso)
+      const safeFileName = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
 
-  return (
-    // CONTENEDOR PRINCIPAL
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-fadeIn font-sans">
+      // 2. Pedimos permiso a tu API (el archivo upload.js)
+      const res = await fetch('/api/upload', { // <-- Si usas el proxy, deja esto así
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName: safeFileName, fileType: file.type })
+      });
       
-      {/* 1. EL ESPACIO PROFUNDO (Video 100% Nítido, sin capas oscuras ni opacidad) */}
-      <video 
-        autoPlay loop muted playsInline 
-        className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
-      >
+      const { uploadUrl } = await res.json(); 
+      
+      if (!uploadUrl) throw new Error("La API no devolvió el ticket de subida.");
+
+      // 3. Subimos el archivo a Cloudflare R2
+      await fetch(uploadUrl, { 
+          method: 'PUT', 
+          body: file,
+          headers: { 'Content-Type': file.type }
+      });
+  
+      // 4. CONSTRUIMOS LA URL PÚBLICA MANUALMENTE
+      // Sustituye "TU_DOMINIO_PUBLICO_R2" por el enlace que te da Cloudflare R2
+      // Ej: https://pub-123456789.r2.dev o https://cdn.bro7vision.com
+      const publicUrl = `https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/${safeFileName}`;
+
+      // 5. Lo guardamos en el estado de React
+      setFormData(prev => ({ ...prev, [fieldName]: publicUrl }));
+      alert("🚀 ¡Archivo inyectado en el NÚCLEO R2!");
+
+    } catch (e) {
+      console.error(e); // Para ver el error exacto en tu consola F12
+      alert("❌ Error de hiper-salto (Subida): " + e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  // 2. Eliminar / Reemplazar (Sistema Seguro Anti-hackeo)
+  const handleDeleteMedia = (fieldName) => {
+      const confirm1 = window.confirm("⚠️ ALERTA DE SISTEMA\n¿Quieres desintegrar este archivo para liberar el espacio?");
+      if (!confirm1) return;
+
+      const confirm2 = window.prompt("MEDIDA DE SEGURIDAD:\nPara confirmar que eres el propietario, escribe la palabra en mayúsculas: BORRAR");
+      
+      if (confirm2 === "BORRAR") {
+          // Vaciamos el estado para habilitar el hueco
+          setFormData(prev => ({ ...prev, [fieldName]: '' }));
+          alert("✅ Archivo desintegrado. El hueco está libre.\nIMPORTANTE: Recuerda pulsar 'ACTUALIZAR NÚCLEO' para guardar este cambio.");
+          
+          // NOTA CTO: En el futuro aquí añadiremos un fetch('/api/delete-file-r2') 
+          // para borrar el archivo físico de Cloudflare y no ocupar espacio basura.
+      } else {
+          alert("❌ Protocolo cancelado. Código de seguridad incorrecto.");
+      }
+  };
+
+  // --- RENDERIZADO DE COMPONENTES DE MEDIOS (CUPOS) ---
+  // Esta pequeña pieza visual nos ahorra repetir código.
+  const MediaSlot = ({ title, fieldName, type, description }) => {
+      const isOccupied = !!formData[fieldName];
+
+      return (
+          <div className="bg-black/40 p-4 rounded-2xl border border-white/5 relative overflow-hidden group">
+              <label className={LabelStyle}>{title}</label>
+              <p className="text-[9px] text-gray-500 mb-3">{description}</p>
+              
+              {isOccupied ? (
+                  <div className="bg-cyan-900/20 p-3 rounded-xl border border-cyan-500/30 flex justify-between items-center backdrop-blur-md">
+                      <div className="flex-1 overflow-hidden pr-2">
+                          <span className="text-[10px] text-cyan-400 font-bold flex items-center gap-1">
+                              ✓ Ocupado
+                          </span>
+                      </div>
+                      <button 
+                          onClick={() => handleDeleteMedia(fieldName)} 
+                          className="bg-red-500/10 text-red-400 border border-red-500/50 hover:bg-red-500 hover:text-white hover:shadow-[0_0_15px_rgba(239,68,68,0.8)] text-[10px] font-bold px-4 py-2 rounded-lg transition-all"
+                      >
+                          REEMPLAZAR
+                      </button>
+                  </div>
+              ) : (
+                  <div className="relative">
+                      <input 
+                          type="file" 
+                          accept={type} 
+                          onChange={(e) => handleUploadUniversal(e, fieldName)} 
+                          className={InputStyle} 
+                      />
+                      <div className="absolute top-1/2 right-4 -translate-y-1/2 pointer-events-none">
+                          <span className="text-xs text-gray-500 font-bold border border-gray-600 px-2 py-1 rounded">HUECO LIBRE</span>
+                      </div>
+                  </div>
+              )}
+          </div>
+      );
+  };
+  
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-fadeIn font-sans">
+      <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none">
         <source src="/videos/deep_space.mp4" type="video/mp4" />
       </video>
-
-      {/* Capa invisible solo para poder hacer clic fuera y cerrar */}
       <div className="absolute inset-0 bg-transparent z-0" onClick={onClose}></div>
       
-      {/* 2. VENTANA MODAL (Cristal Puro / Glassmorphism) */}
       <div className="relative z-10 w-full max-w-6xl bg-black/10 backdrop-blur-[25px] border border-white/20 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col h-[90vh]">
         
-        {/* HEADER CRISTALINO */}
+        {/* HEADER */}
         <div className="bg-white/5 border-b border-white/10 p-5 flex justify-between items-center shrink-0">
             <h2 className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-400 font-bold text-lg flex items-center gap-3 tracking-wider">
                <span className="text-2xl drop-shadow-[0_0_5px_rgba(34,211,238,0.8)]">✨</span> BOOSTER STUDIO TERMINAL
@@ -288,20 +378,17 @@ const BoosterModal = ({ onClose }) => {
             <button onClick={onClose} className="text-gray-400 hover:text-white hover:rotate-90 transition-transform duration-300 text-xl">✕</button>
         </div>
 
-        {/* CONTENEDOR CENTRAL SIN DEGRADADOS AZULES */}
         <div className="flex flex-col md:flex-row flex-1 overflow-hidden bg-transparent">
             
-            {/* SIDEBAR NAVEGACIÓN (Fondo de cristal oscuro) */}
+            {/* SIDEBAR NAVEGACIÓN */}
             <div className="flex md:flex-col border-b md:border-b-0 md:border-r border-white/10 bg-black/10 p-3 gap-2 overflow-x-auto md:w-64 shrink-0 z-20">
-            
-                       {[
+                {[
                     { id: 'identity', label: '👤 Identidad', color: 'cyan' },
-                    { id: 'audio', label: '📡 Señal', color: 'fuchsia' },
+                    { id: 'audio', label: '📡 Señal (Archivos)', color: 'fuchsia' },
                     { id: 'Telefono Casa', label: '☝️ Telefono Casa', color: 'yellow' },
                     { id: 'market', label: '🛒🦝 Tienda & IA', color: 'green' },
-                    { id: 'assets', label: '💾🦝 Archivos Digitales', color: 'blue' },
-                    // NUEVA PESTAÑA DE MÉTRICAS Y ÓRBITAS
-                    { id: 'metrics', label: '🛰️ Órbita & Radar', color: 'orange' } 
+                    { id: 'metrics', label: '🛰️ Órbita & Radar', color: 'orange' },
+                    ...(isAdmin ? [{ id: 'admin', label: '👑 ADMIN NEXUS', color: 'red' }] : [])
                 ].map((item) => (
                     <button 
                         key={item.id}
@@ -322,16 +409,16 @@ const BoosterModal = ({ onClose }) => {
                 {/* 👤 IDENTIDAD */}
                 {tab === 'identity' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fadeIn">
-                        <div className="space-y-6">
+                         <div className="space-y-6">
                             <div className={CardStyle}>
-                                <h3 className="text-sm text-cyan-400 font-bold mb-4 flex items-center gap-2">📸 VISUALES</h3>
+                                <h3 className="text-sm text-cyan-400 font-bold mb-4 flex items-center gap-2">📸 VISUALES (Carga R2)</h3>
                                 <div className="space-y-4">
-                                    <div><label className={LabelStyle}>Avatar (Circular)</label><input type="text" value={formData.avatar_url} onChange={e => setFormData({...formData, avatar_url: e.target.value})} className={InputStyle} /></div>
-                                    <div><label className={LabelStyle}>Banner (LiveGrid)</label><input type="text" value={formData.banner_url} onChange={e => setFormData({...formData, banner_url: e.target.value})} className={InputStyle} /></div>
-                                    <div><label className={LabelStyle}>Banner (Nexus Tarjeta)</label><input type="text" value={formData.card_banner_url} onChange={e => setFormData({...formData, card_banner_url: e.target.value})} className={InputStyle} /></div>
+                                    <MediaSlot title="Avatar (Circular)" fieldName="avatar_url" type="image/*" description="Tu foto de ciudadano." />
+                                    <MediaSlot title="Banner (LiveGrid)" fieldName="banner_url" type="image/*" description="Fondo para el mapa local." />
+                                    <MediaSlot title="Banner (Nexus Tarjeta)" fieldName="card_banner_url" type="image/*" description="Fondo para tu tarjeta principal." />
                                 </div>
                             </div>
-
+                            
                             <div className={CardStyle}>
                                 <label className={LabelStyle}>NICK DE CIUDADANO</label>
                                 <input type="text" value={formData.alias} onChange={e => setFormData({...formData, alias: e.target.value})} className={`${InputStyle} text-lg font-bold text-center tracking-widest border-cyan-500/40`} />
@@ -346,7 +433,7 @@ const BoosterModal = ({ onClose }) => {
                                 </div>
                             </div>
                         </div>
-                        
+                                                
                         {/* --- 💬 MENSAJE DE ESTADO (TWIT) --- */}
                             <div className={`${CardStyle} border-cyan-500/20`}>
                                 <label className={LabelStyle}>💬 MENSAJE CORTO (TWIT RADAR)</label>
@@ -393,12 +480,19 @@ const BoosterModal = ({ onClose }) => {
                             <div className={`${CardStyle} border-fuchsia-500/20`}>
                                 <p className="text-xs font-bold text-fuchsia-400 mb-3 flex items-center gap-2">💎 HOLOPRISMA (3D)</p>
                                 <div className="grid grid-cols-2 gap-3">
-                                    <input type="text" placeholder="Cara Frontal URL" value={formData.holo_1} onChange={e=>setFormData({...formData, holo_1:e.target.value})} className={InputStyle} />
-                                    <input type="text" placeholder="Cara Trasera URL" value={formData.holo_2} onChange={e=>setFormData({...formData, holo_2:e.target.value})} className={InputStyle} />
-                                    <input type="text" placeholder="Cara Izquierda URL" value={formData.holo_3} onChange={e=>setFormData({...formData, holo_3:e.target.value})} className={InputStyle} />
-                                    <input type="text" placeholder="Cara Derecha URL" value={formData.holo_4} onChange={e=>setFormData({...formData, holo_4:e.target.value})} className={InputStyle} />
-                                </div>
-                            </div>
+    			{['holo_1', 'holo_2', 'holo_3', 'holo_4'].map((h, i) => (
+        			<div key={h}>
+            			<label className="text-[9px] text-gray-500">CARA {i+1}</label>
+            			<input 
+                			type="file" 
+                			accept="image/*" 
+                			onChange={(e) => handleUploadUniversal(e, h)} 
+                			className={`${InputStyle} text-[10px]`} 
+           		 />
+        			</div>
+    			))}
+		</div>
+            </div>
                             
                             {/* --- ZONA DE PELIGRO: BORRAR CUENTA --- */}
                             <div className="bg-red-950/20 backdrop-blur-xl border border-red-500/30 p-6 rounded-3xl mt-6 shadow-[0_0_20px_rgba(239,68,68,0.15)]">
@@ -416,41 +510,80 @@ const BoosterModal = ({ onClose }) => {
                     </div>
                 )}
 
-                {/* 📡 SEÑAL */}
+                             {/* 📡 SEÑAL (MEDIOS) + LÓGICA DE CUPOS DINÁMICA */}
                 {tab === 'audio' && (
-                    <div className="space-y-6 max-w-3xl mx-auto animate-fadeIn">
+                    <div className="space-y-6 max-w-4xl mx-auto animate-fadeIn">
                         <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-2xl flex gap-4 items-start shadow-[0_0_20px_rgba(239,68,68,0.1)]">
-                            <div className="text-2xl">⚖️</div>
-                            <p className="text-xs text-red-200 leading-relaxed">Usa música propia o Licencia <span className="font-bold text-white underline">Creative Commons 4.0</span>. Evita material con Copyright comercial para asegurar la permanencia de tu canal.</p>
-                        </div>
-                        <div className={CardStyle}>
-                            <div className="mb-6">
-                                <label className={LabelStyle}>📡 SEÑAL AUDIO LIVE (URL MP3/Dropbox)</label>
-                                <input type="text" value={formData.audio_file} onChange={e=>setFormData({...formData, audio_file:e.target.value})} className={InputStyle} />
+                            <div className="text-2xl mt-1">⚖️</div>
+                            <div>
+                                <h4 className="text-sm font-bold text-red-300 uppercase tracking-widest mb-1">Ley de Medios Bro7Vision</h4>
+                                <p className="text-xs text-red-200">Usa música propia o Licencia <span className="font-bold underline">CC 4.0</span>. Las cargas van directo al servidor. Tienes un cupo máximo de <span className="text-white font-bold">1 Audio, 3 Videos Verticales y 1 Horizontal</span>. Para subir uno nuevo, debes reemplazar uno existente.</p>
                             </div>
-                            
-                            <div className="space-y-4 pt-4 border-t border-white/5">
-                                <div>
-                                    <label className={LabelStyle}>🎬 VIDEO PRINCIPAL (Forest y Teléfono Casa)</label>
-                                    <input type="text" value={formData.video_file} onChange={e=>setFormData({...formData, video_file:e.target.value})} className={InputStyle} />
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* COLUMNA 1: Verticales y Audio */}
+                            <div className={`${CardStyle} space-y-4`}>
+                                <h3 className="text-sm font-bold text-fuchsia-400 mb-4 border-b border-fuchsia-500/20 pb-2">📱 SEÑAL MÓVIL (9:16)</h3>
+                                
+                                <MediaSlot 
+                                    title="Video Reality / Casa 1" fieldName="video_file" type="video/*" 
+                                    description="Video principal vertical." 
+                                />
+                                <MediaSlot 
+                                    title="Video Casa 2" fieldName="video_file_2" type="video/*" 
+                                    description="Video secundario vertical." 
+                                />
+                                <MediaSlot 
+                                    title="Video Casa 3" fieldName="video_file_3" type="video/*" 
+                                    description="Video terciario vertical." 
+                                />
+                                
+                                <div className="mt-6 pt-6 border-t border-white/10">
+                                    <MediaSlot 
+                                        title="📡 SEÑAL AUDIO LIVE" fieldName="audio_file" type="audio/*" 
+                                        description="Audio (MP3) para LiveGrid." 
+                                    />
                                 </div>
-                                <div>
-                                    <label className="text-xs font-bold text-yellow-400 mb-1 ml-1 block">⚡ Video Teléfono Casa 2</label>
-                                    <input type="text" value={formData.video_file_2} onChange={e=>setFormData({...formData, video_file_2:e.target.value})} className={`${InputStyle} border-yellow-500/20 focus:border-yellow-400`} />
+                            </div>
+
+                            {/* COLUMNA 2: Horizontal Cine */}
+                            <div className={`${CardStyle} h-fit`}>
+                                <h3 className="text-sm font-bold text-cyan-400 mb-4 border-b border-cyan-500/20 pb-2">🎬 FORMATO CINE (21:9)</h3>
+                                <MediaSlot 
+                                    title="Video Piso 219" fieldName="video_file_219" type="video/*" 
+                                    description="Formato horizontal panorámico para experiencias inmersivas." 
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}                
+                
+                {/* 👑 ADMIN NEXUS */}
+                {tab === 'admin' && isAdmin && (
+                    <div className="space-y-6 max-w-4xl mx-auto animate-fadeIn">
+                        <div className="bg-red-900/20 border border-red-500/50 p-6 rounded-3xl shadow-[0_0_30px_rgba(239,68,68,0.2)]">
+                            <h2 className="text-xl font-black text-red-400 uppercase tracking-widest mb-6 flex items-center gap-3">
+                                <span>👑</span> CONSOLA DE ARQUITECTO (Admin)
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-4">
+                                    <h3 className="text-xs font-bold text-white uppercase border-b border-red-500/30 pb-2">🌌 Fondos Reality</h3>
+                                    <MediaSlot title="Mañana (Video)" fieldName="admin_bg_morning" type="video/*" description="" />
+                                    <MediaSlot title="Tarde (Video)" fieldName="admin_bg_afternoon" type="video/*" description="" />
+                                    <MediaSlot title="Noche (Video)" fieldName="admin_bg_night" type="video/*" description="" />
                                 </div>
-                                <div>
-                                    <label className="text-xs font-bold text-fuchsia-400 mb-1 ml-1 block">🔮 Video Teléfono Casa 3</label>
-                                    <input type="text" value={formData.video_file_3} onChange={e=>setFormData({...formData, video_file_3:e.target.value})} className={`${InputStyle} border-fuchsia-500/20 focus:border-fuchsia-400`} />
+                                <div className="space-y-4">
+                                    <h3 className="text-xs font-bold text-white uppercase border-b border-red-500/30 pb-2">🕹️ Activos de Sistema</h3>
+                                    <MediaSlot title="Base HoloPrisma Global" fieldName="admin_holoprisma_base" type="image/*" description="" />
+                                    <MediaSlot title="Imágenes Editorial Master" fieldName="admin_editorial_master" type="image/*" description="" />
                                 </div>
-                             <div>
-                              <label className="text-xs font-bold text-orange-400 mb-1 ml-1 block">🎬 PISO 219 (Video a 21:9)</label>
-       			 <input type="text" value={formData.video_file_219} onChange={e=>setFormData({...formData, video_file_219:e.target.value})} className={`${InputStyle} border-orange-500/20 focus:border-orange-400`} />
-    				</div>
-                               </div>                        
+                            </div>
                         </div>
                     </div>
                 )}
-                
+                             
+                             
                 {/* ☝️ TELEFONO CASA */}
                 {tab === 'Telefono Casa' && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fadeIn">
@@ -726,10 +859,9 @@ const BoosterModal = ({ onClose }) => {
         <div className="p-5 border-t border-white/10 bg-black/10 backdrop-blur-3xl flex justify-end gap-4 shrink-0 relative z-20">
             <button onClick={onClose} className="text-gray-300 text-xs px-6 py-3 font-bold uppercase hover:text-white transition-all hover:bg-white/5 rounded-full">Desconectar</button>
             <button onClick={handleSave} disabled={loading} className="bg-white/90 text-black font-bold uppercase text-xs px-8 py-3 rounded-full hover:bg-white hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-                {loading ? 'Sincronizando...' : 'ACTUALIZAR NÚCLEO'}
+                {loading ? '🚀 INYECTANDO...' : 'ACTUALIZAR NÚCLEO'}
             </button>
         </div>
-
       </div>
     </div>
   );
