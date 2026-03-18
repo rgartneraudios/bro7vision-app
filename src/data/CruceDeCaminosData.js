@@ -16,7 +16,7 @@ export const SCENARIOS = [
         outImg: '/images/CruceDeCaminos/out.png',
         ventaImg: '/images/CruceDeCaminos/venta.png',
         superImg: '/images/CruceDeCaminos/super.png',
-        videoSrc: '/videos/CC_tienda.mp4',
+        videoSrc: 'https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/CC_tienda.mp4',
         p2Inercia: { 1: 1, 3: 2, 5: -1, 7: 1 }, 
         context: "HAY UN CLIENTE MIRANDO EL ESCAPARATE. PARECE INDECISO Y TIENE PRISA.",
         dialogues: {
@@ -49,7 +49,7 @@ export const SCENARIOS = [
         outImg: '/images/CruceDeCaminos/out2.png',
         ventaImg: '/images/CruceDeCaminos/venta2.png',
         superImg: '/images/CruceDeCaminos/super2.png',
-        videoSrc: '/videos/CC_tienda.mp4',
+        videoSrc: 'https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/CC_tienda.mp4',
         p2Inercia: { 1: -1, 3: -2, 5: -1, 7: -1 }, 
         context: "UN CLIENTE ENTRA MIRANDO SU MÓVIL. NI SIQUIERA HA LEVANTADO LA VISTA.",
         dialogues: {
@@ -82,7 +82,7 @@ export const SCENARIOS = [
         outImg: '/images/CruceDeCaminos/out3.png',
         ventaImg: '/images/CruceDeCaminos/venta3.png',
         superImg: '/images/CruceDeCaminos/super3.png',
-        videoSrc: '/videos/CC_tienda.mp4',
+        videoSrc: 'https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/CC_tienda.mp4',
         p2Inercia: { 1: -1, 3: 1, 5: -1, 7: 0 }, 
         context: "UNA CHICA OBSERVA SU REFLEJO Y LAS ZAPATILLAS. PARECE QUE DESEA ALGO.",
         dialogues: {
@@ -117,7 +117,7 @@ export const SCENARIOS = [
         outImg: '/images/CruceDeCaminos/c_out.png', 
         ventaImg: '/images/CruceDeCaminos/c_bote.png', 
         superImg: '/images/CruceDeCaminos/c_dormitorio.png', 
-        videoSrc: '/videos/CC_cita_boy.mp4', 
+        videoSrc: 'https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/CC_cita_boy.mp4', 
         p2Inercia: { 1: 1, 3: 1, 5: 2, 7: 1 }, 
         context: "HAS QUEDADO CON ÉL EN UN BAR. SE LE VE NERVIOSO Y HABLA DEMASIADO DE SÍ MISMO.", 
         dialogues: {
@@ -150,7 +150,7 @@ export const SCENARIOS = [
         outImg: '/images/CruceDeCaminos/c_out2.png', 
         ventaImg: '/images/CruceDeCaminos/c_cine2.png', 
         superImg: '/images/CruceDeCaminos/c_dormitorio2.png', 
-        videoSrc: '/videos/CC_cita_girl.mp4', 
+        videoSrc: 'https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/CC_cita_girl.mp4', 
         p2Inercia: { 1: -1, 3: -2, 5: -1, 7: -1 }, 
         context: "ELLA ESTÁ SENTADA EN LA BARRA. APENAS TE MIRA AL LLEGAR, PARECE ALGO ABURRIDA.", 
         dialogues: {
@@ -183,7 +183,7 @@ export const SCENARIOS = [
         outImg: '/images/CruceDeCaminos/c_out3.png', 
         ventaImg: '/images/CruceDeCaminos/c_opera3.png', 
         superImg: '/images/CruceDeCaminos/c_dormitorio.png', 
-        videoSrc: '/videos/CC_cita_girl2.mp4', 
+        videoSrc: 'https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/CC_cita_girl2.mp4', 
         // Inercia de "Test": Empieza suave, pero en el paso 3 te pone a prueba bajando al frío 
         // para ver si tienes la energía de subirla.
         p2Inercia: { 1: 0, 3: -1, 5: 1, 7: -1 }, 
@@ -221,7 +221,7 @@ export const SCENARIOS = [
         outImg: '/images/CruceDeCaminos/t_out.png', 
         ventaImg: '/images/CruceDeCaminos/t_trabajo.png', 
         superImg: '/images/CruceDeCaminos/t_aumento.png', 
-        videoSrc: '/videos/CC_oficina.mp4', 
+        videoSrc: 'https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/CC_oficina.mp4', 
         p2Inercia: { 1: 2, 3: 2, 5: 1, 7: 2 }, 
         context: "TU JEFE TE HA LLAMADO AL DESPACHO. TIENE LOS INFORMES Y NO PARECE FELIZ.", 
         dialogues: {
@@ -256,7 +256,7 @@ export const SCENARIOS = [
     outImg: '/images/CruceDeCaminos/t_out2.png', 
     ventaImg: '/images/CruceDeCaminos/t_entrega2.png', // Realizar trabajo
     superImg: '/images/CruceDeCaminos/t_propina2.png', // Propina
-    videoSrc: '/videos/CC_reparto.mp4', 
+    videoSrc: 'https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/CC_reparto.mp4', 
     p2Inercia: { 1: 1, 3: 2, 5: 1, 7: 1 }, // Cliente agresivo y con prisa
     context: "LLEGAS TARDE A UNA ENTREGA DE ALTA PRIORIDAD. EL CLIENTE TE ESPERA EN LA PUERTA Y NO TIENE BUENA CARA.", 
     dialogues: {
@@ -291,7 +291,7 @@ export const SCENARIOS = [
     outImg: '/images/CruceDeCaminos/t_out3.png', 
     ventaImg: '/images/CruceDeCaminos/t_encargo3.png', // Más trabajo
     superImg: '/images/CruceDeCaminos/t_aumento3.png', // Aumento/Bonus
-    videoSrc: '/videos/CC_freelance.mp4', 
+    videoSrc: 'https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/CC_freelance.mp4', 
     p2Inercia: { 1: -1, 3: -2, 5: -1, 7: -1 }, // Cliente "Ghost" que se enfría y desaparece
     context: "ESTÁS FRENTE AL MONITOR. TE LLEGA UN MENSAJE DE TU CLIENTE PRINCIPAL SOBRE EL ÚLTIMO PROYECTO. SU TONO ES DISTANTE.", 
     dialogues: {

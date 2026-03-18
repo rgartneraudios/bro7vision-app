@@ -128,7 +128,7 @@ const AtlasGame = ({ onWin, onClose }) => {
     >
       
       {/* VIDEO FONDO */}
-      <video src="/videos/space.mp4" autoPlay loop muted className="absolute inset-0 w-full h-full object-cover opacity-60 pointer-events-none" />
+      <video src="https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/space.mp4" autoPlay loop muted className="absolute inset-0 w-full h-full object-cover opacity-60 pointer-events-none" />
 
       {/* BOTÓN SALIR (X) */}
       <button 

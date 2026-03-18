@@ -13,7 +13,7 @@ const HoloProjector219 = ({ user, balances, setBalances, session, onClose, onOpe
 
   // --- VIDEO DE FONDO (16:9) ---
   const bgKey = user.intimo_bg && user.intimo_bg !== "" ? user.intimo_bg : 'salon';
-  const backgroundVideo = `/videos/intimo_${bgKey}.mp4`;
+  const backgroundVideo = `https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/intimo_${bgKey}.mp4`;
 
   // --- VIDEO DEL VISOR 21:9 ---
   const getCleanUrl = (url) => {

@@ -364,7 +364,7 @@ const BoosterModal = ({ onClose }) => {
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-fadeIn font-sans">
       <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none">
-        <source src="/videos/deep_space.mp4" type="video/mp4" />
+        <source src="https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/deep_space.mp4" type="video/mp4" />
       </video>
       <div className="absolute inset-0 bg-transparent z-0" onClick={onClose}></div>
       

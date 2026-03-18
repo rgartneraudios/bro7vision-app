@@ -6,8 +6,8 @@ const ASSETS = {
     bgExit: '/audio/out.mp3',          
     sfxDoor: '/audio/door_sound.mp3',
     sfxAlarm: '/audio/alarm_sound.mp3', 
-    vidVault: '/videos/boveda.mp4',    
-    vidWin: '/videos/city_ambience.mp4' 
+    vidVault: 'https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/boveda.mp4',    
+    vidWin: 'https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/city_ambience.mp4' 
 };
 
 const SevenGates = ({ onWin, onClose }) => {

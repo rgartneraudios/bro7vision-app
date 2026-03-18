@@ -266,11 +266,11 @@ const handleGoToShop = (user) => {
     <BioForest videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={setProjectingUser} selectedForestUser={selectedForestUser} />
   )}
   
-          {step === 1 && <video src="/portada.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover" />}
+          {step === 1 && <video src="https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/portada.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover" />}
         {step === 2 && (
           <video 
             key={intent} 
-            src={intent === 'ai' ? "/ai_bg.mp4" : intent === 'game' ? "/game_bg.mp4" : intent === 'lives' ? "/brolives1.mp4" : intent === 'internal_search' ? "/racoonask.mp4" : getVideoForLocation(scope)} 
+            src={intent === 'ai' ? "https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/ai_bg.mp4" : intent === 'game' ? "https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/game_bg.mp4" : intent === 'lives' ? "https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/brolives1.mp4" : intent === 'internal_search' ? "https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/racoonask.mp4" : getVideoForLocation(scope)} 
             autoPlay loop muted playsInline className="w-full h-full object-cover animate-fadeIn" 
           />
         )}
@@ -487,7 +487,7 @@ const handleGoToShop = (user) => {
      {showStory && (
         <div className="fixed inset-0 z-[200] bg-black">
           <StoryPlayer 
-            src="/brostories_demo.mp4"   // <--- FALTABA EL VIDEO
+            src="https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/brostories_demo.mp4"   // <--- FALTABA EL VIDEO
             activePhase="nova"           // <--- FALTABA ESTO (CRÍTICO PARA EL COLOR)
             balances={balances} 
             setBalances={setBalances}
