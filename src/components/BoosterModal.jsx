@@ -480,19 +480,18 @@ const BoosterModal = ({ onClose }) => {
                             <div className={`${CardStyle} border-fuchsia-500/20`}>
                                 <p className="text-xs font-bold text-fuchsia-400 mb-3 flex items-center gap-2">💎 HOLOPRISMA (3D)</p>
                                 <div className="grid grid-cols-2 gap-3">
-    			{['holo_1', 'holo_2', 'holo_3', 'holo_4'].map((h, i) => (
-        			<div key={h}>
-            			<label className="text-[9px] text-gray-500">CARA {i+1}</label>
-            			<input 
-                			type="file" 
-                			accept="image/*" 
-                			onChange={(e) => handleUploadUniversal(e, h)} 
-                			className={`${InputStyle} text-[10px]`} 
-           		 />
-        			</div>
-    			))}
-		</div>
-            </div>
+    				{['holo_1', 'holo_2', 'holo_3', 'holo_4'].map((h, i) => (
+       				 <MediaSlot 
+            				key={h}
+           				 title={`CARA ${i+1}`}
+            				fieldName={h}
+           				 type="image/*"
+            				description=""
+        				/>
+   				 ))}
+				</div>
+                                
+            		</div>
                             
                             {/* --- ZONA DE PELIGRO: BORRAR CUENTA --- */}
                             <div className="bg-red-950/20 backdrop-blur-xl border border-red-500/30 p-6 rounded-3xl mt-6 shadow-[0_0_20px_rgba(239,68,68,0.15)]">
