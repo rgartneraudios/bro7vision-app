@@ -49,8 +49,7 @@ const BoosterModal = ({ onClose }) => {
 
   const [formData, setFormData] = useState({
     alias: '', avatar_url: '', banner_url: '', card_banner_url: '',
-    twit_message: '', role: '', audio_file: '', bcast_file: '',
-    video_file: '', video_file_2: '', video_file_3: '',
+    twit_message: '', role: '', audio_file: '', video_file: '', video_file_2: '', video_file_3: '',
     video_file_219: '', holo_1: '', holo_2: '', holo_3: '', holo_4: '',
     catalog_url: '', mapache_rules: '', intimo_bg: '', creator_loop_reply: '', 
     editorial_title: '', editorial_content: '', showcase_url: '',
@@ -86,8 +85,7 @@ const BoosterModal = ({ onClose }) => {
                 role: profile.role || '', avatar_url: profile.avatar_url || '',
                 banner_url: profile.banner_url || '', card_banner_url: profile.card_banner_url || '',
                 twit_message: profile.twit_message || '', audio_file: profile.audio_file || '',
-                bcast_file: profile.bcast_file || '', video_file: profile.video_file || '',
-                video_file_2: profile.video_file_2 || '', video_file_3: profile.video_file_3 || '',
+                video_file: profile.video_file || '', video_file_2: profile.video_file_2 || '', video_file_3: profile.video_file_3 || '',
                 video_file_219: profile.video_file_219 || '', holo_1: profile.holo_1 || '', 
                 holo_2: profile.holo_2 || '', holo_3: profile.holo_3 || '', holo_4: profile.holo_4 || '',
                 catalog_url: profile.catalog_url || '', mapache_rules: profile.mapache_rules || '',
