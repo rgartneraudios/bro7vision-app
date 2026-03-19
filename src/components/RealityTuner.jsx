@@ -1,5 +1,5 @@
 // src/components/RealityTuner.jsx
-// ── Actualizado: añadidos canales ESTE y OESTE con su propia sección en el tuner
+
 
 import React from 'react';
 
@@ -7,7 +7,7 @@ const RealityTuner = ({ onSelect }) => {
 
   const REALITIES = [
     // EL ESTADO BASE / NEUTRAL
-    { id: 'eclipse', title: 'ECLIPSE ZENITH', desc: 'Sintonía de Lujo y Sobriedad', icon: '🌑', color: 'border-yellow-500/50', text: 'text-yellow-400', glow: 'shadow-yellow-500/20', group: 'NEUTRAL' },
+    { id: 'moon', title: 'MOON PHASE', desc: 'Sincronicidad con la Fase Luna', icon: '🌑🌒🌓🌔🌕🌖🌗🌘', color: 'border-white-500/50', text: 'text-white-500', glow: 'shadow-white-500/20', group: 'NEUTRAL' },
     
     // GRUPO SOLO
     { id: 'solo_earth',   title: 'SOLO EARTH',   desc: 'Sincronía Vital',      icon: '🌍', color: 'border-emerald-500/50', text: 'text-emerald-400', glow: 'shadow-emerald-500/20', group: 'SOLO' },
@@ -59,7 +59,7 @@ const RealityTuner = ({ onSelect }) => {
 
       <div className="w-full max-w-6xl space-y-10">
         
-        {/* NIVEL 1: EL ECLIPSE (LA BASE) */}
+        {/* NIVEL 1: MOON (LA BASE) */}
 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl mx-auto">
   
   <div className="w-full">
@@ -67,7 +67,7 @@ const RealityTuner = ({ onSelect }) => {
   </div>
 
   <div className="w-full">
-    {renderCard(REALITIES.find(r => r.id === 'eclipse'))}
+    {renderCard(REALITIES.find(r => r.id === 'moon'))}
   </div>
 
   <div className="w-full">

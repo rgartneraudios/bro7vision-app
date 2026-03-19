@@ -20,6 +20,9 @@ import ChannelOeste from './components/ChannelOeste';
 import RacoonTerminal from './components/RacoonTerminal';
 import RealityTuner from './components/RealityTuner';
 import HoloPrism from './components/HoloPrism';
+import MoonMatrixCircle from './components/MoonMatrixCircle';
+import ChannelMoon from './components/ChannelMoon';
+
 
 function App() {
   const [realityMode, setRealityMode] = useState(null); 
@@ -257,18 +260,20 @@ const handleGoToShop = (user) => {
   setSelectedCard(user);          // 👈 Guarda el usuario para abrir su PaymentModal
 };
 
+
   return (
     <div className="relative w-full h-screen bg-black text-white overflow-hidden font-sans">
       
-      {/* 1. FONDO DE VIDEOS */}
+     {/* 1. FONDO DE VIDEOS */}
 <div className="absolute inset-0 z-0">
-  {step === 0 && !projectingUser && (  // 👈 añade && !projectingUser
+  {step === 0 && !projectingUser && (
     !realityMode ? <RealityTuner onSelect={setRealityMode} /> :
     realityMode === 'este'  ? <ChannelEste  videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={setProjectingUser} selectedForestUser={selectedForestUser} /> :
     realityMode === 'oeste' ? <ChannelOeste videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={setProjectingUser} selectedForestUser={selectedForestUser} /> :
+    realityMode === 'moon'  ? <ChannelMoon  videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={setProjectingUser} selectedForestUser={selectedForestUser} /> :
     <BioForest videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={setProjectingUser} selectedForestUser={selectedForestUser} />
   )}
-  
+    
           {step === 1 && <video src="https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/portada.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover" />}
         {step === 2 && (
           <video 
@@ -279,35 +284,37 @@ const handleGoToShop = (user) => {
         )}
       </div>
 
-      {/* 2. PUERTA IZQUIERDA: AUDIO, REALITY Y WALLET */}
+    {/* 2. PUERTA IZQUIERDA */}
 <div className={`side-panel side-panel-left ${isLeftOpen ? 'open' : ''} flex flex-col items-stretch p-0 overflow-y-auto custom-scrollbar`}>
     
-    {/* SECCIÓN WALLET: Ahora ocupa todo el ancho sin márgenes internos que lo achiquen */}
-    <div className="mt-12 w-full px-4">
+    {/* WALLET: Reducimos el margen superior de mt-12 a mt-8 */}
+    <div className="mt-8 w-full px-4">
         <div className="w-full transform scale-100 origin-left">
-            <WalletWidget 
-                balances={balances} 
-                onClick={() => setShowWalletModal(true)} 
-            />
+            <WalletWidget balances={balances} onClick={() => setShowWalletModal(true)} />
         </div>
     </div>
+
+    {/* LUNA: Espacio compacto */}
+    <div className="w-full flex justify-center my-2">
+        <MoonMatrixCircle />
+    </div>
               
-    {/* BOTÓN REALITY: Ajustado para mantener consistencia de bloque */}
-    <div className="px-4 mt-6">
+    {/* BOTÓN REALITY: Reducimos de mt-6 a mt-2 */}
+    <div className="px-4 mt-4">
         <button 
             onClick={() => { setStep(0); setRealityMode(null); setIsRightOpen(false); }} 
-            className="w-full flex justify-between items-center p-4 bg-cyan-500/10 border border-cyan-400/40 rounded-2xl hover:bg-cyan-500 hover:text-black transition-all"
+            className="w-full flex justify-between items-center p-3 bg-fuchsia-500/10 border border-fuchsia-400/40 rounded-2xl hover:bg-cyan-500 hover:text-black transition-all group"
         >
-            <span className="text-[10px] font-black uppercase">Cambiar Reality</span>
-            <span className="text-xl">🌐</span>
+            <span className="text-[10px] font-black uppercase group-hover:text-black">Cambiar Reality</span>
+            <span className="text-lg">🌐</span>
         </button>
-    </div>
-
+    </div>                  
+    
     {/* SCAN REALITY */}
     <div className="flex flex-col gap-2 px-4 mt-4">
         <button 
             onClick={() => setShowRadar(!showRadar)} 
-            className={`flex items-center gap-4 p-4 border rounded-2xl transition-all ${showRadar ? 'bg-cyan-500 text-black border-cyan-400' : 'bg-white/5 border-white/10'}`}
+            className={`flex items-center gap-4 p-4 border rounded-2xl transition-all ${showRadar ? 'bg-cyan-500 text-black border-cyan-400' : 'bg-white/5 border-yellow/10'}`}
         >
             <span className="text-xl">🔍</span>
             <span className="text-[10px] font-black uppercase">Scan Reality</span>
@@ -340,7 +347,7 @@ const handleGoToShop = (user) => {
    {/* AUDIO TOOLS (BROLIVES + TUNER) */}
 <div className="mt-auto flex flex-col w-full pb-10">
               <div className="w-full px-4 mb-4">
-                  <p className="text-[8px] text-gray-500 font-bold uppercase mb-2 tracking-widest ml-1">Audio & Lives Player</p>
+                  <p className="text-[8px] text-blue-500 font-bold uppercase mb-2 tracking-widest ml-1">Audio & Lives Player</p>
                   
                   {/* AQUÍ PASAMOS EL ESTADO DEL AUDIO */}
                   <BroLives 

@@ -267,7 +267,6 @@ const [tickerEchos, setTickerEchos] = useState([
       case 'band_fantasy': return {video:v('band_fantasy'),colors:['text-fuchsia-500','text-purple-300'],reactionColor:'fuchsia',labelClass:'text-fuchsia-400', labelText:'BAND FANTASY',navColor:'text-fuchsia-500'};
       case 'solo_cinema':  return {video:v('solo_cinema'), colors:['text-amber-500','text-orange-300'],  reactionColor:'amber',  labelClass:'text-amber-500',  labelText:'SOLO CINEMA', navColor:'text-amber-600'  };
       case 'band_cinema':  return {video:v('band_cinema'), colors:['text-orange-400','text-yellow-200'], reactionColor:'orange', labelClass:'text-orange-400', labelText:'BAND CINEMA', navColor:'text-orange-500' };
-      case 'eclipse':      return {video:'https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/eclipse_mode.mp4',colors:['text-yellow-500','text-orange-200'],reactionColor:'orange',labelClass:'text-yellow-500',labelText:'ECLIPSE ZENITH',navColor:'text-yellow-500'};
       default:             return {video:'https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/eclipse_mode.mp4',colors:['text-cyan-400','text-white'],       reactionColor:'cyan',  labelClass:'text-cyan-400',  labelText:'GENESIS NODE',navColor:'text-cyan-400'  };
     }
   },[realityMode]);
