@@ -7,25 +7,23 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
   const [activeTab, setActiveTab] = useState(null);
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const [activeReaction, setActiveReaction] = useState(null);
   const [question, setQuestion] = useState("");
   const [show219, setShow219] = useState(false);
-  const [videoIndex, setVideoIndex] = useState(0); // 0: Principal, 1: Teléfono 2, 2: Piso 219
+  const [videoIndex, setVideoIndex] = useState(0);
 
-  const videoRef = useRef(null);  
-  
-// Dentro de tu componente, antes del return
-const videos = [
-    user.video_file,        // Video 1
-    user.video_file_2,      // Video 2
-    user.video_file_3     // Video 3
-];
+  const videoRef = useRef(null);
 
-const nextVideo = () => setVideoIndex((prev) => (prev + 1) % videos.length);
-const prevVideo = () => setVideoIndex((prev) => (prev - 1 + videos.length) % videos.length);
+  const videos = [
+    user.video_file,
+    user.video_file_2,
+    user.video_file_3
+  ];
 
+  const nextVideo = () => setVideoIndex((prev) => (prev + 1) % videos.length);
+  const prevVideo = () => setVideoIndex((prev) => (prev - 1 + videos.length) % videos.length);
 
-  // --- VIDEO DE FONDO ---
   const bgKey = user.intimo_bg && user.intimo_bg !== "" ? user.intimo_bg : 'salon';
   const backgroundVideo = `https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/intimo_${bgKey}.mp4`;
 
@@ -45,11 +43,11 @@ const prevVideo = () => setVideoIndex((prev) => (prev - 1 + videos.length) % vid
 
   const energyStyles = `
     @keyframes vortexRise {
-      0%   { transform: translate(-80vw, -30vh) scale(0.9) rotate(0deg); opacity: 0.8; z-index: 200; }
-      15%  { transform: translate(-30vw, 0vh) scale(1.3) rotate(90deg); z-index: 200; }
-      70%  { transform: translate(10vw, -35vh) scale(1.2) rotate(450deg); z-index: 200; }
-      80%  { transform: translate(5vw, -45vh) scale(0.9) rotate(540deg); z-index: 200; }
-      100% { transform: translate(-30vw, -60vh) scale(0.05) rotate(720deg); z-index: 50; opacity: 0.8; }
+      0%   { transform: translate(-80vw, -30vh) scale(0.9) rotate(0deg); opacity: 0.8; }
+      15%  { transform: translate(-30vw, 0vh) scale(1.3) rotate(90deg); }
+      70%  { transform: translate(10vw, -35vh) scale(1.2) rotate(450deg); }
+      80%  { transform: translate(5vw, -45vh) scale(0.9) rotate(540deg); }
+      100% { transform: translate(-30vw, -60vh) scale(0.05) rotate(720deg); opacity: 0.8; }
     }
     .animate-vortex { animation: vortexRise 6s cubic-bezier(0.45, 0.05, 0.55, 0.95) forwards; }
     @keyframes vortexSpin { 0% { transform: rotate(0deg) scale(1); } 100% { transform: rotate(360deg) scale(1.05); } }
@@ -64,20 +62,20 @@ const prevVideo = () => setVideoIndex((prev) => (prev - 1 + videos.length) % vid
     .animate-flare { animation: flare 3s ease-in-out infinite; }
     @keyframes spirit { 0% { opacity:0; transform:translateY(10px); } 10% { opacity:1; } 90% { opacity:1; } 100% { opacity:0; transform:translateY(-20px); } }
     .animate-spirit { animation: spirit 6s infinite ease-in-out; }
-    @keyframes glowSwim { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 15% { opacity: 1; scale: 1; } 100% { transform: translateY(-115vh) scale(3); opacity: 0; } }
-    .animate-glowSwim { animation: glowSwim 5.5s ease-in-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .animate-fadeIn { animation: fadeIn 0.4s ease-in forwards; }
     @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     .animate-spin-slow { animation: spin-slow 8s linear infinite; }
   `;
 
   const colors = [
-    { name: "azul", primary: "#00127A", secondary: "#006AED", glow: "rgba(59,130,246,0.6)" },
-    { name: "fucsia", primary: "#FF007D", secondary: "#f472b6", glow: "rgba(236,72,153,0.6)" },
-    { name: "esmeralda", primary: "#00FF48", secondary: "#00FFF2", glow: "rgba(16,185,129,0.6)" },
-    { name: "violeta", primary: "#4D00FA", secondary: "#7C4FFF", glow: "rgba(139,92,246,0.6)" },
-    { name: "amarillo", primary: "#facc15", secondary: "#FFFF00", glow: "rgba(250,204,21,0.6)" },
-    { name: "rojo", primary: "#CF0000", secondary: "#F70C0C", glow: "rgba(239,68,68,0.6)" },
-    { name: "cyan", primary: "#00E1FF", secondary: "#61C8FF", glow: "rgba(6,182,212,0.6)" }
+    { primary: "#00127A", secondary: "#006AED", glow: "rgba(59,130,246,0.6)" },
+    { primary: "#FF007D", secondary: "#f472b6", glow: "rgba(236,72,153,0.6)" },
+    { primary: "#00FF48", secondary: "#00FFF2", glow: "rgba(16,185,129,0.6)" },
+    { primary: "#4D00FA", secondary: "#7C4FFF", glow: "rgba(139,92,246,0.6)" },
+    { primary: "#facc15", secondary: "#FFFF00", glow: "rgba(250,204,21,0.6)" },
+    { primary: "#CF0000", secondary: "#F70C0C", glow: "rgba(239,68,68,0.6)" },
+    { primary: "#00E1FF", secondary: "#61C8FF", glow: "rgba(6,182,212,0.6)" }
   ];
 
   const handleSendHalo = async () => {
@@ -103,7 +101,22 @@ const prevVideo = () => setVideoIndex((prev) => (prev - 1 + videos.length) % vid
     }
   };
 
-  // Si se activa el Piso 219, renderizamos ese componente por encima
+  // Seek en la barra de progreso
+  const handleSeek = (e) => {
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pos = (e.clientX - rect.left) / rect.width;
+    if (videoRef.current) videoRef.current.currentTime = pos * videoRef.current.duration;
+  };
+
+  // Play / Pause
+  const togglePlayPause = (e) => {
+    e.stopPropagation();
+    if (!videoRef.current) return;
+    if (videoRef.current.paused) { videoRef.current.play(); setIsPaused(false); }
+    else { videoRef.current.pause(); setIsPaused(true); }
+  };
+
   if (show219) {
     return (
       <HoloProjector219
@@ -113,93 +126,71 @@ const prevVideo = () => setVideoIndex((prev) => (prev - 1 + videos.length) % vid
         session={session}
         onClose={() => setShow219(false)}
         onOpenLog={onOpenLog}
+        handleGoToShop={handleGoToShop}
       />
     );
   }
 
-// Dentro de HoloProjector.jsx
-console.log("¿Qué es handleGoToShop?", handleGoToShop);
-console.log("Mis props actuales:", { videoUrl, user, balances, setBalances, session, onClose, handleGoToShop, onOpenLog });
-
   return (
     <div className="fixed inset-0 z-[99999] bg-black overflow-hidden flex items-center justify-center font-mono">
+      <style>{energyStyles}</style>
 
       {/* VIDEO DE FONDO */}
-      <video src={backgroundVideo} autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover" />
+      <video src={backgroundVideo} autoPlay loop muted playsInline
+        className="absolute inset-0 w-full h-full object-cover" />
 
-      {/* ANIMACIÓN GEMA DE ENERGÍA */}
-      {activeReaction && (
-        <>
-          <style>{energyStyles}</style>
-          {(() => {
-            const randomColor = colors[Math.floor(Math.random() * colors.length)];
-            return (
-              <div className="fixed bottom-4 right-[15%] z-[100] pointer-events-none animate-vortex">
-                <div className="relative flex flex-col items-center" style={{ mixBlendMode: 'screen' }}>
-                  <div className="relative w-36 h-36 flex items-center justify-center">
-                    <div className="absolute w-48 h-48 rounded-full blur-[40px] opacity-60 animate-energy-pulse" style={{ background: randomColor.glow }}></div>
-                    <div className="absolute w-40 h-40 animate-spin-vortex">
-                      <div className="w-full h-full rounded-full opacity-90" style={{ background: `conic-gradient(from 0deg, ${randomColor.primary}, ${randomColor.secondary}, transparent 40%, ${randomColor.primary} 60%, transparent 80%, ${randomColor.secondary})`, filter: 'blur(4px)' }}></div>
-                    </div>
-                    <div className="absolute w-32 h-32 animate-spiral-counter">
-                      <div className="w-full h-full rounded-full opacity-90" style={{ background: `conic-gradient(from 180deg, transparent, ${randomColor.secondary} 30%, transparent 50%, ${randomColor.primary} 70%, transparent)`, filter: 'blur(3px)' }}></div>
-                    </div>
-                    <div className="absolute w-36 h-36 rounded-full animate-spin-vortex" style={{ border: `4px solid ${randomColor.secondary}`, opacity: 0.7, filter: 'blur(1px)', animationDuration: '2s' }}></div>
-                    <div className="relative w-20 h-20 flex items-center justify-center">
-                      <div className="absolute w-24 h-24 rounded-full blur-[20px] opacity-80 animate-energy-pulse" style={{ background: randomColor.primary }}></div>
-                      <div className="absolute w-16 h-16 rounded-full" style={{ background: `radial-gradient(circle, white 20%, ${randomColor.secondary} 50%, ${randomColor.primary} 100%)`, boxShadow: `0 0 40px ${randomColor.glow}, 0 0 80px ${randomColor.glow}, 0 0 120px ${randomColor.glow}, 0 0 160px ${randomColor.glow}` }}></div>
-                      <div className="absolute w-6 h-6 bg-white rounded-full blur-[2px] shadow-[0_0_20px_white,0_0_40px_white]"></div>
-                    </div>
-                    {[0,1,2,3].map(i => (
-                      <div key={i} className="absolute w-2 h-24 animate-flare" style={{ background: `linear-gradient(to bottom, ${randomColor.secondary}, transparent)`, transform: `rotate(${i * 90}deg)`, transformOrigin: 'center', filter: 'blur(2px)', animationDelay: `${i * 0.5}s` }}></div>
-                    ))}
-                    {[0,1,2,3,4,5].map(i => (
-                      <div key={`particle-${i}`} className="absolute animate-particle-orbit" style={{ animationDelay: `${i * 0.3}s` }}>
-                        <div className="w-2 h-2 rounded-full blur-[1px]" style={{ background: i % 2 === 0 ? randomColor.primary : randomColor.secondary }}></div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="absolute inset-0 w-48 h-48 -left-6 -top-6">
-                    {[...Array(10)].map((_, i) => (
-                      <div key={`float-${i}`} className="absolute animate-particle-orbit" style={{ left: `${20 + Math.random() * 60}%`, top: `${20 + Math.random() * 60}%`, animationDelay: `${Math.random() * 2}s`, animationDuration: `${2 + Math.random() * 2}s` }}>
-                        <div className="w-1 h-1 rounded-full blur-[1px]" style={{ background: randomColor.secondary }}></div>
-                      </div>
-                    ))}
-                  </div>
+      {/* ANIMACIÓN GEMA HALO */}
+      {activeReaction && (() => {
+        const c = colors[Math.floor(Math.random() * colors.length)];
+        return (
+          <div className="fixed bottom-4 right-[15%] z-[100] pointer-events-none animate-vortex">
+            <div className="relative flex flex-col items-center" style={{ mixBlendMode: 'screen' }}>
+              <div className="relative w-36 h-36 flex items-center justify-center">
+                <div className="absolute w-48 h-48 rounded-full blur-[40px] opacity-60 animate-energy-pulse" style={{ background: c.glow }} />
+                <div className="absolute w-40 h-40 animate-spin-vortex">
+                  <div className="w-full h-full rounded-full opacity-90" style={{ background: `conic-gradient(from 0deg,${c.primary},${c.secondary},transparent 40%,${c.primary} 60%,transparent 80%,${c.secondary})`, filter: 'blur(4px)' }} />
                 </div>
+                <div className="absolute w-32 h-32 animate-spiral-counter">
+                  <div className="w-full h-full rounded-full opacity-90" style={{ background: `conic-gradient(from 180deg,transparent,${c.secondary} 30%,transparent 50%,${c.primary} 70%,transparent)`, filter: 'blur(3px)' }} />
+                </div>
+                <div className="relative w-20 h-20 flex items-center justify-center">
+                  <div className="absolute w-24 h-24 rounded-full blur-[20px] opacity-80 animate-energy-pulse" style={{ background: c.primary }} />
+                  <div className="absolute w-16 h-16 rounded-full" style={{ background: `radial-gradient(circle,white 20%,${c.secondary} 50%,${c.primary} 100%)`, boxShadow: `0 0 40px ${c.glow},0 0 80px ${c.glow}` }} />
+                  <div className="absolute w-6 h-6 bg-white rounded-full blur-[2px] shadow-[0_0_20px_white]" />
+                </div>
+                {[0,1,2,3].map(i => (
+                  <div key={i} className="absolute w-2 h-24 animate-flare" style={{ background: `linear-gradient(to bottom,${c.secondary},transparent)`, transform: `rotate(${i*90}deg)`, transformOrigin: 'center', filter: 'blur(2px)', animationDelay: `${i*0.5}s` }} />
+                ))}
               </div>
-            );
-          })()}
-        </>
-      )}
-      
-      {/* FLECHAS DE NAVEGACIÓN NEÓN */}
-<button 
-  onClick={prevVideo} 
-  className="absolute left-[calc(46%-220px)] top-1/2 -translate-y-1/2 z-40 w-12 h-12 flex items-center justify-center rounded-full bg-white/5 backdrop-blur-md border border-white/20 hover:bg-white/20 hover:border-fuchsia-400 hover:shadow-[0_0_15px_rgba(232,121,249,0.5)] transition-all duration-300 text-white"
->
-  <span className="text-xl">❮</span>
-</button>
+            </div>
+          </div>
+        );
+      })()}
 
-<button 
-  onClick={nextVideo} 
-  className="absolute right-[calc(46%-220px)] top-1/2 -translate-y-1/2 z-40 w-12 h-12 flex items-center justify-center rounded-full bg-white/5 backdrop-blur-md border border-white/20 hover:bg-white/20 hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(34,211,238,0.5)] transition-all duration-300 text-white"
->
-  <span className="text-xl">❯</span>
-</button>      
+      {/* FLECHAS NAVEGACIÓN VÍDEOS */}
+      <button onClick={prevVideo}
+        className="absolute left-[calc(46%-220px)] top-1/2 -translate-y-1/2 z-40 w-12 h-12 flex items-center justify-center rounded-full bg-white/5 backdrop-blur-md border border-white/20 hover:bg-white/20 hover:border-fuchsia-400 transition-all text-white">
+        <span className="text-xl">❮</span>
+      </button>
+      <button onClick={nextVideo}
+        className="absolute right-[calc(46%-220px)] top-1/2 -translate-y-1/2 z-40 w-12 h-12 flex items-center justify-center rounded-full bg-white/5 backdrop-blur-md border border-white/20 hover:bg-white/20 hover:border-cyan-400 transition-all text-white">
+        <span className="text-xl">❯</span>
+      </button>
 
       {/* VISOR VERTICAL */}
       <div className="relative z-20 flex items-center justify-center">
-        <div
-          className="relative h-[88vh] aspect-[9/16] rounded-[3.5rem] border-[3px] border-[#FFFDD0]/30 shadow-[0_0_40px_rgba(255,253,208,0.15)] flex flex-col overflow-hidden bg-black"
-        >
-         <video
-    ref={videoRef}
-    src={getCleanUrl(videos[videoIndex])} // <--- Cambiado para ser dinámico
-    autoPlay loop playsInline muted={isMuted}
-    className="absolute inset-0 w-full h-full object-cover"
-    onTimeUpdate={() => setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100)}
-	/>
+        <div className="relative h-[88vh] aspect-[9/16] rounded-[3.5rem] border-[3px] border-[#FFFDD0]/30 shadow-[0_0_40px_rgba(255,253,208,0.15)] flex flex-col overflow-hidden bg-black">
+
+          <video
+            ref={videoRef}
+            src={getCleanUrl(videos[videoIndex])}
+            autoPlay loop playsInline muted={isMuted}
+            className="absolute inset-0 w-full h-full object-cover"
+            onTimeUpdate={() => {
+              if (videoRef.current?.duration)
+                setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100);
+            }}
+          />
 
           {/* MENSAJE DEL CREADOR */}
           <div className="absolute top-32 left-0 w-full px-6 z-30 pointer-events-none">
@@ -218,27 +209,47 @@ console.log("Mis props actuales:", { videoUrl, user, balances, setBalances, sess
               <span className="text-white font-black text-[10px]">{balances.genesis}</span>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setIsMuted(!isMuted)} className="w-8 h-8 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10 text-xs">
+              <button onClick={() => setIsMuted(!isMuted)}
+                className="w-8 h-8 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10 text-xs">
                 {isMuted ? '🔇' : '🔊'}
               </button>
-              <button onClick={onClose} className="w-8 h-8 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10 text-xs">✕</button>
+              <button onClick={onClose}
+                className="w-8 h-8 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10 text-xs">✕</button>
             </div>
           </div>
 
-          {/* BARRA PROGRESO */}
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-white/5 z-50">
-            <div className="h-full bg-[#FFFDD0]/60 shadow-[0_0_10px_white]" style={{ width: `${progress}%` }}></div>
+          {/* =====================================================
+              CONTROLES: barra progreso + play/pause
+              pointer-events-auto para atravesar capas
+              ===================================================== */}
+          <div className="absolute bottom-24 left-0 w-full z-50 px-5 pointer-events-auto">
+            {/* BARRA DE PROGRESO */}
+            <div
+              className="w-full h-1 bg-white/20 rounded-full cursor-pointer mb-3 group"
+              onClick={handleSeek}>
+              <div
+                className="h-full bg-[#FFFDD0]/80 rounded-full shadow-[0_0_6px_white] transition-all duration-100 group-hover:h-[4px]"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            {/* PLAY/PAUSE */}
+            <div className="flex justify-center">
+              <button
+                onClick={togglePlayPause}
+                className="bg-black/50 border border-white/20 backdrop-blur-md w-9 h-9 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all text-sm">
+                {isPaused ? '▶' : '⏸'}
+              </button>
+            </div>
           </div>
 
           {/* TERMINAL GLASS */}
           <div className={`absolute bottom-0 left-0 w-full bg-black/85 backdrop-blur-3xl border-t border-white/10 transition-all duration-700 z-40 ${activeTab ? 'h-[65%]' : 'h-24'}`}>
             <div className="flex h-24 items-center px-1">
 
-              {/* 1. BITÁCORA */}
+              {/* 1. PREGUNTAR */}
               <button
                 onClick={() => setActiveTab(activeTab === 'log' ? null : 'log')}
-                className={`flex-1 flex flex-col items-center gap-1 transition-all ${activeTab === 'log' ? 'text-white' : 'text-white/30'}`}
-              >
+                className={`flex-1 flex flex-col items-center gap-1 transition-all ${activeTab === 'log' ? 'text-white' : 'text-white/30'}`}>
                 <span className="text-xl">💬</span>
                 <span className="text-[7px] font-black uppercase">Preguntar</span>
               </button>
@@ -251,39 +262,43 @@ console.log("Mis props actuales:", { videoUrl, user, balances, setBalances, sess
                   author: user.alias || "Anónimo",
                   content: user.editorial_content || "..."
                 })}
-                className="flex-1 flex flex-col items-center gap-1 text-fuchsia-400"
-              >
+                className="flex-1 flex flex-col items-center gap-1 text-fuchsia-400">
                 <span className="text-xl">🖋️</span>
                 <span className="text-[7px] font-black uppercase">Editorial</span>
               </button>
 
-              {/* 3. PISO 219 */}
+              {/* 3. HALO — ahora en el footer */}
+              <button
+                onClick={handleSendHalo}
+                className="flex-1 flex flex-col items-center gap-1 relative">
+                <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center text-xl hover:border-fuchsia-400 hover:shadow-[0_0_14px_rgba(232,121,249,0.5)] transition-all active:scale-90">
+                  ⚪
+                </div>
+                <span className="text-[7px] font-black uppercase text-white/60">Halo</span>
+              </button>
+
+              {/* 4. PISO 219 */}
               <button
                 onClick={() => setShow219(true)}
-                className="flex-1 flex flex-col items-center gap-1 text-cyan-400"
-              >
+                className="flex-1 flex flex-col items-center gap-1 text-cyan-400">
                 <span className="text-xl">📺</span>
                 <span className="text-[7px] font-black uppercase">Piso 219</span>
               </button>
 
-              {/* 4. TIENDA */}
- 		<button
-  onClick={() => {
-    console.log("Intentando ejecutar handleGoToShop con:", user);
-    if (typeof handleGoToShop === 'function') {
-      handleGoToShop(user);
-    } else {
-      console.error("handleGoToShop no es una función en este momento:", handleGoToShop);
-    }
-  }}
-  className="flex-1 flex flex-col items-center gap-1 text-yellow-500"
->
-  <span className="text-xl">🦝</span>
-  <span className="text-[7px] font-black uppercase">Tienda</span>
-</button>
+              {/* 5. TIENDA — usa handleGoToShop igual que en App.jsx */}
+              <button
+                onClick={() => {
+                  if (typeof handleGoToShop === 'function') handleGoToShop(user);
+                }}
+                className="flex-1 flex flex-col items-center gap-1 text-yellow-500">
+                <span className="text-xl">🦝</span>
+                <span className="text-[7px] font-black uppercase">Tienda</span>
+              </button>
+
             </div>
 
-            <div className="px-6 pb-6 h-[calc(100%-6rem)] overflow-y-auto custom-scrollbar">
+            {/* CONTENIDO DEL TAB */}
+            <div className="px-6 pb-6 h-[calc(100%-6rem)] overflow-y-auto">
               {activeTab === 'log' && (
                 <div className="animate-fadeIn space-y-4">
                   <div className="bg-white/5 p-3 rounded-xl border border-white/5">
@@ -293,9 +308,7 @@ console.log("Mis props actuales:", { videoUrl, user, balances, setBalances, sess
                     <p className="text-[9px] text-gray-500 font-black mb-2 uppercase">Enviar Pregunta Privada</p>
                     <div className="flex gap-2">
                       <input
-                        type="text"
-                        value={question}
-                        onChange={e => setQuestion(e.target.value)}
+                        type="text" value={question} onChange={e => setQuestion(e.target.value)}
                         placeholder="¿Tienes alguna duda?"
                         className="flex-1 bg-transparent border-b border-white/10 text-xs text-white outline-none"
                       />
@@ -307,25 +320,12 @@ console.log("Mis props actuales:", { videoUrl, user, balances, setBalances, sess
             </div>
           </div>
 
-          {/* BOTÓN HALO (Solo visible si terminal cerrada) */}
-          {!activeTab && (
-            <button
-              onClick={handleSendHalo}
-              className="absolute right-4 bottom-28 w-12 h-12 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full flex items-center justify-center text-xl z-50 transition-transform active:scale-90"
-            >
-              ⚪
-            </button>
-          )}
         </div>
       </div>
 
       <style>{`
         @keyframes spirit { 0% { opacity:0; transform:translateY(10px); } 10% { opacity:1; } 90% { opacity:1; } 100% { opacity:0; transform:translateY(-20px); } }
         .animate-spirit { animation: spirit 6s infinite ease-in-out; }
-        @keyframes glowSwim { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 15% { opacity: 1; scale: 1; } 100% { transform: translateY(-115vh) scale(3); opacity: 0; } }
-        .animate-glowSwim { animation: glowSwim 5.5s ease-in-out forwards; }
-        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .animate-spin-slow { animation: spin-slow 8s linear infinite; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .animate-fadeIn { animation: fadeIn 0.4s ease-in forwards; }
       `}</style>
