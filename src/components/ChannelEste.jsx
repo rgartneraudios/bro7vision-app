@@ -154,6 +154,7 @@ const ChannelEste = ({ videoUsers, balances, setBalances, session, realityMode, 
   const [visualEchos,   setVisualEchos]   = useState([]);
   const [floatingEcos, setFloatingEcos] = useState([]);        // se reinicia con el video ✅
   const [floatingHyperZaps, setFloatingHyperZaps] = useState([]); // persiste al scrollear ✅
+  const [isPaused, setIsPaused] = useState(false);
 
   const [isOrbitando, setIsOrbitando] = useState(false);
   
@@ -465,63 +466,120 @@ useEffect(()=>{
     </div>
   ))}
 </div>
-      {/* ══════════════════════════════════════════════════════════════
-          PC — VISOR GIGANTE (TECHO A SUELO) AL LADO DERECHO
-          ══════════════════════════════════════════════════════════════ */}
-      <div className="absolute top-0 right-12 h-full z-[30] hidden md:flex items-center justify-end"
-           onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
-
-       {/* ORBE ANTERIOR */}
-<div className="absolute z-[110] cursor-pointer group animate-orb-float"
-     style={{ right: '530px', bottom: '30px' }}
-     onClick={() => setCurrentIndex(p => p > 0 ? p - 1 : displayUsers.length - 1)}>
-  <div className="w-14 h-14 rounded-full flex items-center justify-center relative animate-orb-glow transition-transform group-hover:scale-110 text-white">
-    <div className="absolute inset-0 bg-white opacity-10 blur-xl rounded-full"/>
-    <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-cw"/>
-    <span className="text-2xl font-black text-white relative z-10">←</span>
-  </div>
-</div>
-
-{/* ORBE SIGUIENTE */}
-<div className="absolute z-[110] cursor-pointer group animate-orb-float"
-     style={{ right: '440px', bottom: '30px', animationDelay: '1.5s' }}
-     onClick={() => setCurrentIndex(p => p + 1)}>
-  <div className="w-14 h-14 rounded-full flex items-center justify-center relative animate-orb-glow transition-transform group-hover:scale-110 text-white">
-    <div className="absolute inset-0 bg-white opacity-10 blur-xl rounded-full"/>
-    <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-ccw"/>
-    <span className="text-2xl font-black text-white relative z-10">→</span>
-  </div>
-</div>
-
-
-          {/* Esquina Inferior Izquierda: Volumen */}
-<button onClick={(e)=>{e.stopPropagation();setIsMuted(p=>!p);}}
-        className="absolute bottom-8 left-4 bg-black/60 backdrop-blur-md p-3 rounded-full text-lg z-[150] border border-white/20 hover:bg-white/20 transition-all">
-  {isMuted?'🔇':'🔊'}
-</button>
-
-{/* Esquina Inferior Derecha: El botón de Órbita (Cometa) */}
-<button 
-  onClick={handleOrbitar} 
-  className={`absolute bottom-8 right-4 p-3 rounded-full border transition-all z-[150] ${
-    isOrbitando ? 'bg-cyan-500/20 border-cyan-400 shadow-[0_0_10px_cyan]' : 'bg-black/60 backdrop-blur-md border-white/20 hover:bg-white/20'
-  }`}
->
-  {isOrbitando ? '☄️' : '🛸'}
-</button>
-
-
-        {/* VISOR ESTE - OCUPA EL 100% DEL ALTO */}
-        <div className="relative bg-black este-visor overflow-hidden w-[420px] h-[94vh]">
-          {isTvMode&&<div className="absolute inset-0 z-0 opacity-30 blur-[60px] scale-150 pointer-events-none bg-gradient-to-t from-blue-900 via-purple-900 to-pink-900"/>}
-
-          <video ref={videoRefPC} key={`pc_${currentUser?.id}`} poster={currentUser?.poster||''}
-                 autoPlay loop={!isTvMode} playsInline
-                 className={`relative z-10 transition-all duration-700 ${isTvMode?'w-full h-auto aspect-video object-contain bg-black':'w-full h-full object-cover'}`}
-                 onTimeUpdate={()=>videoRefPC.current&&setProgress((videoRefPC.current.currentTime/(videoRefPC.current.duration||100))*100)}/>
+                  {/* ══════════════════════════════════════════════
+          MUTE + ORBIT — FUERA del div con handlers touch
+          Apilados en el lateral izquierdo del visor,
+          encima de los orbes.
+          ══════════════════════════════════════════════ */}
+      <div className="absolute top-0 right-12 h-full z-[200] hidden md:flex items-center pointer-events-none">
+        <div className="relative w-[420px] h-full">
+          <button
+            onClick={(e) => { e.stopPropagation(); setIsMuted(p => !p); }}
+            className="absolute pointer-events-auto bg-black/60 backdrop-blur-md p-3 rounded-full text-lg border border-white/20 hover:bg-white/20 transition-all"
+            style={{ left: '-54px', bottom: '160px' }}>
+            {isMuted ? '🔇' : '🔊'}
+          </button>
+          <button
+            onClick={handleOrbitar}
+            className={`absolute pointer-events-auto p-3 rounded-full border transition-all ${
+              isOrbitando
+                ? 'bg-cyan-500/20 border-cyan-400 shadow-[0_0_10px_cyan]'
+                : 'bg-black/60 backdrop-blur-md border-white/20 hover:bg-white/20'
+            }`}
+            style={{ left: '-54px', bottom: '100px' }}>
+            {isOrbitando ? '☄️' : '🛸'}
+          </button>
         </div>
       </div>
-      
+
+      {/* ══════════════════════════════════════════════
+          PC — VISOR (handler touch solo aquí, sin Mute ni Orbit)
+          ══════════════════════════════════════════════ */}
+      <div
+        className="absolute top-0 right-12 h-full z-[30] hidden md:flex items-center justify-end"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}>
+
+        {/* ORBE ANTERIOR */}
+        <div
+          className="absolute z-[110] cursor-pointer group animate-orb-float"
+          style={{ right: '520px', bottom: '30px' }}
+          onClick={() => setCurrentIndex(p => p > 0 ? p - 1 : displayUsers.length - 1)}>
+          <div className="w-14 h-14 rounded-full flex items-center justify-center relative animate-orb-glow transition-transform group-hover:scale-110 text-white">
+            <div className="absolute inset-0 bg-white opacity-10 blur-xl rounded-full" />
+            <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-cw" />
+            <span className="text-2xl font-black text-white relative z-10">←</span>
+          </div>
+        </div>
+
+        {/* ORBE SIGUIENTE */}
+        <div
+          className="absolute z-[110] cursor-pointer group animate-orb-float"
+          style={{ right: '440px', bottom: '30px', animationDelay: '1.5s' }}
+          onClick={() => setCurrentIndex(p => p + 1)}>
+          <div className="w-14 h-14 rounded-full flex items-center justify-center relative animate-orb-glow transition-transform group-hover:scale-110 text-white">
+            <div className="absolute inset-0 bg-white opacity-10 blur-xl rounded-full" />
+            <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-ccw" />
+            <span className="text-2xl font-black text-white relative z-10">→</span>
+          </div>
+        </div>
+
+        {/* VISOR ESTE */}
+        <div className="relative bg-black este-visor overflow-hidden w-[420px] h-[94vh]">
+          {isTvMode && (
+            <div className="absolute inset-0 z-0 opacity-30 blur-[60px] scale-150 pointer-events-none bg-gradient-to-t from-blue-900 via-purple-900 to-pink-900" />
+          )}
+
+          <video
+            ref={videoRefPC}
+            key={`pc_${currentUser?.id}`}
+            poster={currentUser?.poster || ''}
+            autoPlay
+            loop={!isTvMode}
+            playsInline
+            className={`relative z-10 transition-all duration-700 ${isTvMode ? 'w-full h-auto aspect-video object-contain bg-black' : 'w-full h-full object-cover'}`}
+            onTimeUpdate={() =>
+              videoRefPC.current &&
+              setProgress((videoRefPC.current.currentTime / (videoRefPC.current.duration || 100)) * 100)
+            }
+          />
+
+          {/* CONTROLES — barra progreso + play/pause */}
+          {!isTvMode && (
+            <div className="absolute bottom-0 left-0 w-full z-[150] px-4 pb-4 bg-gradient-to-t from-black/70 to-transparent pointer-events-auto">
+              <div
+                className="w-full h-1 bg-white/20 rounded-full cursor-pointer mb-3 group"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const pos = (e.clientX - rect.left) / rect.width;
+                  if (videoRefPC.current)
+                    videoRefPC.current.currentTime = pos * videoRefPC.current.duration;
+                }}>
+                <div
+                  className="h-full bg-cyan-400 rounded-full transition-all duration-100 group-hover:h-[5px]"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <div className="flex justify-center">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (videoRefPC.current) {
+                      if (videoRefPC.current.paused) { videoRefPC.current.play(); setIsPaused(false); }
+                      else { videoRefPC.current.pause(); setIsPaused(true); }
+                    }
+                  }}
+                  className="bg-black/50 border border-white/20 backdrop-blur-md w-9 h-9 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all">
+                  {isPaused ? '▶' : '⏸'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+   
      {/* 3. VÓRTICE GEMAS */}
       {activeReaction&&(
         <div className="fixed bottom-4 right-[15%] z-[100] pointer-events-none animate-vortex">
@@ -607,19 +665,19 @@ useEffect(()=>{
         </div>  
       </div>
       
-        {/* INFIERNO TICKER */}
+       {/* INFIERNO TICKER */}
 {tickerEchos?.length > 0 && (
-  <div className="absolute bottom-[36px] left-[53%] -translate-x-1/2 w-[62vw] md:w-[460px] z-[150] overflow-hidden pointer-events-none">
+  <div className="absolute bottom-[36px] left-[54%] -translate-x-1/2 w-[62vw] md:w-[460px] z-[150] overflow-hidden pointer-events-none">
   {/* FUEGOS ARRIBA */}
   <div className="text-[11px] leading-none tracking-[-2px] opacity-70">
     🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
     </div>
-    <div className="text-[8px] text-red-500/60 font-black tracking-widest uppercase mb-0.5 px-1">⬇ INFIERNO</div>
-    <div className="relative h-[28px] rounded-lg overflow-hidden border border-red-900/40"
+    <div className="text-[12px] text-red-500/60 font-black tracking-widest uppercase mb-0.5 px-1">⬇ INFIERNO</div>
+    <div className="relative h-[40px] rounded-lg overflow-hidden border border-red-900/40"
          style={{background:'linear-gradient(90deg,#3f0000ee,#1a0000fa,#3f0000ee)'}}>
       <div className="absolute inset-0 flex items-center animate-ticker whitespace-nowrap">
         {[...tickerEchos,...tickerEchos].map((e,i)=>(
-           <span key={i} className="text-[12px] text-yellow-300/90 font-mono mx-6">
+          <span key={i} className="text-[12px] text-yellow-300/90 font-mono mx-6">
             "{e.text}" <span className="text-red-300/90">—@{e.author_alias}</span>
             <span className="text-red-900/50 mx-4">//</span>
           </span>

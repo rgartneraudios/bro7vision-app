@@ -131,12 +131,9 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
   const [echoType, setEchoType] = useState('text');
   const [echoText, setEchoText] = useState("");
   const [realUserAlias, setRealUserAlias] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
-  const [audioBlob, setAudioBlob] = useState(null);
-  const [recordingTime, setRecordingTime] = useState(0);
   const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
   const [isOrbitando, setIsOrbitando] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   
   // TEMPORAL — quitar en producción
 const [tickerEchos, setTickerEchos] = useState([
@@ -306,6 +303,7 @@ const [tickerEchos, setTickerEchos] = useState([
       if(!same){
         video.pause();video.src="";video.load();
         video.src=playUrl;video.muted=isMuted;video.load();video.play().catch(()=>{});
+        setIsPaused(false);
       }
     }
     setVisualEchos([]);setFloatingEcos([]); // solo resetea Eco Text, los HyperZap sobreviven
@@ -487,7 +485,7 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
     <div className="absolute inset-0 z-0 bg-black overflow-hidden select-none font-mono">
       <style>{FOREST_STYLES}</style>
 
-      {/* 1. FONDO con paralaje */}
+      {/* 1. FONDO  */}
       {config.video && (
         <div className="absolute inset-0 z-[1] transition-transform duration-300 ease-out will-change-transform" >
           <video 
@@ -586,76 +584,153 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
         </div>
       )}
 
-      {/* 4. VISOR PORTAL — NIHILANTH */}
-<div onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}
-     className="absolute top-[45%] md:top-[48%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[20]"
-     style={{perspective:'2000px'}}>
-
-  {/* ORBE ANTERIOR */}
-  <div className="hidden md:block absolute z-[110] cursor-pointer group orb-float"
-       style={{ left: '-130px', bottom: '-40px' }}
-       onClick={()=>setCurrentIndex(p=>p>0?p-1:displayUsers.length-1)}>
-    <div className={`w-14 h-14 rounded-full flex items-center justify-center relative orb-glow transition-transform group-hover:scale-110 ${config.colors[0]}`} style={{color:'currentColor'}}>
-      <div className="absolute inset-0 bg-current opacity-20 blur-xl rounded-full"/>
-      <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-slow"/>
-      <span className="text-3xl font-black text-white relative z-10 pb-1">‹</span>
-    </div>
-  </div>
-
-  {/* ORBE SIGUIENTE */}
-  <div className="hidden md:block absolute z-[110] cursor-pointer group orb-float"
-       style={{ right: '-130px', bottom: '-40px', animationDelay:'1.5s' }}
-       onClick={()=>setCurrentIndex(p=>p+1)}>
-    <div className={`w-14 h-14 rounded-full flex items-center justify-center relative orb-glow transition-transform group-hover:scale-110 ${config.colors[0]}`} style={{color:'currentColor'}}>
-      <div className="absolute inset-0 bg-current opacity-20 blur-xl rounded-full"/>
-      <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-reverse"/>
-      <span className="text-3xl font-black text-white relative z-10 pb-1">›</span>
-    </div>
-  </div>
-
-  {/* BOTÓN MUTE */}
-  <button onClick={(e)=>{e.stopPropagation();setIsMuted(p=>!p);}}
-    className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md p-3 rounded-full text-lg z-[200] border border-white/20 hover:bg-white/20 transition-all">
-    {isMuted?'🔇':'🔊'}
-  </button>
-
-  {/* BOTÓN ORBITA */}
-  <button onClick={handleOrbitar}
-    className={`absolute bottom-4 right-4 p-3 rounded-full border transition-all z-[200] ${
-      isOrbitando ? 'bg-cyan-500/20 border-cyan-400 shadow-[0_0_10px_cyan]' : 'bg-black/60 backdrop-blur-md border-white/20 hover:bg-white/20'
-    }`}>
-    {isOrbitando ? '☄️' : '🛸'}
-  </button>
-
-  {/* VISOR AL FINAL */}
-  <div className="relative w-[62vw] aspect-[9/19] md:w-[400px] md:h-[82vh] md:max-h-[950px] md:aspect-auto flex items-center justify-center overflow-visible"
-     style={{transformStyle:'preserve-3d'}}>
-    <div className="relative w-full h-full z-[10]"
-         style={{transform:portalTransform,transformStyle:'preserve-3d'}}
-         onDoubleClick={()=>setVisorScale(1)}>
-      <div className="relative w-full h-full rounded-[3.5rem] overflow-hidden visor-border bg-black flex items-center justify-center">
-        {isTvMode&&(
-          <div className="absolute inset-0 z-0 opacity-30 blur-[60px] scale-150 pointer-events-none bg-gradient-to-t from-blue-900 via-purple-900 to-pink-900"/>
-        )}
-        <video 
-          ref={videoRef} 
-          poster={currentUser.poster||""} 
-          autoPlay 
-          loop={!isTvMode} 
-          playsInline
-          className={`relative z-10 transition-all duration-700 ${isTvMode?'w-full h-auto aspect-video object-contain bg-black':'w-full h-full object-cover'}`}
-          onTimeUpdate={()=>videoRef.current&&setProgress((videoRef.current.currentTime/(videoRef.current.duration||100))*100)}
-        />
-        {!isTvMode&&(
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-white/10 z-[150]">
-            <div className={`h-full transition-all duration-300 ${config.reactionColor==='orange'?'bg-orange-500':'bg-cyan-500'}`} style={{width:`${progress}%`}}/>
-          </div>
-        )}
+     {/* 4. VISOR PORTAL — NIHILANTH */}
+      {/* =====================================================
+          BOTONES ORBIT y MUTE
+          FIX: completamente FUERA del div con handlers touch.
+          Usan posicionamiento fixed+transform para seguir al visor.
+          ===================================================== */}
+      <div
+        className="absolute pointer-events-none z-[200]"
+        style={{
+          top: '45%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+        }}>
+        {/* Ancho igual al visor para que los botones se alineen a sus lados */}
+        <div className="relative w-[62vw] md:w-[400px]" style={{height:0}}>
+          {/* MUTE — izquierda del visor */}
+          <button
+            onClick={(e) => { e.stopPropagation(); setIsMuted(p => !p); }}
+            className="absolute pointer-events-auto bg-black/60 backdrop-blur-md p-3 rounded-full text-lg border border-white/20 hover:bg-white/20 transition-all"
+            style={{ left: '-60px', top: '340px' }}>
+            {isMuted ? '🔇' : '🔊'}
+          </button>
+          {/* ORBIT — derecha del visor */}
+          <button
+            onClick={handleOrbitar}
+            className={`absolute pointer-events-auto p-3 rounded-full border transition-all ${
+              isOrbitando
+                ? 'bg-cyan-500/20 border-cyan-400 shadow-[0_0_10px_cyan]'
+                : 'bg-black/60 backdrop-blur-md border-white/20 hover:bg-white/20'
+            }`}
+            style={{ right: '-60px', top: '340px' }}>
+            {isOrbitando ? '☄️' : '🛸'}
+          </button>
+        </div>
       </div>
-    </div>
-  </div>
 
-</div>
+      {/* =====================================================
+          4. VISOR PORTAL — handler touch SOLO aquí
+          FIX: pointer-events-none en el contenedor de posición,
+          pointer-events-auto EXPLÍCITO en los controles internos.
+          ===================================================== */}
+      <div
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        className="absolute top-[45%] md:top-[48%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[20] pointer-events-none"
+        style={{ perspective: '2000px' }}>
+
+        {/* ORBE ANTERIOR */}
+        <div
+          className="hidden md:block absolute z-[110] cursor-pointer group orb-float pointer-events-auto"
+          style={{ left: '-130px', bottom: '-40px' }}
+          onClick={() => setCurrentIndex(p => p > 0 ? p - 1 : displayUsers.length - 1)}>
+          <div
+            className={`w-14 h-14 rounded-full flex items-center justify-center relative orb-glow transition-transform group-hover:scale-110 ${config.colors[0]}`}
+            style={{ color: 'currentColor' }}>
+            <div className="absolute inset-0 bg-current opacity-20 blur-xl rounded-full" />
+            <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-slow" />
+            <span className="text-3xl font-black text-white relative z-10 pb-1">‹</span>
+          </div>
+        </div>
+
+        {/* ORBE SIGUIENTE */}
+        <div
+          className="hidden md:block absolute z-[110] cursor-pointer group orb-float pointer-events-auto"
+          style={{ right: '-130px', bottom: '-40px', animationDelay: '1.5s' }}
+          onClick={() => setCurrentIndex(p => p + 1)}>
+          <div
+            className={`w-14 h-14 rounded-full flex items-center justify-center relative orb-glow transition-transform group-hover:scale-110 ${config.colors[0]}`}
+            style={{ color: 'currentColor' }}>
+            <div className="absolute inset-0 bg-current opacity-20 blur-xl rounded-full" />
+            <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-reverse" />
+            <span className="text-3xl font-black text-white relative z-10 pb-1">›</span>
+          </div>
+        </div>
+
+        {/* VISOR */}
+        <div
+          className="relative w-[62vw] aspect-[9/19] md:w-[400px] md:h-[82vh] md:max-h-[950px] md:aspect-auto flex items-center justify-center overflow-visible"
+          style={{ transformStyle: 'preserve-3d' }}>
+          <div
+            className="relative w-full h-full z-[10]"
+            style={{ transform: portalTransform, transformStyle: 'preserve-3d' }}
+            onDoubleClick={() => setVisorScale(1)}>
+            <div className="relative w-full h-full rounded-[3.5rem] overflow-hidden visor-border bg-black flex items-center justify-center">
+
+              {isTvMode && (
+                <div className="absolute inset-0 z-0 opacity-30 blur-[60px] scale-150 pointer-events-none bg-gradient-to-t from-blue-900 via-purple-900 to-pink-900" />
+              )}
+
+              <video
+                ref={videoRef}
+                poster={currentUser.poster || ""}
+                autoPlay
+                loop={!isTvMode}
+                playsInline
+                className={`relative z-10 transition-all duration-700 ${isTvMode ? 'w-full h-auto aspect-video object-contain bg-black' : 'w-full h-full object-cover'}`}
+                onTimeUpdate={() =>
+                  videoRef.current &&
+                  setProgress((videoRef.current.currentTime / (videoRef.current.duration || 100)) * 100)
+                }
+              />
+
+              {/* =====================================================
+                  CONTROLES: pointer-events-auto EXPLÍCITO
+                  Sin esto, el pointer-events-none del padre los bloquea.
+                  ===================================================== */}
+              {!isTvMode && (
+                <div className="absolute bottom-0 left-0 w-full z-[150] px-4 pb-3 bg-gradient-to-t from-black/70 to-transparent pointer-events-auto">
+                  {/* BARRA DE PROGRESO */}
+                  <div
+                    className="w-full h-1 bg-white/20 rounded-full cursor-pointer mb-3 group"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const pos = (e.clientX - rect.left) / rect.width;
+                      if (videoRef.current)
+                        videoRef.current.currentTime = pos * videoRef.current.duration;
+                    }}>
+                    <div
+                      className={`h-full rounded-full transition-all duration-100 group-hover:h-[5px] ${config.reactionColor === 'orange' ? 'bg-orange-500' : 'bg-cyan-500'}`}
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                  {/* PLAY/PAUSE */}
+                  <div className="flex justify-center">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (videoRef.current) {
+                          if (videoRef.current.paused) { videoRef.current.play(); setIsPaused(false); }
+                          else { videoRef.current.pause(); setIsPaused(true); }
+                        }
+                      }}
+                      className="bg-black/50 border border-white/20 backdrop-blur-md w-9 h-9 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all">
+                      {isPaused ? '▶' : '⏸'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+
       {/* 5. NUEVO FOOTER: SOMBREADO + BOTONES + CREADOR */}
       {/* Añadimos pointer-events-none al contenedor general, pero auto a los botones para que los clics funcionen sin bloquear la pantalla */}
       <div className="absolute bottom-0 left-0 w-full flex flex-col md:flex-row justify-between items-center md:items-end px-4 py-6 md:px-[10%] md:py-8 z-[150] pointer-events-none bg-gradient-to-t from-black/90 via-black/60 to-transparent">
@@ -697,8 +772,8 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
   <div className="text-[11px] leading-none tracking-[-2px] opacity-70">
     🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
     </div>
-    <div className="text-[8px] text-red-500/60 font-black tracking-widest uppercase mb-0.5 px-1">⬇ INFIERNO</div>
-    <div className="relative h-[28px] rounded-lg overflow-hidden border border-red-900/40"
+    <div className="text-[12px] text-red-500/60 font-black tracking-widest uppercase mb-0.5 px-1">⬇ INFIERNO</div>
+    <div className="relative h-[40px] rounded-lg overflow-hidden border border-red-900/40"
          style={{background:'linear-gradient(90deg,#3f0000ee,#1a0000fa,#3f0000ee)'}}>
       <div className="absolute inset-0 flex items-center animate-ticker whitespace-nowrap">
         {[...tickerEchos,...tickerEchos].map((e,i)=>(
