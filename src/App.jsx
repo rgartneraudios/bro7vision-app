@@ -56,9 +56,12 @@ function App() {
     plena: 0,
     decrescens: 0
   },
-  eco: 200,    // Aquí tus Ecos
-  halos: 50,   // Aquí tus Halos
-  zap: 10      // Aquí tus Zaps
+  eco_p: 0,
+  eco_gen: 200,
+  halos_p: 0,
+  halos_gen: 50,
+  zap_p: 0,
+  zap_gen: 10
 });
 
   // Paneles Laterales

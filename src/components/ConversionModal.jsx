@@ -2,17 +2,17 @@ import React, { useState } from 'react';
 import { PACKS_REGALOS, REGLAS_DESCUENTOS } from '../data/MoonMatrix';
 
 const ConversionModal = ({ balances, activePhase, onClose }) => {
-  const [activeTab, setActiveTab] = useState('strategy');
+  const[activeTab, setActiveTab] = useState('strategy');
   const faseActual = activePhase || 'nova';
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-2 md:p-4 animate-fadeIn">
       <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" onClick={onClose}></div>
 
-      {/* CONTENEDOR PRINCIPAL: Más compacto en PC, adaptado a móvil */}
+      {/* CONTENEDOR PRINCIPAL */}
       <div className="relative w-full max-w-5xl bg-[#0a0a0a] border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl flex flex-col md:flex-row h-[90vh] md:h-[720px]">
         
-        {/* SIDEBAR */}
+        {/* ================= SIDEBAR (IZQUIERDA) ================= */}
         <div className="w-full md:w-[280px] flex-shrink-0 bg-[#111] border-b md:border-b-0 md:border-r border-white/5 p-4 md:p-6 flex flex-col overflow-y-auto md:overflow-hidden">
            <div className="mb-4 md:mb-6 text-center">
                <h2 className="text-white font-black italic tracking-widest text-lg md:text-xl">BRO<span className="text-cyan-500">MATRIX</span></h2>
@@ -24,38 +24,56 @@ const ConversionModal = ({ balances, activePhase, onClose }) => {
            </div>
 
            {/* INVENTARIO DINÁMICO */}
-           <div className="mb-4 md:mb-6">
-             <p className="text-[9px] md:text-[10px] text-cyan-400 uppercase tracking-widest mb-2 font-bold">TU INVENTARIO</p>
+           <div className="mb-4 md:mb-6 flex-1 overflow-y-auto pr-1 custom-scrollbar">
+             <p className="text-[9px] md:text-[10px] text-cyan-400 uppercase tracking-widest mb-3 font-bold">TU INVENTARIO</p>
+             
              {activeTab === 'strategy' ? (
-                <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
-                    {Object.entries(REGLAS_DESCUENTOS).map(([key, data]) => (
-                        <div key={key} className="flex justify-between items-center bg-white/5 p-2 md:p-3 rounded-lg border border-white/5">
-                            <span className={`text-[8px] md:text-[9px] font-black uppercase ${data.color}`}>{data.label}</span>
-                            <span className="text-white font-black text-xs md:text-sm">{balances?.vales?.[key] || 0}</span>
-                        </div>
-                    ))}
+                <div className="space-y-4">
+                    {/* INVENTARIO DE VALES */}
+                    <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
+                        {Object.entries(REGLAS_DESCUENTOS).map(([key, data]) => (
+                            <div key={key} className="flex justify-between items-center bg-white/5 p-2 rounded-lg border border-white/5">
+                                <span className={`text-[8px] md:text-[9px] font-black uppercase ${data.color}`}>{data.label}</span>
+                                <span className="text-white font-black text-xs">{balances?.vales?.[key] || 0}</span>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* INVENTARIO ACTIVOS GEN */}
+                    <div className="space-y-2 border-t border-white/10 pt-3 text-white text-[9px] md:text-[10px] font-bold uppercase">
+                        <p className="text-cyan-500/80 mb-2 tracking-widest text-[8px]">ACTIVOS GÉNESIS</p>
+                        <div className="flex justify-between p-2 bg-white/5 rounded-lg border border-white/5"><span>HALOS (GEN)</span><span className="text-yellow-400">{balances?.halos_gen || 0}</span></div>
+                        <div className="flex justify-between p-2 bg-white/5 rounded-lg border border-white/5"><span>ECOS (GEN)</span><span className="text-orange-400">{balances?.eco_gen || 0}</span></div>
+                        <div className="flex justify-between p-2 bg-white/5 rounded-lg border border-white/5"><span>ZAPS (GEN)</span><span className="text-pink-400">{balances?.zap_gen || 0}</span></div>
+                    </div>
                 </div>
              ) : (
+                /* INVENTARIO ACTIVOS PREMIUM (P) */
                 <div className="space-y-2 text-white text-[9px] md:text-[10px] font-bold uppercase">
-                    <div className="flex justify-between p-2 md:p-2.5 bg-white/5 rounded-lg border border-white/5"><span>HALOS</span><span className="text-yellow-400">{balances?.halos || 0}</span></div>
-                    <div className="flex justify-between p-2 md:p-2.5 bg-white/5 rounded-lg border border-white/5"><span>ECOS</span><span className="text-orange-400">{balances?.eco || 0}</span></div>
-                    <div className="flex justify-between p-2 md:p-2.5 bg-white/5 rounded-lg border border-white/5"><span>ZAPS</span><span className="text-pink-400">{balances?.zap || 0}</span></div>
+                    <p className="text-purple-500/80 mb-2 tracking-widest text-[8px]">ACTIVOS PREMIUM (FIAT)</p>
+                    <div className="flex justify-between p-2.5 bg-purple-900/10 rounded-lg border border-purple-500/20"><span>HALOS (P)</span><span className="text-yellow-400">{balances?.halos_p || 0}</span></div>
+                    <div className="flex justify-between p-2.5 bg-purple-900/10 rounded-lg border border-purple-500/20"><span>ECOS (P)</span><span className="text-orange-400">{balances?.eco_p || 0}</span></div>
+                    <div className="flex justify-between p-2.5 bg-purple-900/10 rounded-lg border border-purple-500/20"><span>ZAPS (P)</span><span className="text-pink-400">{balances?.zap_p || 0}</span></div>
                 </div>
              )}
            </div>
            
+           {/* BOTONES NAVEGACIÓN SIDEBAR */}
            <nav className="flex flex-row md:flex-col gap-2 mt-auto">
-               <button onClick={() => setActiveTab('strategy')} className={`flex-1 p-3 md:p-4 rounded-xl text-center md:text-left text-[10px] md:text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'strategy' ? 'bg-white text-black shadow-lg shadow-white/10' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}>😎 Vales</button>
-               <button onClick={() => setActiveTab('packs')} className={`flex-1 p-3 md:p-4 rounded-xl text-center md:text-left text-[10px] md:text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'packs' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}>🎁 Activos</button>
+               <button onClick={() => setActiveTab('strategy')} className={`flex-1 p-3 rounded-xl text-center md:text-left text-[10px] md:text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'strategy' ? 'bg-white text-black shadow-lg shadow-white/10' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}>😎 Vales & Gen</button>
+               <button onClick={() => setActiveTab('packs')} className={`flex-1 p-3 rounded-xl text-center md:text-left text-[10px] md:text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'packs' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}>🎁 Packs (FIAT)</button>
            </nav>
         </div>
 
-        {/* CONTENIDO DERECHO (Scrollable independientemente) */}
+        {/* ================= CONTENIDO DERECHO ================= */}
         <div className="flex-1 p-4 md:p-6 lg:p-8 bg-black overflow-y-auto">
            {activeTab === 'strategy' ? (
+              
+              /* ---------------- PESTAÑA 1: ESTRATEGIA (VALES + GEN) ---------------- */
               <div className="h-full flex flex-col">
                  <h3 className="text-xl md:text-2xl font-black text-white uppercase mb-4 md:mb-6">Canje de Vales <span className="text-cyan-500">(Fase: {faseActual.toUpperCase()})</span></h3>
-                 <div className="grid grid-cols-1 gap-3 md:gap-4">
+                 
+                 <div className="grid grid-cols-1 gap-3 md:gap-4 mb-8">
                     {Object.entries(REGLAS_DESCUENTOS).map(([key, data]) => {
                         const isCurrent = key === faseActual;
                         const canAfford = (balances?.genesis || 0) >= data.cost;
@@ -75,51 +93,102 @@ const ConversionModal = ({ balances, activePhase, onClose }) => {
                         );
                     })}
                  </div>
+
+                 {/* SECCIÓN ACTIVOS GEN */}
+                 <h3 className="text-xl md:text-2xl font-black text-white uppercase mb-4 border-t border-white/10 pt-6">
+                    Activos Digitales <span className="text-cyan-500">(Gasto Génesis)</span>
+                 </h3>
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    
+                    {/* ECO GEN */}
+                    <div className="bg-[#151515] p-4 rounded-2xl border border-orange-500/30 flex flex-col justify-between">
+                       <div className="mb-3">
+                           <h4 className="text-orange-400 font-black uppercase text-sm mb-1">💬 Eco Text (GEN)</h4>
+                           <p className="text-[10px] md:text-xs text-gray-400">Comentario verificado.</p>
+                       </div>
+                       <div className="mt-auto">
+                           <div className="text-xl font-black text-white mb-2">100 G</div>
+                           <button disabled={(balances?.genesis || 0) < 100} className="w-full py-2 rounded-lg text-[10px] font-black uppercase tracking-widest bg-orange-600/20 text-orange-400 border border-orange-500/50 hover:bg-orange-600 hover:text-white transition-colors disabled:opacity-50">COMPRAR ECO GEN</button>
+                       </div>
+                    </div>
+
+                    {/* ZAP GEN */}
+                    <div className="bg-[#151515] p-4 rounded-2xl border border-pink-500/30 flex flex-col justify-between">
+                       <div className="mb-3">
+                           <h4 className="text-pink-400 font-black uppercase text-sm mb-1">⚡ Hyper Zap (GEN)</h4>
+                           <p className="text-[10px] md:text-xs text-gray-400">Destaca tu perfil.</p>
+                       </div>
+                       <div className="mt-auto">
+                           <div className="text-xl font-black text-white mb-2">1000 G</div>
+                           <button disabled={(balances?.genesis || 0) < 1000} className="w-full py-2 rounded-lg text-[10px] font-black uppercase tracking-widest bg-pink-600/20 text-pink-400 border border-pink-500/50 hover:bg-pink-600 hover:text-white transition-colors disabled:opacity-50">COMPRAR ZAP GEN</button>
+                       </div>
+                    </div>
+
+                    {/* HALO GEN (BLOQUEADO) */}
+                    <div className="bg-[#111] p-4 rounded-2xl border border-yellow-500/10 flex flex-col justify-between relative overflow-hidden">
+                       <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center">
+                           <span className="text-2xl mb-1">🔒</span>
+                           <span className="text-[10px] font-black text-yellow-500 uppercase tracking-widest bg-black/80 px-2 py-1 rounded border border-yellow-500/30">Fase 2</span>
+                       </div>
+                       <div className="mb-3 opacity-50">
+                           <h4 className="text-yellow-400 font-black uppercase text-sm mb-1">📀 Halo Luz (GEN)</h4>
+                           <p className="text-[10px] md:text-xs text-gray-400">Regalo (10% Retorno).</p>
+                       </div>
+                       <div className="mt-auto opacity-50">
+                           <div className="text-xl font-black text-white mb-2">100 G</div>
+                           <button disabled className="w-full py-2 rounded-lg text-[10px] font-black uppercase tracking-widest bg-gray-800 text-gray-500">REQUERIDO FASE 2</button>
+                       </div>
+                    </div>
+
+                 </div>
               </div>
+
            ) : (
+
+              /* ---------------- PESTAÑA 2: PACKS PREMIUM Y QUEMA ---------------- */
               <div className="h-full flex flex-col">
                  
-                 {/* ZONA DE QUEMA (GRID DE 2 COLUMNAS) */}
+                 {/* ZONA DE QUEMA */}
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 md:mb-8">
-                     {/* QUEMA DE ECOS */}
                      <div className="bg-[#151515] p-4 md:p-5 rounded-2xl border border-orange-500/30 flex flex-col justify-between">
                         <div className="mb-3">
-                            <h4 className="text-orange-400 font-black uppercase text-sm md:text-base mb-1">🔥 Quema de Ecos</h4>
-                            <p className="text-[10px] md:text-xs text-orange-200/70 font-bold uppercase tracking-wider">180 Ecos → 50 Halos</p>
+                            <h4 className="text-orange-400 font-black uppercase text-sm md:text-base mb-1">🔥 Quema de Ecos Premium</h4>
+                            <p className="text-[10px] md:text-xs text-orange-200/70 font-bold uppercase tracking-wider">180 Ecos (P) → 50 Halos (P)</p>
                         </div>
-                        <button className="w-full py-2.5 rounded-lg text-xs font-black uppercase tracking-widest bg-orange-500 text-black hover:bg-orange-400 transition-colors">QUEMAR 180 ECOS</button>
+                        <button disabled={(balances?.eco_p || 0) < 180} className="w-full py-2.5 rounded-lg text-xs font-black uppercase tracking-widest bg-orange-500 text-black hover:bg-orange-400 transition-colors disabled:opacity-50 disabled:bg-gray-800 disabled:text-gray-500">
+                           {(balances?.eco_p || 0) < 180 ? 'INSUFICIENTES ECOS P' : 'QUEMAR 180 ECOS (P)'}
+                        </button>
                      </div>
 
-                     {/* QUEMA DE ZAPS */}
                      <div className="bg-[#151515] p-4 md:p-5 rounded-2xl border border-pink-500/30 flex flex-col justify-between">
                         <div className="mb-3">
-                            <h4 className="text-pink-400 font-black uppercase text-sm md:text-base mb-1">⚡ Quema de Zaps</h4>
-                            <p className="text-[10px] md:text-xs text-pink-200/70 font-bold uppercase tracking-wider">70 Zaps → 50 Halos</p>
+                            <h4 className="text-pink-400 font-black uppercase text-sm md:text-base mb-1">⚡ Quema de Zaps Premium</h4>
+                            <p className="text-[10px] md:text-xs text-pink-200/70 font-bold uppercase tracking-wider">70 Zaps (P) → 50 Halos (P)</p>
                         </div>
-                        <button className="w-full py-2.5 rounded-lg text-xs font-black uppercase tracking-widest bg-pink-600 text-white hover:bg-pink-500 transition-colors">QUEMAR 70 ZAPS</button>
+                        <button disabled={(balances?.zap_p || 0) < 70} className="w-full py-2.5 rounded-lg text-xs font-black uppercase tracking-widest bg-pink-600 text-white hover:bg-pink-500 transition-colors disabled:opacity-50 disabled:bg-gray-800 disabled:text-gray-500">
+                           {(balances?.zap_p || 0) < 70 ? 'INSUFICIENTES ZAPS P' : 'QUEMAR 70 ZAPS (P)'}
+                        </button>
                      </div>
                  </div>
 
-                 <h3 className="text-xl md:text-2xl font-black text-white uppercase mb-4 md:mb-6">Packs de Activos <span className="text-purple-500">(IN)</span></h3>
+                 <h3 className="text-xl md:text-2xl font-black text-white uppercase mb-4 md:mb-6">Packs de Activos <span className="text-purple-500">(PREMIUM FIAT)</span></h3>
                  
-                 {/* GRID DE PACKS (CONTENIDO ALINEADO A LA DERECHA) */}
+                 {/* GRID DE PACKS */}
                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {Object.entries(PACKS_REGALOS).map(([key, data]) => (
                         <div key={key} className="bg-gradient-to-br from-purple-900/20 to-black p-4 md:p-5 rounded-2xl border border-purple-500/20 hover:border-purple-500/50 transition-colors flex flex-col justify-between">
                             <div>
                                <h4 className="font-black text-white/90 text-sm md:text-base uppercase tracking-widest mb-2 md:mb-3">{data.label}</h4>
-                               
-                               {/* PRECIO A LA IZQUIERDA, ITEMS A LA DERECHA */}
                                <div className="flex items-center justify-between mb-4 md:mb-5">
                                    <div className="text-3xl md:text-4xl font-black text-white">{data.price.toFixed(2)}€</div>
                                    <ul className="text-[9px] md:text-[10px] text-gray-300 font-bold space-y-1.5 uppercase tracking-wider text-right">
-                                       <li className="text-yellow-400">📀 {data.halos} Halos</li>
-                                       <li className="text-orange-400">💬 {data.eco} Eco Text</li>
-                                       <li className="text-pink-400">⚡ {data.zap} Hyper Zap</li>
+                                       <li className="text-yellow-400">📀 {data.halosP} Halos (P)</li>
+                                       <li className="text-orange-400">💬 {data.ecoP} Eco Text (P)</li>
+                                       <li className="text-pink-400">⚡ {data.zapP} Hyper Zap (P)</li>
                                    </ul>
                                </div>
                             </div>
-                            <button className="w-full py-3 bg-purple-600/90 text-white rounded-lg text-xs md:text-sm font-black uppercase tracking-widest hover:bg-purple-500 shadow-lg shadow-purple-900/50 transition-all">Comprar Pack</button>
+                            <button className="w-full py-3 bg-purple-600/90 text-white rounded-lg text-xs md:text-sm font-black uppercase tracking-widest hover:bg-purple-500 shadow-lg shadow-purple-900/50 transition-all">Comprar Pack FIAT</button>
                         </div>
                     ))}
                  </div>

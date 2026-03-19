@@ -1,14 +1,15 @@
 // src/data/MoonMatrix.js
 
+// 1. PACKS FIAT (Generan activos "P" - Premium)
 export const PACKS_REGALOS = {
-  nova: { label: 'NOVA PACK', price: 9.00, halos: 100, eco: 100, zap: 50 },
-  crescens: { label: 'CRESCENS PACK', price: 9.50, halos: 110, eco: 100, zap: 50 },
-  plena:     { label: 'PLENA PACK', price: 11.00, halos: 130, eco: 100, zap: 60 },
-  decrescens:{ label: 'DECRESCENS PACK', price: 10.50, halos: 120, eco: 100, zap: 60 },
+  nova: { label: 'NOVA PACK', price: 9.00, halosP: 100, ecoP: 100, zapP: 50 },
+  crescens: { label: 'CRESCENS PACK', price: 9.50, halosP: 110, ecoP: 100, zapP: 50 },
+  plena:     { label: 'PLENA PACK', price: 11.00, halosP: 130, ecoP: 100, zapP: 60 },
+  decrescens:{ label: 'DECRESCENS PACK', price: 10.50, halosP: 120, ecoP: 100, zapP: 60 },
 };
 
+// 2. VALES DE DESCUENTO (Se compran con Puntos Génesis)
 export const REGLAS_DESCUENTOS = {
-  // Ahora guardamos la clase completa de Tailwind para evitar errores de renderizado
   nova:       { 
     label: 'NOVA VALE', pct: 0.05, min_items: 1, cost: 1000, 
     color: 'text-fuchsia-400', border: 'border-fuchsia-500', bg: 'bg-fuchsia-500' 
@@ -27,14 +28,32 @@ export const REGLAS_DESCUENTOS = {
   },
 };
 
-export const COSTE_SERVICIOS = {
-  eco_text: 100,
-  halo_regalo: 100,
-  hyper_zap: 1000
+// 3. COSTE DE ACTIVOS GÉNESIS (Se compran con Puntos Génesis)
+// Estos son los que NO se pueden quemar y en Fase 2 darán un 10% al creador.
+export const COSTE_SERVICIOS_GEN = {
+  eco_gen: 100,
+  halo_gen: 100, 
+  zap_gen: 1000
 };
 
+// 4. REGLAS DE QUEMA (Solo aplican para activos "P")
+export const REGLAS_QUEMA = {
+  quema_eco: { 
+    label: '🔥 Quema de Ecos Premium',
+    requiere: 180, tipo_requerido: 'ecoP', 
+    recompensa: 50, tipo_recompensa: 'halosP' 
+  },
+  quema_zap: { 
+    label: '⚡ Quema de Zaps Premium',
+    requiere: 70, tipo_requerido: 'zapP', 
+    recompensa: 50, tipo_recompensa: 'halosP' 
+  }
+};
+
+// EXPORTACIÓN CENTRALIZADA
 export const MOON_MATRIX = {
   packs: PACKS_REGALOS,
   descuentos: REGLAS_DESCUENTOS,
-  servicios: COSTE_SERVICIOS
+  servicios_gen: COSTE_SERVICIOS_GEN,
+  quema: REGLAS_QUEMA
 };
