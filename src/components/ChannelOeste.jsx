@@ -132,7 +132,7 @@ function loadVideo(videoEl,url,isMuted,hlsRef){
   }
 }
 
-const ChannelOeste = ({ videoUsers, balances, setBalances, session, realityMode, onOpenProfile, selectedForestUser }) => {
+const ChannelOeste = ({ videoUsers, balances, setBalances, session, realityMode, onOpenProfile, selectedForestUser, savedUserIndex }) => {
   const [currentIndex,  setCurrentIndex]  = useState(0);
   const [isMuted,       setIsMuted]       = useState(false);
   const [progress,      setProgress]      = useState(0);
@@ -145,8 +145,12 @@ const ChannelOeste = ({ videoUsers, balances, setBalances, session, realityMode,
   const [floatingEcos, setFloatingEcos] = useState([]);        // se reinicia con el video ✅
   const [floatingHyperZaps, setFloatingHyperZaps] = useState([]); // persiste al scrollear ✅
   const [isPaused, setIsPaused] = useState(false);
-  
+  const [ecoVariant, setEcoVariant] = useState('pay');
   const [isOrbitando, setIsOrbitando] = useState(false);
+  
+  useEffect(() => {
+  if (savedUserIndex) setCurrentIndex(savedUserIndex);
+}, []);
   
   // TEMPORAL — quitar en producción
 const [tickerEchos, setTickerEchos] = useState([
@@ -381,26 +385,40 @@ useEffect(()=>{
     touchStart.current=0;touchEnd.current=0;
   };
 
-  const handleAction=async(type)=>{
-    const cost=echoType==='hyper'?1000:100;
-    if(!balances||balances.genesis<cost){alert(`NECESITAS ${cost} GÉNESIS...`);return;}
-    const myAlias=realUserAlias||'CIUDADANO';
-    if(type==='reaction'){
-      setActiveReaction({from:myAlias});
-      setTimeout(()=>setActiveReaction(null),6000);
-    } else {
-      const {data}=await supabase.from('bro_echos').insert([{
-        target_profile_id:currentUser.id,author_alias:myAlias,
-        advertiser_id:session.user.id,text:echoText.toUpperCase(),
-        is_sponsored:echoType==='hyper',created_at:new Date()
-      }]).select();
-      if(data)setVisualEchos(prev=>[data[0],...prev]);
-      setShowEchoInput(false);setEchoText('');
-    }
-    const ng=balances.genesis-cost;
-    setBalances(prev=>({...prev,genesis:ng}));
-    await supabase.from('profiles').update({genesis:ng}).eq('id',session.user.id);
-  };
+  const handleAction = async (type) => {
+  const col = echoType === 'hyper' ? `zap_${ecoVariant}` : `eco_${ecoVariant}`;
+
+  if (type === 'reaction') {
+    const myAlias = realUserAlias || 'CIUDADANO';
+    setActiveReaction({ from: myAlias });
+    setTimeout(() => setActiveReaction(null), 6000);
+    return; // 👈 sale aquí, no descuenta nada
+  }
+
+  // Solo llega aquí si es echo/zap
+  if (!balances || balances[col] < 1) {
+    alert(`NECESITAS ${echoType === 'hyper' ? 'ZAP' : 'ECO'} ${ecoVariant.toUpperCase()}...`);
+    return;
+  }
+
+  const myAlias = realUserAlias || 'CIUDADANO';
+  const { data } = await supabase.from('bro_echos').insert([{
+    target_profile_id: currentUser.id,
+    author_alias: myAlias,
+    advertiser_id: session.user.id,
+    text: echoText.toUpperCase(),
+    is_sponsored: echoType === 'hyper',
+    created_at: new Date()
+  }]).select();
+
+  if (data) setVisualEchos(prev => [data[0], ...prev]);
+  setShowEchoInput(false);
+  setEchoText('');
+
+  const newVal = balances[col] - 1;
+  setBalances(prev => ({ ...prev, [col]: newVal }));
+  await supabase.from('profiles').update({ [col]: newVal }).eq('id', session.user.id);
+};
 
   const isTvMode=currentUser&&(currentUser.isTv||currentUser.is_tv);
 
@@ -636,9 +654,11 @@ useEffect(()=>{
           <button onClick={()=>handleAction('reaction')} className="px-5 py-3 md:py-4 bg-white text-black border border-white rounded-xl text-[9px] md:text-[11px] font-black uppercase shadow-[0_0_15px_rgba(255,255,255,0.4)] hover:scale-105 transition-transform">
             ✨ HALO
           </button>
-          <button onClick={()=>{ if(currentUser)onOpenProfile(currentUser); }} className="px-5 py-3 md:py-4 bg-black text-white border-2 border-[#bf00ff] rounded-xl text-[9px] md:text-[11px] font-black uppercase shadow-[0_0_15px_rgba(191,0,255,0.6)] hover:scale-105 transition-all animate-pulse">
-            ☝️ TELEFONO CASA
-          </button>
+          <button 
+  		onClick={() => { if(currentUser) onOpenProfile({ ...currentUser, _savedIndex: currentIndex }); }} 
+  		className="px-5 py-3 md:py-4 bg-black text-white border-2 border-[#bf00ff] rounded-xl text-[9px] md:text-[11px] font-black 		uppercase shadow-[0_0_15px_rgba(191,0,255,0.6),inset_0_0_8px_rgba(191,0,255,0.4)] hover:scale-105 transition-all animate-		pulse">
+  		<span className="drop-shadow-[0_0_8px_rgba(191,0,255,0.9)]">☝️ TELEFONO CASA</span>
+	</button>
           <button onClick={()=>setShowEchoInput(true)} className="px-6 py-3 md:py-4 bg-black/90 border border-white/20 text-white rounded-xl text-[9px] md:text-[11px] font-black uppercase hover:bg-white/10 transition-colors">
             💬 ECO
           </button>
@@ -687,12 +707,35 @@ useEffect(()=>{
         <div className="fixed inset-0 z-[1000] bg-black/95 backdrop-blur-md flex items-center justify-center p-6">
           <div className="w-full max-w-md text-center flex flex-col items-center">
             <div className="flex gap-4 mb-12 justify-center w-full">
-              <button onClick={()=>setEchoType('text')} className={`flex-1 py-3 rounded-full text-[10px] font-black border tracking-widest transition-all ${echoType==='text'?'bg-fuchsia-500 text-black border-fuchsia-400':'text-white/40 border-white/10'}`}>💬 TEXTO NEÓN</button>
+              <button onClick={()=>setEchoType('text')} className={`flex-1 py-3 rounded-full text-[10px] font-black border tracking-widest transition-all ${echoType==='text'?'bg-fuchsia-500 text-black border-fuchsia-400':'text-white/40 border-white/10'}`}>💬 ECO</button>
               <button onClick={() => setEchoType('hyper')} className={`flex-1 max-w-[160px] py-3 rounded-full text-[10px] font-black border tracking-widest transition-all ${echoType === 'hyper' ? 'bg-[#002366] text-cyan-400 border-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.6)]' : 'text-white/40 border-white/10 hover:text-white/80'}`}>
-                ⚡ HYPER ZAP
+                ⚡ ZAP
               </button>
             </div>
-            <input autoFocus type="text" placeholder={echoType==='hyper'?'TÍTULO DEL ANUNCIO...':'ESCRIBE TU ECO...'}
+            
+            {/* SELECTOR GEN / PAY */}
+<div className="flex gap-4 mb-8 justify-center w-full">
+
+  <button
+    onClick={() => setEcoVariant('pay')}
+    className={`flex-1 max-w-[160px] py-3 rounded-full text-[10px] font-black border tracking-widest transition-all ${ecoVariant === 'pay' 
+      ? 'bg-cyan-400 text-black border-cyan-300 shadow-[0_0_25px_rgba(6,182,212,0.7)] scale-105' 
+      : 'bg-cyan-500/20 text-cyan-300 border-cyan-400/50 shadow-[0_0_12px_rgba(6,182,212,0.3)] hover:scale-105'}`}
+  >
+    ⚡ PAY ({echoType === 'hyper' ? balances?.zap_p ?? 0 : balances?.eco_p ?? 0})
+  </button>
+
+  <button
+    onClick={() => setEcoVariant('gen')}
+    className={`flex-1 max-w-[160px] py-3 rounded-full text-[10px] font-black border tracking-widest transition-all ${ecoVariant === 'gen' 
+      ? 'bg-white/20 text-white border-white/40' 
+      : 'text-white/30 border-white/10 hover:text-white/50'}`}
+  >
+    🟢 GEN ({echoType === 'hyper' ? balances?.zap_gen ?? 0 : balances?.eco_gen ?? 0})
+  </button>
+
+</div>            
+            <input autoFocus type="text" placeholder={echoType==='hyper'?'TÍTULO DEL ANUNCIO...':'ESCRIBE TU ECO O ZAP...'}
                    className="w-full bg-transparent border-b-2 border-white/20 py-6 text-center text-white outline-none font-black text-2xl md:text-3xl uppercase focus:border-fuchsia-400 transition-colors"
                    value={echoText} onChange={e=>setEchoText(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleAction('echo')} maxLength={60}/>
             <button onClick={()=>handleAction('echo')} className="w-full max-w-[280px] py-4 rounded-2xl font-black text-[12px] tracking-widest uppercase transition-all shadow-xl bg-fuchsia-600 text-white mt-16 mb-6">

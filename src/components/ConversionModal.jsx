@@ -1,10 +1,29 @@
 import React, { useState } from 'react';
 import { PACKS_REGALOS, REGLAS_DESCUENTOS } from '../data/MoonMatrix';
+import { supabase } from '../supabaseClient';
 
-const ConversionModal = ({ balances, activePhase, onClose }) => {
-  const[activeTab, setActiveTab] = useState('strategy');
+const ConversionModal = ({ balances, setBalances, session, activePhase, onClose }) => {
+  const [activeTab, setActiveTab] = useState('strategy');
   const faseActual = activePhase || 'nova';
 
+  const handleBuyGen = async (type) => {
+    const cost = type === 'eco' ? 100 : 1000;
+    const col = type === 'eco' ? 'eco_gen' : 'zap_gen';
+
+    if ((balances?.genesis || 0) < cost) {
+      alert(`NECESITAS ${cost} GÉNESIS`);
+      return;
+    }
+
+    const newGenesis = balances.genesis - cost;
+    const newCol = (balances[col] || 0) + 1;
+
+    setBalances(prev => ({ ...prev, genesis: newGenesis, [col]: newCol }));
+    await supabase.from('profiles')
+      .update({ genesis: newGenesis, [col]: newCol })
+      .eq('id', session.user.id);
+  };
+   
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-2 md:p-4 animate-fadeIn">
       <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" onClick={onClose}></div>
@@ -108,7 +127,12 @@ const ConversionModal = ({ balances, activePhase, onClose }) => {
                        </div>
                        <div className="mt-auto">
                            <div className="text-xl font-black text-white mb-2">100 G</div>
-                           <button disabled={(balances?.genesis || 0) < 100} className="w-full py-2 rounded-lg text-[10px] font-black uppercase tracking-widest bg-orange-600/20 text-orange-400 border border-orange-500/50 hover:bg-orange-600 hover:text-white transition-colors disabled:opacity-50">COMPRAR ECO GEN</button>
+                           <button 
+  				disabled={(balances?.genesis || 0) < 100} 
+  				onClick={() => handleBuyGen('eco')}
+  				className="w-full py-2 rounded-lg text-[10px] font-black uppercase tracking-widest bg-orange-600/20 text-orange-400 border border-orange-500/50 hover:bg-orange-600 hover:text-white transition-colors disabled:opacity-50">
+  				COMPRAR ECO GEN
+		        </button>
                        </div>
                     </div>
 
@@ -120,9 +144,14 @@ const ConversionModal = ({ balances, activePhase, onClose }) => {
                        </div>
                        <div className="mt-auto">
                            <div className="text-xl font-black text-white mb-2">1000 G</div>
-                           <button disabled={(balances?.genesis || 0) < 1000} className="w-full py-2 rounded-lg text-[10px] font-black uppercase tracking-widest bg-pink-600/20 text-pink-400 border border-pink-500/50 hover:bg-pink-600 hover:text-white transition-colors disabled:opacity-50">COMPRAR ZAP GEN</button>
-                       </div>
-                    </div>
+                           <button 
+  				disabled={(balances?.genesis || 0) < 1000} 
+  				onClick={() => handleBuyGen('zap')}
+ 				 className="w-full py-2 rounded-lg text-[10px] font-black uppercase tracking-widest bg-pink-600/20 text-pink-400 				 border border-pink-500/50 hover:bg-pink-600 hover:text-white transition-colors disabled:opacity-50">
+ 				 COMPRAR ZAP GEN
+ 		       </button>                       			
+ 		</div>
+                  </div>
 
                     {/* HALO GEN (BLOQUEADO) */}
                     <div className="bg-[#111] p-4 rounded-2xl border border-yellow-500/10 flex flex-col justify-between relative overflow-hidden">

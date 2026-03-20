@@ -22,7 +22,7 @@ import RealityTuner from './components/RealityTuner';
 import HoloPrism from './components/HoloPrism';
 import MoonMatrixCircle from './components/MoonMatrixCircle';
 import ChannelMoon from './components/ChannelMoon';
-
+import { getMoonSuffix } from './utils/moonUtils';
 
 function App() {
   const [realityMode, setRealityMode] = useState(null); 
@@ -52,20 +52,20 @@ function App() {
   const [isShopOpen, setIsShopOpen] = useState(false); // Estado de la tienda
   
   const [balances, setBalances] = useState({
-  genesis: 493230,
-  vales: {
-    nova: 0,
-    crescens: 0,
-    plena: 0,
-    decrescens: 0
-  },
-  eco_p: 0,
-  eco_gen: 200,
-  halos_p: 0,
-  halos_gen: 50,
-  zap_p: 0,
-  zap_gen: 10
+  genesis: 0,
+  vales: { nova: 0, crescens: 0, plena: 0, decrescens: 0 },
+  eco_p: 0, eco_gen: 0,
+  halos_p: 0, halos_gen: 0,
+  zap_p: 0, zap_gen: 0
 });
+
+const [savedUserIndex, setSavedUserIndex] = useState(0);
+
+const handleOpenProfile = (user) => {
+  const { _savedIndex, ...cleanUser } = user;
+  setSavedUserIndex(_savedIndex || 0);
+  setProjectingUser(cleanUser);
+};
 
   // Paneles Laterales
   const [isLeftOpen, setIsLeftOpen] = useState(false);
@@ -144,7 +144,21 @@ function App() {
     const fetchData = async () => {
       if (!session) return;
       const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-      if (prof) setBalances({ genesis: prof.genesis, nova: prof.nova, crescens: prof.crescens, plena: prof.plena, decrescens: prof.decrescens });
+      if (prof) setBalances({
+  genesis: prof.genesis,
+  vales: {
+    nova: prof.nova || 0,
+    crescens: prof.crescens || 0,
+    plena: prof.plena || 0,
+    decrescens: prof.decrescens || 0
+  },
+  eco_p: prof.eco_p || 0,
+  eco_gen: prof.eco_gen || 0,
+  halos_p: prof.halos_p || 0,
+  halos_gen: prof.halos_gen || 0,
+  zap_p: prof.zap_p || 0,
+  zap_gen: prof.zap_gen || 0
+});
       
       const { data: all } = await supabase.from('profiles').select('*');
       if (all) {
@@ -268,10 +282,11 @@ const handleGoToShop = (user) => {
 <div className="absolute inset-0 z-0">
   {step === 0 && !projectingUser && (
     !realityMode ? <RealityTuner onSelect={setRealityMode} /> :
-    realityMode === 'este'  ? <ChannelEste  videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={setProjectingUser} selectedForestUser={selectedForestUser} /> :
-    realityMode === 'oeste' ? <ChannelOeste videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={setProjectingUser} selectedForestUser={selectedForestUser} /> :
-    realityMode === 'moon'  ? <ChannelMoon  videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={setProjectingUser} selectedForestUser={selectedForestUser} /> :
-    <BioForest videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={setProjectingUser} selectedForestUser={selectedForestUser} />
+    realityMode === 'este'  ? <ChannelEste  videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={handleOpenProfile} selectedForestUser={selectedForestUser} onOpenProfile={handleOpenProfile} savedUserIndex={savedUserIndex} /> :
+    realityMode === 'oeste' ? <ChannelOeste videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={handleOpenProfile} selectedForestUser={selectedForestUser} onOpenProfile={handleOpenProfile} savedUserIndex={savedUserIndex} /> :
+    realityMode === 'moon'  ? <ChannelMoon  videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={handleOpenProfile} selectedForestUser={selectedForestUser} onOpenProfile={handleOpenProfile} savedUserIndex={savedUserIndex} /> :
+    <BioForest videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={handleOpenProfile} selectedForestUser={selectedForestUser} onOpenProfile={handleOpenProfile}
+  savedUserIndex={savedUserIndex} />
   )}
     
           {step === 1 && <video src="https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/portada.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover" />}
@@ -516,8 +531,19 @@ const handleGoToShop = (user) => {
         </div>
       )}
       
-      {showWalletModal && <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-xl"><ConversionModal balances={balances} setBalances={setBalances} onClose={() => setShowWalletModal(false)} /></div>}
-      {showBooster && <div className="fixed inset-0 z-[200] bg-black/80 flex items-center justify-center"><BoosterModal onClose={() => setShowBooster(false)} /></div>}
+      {showWalletModal && (
+  <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-xl">
+    <ConversionModal 
+      balances={balances} 
+      setBalances={setBalances}
+      session={session}
+      activePhase={getMoonSuffix()}
+      onClose={() => setShowWalletModal(false)} 
+    />
+  </div>
+)}
+
+{showBooster && <div className="fixed inset-0 z-[200] bg-black/80 flex items-center justify-center"><BoosterModal onClose={() => setShowBooster(false)} /></div>}
       
       {/* TELEFONO CASA / HOLOPROJECTOR (VERTICAL) */}
 {projectingUser && !is219Mode && (

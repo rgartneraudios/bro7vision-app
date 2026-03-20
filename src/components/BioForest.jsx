@@ -118,7 +118,7 @@ const HYPER_PC_SLOTS = [
 ];
 const HYPER_MOBILE_SLOTS = [{x:20,y:2}];
 
-const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, onOpenProfile, selectedForestUser }) => {
+const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, onOpenProfile, selectedForestUser, savedUserIndex }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -134,6 +134,11 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
   const mediaRecorderRef = useRef(null);
   const [isOrbitando, setIsOrbitando] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [ecoVariant, setEcoVariant] = useState('pay');
+  
+  useEffect(() => {
+  if (savedUserIndex) setCurrentIndex(savedUserIndex);
+}, []);
   
   // TEMPORAL — quitar en producción
 const [tickerEchos, setTickerEchos] = useState([
@@ -254,7 +259,7 @@ const [tickerEchos, setTickerEchos] = useState([
   if(h >= 5  && h < 11) return '1';  // 05-11
   if(h >= 11 && h < 17) return '2';  // 11-17
   if(h >= 17 && h < 23) return '3';  // 17-23
-  return '4';                         // 23-05
+  return '04';                         // 23-05
 };
 
   const config = useMemo(() => {
@@ -397,26 +402,40 @@ useEffect(()=>{
 setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
   };
 
-  const handleAction=async(type)=>{
-    const cost=echoType==='hyper'?1000:100;
-    if(!balances||balances.genesis<cost){alert(`NECESITAS ${cost} GÉNESIS...`);return;}
-    const myAlias=realUserAlias||'CIUDADANO';
-    if(type==='reaction'){
-      setActiveReaction({from:myAlias});
-      setTimeout(()=>setActiveReaction(null),6000);
-    } else {
-      const ecoData={target_profile_id:currentUser.id,author_alias:myAlias,advertiser_id:session.user.id,text:echoText.toUpperCase(),is_sponsored:echoType==='hyper',created_at:new Date()};
-      const{data}=await supabase.from('bro_echos').insert([ecoData]).select();
-     if(data){
-        const newEcho=data[0];
-        setVisualEchos(prev=>[newEcho,...prev]);
-      }
-      setShowEchoInput(false);setEchoText("");
-    }
-    const newGenesis=balances.genesis-cost;
-    setBalances(prev=>({...prev,genesis:newGenesis}));
-    await supabase.from('profiles').update({genesis:newGenesis}).eq('id',session.user.id);
-  };
+  const handleAction = async (type) => {
+  const col = echoType === 'hyper' ? `zap_${ecoVariant}` : `eco_${ecoVariant}`;
+
+  if (type === 'reaction') {
+    const myAlias = realUserAlias || 'CIUDADANO';
+    setActiveReaction({ from: myAlias });
+    setTimeout(() => setActiveReaction(null), 6000);
+    return; // 👈 sale aquí, no descuenta nada
+  }
+
+  // Solo llega aquí si es echo/zap
+  if (!balances || balances[col] < 1) {
+    alert(`NECESITAS ${echoType === 'hyper' ? 'ZAP' : 'ECO'} ${ecoVariant.toUpperCase()}...`);
+    return;
+  }
+
+  const myAlias = realUserAlias || 'CIUDADANO';
+  const { data } = await supabase.from('bro_echos').insert([{
+    target_profile_id: currentUser.id,
+    author_alias: myAlias,
+    advertiser_id: session.user.id,
+    text: echoText.toUpperCase(),
+    is_sponsored: echoType === 'hyper',
+    created_at: new Date()
+  }]).select();
+
+  if (data) setVisualEchos(prev => [data[0], ...prev]);
+  setShowEchoInput(false);
+  setEchoText('');
+
+  const newVal = balances[col] - 1;
+  setBalances(prev => ({ ...prev, [col]: newVal }));
+  await supabase.from('profiles').update({ [col]: newVal }).eq('id', session.user.id);
+};
 
   // FIX TOUCH — botones ignorados para no encimar videos
   const handleTouchStart=(e)=>{if(e.target.closest('button'))return;touchStart.current=e.targetTouches[0].clientX;};
@@ -739,9 +758,11 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
           <button onClick={()=>handleAction('reaction')} className="px-5 py-3 md:py-4 bg-white text-black border border-white rounded-xl text-[9px] md:text-[11px] font-black uppercase shadow-[0_0_15px_rgba(255,255,255,0.4)] hover:scale-105 transition-transform">
             ✨ HALO
           </button>
-          <button onClick={()=>{if(currentUser)onOpenProfile(currentUser);}} className="px-5 py-3 md:py-4 bg-black text-white border-2 border-[#bf00ff] rounded-xl text-[9px] md:text-[11px] font-black uppercase shadow-[0_0_15px_rgba(191,0,255,0.6),inset_0_0_8px_rgba(191,0,255,0.4)] hover:scale-105 transition-all animate-pulse">
-            <span className="drop-shadow-[0_0_8px_rgba(191,0,255,0.9)]">☝️ TELEFONO CASA</span>
-          </button>
+          <button 
+  		onClick={() => { if(currentUser) onOpenProfile({ ...currentUser, _savedIndex: currentIndex }); }} 
+  		className="px-5 py-3 md:py-4 bg-black text-white border-2 border-[#bf00ff] rounded-xl text-[9px] md:text-[11px] font-black 		uppercase shadow-[0_0_15px_rgba(191,0,255,0.6),inset_0_0_8px_rgba(191,0,255,0.4)] hover:scale-105 transition-all animate-		pulse">
+  		<span className="drop-shadow-[0_0_8px_rgba(191,0,255,0.9)]">☝️ TELEFONO CASA</span>
+	</button>
           <button onClick={()=>setShowEchoInput(true)} className="px-6 py-3 md:py-4 bg-black/90 border border-white/20 text-white rounded-xl text-[9px] md:text-[11px] font-black uppercase hover:bg-white/10 transition-colors">
             💬 ECO
           </button>
@@ -796,22 +817,45 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
             
             <div className="flex gap-4 mb-12 justify-center w-full">
               <button onClick={() => setEchoType('text')} className={`flex-1 max-w-[160px] py-3 rounded-full text-[10px] font-black border tracking-widest transition-all ${echoType === 'text' ? 'bg-cyan-500 text-black border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.4)]' : 'text-white/40 border-white/10 hover:text-white/80'}`}>
-                💬 TEXTO NEÓN
+                💬 ECO
               </button>
               <button onClick={() => setEchoType('hyper')} className={`flex-1 max-w-[160px] py-3 rounded-full text-[10px] font-black border tracking-widest transition-all ${echoType === 'hyper' ? 'bg-[#002366] text-cyan-400 border-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.6)]' : 'text-white/40 border-white/10 hover:text-white/80'}`}>
-                ⚡ HYPER ZAP
+                ⚡ ZAP
               </button>
             </div>
             
+            {/* SELECTOR GEN / PAY */}
+<div className="flex gap-4 mb-8 justify-center w-full">
+
+  <button
+    onClick={() => setEcoVariant('pay')}
+    className={`flex-1 max-w-[160px] py-3 rounded-full text-[10px] font-black border tracking-widest transition-all ${ecoVariant === 'pay' 
+      ? 'bg-cyan-400 text-black border-cyan-300 shadow-[0_0_25px_rgba(6,182,212,0.7)] scale-105' 
+      : 'bg-cyan-500/20 text-cyan-300 border-cyan-400/50 shadow-[0_0_12px_rgba(6,182,212,0.3)] hover:scale-105'}`}
+  >
+    ⚡ PAY ({echoType === 'hyper' ? balances?.zap_p ?? 0 : balances?.eco_p ?? 0})
+  </button>
+
+  <button
+    onClick={() => setEcoVariant('gen')}
+    className={`flex-1 max-w-[160px] py-3 rounded-full text-[10px] font-black border tracking-widest transition-all ${ecoVariant === 'gen' 
+      ? 'bg-white/20 text-white border-white/40' 
+      : 'text-white/30 border-white/10 hover:text-white/50'}`}
+  >
+    🟢 GEN ({echoType === 'hyper' ? balances?.zap_gen ?? 0 : balances?.eco_gen ?? 0})
+  </button>
+
+</div>
+            
             <input 
-              autoFocus type="text" placeholder={echoType === 'hyper' ? "TÍTULO DEL ANUNCIO..." : "ESCRIBE TU ECO..."}
+              autoFocus type="text" placeholder={echoType === 'hyper' ? "TÍTULO DEL ANUNCIO..." : "ESCRIBE TU ECO O ZAP..."}
               className="w-full bg-transparent border-b-2 border-white/20 py-6 text-center text-white outline-none font-black text-2xl md:text-3xl uppercase focus:border-cyan-400 transition-colors drop-shadow-lg"
               value={echoText} onChange={e => setEchoText(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAction('echo')} maxLength={60}
             />
             
             <div className="mt-16 flex flex-col items-center gap-6 w-full">
               <button onClick={() => handleAction('echo')} className={`w-full max-w-[280px] py-4 rounded-2xl font-black text-[12px] tracking-widest uppercase transition-all shadow-xl hover:scale-105 ${echoType === 'hyper' ? 'bg-cyan-600 text-white border border-cyan-400 shadow-cyan-600/30' : 'bg-white text-black shadow-white/20'}`}>
-                {echoType === 'hyper' ? 'EMITIR HYPER ZAP (1000 G)' : 'EMITIR ECO (100 G)'}
+                {echoType === 'hyper' ? 'EMITIR HYPER ZAP' : 'EMITIR'}
               </button>
               
               <button onClick={() => setShowEchoInput(false)} className="text-gray-500 text-[12px] font-black uppercase tracking-widest hover:text-white transition-colors">
