@@ -115,7 +115,7 @@ const MOBILE_SLOTS = [{x:5,y:75}, {x:50,y:75}];
 // HYPER ZAP — zonas derecha, para no pisarse
 const HYPER_PC_SLOTS = [
   {x:25,y:20},{x:22,y:40},{x:30,y:65},
-  {x:28,y:38},{x:23,y:75},{x:16,y:80},
+  {x:28,y:38},{x:23,y:75},{x:6,y:70},
 ];
 const HYPER_MOBILE_SLOTS = [{x:20,y:2}];
 
@@ -334,52 +334,100 @@ useEffect(()=>{
     }
   },[selectedForestUser,displayUsers]);
 
-  useEffect(()=>{
-    if(!currentUser?.id)return;
-    (async()=>{
-      const isUUID=/^[0-9a-f]{8}/i.test(currentUser.id);
-      const {data:ads}=await supabase.from('bro_echos').select('*').eq('is_sponsored',true).limit(10);
-      let fv=ads||[];
-      if(isUUID){
-        const y=new Date(); y.setDate(y.getDate()-1);
-        const {data:ue}=await supabase.from('bro_echos').select('*').eq('target_profile_id',currentUser.id).eq('is_sponsored',false).gt('created_at',y.toISOString()).lt('reports_count',3).order('created_at',{ascending:false}).limit(30);
-        if(ue)fv=[...fv,...ue.filter(e=>!e.audio_link&&!e.text?.includes('[TTS]'))];
-      } else { fv=[...fv,{id:'s1',author_alias:'SISTEMA',text:'MODO SIMULACIÓN'}]; }
-      setVisualEchos(fv);
-    })();
-  },[currentUser]);
+  // Fetch ecos completo con Hyper Zap (VERSIÓN LIMPIA SIN AUDIO Y SIN LA PALABRA AD)
+  useEffect(() => {
+    if(!currentUser?.id) return;
+    const fetch = async() => {
+      const isUUID = /^[0-9a-f]{8}/i.test(currentUser.id);
+      
+      // 1. Traemos los Hyper Zaps (Visuales) -> Adiós a la variable 'ads'
+      const { data: zapsData } = await supabase
+        .from('bro_echos')
+        .select('*')
+        .eq('is_sponsored', true)
+        .limit(10);
+        
+      let finalVisual = zapsData || [];
 
-// DESPUÉS (separados):
-useEffect(()=>{
-  if(!visualEchos||visualEchos.length===0)return;
-  let slot=0;
-  const interval=setInterval(()=>{
-    const ads=visualEchos.filter(e=>e.is_sponsored);
-    const normals=visualEchos.filter(e=>!e.is_sponsored);
-    const mob=window.innerWidth<768;
-    const slots=mob?MOBILE_SLOTS:PC_SLOTS;
-    const coords = (mob ? MOBILE_SLOTS : PC_SLOTS)[slot % (mob ? MOBILE_SLOTS : PC_SLOTS).length];
-    const hyperSlots = mob ? HYPER_MOBILE_SLOTS : HYPER_PC_SLOTS;
-    const hyperCoords = hyperSlots[slot % hyperSlots.length];
-    slot++;
+      if(isUUID) {
+        const yesterday = new Date(); 
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        // 2. Traemos los Ecos normales de las últimas 24h
+        const { data: userEchos } = await supabase
+          .from('bro_echos')
+          .select('*')
+          .eq('target_profile_id', currentUser.id)
+          .eq('is_sponsored', false)
+          .gt('created_at', yesterday.toISOString())
+          .lt('reports_count', 3)
+          .order('created_at', { ascending: false })
+          .limit(30);
+          
+        if(userEchos) {
+          // Filtramos solo para asegurarnos de que no entren audios viejos, adiós al TTS.
+          finalVisual = [...finalVisual, ...userEchos.filter(e => !e.audio_link)];
+        }
+      } else {
+        finalVisual = [...finalVisual, { id: 's1', author_alias: 'SISTEMA', text: 'MODO SIMULACIÓN' }];
+      }
+      
+      setVisualEchos(finalVisual);
+    };
+    
+    fetch();
+  }, [currentUser]);
 
-    // ECO TEXT → se reinicia con el video
-    if(normals.length>0){
-      const echo=normals[Math.floor(Math.random()*normals.length)];
-      setFloatingEcos(prev=>[...prev.slice(-2),{...echo,id:Date.now()+Math.random(),x:coords.x,y:coords.y}]);
-    }
 
-    // HYPER ZAP → 25% del tiempo, persiste
-    if(Math.random()>0.75){
-      const ad=ads.length>0
-        ?ads[Math.floor(Math.random()*ads.length)]
-        :{id:'SYSTEM_AD',is_sponsored:true,author_alias:'BROVISION TV',text:'🔴 ¿QUIERES VER TV EN VIVO? HAZ CLIC AQUÍ',target_index:0};
-      setFloatingHyperZaps(prev=>[...prev.slice(-1),{...ad,id:Date.now()+Math.random(),x:hyperCoords .x,y:hyperCoords .y}]);
-    }
-  },4500);
-  return()=>clearInterval(interval);
-},[visualEchos]);
+useEffect(() => {
+    if(!visualEchos || visualEchos.length === 0) return;
+    let slot = 0;
+    
+    const interval = setInterval(() => {
+      // FILTRO 1: Zaps que NO sean del creador actual (Evita auto-promoción redundante)
+      const zapsList = visualEchos.filter(e => e.is_sponsored && e.advertiser_id !== currentUser?.id);
+      
+      // FILTRO 2: Ecos normales
+      const normalsList = visualEchos.filter(e => !e.is_sponsored);
+      
+      const mob = window.innerWidth < 768;
+      const coords = (mob ? MOBILE_SLOTS : PC_SLOTS)[slot % (mob ? MOBILE_SLOTS : PC_SLOTS).length];
+      const hyperSlots = mob ? HYPER_MOBILE_SLOTS : HYPER_PC_SLOTS;
+      const hyperCoords = hyperSlots[slot % hyperSlots.length];
+      slot++;
 
+      // ECO TEXT → Se añade un flag "isCreator" para destacarlo en tu CSS luego
+      if(normalsList.length > 0) {
+        const echo = normalsList[Math.floor(Math.random() * normalsList.length)];
+        const isOwnCreator = echo.advertiser_id === currentUser?.id; // ¿Es el dueño de la casa?
+        
+        setFloatingEcos(prev => [...prev.slice(-2), {
+          ...echo, 
+          id: Date.now() + Math.random(), 
+          x: coords.x, 
+          y: coords.y,
+          isCreator: isOwnCreator // <-- NUEVO: Usa esto en el render del HTML para darle un borde dorado o algo guay.
+        }]);
+      }
+
+      // HYPER ZAP → 25% del tiempo, persiste
+      if(Math.random() > 0.75) {
+        const currentZap = zapsList.length > 0
+          ? zapsList[Math.floor(Math.random() * zapsList.length)]
+          : { id: 'SYSTEM_ZAP', is_sponsored: true, author_alias: 'BROVISION TV', text: '🔴 ¿QUIERES VER TV EN VIVO? HAZ CLIC AQUÍ', target_index: 0 };
+          
+        setFloatingHyperZaps(prev => [...prev.slice(-1), {
+          ...currentZap, 
+          id: Date.now() + Math.random(), 
+          x: hyperCoords.x, 
+          y: hyperCoords.y
+        }]);
+      }
+    }, 4500);
+    
+    // IMPORTANTE: Añade currentUser a las dependencias para que el filtro se actualice si cambias de canal
+    return () => clearInterval(interval);
+  }, [visualEchos, currentUser]);
   const handleTouchStart=(e)=>{ if(e.target.closest('button'))return; touchStart.current=e.targetTouches[0].clientX; };
   const handleTouchMove =(e)=>{ if(e.target.closest('button'))return; touchEnd.current  =e.targetTouches[0].clientX; };
   const handleTouchEnd  =()=>{
@@ -434,51 +482,96 @@ useEffect(()=>{
       <video ref={bgVideoRef} src={BG_VIDEO} autoPlay loop muted playsInline
        className="absolute inset-0 w-full h-full object-cover z-[1]"/>
        
-      {/* 2. ECOS FLOTANTES completos */}
-      {/* ECO TEXT — dentro del flujo normal, se reinicia con el video */}
+      {/* 2. ECOS FLOTANTES — Versión Compacta */}
 <div className="absolute inset-0 z-[10] pointer-events-none">
-  {floatingEcos.map((echo)=>{
-    const neon=neonColors[Math.floor(Math.random()*neonColors.length)];
+  {floatingEcos.map((echo) => {
+    const neon = neonColors[Math.floor(Math.random() * neonColors.length)];
+    const displayText = echo.text.length > 90 ? echo.text.substring(0, 87) + "..." : echo.text;
+
     return (
       <div key={echo.id}
            className="absolute animate-spirit text-center pointer-events-none z-[40]"
-           style={{left:`${echo.x}%`,top:`${echo.y}%`}}>
-        <p className={`text-[8px] mb-1 uppercase tracking-[0.5em] font-black opacity-80 ${neon.text}`}>
-          @{echo.author_alias}
-        </p>
-        <div className={`border backdrop-blur-none px-7 py-3 rounded-[2.5rem] bg-black/90 border ${neon.border} ${neon.text} ${neon.glow}`}>
-          <span className="text-xs md:text-lg">"{echo.text}"</span>
+           style={{ left: `${echo.x}%`, top: `${echo.y}%` }}>
+        
+        <div className={`
+          flex flex-col items-center gap-0 
+          border backdrop-blur-md px-5 py-2 rounded-[1.8rem] bg-black/95 
+          ${neon.border} ${neon.glow}
+          max-w-[180px] md:max-w-[260px]
+          whitespace-normal break-words
+        `}>
+          
+          <span className={`text-[8px] md:text-[9px] uppercase tracking-[0.25em] font-black ${neon.text} border-b border-white/10 pb-[2px] w-full opacity-100`}>
+            @{echo.author_alias}
+          </span>
+
+          <span className="text-[11px] md:text-[14px] leading-tight font-bold italic text-white pt-1"
+                style={{ textShadow: '2px 2px 4px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000' }}>
+            "{displayText}"
+          </span>
         </div>
-        <button onClick={()=>handleReport(echo.id)} className="pointer-events-auto opacity-0 group-hover:opacity-100 absolute -top-4 -right-4 bg-red-600/20 p-2 rounded-full text-[8px] hover:bg-red-600 transition-all">⚠️</button>
       </div>
     );
   })}
 </div>
 
-{/* HYPER ZAP — fixed al viewport, NO se reinicia con scroll */}
+{/* HYPER ZAP — Versión "Wide" con Botón Barra Dorada */}
 <div className="pointer-events-none">
-  {floatingHyperZaps.map((echo)=>(
-    <div key={echo.id}
-         className="fixed animate-spirit text-center z-[60] pointer-events-auto cursor-pointer scale-110"
-         style={{left:`${echo.x}%`,top:`${echo.y}%`}}
-         onClick={()=>{
-           const adv=videoUsers.find(u=>u.id===echo.advertiser_id);
-           if(adv){displayUsers.splice(currentIndex+1,0,{...adv,id:`zap_${Date.now()}`,is_zap:true});setCurrentIndex(currentIndex+1);}
-           else setCurrentIndex(0);
-         }}>
-      <p className="text-[8px] mb-1 uppercase tracking-[0.5em] font-black text-[#FFD700] drop-shadow-[0_0_8px_rgba(255,215,0,0.6)]">
-        ⚡ HYPER ZAP
-      </p>
-      <div className="px-5 py-2.5 rounded-[2rem] bg-[#0C0C1C]/50 border border-[#E3DDB1]/30 text-white font-medium shadow-[0_0_20px_rgba(0,0,0,0.9),inset_0_0_10px_rgba(255,215,0,0.05)]">
-        <span className="text-xs md:text-base tracking-wide text-white drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]">"{echo.text}"</span>
-        <div className="mt-2 relative overflow-hidden py-1.5 px-5 rounded-full border border-[#DED590]/50 bg-gradient-to-r from-amber-200/20 via-yellow-300/20 to-amber-100/20 shadow-[0_0_15px_rgba(251,191,36,0.2)]">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-shimmer"/>
-          <span className="text-[9px] text-[#FFD700] font-black tracking-[0.3em] uppercase relative z-10">ENTRAR ▶</span>
+  {floatingHyperZaps.map((echo) => {
+    const displayText = echo.text.length > 90 ? echo.text.substring(0, 87) + "..." : echo.text;
+
+    return (
+      <div key={echo.id}
+           className="fixed animate-spirit text-left z-[60] pointer-events-auto cursor-pointer group"
+           style={{ left: `${echo.x}%`, top: `${echo.y}%` }}
+           onClick={() => {
+             const adv = videoUsers.find(u => u.id === echo.advertiser_id);
+             if (adv) {
+               displayUsers.splice(currentIndex + 1, 0, { ...adv, id: `zap_${Date.now()}`, is_zap: true });
+               setCurrentIndex(currentIndex + 1);
+             } else setCurrentIndex(0);
+           }}>
+        
+        <div className="
+          flex flex-col items-stretch gap-1.5
+          px-5 py-2 rounded-[1.2rem] 
+          bg-black/75 backdrop-blur-xl 
+          border border-white/50 
+          shadow-[0_15px_40px_rgba(0,0,0,0.8)]
+          max-w-[220px] md:max-w-[340px] 
+          whitespace-normal break-words
+          relative overflow-hidden
+        ">
+          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-50 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-shimmer pointer-events-none" />
+
+          <span className="text-[11px] md:text-[12px] uppercase tracking-[0.4em] md:tracking-[0.5em] font-black text-[#FFD700] border-b border-black/30 pb-1 w-full flex items-center justify-center gap-1"
+                style={{ textShadow: '3px 3px 0px #000, -1px -1px 0px #000, 0px 4px 6px rgba(0,0,0,0.8)' }}>
+            <span className="animate-pulse">⚡</span> @{echo.author_alias || 'SPONSOR'}
+          </span>
+
+          <span className="text-[13px] md:text-[15px] leading-snug font-black italic text-white w-full text-left px-1"
+                style={{ textShadow: '3px 3px 0px #000, 4px 4px 0px rgba(0,0,0,0.9), -1px -1px 0px #000, 0px 4px 8px rgba(0,0,0,0.8)' }}>
+            "{displayText}"
+          </span>
+
+          <div className="
+            mt-1 w-full py-[3px] rounded-full flex justify-center items-center
+            bg-gradient-to-r from-amber-400 to-yellow-600
+            border-[1.5px] border-black
+            shadow-[0_4px_10px_rgba(0,0,0,0.8)]
+            group-hover:scale-[1.02] transition-transform
+          ">
+            <span className="text-[9px] md:text-[11px] text-black font-black tracking-[0.4em] uppercase pt-[1px]">
+              ENTRAR ▶
+            </span>
+          </div>
         </div>
       </div>
-    </div>
-  ))}
+    );
+  })}
 </div>
+
                   {/* ══════════════════════════════════════════════
           MUTE + ORBIT — FUERA del div con handlers touch
           Apilados en el lateral izquierdo del visor,
@@ -707,33 +800,108 @@ useEffect(()=>{
       {showEchoInput&&(
         <div className="fixed inset-0 z-[1000] bg-black/95 backdrop-blur-md flex items-center justify-center p-6">
           <div className="w-full max-w-md text-center flex flex-col items-center">
-            <div className="flex gap-4 mb-12 justify-center w-full">
-              <button onClick={()=>setEchoType('text')} className={`flex-1 py-3 rounded-full text-[10px] font-black border tracking-widest transition-all ${echoType==='text'?'bg-cyan-500 text-black border-cyan-400':'text-white/40 border-white/10'}`}>💬 ECO</button>
-              <button onClick={()=>setEchoType('hyper')} className={`flex-1 py-3 rounded-full text-[10px] font-black border tracking-widest transition-all ${echoType==='hyper'?'bg-[#002366] text-cyan-400 border-cyan-500':'text-white/40 border-white/10'}`}>⚡ZAP</button>
-            </div>
-            
-           {/* SELECTOR GEN / PAY */}
-<div className="flex gap-4 mb-8 justify-center w-full">
+          
+           {/* MENSAJE DE REGLAS ANTI-SPAM BROVISION */}
+<div className="my-4 p-4 border border-white/60 bg-red-950/80 rounded-xl shadow-[0_0_15px_rgba(220,38,38,0.5)] font-sans text-center backdrop-blur-md">
+  
+  <h3 className="mb-3 text-yellow-400 font-extrabold uppercase tracking-wider text-lg flex items-center justify-center gap-2 drop-shadow-[0_0_8px_rgba(250,204,21,0.8)]">
+    <span>⚠️</span> REGLAS DE ECOS Y ZAPS <span>⚠️</span>
+  </h3>
+  
+  <p className="mb-4 text-white/95 text-sm md:text-base leading-relaxed">
+    <span className="text-cyan-400 font-bold drop-shadow-[0_0_5px_rgba(34,211,238,0.6)]">Eco</span> y <span className="text-fuchsia-400 font-bold drop-shadow-[0_0_5px_rgba(232,121,249,0.6)]">Zap</span> son herramientas de interacción y promoción <b className="text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">interna</b> de tu Canal.
+    <br/>
+    <b className="text-yellow-300">Respeto Mutuo:</b> NO se toleran insultos, toxicidad ni actitudes irrespetuosas en la comunidad. Mantén la vibra limpia.
+    <br/>
+    <b className="text-red-400">Cero Marcas:</b> NO se permite publicidad comercial directa con precios. Ejemplos ZAP
+  </p>
 
+  {/* BOTONES DE EJEMPLO APILADOS (Flex-col) */}
+  <div className="flex flex-col gap-3 w-full px-2 max-w-lg mx-auto">
+    
+    {/* EJEMPLO CORRECTO */}
+    <div className="bg-black/70 border border-emerald-500/60 py-3 px-4 rounded-lg text-emerald-400 text-base md:text-lg font-semibold shadow-[0_0_12px_rgba(16,185,129,0.2)] flex items-center gap-3 text-left">
+      <span className="text-2xl drop-shadow-[0_0_5px_rgba(16,185,129,0.8)]">✅</span> 
+      <span className="leading-tight">"Te muestro la nueva afeitadora en mi canal"</span>
+    </div>
+    
+    {/* EJEMPLO INCORRECTO */}
+    <div className="bg-black/70 border border-red-500/60 py-3 px-4 rounded-lg text-red-400 text-base md:text-lg font-semibold shadow-[0_0_12px_rgba(239,68,68,0.2)] flex items-center gap-3 text-left">
+      <span className="text-2xl drop-shadow-[0_0_5px_rgba(239,68,68,0.8)]">❌</span> 
+      <span className="leading-tight">"Oferta afeitadora 15 euros, entra a mi tienda"</span>
+    </div>
+
+  </div>
+  
+</div> 
+          
+            {/* SELECTOR 1: TIPO DE MENSAJE (ECO vs ZAP) */}
+<div className="flex gap-4 mb-6 justify-center w-full max-w-md mx-auto px-2">
+  
+  {/* BOTÓN ECO (Fuchsia) */}
+  <button 
+    onClick={() => setEchoType('text')} 
+    className={`flex-1 py-3 md:py-4 rounded-xl text-lg md:text-xl font-black border tracking-widest transition-all duration-300 flex items-center justify-center gap-3
+    ${echoType === 'text' 
+      ? 'bg-fuchsia-500 text-black border-fuchsia-300 shadow-[0_0_20px_rgba(217,70,239,0.7)] scale-105 z-10' 
+      : 'bg-black/40 text-fuchsia-400/60 border-fuchsia-500/30 hover:border-fuchsia-400/80 hover:text-fuchsia-300 hover:shadow-[0_0_10px_rgba(217,70,239,0.3)]'
+    }`}
+  >
+    <span className="text-2xl md:text-3xl">💬</span> ECO
+  </button>
+
+  {/* BOTÓN ZAP (Dorado/Yellow - Mayor jerarquía) */}
+  <button 
+    onClick={() => setEchoType('hyper')} 
+    className={`flex-1 py-3 md:py-4 rounded-xl text-lg md:text-xl font-black border tracking-widest transition-all duration-300 flex items-center justify-center gap-3
+    ${echoType === 'hyper' 
+      ? 'bg-yellow-400 text-black border-yellow-200 shadow-[0_0_30px_rgba(250,204,21,0.9)] scale-110 z-10' 
+      : 'bg-black/40 text-yellow-500/60 border-yellow-500/30 hover:border-yellow-400/80 hover:text-yellow-300 hover:shadow-[0_0_15px_rgba(250,204,21,0.4)]'
+    }`}
+  >
+    <span className="text-2xl md:text-3xl">⚡</span> ZAP
+  </button>
+
+</div>
+            
+{/* SELECTOR 2: VARIANTE DE MONEDA (PAY vs GEN) */}
+<div className="flex gap-4 mb-8 justify-center w-full max-w-md mx-auto px-2">
+
+  {/* BOTÓN PAY (Cyan - Invitación a usarlo) */}
   <button
     onClick={() => setEcoVariant('pay')}
-    className={`flex-1 max-w-[160px] py-3 rounded-full text-[10px] font-black border tracking-widest transition-all ${ecoVariant === 'pay' 
-      ? 'bg-cyan-400 text-black border-cyan-300 shadow-[0_0_25px_rgba(6,182,212,0.7)] scale-105' 
-      : 'bg-cyan-500/20 text-cyan-300 border-cyan-400/50 shadow-[0_0_12px_rgba(6,182,212,0.3)] hover:scale-105'}`}
+    className={`flex-1 py-3 md:py-4 rounded-xl text-lg md:text-xl font-black border tracking-widest transition-all duration-300 flex flex-col items-center justify-center gap-1
+    ${ecoVariant === 'pay' 
+      ? 'bg-cyan-400 text-black border-cyan-200 shadow-[0_0_25px_rgba(6,182,212,0.8)] scale-105 z-10' 
+      : 'bg-cyan-950/40 text-cyan-400 border-cyan-500/40 hover:border-cyan-300 hover:shadow-[0_0_15px_rgba(6,182,212,0.5)]'
+    }`}
   >
-    ⚡ PAY ({echoType === 'hyper' ? balances?.zap_p ?? 0 : balances?.eco_p ?? 0})
+    <span className="flex items-center gap-2 uppercase">
+      <span className="text-xl md:text-2xl drop-shadow-md">⚡</span> PAY
+    </span>
+    <span className={`text-xs md:text-sm font-bold tracking-wider ${ecoVariant === 'pay' ? 'text-black/80' : 'text-cyan-400/80'}`}>
+      DISP: {echoType === 'hyper' ? balances?.zap_p ?? 0 : balances?.eco_p ?? 0}
+    </span>
   </button>
 
+  {/* BOTÓN GEN (Orange - Lindo pero un escalón visual por debajo) */}
   <button
     onClick={() => setEcoVariant('gen')}
-    className={`flex-1 max-w-[160px] py-3 rounded-full text-[10px] font-black border tracking-widest transition-all ${ecoVariant === 'gen' 
-      ? 'bg-white/20 text-white border-white/40' 
-      : 'text-white/30 border-white/10 hover:text-white/50'}`}
+    className={`flex-1 py-3 md:py-4 rounded-xl text-lg md:text-xl font-black border tracking-widest transition-all duration-300 flex flex-col items-center justify-center gap-1
+    ${ecoVariant === 'gen' 
+      ? 'bg-orange-500 text-black border-orange-300 shadow-[0_0_20px_rgba(249,115,22,0.7)] scale-100 z-10' 
+      : 'bg-orange-950/30 text-orange-500/60 border-orange-500/30 hover:border-orange-400/80 hover:text-orange-400'
+    }`}
   >
-    🟢 GEN ({echoType === 'hyper' ? balances?.zap_gen ?? 0 : balances?.eco_gen ?? 0})
+    <span className="flex items-center gap-2 uppercase">
+      <span className="text-xl md:text-2xl drop-shadow-md">🟢</span> GEN
+    </span>
+    <span className={`text-xs md:text-sm font-bold tracking-wider ${ecoVariant === 'gen' ? 'text-black/80' : 'text-orange-500/80'}`}>
+      DISP: {echoType === 'hyper' ? balances?.zap_gen ?? 0 : balances?.eco_gen ?? 0}
+    </span>
   </button>
 
-</div>            
+</div>         
             <input autoFocus type="text" placeholder={echoType==='hyper'?'TÍTULO DEL ANUNCIO...':'ESCRIBE TU ECO O ZAP...'}
                    className="w-full bg-transparent border-b-2 border-white/20 py-6 text-center text-white outline-none font-black text-2xl md:text-3xl uppercase focus:border-cyan-400 transition-colors"
                    value={echoText} onChange={e=>setEchoText(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleAction('echo')} maxLength={60}/>
