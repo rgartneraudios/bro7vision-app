@@ -219,7 +219,6 @@ export const MASTER_DB = [
       isLive: true,
       viewers: 340, 
       audioFile: "/audio/IA_y_el_fin_de_los_cursos_caros__Tu_universidad_personal_gratis.mp3",
-      video_file: "https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/Mapache-Guia.mp4",
      twit_message: 'AI_El Fin de los Cursos',
       neonColor: "cyan-emerald",
       img: '/images/yam5.jpg',

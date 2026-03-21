@@ -113,8 +113,8 @@ const MOBILE_SLOTS = [{x:5,y:75}, {x:50,y:75}];
 
 // HYPER ZAP — zonas derecha, para no pisarse
 const HYPER_PC_SLOTS = [
-  {x:72,y:15},{x:70,y:60},{x:80,y:55},
-  {x:8,y:78},{x:15,y:55},{x:16,y:27},
+  {x:72,y:15},{x:70,y:60},{x:80,y:75},
+  {x:4,y:78},{x:15,y:55},{x:16,y:27},
 ];
 const HYPER_MOBILE_SLOTS = [{x:20,y:2}];
 
@@ -565,8 +565,8 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
           whitespace-normal break-words
         `}>
           
-          <span className={`text-[8px] md:text-[9px] uppercase tracking-[0.25em] font-black ${neon.text} border-b border-white/10 pb-[2px] w-full opacity-100`}>
-            @{echo.author_alias}
+          <span className={`text-[12px] md:text-[12px] uppercase tracking-[0.25em] font-black ${neon.text} border-b border-white/10 pb-[2px] w-full opacity-100`}>
+            👀___{echo.author_alias}___👀
           </span>
 
           <span className="text-[11px] md:text-[14px] leading-tight font-bold italic text-white pt-1"
@@ -609,9 +609,9 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
           <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-50 pointer-events-none" />
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-shimmer pointer-events-none" />
 
-          <span className="text-[11px] md:text-[12px] uppercase tracking-[0.4em] md:tracking-[0.5em] font-black text-[#FFD700] border-b border-black/30 pb-1 w-full flex items-center justify-center gap-1"
+          <span className="text-[12px] md:text-[12px] uppercase tracking-[0.4em] md:tracking-[0.5em] font-black text-[#FFD700] border-b border-black/30 pb-1 w-full flex items-center justify-center gap-1"
                 style={{ textShadow: '3px 3px 0px #000, -1px -1px 0px #000, 0px 4px 6px rgba(0,0,0,0.8)' }}>
-            <span className="animate-pulse">⚡</span> @{echo.author_alias || 'SPONSOR'}
+            <span className="animate-pulse">🔔___</span>  {echo.author_alias || 'SPONSOR'}___🔔
           </span>
 
           <span className="text-[13px] md:text-[15px] leading-snug font-black italic text-white w-full text-left px-1"

@@ -114,8 +114,8 @@ const MOBILE_SLOTS = [{x:5,y:75}, {x:50,y:75}];
 
 // HYPER ZAP — zonas derecha, para no pisarse
 const HYPER_PC_SLOTS = [
-  {x:25,y:20},{x:22,y:40},{x:30,y:65},
-  {x:28,y:38},{x:23,y:75},{x:6,y:70},
+  {x:25,y:20},{x:22,y:40},{x:40,y:5},
+  {x:55,y:58},{x:3,y:75},{x:6,y:70},
 ];
 const HYPER_MOBILE_SLOTS = [{x:20,y:2}];
 
@@ -501,8 +501,8 @@ useEffect(() => {
           whitespace-normal break-words
         `}>
           
-          <span className={`text-[8px] md:text-[9px] uppercase tracking-[0.25em] font-black ${neon.text} border-b border-white/10 pb-[2px] w-full opacity-100`}>
-            @{echo.author_alias}
+          <span className={`text-[12px] md:text-[12px] uppercase tracking-[0.25em] font-black ${neon.text} border-b border-white/10 pb-[2px] w-full opacity-100`}>
+            👀___{echo.author_alias}___👀
           </span>
 
           <span className="text-[11px] md:text-[14px] leading-tight font-bold italic text-white pt-1"
@@ -547,7 +547,7 @@ useEffect(() => {
 
           <span className="text-[11px] md:text-[12px] uppercase tracking-[0.4em] md:tracking-[0.5em] font-black text-[#FFD700] border-b border-black/30 pb-1 w-full flex items-center justify-center gap-1"
                 style={{ textShadow: '3px 3px 0px #000, -1px -1px 0px #000, 0px 4px 6px rgba(0,0,0,0.8)' }}>
-            <span className="animate-pulse">⚡</span> @{echo.author_alias || 'SPONSOR'}
+            <span className="animate-pulse">🔔___</span> @{echo.author_alias || 'SPONSOR'}___🔔
           </span>
 
           <span className="text-[13px] md:text-[15px] leading-snug font-black italic text-white w-full text-left px-1"
