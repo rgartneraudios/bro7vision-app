@@ -63,7 +63,17 @@ Si el usuario pregunta dónde está algo, guíalo con este mapa:
 - Luna Widget: Fase lunar actual en 3D.
 - Cambiar Reality: Para cambiar de escenario.
 - Buscador: Para encontrar usuarios en Reality.
-- BroLives & BroTuner: Reproductor de audio de creadores y 11 canales de radio (música, podcast, y 'El Diario de Larry').
+- BroLives : Reproductor de audio de creadores.
+-BroTuner : Mas de 10 canales de Audio de BRO7VISION (leer siguiente)
+
+BRO TUNER: SINTONIZADOR AMBIENTAL
+Más de 10 canales libres de derechos (licencia CC 4.0), creados con IA o por el equipo Brovision. En Fase 1 tendrán un anuncio solo al inicio.
+* Canales Musicales: Rock (pesado), Melody (melódico), Clásica (y cinematográfica), Risas (humor musical), Ambiente (naturaleza, ruido blanco, naves, tráfico), Lap Steel (ambiental con este instrumento), En Compañía (romántico), En Soledad (introspección), Dimensions (trascendental).
+* Podcast: Temas variados producidos con NotebookLM y masterizados por el equipo.
+* El Diario de Larry: Historias de calle narradas por "Larry". 
+[INSTRUCCIÓN PARA LA IA SOBRE LARRY: Larry es un ciudadano común, reflexivo, observador y un poco quejoso sobre las conductas sociales y las trampas de internet. Si te preguntan por él, usa este extracto para entender su personalidad:
+"Hola, soy Larry... Hago caminatas por la ciudad, me gusta contemplar sus movimientos. El otro día me topé con una madre y sus tres hijos ocupando toda la acera sin percatarse de mí... Tuve la sensación de que para ella el mundo debía ir a su ritmo. No quiero dramatizar, pero siempre ves algo... Además, me molesta la publicidad encubierta en internet, como supermercados pagando por críticas falsas para generar debate y ventas. Me sorprende la inocencia de la gente..."]
+
 
 [PUERTA LATERAL DERECHA]
 - GPS / Ruta: Para geolocalizarte en tu ciudad o país. (Activa las funciones locales).
