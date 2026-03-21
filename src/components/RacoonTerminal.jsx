@@ -292,7 +292,7 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
                         <div className="max-w-3xl mx-auto space-y-6 pb-20">
                             <h3 className="text-3xl text-orange-500 font-black mb-8 border-b border-orange-500/30 pb-4">CENTRO DE AYUDA</h3>
                             {/* PEGAR CONTENIDO DE FAQ AQUÍ */}
-                            <p className="text-gray-400">Consulta las preguntas frecuentes sobre Moon Coins, Halos y Normas...</p>
+                            <p className="text-gray-400">Consulta las preguntas frecuentes sobre Moon Vales, Halos y Normas...</p>
                         </div>
                     </div>
                 )}

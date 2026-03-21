@@ -580,7 +580,7 @@ useEffect(()=>{
           <button
             onClick={(e) => { e.stopPropagation(); setIsMuted(p => !p); }}
             className="absolute pointer-events-auto bg-black/60 backdrop-blur-md p-3 rounded-full text-lg border border-white/20 hover:bg-white/20 transition-all"
-            style={{ right: '-54px', bottom: '160px' }}>
+            style={{ right: '-62px', bottom: '160px' }}>
             {isMuted ? '🔇' : '🔊'}
           </button>
           <button
@@ -590,7 +590,7 @@ useEffect(()=>{
                 ? 'bg-cyan-500/20 border-cyan-400 shadow-[0_0_10px_cyan]'
                 : 'bg-black/60 backdrop-blur-md border-white/20 hover:bg-white/20'
             }`}
-            style={{ right: '-54px', bottom: '100px' }}>
+            style={{ right: '-62px', bottom: '100px' }}>
             {isOrbitando ? '☄️' : '🛸'}
           </button>
         </div>
