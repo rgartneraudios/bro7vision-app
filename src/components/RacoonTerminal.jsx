@@ -99,7 +99,7 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
 
         // 3. Acción de "Ir al Santuario"
         // Aquí deberíamos llamar a una función del padre para cambiar de vista
-        alert(`🔓 CONEXIÓN ESTABLECIDA.\nUsuario: ${aviso.author_alias}\nID Real: ${aviso.user_id}\n\n(Redirigiendo a Santuario...)`);
+        alert(`🔓 CONEXIÓN ESTABLECIDA.\nUsuario: ${aviso.author_alias}\nID Real: ${aviso.user_id}\n\n(Redirigiendo a Teléfono Casa...)`);
         onNavigateToSantuario(aviso.user_id); // <--- Ejecuta el viaje
     }
   };
@@ -134,7 +134,7 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
             <div className="flex flex-wrap border-b border-white/10 bg-black/80 shrink-0">
               <button onClick={() => setTab('avisos')} className={`flex-1 py-4 text-[10px] md:text-sm font-bold uppercase tracking-widest transition-all ${tab === 'avisos' ? 'text-orange-400 bg-orange-900/20 border-b-2 border-orange-500' : 'text-gray-500 hover:text-white'}`}>📢 TABLÓN AVISOS</button>
                 <button onClick={() => setTab('drops')} className={`flex-1 py-4 text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${tab === 'drops' ? 'text-orange-400 bg-orange-900/20 border-b-2 border-orange-500' : 'text-gray-500 hover:text-white'}`}>📦 DROPS</button>
-                <button onClick={() => setTab('faq')} className={`flex-1 py-4 text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${tab === 'faq' ? 'text-orange-400 bg-orange-900/20 border-b-2 border-orange-500' : 'text-gray-500 hover:text-white'}`}>❓ FAQ / AYUDA</button>
+                <button onClick={() => setTab('faq')} className={`flex-1 py-4 text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${tab === 'faq' ? 'text-orange-400 bg-orange-900/20 border-b-2 border-orange-500' : 'text-gray-500 hover:text-white'}`}>👑 LISTADO DE HONOR</button>
             </div>
 
             {/* BODY */}
@@ -284,18 +284,209 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
                     </div>
                 )}
 
-                {/* --- TAB FAQ (TU CÓDIGO ANTERIOR REUTILIZADO) --- */}
-                {tab === 'faq' && (
-                    <div className="absolute inset-0 overflow-y-auto custom-scrollbar p-8">
-                        {/* ... Aquí iría el contenido de las FAQ que me pasaste ... */}
-                        {/* He simplificado esto para no ocupar todo el bloque, pero aquí pegas tu código de los <details> */}
-                        <div className="max-w-3xl mx-auto space-y-6 pb-20">
-                            <h3 className="text-3xl text-orange-500 font-black mb-8 border-b border-orange-500/30 pb-4">CENTRO DE AYUDA</h3>
-                            {/* PEGAR CONTENIDO DE FAQ AQUÍ */}
-                            <p className="text-gray-400">Consulta las preguntas frecuentes sobre Moon Vales, Halos y Normas...</p>
-                        </div>
-                    </div>
-                )}
+              {/* --- BOTÓN TAB (reemplaza el de FAQ / AYUDA en el header) --- */}
+<button
+  onClick={() => setTab('faq')}
+  className={`flex-1 py-4 text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${
+    tab === 'faq'
+      ? 'text-orange-400 bg-orange-900/20 border-b-2 border-orange-500'
+      : 'text-gray-500 hover:text-white'
+  }`}
+>
+  👑 REINADOS
+</button>
+
+{/* --- TAB REINADOS --- */}
+{tab === 'faq' && (
+  <div className="absolute inset-0 overflow-y-auto custom-scrollbar p-6 bg-black/20">
+    <div className="max-w-2xl mx-auto pb-20">
+
+      {/* ── CABECERA ── */}
+      <div className="text-center mb-12 animate-fadeIn">
+        <p className="text-[10px] text-gray-600 uppercase tracking-[0.35em] mb-3">
+          Crónicas del Reino Interior
+        </p>
+        <h2
+          className="text-4xl md:text-5xl font-black uppercase text-orange-500 tracking-wide"
+          style={{ fontFamily: "'Georgia', 'Times New Roman', serif", letterSpacing: '0.08em' }}
+        >
+          Reinados
+        </h2>
+        <p className="text-gray-600 text-xs uppercase tracking-[0.25em] mt-2">
+          Listado de Honor · Bro7vision
+        </p>
+        <div className="h-px w-24 bg-gradient-to-r from-transparent via-orange-600/60 to-transparent mx-auto mt-5" />
+      </div>
+
+      {/* ── REYES & REINAS ── */}
+      <section className="mb-12">
+        <div className="flex items-center gap-3 mb-6">
+          <span className="text-2xl">👑</span>
+          <p
+            className="text-orange-500/80 text-xs uppercase tracking-[0.3em]"
+            style={{ fontFamily: "'Georgia', serif" }}
+          >
+            Alta Corte · Reyes &amp; Reinas
+          </p>
+          <div className="flex-1 h-px bg-gradient-to-r from-orange-700/40 to-transparent" />
+        </div>
+
+        <div className="space-y-5">
+          {/* Mapear desde Supabase filtrando rank = 'rey' */}
+          {[
+            { num: '01', titulo: 'Rey de Solaris',         tratamiento: 'Don',  alias: 'Marcos7520' },
+            { num: '02', titulo: 'Reina del Alba Carmesí', tratamiento: 'Doña', alias: 'LunaEterna' },
+          ].map((item) => (
+            <div key={item.num} className="flex items-baseline gap-5 border-b border-white/5 pb-4">
+              <span className="text-orange-800/70 text-base font-bold w-8 shrink-0 text-right"
+                style={{ fontFamily: "'Georgia', serif" }}>
+                {item.num}
+              </span>
+              <div className="flex-1">
+                <p className="text-gray-500 text-[10px] uppercase tracking-[0.3em] leading-none mb-1.5">
+                  {item.titulo}
+                </p>
+                <p className="text-white text-lg font-bold"
+                  style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+                  {item.tratamiento}{' '}
+                  <span className="text-orange-300">{item.alias}</span>
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── PRÍNCIPES & PRINCESAS ── */}
+      <section className="mb-12">
+        <div className="flex items-center gap-3 mb-6">
+          <span className="text-2xl">⚔️</span>
+          <p
+            className="text-blue-400/70 text-xs uppercase tracking-[0.3em]"
+            style={{ fontFamily: "'Georgia', serif" }}
+          >
+            Guardia Real · Príncipes &amp; Princesas
+          </p>
+          <div className="flex-1 h-px bg-gradient-to-r from-blue-700/40 to-transparent" />
+        </div>
+
+        <div className="space-y-5">
+          {/* Mapear desde Supabase filtrando rank = 'principe' */}
+          {[
+            { num: '101', titulo: 'Príncipe de Luminaria',  tratamiento: 'Excelentísimo', alias: 'JavierBlue' },
+            { num: '102', titulo: 'Princesa de Luminaria',  tratamiento: 'Excelentísima', alias: 'SilviaRed'  },
+          ].map((item) => (
+            <div key={item.num} className="flex items-baseline gap-5 border-b border-white/5 pb-4">
+              <span className="text-blue-800/60 text-base font-bold w-8 shrink-0 text-right"
+                style={{ fontFamily: "'Georgia', serif" }}>
+                {item.num}
+              </span>
+              <div className="flex-1">
+                <p className="text-gray-500 text-[10px] uppercase tracking-[0.3em] leading-none mb-1.5">
+                  {item.titulo}
+                </p>
+                <p className="text-white/85 text-lg font-bold"
+                  style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+                  {item.tratamiento}{' '}
+                  <span className="text-blue-300">{item.alias}</span>
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── TÍTULOS NOBILIARIOS ── */}
+      <section className="mb-12">
+        <div className="flex items-center gap-3 mb-6">
+          <span className="text-2xl">🛡️</span>
+          <p
+            className="text-gray-500 text-xs uppercase tracking-[0.3em]"
+            style={{ fontFamily: "'Georgia', serif" }}
+          >
+            Títulos Nobiliarios
+          </p>
+          <div className="flex-1 h-px bg-gradient-to-r from-gray-700/40 to-transparent" />
+        </div>
+
+        <div className="space-y-5">
+          {/* Mapear desde Supabase filtrando rank = 'noble' */}
+          {[
+            { tratamiento: 'Ilustrísimo', rango: 'Duque del Eco Perdido',      prefijo: 'Lord', alias: 'ShadowWave' },
+            { tratamiento: 'Honorable',   rango: 'Marqués del Horizonte Azul', prefijo: 'Sir',  alias: 'NeoSky'     },
+          ].map((item, i) => (
+            <div key={i} className="flex items-baseline gap-5 border-b border-white/5 pb-4">
+              <span className="w-8 shrink-0" />
+              <div className="flex-1">
+                <p className="text-gray-600 text-[10px] uppercase tracking-[0.3em] leading-none mb-1.5">
+                  {item.tratamiento} · {item.rango}
+                </p>
+                <p className="text-white/70 text-lg font-bold"
+                  style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+                  {item.prefijo}{' '}
+                  <span className="text-gray-300">{item.alias}</span>
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── MENSAJE TÍTULOS NOBILIARIOS ABIERTOS ── */}
+      <div className="mb-10 p-5 rounded-2xl border border-white/10 bg-white/3 text-center">
+        <span className="text-2xl mb-3 block">🌙</span>
+        <p className="text-white/90 text-lg font-bold mb-2"
+          style={{ fontFamily: "'Georgia', serif" }}>
+          ¿Tu nombre aún no figura en el Listado?
+        </p>
+        <p className="text-gray-400 text-sm leading-relaxed max-w-md mx-auto">
+          Manteniéndote activo en Bro7vision podrás conseguir un{' '}
+          <span className="text-orange-400 font-bold">Título Nobiliario Digital</span> y ocupar
+          tu lugar en estas Crónicas. La nobleza no se hereda — se gana con presencia y dedicación.
+        </p>
+      </div>
+
+      {/* ── POSTULACIÓN ── */}
+      <section className="p-6 border border-dashed border-white/10 rounded-2xl bg-black/40 text-center">
+        <p className="text-orange-500/90 font-black text-base uppercase tracking-widest mb-2"
+          style={{ fontFamily: "'Georgia', serif" }}>
+          ¿Quieres reclamar tu lugar en el linaje?
+        </p>
+        <p className="text-gray-500 text-xs mb-4 max-w-sm mx-auto leading-relaxed">
+          Envía tu propuesta de contenido a{' '}
+          <a href="mailto:fundadores@bro7vision.com" className="text-white/70 underline underline-offset-2">
+            fundadores@bro7vision.com
+          </a>
+        </p>
+
+        {/* Nota menores */}
+        <div className="mb-5 p-4 rounded-xl bg-white/5 border border-white/10 text-left max-w-sm mx-auto">
+          <p className="text-[11px] text-gray-400 leading-relaxed">
+            <span className="text-orange-400/90 font-bold uppercase">Si eres menor de 16 años —</span>{' '}
+            puedes solicitar tu lugar bajo una condición: una persona adulta y mayor de edad debe
+            realizar la candidatura en tu nombre, acceder a la plataforma por ti y ser responsable
+            de tu actividad. Ese adulto es quien ocupa el puesto formalmente hasta que alcances
+            la mayoría de edad.
+          </p>
+        </div>
+
+        <a
+          href="mailto:fundadores@bro7vision.com"
+          className="inline-block bg-orange-600 text-black font-black px-8 py-3 rounded-full text-xs uppercase tracking-widest hover:bg-white hover:scale-105 transition-all"
+        >
+          Solicitar Audiencia
+        </a>
+      </section>
+
+      {/* ── PIE ── */}
+      <p className="text-center text-[11px] text-gray-600 uppercase tracking-[0.3em] mt-10"
+        style={{ fontFamily: "'Georgia', serif" }}>
+        La grandeza se sostiene con presencia y dedicación.
+      </p>
+
+    </div>
+  </div>
+)}
 
                 {/* --- TAB DROPS/CLUSTERS (Placeholder) --- */}
                 {(tab === 'drops' || tab === 'clusters') && (

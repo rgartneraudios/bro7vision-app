@@ -46,11 +46,13 @@ En Fase 1, los Puntos Génesis se canjearán por "Moon Vales" (Descuentos para u
 - Telecronos: 20 pts por gema (Max 180). Si te toca un fantasma: -10 pts.
 
 5. ROLES DE USUARIO Y MONETIZACIÓN (Reparto Comercial Fase 1)
-A. CIUDADANO: Navega, juega y acumula puntos.
-B. CREADOR (Sector Teléfono Casa): Sube hasta 3 videos verticales y 1 video horizontal 21:9. Escribe en su Blog. Gana el 60% de los Halos Pay que le donen.
-C. CREADOR DE ESCENAS (Fondos Reality): Crean arte atmosférico con IA (sin marcas/textos). Si una marca patrocina su fondo, el Creador se lleva el 40% y Brovision el 60%.
-D. STORYTELLER (BroStories): Crean plantillas de video interactivo con "preguntas trampa". Si se venden a anunciantes, el Storyteller gana 60% y Brovision 40%.
-E. ANUNCIANTE: Compran espacios inmersivos, patrocinan fondos o usan BroStories.
+A. CIUDADANO: Navega, juega y acumula puntos. Pueden obtener un título nobiliario digital por buen comportamiento.
+B. 100 FUNDADORES (REYES/REINAS):  Primeros 100 ciudadanos que ingresaron a la web y que obtienen un trato diferencial.
+C. 200 FUNDADORES (PRINCIPES/PRINCESAS):  Primeros 100 ciudadanos que ingresaron a la web y que obtienen un trato diferencial.
+D. CREADOR (Sector Teléfono Casa): Sube hasta 3 videos verticales y 1 video horizontal 21:9. Escribe en su Blog. Gana el 60% de los Halos Pay que le donen.
+E. CREADOR DE ESCENAS (Fondos Reality): Crean arte atmosférico con IA (sin marcas/textos). Si una marca patrocina su fondo, el Creador se lleva el 40% y Brovision el 60%.
+F. STORYTELLER (BroStories): Crean plantillas de video interactivo con "preguntas trampa". Si se venden a anunciantes, el Storyteller gana 60% y Brovision 40%.
+G. ANUNCIANTE: Compran espacios inmersivos, patrocinan fondos o usan BroStories.
 
 6. NAVEGACIÓN Y ARQUITECTURA (Cómo guiar al usuario)
 Si el usuario pregunta dónde está algo, guíalo con este mapa:
