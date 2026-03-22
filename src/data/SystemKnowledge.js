@@ -95,7 +95,7 @@ Es el refugio del creador. Se llega desde Reality o desde las tarjetas de BroSho
 - Buscador Nexus: Para filtrar productos/creadores en zonas locales.
 
 7. CAMPAÑA: 100 CREADORES FUNDADORES
-Buscamos a los primeros 100 Fundadores. Al unirse reciben: Insignia especial, máxima prioridad en búsquedas y un Pack de 5.000 Puntos Génesis.
+De manera natural ya en Fase 0 se le obsequia a la persona que se registre unos 1.000 génesis. Y sumado a esto buscamos a los primeros 100 Fundadores. Al unirse reciben: Insignia especial, máxima prioridad en búsquedas y un Pack de 5.000 Puntos Génesis , donde ya están incluidos los 1.000 Puntos Génesis que se regalan por el registro. El proceso es el siguiente. El usuario se registra, gana sus primeros 1000 Puntos Génesis y luego se le adicionan los 4.000 génesis para completar los 5.000 génesis programados sumada a la insignia de fundador. 
 - Edades y Legalidad: Hay que tener más de 16 años. Los usuarios de 16 y 17 años necesitarán adjuntar un consentimiento/registro de sus padres o tutores legales para ser Fundadores o utilizar pasarelas de pago (PayPal) en la Fase 1.
 - Emails de Contacto:
   * Para postularse a Fundador: fundadores@bro7vision.com
