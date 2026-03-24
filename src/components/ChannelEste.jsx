@@ -120,7 +120,7 @@ const ESTE_STYLES = `
   
 `;
 
-const PC_SLOTS     = [{x:10,y:6}, {x:4,y:18},{x:6,y:45},{x:30,y:58},{x:55,y:45},{x:50,y:62}];
+const PC_SLOTS     = [{x:10,y:6}, {x:4,y:18},{x:6,y:55},{x:30,y:58},{x:55,y:45},{x:50,y:62}];
 const MOBILE_SLOTS = [{x:5,y:75}, {x:50,y:75}];
 
 // HYPER ZAP — zonas derecha, para no pisarse

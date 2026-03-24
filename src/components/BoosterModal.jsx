@@ -1061,20 +1061,44 @@ const MediaSlot = ({ title, fieldName, type, description }) => {
 {/* 👑 LINAJE */}
 {tab === 'linaje' && formData.rank && (() => {
 
-  /* ── REINOS ── */
+ /* ── REINOS (100 Nombres Únicos y Corregidos) ── */
   const REINOS = [
-    'Reino de Solaris',      'Reino de Lunaris',       'Reino de Polaris',
-    'Reino de Vega',         'Reino de Andrómeda',     'Reino de Cásiopea',
-    'Reino de las Pléyades', 'Reino de Orión',          'Reino de Ofiuco',
-    'Reino de Aries',        'Reino de Géminis',        'Reino de Leo',
-    'Reino del Zodíaco',     'Reino de Neptuno',        'Reino de Marte',
-    'Reino de Júpiter',      'Reino de Venus',           'Reino de Aurora',
-    'Reino del Cénit',       'Reino del Horizonte',     'Reino de la Nebulosa',
-    'Reino de los Elfos',    'Reino de los Eloi',       'Reino de MU',
-    'Reino de la Atlántida', 'Reino de Lemuria',        'Reino de Avalon',
-    'Reino de Arcadia',      'Reino del Éter',           'Reino de Hyperión',
+    'Reino de Solaris',      'Reino de Lunaris',     'Reino de Polaris',
+    'Reino de Vega',         'Reino de Andrómeda',   'Reino de Cásiopea',
+    'Reino de las Pléyades', 'Reino de Orión',       'Reino de Ofiuco',
+    'Reino de Aries',        'Reino de Géminis',     'Reino de Leo',
+    'Reino del Zodíaco',     'Reino de Neptuno',     'Reino de Marte',
+    'Reino de Júpiter',      'Reino de Venus',       'Reino de Aurora',
+    'Reino del Cénit',       'Reino del Horizonte',  'Reino de la Nebulosa',
+    'Reino de los Elfos',    'Reino de los Eloi',    'Reino de MU',
+    'Reino de la Atlántida', 'Reino de Lemuria',     'Reino de Avalon',
+    'Reino de Lira',         'Reino del Éter',       'Reino de Hyperión',
+    'Reino de Mare Imbrium', 'Reino de KPax',        'Reino de Mare Tranquillitatis',
+    'Reino de Mare Nectaris', 'Reino de Altair',     'Reino de Mare Serenitatis',
+    'Reino de Mare Somniorum', 'Reino de Lacus Somniorum', 'Reino de Lacus Felicitatis',
+    'Reino de Arabia Terra', 'Reino de Tharsis',     'Reino de Elysium',
+    'Reino de Selene',       'Reino de Amazonis',    'Reino de Utopia',
+    'Reino de Syrtis Major', 'Reino de Hellas',      'Reino de Olympus',
+    'Reino de Arsia',        'Reino de Pavonis',     'Reino de Ascraeus',
+    'Reino de Elysium Mons', 'Reino de Marineris',   'Reino de Ares Vallis',
+    'Reino de Kasei',        'Reino de Tiu Vallis',  'Reino de Procellarum',
+    'Reino de Isidis',       'Reino de Tempe',       'Reino de Syrtis',
+    'Reino de Brazil',       'Reino de Chryse',      'Reino de Noachis',
+    'Reino de Aonia',        'Reino de Daedalia',    'Reino de Mareotis',
+    'Reino de Aeolis',       'Reino de Eridania',    'Reino de Memnonia',
+    'Reino de Promethei',    'Reino de Albor Tholus', 'Reino de Gale',
+    'Reino de Jezero',       'Reino de Gusev',       'Reino de Lyot',
+    'Reino de Korolev',      'Reino de Holden',      'Reino de Endeavour',
+    'Reino de los Montes Rook', 'Reino de los Montes Cárpatos', 'Reino de la Lealtad',
+    'Reino de la Pietatis',  'Reino de la Virtutis', 'Reino de la Sapientiae',
+    'Reino de la Concordiae', 'Reino de la Fortitudinis', 'Reino de la Clementiae',
+    'Reino del Honoris',     'Reino de Sirio',       'Reino de Brahma',
+    'Reino de la Caritatis', 'Reino de Urano',       'Reino de Antares',
+    'Reino de Cygnus',       'Reino de Tartaria',       'Reino de Polux',
+    'Reino de la Humanitatis', 'Reino de la Veritatis', 'Reino de Aquila',
+    'Reino de la Namibia',
   ];
-
+  
   /* ── LÓGICA DE GÉNERO ── */
   const g = formData.genero || 'n'; // 'm' | 'f' | 'n'
 
