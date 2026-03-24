@@ -1,4 +1,6 @@
 import React, { useState, useRef } from 'react';
+import { marcarActividad } from '../hooks/useActividad';
+await marcarActividad('games');
 
 // --- BASE DE DATOS DE FRASES ---
 const HEAVEN_QUOTES = [

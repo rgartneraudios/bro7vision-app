@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '../supabaseClient';
 import { TV_NODES } from '../data/TvDatabase';
 import Hls from 'hls.js';
+import { marcarActividad } from '../hooks/useActividad';
+await marcarActividad('activo');
+
 
 // ¡CORREGIDO! Ya no se corta el borde (border-left: none eliminado)
 const OESTE_STYLES = `

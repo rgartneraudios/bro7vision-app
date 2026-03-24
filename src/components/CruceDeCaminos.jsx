@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'; // <--- FIX: Añadido useRef
 import { SCENARIOS, EMOTIONAL_MATRIX } from '../data/CruceDeCaminosData';
+import { marcarActividad } from '../hooks/useActividad';
+await marcarActividad('games');
 
 const BUTTON_SETS = {
     HOT: [

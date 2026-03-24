@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
+import { marcarActividad } from '../hooks/useActividad';
+await marcarActividad('games');
 
 const PhaserGame = ({ config, onWin }) => {
   const gameContainer = useRef(null);

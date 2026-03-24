@@ -3,6 +3,9 @@ import { supabase } from '../supabaseClient';
 import { TV_NODES } from '../data/TvDatabase';
 import Hls from 'hls.js';
 import { getMoonSuffix } from '../utils/moonUtils';
+import { marcarActividad } from '../hooks/useActividad';
+await marcarActividad('activo');
+
 
 // ¡CORREGIDO! Ya no se corta el borde (border-right: none eliminado)
 const MOON_STYLES = `

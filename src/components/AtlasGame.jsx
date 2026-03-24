@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom'; // <--- IMPORTANTE: Necesario para el Portal
+import { marcarActividad } from '../hooks/useActividad';
+await marcarActividad('games');
 
 const AtlasGame = ({ onWin, onClose }) => {
   const [gameOver, setGameOver] = useState(false);

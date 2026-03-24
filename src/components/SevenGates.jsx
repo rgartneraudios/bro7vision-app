@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { marcarActividad } from '../hooks/useActividad';
+await marcarActividad('games');
 
 // --- CONFIGURACIÓN DE MEDIOS ---
 const ASSETS = {

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { marcarActividad } from '../hooks/useActividad';
 
 const ENERGY_COLORS = [
     { id: 'cyan',    hex: 'bg-cyan-400 shadow-[0_0_10px_#22d3ee]',    name: 'CYAN'     },
@@ -445,21 +446,27 @@ const MediaSlot = ({ title, fieldName, type, description }) => {
   };
 
   const handleConfirmarSubida = async () => {
-    // Validación obligatoria
-    if (!metadatos.titulo.trim()) { setErrorMeta('El título es obligatorio.'); return; }
-    if (!metadatos.descripcion.trim()) { setErrorMeta('La descripción es obligatoria.'); return; }
-    setErrorMeta('');
+  // Validación obligatoria
+  if (!metadatos.titulo.trim())       { setErrorMeta('El título es obligatorio.');       return; }
+  if (!metadatos.descripcion.trim())  { setErrorMeta('La descripción es obligatoria.');  return; }
+  setErrorMeta('');
 
-    // Llamamos al upload con los metadatos
-    const fakeEvent = { target: { files: [archivoSeleccionado] } };
-    await handleUploadUniversal(fakeEvent, fieldName, metadatos);
+  // Llamamos al upload con los metadatos
+  const fakeEvent = { target: { files: [archivoSeleccionado] } };
+  await handleUploadUniversal(fakeEvent, fieldName, metadatos);
 
-    // Limpiamos el acordeón
-    setAcordeonAbierto(false);
-    setArchivoSeleccionado(null);
-    setMetadatos({ titulo: '', descripcion: '', tipo: 'original' });
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
+  // ── NUEVO: si es un slot de video, marcamos actividad_video ──
+  const esVideo = ['video_file', 'video_file_2', 'video_file_3', 'video_file_219'].includes(fieldName);
+  if (esVideo) {
+    await marcarActividad('video');
+  }
+
+  // Limpiamos el acordeón
+  setAcordeonAbierto(false);
+  setArchivoSeleccionado(null);
+  setMetadatos({ titulo: '', descripcion: '', tipo: 'original' });
+  if (fileInputRef.current) fileInputRef.current.value = '';
+};
 
   const handleCancelar = () => {
     setAcordeonAbierto(false);

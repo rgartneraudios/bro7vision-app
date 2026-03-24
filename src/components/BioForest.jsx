@@ -5,6 +5,9 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { supabase } from '../supabaseClient';
 import { TV_NODES } from '../data/TvDatabase';
 import Hls from 'hls.js';
+import { marcarActividad } from '../hooks/useActividad';
+await marcarActividad('activo');
+
 
 const FOREST_STYLES = `
     @keyframes spiritFade {

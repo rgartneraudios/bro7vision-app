@@ -1,6 +1,8 @@
 // src/components/NeonReact.jsx (VERSIÓN FINAL ECONOMÍA 10 PTS)
 
 import React, { useState, useEffect, useRef } from 'react';
+import { marcarActividad } from '../hooks/useActividad';
+await marcarActividad('games');
 
 export default function NeonReact({ onWin }) {
   const [sequence, setSequence] = useState([]);

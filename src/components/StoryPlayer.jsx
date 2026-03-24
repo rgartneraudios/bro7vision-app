@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { PACKS_REGALOS, REGLAS_DESCUENTOS, MOON_MATRIX } from '../data/MoonMatrix';
+import { marcarActividad } from '../hooks/useActividad';
+await marcarActividad('brostory');
 
 const StoryPlayer = ({ src, activePhase, onClose, onComplete }) => {
   const videoRef = useRef(null);

@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
+import { marcarActividad } from '../hooks/useActividad';
+await marcarActividad('games');
 
 const TILE_SIZE = 100;
 const COLS = 11;
