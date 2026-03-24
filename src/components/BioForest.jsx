@@ -454,8 +454,7 @@ useEffect(()=>{
     }, 4500);
     
     return () => clearInterval(interval);
-  }, [visualEchos, currentUser]);
-  
+  }, [visualEchos, currentUser]);  
   
   const handleReport=async(echoId)=>{
     if(!confirm("¿Reportar este mensaje como inapropiado?"))return;
