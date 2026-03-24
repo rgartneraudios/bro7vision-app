@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'; // <--- FIX: Añadido useRef
 import { SCENARIOS, EMOTIONAL_MATRIX } from '../data/CruceDeCaminosData';
 import { marcarActividad } from '../hooks/useActividad';
-await marcarActividad('games');
+
 
 const BUTTON_SETS = {
     HOT: [
@@ -67,6 +67,7 @@ const CruceDeCaminos = ({ onWin, onClose }) => {
         const set = balance > 0 ? BUTTON_SETS.HOT : (balance < 0 ? BUTTON_SETS.COLD : BUTTON_SETS.NEUTRAL);
         setShuffledButtons(shuffle(set));
     }, [balance, step, gameState]);
+    
 
     const selectScenario = (sc) => {
         if (sc.locked) return;
@@ -139,6 +140,22 @@ const CruceDeCaminos = ({ onWin, onClose }) => {
         }
         setGameState('END');
     };
+    
+    // --- REGISTRO DE ACTIVIDAD (SUPABASE) ---
+  useEffect(() => {
+    // En este juego usamos gameState === 'finished' en lugar de gameOver
+    if (gameState === 'finished') {
+      const registrarActividad = async () => {
+        try {
+          await marcarActividad('games'); 
+          console.log("Actividad de juego guardada con éxito");
+        } catch (error) {
+          console.error("Error al marcar actividad del juego:", error);
+        }
+      };
+      registrarActividad();
+    }
+  }, [gameState]); // Vigilamos el estado del juego
 
     // --- RENDERS ---
 

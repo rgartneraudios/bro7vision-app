@@ -3,7 +3,7 @@ import { supabase } from '../supabaseClient';
 import { TV_NODES } from '../data/TvDatabase';
 import Hls from 'hls.js';
 import { marcarActividad } from '../hooks/useActividad';
-await marcarActividad('activo');
+
 
 
 // ¡CORREGIDO! Ya no se corta el borde (border-right: none eliminado)
@@ -177,13 +177,7 @@ const ChannelEste = ({ videoUsers, balances, setBalances, session, realityMode, 
   if (savedUserIndex) setCurrentIndex(savedUserIndex);
 }, []);
   
-  // TEMPORAL — quitar en producción
-const [tickerEchos, setTickerEchos] = useState([
-  { id: 1, text: 'vaya tela lo que hay que oír', author_alias: 'anonx77' },
-  { id: 2, text: 'no coincido en nada, en nada eh', author_alias: 'critixx' },
-  { id: 3, text: 'uff brutal pero pa mal', author_alias: 'user4421' },
-]);
-
+ 
   const videoRefPC  = useRef(null);
   const videoRefMob = useRef(null);
   const bgVideoRef  = useRef(null);
@@ -477,18 +471,37 @@ useEffect(() => {
   const handleAction = async (type) => {
   const col = echoType === 'hyper' ? `zap_${ecoVariant}` : `eco_${ecoVariant}`;
 
+  // --- CASO A: ECOS DE LUZ / REACCIONES (HALOS) ---
   if (type === 'reaction') {
+    try {
+      // Registramos que el usuario lanzó un Halo de luz
+      await marcarActividad('halo_luz');
+    } catch (e) { console.error(e); }
+    
     const myAlias = realUserAlias || 'CIUDADANO';
     setActiveReaction({ from: myAlias });
     setTimeout(() => setActiveReaction(null), 6000);
     return; // 👈 sale aquí, no descuenta nada
   }
+  
+   // --- CASO B: MANDAR ECO O HYPER ZAP (GEMMAS vs GENESIS) ---
+  try {
+    if (ecoVariant === 'pay') {
+      // Si la variante es 'pay', significa que está usando Gemmas
+      await marcarActividad('uso_gemmas');
+    } else {
+      // Si es 'gen', está usando puntos Génesis
+      await marcarActividad('uso_genesis');
+    }
+  } catch (e) { console.error(e); }
 
   // Solo llega aquí si es echo/zap
   if (!balances || balances[col] < 1) {
     alert(`NECESITAS ${echoType === 'hyper' ? 'ZAP' : 'ECO'} ${ecoVariant.toUpperCase()}...`);
     return;
   }
+  
+
 
   const myAlias = realUserAlias || 'CIUDADANO';
   const { data } = await supabase.from('bro_echos').insert([{

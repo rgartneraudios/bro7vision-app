@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { marcarActividad } from '../hooks/useActividad';
-await marcarActividad('games');
 
 // --- CONFIGURACIÓN DE MEDIOS ---
 const ASSETS = {
@@ -244,6 +243,22 @@ const SevenGates = ({ onWin, onClose }) => {
           generateLevel(1);
       }, 4000);
   };
+  
+  // --- REGISTRO DE ACTIVIDAD (SUPABASE) ---
+  useEffect(() => {
+    // En este juego usamos gameState === 'finished' en lugar de gameOver
+    if (gameState === 'finished') {
+      const registrarActividad = async () => {
+        try {
+          await marcarActividad('games'); 
+          console.log("Actividad de juego guardada con éxito");
+        } catch (error) {
+          console.error("Error al marcar actividad del juego:", error);
+        }
+      };
+      registrarActividad();
+    }
+  }, [gameState]); // Vigilamos el estado del juego
 
   return (
     // CAMBIO COLOR: Todo el borde y sombra ahora es CYAN siempre

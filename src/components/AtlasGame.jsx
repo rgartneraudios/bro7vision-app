@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom'; // <--- IMPORTANTE: Necesario para el Portal
 import { marcarActividad } from '../hooks/useActividad';
-await marcarActividad('games');
+
 
 const AtlasGame = ({ onWin, onClose }) => {
   const [gameOver, setGameOver] = useState(false);
@@ -50,6 +50,24 @@ const AtlasGame = ({ onWin, onClose }) => {
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, [onClose]);
+  
+  // --- REGISTRO DE ACTIVIDAD (SUPABASE) ---
+useEffect(() => {
+  // Solo disparamos cuando el juego termina (gameOver pasa a ser TRUE)
+  if (gameOver) {
+    const registrarActividad = async () => {
+      try {
+        // CAMBIA '3iatlas' por el nombre de cada juego en sus respectivos archivos
+        await marcarActividad('games'); 
+        console.log("Actividad de juego guardada con éxito");
+      } catch (error) {
+        console.error("Error al marcar actividad del juego:", error);
+      }
+    };
+    
+    registrarActividad();
+  }
+}, [gameOver]); // <--- Importante: Se activa cuando cambia el estado de la partida
 
   // --- BUCLE DEL JUEGO ---
   useEffect(() => {
@@ -197,18 +215,39 @@ const AtlasGame = ({ onWin, onClose }) => {
 
       {/* MENÚS */}
       {(!gameStarted || gameOver) && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md z-[100]">
-          <h1 className="text-8xl font-black italic text-transparent bg-clip-text bg-gradient-to-br from-cyan-400 to-fuchsia-600 mb-4 drop-shadow-2xl">
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md z-[100] p-6 text-center">
+          
+          <h1 className="text-8xl font-black italic text-transparent bg-clip-text bg-gradient-to-br from-cyan-400 to-fuchsia-600 mb-2 drop-shadow-2xl">
               ATLAS
           </h1>
+
+          {/* --- BLOQUE DE INFO DE RECOMPENSAS Y ESTRATEGIA --- */}
+          {!gameOver && (
+            <div className="mb-8 animate-fadeIn max-w-xs">
+              {/* Tabla de Puntos simplificada */}
+              <div className="flex flex-wrap justify-center gap-3 mb-4 font-mono text-[10px] font-black tracking-tighter">
+                <span className="px-2 py-1 bg-white/5 border border-cyan-500/30 text-cyan-400">5K: 50 GEN</span>
+                <span className="px-2 py-1 bg-white/5 border border-fuchsia-500/30 text-fuchsia-400">10K: 100 GEN</span>
+                <span className="px-2 py-1 bg-white/5 border border-cyan-500/30 text-cyan-400">15K: 150 GEN</span>
+                <span className="px-2 py-1 bg-white/5 border border-fuchsia-500/30 text-fuchsia-400">20K: 200 GEN</span>
+              </div>
+              
+              {/* Tip de Estrategia */}
+              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400 leading-relaxed italic">
+                A mayor <span className="text-white underline font-bold">altitud</span> el marcador se acelera, pero el riesgo de colisión es <span className="text-red-500">crítico</span>.
+              </p>
+            </div>
+          )}
           
           {gameOver && (
             <div className="text-center mb-10 animate-fadeIn">
                 <p className="text-red-500 font-bold tracking-[0.5em] text-sm mb-2 animate-pulse">SIGNAL LOST</p>
                 <p className="text-white text-6xl font-mono font-bold mb-4">{score.toLocaleString()}</p>
+                
+                {/* Recompensas dinámicas basadas en tu escala */}
                 {score >= 5000 && (
                     <div className="bg-white/10 px-6 py-2 rounded-full border border-white/20">
-                        <p className="text-cyan-300 font-bold">
+                        <p className="text-cyan-300 font-bold uppercase text-xs tracking-widest">
                             RECOMPENSA: +{score >= 20000 ? 200 : score >= 15000 ? 150 : score >= 10000 ? 100 : 50} GÉNESIS
                         </p>
                     </div>
@@ -237,7 +276,8 @@ const AtlasGame = ({ onWin, onClose }) => {
           </div>
         </div>
       )}
-    </div>
+      
+          </div>
   );
 
   // --- EL TRUCO DE MAGIA: RENDERIZAR EN EL BODY ---

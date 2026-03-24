@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
 import { marcarActividad } from '../hooks/useActividad';
-await marcarActividad('games');
+
 
 const PhaserGame = ({ config, onWin }) => {
   const gameContainer = useRef(null);
@@ -58,6 +58,22 @@ const PhaserGame = ({ config, onWin }) => {
           gameInstance.current.registry.set('onWin', onWin);
       }
   }, [onWin]);
+  
+  // --- REGISTRO DE ACTIVIDAD (SUPABASE) ---
+  useEffect(() => {
+    // En este juego usamos gameState === 'finished' en lugar de gameOver
+    if (gameState === 'finished') {
+      const registrarActividad = async () => {
+        try {
+          await marcarActividad('games'); 
+          console.log("Actividad de juego guardada con éxito");
+        } catch (error) {
+          console.error("Error al marcar actividad del juego:", error);
+        }
+      };
+      registrarActividad();
+    }
+  }, [gameState]); // Vigilamos el estado del juego
 
   return (
     <div 

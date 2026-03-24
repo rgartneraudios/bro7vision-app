@@ -3,7 +3,7 @@ import PhaserGame from './PhaserGame';
 import ScalextricScene from '../game/ScalextricScene';
 import Phaser from 'phaser';
 import { marcarActividad } from '../hooks/useActividad';
-await marcarActividad('games');
+
 
 const ScalextricPhaser = ({ onWin, difficulty }) => {
   const [mode, setMode] = useState('menu'); 
@@ -191,6 +191,22 @@ const ScalextricPhaser = ({ onWin, difficulty }) => {
         }
     }
   }), [difficulty]); // <--- IMPORTANTE: Añade [difficulty] aquí si quieres que se recargue si cambia, si no, déjalo []
+  
+  // --- REGISTRO DE ACTIVIDAD (SUPABASE) ---
+  useEffect(() => {
+    // En este juego usamos gameState === 'finished' en lugar de gameOver
+    if (gameState === 'finished') {
+      const registrarActividad = async () => {
+        try {
+          await marcarActividad('games'); 
+          console.log("Actividad de juego guardada con éxito");
+        } catch (error) {
+          console.error("Error al marcar actividad del juego:", error);
+        }
+      };
+      registrarActividad();
+    }
+  }, [gameState]); // Vigilamos el estado del juego
   
   return (
     <div className="w-full h-full flex items-center justify-center bg-black/90 rounded-xl overflow-hidden border-2 border-cyan-500/50 shadow-lg relative">

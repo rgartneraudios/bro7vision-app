@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { marcarActividad } from '../hooks/useActividad';
-await marcarActividad('games');
 
 const TILE_SIZE = 100;
 const COLS = 11;
@@ -628,6 +627,22 @@ const CronosGame = ({ onWin, onClose }) => {
     
     console.log('Telecronos - Enviando puntos:', finalAmount);
     onWin(finalAmount); // Esto ahora sí enviará los 10 puntos al App.jsx
+    
+    // --- REGISTRO DE ACTIVIDAD (SUPABASE) ---
+  useEffect(() => {
+    // En este juego usamos gameState === 'finished' en lugar de gameOver
+    if (gameState === 'finished') {
+      const registrarActividad = async () => {
+        try {
+          await marcarActividad('games'); 
+          console.log("Actividad de juego guardada con éxito");
+        } catch (error) {
+          console.error("Error al marcar actividad del juego:", error);
+        }
+      };
+      registrarActividad();
+    }
+  }, [gameState]); // Vigilamos el estado del juego
 
     // Limpieza de audio
     if (assets.current.audios.loop) { 

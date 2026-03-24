@@ -1,6 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { marcarActividad } from '../hooks/useActividad';
-await marcarActividad('games');
 
 // --- BASE DE DATOS DE FRASES ---
 const HEAVEN_QUOTES = [
@@ -276,6 +275,22 @@ const CosmicQuiz = ({ onWin }) => {
         setBubbleText(quote);
     }
   };
+  
+ // --- REGISTRO DE ACTIVIDAD (SUPABASE) ---
+  useEffect(() => {
+    // En este juego usamos gameState === 'finished' en lugar de gameOver
+    if (gameState === 'finished') {
+      const registrarActividad = async () => {
+        try {
+          await marcarActividad('games'); 
+          console.log("Actividad de juego guardada con éxito");
+        } catch (error) {
+          console.error("Error al marcar actividad del juego:", error);
+        }
+      };
+      registrarActividad();
+    }
+  }, [gameState]); // Vigilamos el estado del juego
 
   return (
     <div className="w-full h-full relative overflow-hidden bg-black border-2 border-white/20 rounded-3xl shadow-2xl font-mono select-none flex flex-col items-center justify-center">

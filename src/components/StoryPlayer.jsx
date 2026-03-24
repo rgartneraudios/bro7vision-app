@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { PACKS_REGALOS, REGLAS_DESCUENTOS, MOON_MATRIX } from '../data/MoonMatrix';
 import { marcarActividad } from '../hooks/useActividad';
-await marcarActividad('brostory');
+
 
 const StoryPlayer = ({ src, activePhase, onClose, onComplete }) => {
   const videoRef = useRef(null);
@@ -34,9 +34,18 @@ const phaseData = MOON_MATRIX[activePhase] || {
       }
     };
 
-    const handleEnded = () => {
+    const handleEnded = async () => { // 1. Añadimos 'async' aquí
       setIsCompleted(true);
       setCreditsMined(TOTAL_REWARD);
+      
+      try {
+        // 2. REGISTRAMOS LA ACTIVIDAD EN SUPABASE JUSTO AQUÍ
+        await marcarActividad('brostory');
+        console.log("Actividad registrada en Supabase");
+      } catch (error) {
+        console.error("Error al registrar actividad:", error);
+      }
+      
       setTimeout(() => {
         onComplete(TOTAL_REWARD);
       }, 1000); 
