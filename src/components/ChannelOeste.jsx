@@ -379,7 +379,7 @@ useEffect(()=>{
           finalVisual = [...finalVisual, ...userEchos.filter(e => !e.audio_link)];
         }
       } else {
-        finalVisual = [...finalVisual, { id: 's1', author_alias: 'SISTEMA', text: 'MODO SIMULACIÓN' }];
+        finalVisual = [...finalVisual, { id: 's1', author_alias: 'BRO MASTER', text: 'Buscamos los primeros 500 Fundadores para arrancar el Reino!, postúlate!' }];
       }
       
       setVisualEchos(finalVisual);
@@ -526,7 +526,7 @@ useEffect(()=>{
         
         <div className={`
           flex items-center gap-4 
-          px-5 py-3 rounded-2xl bg-black/95 /* Fondo muy oscuro, puntas redondeadas modernas */
+          px-5 py-3 rounded-2xl bg-slate-900/75 /* Fondo muy oscuro, puntas redondeadas modernas */
           border-[1.5px] ${borderColor} ${shadowColor}
           max-w-[280px] md:max-w-[360px] font-sans /* Fuente moderna */
         `}>

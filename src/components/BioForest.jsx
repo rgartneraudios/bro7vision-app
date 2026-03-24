@@ -123,13 +123,13 @@ const FOREST_STYLES = `
 const PC_SLOTS = [
     {x:5,y:25},{x:7,y:40},{x:15,y:75},
     {x:62,y:10},{x:75,y:25},{x:75,y:7},
-    {x:15,y:3},{x:65,y:43},{x:80,y:20},
+    {x:15,y:3},{x:65,y:43},{x:80,y:40},
 ];
 const MOBILE_SLOTS = [{x:5,y:75}, {x:50,y:75}];
 
 // HYPER ZAP — zonas derecha, para no pisarse
 const HYPER_PC_SLOTS = [
-  {x:72,y:15},{x:70,y:60},{x:80,y:75},
+  {x:70,y:60},{x:80,y:75},
   {x:4,y:78},{x:15,y:55},{x:16,y:27},
 ];
 const HYPER_MOBILE_SLOTS = [{x:20,y:2}];
@@ -381,7 +381,7 @@ useEffect(()=>{
           finalVisual = [...finalVisual, ...userEchos.filter(e => !e.audio_link)];
         }
       } else {
-        finalVisual = [...finalVisual, { id: 's1', author_alias: 'SISTEMA', text: 'MODO SIMULACIÓN' }];
+        finalVisual = [...finalVisual, { id: 's1', author_alias: 'BRO MASTER', text: 'Buscamos los primeros 500 Fundadores para arrancar el Reino!, postúlate!' }];
       }
       
       setVisualEchos(finalVisual);
@@ -597,7 +597,7 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
         
         <div className={`
           flex items-center gap-4 
-          px-5 py-3 rounded-2xl bg-black/95 /* Fondo muy oscuro, puntas redondeadas modernas */
+          px-5 py-3 rounded-2xl bg-slate-900/75 /* Fondo muy oscuro, puntas redondeadas modernas */
           border-[1.5px] ${borderColor} ${shadowColor}
           max-w-[280px] md:max-w-[360px] font-sans /* Fuente moderna */
         `}>
