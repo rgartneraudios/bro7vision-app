@@ -67,20 +67,20 @@ const MoonMatrixCircle = () => {
         <circle cx="50" cy="50" r="38" fill="white" opacity={g2} filter="url(#glowSoft)"/>
 
         {/* Base */}
-        <circle cx="50" cy="50" r="38" fill={isNova ? 'url(#novaGrad)' : '#080c14'}/>
+        <circle cx="50" cy="50" r="38" fill={isNova ? 'url(#novaGrad)' : '#000000'}/>
 
         {/* Superficie + sombra */}
         <g clipPath="url(#diskClip)">
           <circle cx="50" cy="50" r="38" fill="url(#litGrad)" opacity={litOpacity}/>
+          
+          {/* Parches oscuros para sellar las fugas de luz en los bordes curvos */}
+          {phase === 'CRESCENS' && <rect x="0" y="0" width={cx} height="100" fill="#080c14" />}
+          {phase === 'DECRESCENS' && <rect x={cx} y="0" width={100} height="100" fill="#080c14" />}
+          
           <ellipse cx={cx} cy="50" rx={rx} ry="38" fill="#080c14"/>
         </g>
-
-        {/* Borde */}
-        <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="0.8"/>
-        {/* Reflejo */}
-        {!isNova && <ellipse cx="42" cy="40" rx="9" ry="5" fill="rgba(255,255,255,0.1)" transform="rotate(-25,42,40)"/>}
       </svg>
-
+            
       <span style={{ fontFamily: 'monospace', fontSize: '10px', fontWeight: 700, letterSpacing: '0.25em', color: 'rgba(255,255,255,0.75)', textTransform: 'uppercase' }}>
         {phase}
       </span>

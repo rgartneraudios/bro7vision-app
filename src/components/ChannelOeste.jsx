@@ -877,144 +877,152 @@ useEffect(()=>{
 
 
       {/* ══ MODAL ECO ══ */}
-      {showEchoInput&&(
-        <div className="fixed inset-0 z-[1000] bg-black/95 backdrop-blur-md flex items-center justify-center p-6">
-          <div className="w-full max-w-md text-center flex flex-col items-center">
-          
-           {/* MENSAJE DE REGLAS ANTI-SPAM BROVISION */}
-<div className="my-4 p-4 border border-white/60 bg-red-950/80 rounded-xl shadow-[0_0_15px_rgba(220,38,38,0.5)] font-sans text-center backdrop-blur-md">
-  
-  <h3 className="mb-3 text-yellow-400 font-extrabold uppercase tracking-wider text-lg flex items-center justify-center gap-2 drop-shadow-[0_0_8px_rgba(250,204,21,0.8)]">
-    <span>⚠️</span> REGLAS DE ECOS Y ZAPS <span>⚠️</span>
-  </h3>
-  
-  <p className="mb-4 text-white/95 text-sm md:text-base leading-relaxed">
-    <span className="text-cyan-400 font-bold drop-shadow-[0_0_5px_rgba(34,211,238,0.6)]">Eco</span> y <span className="text-fuchsia-400 font-bold drop-shadow-[0_0_5px_rgba(232,121,249,0.6)]">Zap</span> son herramientas de interacción y promoción <b className="text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">interna</b> de tu Canal.
-    <br/>
-    <b className="text-yellow-300">Respeto Mutuo:</b> NO se toleran insultos, toxicidad ni actitudes irrespetuosas en la comunidad. Mantén la vibra limpia.
-    <br/>
-    <b className="text-red-400">Cero Marcas:</b> NO se permite publicidad comercial directa con precios. Ejemplos ZAP
-  </p>
-
-  {/* BOTONES DE EJEMPLO APILADOS (Flex-col) */}
-  <div className="flex flex-col gap-3 w-full px-2 max-w-lg mx-auto">
+{showEchoInput && (
+  <div className="fixed inset-0 z-[1000] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4 md:p-6 overflow-y-auto">
+    <div className="w-full max-w-md text-center flex flex-col items-center my-auto">
     
-    {/* EJEMPLO CORRECTO */}
-    <div className="bg-black/70 border border-emerald-500/60 py-3 px-4 rounded-lg text-emerald-400 text-base md:text-lg font-semibold shadow-[0_0_12px_rgba(16,185,129,0.2)] flex items-center gap-3 text-left">
-      <span className="text-2xl drop-shadow-[0_0_5px_rgba(16,185,129,0.8)]">✅</span> 
-      <span className="leading-tight">"Te muestro la nueva afeitadora en mi canal"</span>
-    </div>
-    
-    {/* EJEMPLO INCORRECTO */}
-    <div className="bg-black/70 border border-red-500/60 py-3 px-4 rounded-lg text-red-400 text-base md:text-lg font-semibold shadow-[0_0_12px_rgba(239,68,68,0.2)] flex items-center gap-3 text-left">
-      <span className="text-2xl drop-shadow-[0_0_5px_rgba(239,68,68,0.8)]">❌</span> 
-      <span className="leading-tight">"Oferta afeitadora 15 euros, entra a mi tienda"</span>
-    </div>
+      {/* MENSAJE DE REGLAS ANTI-SPAM BROVISION (Intacto) */}
+      <div className="my-3 p-4 border border-white/60 bg-red-950/80 rounded-xl shadow-[0_0_15px_rgba(220,38,38,0.5)] font-sans text-center backdrop-blur-md">
+        <h3 className="mb-3 text-yellow-400 font-extrabold uppercase tracking-wider text-lg flex items-center justify-center gap-2 drop-shadow-[0_0_8px_rgba(250,204,21,0.8)]">
+          <span>⚠️</span> REGLAS DE ECOS Y ZAPS <span>⚠️</span>
+        </h3>
+        <p className="mb-3 text-white/95 text-sm md:text-base leading-relaxed">
+          <span className="text-cyan-400 font-bold drop-shadow-[0_0_5px_rgba(34,211,238,0.6)]">Eco</span> y <span className="text-fuchsia-400 font-bold drop-shadow-[0_0_5px_rgba(232,121,249,0.6)]">Zap</span> son herramientas de interacción y promoción <b className="text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">interna</b> de tu Canal.
+          <br/>
+          <b className="text-yellow-300">Respeto Mutuo:</b> NO se toleran insultos ni actitudes irrespetuosas.
+          <br/>
+          <b className="text-red-400">Cero Marcas:</b> NO publicidad comercial directa con precios. Ejemplos ZAP:
+        </p>
 
-  </div>
-  
-</div> 
-          
-            {/* SELECTOR 1: TIPO DE MENSAJE (ECO vs ZAP) */}
-<div className="flex gap-4 mb-6 justify-center w-full max-w-md mx-auto px-2">
-  
-  {/* BOTÓN ECO (Fuchsia) */}
-  <button 
-    onClick={() => setEchoType('text')} 
-    className={`flex-1 py-3 md:py-4 rounded-xl text-lg md:text-xl font-black border tracking-widest transition-all duration-300 flex items-center justify-center gap-3
-    ${echoType === 'text' 
-      ? 'bg-fuchsia-500 text-black border-fuchsia-300 shadow-[0_0_20px_rgba(217,70,239,0.7)] scale-105 z-10' 
-      : 'bg-black/40 text-fuchsia-400/60 border-fuchsia-500/30 hover:border-fuchsia-400/80 hover:text-fuchsia-300 hover:shadow-[0_0_10px_rgba(217,70,239,0.3)]'
-    }`}
-  >
-    <span className="text-2xl md:text-3xl">💬</span> ECO
-  </button>
-
-  {/* BOTÓN ZAP (Dorado/Yellow - Mayor jerarquía) */}
-  <button 
-    onClick={() => setEchoType('hyper')} 
-    className={`flex-1 py-3 md:py-4 rounded-xl text-lg md:text-xl font-black border tracking-widest transition-all duration-300 flex items-center justify-center gap-3
-    ${echoType === 'hyper' 
-      ? 'bg-yellow-400 text-black border-yellow-200 shadow-[0_0_30px_rgba(250,204,21,0.9)] scale-110 z-10' 
-      : 'bg-black/40 text-yellow-500/60 border-yellow-500/30 hover:border-yellow-400/80 hover:text-yellow-300 hover:shadow-[0_0_15px_rgba(250,204,21,0.4)]'
-    }`}
-  >
-    <span className="text-2xl md:text-3xl">🐬</span> ZAP
-  </button>
-
-</div>
-            
-{/* SELECTOR 2: VARIANTE DE MONEDA (PAY vs GEN) */}
-<div className="flex gap-4 mb-8 justify-center w-full max-w-md mx-auto px-2">
-
-  {/* BOTÓN PAY (Cyan - Invitación a usarlo) */}
-  <button
-    onClick={() => setEcoVariant('pay')}
-    className={`flex-1 py-3 md:py-4 rounded-xl text-lg md:text-xl font-black border tracking-widest transition-all duration-300 flex flex-col items-center justify-center gap-1
-    ${ecoVariant === 'pay' 
-      ? 'bg-cyan-400 text-black border-cyan-200 shadow-[0_0_25px_rgba(6,182,212,0.8)] scale-105 z-10' 
-      : 'bg-cyan-950/40 text-cyan-400 border-cyan-500/40 hover:border-cyan-300 hover:shadow-[0_0_15px_rgba(6,182,212,0.5)]'
-    }`}
-  >
-    <span className="flex items-center gap-2 uppercase">
-      <span className="text-xl md:text-2xl drop-shadow-md">💶</span> PAY
-    </span>
-    <span className={`text-xs md:text-sm font-bold tracking-wider ${ecoVariant === 'pay' ? 'text-black/80' : 'text-cyan-400/80'}`}>
-      DISP: {echoType === 'hyper' ? balances?.zap_p ?? 0 : balances?.eco_p ?? 0}
-    </span>
-  </button>
-
-  {/* BOTÓN GEN (Orange - Lindo pero un escalón visual por debajo) */}
-  <button
-    onClick={() => setEcoVariant('gen')}
-    className={`flex-1 py-3 md:py-4 rounded-xl text-lg md:text-xl font-black border tracking-widest transition-all duration-300 flex flex-col items-center justify-center gap-1
-    ${ecoVariant === 'gen' 
-      ? 'bg-orange-500 text-black border-orange-300 shadow-[0_0_20px_rgba(249,115,22,0.7)] scale-100 z-10' 
-      : 'bg-orange-950/30 text-orange-500/60 border-orange-500/30 hover:border-orange-400/80 hover:text-orange-400'
-    }`}
-  >
-    <span className="flex items-center gap-2 uppercase">
-      <span className="text-xl md:text-2xl drop-shadow-md">🟢</span> GEN
-    </span>
-    <span className={`text-xs md:text-sm font-bold tracking-wider ${ecoVariant === 'gen' ? 'text-black/80' : 'text-orange-500/80'}`}>
-      DISP: {echoType === 'hyper' ? balances?.zap_gen ?? 0 : balances?.eco_gen ?? 0}
-    </span>
-  </button>
-
-</div>
-
-{/* SELECTOR DE EMOJIS (NUEVO) */}
-<div className="flex justify-center gap-2 mb-6 w-full max-w-md mx-auto px-2">
-  {[1, 2, 3, 4, 5, 6, 7].map((id) => (
-    <button
-      key={id}
-      onClick={() => setSelectedEmoji(id)}
-      className={`relative w-[40px] h-[40px] md:w-[50px] md:h-[50px] rounded-full transition-all duration-300 flex-shrink-0
-        ${selectedEmoji === id
-          ? 'scale-125 z-10 shadow-[0_0_15px_rgba(34,211,238,0.8)] border-2 border-cyan-400 bg-black/60'
-          : 'opacity-50 hover:opacity-100 hover:scale-110 border border-transparent'
-        }`}
-    >
-      <img
-        src={`/emojis/emoji_${id}.webp`} /* Asegúrate de tener las imágenes en tu carpeta public/emojis */
-        alt={`Emoji ${id}`}
-        className="w-full h-full object-cover drop-shadow-md"
-        loading="lazy"
-      />
-    </button>
-  ))}
-</div>
-            
-            <input autoFocus type="text" placeholder={echoType==='hyper'?'TÍTULO DEL ANUNCIO...':'ESCRIBE TU ECO O ZAP...'}
-                   className="w-full bg-transparent border-b-2 border-white/20 py-6 text-center text-white outline-none font-black text-2xl md:text-3xl uppercase focus:border-fuchsia-400 transition-colors"
-                   value={echoText} onChange={e=>setEchoText(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleAction('echo')} maxLength={60}/>
-            <button onClick={()=>handleAction('echo')} className="w-full max-w-[280px] py-4 rounded-2xl font-black text-[12px] tracking-widest uppercase transition-all shadow-xl bg-fuchsia-600 text-white mt-16 mb-6">
-              EMITIR
-            </button>
-            <button onClick={()=>setShowEchoInput(false)} className="text-gray-500 text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors">[ VOLVER ]</button>
+        {/* BOTONES DE EJEMPLO APILADOS */}
+        <div className="flex flex-col gap-2 w-full px-2 max-w-lg mx-auto">
+          <div className="bg-black/70 border border-emerald-500/60 py-2 px-3 rounded-lg text-emerald-400 text-sm md:text-base font-semibold shadow-[0_0_12px_rgba(16,185,129,0.2)] flex items-center gap-3 text-left">
+            <span className="text-xl drop-shadow-[0_0_5px_rgba(16,185,129,0.8)]">✅</span> 
+            <span className="leading-tight">"Te muestro la nueva afeitadora en mi canal"</span>
+          </div>
+          <div className="bg-black/70 border border-red-500/60 py-2 px-3 rounded-lg text-red-400 text-sm md:text-base font-semibold shadow-[0_0_12px_rgba(239,68,68,0.2)] flex items-center gap-3 text-left">
+            <span className="text-xl drop-shadow-[0_0_5px_rgba(239,68,68,0.8)]">❌</span> 
+            <span className="leading-tight">"Oferta afeitadora 15 euros, entra a mi tienda"</span>
           </div>
         </div>
-      )}
+      </div> 
+    
+      {/* SELECTOR 1: TIPO DE MENSAJE (ECO vs ZAP) - Altura reducida */}
+      <div className="flex gap-3 mb-3 justify-center w-full max-w-md mx-auto px-2">
+        <button 
+          onClick={() => setEchoType('text')} 
+          className={`flex-1 py-2 md:py-3 rounded-xl text-base md:text-xl font-black border tracking-widest transition-all duration-300 flex items-center justify-center gap-2
+          ${echoType === 'text' 
+            ? 'bg-fuchsia-500 text-black border-fuchsia-300 shadow-[0_0_20px_rgba(217,70,239,0.7)] scale-[1.02] z-10' 
+            : 'bg-black/40 text-fuchsia-400/60 border-fuchsia-500/30 hover:border-fuchsia-400/80 hover:text-fuchsia-300 hover:shadow-[0_0_10px_rgba(217,70,239,0.3)]'
+          }`}
+        >
+          <span className="text-xl md:text-2xl">💬</span> ECO
+        </button>
+
+        <button 
+          onClick={() => setEchoType('hyper')} 
+          className={`flex-1 py-2 md:py-3 rounded-xl text-base md:text-xl font-black border tracking-widest transition-all duration-300 flex items-center justify-center gap-2
+          ${echoType === 'hyper' 
+            ? 'bg-yellow-400 text-black border-yellow-200 shadow-[0_0_30px_rgba(250,204,21,0.9)] scale-[1.05] z-10' 
+            : 'bg-black/40 text-yellow-500/60 border-yellow-500/30 hover:border-yellow-400/80 hover:text-yellow-300 hover:shadow-[0_0_15px_rgba(250,204,21,0.4)]'
+          }`}
+        >
+          <span className="text-xl md:text-2xl">🐬</span> ZAP
+        </button>
+      </div>
+      
+      {/* SELECTOR 2: VARIANTE DE MONEDA (PAY vs GEN) - EN UNA SOLA LÍNEA */}
+      <div className="flex gap-3 mb-4 justify-center w-full max-w-md mx-auto px-2">
+        <button
+          onClick={() => setEcoVariant('pay')}
+          className={`flex-1 py-2 rounded-xl text-sm md:text-base font-black border tracking-widest transition-all duration-300 flex items-center justify-center gap-2
+          ${ecoVariant === 'pay' 
+            ? 'bg-cyan-400 text-black border-cyan-200 shadow-[0_0_25px_rgba(6,182,212,0.8)] scale-[1.02] z-10' 
+            : 'bg-cyan-950/40 text-cyan-400 border-cyan-500/40 hover:border-cyan-300 hover:shadow-[0_0_15px_rgba(6,182,212,0.5)]'
+          }`}
+        >
+          <span className="flex items-center gap-1.5 uppercase">
+            <span className="text-lg md:text-xl drop-shadow-md">💰</span> PAY
+          </span>
+          <span className="opacity-40">|</span>
+          <span className={`text-xs md:text-sm font-bold tracking-wider ${ecoVariant === 'pay' ? 'text-black/80' : 'text-cyan-400/80'}`}>
+            DISP: {echoType === 'hyper' ? balances?.zap_p ?? 0 : balances?.eco_p ?? 0}
+          </span>
+        </button>
+
+        <button
+          onClick={() => setEcoVariant('gen')}
+          className={`flex-1 py-2 rounded-xl text-sm md:text-base font-black border tracking-widest transition-all duration-300 flex items-center justify-center gap-2
+          ${ecoVariant === 'gen' 
+            ? 'bg-orange-500 text-black border-orange-300 shadow-[0_0_20px_rgba(249,115,22,0.7)] scale-100 z-10' 
+            : 'bg-orange-950/30 text-orange-500/60 border-orange-500/30 hover:border-orange-400/80 hover:text-orange-400'
+          }`}
+        >
+          <span className="flex items-center gap-1.5 uppercase">
+            <span className="text-lg md:text-xl drop-shadow-md">🌱</span> GEN
+          </span>
+          <span className="opacity-40">|</span>
+          <span className={`text-xs md:text-sm font-bold tracking-wider ${ecoVariant === 'gen' ? 'text-black/80' : 'text-orange-500/80'}`}>
+            DISP: {echoType === 'hyper' ? balances?.zap_gen ?? 0 : balances?.eco_gen ?? 0}
+          </span>
+        </button>
+      </div>
+
+      {/* SELECTOR DE EMOJIS - Emojis ligeramente más grandes */}
+      <div className="flex justify-center gap-2 mb-4 w-full max-w-md mx-auto px-2">
+        {[1, 2, 3, 4, 5, 6, 7].map((id) => (
+          <button
+            key={id}
+            onClick={() => setSelectedEmoji(id)}
+            className={`relative w-[45px] h-[45px] md:w-[65px] md:h-[65px] rounded-full transition-all duration-300 flex-shrink-0
+              ${selectedEmoji === id
+                ? 'scale-125 z-10 shadow-[0_0_15px_rgba(34,211,238,0.8)] border-2 border-cyan-400 bg-black/60'
+                : 'opacity-50 hover:opacity-100 hover:scale-110 border border-transparent'
+              }`}
+          >
+            <img
+              src={`/emojis/emoji_${id}.webp`} 
+              alt={`Emoji ${id}`}
+              className="w-full h-full object-cover drop-shadow-md"
+              loading="lazy"
+            />
+          </button>
+        ))}
+      </div>
+      
+      {/* INPUT - Menos padding vertical para ahorrar espacio */}
+      <input 
+        autoFocus 
+        type="text" 
+        placeholder={echoType==='hyper'?'TÍTULO DEL ANUNCIO...':'ESCRIBE TU ECO O ZAP...'}
+        className="w-full bg-transparent border-b-2 border-white/20 py-3 text-center text-white outline-none font-black text-xl md:text-2xl uppercase focus:border-fuchsia-400 transition-colors"
+        value={echoText} 
+        onChange={e=>setEchoText(e.target.value)} 
+        onKeyDown={e=>e.key==='Enter'&&handleAction('echo')} 
+        maxLength={60}
+      />
+      
+      {/* BOTÓN EMITIR - Margen superior muy reducido (mt-16 a mt-6) */}
+      <button 
+        onClick={()=>handleAction('echo')} 
+        className="w-full max-w-[280px] py-3 rounded-2xl font-black text-[14px] tracking-widest uppercase transition-all shadow-xl bg-green-600 text-white mt-6 mb-4 hover:bg-green-500"
+      >
+        EMITIR
+      </button>
+
+      {/* BOTÓN VOLVER - Ahora sí se verá sin tener que hacer zoom out */}
+      <button 
+        onClick={()=>setShowEchoInput(false)} 
+        className="text-gray-500 text-[12px] font-black uppercase tracking-widest hover:text-white transition-colors"
+      >
+        [ VOLVER ]
+      </button>
+      
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
