@@ -231,7 +231,7 @@ const handleOpenProfile = (user) => {
 
     // 3. Unir todo
     return [
-      { alias: "BRO MASTER", video_file: "https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/Mapache-Guia.mp4", id: "bro_master" },
+      { alias: "BRO MASTER", video_file: "https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/Mapache-habla.mp4", id: "bro_master" },
       ...masterVideos,
       ...supabaseVideos
     ];

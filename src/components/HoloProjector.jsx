@@ -12,20 +12,40 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
   const [question, setQuestion] = useState("");
   const [show219, setShow219] = useState(false);
   const [videoIndex, setVideoIndex] = useState(0);
+  const [mediaData, setMediaData] = useState({});         // ← NUEVO
+  const [acordeonAbierto, setAcordeonAbierto] = useState(false); // ← NUEVO
 
   const videoRef = useRef(null);
 
-  const videos = [
-    user.video_file,
-    user.video_file_2,
-    user.video_file_3
-  ];
+  const SLOT_KEYS = ['v1', 'v2', 'v3'];
 
-  const nextVideo = () => setVideoIndex((prev) => (prev + 1) % videos.length);
-  const prevVideo = () => setVideoIndex((prev) => (prev - 1 + videos.length) % videos.length);
+  const videos = [user.video_file, user.video_file_2, user.video_file_3].filter(Boolean);
+
+  const nextVideo = () => { setVideoIndex((prev) => (prev + 1) % videos.length); setAcordeonAbierto(false); };
+  const prevVideo = () => { setVideoIndex((prev) => (prev - 1 + videos.length) % videos.length); setAcordeonAbierto(false); };
 
   const bgKey = user.intimo_bg && user.intimo_bg !== "" ? user.intimo_bg : 'salon';
   const backgroundVideo = `https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/intimo_${bgKey}.mp4`;
+
+  // ── NUEVO: fetch creator_media ─────────────────────────────────
+  useEffect(() => {
+    const fetchMedia = async () => {
+      const { data, error } = await supabase
+        .from('creator_media')
+        .select('slot, url, titulo, descripcion, tipo')
+        .eq('user_id', user.id);
+      if (error) { console.error('[creator_media]', error); return; }
+      const mapped = {};
+      data.forEach(item => { mapped[item.slot] = item; });
+      setMediaData(mapped);
+    };
+    if (user?.id) fetchMedia();
+  }, [user.id]);
+
+  // Metadatos del video visible ahora mismo
+  const currentSlot = SLOT_KEYS[videoIndex] || 'v1';
+  const currentMedia = mediaData[currentSlot] || null;
+  const currentTipo  = currentMedia?.tipo || 'original';
 
   const getCleanUrl = (url) => {
     if (!url) return "";
@@ -34,8 +54,7 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
       clean = clean
         .replace('www.dropbox.com', 'dl.dropboxusercontent.com')
         .replace('dropbox.com', 'dl.dropboxusercontent.com')
-        .replace('?dl=0', '')
-        .replace('&dl=0', '');
+        .replace('?dl=0', '').replace('&dl=0', '');
       return clean.includes('?') ? `${clean}&raw=1` : `${clean}?raw=1`;
     }
     return clean;
@@ -56,16 +75,14 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
     .animate-energy-pulse { animation: energyPulse 2s ease-in-out infinite; }
     @keyframes spiralCounter { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }
     .animate-spiral-counter { animation: spiralCounter 3s linear infinite; }
-    @keyframes particleOrbit { 0% { transform: rotate(0deg) translateX(30px) scale(1); opacity: 1; } 100% { transform: rotate(360deg) translateX(30px) scale(0.5); opacity: 0; } }
-    .animate-particle-orbit { animation: particleOrbit 2s ease-out infinite; }
     @keyframes flare { 0%, 60%, 100% { opacity: 0; transform: scale(0.8); } 70% { opacity: 1; transform: scale(1.3); } }
     .animate-flare { animation: flare 3s ease-in-out infinite; }
     @keyframes spirit { 0% { opacity:0; transform:translateY(10px); } 10% { opacity:1; } 90% { opacity:1; } 100% { opacity:0; transform:translateY(-20px); } }
     .animate-spirit { animation: spirit 6s infinite ease-in-out; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .animate-fadeIn { animation: fadeIn 0.4s ease-in forwards; }
-    @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    .animate-spin-slow { animation: spin-slow 8s linear infinite; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-slideUp { animation: slideUp 0.3s ease-out forwards; }
   `;
 
   const colors = [
@@ -95,13 +112,9 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
       text: `❓ PREGUNTA: ${question.toUpperCase()}`,
       is_creator: false
     }]);
-    if (!error) {
-      alert("Pregunta enviada al buzón del creador.");
-      setQuestion("");
-    }
+    if (!error) { alert("Pregunta enviada al buzón del creador."); setQuestion(""); }
   };
 
-  // Seek en la barra de progreso
   const handleSeek = (e) => {
     e.stopPropagation();
     const rect = e.currentTarget.getBoundingClientRect();
@@ -109,7 +122,6 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
     if (videoRef.current) videoRef.current.currentTime = pos * videoRef.current.duration;
   };
 
-  // Play / Pause
   const togglePlayPause = (e) => {
     e.stopPropagation();
     if (!videoRef.current) return;
@@ -120,13 +132,9 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
   if (show219) {
     return (
       <HoloProjector219
-        user={user}
-        balances={balances}
-        setBalances={setBalances}
-        session={session}
-        onClose={() => setShow219(false)}
-        onOpenLog={onOpenLog}
-        handleGoToShop={handleGoToShop}
+        user={user} balances={balances} setBalances={setBalances}
+        session={session} onClose={() => setShow219(false)}
+        onOpenLog={onOpenLog} handleGoToShop={handleGoToShop}
       />
     );
   }
@@ -167,7 +175,7 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
         );
       })()}
 
-      {/* FLECHAS NAVEGACIÓN VÍDEOS */}
+      {/* FLECHAS NAVEGACIÓN */}
       <button onClick={prevVideo}
         className="absolute left-[calc(46%-220px)] top-1/2 -translate-y-1/2 z-40 w-12 h-12 flex items-center justify-center rounded-full bg-white/5 backdrop-blur-md border border-white/20 hover:bg-white/20 hover:border-fuchsia-400 transition-all text-white">
         <span className="text-xl">❮</span>
@@ -218,35 +226,25 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
             </div>
           </div>
 
-          {/* =====================================================
-              CONTROLES: barra progreso + play/pause
-              pointer-events-auto para atravesar capas
-              ===================================================== */}
+          {/* CONTROLES */}
           <div className="absolute bottom-24 left-0 w-full z-50 px-5 pointer-events-auto">
-            {/* BARRA DE PROGRESO */}
-            <div
-              className="w-full h-1 bg-white/20 rounded-full cursor-pointer mb-3 group"
-              onClick={handleSeek}>
-              <div
-                className="h-full bg-[#FFFDD0]/80 rounded-full shadow-[0_0_6px_white] transition-all duration-100 group-hover:h-[4px]"
-                style={{ width: `${progress}%` }}
-              />
+            <div className="w-full h-1 bg-white/20 rounded-full cursor-pointer mb-3 group" onClick={handleSeek}>
+              <div className="h-full bg-[#FFFDD0]/80 rounded-full shadow-[0_0_6px_white] transition-all duration-100 group-hover:h-[4px]"
+                style={{ width: `${progress}%` }} />
             </div>
-            {/* PLAY/PAUSE */}
             <div className="flex justify-center">
-              <button
-                onClick={togglePlayPause}
+              <button onClick={togglePlayPause}
                 className="bg-black/50 border border-white/20 backdrop-blur-md w-9 h-9 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all text-sm">
                 {isPaused ? '▶' : '⏸'}
               </button>
             </div>
           </div>
 
-          {/* TERMINAL GLASS */}
+          {/* ── TERMINAL GLASS ─────────────────────────────────────── */}
           <div className={`absolute bottom-0 left-0 w-full bg-black/85 backdrop-blur-3xl border-t border-white/10 transition-all duration-700 z-40 ${activeTab ? 'h-[65%]' : 'h-24'}`}>
-            <div className="flex h-24 items-center px-1">
 
-              {/* 1. PREGUNTAR */}
+            {/* BOTONES DEL FOOTER */}
+            <div className="flex h-24 items-center px-1">
               <button
                 onClick={() => setActiveTab(activeTab === 'log' ? null : 'log')}
                 className={`flex-1 flex flex-col items-center gap-1 transition-all ${activeTab === 'log' ? 'text-white' : 'text-white/30'}`}>
@@ -254,7 +252,6 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
                 <span className="text-[7px] font-black uppercase">Preguntar</span>
               </button>
 
-              {/* 2. EDITORIAL */}
               <button
                 onClick={() => onOpenLog({
                   id: user.id,
@@ -267,37 +264,27 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
                 <span className="text-[7px] font-black uppercase">Editorial</span>
               </button>
 
-              {/* 3. HALO — ahora en el footer */}
-              <button
-                onClick={handleSendHalo}
-                className="flex-1 flex flex-col items-center gap-1 relative">
+              <button onClick={handleSendHalo} className="flex-1 flex flex-col items-center gap-1 relative">
                 <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center text-xl hover:border-fuchsia-400 hover:shadow-[0_0_14px_rgba(232,121,249,0.5)] transition-all active:scale-90">
                   ⚪
                 </div>
                 <span className="text-[7px] font-black uppercase text-white/60">Halo</span>
               </button>
 
-              {/* 4. PISO 219 */}
-              <button
-                onClick={() => setShow219(true)}
-                className="flex-1 flex flex-col items-center gap-1 text-cyan-400">
+              <button onClick={() => setShow219(true)} className="flex-1 flex flex-col items-center gap-1 text-cyan-400">
                 <span className="text-xl">📺</span>
                 <span className="text-[7px] font-black uppercase">Piso 219</span>
               </button>
 
-              {/* 5. TIENDA — usa handleGoToShop igual que en App.jsx */}
               <button
-                onClick={() => {
-                  if (typeof handleGoToShop === 'function') handleGoToShop(user);
-                }}
+                onClick={() => { if (typeof handleGoToShop === 'function') handleGoToShop(user); }}
                 className="flex-1 flex flex-col items-center gap-1 text-yellow-500">
                 <span className="text-xl">🦝</span>
                 <span className="text-[7px] font-black uppercase">Tienda</span>
               </button>
-
             </div>
 
-            {/* CONTENIDO DEL TAB */}
+            {/* CONTENIDO TAB PREGUNTAR */}
             <div className="px-6 pb-6 h-[calc(100%-6rem)] overflow-y-auto">
               {activeTab === 'log' && (
                 <div className="animate-fadeIn space-y-4">
@@ -307,11 +294,9 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
                   <div className="bg-black/40 p-4 rounded-2xl border border-white/10">
                     <p className="text-[9px] text-gray-500 font-black mb-2 uppercase">Enviar Pregunta Privada</p>
                     <div className="flex gap-2">
-                      <input
-                        type="text" value={question} onChange={e => setQuestion(e.target.value)}
+                      <input type="text" value={question} onChange={e => setQuestion(e.target.value)}
                         placeholder="¿Tienes alguna duda?"
-                        className="flex-1 bg-transparent border-b border-white/10 text-xs text-white outline-none"
-                      />
+                        className="flex-1 bg-transparent border-b border-white/10 text-xs text-white outline-none" />
                       <button onClick={handleSendQuestion} className="text-fuchsia-400 text-[9px] font-black uppercase">Preguntar</button>
                     </div>
                   </div>
@@ -319,7 +304,56 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
               )}
             </div>
           </div>
+        </div>
+      </div>
 
+      {/* ── FOOTER DEL ESCENARIO ────────────────────────────────── */}
+      <div className="absolute bottom-0 left-0 w-full z-[150] pointer-events-none">
+        <div className="flex items-end justify-between px-5 pb-3 gap-4">
+
+          {/* IZQUIERDA: acordeón */}
+          {currentMedia && (
+            <div className="pointer-events-auto flex flex-col items-start max-w-[60%]">
+
+              {/* Panel expandido — fondo muy transparente, se ve el vídeo */}
+              {acordeonAbierto && (
+                <div className="mb-2 w-full px-5 py-4 bg-black/30 backdrop-blur-sm border border-white/10 rounded-2xl animate-slideUp overflow-y-auto max-h-56">
+                  <p style={{ fontFamily: 'Georgia, serif' }}
+                    className="text-white text-lg font-bold leading-snug mb-2">
+                    {currentMedia.titulo}
+                  </p>
+                  <p className="text-white/50 text-sm leading-relaxed whitespace-pre-wrap">
+                    {currentMedia.descripcion}
+                  </p>
+                </div>
+              )}
+
+              {/* Botón base: siempre dice TÍTULO Y DESCRIPCIÓN */}
+              <button
+                onClick={() => setAcordeonAbierto(prev => !prev)}
+                className="flex items-center gap-2 px-4 py-2 bg-black/50 backdrop-blur-md border border-white/20 rounded-xl hover:bg-white/10 transition-all"
+              >
+                <span className="text-white/80 text-xs font-black uppercase tracking-widest">
+                  Título y Descripción
+                </span>
+                <span className={`text-white/50 text-xs transition-transform duration-300 ${acordeonAbierto ? 'rotate-180' : ''}`}>▼</span>
+              </button>
+            </div>
+          )}
+
+          {/* DERECHA: badges */}
+          <div className="pointer-events-none flex flex-col items-end gap-2 pb-1">
+            {currentTipo === 'publicidad' && (
+              <span className="bg-amber-500 text-black text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
+                📢 Publicidad
+              </span>
+            )}
+            {currentTipo === 'ia' && (
+              <span className="bg-violet-600 text-white text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
+                🤖 Video hecho con IA
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -328,9 +362,12 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
         .animate-spirit { animation: spirit 6s infinite ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .animate-fadeIn { animation: fadeIn 0.4s ease-in forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-slideUp { animation: slideUp 0.3s ease-out forwards; }
       `}</style>
     </div>
   );
 };
 
 export default HoloProjector;
+

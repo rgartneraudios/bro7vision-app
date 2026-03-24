@@ -11,6 +11,10 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
   const [aiResponse, setAiResponse] = useState(null); // Guardará el texto del Mapache
   const [isAiLoading, setIsAiLoading] = useState(false); // Para mostrar "Cargando..."
   const [mobileView, setMobileView] = useState('lista'); // 'lista' o 'publicar'
+  const [postulacion, setPostulacion] = useState({ nombre: '', alias: '', edad: '', motivo: '' });
+  const [postulacionEstado, setPostulacionEstado] = useState('idle'); // 'idle' | 'enviando' | 'ok' | 'error'
+  const [beneficioAbierto, setBeneficioAbierto] = useState(null);
+
   
   // Estado para controlar qué avisos ha desbloqueado este usuario (para no cobrarle doble)
   const [unlockedAvisos, setUnlockedAvisos] = useState([]);
@@ -121,6 +125,28 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
           setIsAiLoading(false); // Apagamos el "Cargando"
       }
   };
+  
+  const handlePostulacion = async () => {
+         if (!postulacion.nombre || !postulacion.alias || !postulacion.edad || !postulacion.motivo) return;
+         setPostulacionEstado('enviando');
+         try {
+           // Opción A: Guardar en Supabase (tabla 'postulaciones')
+           const { error } = await supabase.from('postulaciones').insert([{
+             nombre:   postulacion.nombre,
+             alias:    postulacion.alias,
+             edad:     parseInt(postulacion.edad),
+             motivo:   postulacion.motivo,
+             user_id:  session?.user?.id || null,
+             created_at: new Date().toISOString(),
+           }]);
+           if (error) throw error;
+           setPostulacionEstado('ok');
+         } catch (e) {
+           console.error(e);
+           setPostulacionEstado('error');
+         }
+       };
+
     
   return (
    <div className="w-full h-full flex items-center justify-center relative">
@@ -284,7 +310,7 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
                     </div>
                 )}
 
-              {/* --- BOTÓN TAB (reemplaza el de FAQ / AYUDA en el header) --- */}
+    {/* --- BOTÓN TAB --- */}
 <button
   onClick={() => setTab('faq')}
   className={`flex-1 py-4 text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${
@@ -293,63 +319,59 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
       : 'text-gray-500 hover:text-white'
   }`}
 >
-  👑 REINADOS
+  👑 LISTADO DE HONOR
 </button>
 
-{/* --- TAB REINADOS --- */}
+{/* --- TAB REINADOS v4 --- */}
 {tab === 'faq' && (
-  <div className="absolute inset-0 overflow-y-auto custom-scrollbar p-6 bg-black/20">
-    <div className="max-w-2xl mx-auto pb-20">
+  <div className="absolute inset-0 overflow-y-auto custom-scrollbar bg-black/20">
+    <div className="w-full px-6 pb-20 pt-6">
 
       {/* ── CABECERA ── */}
-      <div className="text-center mb-12 animate-fadeIn">
-        <p className="text-[10px] text-gray-600 uppercase tracking-[0.35em] mb-3">
+      <div className="text-center mb-10 animate-fadeIn">
+        <p className="text-[10px] text-gray-500 uppercase tracking-[0.35em] mb-3">
           Crónicas del Reino Interior
         </p>
         <h2
-          className="text-4xl md:text-5xl font-black uppercase text-orange-500 tracking-wide"
-          style={{ fontFamily: "'Georgia', 'Times New Roman', serif", letterSpacing: '0.08em' }}
+          className="text-5xl md:text-6xl font-black uppercase tracking-wide"
+          style={{
+            fontFamily: "'Georgia', 'Times New Roman', serif",
+            background: 'linear-gradient(135deg, #f97316, #fbbf24)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}
         >
           Reinados
         </h2>
-        <p className="text-gray-600 text-xs uppercase tracking-[0.25em] mt-2">
+        <p className="text-gray-500 text-sm uppercase tracking-[0.25em] mt-2">
           Listado de Honor · Bro7vision
         </p>
-        <div className="h-px w-24 bg-gradient-to-r from-transparent via-orange-600/60 to-transparent mx-auto mt-5" />
+        <div className="h-px w-32 bg-gradient-to-r from-transparent via-orange-500/70 to-transparent mx-auto mt-5" />
       </div>
 
-      {/* ── REYES & REINAS ── */}
+      {/* ── REYES & REINAS — DOS COLUMNAS ── */}
       <section className="mb-12">
         <div className="flex items-center gap-3 mb-6">
-          <span className="text-2xl">👑</span>
-          <p
-            className="text-orange-500/80 text-xs uppercase tracking-[0.3em]"
-            style={{ fontFamily: "'Georgia', serif" }}
-          >
+          <span className="text-3xl">👑</span>
+          <p className="text-orange-400 text-sm font-bold uppercase tracking-[0.25em]"
+            style={{ fontFamily: "'Georgia', serif" }}>
             Alta Corte · Reyes &amp; Reinas
           </p>
-          <div className="flex-1 h-px bg-gradient-to-r from-orange-700/40 to-transparent" />
+          <div className="flex-1 h-px bg-gradient-to-r from-orange-600/50 to-transparent" />
         </div>
-
-        <div className="space-y-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Mapear desde Supabase filtrando rank = 'rey' */}
           {[
             { num: '01', titulo: 'Rey de Solaris',         tratamiento: 'Don',  alias: 'Marcos7520' },
             { num: '02', titulo: 'Reina del Alba Carmesí', tratamiento: 'Doña', alias: 'LunaEterna' },
           ].map((item) => (
-            <div key={item.num} className="flex items-baseline gap-5 border-b border-white/5 pb-4">
-              <span className="text-orange-800/70 text-base font-bold w-8 shrink-0 text-right"
-                style={{ fontFamily: "'Georgia', serif" }}>
-                {item.num}
-              </span>
-              <div className="flex-1">
-                <p className="text-gray-500 text-[10px] uppercase tracking-[0.3em] leading-none mb-1.5">
-                  {item.titulo}
-                </p>
-                <p className="text-white text-lg font-bold"
-                  style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
-                  {item.tratamiento}{' '}
-                  <span className="text-orange-300">{item.alias}</span>
+            <div key={item.num} className="flex items-center gap-4 bg-orange-950/20 border border-orange-800/30 rounded-xl px-5 py-4 hover:border-orange-600/50 transition-all">
+              <span className="text-orange-600 text-xl font-black w-10 shrink-0 text-center"
+                style={{ fontFamily: "'Georgia', serif" }}>{item.num}</span>
+              <div>
+                <p className="text-orange-500/70 text-[10px] uppercase tracking-[0.3em] leading-none mb-1">{item.titulo}</p>
+                <p className="text-white text-xl font-bold" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+                  {item.tratamiento} <span className="text-orange-300">{item.alias}</span>
                 </p>
               </div>
             </div>
@@ -357,38 +379,29 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
         </div>
       </section>
 
-      {/* ── PRÍNCIPES & PRINCESAS ── */}
+      {/* ── PRÍNCIPES & PRINCESAS — DOS COLUMNAS ── */}
       <section className="mb-12">
         <div className="flex items-center gap-3 mb-6">
-          <span className="text-2xl">⚔️</span>
-          <p
-            className="text-blue-400/70 text-xs uppercase tracking-[0.3em]"
-            style={{ fontFamily: "'Georgia', serif" }}
-          >
+          <span className="text-3xl">⚔️</span>
+          <p className="text-blue-400 text-sm font-bold uppercase tracking-[0.25em]"
+            style={{ fontFamily: "'Georgia', serif" }}>
             Guardia Real · Príncipes &amp; Princesas
           </p>
-          <div className="flex-1 h-px bg-gradient-to-r from-blue-700/40 to-transparent" />
+          <div className="flex-1 h-px bg-gradient-to-r from-blue-600/50 to-transparent" />
         </div>
-
-        <div className="space-y-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Mapear desde Supabase filtrando rank = 'principe' */}
           {[
             { num: '101', titulo: 'Príncipe de Luminaria',  tratamiento: 'Excelentísimo', alias: 'JavierBlue' },
             { num: '102', titulo: 'Princesa de Luminaria',  tratamiento: 'Excelentísima', alias: 'SilviaRed'  },
           ].map((item) => (
-            <div key={item.num} className="flex items-baseline gap-5 border-b border-white/5 pb-4">
-              <span className="text-blue-800/60 text-base font-bold w-8 shrink-0 text-right"
-                style={{ fontFamily: "'Georgia', serif" }}>
-                {item.num}
-              </span>
-              <div className="flex-1">
-                <p className="text-gray-500 text-[10px] uppercase tracking-[0.3em] leading-none mb-1.5">
-                  {item.titulo}
-                </p>
-                <p className="text-white/85 text-lg font-bold"
-                  style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
-                  {item.tratamiento}{' '}
-                  <span className="text-blue-300">{item.alias}</span>
+            <div key={item.num} className="flex items-center gap-4 bg-blue-950/20 border border-blue-800/30 rounded-xl px-5 py-4 hover:border-blue-600/50 transition-all">
+              <span className="text-blue-500 text-xl font-black w-10 shrink-0 text-center"
+                style={{ fontFamily: "'Georgia', serif" }}>{item.num}</span>
+              <div>
+                <p className="text-blue-400/60 text-[10px] uppercase tracking-[0.3em] leading-none mb-1">{item.titulo}</p>
+                <p className="text-white text-xl font-bold" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+                  {item.tratamiento} <span className="text-blue-300">{item.alias}</span>
                 </p>
               </div>
             </div>
@@ -396,35 +409,90 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
         </div>
       </section>
 
-      {/* ── TÍTULOS NOBILIARIOS ── */}
+      {/* ── DUQUES ── */}
       <section className="mb-12">
         <div className="flex items-center gap-3 mb-6">
-          <span className="text-2xl">🛡️</span>
-          <p
-            className="text-gray-500 text-xs uppercase tracking-[0.3em]"
-            style={{ fontFamily: "'Georgia', serif" }}
-          >
-            Títulos Nobiliarios
+          <span className="text-3xl">🏰</span>
+          <p className="text-purple-400 text-sm font-bold uppercase tracking-[0.25em]"
+            style={{ fontFamily: "'Georgia', serif" }}>
+            Nobleza Mayor · Duques &amp; Duquesas
           </p>
-          <div className="flex-1 h-px bg-gradient-to-r from-gray-700/40 to-transparent" />
+          <div className="flex-1 h-px bg-gradient-to-r from-purple-600/50 to-transparent" />
         </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Mapear desde Supabase filtrando rank = 'duque' */}
+          {[].length === 0 && (
+            <p className="text-gray-700 text-xs uppercase tracking-widest col-span-2 py-4 text-center">
+              Cupo disponible — abre tras completar la Guardia Real
+            </p>
+          )}
+        </div>
+      </section>
 
-        <div className="space-y-5">
-          {/* Mapear desde Supabase filtrando rank = 'noble' */}
+      {/* ── MARQUESES ── */}
+      <section className="mb-12">
+        <div className="flex items-center gap-3 mb-6">
+          <span className="text-3xl">📜</span>
+          <p className="text-cyan-400 text-sm font-bold uppercase tracking-[0.25em]"
+            style={{ fontFamily: "'Georgia', serif" }}>
+            Nobleza · Marqueses &amp; Marquesas
+          </p>
+          <div className="flex-1 h-px bg-gradient-to-r from-cyan-600/50 to-transparent" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Mapear desde Supabase filtrando rank = 'marques' */}
+          {[].length === 0 && (
+            <p className="text-gray-700 text-xs uppercase tracking-widest col-span-2 py-4 text-center">
+              Cupo disponible — abre tras completar los Ducados
+            </p>
+          )}
+        </div>
+      </section>
+
+      {/* ── CONDES ── */}
+      <section className="mb-12">
+        <div className="flex items-center gap-3 mb-6">
+          <span className="text-3xl">🌿</span>
+          <p className="text-green-400 text-sm font-bold uppercase tracking-[0.25em]"
+            style={{ fontFamily: "'Georgia', serif" }}>
+            Nobleza · Condes &amp; Condesas
+          </p>
+          <div className="flex-1 h-px bg-gradient-to-r from-green-600/50 to-transparent" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Mapear desde Supabase filtrando rank = 'conde' */}
+          {[].length === 0 && (
+            <p className="text-gray-700 text-xs uppercase tracking-widest col-span-2 py-4 text-center">
+              Cupo disponible — abre tras completar los Marquesados
+            </p>
+          )}
+        </div>
+      </section>
+
+      {/* ── LORDS & LADIES ── */}
+      <section className="mb-12">
+        <div className="flex items-center gap-3 mb-6">
+          <span className="text-3xl">✦</span>
+          <p className="text-yellow-400 text-sm font-bold uppercase tracking-[0.25em]"
+            style={{ fontFamily: "'Georgia', serif" }}>
+            Honor del Reino · Lord &amp; Lady
+          </p>
+          <div className="flex-1 h-px bg-gradient-to-r from-yellow-600/50 to-transparent" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Mapear desde Supabase filtrando rank = 'lord' */}
           {[
             { tratamiento: 'Ilustrísimo', rango: 'Duque del Eco Perdido',      prefijo: 'Lord', alias: 'ShadowWave' },
-            { tratamiento: 'Honorable',   rango: 'Marqués del Horizonte Azul', prefijo: 'Sir',  alias: 'NeoSky'     },
+            { tratamiento: 'Honorable',   rango: 'Marqués del Horizonte Azul', prefijo: 'Lady', alias: 'NeoSky'     },
           ].map((item, i) => (
-            <div key={i} className="flex items-baseline gap-5 border-b border-white/5 pb-4">
-              <span className="w-8 shrink-0" />
-              <div className="flex-1">
-                <p className="text-gray-600 text-[10px] uppercase tracking-[0.3em] leading-none mb-1.5">
+            <div key={i} className="flex items-center gap-4 bg-yellow-950/10 border border-yellow-800/20 rounded-xl px-5 py-4 hover:border-yellow-600/40 transition-all">
+              <span className="text-yellow-600 text-xl w-10 shrink-0 text-center">✦</span>
+              <div>
+                <p className="text-yellow-700/70 text-[10px] uppercase tracking-[0.3em] leading-none mb-1">
                   {item.tratamiento} · {item.rango}
                 </p>
-                <p className="text-white/70 text-lg font-bold"
-                  style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
-                  {item.prefijo}{' '}
-                  <span className="text-gray-300">{item.alias}</span>
+                <p className="text-white/80 text-xl font-bold" style={{ fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+                  {item.prefijo} <span className="text-yellow-300">{item.alias}</span>
                 </p>
               </div>
             </div>
@@ -432,54 +500,248 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
         </div>
       </section>
 
-      {/* ── MENSAJE TÍTULOS NOBILIARIOS ABIERTOS ── */}
-      <div className="mb-10 p-5 rounded-2xl border border-white/10 bg-white/3 text-center">
-        <span className="text-2xl mb-3 block">🌙</span>
-        <p className="text-white/90 text-lg font-bold mb-2"
-          style={{ fontFamily: "'Georgia', serif" }}>
-          ¿Tu nombre aún no figura en el Listado?
-        </p>
-        <p className="text-gray-400 text-sm leading-relaxed max-w-md mx-auto">
-          Manteniéndote activo en Bro7vision podrás conseguir un{' '}
-          <span className="text-orange-400 font-bold">Título Nobiliario Digital</span> y ocupar
-          tu lugar en estas Crónicas. La nobleza no se hereda — se gana con presencia y dedicación.
-        </p>
-      </div>
+      {/* ── SEPARADOR ── */}
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent mb-10" />
 
-      {/* ── POSTULACIÓN ── */}
-      <section className="p-6 border border-dashed border-white/10 rounded-2xl bg-black/40 text-center">
-        <p className="text-orange-500/90 font-black text-base uppercase tracking-widest mb-2"
-          style={{ fontFamily: "'Georgia', serif" }}>
-          ¿Quieres reclamar tu lugar en el linaje?
-        </p>
-        <p className="text-gray-500 text-xs mb-4 max-w-sm mx-auto leading-relaxed">
-          Envía tu propuesta de contenido a{' '}
-          <a href="mailto:fundadores@bro7vision.com" className="text-white/70 underline underline-offset-2">
-            fundadores@bro7vision.com
-          </a>
-        </p>
+      {/* ── BLOQUE INFERIOR ── */}
+      <div className="w-full space-y-8">
 
-        {/* Nota menores */}
-        <div className="mb-5 p-4 rounded-xl bg-white/5 border border-white/10 text-left max-w-sm mx-auto">
-          <p className="text-[11px] text-gray-400 leading-relaxed">
-            <span className="text-orange-400/90 font-bold uppercase">Si eres menor de 16 años —</span>{' '}
-            puedes solicitar tu lugar bajo una condición: una persona adulta y mayor de edad debe
-            realizar la candidatura en tu nombre, acceder a la plataforma por ti y ser responsable
-            de tu actividad. Ese adulto es quien ocupa el puesto formalmente hasta que alcances
-            la mayoría de edad.
+        {/* ACORDEÓN PRIVILEGIOS */}
+        <div className="w-full space-y-3">
+          <p className="text-center text-gray-500 text-xs uppercase tracking-[0.3em] mb-5"
+            style={{ fontFamily: "'Georgia', serif" }}>
+            — Privilegios del Linaje —
+          </p>
+
+          {[
+            {
+              key: 'reyes',
+              emoji: '👑', titulo: 'Reyes & Reinas', subtitulo: 'Alta Corte · 100 cupos · Postulación',
+              border: 'border-orange-800/40', bg: 'bg-orange-950/30', hover: 'hover:bg-orange-950/50',
+              borderInner: 'border-orange-900/30', tc: 'text-orange-400', ts: 'text-orange-700',
+              ta: 'text-orange-500', td: 'text-orange-800',
+              descripcion: <>Los <span className="text-orange-400 font-bold">100 primeros pilares del Reino</span>. El rango más alto al que un ciudadano puede aspirar en Bro7vision.</>,
+              beneficios: [
+                <><span className="text-white font-bold">2.000 Puntos Génesis cada mes</span> mientras mantengas actividad: sube contenido, lanza <span className="text-orange-300">Halos</span>, <span className="text-orange-300">Ecos</span> o <span className="text-orange-300">Zaps</span>, juega en Games o disfruta de BroStories.</>,
+                <><span className="text-white font-bold">Círculo interno exclusivo</span> — serás el primero en conocer las novedades que se están gestando.</>,
+                <><span className="text-white font-bold">Encuestas colaborativas</span> — tu voz da forma al futuro de Bro7vision antes que nadie.</>,
+              ],
+              aviso: '⚠️ La inactividad sin justificación cede el trono al siguiente aspirante',
+            },
+            {
+              key: 'principes',
+              emoji: '⚔️', titulo: 'Príncipes & Princesas', subtitulo: 'Guardia Real · 100 cupos · Abre tras llenar Reyes',
+              border: 'border-blue-800/40', bg: 'bg-blue-950/30', hover: 'hover:bg-blue-950/50',
+              borderInner: 'border-blue-900/30', tc: 'text-blue-400', ts: 'text-blue-800',
+              ta: 'text-blue-500', td: 'text-blue-900',
+              descripcion: <>Los <span className="text-blue-400 font-bold">custodios del linaje</span>. Mismo acceso privilegiado que la Alta Corte. La diferencia está en el rango, no en el compromiso.</>,
+              beneficios: [
+                <><span className="text-white font-bold">1.000 Puntos Génesis cada mes</span> mientras mantengas actividad: sube contenido, lanza <span className="text-blue-300">Halos</span>, <span className="text-blue-300">Ecos</span> o <span className="text-blue-300">Zaps</span>, juega en Games o disfruta de BroStories.</>,
+                <><span className="text-white font-bold">Círculo interno exclusivo</span> — mismo acceso que la Alta Corte a novedades y decisiones en curso.</>,
+                <><span className="text-white font-bold">Encuestas colaborativas</span> — tu opinión cuenta en la construcción del Reino.</>,
+              ],
+              aviso: '⚠️ La inactividad sin justificación cede el título al siguiente aspirante',
+            },
+            {
+              key: 'duques',
+              emoji: '🏰', titulo: 'Duques & Duquesas', subtitulo: 'Nobleza Mayor · 100 cupos · Abre tras llenar Príncipes',
+              border: 'border-purple-800/40', bg: 'bg-purple-950/20', hover: 'hover:bg-purple-950/40',
+              borderInner: 'border-purple-900/30', tc: 'text-purple-400', ts: 'text-purple-800',
+              ta: 'text-purple-500', td: 'text-purple-900',
+              descripcion: <>El primer escalón de la nobleza digital. <span className="text-purple-400 font-bold">100 cupos</span> que se abren cuando la Guardia Real esté completa.</>,
+              beneficios: [
+                <><span className="text-white font-bold">500 Puntos Génesis cada mes</span> manteniendo actividad en la red.</>,
+                <><span className="text-white font-bold">Reconocimiento público</span> en el Listado de Honor con título grabado en las Crónicas.</>,
+                <><span className="text-white font-bold">Acceso a encuestas</span> colaborativas del Reino.</>,
+              ],
+              aviso: '⚠️ La inactividad sin justificación cede el ducado al siguiente aspirante',
+            },
+            {
+              key: 'marqueses',
+              emoji: '📜', titulo: 'Marqueses & Marquesas', subtitulo: 'Nobleza · 100 cupos · Abre tras llenar Duques',
+              border: 'border-cyan-800/40', bg: 'bg-cyan-950/20', hover: 'hover:bg-cyan-950/40',
+              borderInner: 'border-cyan-900/30', tc: 'text-cyan-400', ts: 'text-cyan-900',
+              ta: 'text-cyan-600', td: 'text-cyan-900',
+              descripcion: <>Custodios de las fronteras del Reino. <span className="text-cyan-400 font-bold">100 cupos</span> para quienes demuestran dedicación constante.</>,
+              beneficios: [
+                <><span className="text-white font-bold">300 Puntos Génesis cada mes</span> manteniendo actividad en la red.</>,
+                <><span className="text-white font-bold">Título y nombre</span> en el Listado de Honor de las Crónicas.</>,
+              ],
+              aviso: '⚠️ La inactividad sin justificación cede el marquesado al siguiente aspirante',
+            },
+            {
+              key: 'condes',
+              emoji: '🌿', titulo: 'Condes & Condesas', subtitulo: 'Nobleza · 100 cupos · Abre tras llenar Marqueses',
+              border: 'border-green-800/40', bg: 'bg-green-950/20', hover: 'hover:bg-green-950/40',
+              borderInner: 'border-green-900/30', tc: 'text-green-400', ts: 'text-green-900',
+              ta: 'text-green-600', td: 'text-green-900',
+              descripcion: <>La puerta de entrada a la nobleza digital. <span className="text-green-400 font-bold">100 cupos</span> para ciudadanos comprometidos con la red.</>,
+              beneficios: [
+                <><span className="text-white font-bold">200 Puntos Génesis cada mes</span> manteniendo actividad en la red.</>,
+                <><span className="text-white font-bold">Título y nombre</span> en el Listado de Honor de las Crónicas.</>,
+              ],
+              aviso: '⚠️ La inactividad sin justificación cede el condado al siguiente aspirante',
+            },
+            {
+              key: 'lords',
+              emoji: '✦', titulo: 'Lord & Lady', subtitulo: 'Honor del Reino · Sin límite de cupos · Premio al mérito',
+              border: 'border-yellow-800/30', bg: 'bg-yellow-950/10', hover: 'hover:bg-yellow-950/20',
+              borderInner: 'border-yellow-900/20', tc: 'text-yellow-400', ts: 'text-yellow-800',
+              ta: 'text-yellow-600', td: 'text-yellow-900',
+              descripcion: <>El título de Lord o Lady <span className="text-yellow-400 font-bold">no se solicita, se otorga</span>. Es el reconocimiento más personal del Reino — concedido directamente a quienes demuestran buen comportamiento, apoyo a la comunidad y dedicación genuina.</>,
+              beneficios: [
+                <><span className="text-white font-bold">100 Puntos Génesis cada mes</span> como reconocimiento a su dedicación continua.</>,
+                <><span className="text-white font-bold">Nombre grabado en las Crónicas</span> del Reino Interior con tratamiento honorífico.</>,
+                <><span className="text-white font-bold">Beneficios evolutivos</span> — sus privilegios crecerán con la plataforma.</>,
+              ],
+              aviso: '✦ La nobleza no se hereda — se gana con presencia y dedicación',
+            },
+          ].map((rango) => (
+            <div key={rango.key} className={`rounded-2xl border ${rango.border} overflow-hidden`}>
+              <button
+                onClick={() => setBeneficioAbierto(beneficioAbierto === rango.key ? null : rango.key)}
+                className={`w-full flex items-center justify-between px-6 py-5 ${rango.bg} ${rango.hover} transition-all text-left`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{rango.emoji}</span>
+                  <div>
+                    <p className={`${rango.tc} font-black text-base uppercase tracking-widest`}
+                      style={{ fontFamily: "'Georgia', serif" }}>
+                      {rango.titulo}
+                    </p>
+                    <p className={`${rango.ts} text-xs uppercase tracking-widest`}>{rango.subtitulo}</p>
+                  </div>
+                </div>
+                <span className={`${rango.ta} text-xl transition-transform duration-300`}
+                  style={{ transform: beneficioAbierto === rango.key ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                  ▾
+                </span>
+              </button>
+              {beneficioAbierto === rango.key && (
+                <div className={`px-6 py-6 bg-black/40 border-t ${rango.borderInner} animate-fadeIn space-y-4`}>
+                  <p className="text-gray-300 text-sm leading-relaxed">{rango.descripcion}</p>
+                  <ul className="space-y-3">
+                    {rango.beneficios.map((b, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <span className={`${rango.ta} mt-0.5`}>✦</span>
+                        <p className="text-gray-300 text-sm leading-relaxed">{b}</p>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className={`${rango.td} text-xs uppercase tracking-widest pt-2 border-t ${rango.borderInner}`}>
+                    {rango.aviso}
+                  </p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        {/* FIN ACORDEÓN */}
+
+        {/* MENSAJE ¿TU NOMBRE AÚN NO FIGURA? */}
+        <div className="w-full p-8 rounded-2xl border border-white/10 bg-white/3 text-center">
+          <span className="text-4xl mb-4 block">🌙</span>
+          <p className="text-white text-2xl font-bold mb-3" style={{ fontFamily: "'Georgia', serif" }}>
+            ¿Tu nombre aún no figura en el Listado?
+          </p>
+          <p className="text-gray-300 text-base leading-relaxed max-w-2xl mx-auto">
+            Primero se completan los <span className="text-orange-400 font-bold">100 Reyes y Reinas</span>,
+            después los <span className="text-blue-400 font-bold">100 Príncipes y Princesas</span>,
+            los <span className="text-purple-400 font-bold">100 Duques</span>,
+            los <span className="text-cyan-400 font-bold">100 Marqueses</span>
+            y los <span className="text-green-400 font-bold">100 Condes</span> —
+            <strong> 500 cupos en total</strong>.
+            Si el cupo ya está cubierto, mantente activo — los ciudadanos más destacados
+            reciben un <span className="text-yellow-400 font-bold">título de Lord o Lady</span>{' '}
+            como reconocimiento a su dedicación. La nobleza no se hereda, se gana.
           </p>
         </div>
 
-        <a
-          href="mailto:fundadores@bro7vision.com"
-          className="inline-block bg-orange-600 text-black font-black px-8 py-3 rounded-full text-xs uppercase tracking-widest hover:bg-white hover:scale-105 transition-all"
-        >
-          Solicitar Audiencia
-        </a>
-      </section>
+        {/* FORMULARIO DE POSTULACIÓN */}
+        <div className="w-full p-8 border border-dashed border-orange-800/40 rounded-2xl bg-black/50">
+          {postulacionEstado === 'ok' ? (
+            <div className="text-center py-8 animate-fadeIn">
+              <span className="text-5xl mb-5 block">📜</span>
+              <p className="text-orange-400 text-2xl font-black uppercase mb-3"
+                style={{ fontFamily: "'Georgia', serif" }}>
+                Tu postulación ha sido recibida
+              </p>
+              <p className="text-gray-300 text-base leading-relaxed max-w-lg mx-auto mb-6">
+                Los Guardianes del Reino estudiarán tu candidatura. Si eres digno,
+                tu nombre será grabado en las Crónicas del Reino Interior.
+                Recibirás respuesta por los canales oficiales.
+              </p>
+              <p className="text-gray-600 text-xs uppercase tracking-widest">
+                — La Orden Real de Bro7vision —
+              </p>
+            </div>
+          ) : (
+            <>
+              <p className="text-orange-400 text-xl font-black uppercase tracking-widest mb-2 text-center"
+                style={{ fontFamily: "'Georgia', serif" }}>
+                Aspirar al Título
+              </p>
+              <p className="text-gray-400 text-sm text-center mb-8 leading-relaxed">
+                Los cupos se cubren en cascada. Tu candidatura se asignará al rango disponible en el momento de ser aceptada.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                <div>
+                  <label className="text-gray-500 text-xs uppercase tracking-widest block mb-2">Nombre completo</label>
+                  <input type="text" placeholder="Tu nombre real..."
+                    value={postulacion.nombre}
+                    onChange={(e) => setPostulacion({ ...postulacion, nombre: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-base focus:border-orange-500 focus:outline-none placeholder-gray-700 transition-colors" />
+                </div>
+                <div>
+                  <label className="text-gray-500 text-xs uppercase tracking-widest block mb-2">Alias en Bro7vision</label>
+                  <input type="text" placeholder="Tu alias..."
+                    value={postulacion.alias}
+                    onChange={(e) => setPostulacion({ ...postulacion, alias: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-base focus:border-orange-500 focus:outline-none placeholder-gray-700 transition-colors" />
+                </div>
+              </div>
+              <div className="mb-5">
+                <label className="text-gray-500 text-xs uppercase tracking-widest block mb-2">Edad</label>
+                <input type="number" placeholder="Tu edad..." min="1" max="120"
+                  value={postulacion.edad}
+                  onChange={(e) => setPostulacion({ ...postulacion, edad: e.target.value })}
+                  className="w-full md:w-1/3 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-base focus:border-orange-500 focus:outline-none placeholder-gray-700 transition-colors" />
+              </div>
+              <div className="mb-6">
+                <label className="text-gray-500 text-xs uppercase tracking-widest block mb-2">
+                  ¿Por qué mereces un lugar en el Listado?
+                </label>
+                <textarea rows="4" placeholder="Cuéntanos qué aportarás al Reino..."
+                  value={postulacion.motivo}
+                  onChange={(e) => setPostulacion({ ...postulacion, motivo: e.target.value })}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-base focus:border-orange-500 focus:outline-none placeholder-gray-700 transition-colors resize-none custom-scrollbar" />
+              </div>
+              <div className="mb-6 p-4 rounded-xl bg-white/5 border border-white/10">
+                <p className="text-sm text-gray-400 leading-relaxed">
+                  <span className="text-orange-400 font-bold uppercase">Si eres menor de 16 años —</span>{' '}
+                  una persona adulta debe realizar esta candidatura en tu nombre y ser responsable
+                  de tu actividad. Ese adulto ocupa el puesto formalmente hasta que alcances la mayoría de edad.
+                </p>
+              </div>
+              {postulacionEstado === 'error' && (
+                <p className="text-red-400 text-sm text-center mb-4">
+                  ⚠️ Hubo un error al enviar tu candidatura. Inténtalo de nuevo.
+                </p>
+              )}
+              <button
+                onClick={handlePostulacion}
+                disabled={postulacionEstado === 'enviando' || !postulacion.nombre || !postulacion.alias || !postulacion.edad || !postulacion.motivo}
+                className="w-full bg-gradient-to-r from-orange-600 to-amber-600 text-black font-black py-4 rounded-xl text-base uppercase tracking-widest hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-lg shadow-orange-900/30"
+              >
+                {postulacionEstado === 'enviando' ? '⏳ Enviando candidatura...' : '📜 Presentar Candidatura al Reino'}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
 
       {/* ── PIE ── */}
-      <p className="text-center text-[11px] text-gray-600 uppercase tracking-[0.3em] mt-10"
+      <p className="text-center text-xs text-gray-600 uppercase tracking-[0.3em] mt-12"
         style={{ fontFamily: "'Georgia', serif" }}>
         La grandeza se sostiene con presencia y dedicación.
       </p>
@@ -488,18 +750,6 @@ const RacoonTerminal = ({ onClose, session, balances, setBalances, onNavigateToS
   </div>
 )}
 
-                {/* --- TAB DROPS/CLUSTERS (Placeholder) --- */}
-                {(tab === 'drops' || tab === 'clusters') && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-center animate-fadeIn p-8 border border-dashed border-white/20 rounded-xl">
-                            <div className="text-5xl mb-4 grayscale opacity-50">🚧</div>
-                            <p className="text-orange-400 font-bold uppercase tracking-widest text-lg mb-2">SECTOR CERRADO (FASE 0)</p>
-                            <p className="text-gray-500 text-sm max-w-md mx-auto">
-                                Estamos acumulando masa crítica. Estos servicios se activarán en la <strong>Fase 1</strong>.
-                            </p>
-                        </div>
-                    </div>
-                )}
 
             </div>
         </div>

@@ -105,7 +105,16 @@ const ESTE_STYLES = `
   }
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap');
     
+    .font-moderna { font-family: 'Outfit', sans-serif; }
+    
+    /* SCROLLBAR NEON (Que ya tenías) */
+    .bro-scrollbar::-webkit-scrollbar { width: 6px; }
+    .bro-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.6); border-radius: 8px; }
+    .bro-scrollbar::-webkit-scrollbar-thumb { background: #00ffff; border-radius: 8px; box-shadow: 0 0 10px #00ffff; }
+    .bro-scrollbar::-webkit-scrollbar-thumb:hover { background: #d946ef; }
+  
 `;
 
 const PC_SLOTS     = [{x:10,y:6}, {x:4,y:18},{x:6,y:45},{x:30,y:58},{x:55,y:45},{x:50,y:62}];
@@ -157,6 +166,9 @@ const ChannelEste = ({ videoUsers, balances, setBalances, session, realityMode, 
   const [isPaused, setIsPaused] = useState(false);
   const [ecoVariant, setEcoVariant] = useState('pay');
   const [isOrbitando, setIsOrbitando] = useState(false);
+  const [selectedEmoji, setSelectedEmoji] = useState(1);
+  const [isAccordionOpen, setIsAccordionOpen] = useState(false); // Para abrir/cerrar el historial
+
   
   useEffect(() => {
   if (savedUserIndex) setCurrentIndex(savedUserIndex);
@@ -386,13 +398,13 @@ useEffect(()=>{
 
 useEffect(() => {
     if(!visualEchos || visualEchos.length === 0) return;
-    let slot = 0;
     
+    let slot = 0;
+    let lastEchoId = null; // MAGIA 1: Memoria del último comentario lanzado
+
     const interval = setInterval(() => {
-      // FILTRO 1: Zaps que NO sean del creador actual (Evita auto-promoción redundante)
+      // Filtros
       const zapsList = visualEchos.filter(e => e.is_sponsored && e.advertiser_id !== currentUser?.id);
-      
-      // FILTRO 2: Ecos normales
       const normalsList = visualEchos.filter(e => !e.is_sponsored);
       
       const mob = window.innerWidth < 768;
@@ -401,21 +413,37 @@ useEffect(() => {
       const hyperCoords = hyperSlots[slot % hyperSlots.length];
       slot++;
 
-      // ECO TEXT → Se añade un flag "isCreator" para destacarlo en tu CSS luego
+      // LOGICA DE ECOS NORMALES (Anti-Repetición)
       if(normalsList.length > 0) {
-        const echo = normalsList[Math.floor(Math.random() * normalsList.length)];
-        const isOwnCreator = echo.advertiser_id === currentUser?.id; // ¿Es el dueño de la casa?
         
-        setFloatingEcos(prev => [...prev.slice(-2), {
-          ...echo, 
-          id: Date.now() + Math.random(), 
-          x: coords.x, 
-          y: coords.y,
-          isCreator: isOwnCreator // <-- NUEVO: Usa esto en el render del HTML para darle un borde dorado o algo guay.
-        }]);
+        let pool = normalsList;
+        // Si hay variedad, quitamos del sorteo el que acaba de salir
+        if (normalsList.length > 1) {
+          pool = normalsList.filter(e => e.id !== lastEchoId);
+        }
+
+        // MAGIA 2: Si hay muy pocos comentarios, damos pausas aleatorias 
+        // para que no se clonen simultáneamente en pantalla.
+        const isQuietRoom = normalsList.length <= 2;
+        const shouldSkipPulse = isQuietRoom && Math.random() > 0.4; // 60% de chances de saltar el turno
+
+        if (!shouldSkipPulse) {
+          const echo = pool[Math.floor(Math.random() * pool.length)];
+          lastEchoId = echo.id; // Guardamos en memoria el elegido
+          
+          const isOwnCreator = echo.advertiser_id === currentUser?.id;
+          
+          setFloatingEcos(prev => [...prev.slice(-2), {
+            ...echo, 
+            id: Date.now() + Math.random(), 
+            x: coords.x, 
+            y: coords.y,
+            isCreator: isOwnCreator
+          }]);
+        }
       }
 
-      // HYPER ZAP → 25% del tiempo, persiste
+      // LOGICA DE HYPER ZAP (Queda igual, 25% de apariciones)
       if(Math.random() > 0.75) {
         const currentZap = zapsList.length > 0
           ? zapsList[Math.floor(Math.random() * zapsList.length)]
@@ -430,9 +458,10 @@ useEffect(() => {
       }
     }, 4500);
     
-    // IMPORTANTE: Añade currentUser a las dependencias para que el filtro se actualice si cambias de canal
     return () => clearInterval(interval);
-  }, [visualEchos, currentUser]);
+  }, [visualEchos, currentUser]);  
+  
+  
   const handleTouchStart=(e)=>{ if(e.target.closest('button'))return; touchStart.current=e.targetTouches[0].clientX; };
   const handleTouchMove =(e)=>{ if(e.target.closest('button'))return; touchEnd.current  =e.targetTouches[0].clientX; };
   const handleTouchEnd  =()=>{
@@ -465,6 +494,8 @@ useEffect(() => {
     advertiser_id: session.user.id,
     text: echoText.toUpperCase(),
     is_sponsored: echoType === 'hyper',
+    eco_emoji_id: selectedEmoji, // <-- GUARDAMOS EL EMOJI
+    currency: ecoVariant,        // <-- GUARDAMOS SI ES PAY O GEN
     created_at: new Date()
   }]).select();
 
@@ -486,11 +517,14 @@ useEffect(() => {
       <video ref={bgVideoRef} src={BG_VIDEO} autoPlay loop muted playsInline
        className="absolute inset-0 w-full h-full object-cover z-[1]"/>
        
-      {/* 2. ECOS FLOTANTES — Versión Compacta */}
+    {/* 2. ECOS FLOTANTES — MÁXIMO 3, OSCUROS, CON EMOJI */}
 <div className="absolute inset-0 z-[10] pointer-events-none">
   {floatingEcos.map((echo) => {
-    const neon = neonColors[Math.floor(Math.random() * neonColors.length)];
-    const displayText = echo.text.length > 90 ? echo.text.substring(0, 87) + "..." : echo.text;
+    const isPay = echo.currency === 'pay';
+    const borderColor = isPay ? 'border-cyan-400' : 'border-amber-500';
+    const shadowColor = isPay ? 'shadow-[0_0_15px_rgba(34,211,238,0.4)]' : 'shadow-[0_0_15px_rgba(245,158,11,0.4)]';
+    const textColor   = isPay ? 'text-cyan-400' : 'text-amber-400';
+    const emojiId = echo.eco_emoji_id || 1; 
 
     return (
       <div key={echo.id}
@@ -498,21 +532,27 @@ useEffect(() => {
            style={{ left: `${echo.x}%`, top: `${echo.y}%` }}>
         
         <div className={`
-          flex flex-col items-center gap-0 
-          border backdrop-blur-md px-5 py-2 rounded-[1.8rem] bg-black/95 
-          ${neon.border} ${neon.glow}
-          max-w-[180px] md:max-w-[260px]
-          whitespace-normal break-words
+          flex items-center gap-4 
+          px-5 py-3 rounded-2xl bg-black/95 /* Fondo muy oscuro, puntas redondeadas modernas */
+          border-[1.5px] ${borderColor} ${shadowColor}
+          max-w-[280px] md:max-w-[360px] font-sans /* Fuente moderna */
         `}>
           
-          <span className={`text-[12px] md:text-[12px] uppercase tracking-[0.25em] font-black ${neon.text} border-b border-white/10 pb-[2px] w-full opacity-100`}>
-            👀___{echo.author_alias}___👀
-          </span>
+          <img 
+            src={`/emojis/emoji_${emojiId}.webp`} /* Asumiendo que los metiste en images */
+            alt="eco" 
+            className="w-[55px] h-[55px] drop-shadow-[0_0_8px_rgba(255,255,255,0.2)] flex-shrink-0" 
+          />
 
-          <span className="text-[11px] md:text-[14px] leading-tight font-bold italic text-white pt-1"
-                style={{ textShadow: '2px 2px 4px #000, -1px -1px 0px #000, 1px -1px 0px #000, -1px 1px 0px #000' }}>
-            "{displayText}"
-          </span>
+          <div className="flex flex-col text-left overflow-hidden">
+            <span className={`text-[10px] md:text-[12px] uppercase tracking-widest font-black ${textColor}`}>
+              {echo.author_alias}
+            </span>
+            <span className="text-[12px] md:text-[14px] leading-snug font-bold text-white line-clamp-2">
+              "{echo.text}"
+            </span>
+          </div>
+
         </div>
       </div>
     );
@@ -777,27 +817,52 @@ useEffect(() => {
         </div>  
       </div>
       
-       {/* INFIERNO TICKER */}
-{tickerEchos?.length > 0 && (
-  <div className="absolute bottom-[36px] left-[54%] -translate-x-1/2 w-[62vw] md:w-[460px] z-[150] overflow-hidden pointer-events-none">
-  {/* FUEGOS ARRIBA */}
-  <div className="text-[11px] leading-none tracking-[-2px] opacity-70">
-    🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-    </div>
-    <div className="text-[12px] text-red-500/60 font-black tracking-widest uppercase mb-0.5 px-1">⬇ INFIERNO</div>
-    <div className="relative h-[40px] rounded-lg overflow-hidden border border-red-900/40"
-         style={{background:'linear-gradient(90deg,#3f0000ee,#1a0000fa,#3f0000ee)'}}>
-      <div className="absolute inset-0 flex items-center animate-ticker whitespace-nowrap">
-        {[...tickerEchos,...tickerEchos].map((e,i)=>(
-          <span key={i} className="text-[12px] text-yellow-300/90 font-mono mx-6">
-            "{e.text}" <span className="text-red-300/90">—@{e.author_alias}</span>
-            <span className="text-red-900/50 mx-4">//</span>
-          </span>
-        ))}
+     {/* NUEVO HISTORIAL / ACORDEÓN (Gigante, Transparente y Moderno) */}
+<div className="absolute bottom-[20px] left-[54%] -translate-x-1/2 w-[95vw] md:w-[800px] z-[300] pointer-events-auto flex flex-col items-center font-moderna">
+  
+  {isAccordionOpen && (
+    <div 
+      className="w-full h-[450px] mb-2 rounded-2xl border border-white/30 overflow-y-auto bro-scrollbar shadow-[0_0_50px_rgba(0,0,0,0.95)] flex flex-col gap-3 p-4 relative"
+    >
+      {/* Fondo Galáctico Fijo (se coloca como img absoluta para no afectar opacidades hijas) */}
+      <img src="/images/galaxy_bg.webp" alt="galaxia" className="absolute inset-0 w-full h-full object-cover z-0 opacity-80 pointer-events-none" />
+      
+      {/* Contenedor de Ecos (z-10 para estar sobre la galaxia) */}
+      <div className="relative z-10 flex flex-col gap-3 w-full">
+        {visualEchos.filter(echo => !echo.is_sponsored).map((echo, i) => {
+          const isInferno = echo.is_inferno; 
+          // AQUÍ ESTÁ LA MAGIA: bg-black/40 (muy transparente) y SIN backdrop-blur
+          const bgRow = isInferno ? 'bg-red-950/50 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.4)]' : 'bg-black/40 border-white/10 hover:bg-black/60 transition-colors';
+          const emojiId = echo.eco_emoji_id || 1;
+
+          return (
+            <div key={i} className={`flex items-start gap-4 p-4 rounded-xl border ${bgRow}`}>
+              <img src={`/emojis/emoji_${emojiId}.webp`} alt="eco" className="w-[75px] h-[75px] flex-shrink-0 drop-shadow-md" />
+              <div className="flex flex-col w-full">
+                <div className="flex justify-between items-center w-full mb-1">
+                  <span className={`text-[12px] md:text-[14px] font-black uppercase tracking-widest ${isInferno ? 'text-red-400' : 'text-cyan-400'}`}>
+                    @{echo.author_alias}
+                  </span>
+                  {isInferno && <span className="text-[10px] md:text-[12px] font-black text-red-500 animate-pulse drop-shadow-md">🔥 INFIERNO</span>}
+                </div>
+                <p className="text-[14px] md:text-[16px] text-white/95 font-semibold leading-relaxed mt-1 tracking-wide">
+                  {echo.text}
+                </p>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
-  </div>
-)}
+  )}
+
+  <button 
+    onClick={() => setIsAccordionOpen(!isAccordionOpen)}
+    className="px-8 py-2.5 bg-black/95 backdrop-blur-md border border-white/30 rounded-t-2xl text-[12px] md:text-[14px] font-black text-white/80 tracking-[0.3em] hover:text-white hover:bg-white/10 hover:border-cyan-400 transition-all uppercase shadow-[0_-5px_25px_rgba(0,0,0,0.6)]"
+  >
+    {isAccordionOpen ? '▼ CERRAR HISTORIAL ▼' : '▲ VER HISTORIAL DE ECOS ▲'}
+  </button>
+</div>
 
 
       {/* ══ MODAL ECO ══ */}
@@ -863,7 +928,7 @@ useEffect(() => {
       : 'bg-black/40 text-yellow-500/60 border-yellow-500/30 hover:border-yellow-400/80 hover:text-yellow-300 hover:shadow-[0_0_15px_rgba(250,204,21,0.4)]'
     }`}
   >
-    <span className="text-2xl md:text-3xl">⚡</span> ZAP
+    <span className="text-2xl md:text-3xl">🐬</span> ZAP
   </button>
 
 </div>
@@ -881,7 +946,7 @@ useEffect(() => {
     }`}
   >
     <span className="flex items-center gap-2 uppercase">
-      <span className="text-xl md:text-2xl drop-shadow-md">⚡</span> PAY
+      <span className="text-xl md:text-2xl drop-shadow-md">💶</span> PAY
     </span>
     <span className={`text-xs md:text-sm font-bold tracking-wider ${ecoVariant === 'pay' ? 'text-black/80' : 'text-cyan-400/80'}`}>
       DISP: {echoType === 'hyper' ? balances?.zap_p ?? 0 : balances?.eco_p ?? 0}
@@ -905,6 +970,28 @@ useEffect(() => {
     </span>
   </button>
 
+</div>
+
+           {/* SELECTOR DE EMOJIS (NUEVO) */}
+<div className="flex justify-center gap-2 mb-6 w-full max-w-md mx-auto px-2">
+  {[1, 2, 3, 4, 5, 6, 7].map((id) => (
+    <button
+      key={id}
+      onClick={() => setSelectedEmoji(id)}
+      className={`relative w-[40px] h-[40px] md:w-[50px] md:h-[50px] rounded-full transition-all duration-300 flex-shrink-0
+        ${selectedEmoji === id
+          ? 'scale-125 z-10 shadow-[0_0_15px_rgba(34,211,238,0.8)] border-2 border-cyan-400 bg-black/60'
+          : 'opacity-50 hover:opacity-100 hover:scale-110 border border-transparent'
+        }`}
+    >
+      <img
+        src={`/emojis/emoji_${id}.webp`} /* Asegúrate de tener las imágenes en tu carpeta public/emojis */
+        alt={`Emoji ${id}`}
+        className="w-full h-full object-cover drop-shadow-md"
+        loading="lazy"
+      />
+    </button>
+  ))}
 </div>
        
             <input autoFocus type="text" placeholder={echoType==='hyper'?'TÍTULO DEL ANUNCIO...':'ESCRIBE TU ECO O ZAP...'}

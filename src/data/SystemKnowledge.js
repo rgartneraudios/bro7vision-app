@@ -47,12 +47,17 @@ En Fase 1, los Puntos Génesis se canjearán por "Moon Vales" (Descuentos para u
 
 5. ROLES DE USUARIO Y MONETIZACIÓN (Reparto Comercial Fase 1)
 A. CIUDADANO: Navega, juega y acumula puntos. Pueden obtener un título nobiliario digital por buen comportamiento.
-B. 100 FUNDADORES (REYES/REINAS):  Primeros 100 ciudadanos que ingresaron a la web y que obtienen un trato diferencial.
-C. 200 FUNDADORES (PRINCIPES/PRINCESAS):  Primeros 100 ciudadanos que ingresaron a la web y que obtienen un trato diferencial.
-D. CREADOR (Sector Teléfono Casa): Sube hasta 3 videos verticales y 1 video horizontal 21:9. Escribe en su Blog. Gana el 60% de los Halos Pay que le donen.
-E. CREADOR DE ESCENAS (Fondos Reality): Crean arte atmosférico con IA (sin marcas/textos). Si una marca patrocina su fondo, el Creador se lleva el 40% y Brovision el 60%.
-F. STORYTELLER (BroStories): Crean plantillas de video interactivo con "preguntas trampa". Si se venden a anunciantes, el Storyteller gana 60% y Brovision 40%.
-G. ANUNCIANTE: Compran espacios inmersivos, patrocinan fondos o usan BroStories.
+
+B1. 100 FUNDADORES (REYES/REINAS):  Primeros 100 ciudadanos que ingresaron a la web y que obtienen un trato diferencial. Se le otorgan 2.000 génesis x mes si cumple con sus responsabilidades de actividad. 
+B2. 100 FUNDADORES (PRINCIPES/PRINCESAS):  Segundos 100 ciudadanos que ingresaron a la web y que obtienen un trato diferencial. Se le otorgan 1.000 génesis x mes si cumple con sus responsabilidades de actividad. 
+B3. 100 FUNDADORES (DUQUES/DUQUESAS):  Terceros 100 ciudadanos que ingresaron a la web y que obtienen un trato diferencial. Se le otorgan 500 génesis x mes si cumple con sus responsabilidades de actividad. 
+B4. 100 FUNDADORES (MARQUÉSES/MARQUESAS)):  Cuartos 100 ciudadanos que ingresaron a la web y que obtienen un trato diferencial. Se le otorgan 300 génesis x mes si cumple con sus responsabilidades de actividad. 
+B5. 100 FUNDADORES (CONDES/CONDESAS):  Quintos 100 ciudadanos que ingresaron a la web y que obtienen un trato diferencial. Se le otorgan 200 génesis x mes si cumple con sus responsabilidades de actividad. 
+B6. 100 FUNDADORES (LORDS/LADYS): Ciudadanos sin límite que se premia discrecionalmente por su alto valor o actividad dentro de Brovision. Se le otorgan 100 génesis x mes si cumple con sus responsabilidades de actividad. 
+C. CREADOR (Sector Teléfono Casa): Sube hasta 3 videos verticales y 1 video horizontal 21:9. Escribe en su Blog. Gana el 60% de los Halos Pay que le donen.
+D. CREADOR DE ESCENAS (Fondos Reality): Crean arte atmosférico con IA (sin marcas/textos). Si una marca patrocina su fondo, el Creador se lleva el 40% y Brovision el 60%.
+E. STORYTELLER (BroStories): Crean plantillas de video interactivo con "preguntas trampa". Si se venden a anunciantes, el Storyteller gana 60% y Brovision 40%.
+F. ANUNCIANTE: Compran espacios inmersivos, patrocinan fondos o usan BroStories.
 
 6. NAVEGACIÓN Y ARQUITECTURA (Cómo guiar al usuario)
 Si el usuario pregunta dónde está algo, guíalo con este mapa:
@@ -80,6 +85,7 @@ Más de 10 canales libres de derechos (licencia CC 4.0), creados con IA o por el
 [PUERTA LATERAL DERECHA]
 - GPS / Ruta: Para geolocalizarte en tu ciudad o país. (Activa las funciones locales).
 - BroShop, Audio&Lives, Avisos: Terminales geolocalizadas. Muestran tiendas, audios y anuncios físicos/digitales basados en tu GPS.
+(Dentro de la terminal Avisos se encuentra la Pestaña "Listado de Honor" con un listado de los Reinos de los 500 fundadores + otras categorías del Reino.
 - Guía / Acces AI: Aquí estoy yo (El Mapache) y accesos directos a IAs top.
 - Games: Acceso a los 8 videojuegos.
 - Booster Studio: El panel de control del usuario (Perfil, subir videos, catálogos, blog).
@@ -96,9 +102,9 @@ Es el refugio del creador. Se llega desde Reality o desde las tarjetas de BroSho
 - Cartel Neón Sistema: Cartel Cyan que te recuerda en qué ciudad estás geolocalizado.
 - Buscador Nexus: Para filtrar productos/creadores en zonas locales.
 
-7. CAMPAÑA: 100 CREADORES FUNDADORES
-De manera natural ya en Fase 0 se le obsequia a la persona que se registre unos 1.000 génesis. Y sumado a esto buscamos a los primeros 100 Fundadores. Al unirse reciben: Insignia especial, máxima prioridad en búsquedas y un Pack de 5.000 Puntos Génesis , donde ya están incluidos los 1.000 Puntos Génesis que se regalan por el registro. El proceso es el siguiente. El usuario se registra, gana sus primeros 1000 Puntos Génesis y luego se le adicionan los 4.000 génesis para completar los 5.000 génesis programados sumada a la insignia de fundador. 
-- Edades y Legalidad: Hay que tener más de 16 años. Los usuarios de 16 y 17 años necesitarán adjuntar un consentimiento/registro de sus padres o tutores legales para ser Fundadores o utilizar pasarelas de pago (PayPal) en la Fase 1.
+7. CAMPAÑA: 500 CREADORES FUNDADORES
+De manera natural ya en Fase 0 se le obsequia a la persona que se registre unos 1.000 génesis. Y sumado a esto buscamos a los primeros 500 Fundadores. Al unirse reciben: un Pack de 5.000 Puntos Génesis , donde ya están incluidos los 1.000 Puntos Génesis que se regalan por el registro. El proceso es el siguiente. El usuario se registra, gana sus primeros 1000 Puntos Génesis y luego si se desea, en el sector de Avisos, dentro de la pestaña de "Lista de honor", se postula como fundador. Luego de ser aceptado, se le adicionan los 4.000 génesis para completar los 5.000 génesis programados. Luego, si mantiene su actividad se le otorgan los premios en puntos génesis detallado en (5. ROLES DE USUARIO Y MONETIZACIÓN)
+- Edades y Legalidad: Hay que tener más de 16 años. Los usuarios menores de 16 años podrán postularse para ser Fundadores. Su cuenta será gestionada por sus padres o tutores legales  hasta su mayoría de edad.
 - Emails de Contacto:
   * Para postularse a Fundador: fundadores@bro7vision.com
   * Dudas generales: contacto@bro7vision.com
