@@ -124,7 +124,7 @@ const FOREST_STYLES = `
 `;
 
 const PC_SLOTS = [
-    {x:5,y:25},{x:7,y:40},{x:15,y:75},
+    {x:5,y:25},{x:7,y:40},{x:15,y:65},
     {x:62,y:10},{x:75,y:25},{x:75,y:7},
     {x:15,y:3},{x:65,y:43},{x:80,y:40},
 ];
@@ -133,7 +133,7 @@ const MOBILE_SLOTS = [{x:5,y:75}, {x:50,y:75}];
 // HYPER ZAP — zonas derecha, para no pisarse
 const HYPER_PC_SLOTS = [
   {x:70,y:60},{x:80,y:75},
-  {x:4,y:78},{x:15,y:55},{x:16,y:27},
+  {x:4,y:78},{x:15,y:50},{x:16,y:27},
 ];
 const HYPER_MOBILE_SLOTS = [{x:20,y:2}];
 
@@ -599,7 +599,7 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
 <div className="absolute inset-0 z-[10] pointer-events-none">
   {floatingEcos.map((echo) => {
     const isPay = echo.currency === 'pay';
-    const borderColor = isPay ? 'border-cyan-400' : 'border-amber-500';
+    const borderColor = isPay ? 'border-blue-400' : 'border-blue-500';
     const shadowColor = isPay ? 'shadow-[0_0_15px_rgba(34,211,238,0.4)]' : 'shadow-[0_0_15px_rgba(245,158,11,0.4)]';
     const textColor   = isPay ? 'text-cyan-400' : 'text-amber-400';
     const emojiId = echo.eco_emoji_id || 1; 

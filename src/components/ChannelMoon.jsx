@@ -118,7 +118,7 @@ const MOON_STYLES = `
     .bro-scrollbar::-webkit-scrollbar-thumb:hover { background: #d946ef; }
 `;
 
-const PC_SLOTS     = [{x:10,y:6}, {x:4,y:18},{x:6,y:45},{x:30,y:58},{x:55,y:45},{x:50,y:62}];
+const PC_SLOTS     = [{x:10,y:6}, {x:4,y:18},{x:6,y:65},{x:30,y:58},{x:55,y:65},{x:55,y:32}];
 const MOBILE_SLOTS = [{x:5,y:75}, {x:50,y:75}];
 
 // HYPER ZAP — zonas derecha, para no pisarse
@@ -529,9 +529,9 @@ useEffect(() => {
 <div className="absolute inset-0 z-[10] pointer-events-none">
   {floatingEcos.map((echo) => {
     const isPay = echo.currency === 'pay';
-    const borderColor = isPay ? 'border-cyan-400' : 'border-amber-500';
-    const shadowColor = isPay ? 'shadow-[0_0_15px_rgba(34,211,238,0.4)]' : 'shadow-[0_0_15px_rgba(245,158,11,0.4)]';
-    const textColor   = isPay ? 'text-cyan-400' : 'text-amber-400';
+    const borderColor = isPay ? 'border-white-400' : 'border-gray-300';
+    const shadowColor = isPay ? 'shadow-[0_0_15px_rgba(167,153,160,0.24)]' : 'shadow-[0_0_15px_rgba(201,176,189,0.24)]';
+    const textColor   = isPay ? 'text-gray-500' : 'text-gray-600';
     const emojiId = echo.eco_emoji_id || 1; 
 
     return (

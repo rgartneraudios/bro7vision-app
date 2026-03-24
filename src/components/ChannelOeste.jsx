@@ -529,9 +529,9 @@ useEffect(()=>{
 <div className="absolute inset-0 z-[10] pointer-events-none">
   {floatingEcos.map((echo) => {
     const isPay = echo.currency === 'pay';
-    const borderColor = isPay ? 'border-cyan-400' : 'border-amber-500';
+    const borderColor = isPay ? 'border-fuchsia-400' : 'border-fuchsia-500';
     const shadowColor = isPay ? 'shadow-[0_0_15px_rgba(34,211,238,0.4)]' : 'shadow-[0_0_15px_rgba(245,158,11,0.4)]';
-    const textColor   = isPay ? 'text-cyan-400' : 'text-amber-400';
+    const textColor   = isPay ? 'text-fuchsia-400' : 'text-fuchsia-400';
     const emojiId = echo.eco_emoji_id || 1; 
 
     return (
