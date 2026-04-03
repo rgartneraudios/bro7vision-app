@@ -1,12 +1,11 @@
 // src/components/NexusDashboard.jsx
 
 import React, { useState, useEffect } from 'react';
-import LiveGrid from './LiveGrid';
-import RacoonTerminal from './RacoonTerminal';
+import Reinos from './Reinos';
 import CommunityTicker from './CommunityTicker'; 
-import { askGemini } from '../services/gemini'; 
-import PaginatedDisplay from './PaginatedDisplay'; 
-import CityLocationBanner from './CityLocationBanner';
+import { askGemini } from '../services/gemini';
+import { supabase } from '../supabaseClient';
+
 
 // JUEGOS
 import NeonReact from './NeonReact'; 
@@ -18,7 +17,6 @@ import AtlasGame from './AtlasGame';
 import CronosGame from './CronosGame';
 
 const NexusDashboard = ({ 
-    onSearch, searchQuery, setSearchQuery, 
     intent, setIntent, handleGoToShop,
     onBack, onGameWin, onOpenLog, 
     onSelectShop, onTuneIn, onUserClick,
@@ -33,7 +31,13 @@ const NexusDashboard = ({
     setBalances,
     realItems,
     onOpenProjector,
-    setProjectingUser
+    setProjectingUser,
+    sessionCP,
+    sessionCity,
+    sessionRef,
+    onVLChange,
+    ososHandoffContext,
+  onHandoffConsumed  
 }) => {
 
   const [currentLogIndex, setCurrentLogIndex] = useState(0);
@@ -66,8 +70,8 @@ const NexusDashboard = ({
   const isGameMode = intent === 'game';
   const isAIMode = intent === 'ai';
   const isLiveMode = intent === 'lives';
-  const isCardMode = (intent === 'broshop' || intent === 'product' || intent === 'service');
-  const showSearchBar = !isGameMode && !isAIMode;
+  const isCardMode = (intent === 'broshop' || intent === 'product' || intent === 'service' || intent === 'lives');
+
 
   const handleLogClick = () => { 
       onOpenLog({ title: MOCK_LOGS[currentLogIndex], category: "MERCANTIL", author: "Sistema" }); 
@@ -75,52 +79,117 @@ const NexusDashboard = ({
   
   const cityName = scope?.city || "RED GLOBAL";
   const displayCity = cityName === "Detectando..." ? "SINTONIZANDO..." : cityName;
+  
+  useEffect(() => {
+  if (!ososHandoffContext) return;
 
-  return (
-    <div className="absolute inset-0 z-40 flex flex-col items-center justify-center pointer-events-none font-mono">
-      
-  {/*1. ESTO ES EL TICKER (SIEMPRE ARRIBA) */}
-<div className="absolute top-0 md:top-0 w-full px-4 z-[60] pointer-events-none">
-  <div className="max-w-4xl mx-auto pointer-events-auto">
-     <CommunityTicker 
-    onUserClick={(msg) => {
-        // Buscamos el usuario completo en 'realItems' (que ya tienes en el Dashboard)
-        // para que no falten datos (video_file, etc.)
-        const fullUser = realItems.find(item => item.id === msg.id);
-        
-        if (fullUser) {
-            // Ahora pasamos el usuario completo a la función de abrir video
-            onOpenVideo(fullUser); 
-        } else {
-            console.warn("Usuario no encontrado en la lista cargada");
-        }
-    }} 
-/>
-      </div>
-</div>
+  // Búsqueda genérica — solo intención, sin comercio específico
+  if (ososHandoffContext.intencion && !ososHandoffContext.comercio_especifico) {
+    // BroShopAcordeon ya lo maneja con su propio useEffect
+    return;
+  }
 
-{/* 2. SECTOR SUPERIOR: FEED DE NOTICIAS */}
+  // Comercio específico — buscar en Supabase y abrir Terminal directo
+  if (ososHandoffContext.comercio_especifico) {
+    const buscarComercio = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .ilike('alias', `%${ososHandoffContext.comercio_especifico}%`)
+        .limit(1)
+        .maybeSingle();
+
+      if (data) {
+        handleGoToShop({
+          ...data,
+          mapache_prefill: ososHandoffContext.intencion || ''
+        });
+      }
+      onHandoffConsumed?.();
+    };
+    buscarComercio();
+  }
+}, [ososHandoffContext]);
+
+   return (
+  <div className="absolute inset-0 z-40 flex flex-col items-center justify-start pt-24 pointer-events-none font-mono">
+    
+{/* --- PANEL LATERAL DERECHO COMPACTO --- */}
 {isCardMode && (
-  <div onClick={handleLogClick} className="absolute top-20 md:top-20 w-full max-w-4xl px-4 z-50 pointer-events-auto cursor-pointer">
-     <div className="bg-black/40 backdrop-blur-md border-y border-cyan-500/20 py-3 text-center">
-        <p className="text-[8px] text-cyan-400 font-black uppercase tracking-[0.4em] mb-1 animate-pulse">⚡ BRO-LOGS FEED</p>
-        <h2 className="text-sm md:text-xl text-white font-thin italic tracking-wide">"{MOCK_LOGS[currentLogIndex]}"</h2>
-     </div>
+  <div className="hidden lg:flex fixed right-20 top-[4%] bottom-8 w-52 flex-col gap-3 z-50 pointer-events-none">
+    
+    {/* 1. BRO-LOGS arriba (ahora con DATOS REALES) */}
+    <div 
+      onClick={handleLogClick} 
+      className="flex-[0.6] pointer-events-auto cursor-pointer" 
+    >
+      <div className="
+        relative w-full h-full overflow-hidden
+        flex flex-col bg-black/80 backdrop-blur-2xl 
+        border border-cyan-400/20 rounded-[1.5rem] p-4 
+        shadow-[0_0_20px_rgba(34,211,238,0.1)] 
+        hover:border-cyan-400/60 transition-all duration-500
+      ">
+        
+        {/* Cabecera */}
+        <div className="flex items-center justify-center gap-2 mb-3"> 
+            <span className="text-cyan-400 text-xs animate-pulse">⚡</span>
+            <p className="text-[8px] text-cyan-400 font-black uppercase tracking-[0.3em]">BRO-LOGS</p>
+        </div>
+
+        {/* 
+            LÓGICA SEGURA:
+            Verificamos si realItems existe y tiene datos. 
+            Si tu array de datos se llama de otra forma (ej: 'logs', 'users'), 
+            cámbialo aquí en lugar de 'realItems'.
+        */}
+        {realItems && realItems.length > 0 ? (
+          <>
+            {/* AVATAR DINÁMICO REAL */}
+            <div className="flex justify-center mb-3 shrink-0">
+              <div className="w-36 h-48 rounded-xl overflow-hidden border border-cyan-400/30 shadow-[0_0_10px_rgba(34,211,238,0.15)] bg-black/50">
+                <img 
+                  src={realItems[currentLogIndex]?.banner_url} 
+                  className="w-full h-full object-cover" 
+                  alt="Avatar User" 
+                />
+              </div>
+            </div>
+            
+             {/* Nombre del usuario */}
+  <span className="text-[9px] text-cyan-400/90 font-bold tracking-wider uppercase text-center line-clamp-1 w-full px-2">
+    @{realItems[currentLogIndex]?.alias}
+  </span>
+
+            {/* --- TEXTO DEL BLOG (CONTENIDO) --- */}
+<div className="flex-1 overflow-hidden flex items-center justify-center text-center">
+  <p className="text-[16px] leading-snug text-white/70 font-light italic line-clamp-4">
+     "{realItems[currentLogIndex]?.editorial_title}" 
+  </p>
+</div>
+          </>
+        ) : (
+          /* Estado de Carga por si los datos tardan en llegar */
+          <div className="flex-1 flex items-center justify-center">
+             <span className="text-cyan-400/50 text-xs animate-pulse">Cargando logs...</span>
+          </div>
+        )}
+
+      </div>
+    </div>
+    
+        {/* 2. COMMUNITY FEED abajo (más grande) - INTACTO */}
+    <div className="flex-[0.6] pointer-events-auto"> 
+      <CommunityTicker 
+        onUserClick={(msg) => {
+          const fullUser = realItems.find(item => item.id === msg.id);
+          if (fullUser) onOpenVideo(fullUser);
+        }} 
+      />
+    </div>
+
   </div>
 )}
-
-      {/* 3. VÓRTICE DE BURBUJAS (PAGINATED DISPLAY) */}
-      {isCardMode && (
-        <div className="absolute inset-0 z-40 pointer-events-none animate-zoomIn flex flex-col items-center justify-start pt-48 md:pt-40">
-             <PaginatedDisplay 
-                items={items} 
-                onSelect={handleGoToShop} 
-                onOpenVideo={onOpenVideo} 
-                // CABLE CONECTADO: Aquí faltaba onTuneIn
-                onTuneIn={onTuneIn}
-             />
-        </div>
-      )}   
 
       {/* 4. SECCIÓN DE JUEGOS */}
       {isGameMode && (      
@@ -336,37 +405,7 @@ const NexusDashboard = ({
               </div>
           </div>
       )}      
-     
-     {/* 6. MODO RADIO (RADIO GEOLOCALIZADA) */}
-{/* Aquí NO le pongas el Ticker, el Ticker ya está arriba de todo gracias al bloque de arriba */}
-{isLiveMode && (
-   <div className="z-50">
-     <LiveGrid 
-        items={items} 
-        onTuneIn={onTuneIn} 
-        onSelectShop={handleGoToShop}
-        onClose={() => setIntent('broshop')} 
-        onOpenVideo={onOpenVideo} 
-        onUserClick={onHoverCard}
-     />
-   </div>
-)}
-        
-      {(intent === 'broshop' || intent === 'lives') && (
-        <CityLocationBanner scope={scope} />
-      )}      
-                  
-      {/* --- BUSCADOR --- */}
-      <div className="absolute bottom-[16%] md:bottom-12 w-full max-w-5xl px-4 pointer-events-auto flex flex-col items-center gap-4 z-[20000]">
-        {showSearchBar && (
-            <div className="flex items-center bg-black/90 rounded-full border-2 border-white/10 h-10 md:h-16 w-full max-w-3xl shadow-2xl backdrop-blur-md">
-                <span className="pl-4 md:pl-6 text-gray-500 text-lg md:text-xl">🔍</span>
-                <input type="text" placeholder="Busca en la Red Bro7..." className="w-full bg-transparent text-white px-3 md:px-4 py-1 md:py-2 focus:outline-none font-bold text-xs md:text-lg placeholder-gray-700" onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && onSearch()} />
-                <button onClick={onSearch} className="mr-1 md:mr-2 bg-white text-black px-4 md:px-6 py-1.5 md:py-2 rounded-full font-black text-[9px] md:text-xs uppercase hover:bg-cyan-400 transition-colors shadow-[0_0_15px_white]">GO</button>
-            </div>
-        )}
-      </div>
-
+              
     </div>
   );
 };

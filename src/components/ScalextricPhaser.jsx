@@ -3,7 +3,7 @@ import PhaserGame from './PhaserGame';
 import ScalextricScene from '../game/ScalextricScene';
 import Phaser from 'phaser';
 import { marcarActividad } from '../hooks/useActividad';
-
+import { useAudioContext } from '../context/AudioContext';
 
 const ScalextricPhaser = ({ onWin, difficulty }) => {
   const [mode, setMode] = useState('menu'); 
@@ -11,6 +11,7 @@ const ScalextricPhaser = ({ onWin, difficulty }) => {
   const [finalRank, setFinalRank] = useState(0);
   const [liveRank, setLiveRank] = useState(5);
   const [liveLap, setLiveLap] = useState(0);
+  const { gamesMuted } = useAudioContext();
 
   const phaserRef = useRef(null);
 
@@ -20,8 +21,11 @@ const ScalextricPhaser = ({ onWin, difficulty }) => {
       }
   }, [difficulty]);
 
-  // --- MOTOR DE AUDIO ---
+  // --- MOTOR DE AUDIO CON MUTEO ---
   const playSound = (effect) => {
+      // SI EL JUEGO ESTÁ MUTEADO, SALIMOS DE LA FUNCIÓN Y NO SUENA NADA
+      if (gamesMuted) return; 
+
       const audio = new Audio(`/audio/${effect}.mp3`);
       audio.volume = 0.5; 
       audio.play().catch(e => console.error("Error audio:", e));
@@ -48,30 +52,19 @@ const ScalextricPhaser = ({ onWin, difficulty }) => {
   const generateMath = () => {
       let q, ans;
       
-      // === MODO ROOKIE (Familiar / 10-12 años) ===
-      // Estilo: 7 + 5 - 2 = ?  o  3 x 3 - 4 = ?
       if (difficulty === 'easy') {
           const type = Math.random();
-          
           if (type > 0.5) {
-              // TIPO 1: Suma y Resta combinada (A + B - C)
-              // Ejemplo: 12 + 5 - 3
-              const n1 = Math.floor(Math.random() * 12) + 5;  // 5 a 16
-              const n2 = Math.floor(Math.random() * 8) + 2;   // 2 a 9
-              const n3 = Math.floor(Math.random() * 5) + 2;   // 2 a 6
-              
-              // Aseguramos que el resultado no sea negativo
+              const n1 = Math.floor(Math.random() * 12) + 5; 
+              const n2 = Math.floor(Math.random() * 8) + 2;   
+              const n3 = Math.floor(Math.random() * 5) + 2;   
               ans = n1 + n2 - n3;
               q = `${n1} + ${n2} - ${n3}`;
           } else {
-              // TIPO 2: Multiplicación pequeña y Resta (A x B - C)
-              // Ejemplo: 4 x 3 - 5
-              const n1 = Math.floor(Math.random() * 4) + 2;   // 2 a 5
-              const n2 = Math.floor(Math.random() * 5) + 2;   // 2 a 6
-              const sub = Math.floor(Math.random() * 5) + 1;  // 1 a 5
-              
+              const n1 = Math.floor(Math.random() * 4) + 2;   
+              const n2 = Math.floor(Math.random() * 5) + 2;   
+              const sub = Math.floor(Math.random() * 5) + 1;  
               ans = (n1 * n2) - sub;
-              // Si por azar da negativo o cero, lo arreglamos sumando en vez de restando
               if (ans <= 0) {
                   ans = (n1 * n2) + sub;
                   q = `${n1} x ${n2} + ${sub}`;
@@ -79,52 +72,32 @@ const ScalextricPhaser = ({ onWin, difficulty }) => {
                   q = `${n1} x ${n2} - ${sub}`;
               }
           }
-      } 
-      
-      // === MODO PRO (Adultos / Difícil) ===
-      // Estilo: (9x8)/2  o  (15/3)x5
-      else {
+      } else {
           const type = Math.random();
-          
           if (type < 0.4) {
-              // TIPO 1: Multiplicación y División por 2
-              // Ejemplo: (8 x 5) / 2
-              // Truco: Uno de los números debe ser par para que la división sea exacta
-              const n1 = (Math.floor(Math.random() * 6) + 2) * 2; // Número par (4, 6, 8... 14)
-              const n2 = Math.floor(Math.random() * 8) + 3;       // 3 a 10
-              
+              const n1 = (Math.floor(Math.random() * 6) + 2) * 2; 
+              const n2 = Math.floor(Math.random() * 8) + 3;       
               ans = (n1 * n2) / 2;
               q = `(${n1} x ${n2}) / 2`;
-              
           } else if (type < 0.7) {
-              // TIPO 2: División primero, luego Multiplicación
-              // Ejemplo: (20 / 4) x 3
-              const divisor = Math.floor(Math.random() * 4) + 2; // 2, 3, 4, 5
-              const resultDiv = Math.floor(Math.random() * 8) + 2; // Resultado de la división
-              const dividend = divisor * resultDiv; // Calculamos el dividendo exacto
+              const divisor = Math.floor(Math.random() * 4) + 2; 
+              const resultDiv = Math.floor(Math.random() * 8) + 2; 
+              const dividend = divisor * resultDiv; 
               const multiplier = Math.floor(Math.random() * 8) + 2;
-              
               ans = resultDiv * multiplier;
               q = `(${dividend} / ${divisor}) x ${multiplier}`;
-              
           } else {
-              // TIPO 3: Multiplos de 10 (Rollo concurso TV)
-              // Ejemplo: (50 / 5) + 15
-              const base = (Math.floor(Math.random() * 8) + 2) * 10; // 20, 30... 90
-              const div = [2, 5, 10][Math.floor(Math.random() * 3)]; // Divisores fáciles
+              const base = (Math.floor(Math.random() * 8) + 2) * 10; 
+              const div = [2, 5, 10][Math.floor(Math.random() * 3)]; 
               const sum = Math.floor(Math.random() * 15) + 5;
-              
               ans = (base / div) + sum;
               q = `(${base} / ${div}) + ${sum}`;
           }
       }
       
-      // --- GENERADOR DE RESPUESTAS FALSAS (Opciones) ---
-      // Generamos variaciones cercanas para confundir
       let w1 = ans + (Math.random() > 0.5 ? 2 : -2); 
-      let w2 = ans + (Math.random() > 0.5 ? 5 : -5); // Un poco más lejos
+      let w2 = ans + (Math.random() > 0.5 ? 5 : -5); 
       
-      // Evitar duplicados y negativos
       if (w1 === ans) w1 += 1;
       if (w2 === ans) w2 -= 3;
       if (w1 === w2) w2 += 1;
@@ -132,20 +105,15 @@ const ScalextricPhaser = ({ onWin, difficulty }) => {
       if (w2 <= 0) w2 = ans + 7;
 
       const opts = [ans, w1, w2].sort(() => Math.random() - 0.5);
-      
       setQuestion({ text: q, answer: ans, options: opts });
   };
   
   const handleAnswer = (val) => {
       if (val === question.answer) {
           setQuestion(null); 
-          
-          // SONIDO: SOLO AL ACERTAR (SALIDA DE BOXES)
           playSound('f1_start'); 
-
           if (phaserRef.current) phaserRef.current.events.emit('playerAnswered');
       } else {
-          // Penalización (Silencio, solo nueva pregunta)
           generateMath(); 
       }
   };
@@ -162,19 +130,12 @@ const ScalextricPhaser = ({ onWin, difficulty }) => {
         postBoot: (game) => {
             phaserRef.current = game;
             
-            // Aseguramos que la dificultad inicial se pase correctamente
             game.registry.set('difficulty', difficulty); 
             game.registry.set('onPitStop', generateMath);
             game.registry.set('onWin', onWin);
             
-            // --- NUEVO: ESCUCHADOR DE AUDIO DESDE PHASER ---
             game.events.on('playSound', (effect) => {
-                // Si no tienes un archivo 'beep.mp3', puedes hacer que solo suene en f1_start
-                if (effect === 'beep') {
-                    // Opcional: playSound('beep'); 
-                } else {
-                    playSound(effect); // Reproducirá 'f1_start' cuando Phaser lo pida
-                }
+                playSound(effect); 
             });
 
             game.events.on('updateHUD', (data) => {
@@ -190,12 +151,12 @@ const ScalextricPhaser = ({ onWin, difficulty }) => {
             });
         }
     }
-  }), [difficulty]); // <--- IMPORTANTE: Añade [difficulty] aquí si quieres que se recargue si cambia, si no, déjalo []
+  }), [difficulty]); 
   
-  // --- REGISTRO DE ACTIVIDAD (SUPABASE) ---
+  // --- REGISTRO DE ACTIVIDAD (SUPABASE) CORREGIDO ---
   useEffect(() => {
-    // En este juego usamos gameState === 'finished' en lugar de gameOver
-    if (gameState === 'finished') {
+    // CORRECCIÓN DEL ERROR ROJO: Aquí usamos 'mode' que es la variable real, no 'gameState'
+    if (mode === 'finished') {
       const registrarActividad = async () => {
         try {
           await marcarActividad('games'); 
@@ -206,7 +167,7 @@ const ScalextricPhaser = ({ onWin, difficulty }) => {
       };
       registrarActividad();
     }
-  }, [gameState]); // Vigilamos el estado del juego
+  }, [mode]); 
   
   return (
     <div className="w-full h-full flex items-center justify-center bg-black/90 rounded-xl overflow-hidden border-2 border-cyan-500/50 shadow-lg relative">

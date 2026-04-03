@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react'; // <--- FIX: Añadido useRef
+import React, { useState, useEffect, useRef } from 'react';
 import { SCENARIOS, EMOTIONAL_MATRIX } from '../data/CruceDeCaminosData';
 import { marcarActividad } from '../hooks/useActividad';
-
+import { useAudioContext } from '../context/AudioContext';
 
 const BUTTON_SETS = {
     HOT: [
@@ -35,30 +35,45 @@ const CruceDeCaminos = ({ onWin, onClose }) => {
     const [finalImage, setFinalImage] = useState(null);
     const [pendingReward, setPendingReward] = useState(0);
     const [shuffledButtons, setShuffledButtons] = useState([]);
+    const { gamesMuted } = useAudioContext();
 
     // --- SISTEMA DE AUDIO GLOBAL ---
     const audioRef = useRef(null);
 
+    // 1. Carga inicial y limpieza total al desmontar el componente
     useEffect(() => {
-        // Inicializamos el audio solo una vez
         if (!audioRef.current) {
             audioRef.current = new Audio('/audio/Cruce_de_Caminos.mp3');
             audioRef.current.loop = true;
             audioRef.current.volume = 0.4;
         }
-
-        const playMusic = () => {
+        return () => {
             if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.currentTime = 0;
+            }
+        };
+    }, []);
+
+    // 2. Manejo de Play/Pause interactivo respetando el mute
+    useEffect(() => {
+        const playMusic = () => {
+            // Protección: Solo reproducir si NO está muteado
+            if (audioRef.current && !gamesMuted) {
                 audioRef.current.play().catch(e => console.log("Interacción necesaria"));
             }
         };
 
+        // Si mutean el juego en medio de la partida, pausar de inmediato
+        if (gamesMuted && audioRef.current) {
+            audioRef.current.pause();
+        }
+
         window.addEventListener('click', playMusic);
         return () => {
-            if (audioRef.current) audioRef.current.pause();
             window.removeEventListener('click', playMusic);
         };
-    }, []);
+    }, [gamesMuted]); // Dependencia clave para que reaccione al botón de Mute
 
     const categories = ['TIENDA', 'CITAS', 'TRABAJO'];
     const shuffle = (array) => [...array].sort(() => Math.random() - 0.5);
@@ -142,20 +157,20 @@ const CruceDeCaminos = ({ onWin, onClose }) => {
     };
     
     // --- REGISTRO DE ACTIVIDAD (SUPABASE) ---
-  useEffect(() => {
-    // En este juego usamos gameState === 'finished' en lugar de gameOver
-    if (gameState === 'finished') {
-      const registrarActividad = async () => {
-        try {
-          await marcarActividad('games'); 
-          console.log("Actividad de juego guardada con éxito");
-        } catch (error) {
-          console.error("Error al marcar actividad del juego:", error);
+    useEffect(() => {
+        // Corrección: El estado final de este juego es 'END', no 'finished'
+        if (gameState === 'END') {
+            const registrarActividad = async () => {
+                try {
+                    await marcarActividad('games'); 
+                    console.log("Actividad de juego guardada con éxito");
+                } catch (error) {
+                    console.error("Error al marcar actividad del juego:", error);
+                }
+            };
+            registrarActividad();
         }
-      };
-      registrarActividad();
-    }
-  }, [gameState]); // Vigilamos el estado del juego
+    }, [gameState]); 
 
     // --- RENDERS ---
 

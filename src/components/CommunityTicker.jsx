@@ -1,13 +1,10 @@
-// src/components/CommunityTicker.jsx (VERSIÓN TRANSPARENTE / GLASS)
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
 const FAKE_TWITS = [
     { alias: 'Neo_Runner', twit_message: 'He perdido un dron en la Zona 4. Recompensa.', card_color: 'cyan' },
-    { alias: 'Bar_Manolo', twit_message: '¡Tortilla recién hecha! 2x1 hasta las 12h.', card_color: 'yellow' },
     { alias: 'Cyber_Rose', twit_message: 'Buscando bajista para banda Synthwave.', card_color: 'fuchsia' },
-    { alias: 'Sys_Admin',  twit_message: 'Mantenimiento de nodos esta noche.', card_color: 'red' },
-    { alias: 'Viker_88',   twit_message: '¡Qué partidazo del Betis anoche! ⚽💚', card_color: 'green' }
+    { alias: 'Sys_Admin',  twit_message: 'Mantenimiento de nodos esta noche.', card_color: 'red' }
 ];
 
 const CommunityTicker = ({ onUserClick }) => {
@@ -19,11 +16,10 @@ const CommunityTicker = ({ onUserClick }) => {
       try {
         const { data } = await supabase
           .from('profiles')
-          .select('alias, twit_message, card_color, avatar_url, id')
+          .select('alias, twit_message, card_color, banner_url, id')
           .neq('twit_message', '')
           .neq('twit_message', null)
           .limit(10);
-
         if (data && data.length > 0) {
           setMessages([...data, ...FAKE_TWITS].sort(() => Math.random() - 0.5));
         }
@@ -35,60 +31,66 @@ const CommunityTicker = ({ onUserClick }) => {
   useEffect(() => {
     const timer = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % messages.length);
-    }, 5000);
+    }, 6000);
     return () => clearInterval(timer);
   }, [messages]);
 
   const msg = messages[currentIndex];
+  const colorMap = {
+    cyan: '#00E1FF', fuchsia: '#FF007D', yellow: '#FFD700', 
+    green: '#00FF48', red: '#FF1A1A', blue: '#006AED', orange: '#FF8000'
+  };
+  const activeColor = colorMap[msg.card_color] || '#00E1FF';
 
   return (
-    <div className=" pointer-events-auto z-40 w-full max-w-4xl animate-slideDown px-4 mt-2">
-        
-        <div 
-    // Si el msg tiene 'id', es real (base de datos), si no, es FAKE.
-    onClick={() => {
-        if (msg.id && onUserClick) {
-            onUserClick(msg); // Esto avisa al Padre: "Abre el HoloProyector de este usuario"
-        }
-    }}
-    className={`
-        relative 
-        ${msg.id ? 'cursor-pointer' : 'cursor-default'} /* Solo cambia a cursor pointer si es real */
-        bg-black/60 backdrop-blur-md 
-        border border-${msg.card_color || 'cyan'}-500/50 
-        rounded-full py-2 px-5 shadow-[0_0_30px_rgba(0,0,0,0.3)]
-        flex items-center gap-4 transition-all 
-        ${msg.id ? 'hover:scale-105 hover:bg-black/80 hover:border-' + (msg.card_color || 'cyan') + '-400 group' : ''}
-    `}
->
-
-            {/* AVATAR */}
-            <div className={`w-10 h-10 rounded-full bg-${msg.card_color || 'cyan'}-500 flex items-center justify-center font-black text-black text-sm shrink-0 border border-white/20 shadow-lg`}>
-                {msg.alias[0].toUpperCase()}
-            </div>
-
-            {/* ZONA DE TEXTO */}
-            <div className="flex-1 overflow-hidden flex flex-col justify-center">
-                
-                {/* CABECERA */}
-                <div className="flex justify-between items-baseline mb-0.5">
-                    <p className={`text-[10px] font-black uppercase text-${msg.card_color || 'cyan'}-400 tracking-widest group-hover:underline shadow-black drop-shadow-sm`}>
-                        @{msg.alias}
-                    </p>
-                    <span className="text-[8px] text-gray-400 font-mono tracking-widest opacity-80">LIVE FEED</span>
+    <div className="w-full h-full animate-slideInRight pointer-events-auto">
+        <div  
+            onClick={() => msg.id && onUserClick?.(msg)}
+            className="relative w-full h-full flex flex-col bg-black/80 backdrop-blur-2xl border rounded-[1.8rem] overflow-hidden transition-all duration-500 group cursor-pointer"
+            style={{ 
+                borderColor: `${activeColor}30`,
+                boxShadow: `0 0 20px ${activeColor}15`
+            }}
+        >
+            {/* Header más pequeño */}
+            <div className="p-3 pb-1">
+                <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[8px] animate-pulse" style={{ color: activeColor }}>●</span>
+                    <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white/30">LIVE FEED</p>
                 </div>
 
-                {/* MENSAJE (Con sombra extra para leerse bien sobre fondo transparente) */}
-                <p className="text-base md:text-lg text-white truncate font-bold italic tracking-wide drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] pb-0.5">
+                <div className="flex flex-col items-center gap-2 mt-1">
+                    {/* AVATAR ACHICADO (de w-20 a w-12) */}
+                    <div className="w-36 h-48 rounded-xl overflow-hidden border shadow-lg"
+                             style={{ borderColor: activeColor }}>
+                            {msg.banner_url ? (
+                                <img src={msg.banner_url} className="w-full h-full object-cover" alt="" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-xl font-black bg-black text-white">
+                                    {msg.alias[0].toUpperCase()}
+                                </div>
+                            )}
+                    </div>
+                    <p className="text-xs font-black tracking-tighter" style={{ color: activeColor }}>
+                        @{msg.alias.toUpperCase()}
+                    </p>
+                </div>
+            </div>
+
+            {/* MENSAJE (Texto ajustado a tamaño base) */}
+            <div className="flex-1 flex items-center justify-center px-5 text-center">
+                <p className="text-sm font-normal italic leading-tight text-white/90">
                     "{msg.twit_message}"
                 </p>
             </div>
 
-            {/* FLECHA */}
-            <span className="text-gray-400 text-lg group-hover:text-white transition-colors">➔</span>
+            {/* Footer mini */}
+            <div className="p-2 mt-auto bg-white/5 flex justify-end">
+                <span className="text-xs group-hover:translate-x-1 transition-transform" style={{ color: activeColor }}>➔</span>
+            </div>
         </div>
     </div>
   );
-};
+  };
 
 export default CommunityTicker;

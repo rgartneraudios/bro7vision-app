@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { marcarActividad } from '../hooks/useActividad';
+import { useAudioContext } from '../context/AudioContext';
 
 // --- BASE DE DATOS DE FRASES ---
 const HEAVEN_QUOTES = [
@@ -158,6 +159,7 @@ const CosmicQuiz = ({ onWin }) => {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [score, setScore] = useState(0);
   const [questionCount, setQuestionCount] = useState(0);
+  const { gamesMuted } = useAudioContext();
   
   // Mazo de preguntas barajado
   const [gameQuestions, setGameQuestions] = useState([]);
@@ -168,23 +170,20 @@ const CosmicQuiz = ({ onWin }) => {
   const [isHeaven, setIsHeaven] = useState(true);
 
   // REFERENCIAS DE AUDIO
-  const audioRef = useRef(new Audio());
-
-  // --- MOTOR DE AUDIO ---
-  const playSound = (type) => {
-      let src = "";
-      let vol = 0.5;
-
-      if (type === 'heaven') { src = "/audio/heaven.mp3"; vol = 0.4; }
-      else if (type === 'dark') { src = "/audio/dark.mp3"; vol = 0.6; }
-      else if (type === 'door') { src = "/audio/door_open.mp3"; vol = 0.3; } // Opcional
-
-      if (src) {
-          const audio = new Audio(src);
-          audio.volume = vol;
-          audio.play().catch(e => console.error("Audio error:", e));
-      }
-  };
+ const playSound = (type) => {
+    if (gamesMuted) return;  // ← una sola línea, para todo
+    
+    let src = "";
+    let vol = 0.5;
+    if (type === 'heaven') { src = "/audio/heaven.mp3"; vol = 0.4; }
+    else if (type === 'dark') { src = "/audio/dark.mp3"; vol = 0.6; }
+    else if (type === 'door') { src = "/audio/door_open.mp3"; vol = 0.3; }
+    if (src) {
+        const audio = new Audio(src);
+        audio.volume = vol;
+        audio.play().catch(e => console.error("Audio error:", e));
+    }
+};
 
   // --- LÓGICA DEL JUEGO ---
 

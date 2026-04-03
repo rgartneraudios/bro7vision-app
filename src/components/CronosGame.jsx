@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { marcarActividad } from '../hooks/useActividad';
+import { useAudioContext } from '../context/AudioContext';
 
 const TILE_SIZE = 100;
 const COLS = 11;
@@ -14,15 +15,24 @@ const WALL_PAD = 5;
 const PLAYER_HITBOX = 50; 
 const ENEMY_HITBOX = 35;  
 const PLAYER_SPEED = 5;
-const ENEMY_NORMAL_SPEED = 2.5;  // Velocidad aumentada ligeramente
-const ENEMY_MONSTER_SPEED = 3.5;  // Velocidad de monstruos (superior pero no excesiva)
+const ENEMY_NORMAL_SPEED = 2.5;  
+const ENEMY_MONSTER_SPEED = 3.5;  
+
+// --- FUNCIÓN MATEMÁTICA FALTANTE ---
+const rectIntersect = (r1, r2) => {
+  return !(r2.left > r1.right || 
+           r2.right < r1.left || 
+           r2.top > r1.bottom ||
+           r2.bottom < r1.top);
+};
 
 const CronosGame = ({ onWin, onClose }) => {
   const canvasRef = useRef(null);
   const [score, setScore] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameOver, setGameOver] = useState(false);
-
+  const { gamesMuted } = useAudioContext();
+  
   const assets = useRef({
     playerImg: new Image(), 
     enemyImgs: [],          
@@ -42,7 +52,7 @@ const CronosGame = ({ onWin, onClose }) => {
     }
   }, []);
 
-  // --- FIX AUDIO: Limpieza solo al desmontar el componente completo ---
+  // Limpieza de audios al desmontar
   useEffect(() => {
     return () => {
       Object.values(assets.current.audios).forEach(a => {
@@ -64,7 +74,6 @@ const CronosGame = ({ onWin, onClose }) => {
   const gameState = useRef({
     player: { x: 305, y: 205, skin: 'normal', faceIdx: null, damageCooldown: 0 }, 
     enemies: [
-      // IMPORTANTE: Inicializar con velocidades no-cero
       { x: 25, y: 205, vx: ENEMY_NORMAL_SPEED, vy: 0, imgId: 0, skin: 'normal', faceIdx: null, portalCD: 0 },
       { x: 1015, y: 205, vx: -ENEMY_NORMAL_SPEED, vy: 0, imgId: 1, skin: 'normal', faceIdx: null, portalCD: 0 },
       { x: 25, y: 405, vx: 0, vy: -ENEMY_NORMAL_SPEED, imgId: 2, skin: 'normal', faceIdx: null, portalCD: 0 },
@@ -113,35 +122,32 @@ const CronosGame = ({ onWin, onClose }) => {
   }, []);
 
   const initGame = () => {
-    // Si ya hay audios cargados, no los recargues, solo dales play
     if (Object.keys(assets.current.audios).length === 0) {
         const audNames = ['loop', 'cronos', 'gong', 'portal', 'mistica', 'horror', 'ghost'];
         audNames.forEach(k => {
-        const a = new Audio(`/audio/${k === 'loop' ? 'loops' : k}.mp3`);
-        if (k === 'loop') a.loop = true;
-        a.volume = 1.0;
-        assets.current.audios[k] = a;
+            const a = new Audio(`/audio/${k === 'loop' ? 'loops' : k}.mp3`);
+            if (k === 'loop') a.loop = true;
+            a.volume = 1.0;
+            assets.current.audios[k] = a;
         });
     }
-    assets.current.audios.loop.play().catch(e => console.log("Audio play failed:", e));
+    // Solo play si no está muteado
+    if (!gamesMuted) {
+        assets.current.audios.loop.play().catch(e => console.log("Audio play failed:", e));
+    }
     setGameStarted(true);
-  };
-
-  const rectIntersect = (r1, r2) => {
-    return !(r2.left > r1.right || r2.right < r1.left || r2.top > r1.bottom || r2.bottom < r1.top);
   };
 
   const isColliding = (x, y, isPlayer = true) => {
     const centerX = x + SPRITE_SIZE / 2;
     const centerY = y + SPRITE_SIZE / 2;
     const size = isPlayer ? PLAYER_HITBOX : ENEMY_HITBOX; 
-    
+
     const charRect = {
         left: centerX - size / 2, right: centerX + size / 2,
         top: centerY - size / 2, bottom: centerY + size / 2
     };
 
-    // 1. Límites del mapa
     if (charRect.left < 5 || charRect.right > WIDTH - 5 || 
         charRect.top < 5 || charRect.bottom > HEIGHT - 5) {
       const onPortal = gameState.current.portals.some(p => 
@@ -150,25 +156,22 @@ const CronosGame = ({ onWin, onClose }) => {
       if (!onPortal) return true;
     }
 
-    // 2. CUBOS
     for (const c of gameState.current.cubes) {
         const cz = 90; 
         const isDoorGone = c.status !== 'closed' && c.status !== 'opening';
 
         if (!isDoorGone) {
-            // Cubo cerrado: caja sólida
             const cubeRect = { left: c.x, right: c.x + cz, top: c.y, bottom: c.y + cz };
             if (rectIntersect(charRect, cubeRect)) return true;
         } else {
-            // Cubo abierto: paredes finas (U-shape)
             const thick = 15; 
             const shorten = 20; 
 
             let walls = [];
             if (c.doorSide === 'bottom') {
-                walls.push({ l: c.x, r: c.x + cz, t: c.y, b: c.y + thick }); // Fondo
-                walls.push({ l: c.x, r: c.x + thick, t: c.y, b: c.y + cz - shorten }); // Izq
-                walls.push({ l: c.x + cz - thick, r: c.x + cz, t: c.y, b: c.y + cz - shorten }); // Der
+                walls.push({ l: c.x, r: c.x + cz, t: c.y, b: c.y + thick });
+                walls.push({ l: c.x, r: c.x + thick, t: c.y, b: c.y + cz - shorten });
+                walls.push({ l: c.x + cz - thick, r: c.x + cz, t: c.y, b: c.y + cz - shorten });
             } 
             else if (c.doorSide === 'top') {
                 walls.push({ l: c.x, r: c.x + cz, t: c.y + cz - thick, b: c.y + cz });
@@ -192,7 +195,6 @@ const CronosGame = ({ onWin, onClose }) => {
         }
     }
 
-    // 3. Muros Externos
     for (const w of gameState.current.walls) {
         const currentWallPad = isPlayer ? 10 : WALL_PAD;
         const wallRect = {
@@ -203,13 +205,12 @@ const CronosGame = ({ onWin, onClose }) => {
     }
 
     return false;
-};
+  };
 
   const update = () => {
     if (!gameStarted || gameOver) return;
     const { player, enemies, cubes, keys } = gameState.current;
 
-    // --- PLAYER MOVEMENT ---
     let dx = 0; let dy = 0;
     const speed = PLAYER_SPEED;
     if (keys['w'] || keys['arrowup']) dy = -speed;
@@ -228,9 +229,8 @@ const CronosGame = ({ onWin, onClose }) => {
         else if (!isColliding(player.x + dx, player.y - 10)) player.y -= 4;
     }
 
-    // --- PORTALES (Player) ---
     if (gameState.current.portalCooldown > 0) gameState.current.portalCooldown--;
-    if (player.damageCooldown > 0) player.damageCooldown--;  // Cooldown de daño
+    if (player.damageCooldown > 0) player.damageCooldown--;  
     
     if (gameState.current.portalCooldown === 0) {
       gameState.current.portals.forEach(p => {
@@ -242,13 +242,11 @@ const CronosGame = ({ onWin, onClose }) => {
       });
     }
 
-    // --- INTERACCIÓN CUBOS ---
     const plCx = player.x + SPRITE_SIZE/2;
     const plCy = player.y + SPRITE_SIZE/2;
     const hbR = PLAYER_HITBOX / 2;
 
     cubes.forEach(c => {
-      // Player abre cubo
       if (c.status === 'closed') {
         let tx = c.x, ty = c.y, tw = 90, th = 90;
         if (c.doorSide === 'top') { tx = c.x; ty -= 10; tw = 90; th = 20; }
@@ -258,22 +256,24 @@ const CronosGame = ({ onWin, onClose }) => {
 
         if (plCx + hbR > tx && plCx - hbR < tx + tw && plCy + hbR > ty && plCy - hbR < ty + th) {
             c.status = 'opening'; c.timer = 200;
-            assets.current.audios.cronos.play();
+            // -- PROTECCIÓN AUDIO --
+            if (!gamesMuted) assets.current.audios.cronos.play();
         }
       }
       if (c.status === 'opening' && --c.timer <= 0) {
         c.status = 'open'; 
         assets.current.audios.cronos.pause(); assets.current.audios.cronos.currentTime = 0;
-        assets.current.audios.gong.play();
+        // -- PROTECCIÓN AUDIO --
+        if (!gamesMuted) assets.current.audios.gong.play();
       }
       
-      // Captura Player
       if (c.status === 'open' && Math.hypot(plCx - (c.x + 45), plCy - (c.y + 45)) < 30) {
         c.status = 'captured_pos'; player.skin = 'face'; player.faceIdx = c.id;
-        setScore(s => s + 20); assets.current.audios.mistica.play();
+        setScore(s => s + 20); 
+        // -- PROTECCIÓN AUDIO --
+        if (!gamesMuted) assets.current.audios.mistica.play();
       }
       
-      // Captura Enemigo - SOLO si entra por la puerta (centro), no por los lados
       enemies.forEach(en => {
         if (c.status === 'open') {
           const enCx = en.x + SPRITE_SIZE/2;
@@ -281,24 +281,18 @@ const CronosGame = ({ onWin, onClose }) => {
           const cubeCx = c.x + 45;
           const cubeCy = c.y + 45;
           
-          // Verificar que el enemigo está cerca del centro del cubo
           const dist = Math.hypot(enCx - cubeCx, enCy - cubeCy);
           
           if (dist < 35) {
-            // VALIDAR que entra por la puerta correcta (no por los lados)
             let enteringThroughDoor = false;
             
             if (c.doorSide === 'bottom') {
-              // Puerta abajo: el enemigo debe venir desde abajo (y > cubeY)
               enteringThroughDoor = enCy > cubeCy + 20;
             } else if (c.doorSide === 'top') {
-              // Puerta arriba: el enemigo debe venir desde arriba (y < cubeY)
               enteringThroughDoor = enCy < cubeCy - 20;
             } else if (c.doorSide === 'right') {
-              // Puerta derecha: el enemigo debe venir desde la derecha (x > cubeX)
               enteringThroughDoor = enCx > cubeCx + 20;
             } else if (c.doorSide === 'left') {
-              // Puerta izquierda: el enemigo debe venir desde la izquierda (x < cubeX)
               enteringThroughDoor = enCx < cubeCx - 20;
             }
             
@@ -306,21 +300,19 @@ const CronosGame = ({ onWin, onClose }) => {
               c.status = 'captured_neg'; 
               en.skin = 'face'; 
               en.faceIdx = c.id;
-              assets.current.audios.horror.play();
+              // -- PROTECCIÓN AUDIO --
+              if (!gamesMuted) assets.current.audios.horror.play();
             }
           }
         }
       });
     });
 
-    // --- IA ENEMIGOS MEJORADA ---
    enemies.forEach(en => {
       if (en.portalCD > 0) en.portalCD--;
       
-      // FIX PRINCIPAL: Asegurar que la velocidad nunca sea 0
       const currentSpeed = en.skin === 'normal' ? ENEMY_NORMAL_SPEED : ENEMY_MONSTER_SPEED;
 
-      // 1. Succión (Atracción al cubo abierto) - SOLO si está alineado con la puerta
       let beingSucked = false;
       cubes.forEach(c => {
         if (c.status === 'open') {
@@ -328,8 +320,7 @@ const CronosGame = ({ onWin, onClose }) => {
           const enCx = en.x + SPRITE_SIZE/2, enCy = en.y + SPRITE_SIZE/2;
           const dist = Math.hypot(cCx - enCx, cCy - enCy);
           
-          if (dist < 150) {  // Rango de detección
-            // Verificar si el enemigo está en línea con la puerta
+          if (dist < 150) {  
             let alignedWithDoor = false;
             
             if (c.doorSide === 'bottom' && Math.abs(enCx - cCx) < 40 && enCy > cCy) {
@@ -349,7 +340,6 @@ const CronosGame = ({ onWin, onClose }) => {
               en.x += Math.cos(angle) * suckSpeed; 
               en.y += Math.sin(angle) * suckSpeed;
               
-              // Actualizar velocidad para que apunte al cubo
               en.vx = Math.cos(angle) * currentSpeed;
               en.vy = Math.sin(angle) * currentSpeed;
             }
@@ -357,20 +347,19 @@ const CronosGame = ({ onWin, onClose }) => {
         }
       });
 
-      // 2. Movimiento Inteligente (solo si NO está siendo succionado)
       if (!beingSucked) {
-          // Teletransporte de enemigos
           gameState.current.portals.forEach(p => {
             if (Math.hypot((en.x + SPRITE_SIZE/2) - (p.x + 50), (en.y + SPRITE_SIZE/2) - (p.y + 50)) < 40) {
                 if (!en.portalCD || en.portalCD <= 0) {
                     assets.current.audios.portal.currentTime = 0; 
-                    assets.current.audios.portal.play();
+                    // -- PROTECCIÓN AUDIO --
+                    if (!gamesMuted) assets.current.audios.portal.play();
+
                     const spots = [{x: 505, y: 105}, {x: 505, y: 505}, {x: 105, y: 305}, {x: 905, y: 305}];
                     const target = spots[Math.floor(Math.random() * spots.length)];
                     en.x = target.x; en.y = target.y; 
                     en.portalCD = 150;
                     
-                    // Asignar nueva dirección aleatoria después del teletransporte
                     const randomDirs = [{vx:1,vy:0},{vx:-1,vy:0},{vx:0,vy:1},{vx:0,vy:-1}];
                     const randomDir = randomDirs[Math.floor(Math.random() * randomDirs.length)];
                     en.vx = randomDir.vx * currentSpeed;
@@ -379,18 +368,13 @@ const CronosGame = ({ onWin, onClose }) => {
             }
           });
 
-          // APLICAR MOVIMIENTO primero
           const nextX = en.x + en.vx;
           const nextY = en.y + en.vy;
           
-          // Verificar si el próximo movimiento es válido
           if (!isColliding(nextX, nextY, false)) {
-              // Movimiento normal - avanzar
               en.x = nextX;
               en.y = nextY;
               
-              // CAMBIO ALEATORIO DE DIRECCIÓN (para explorar más el mapa)
-              // 5% de probabilidad cada frame de cambiar de dirección espontáneamente
               if (Math.random() < 0.05) {
                   const validDirections = [];
                   const dirs = [
@@ -402,12 +386,8 @@ const CronosGame = ({ onWin, onClose }) => {
                   const curDirY = en.vy !== 0 ? Math.sign(en.vy) : 0;
                   
                   dirs.forEach(d => {
-                      // No ir directamente atrás
                       if (d.vx === -curDirX && d.vy === -curDirY) return;
-                      
-                      if (!isColliding(en.x + d.vx * 60, en.y + d.vy * 60, false)) {
-                          validDirections.push(d);
-                      }
+                      if (!isColliding(en.x + d.vx * 60, en.y + d.vy * 60, false)) validDirections.push(d);
                   });
                   
                   if (validDirections.length > 0) {
@@ -417,7 +397,6 @@ const CronosGame = ({ onWin, onClose }) => {
                   }
               }
           } else {
-              // COLISIÓN DETECTADA - necesitamos cambiar de dirección
               const validDirections = [];
               const dirs = [
                   { vx: 1, vy: 0 }, { vx: -1, vy: 0 },
@@ -427,52 +406,35 @@ const CronosGame = ({ onWin, onClose }) => {
               const curDirX = en.vx !== 0 ? Math.sign(en.vx) : 0;
               const curDirY = en.vy !== 0 ? Math.sign(en.vy) : 0;
 
-              // Probar cada dirección
               dirs.forEach(d => {
-                  // No intentar ir directamente atrás como primera opción
                   if (d.vx === -curDirX && d.vy === -curDirY) return;
-                  
                   const testDist = 60;
-                  if (!isColliding(en.x + d.vx * testDist, en.y + d.vy * testDist, false)) {
-                      validDirections.push(d);
-                  }
+                  if (!isColliding(en.x + d.vx * testDist, en.y + d.vy * testDist, false)) validDirections.push(d);
               });
 
-              // Si no hay direcciones válidas, permitir ir hacia atrás
               if (validDirections.length === 0) {
                   dirs.forEach(d => {
                       const testDist = 60;
-                      if (!isColliding(en.x + d.vx * testDist, en.y + d.vy * testDist, false)) {
-                          validDirections.push(d);
-                      }
+                      if (!isColliding(en.x + d.vx * testDist, en.y + d.vy * testDist, false)) validDirections.push(d);
                   });
               }
 
-              // Elegir nueva dirección
               if (validDirections.length > 0) {
                   const pick = validDirections[Math.floor(Math.random() * validDirections.length)];
                   en.vx = pick.vx * currentSpeed;
                   en.vy = pick.vy * currentSpeed;
-                  
-                  // Aplicar el nuevo movimiento inmediatamente
                   en.x += en.vx;
                   en.y += en.vy;
               } else {
-                  // Último recurso: retroceder
                   en.vx = -curDirX * currentSpeed;
                   en.vy = -curDirY * currentSpeed;
-                  
-                  if (en.vx === 0 && en.vy === 0) {
-                      en.vx = currentSpeed;
-                  }
-                  
+                  if (en.vx === 0 && en.vy === 0) en.vx = currentSpeed;
                   en.x += en.vx;
                   en.y += en.vy;
               }
           }
       }
       
-      // Verificar colisión con el Player
       const dist = Math.hypot(
           (en.x + SPRITE_SIZE/2) - (player.x + SPRITE_SIZE/2), 
           (en.y + SPRITE_SIZE/2) - (player.y + SPRITE_SIZE/2)
@@ -480,20 +442,16 @@ const CronosGame = ({ onWin, onClose }) => {
       
       if (dist < 50) {
           if (en.skin === 'normal') {
-              // Enemigos NORMALES: matan al player (GAME OVER)
               setGameOver(true);
           } else {
-              // MONSTRUOS (fantasmas): restan 10 génesis
-              // El "damageCooldown" evita que reste 10 génesis cada milisegundo
-              // Solo resta cada 1.5 segundos aproximadamente
               if (player.damageCooldown <= 0) {
-                  setScore(s => s - 10); // Puede quedar negativo (-20, -50, etc)
-                  player.damageCooldown = 90; // 1.5 segundos de "inmunidad"
+                  setScore(s => s - 10); 
+                  player.damageCooldown = 90; 
                   
-                  // Sonido de susto
                   if (assets.current.audios.ghost) {
                       assets.current.audios.ghost.currentTime = 0;
-                      assets.current.audios.ghost.play();
+                      // -- PROTECCIÓN AUDIO --
+                      if (!gamesMuted) assets.current.audios.ghost.play();
                   }
               }
           }
@@ -506,7 +464,8 @@ const CronosGame = ({ onWin, onClose }) => {
   const teleport = (isPlayer = false) => {
     if (isPlayer && assets.current.audios.portal) { 
         assets.current.audios.portal.currentTime = 0; 
-        assets.current.audios.portal.play(); 
+        // -- PROTECCIÓN AUDIO --
+        if (!gamesMuted) assets.current.audios.portal.play(); 
     }
     const spots = [{x: 505, y: 105}, {x: 505, y: 505}, {x: 105, y: 305}, {x: 905, y: 305}];
     const target = spots[Math.floor(Math.random() * spots.length)];
@@ -520,13 +479,11 @@ const CronosGame = ({ onWin, onClose }) => {
 
     ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, WIDTH, HEIGHT);
     
-    // Bordes
     ctx.fillStyle = '#facc15';
     const border = 10;
     ctx.fillRect(0,0,WIDTH,border); ctx.fillRect(0,HEIGHT-border,WIDTH,border);
     ctx.fillRect(0,0,border,HEIGHT); ctx.fillRect(WIDTH-border,0,border,HEIGHT);
     
-    // Huecos portales bordes
     portals.forEach(p => {
         if(p.y===0) ctx.clearRect(p.x, 0, 100, border);
         if(p.y===HEIGHT-100) ctx.clearRect(p.x, HEIGHT-border, 100, border);
@@ -534,19 +491,16 @@ const CronosGame = ({ onWin, onClose }) => {
         if(p.x===WIDTH-100) ctx.clearRect(WIDTH-border, p.y, border, 100);
     });
 
-    // Muros
     walls.forEach(w => { 
         ctx.beginPath(); 
         ctx.roundRect(w.x - WALL_PAD + 2, w.y - WALL_PAD + 2, w.w + (WALL_PAD*2) - 4, w.h + (WALL_PAD*2) - 4, 8); 
         ctx.fill(); 
     });
 
-    // Portales visual
     ctx.shadowBlur = 25; ctx.shadowColor = '#4ade80'; ctx.fillStyle = '#4ade80';
     portals.forEach(p => ctx.fillRect(p.x + 25, p.y + 25, 50, 50));
     ctx.shadowBlur = 0;
 
-    // Cubos
     cubes.forEach((c, i) => {
       ctx.strokeStyle = '#facc15'; 
       ctx.lineWidth = 4;
@@ -579,7 +533,6 @@ const CronosGame = ({ onWin, onClose }) => {
       if (c.status === 'captured_neg') ctx.drawImage(assets.current.negativos[i], c.x+15, c.y+15, 60, 60);
     });
 
-    // Entidades
     enemies.forEach(en => {
       if (en.skin === 'normal') {
          const img = assets.current.enemyImgs[en.imgId];
@@ -589,7 +542,6 @@ const CronosGame = ({ onWin, onClose }) => {
     });
 
     if (player.skin === 'normal') {
-        // Efecto de daño: parpadeo rojo cuando te golpea un monstruo
         if (player.damageCooldown > 0 && Math.floor(player.damageCooldown / 10) % 2 === 0) {
             ctx.shadowBlur = 20;
             ctx.shadowColor = '#ff0000';
@@ -618,20 +570,9 @@ const CronosGame = ({ onWin, onClose }) => {
   // Manejo de Audio Game Over
   useEffect(() => { if (gameOver && assets.current.audios.loop) assets.current.audios.loop.pause(); }, [gameOver]);
 
-  const handleClose = () => {
-    // 1. Verificamos si realmente ganó (capturó todos los cubos)
-    const hasWonAll = gameState.current.cubes.every(c => c.status.startsWith('captured'));
-    
-    // 2. Si ganó, enviamos el score acumulado. Si no, enviamos los 10 de participación.
-    const finalAmount = hasWonAll ? score : 10; 
-    
-    console.log('Telecronos - Enviando puntos:', finalAmount);
-    onWin(finalAmount); // Esto ahora sí enviará los 10 puntos al App.jsx
-    
-    // --- REGISTRO DE ACTIVIDAD (SUPABASE) ---
+  // --- REGISTRO DE ACTIVIDAD FUE MOVIDO AFUERA DEL HANDLE CLOSE PARA NO DAR ERROR DE REACT ---
   useEffect(() => {
-    // En este juego usamos gameState === 'finished' en lugar de gameOver
-    if (gameState === 'finished') {
+    if (gameOver) {
       const registrarActividad = async () => {
         try {
           await marcarActividad('games'); 
@@ -642,15 +583,20 @@ const CronosGame = ({ onWin, onClose }) => {
       };
       registrarActividad();
     }
-  }, [gameState]); // Vigilamos el estado del juego
+  }, [gameOver]);
 
-    // Limpieza de audio
+  const handleClose = () => {
+    const hasWonAll = gameState.current.cubes.every(c => c.status.startsWith('captured'));
+    const finalAmount = hasWonAll ? score : 10; 
+    
+    console.log('Telecronos - Enviando puntos:', finalAmount);
+    onWin(finalAmount); 
+    
     if (assets.current.audios.loop) { 
       assets.current.audios.loop.pause();
       assets.current.audios.loop.currentTime = 0; 
     }
     
-    // Llamada al cierre
     if (onClose) onClose();
   };
   
@@ -686,7 +632,6 @@ const CronosGame = ({ onWin, onClose }) => {
         </div>
       )}
       
-   {/* 🌟 INYECTAMOS EL SCROLL AMARILLO DIRECTO EN EL JUEGO 🌟 */}
       <style>{`
         .cronos-scroll::-webkit-scrollbar { width: 4px; }
         .cronos-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.5); border-radius: 10px; }
@@ -695,39 +640,18 @@ const CronosGame = ({ onWin, onClose }) => {
         .cronos-scroll { scrollbar-width: thin; scrollbar-color: #facc15 rgba(0,0,0,0.5); }
       `}</style>
 
-      {/* PANEL HUD: Más angosto, centrado verticalmente a la izquierda */}
       <div className="absolute left-2 md:left-12 top-[15%] md:top-[20%] w-48 md:w-56 bg-black/80 backdrop-blur-md p-4 rounded-xl border border-yellow-500/30 shadow-[0_0_30px_rgba(0,0,0,0.9)] z-[20] flex flex-col"> 
-        
         <h2 className="text-yellow-400 font-black text-lg md:text-2xl mb-3 uppercase tracking-widest drop-shadow-md border-b border-yellow-500/20 pb-2">
             TELECRONOS
         </h2> 
-        
-        {/* TEXTO: Fuente más pequeña y con más altura máxima */}
         <div className="text-gray-300 text-[10px] md:text-[12.5px] leading-relaxed max-h-[60vh] overflow-y-auto cronos-scroll pr-3 flex flex-col gap-3 font-mono">
-            <p>
-                <span className="text-yellow-400 font-bold block mb-0.5">INFO:</span> 
-                Telecronos es un modelo beta. Si gusta, lanzaremos versión premium con más niveles.
-            </p>
-            <p>
-                <span className="text-cyan-400 font-bold block mb-0.5">OBJETIVO:</span> 
-                Activa los cubos para obtener 9 gemas <span className="text-fuchsia-400">(20 Génesis c/u)</span>. Entra rápido al portal antes que el enemigo.
-            </p>
-            <p>
-                <span className="text-red-500 font-bold block mb-0.5">PELIGRO:</span> 
-                Los enemigos rojos te matan al contacto.
-            </p>
-            <p>
-                <span className="text-purple-400 font-bold block mb-0.5">MECÁNICA:</span> 
-                Los portales absorben enemigos y los hacen fantasmas. Los fantasmas te quitan 10 Génesis al cruzarlos.
-            </p>
-            <p>
-                <span className="text-green-400 font-bold block mb-0.5">ESTRATEGIA:</span> 
-                Abre portales, transforma enemigos y sobrevive. Usa las flechas para moverte.
-            </p>
+            <p><span className="text-yellow-400 font-bold block mb-0.5">INFO:</span> Telecronos es un modelo beta. Si gusta, lanzaremos versión premium con más niveles.</p>
+            <p><span className="text-cyan-400 font-bold block mb-0.5">OBJETIVO:</span> Activa los cubos para obtener 9 gemas <span className="text-fuchsia-400">(20 Génesis c/u)</span>. Entra rápido al portal antes que el enemigo.</p>
+            <p><span className="text-red-500 font-bold block mb-0.5">PELIGRO:</span> Los enemigos rojos te matan al contacto.</p>
+            <p><span className="text-purple-400 font-bold block mb-0.5">MECÁNICA:</span> Los portales absorben enemigos y los hacen fantasmas. Los fantasmas te quitan 10 Génesis al cruzarlos.</p>
+            <p><span className="text-green-400 font-bold block mb-0.5">ESTRATEGIA:</span> Abre portales, transforma enemigos y sobrevive. Usa las flechas para moverte.</p>
         </div>
-        
       </div>
-      
     </div>, document.body
   );
 };

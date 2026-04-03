@@ -1,34 +1,49 @@
-  // src/components/BoosterModal.jsx
+// src/components/BoosterModal.jsx
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { marcarActividad } from '../hooks/useActividad';
+import { CoordenadosBlock } from '../components/CoordenadosBlock';
+import { MarketTab } from '../components/MarketTab';
 
 const ENERGY_COLORS = [
-    { id: 'cyan',    hex: 'bg-cyan-400 shadow-[0_0_10px_#22d3ee]',    name: 'CYAN'     },
-    { id: 'fuchsia', hex: 'bg-fuchsia-400 shadow-[0_0_10px_#e879f9]', name: 'MAGENTA'  },
-    { id: 'yellow',  hex: 'bg-yellow-300 shadow-[0_0_10px_#fde047]',  name: 'AMARILLO' },
-    { id: 'green',   hex: 'bg-emerald-400 shadow-[0_0_10px_#34d399]', name: 'VERDE'    },
-    { id: 'blue',    hex: 'bg-blue-500 shadow-[0_0_10px_#3b82f6]',    name: 'AZUL'     },
-    { id: 'red',     hex: 'bg-red-500 shadow-[0_0_10px_#ef4444]',     name: 'ROJO'     },
-    { id: 'white',   hex: 'bg-white shadow-[0_0_15px_white]',         name: 'BLANCO'   },
+  { id: 'cyan',    hex: 'bg-cyan-400 shadow-[0_0_10px_#00D0FF]',    name: 'CYAN'     },
+  { id: 'fuchsia', hex: 'bg-fuchsia-400 shadow-[0_0_10px_#e879f9]', name: 'MAGENTA'  },
+  { id: 'yellow',  hex: 'bg-yellow-300 shadow-[0_0_10px_#FFE687]',  name: 'AMARILLO' },
+  { id: 'green',   hex: 'bg-emerald-400 shadow-[0_0_10px_#45FF56]', name: 'VERDE'    },
+  { id: 'blue',    hex: 'bg-blue-500 shadow-[0_0_10px_#0017C9]',    name: 'AZUL'     },
+  { id: 'red',     hex: 'bg-red-500 shadow-[0_0_10px_#FF4D4D]',     name: 'ROJO'     },
+  { id: 'white',   hex: 'bg-white shadow-[0_0_15px_#F2F2F2]',       name: 'BLANCO'   },
 ];
 
 const MATTER_COLORS = [
-    { id: 'void',   hex: 'bg-[#050b14]', name: 'ABISMO'         },
-    { id: 'carbon', hex: 'bg-[#1e293b]', name: 'CARBONO'        },
-    { id: 'navy',   hex: 'bg-[#0f172a]', name: 'DEEP NAVY'      },
-    { id: 'plum',   hex: 'bg-[#2e1065]', name: 'NEBULA'         },
-    { id: 'wine',   hex: 'bg-[#450a0a]', name: 'SANGRE'         },
-    { id: 'forest', hex: 'bg-[#022c22]', name: 'BOSQUE PROFUNDO'},
+  { id: 'void',   hex: 'bg-[#050b14]', name: 'ABISMO'          },
+  { id: 'carbon', hex: 'bg-[#1E252E]', name: 'CARBONO'         },
+  { id: 'navy',   hex: 'bg-[#0f172a]', name: 'DEEP NAVY'       },
+  { id: 'plum',   hex: 'bg-[#2e1065]', name: 'NEBULA'          },
+  { id: 'wine',   hex: 'bg-[#450a0a]', name: 'SANGRE'          },
+  { id: 'forest', hex: 'bg-[#022c22]', name: 'BOSQUE PROFUNDO' },
+];
+
+const OSOS_TONOS = [
+  { id: 'formal',    label: 'Formal'       },
+  { id: 'detu',      label: 'De tú'        },
+  { id: 'amigos',    label: 'Como amigos'  },
+];
+
+const OSOS_INTERESES = [
+  { id: 'productos', label: 'Productos'  },
+  { id: 'servicios', label: 'Servicios'  },
+  { id: 'musica',    label: 'Música'     },
+  { id: 'avisos',    label: 'Avisos'     },
+  { id: 'ofertas',   label: 'Ofertas'    },
 ];
 
 const BoosterModal = ({ onClose }) => {
 
   // ── 1. ESTADOS PRINCIPALES ──
-  const [loading, setLoading]     = useState(false);
-  const [tab, setTab]             = useState('identity');
-  const [isAdmin, setIsAdmin]     = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [tab, setTab]         = useState('identity');
 
   // ── 2. ESTADOS DE PERFIL ──
   const [country, setCountry]       = useState('');
@@ -36,26 +51,59 @@ const BoosterModal = ({ onClose }) => {
   const [zipCode, setZipCode]       = useState('');
   const [energyColor, setEnergyColor] = useState('cyan');
   const [matterColor, setMatterColor] = useState('void');
-  const [isMerchant, setIsMerchant]   = useState(false);
+
 
   // ── 3. ESTADOS DE FORMULARIOS Y ARCHIVOS ──
   const [assets, setAssets]         = useState([]);
-  const [newAsset, setNewAsset]     = useState({ title: '', url: '', type: 'video', price: 0 });
-  const [newProduct, setNewProduct] = useState({ title: '', desc: '', price: 0, url: '', sizes: '', colors: '' });
-  const [newService, setNewService] = useState({ title: '', desc: '', price: 0, url: '' });
   const [questions, setQuestions]   = useState([]);
   const [followerCount, setFollowerCount] = useState(0);
 
+  const [address, setAddress]               = useState('');
+  const [neighborhood, setNeighborhood]     = useState('');
+  const [nearbyRef, setNearbyRef]           = useState('');
+  const [bizCategory, setBizCategory]       = useState('');
+  const [bizProfession, setBizProfession]   = useState('');
+  const [refPrice, setRefPrice]  = useState('');
+  const [description, setDescription] = useState('');
+  
+  // OSOS IA
+  const [ososInteresesArr, setOsosInteresesArr] = useState([]);
+
+  // Market escalable
+  const [catalogItems, setCatalogItems]     = useState([]);
+  const [catalogTotal, setCatalogTotal]     = useState(0);
+  const [catalogPage, setCatalogPage]       = useState(0);
+  const [catalogSearch, setCatalogSearch]   = useState('');
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const CATALOG_PAGE_SIZE = 20;
+
   // ── 4. FORMDATA PRINCIPAL ──
   const [formData, setFormData] = useState({
-    alias: '', avatar_url: '', banner_url: '', card_banner_url: '',
-    twit_message: '', role: '', audio_file: '', video_file: '',
+    alias: '', avatar_url: '', banner_url: '', card_banner_url: '', bro_id: '',
+    twit_message: '', role:[], audio_file: '', video_file: '',
     video_file_2: '', video_file_3: '', video_file_219: '',
     holo_1: '', holo_2: '', holo_3: '', holo_4: '',
-    catalog_url: '', mapache_rules: '', intimo_bg: '',
+    catalog_url: '', ventas_rules: '', intimo_bg: '',
     creator_loop_reply: '', editorial_title: '', editorial_content: '',
-    showcase_url: '', admin_reality_bg: '', admin_game_img: '',
-    // ── LINAJE ──
+    showcase_url: '',
+    description: '',
+    genero: 'n',
+    // OSOS IA
+    osos_nombre: '',
+    osos_tono: '',
+    osos_intereses: '',
+    osos_frase: '',
+    oso_id: 'TITO',
+    //SECTORES
+    servicios_id: '',
+    servicios_personaje: '',
+    audio_personaje:'',
+    audio_id:'',
+    oraculo_personaje:'',
+    oraculo_id:'',
+    avisos_personaje:'',
+    avisos_id:'',
+     // LINAJE
     rank: '',
     reino: '',
     juramento_firmado: false,
@@ -67,18 +115,12 @@ const BoosterModal = ({ onClose }) => {
   });
 
   // ── 5. ESTADOS DE LINAJE ──
-  const [reinoElegido, setReinoElegido]     = useState('');
-  const [reinoPropuesto, setReinoPropuesto] = useState('');
+  const [reinoElegido, setReinoElegido]       = useState('');
+  const [reinoPropuesto, setReinoPropuesto]   = useState('');
   const [juramentoFirmado, setJuramentoFirmado] = useState(false);
-  const [guardandoReino, setGuardandoReino]     = useState(false);
+  const [guardandoReino, setGuardandoReino]   = useState(false);
 
   // ── 6. CONSTANTES UI ──
-  const ROLES = [
-    { id: 'MUSIC',   label: '🎵 Music'   },
-    { id: 'TALK',    label: '🎙️ Talk'    },
-    { id: 'SHOP',    label: '📦 Shop'    },
-    { id: 'SERVICE', label: '🤝 Service' },
-  ];
   const InputStyle = "w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all";
   const LabelStyle = "text-xs font-bold text-gray-300 uppercase tracking-widest mb-2 block";
   const CardStyle  = "bg-blue-950/10 backdrop-blur-xl border border-white/10 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]";
@@ -100,6 +142,15 @@ const BoosterModal = ({ onClose }) => {
     if (!error) setJuramentoFirmado(true);
   };
 
+  // ── HELPER OSOS INTERESES ──
+  const toggleOsosInteres = (id) => {
+    setOsosInteresesArr(prev => {
+      const next = prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id];
+      setFormData(fd => ({ ...fd, osos_intereses: next.join(',') }));
+      return next;
+    });
+  };
+
   // ── 8. EFECTOS ──
 
   // A) CARGAR PERFIL
@@ -112,47 +163,73 @@ const BoosterModal = ({ onClose }) => {
             .from('profiles').select('*').eq('id', user.id).single();
 
           if (profile) {
-            setIsMerchant(profile.is_merchant || false);
-            if (profile.is_admin === true) setIsAdmin(true);
+  const colors = (profile.card_color || 'cyan-void').split('-');
+  setEnergyColor(colors[0] || 'cyan');
+  setMatterColor(colors[1] || 'void');
+  setCountry(profile.country          || '');
+  setCity(profile.city                || '');
+  setZipCode(profile.zip_code         || '');
+  setAddress(profile.address          || '');
+  setNeighborhood(profile.neighborhood || '');
+  setNearbyRef(profile.nearby_ref      || '');
+  setBizCategory(profile.biz_category  || '');
+  setBizProfession(profile.biz_profession || '');
+  setDescription(profile.description || '');
+  setRefPrice(profile.ref_price           || '');
+  
+            // OSOS intereses → array local
+            const interesesGuardados = profile.osos_intereses
+              ? profile.osos_intereses.split(',').filter(Boolean)
+              : [];
+            setOsosInteresesArr(interesesGuardados);
 
-            const colors = (profile.card_color || 'cyan-void').split('-');
-            setEnergyColor(colors[0] || 'cyan');
-            setMatterColor(colors[1] || 'void');
-            setCountry(profile.country  || '');
-            setCity(profile.city        || '');
-            setZipCode(profile.zip_code || '');
-
-            // ── Linaje: estados separados ──
-            setReinoElegido(profile.reino || '');
+            // Linaje
+            setReinoElegido(profile.reino         || '');
             setJuramentoFirmado(profile.juramento_firmado || false);
 
-            // ── FormData completo ──
             setFormData({
-              alias:             profile.alias || user.user_metadata.alias || '',
-              role:              profile.role              || '',
-              avatar_url:        profile.avatar_url        || '',
-              banner_url:        profile.banner_url        || '',
-              card_banner_url:   profile.card_banner_url   || '',
-              twit_message:      profile.twit_message      || '',
-              audio_file:        profile.audio_file        || '',
-              video_file:        profile.video_file        || '',
-              video_file_2:      profile.video_file_2      || '',
-              video_file_3:      profile.video_file_3      || '',
-              video_file_219:    profile.video_file_219    || '',
-              holo_1:            profile.holo_1            || '',
-              holo_2:            profile.holo_2            || '',
-              holo_3:            profile.holo_3            || '',
-              holo_4:            profile.holo_4            || '',
-              catalog_url:       profile.catalog_url       || '',
-              mapache_rules:     profile.mapache_rules     || '',
-              intimo_bg:         profile.intimo_bg         || '',
+              alias:              profile.alias || user.user_metadata?.alias || '',
+              role: Array.isArray(profile.role) ? profile.role : (profile.role ? [profile.role] : []),
+	    bro_id:             profile.bro_id || '',
+	    description:  profile.description || '',
+              genero:             profile.genero            || 'n', 
+              avatar_url:         profile.avatar_url        || '',
+              banner_url:         profile.banner_url        || '',
+              card_banner_url:    profile.card_banner_url   || '',
+              twit_message:       profile.twit_message      || '',
+              audio_file:         profile.audio_file        || '',
+              video_file:         profile.video_file        || '',
+              video_file_2:       profile.video_file_2      || '',
+              video_file_3:       profile.video_file_3      || '',
+              video_file_219:     profile.video_file_219    || '',
+              holo_1:             profile.holo_1            || '',
+              holo_2:             profile.holo_2            || '',
+              holo_3:             profile.holo_3            || '',
+              holo_4:             profile.holo_4            || '',
+              catalog_url:        profile.catalog_url       || '',
+              ventas_rules:      profile.ventas_rules     || '',
+              intimo_bg:          profile.intimo_bg         || '',
               creator_loop_reply: profile.creator_loop_reply || '',
-              editorial_title:   profile.editorial_title   || '',
-              editorial_content: profile.editorial_content || '',
-              showcase_url:      profile.showcase_url      || '',
-              admin_reality_bg:  profile.admin_reality_bg  || '',
-              admin_game_img:    profile.admin_game_img    || '',
-              // ── Linaje ──
+              editorial_title:    profile.editorial_title   || '',
+              editorial_content:  profile.editorial_content || '',
+              showcase_url:       profile.showcase_url      || '',
+              // OSOS IA
+              osos_nombre:        profile.osos_nombre    || '',
+              osos_tono:          profile.osos_tono      || '',
+              osos_intereses:     profile.osos_intereses || '',
+              osos_frase:         profile.osos_frase     || '',
+             oso_id:         profile.oso_id         || 'TITO',
+             // SECTORES  
+             servicios_id:         profile.servicios_id         || 'ISABELLA',
+             servicios_personaje:  profile.servicios_personaje   || 'ISABELLA',
+             audio_id:         profile.audio_id         || 'MAPACHE',
+             audio_personaje:    profile.audio_personaje    || 'MAPACHE',
+             oraculo_personaje:  profile.oraculo_personaje   || 'ORUMAMA',
+             oraculo_id:         profile.oraculo_id         || 'ORUMAMA',
+              avisos_personaje:  profile.avisos_personaje   || 'EVELYN',
+             avisos_id:         profile.avisos_id        || 'EVELYN',
+             
+              // Linaje
               rank:               profile.rank               || '',
               reino:              profile.reino              || '',
               juramento_firmado:  profile.juramento_firmado  || false,
@@ -191,7 +268,7 @@ const BoosterModal = ({ onClose }) => {
     fetchQuestions();
   }, [tab]);
 
-  // C) CARGAR RADAR Y ÓRBITAS
+  // C) CARGAR RADAR
   useEffect(() => {
     const fetchOrbitsData = async () => {
       if (tab === 'metrics') {
@@ -203,22 +280,60 @@ const BoosterModal = ({ onClose }) => {
             .eq('creator_id', user.id)
             .eq('is_orbiting', true);
           if (!error) setFollowerCount(count || 0);
-          else console.error("Error en radar:", error);
         }
       }
     };
     fetchOrbitsData();
   }, [tab]);
 
-  // ── 9. FUNCIONES GENERALES ──
+  // D) CATÁLOGO ESCALABLE
+  useEffect(() => {
+    if (tab !== 'market') return;
+    const fetchCatalog = async () => {
+      setCatalogLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      let query = supabase
+        .from('catalog_items')
+        .select('*', { count: 'exact' })
+        .eq('owner_id', user.id)
+        .order('created_at', { ascending: false })
+        .range(catalogPage * CATALOG_PAGE_SIZE, (catalogPage + 1) * CATALOG_PAGE_SIZE - 1);
+      if (catalogSearch.trim()) query = query.ilike('title', `%${catalogSearch.trim()}%`);
+      const { data, count, error } = await query;
+      if (!error) { setCatalogItems(data || []); setCatalogTotal(count || 0); }
+      setCatalogLoading(false);
+    };
+    fetchCatalog();
+  }, [tab, catalogPage, catalogSearch]);
 
-  const toggleRole = (roleId) => {
-    let currentRoles = formData.role ? String(formData.role).split(',') : [];
-    if (currentRoles.includes(roleId)) currentRoles = currentRoles.filter(r => r !== roleId);
-    else currentRoles.push(roleId);
-    setFormData({ ...formData, role: currentRoles.join(',') });
+
+  // ── CATÁLOGO ──
+  const handleDeleteCatalogItem = async (itemId) => {
+    if (!window.confirm('¿Eliminar este artículo del catálogo?')) return;
+    const { error } = await supabase.from('catalog_items').delete().eq('id', itemId);
+    if (!error) setCatalogItems(prev => prev.filter(i => i.id !== itemId));
   };
 
+  const handleCSVUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const text = await file.text();
+    const lines = text.split('\n').slice(1).filter(Boolean);
+    const { data: { user } } = await supabase.auth.getUser();
+    const rows = lines.map(line => {
+      const [title, description, price_fiat, url, category] = line.split(',').map(s => s.trim().replace(/^"|"$/g, ''));
+      return { owner_id: user.id, title, description, price_fiat: parseFloat(price_fiat) || 0, url, category };
+    });
+    for (let i = 0; i < rows.length; i += 100) {
+      await supabase.from('catalog_items').insert(rows.slice(i, i + 100));
+    }
+    alert(`✅ ${rows.length} artículos importados al catálogo.`);
+    setCatalogPage(0);
+    setCatalogSearch('');
+  };
+
+  // ── GUARDAR ──
   const handleSave = async () => {
     try {
       setLoading(true);
@@ -226,8 +341,12 @@ const BoosterModal = ({ onClose }) => {
       if (!user) throw new Error("No user");
       const finalColor = `${energyColor}-${matterColor}`;
       const updates = {
-        ...formData, card_color: finalColor, is_merchant: isMerchant,
-        country, city, zip_code: zipCode, updated_at: new Date(),
+        ...formData,
+        card_color: finalColor,
+        country, city, zip_code: zipCode,
+        address, neighborhood, nearby_ref: nearbyRef,
+        biz_category: bizCategory, biz_profession: bizProfession, ref_price: refPrice,
+        updated_at: new Date(),
       };
       const { error } = await supabase.from('profiles').update(updates).eq('id', user.id);
       if (error) throw error;
@@ -241,6 +360,7 @@ const BoosterModal = ({ onClose }) => {
     }
   };
 
+  // ── BORRAR CUENTA ──
   const handleDeleteAccount = async () => {
     const alert1 = window.confirm("🚨 ¡ALERTA ROJA! 🚨\n¿Estás absolutamente seguro de que quieres desintegrar tu identidad de BRO7VISION?");
     if (!alert1) return;
@@ -253,7 +373,7 @@ const BoosterModal = ({ onClose }) => {
       await supabase.from('profiles').delete().eq('id', user.id);
       await supabase.rpc('delete_user');
       await supabase.auth.signOut();
-      alert("🌌 Secuencia completada. Tu identidad ha sido desintegrada. Volviendo a la Tierra...");
+      alert("🌌 Secuencia completada. Tu identidad ha sido desintegrada.");
       window.location.href = '/';
     } catch (error) {
       alert("❌ Error en la desintegración: " + error.message);
@@ -262,6 +382,7 @@ const BoosterModal = ({ onClose }) => {
     }
   };
 
+  // ── ASSETS ──
   const handleDeleteItem = async (itemId) => {
     if (!window.confirm("¿Desintegrar este ítem del sistema?")) return;
     const { error } = await supabase.from('assets').delete().eq('id', itemId);
@@ -269,27 +390,8 @@ const BoosterModal = ({ onClose }) => {
     else setAssets(assets.filter(a => a.id !== itemId));
   };
 
-  const handleAddDigitalAsset = async () => {
-    if (!newAsset.title || !newAsset.url) { alert("Faltan datos"); return; }
-    const { data: { user } } = await supabase.auth.getUser();
-    const { data, error } = await supabase.from('assets').insert([
-      { owner_id: user.id, title: newAsset.title, url: newAsset.url, asset_type: newAsset.type, price_fiat: newAsset.price }
-    ]).select();
-    if (error) { alert("❌ Error: " + error.message); return; }
-    if (data) { setAssets([...assets, data[0]]); setNewAsset({ title: '', url: '', type: 'video', price: 0 }); }
-  };
-
-  const handleAddProduct = async () => {
-    if (!newProduct.title) { alert("¡Falta el título!"); return; }
-    const { data: { user } } = await supabase.auth.getUser();
-    const { data, error } = await supabase.from('assets').insert([{
-      owner_id: user.id, title: newProduct.title, description: newProduct.desc,
-      price_fiat: newProduct.price, url: newProduct.url, asset_type: 'product',
-      sizes: newProduct.sizes, colors: newProduct.colors
-    }]).select();
-    if (error) { alert("❌ Error: " + error.message); return; }
-    if (data) { setAssets([...assets, data[0]]); setNewProduct({ title: '', desc: '', price: 0, url: '', sizes: '', colors: '' }); }
-  };
+  const serviceItems  = assets.filter(a => a.asset_type === 'service');
+  const [newService, setNewService] = useState({ title: '', desc: '', price: 0, url: '' });
 
   const handleAddService = async () => {
     if (!newService.title) { alert("¡Falta el título!"); return; }
@@ -302,1209 +404,1037 @@ const BoosterModal = ({ onClose }) => {
     if (data) { setAssets([...assets, data[0]]); setNewService({ title: '', desc: '', price: 0, url: '' }); }
   };
 
-  const physicalProducts = assets.filter(a => a.asset_type === 'product');
-  const serviceItems     = assets.filter(a => a.asset_type === 'service');
-  const digitalAssets    = assets.filter(a => !['product', 'service'].includes(a.asset_type));
-  
-    // ── HELPER: borra un archivo de R2 (llama a /api/delete-r2) ── // ← NUEVO
-const deleteFromR2 = async (fileUrl) => {
-  if (!fileUrl) return; // slot vacío, no hay nada que borrar
-  try {
-    await fetch('/api/delete-r2', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fileUrl }),
-    });
-  } catch (err) {
-    console.warn('[deleteFromR2] No se pudo borrar:', err);
-    // No bloqueamos la subida si el borrado falla
-  }
-};
+  // ── R2 ──
+  const deleteFromR2 = async (fileUrl) => {
+    if (!fileUrl) return;
+    try {
+      await fetch('/api/delete-r2', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileUrl }),
+      });
+    } catch (err) {
+      console.warn('[deleteFromR2]', err);
+    }
+  };
 
-const handleDeleteMedia = async (fieldName) => {                    // ← async NUEVO
-  const confirm1 = window.confirm("⚠️ ALERTA DE SISTEMA\n¿Quieres desintegrar este archivo para liberar el espacio?");
-  if (!confirm1) return;
-
-  const confirm2 = window.prompt("MEDIDA DE SEGURIDAD:\nPara confirmar que eres el propietario, escribe la palabra en mayúsculas: BORRAR");
-
-  if (confirm2 === "BORRAR") {
-    await deleteFromR2(formData[fieldName]);                         // ← NUEVO: borra de R2 antes de limpiar
-    setFormData(prev => ({ ...prev, [fieldName]: '' }));
-    alert("✅ Archivo desintegrado. El hueco está libre.\nIMPORTANTE: Recuerda pulsar 'ACTUALIZAR NÚCLEO' para guardar este cambio.");
-  } else {
-    alert("❌ Protocolo cancelado. Código de seguridad incorrecto.");
-  }
-};
-
+  const handleDeleteMedia = async (fieldName) => {
+    const confirm1 = window.confirm("⚠️ ALERTA DE SISTEMA\n¿Quieres desintegrar este archivo para liberar el espacio?");
+    if (!confirm1) return;
+    const confirm2 = window.prompt("MEDIDA DE SEGURIDAD:\nEscribe la palabra en mayúsculas: BORRAR");
+    if (confirm2 === "BORRAR") {
+      await deleteFromR2(formData[fieldName]);
+      setFormData(prev => ({ ...prev, [fieldName]: '' }));
+      alert("✅ Archivo desintegrado. Recuerda pulsar 'ACTUALIZAR NÚCLEO'.");
+    } else {
+      alert("❌ Protocolo cancelado. Código de seguridad incorrecto.");
+    }
+  };
 
   const VERTICAL_SLOTS = ['video_file', 'video_file_2', 'video_file_3'];
-  
+  const SLOT_MAP = {
+    video_file: 'v1', video_file_2: 'v2', video_file_3: 'v3',
+    video_file_219: 'horizontal', audio_file: 'audio',
+  };
 
-// ── MAPA: fieldName → slot en creator_media ──────────────────────
-const SLOT_MAP = {
-  video_file:    'v1',
-  video_file_2:  'v2',
-  video_file_3:  'v3',
-  video_file_219: 'horizontal',
-  audio_file:    'audio',
-};
-
-
-  // ── UPLOAD UNIVERSAL con guardado en creator_media ────────────────
-const handleUploadUniversal = async (e, fieldName, metadatos) => {
-  // metadatos = { titulo, descripcion, tipo } — vienen del acordeón
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const isVideo = file.type.includes('video');
-  const maxSize = isVideo ? 1500 * 1024 * 1024 : 10 * 1024 * 1024;
-  if (file.size > maxSize) {
-    alert(`¡Archivo muy pesado! Máximo ${isVideo ? '1500MB' : '10MB'} permitido.`);
-    return;
-  }
-
-  setLoading(true);
-  try {
-    const safeFileName = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
-
-    // 1. Presigned URL
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fileName: safeFileName, fileType: file.type }),
-    });
-    const { uploadUrl } = await res.json();
-    if (!uploadUrl) throw new Error("La API no devolvió el ticket de subida.");
-
-    // 2. Subir a R2
-    await fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
-    const publicUrl = `https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/${safeFileName}`;
-
-    const slot = SLOT_MAP[fieldName];
-
-    // 3. Lógica de cola para verticales + borrado R2
-    if (VERTICAL_SLOTS.includes(fieldName)) {
-      const slot1 = formData.video_file   || null;
-      const slot2 = formData.video_file_2 || null;
-      const slot3 = formData.video_file_3 || null;
-      await deleteFromR2(slot3);
-      setFormData(prev => ({
-        ...prev,
-        video_file:   publicUrl,
-        video_file_2: slot1,
-        video_file_3: slot2,
-      }));
-    } else if (fieldName === 'video_file_219' || fieldName === 'audio_file') {
-      await deleteFromR2(formData[fieldName]);
-      setFormData(prev => ({ ...prev, [fieldName]: publicUrl }));
-    } else {
-      setFormData(prev => ({ ...prev, [fieldName]: publicUrl }));
-    }
-
-    // 4. Guardar/actualizar metadatos en creator_media (upsert por user_id + slot)
-    if (slot) {
-      const { error: upsertError } = await supabase
-        .from('creator_media')
-        .upsert({
-          user_id:     formData.id,   // el UUID del usuario actual
-          slot,
-          url:         publicUrl,
-          titulo:      metadatos.titulo,
-          descripcion: metadatos.descripcion,
-          tipo:        metadatos.tipo,
-        }, { onConflict: 'user_id,slot' }); // si ya existe ese slot, lo actualiza
-
-      if (upsertError) console.error('[creator_media upsert]', upsertError);
-    }
-
-    alert("🚀 ¡Archivo inyectado en el NÚCLEO R2!");
-  } catch (err) {
-    console.error(err);
-    alert("❌ Error de hiper-salto (Subida): " + err.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
-// ── COMPONENTE MediaSlot con acordeón de metadatos ────────────────
-const MediaSlot = ({ title, fieldName, type, description }) => {
-  const isOccupied = !!formData[fieldName];
-
-  // Estado local del acordeón
-  const [acordeonAbierto, setAcordeonAbierto] = useState(false);
-  const [archivoSeleccionado, setArchivoSeleccionado] = useState(null);
-  const [metadatos, setMetadatos] = useState({ titulo: '', descripcion: '', tipo: 'original' });
-  const [errorMeta, setErrorMeta] = useState('');
-  const fileInputRef = React.useRef(null);
-
-  const handleFileSelected = (e) => {
+  const handleUploadUniversal = async (e, fieldName, metadatos) => {
     const file = e.target.files[0];
     if (!file) return;
-    setArchivoSeleccionado(file);
-    setAcordeonAbierto(true);  // abre el acordeón automáticamente
-    setErrorMeta('');
+    const isVideo = file.type.includes('video');
+    const maxSize = isVideo ? 1500 * 1024 * 1024 : 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert(`¡Archivo muy pesado! Máximo ${isVideo ? '1500MB' : '10MB'} permitido.`);
+      return;
+    }
+    setLoading(true);
+    try {
+      const safeFileName = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName: safeFileName, fileType: file.type }),
+      });
+      const { uploadUrl } = await res.json();
+      if (!uploadUrl) throw new Error("La API no devolvió el ticket de subida.");
+      await fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
+      const publicUrl = `https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/${safeFileName}`;
+      const slot = SLOT_MAP[fieldName];
+      if (VERTICAL_SLOTS.includes(fieldName)) {
+        const slot1 = formData.video_file   || null;
+        const slot2 = formData.video_file_2 || null;
+        const slot3 = formData.video_file_3 || null;
+        await deleteFromR2(slot3);
+        setFormData(prev => ({ ...prev, video_file: publicUrl, video_file_2: slot1, video_file_3: slot2 }));
+      } else if (fieldName === 'video_file_219' || fieldName === 'audio_file') {
+        await deleteFromR2(formData[fieldName]);
+        setFormData(prev => ({ ...prev, [fieldName]: publicUrl }));
+      } else {
+        setFormData(prev => ({ ...prev, [fieldName]: publicUrl }));
+      }
+      if (slot) {
+        const { error: upsertError } = await supabase.from('creator_media').upsert({
+          user_id: formData.id, slot, url: publicUrl,
+          titulo: metadatos.titulo, descripcion: metadatos.descripcion, tipo: metadatos.tipo,
+        }, { onConflict: 'user_id,slot' });
+        if (upsertError) console.error('[creator_media upsert]', upsertError);
+      }
+      alert("🚀 ¡Archivo inyectado en el NÚCLEO R2!");
+    } catch (err) {
+      console.error(err);
+      alert("❌ Error de hiper-salto: " + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleConfirmarSubida = async () => {
-  // Validación obligatoria
-  if (!metadatos.titulo.trim())       { setErrorMeta('El título es obligatorio.');       return; }
-  if (!metadatos.descripcion.trim())  { setErrorMeta('La descripción es obligatoria.');  return; }
-  setErrorMeta('');
+  // ── COMPONENTE MediaSlot ──
+  const MediaSlot = ({ title, fieldName, type, description }) => {
+    const isOccupied = !!formData[fieldName];
+    const [acordeonAbierto, setAcordeonAbierto]     = useState(false);
+    const [archivoSeleccionado, setArchivoSeleccionado] = useState(null);
+    const [metadatos, setMetadatos] = useState({ titulo: '', descripcion: '', tipo: 'original' });
+    const [errorMeta, setErrorMeta] = useState('');
+    const fileInputRef = React.useRef(null);
 
-  // Llamamos al upload con los metadatos
-  const fakeEvent = { target: { files: [archivoSeleccionado] } };
-  await handleUploadUniversal(fakeEvent, fieldName, metadatos);
+    const handleFileSelected = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      setArchivoSeleccionado(file);
+      setAcordeonAbierto(true);
+      setErrorMeta('');
+    };
 
-  // ── NUEVO: si es un slot de video, marcamos actividad_video ──
-  const esVideo = ['video_file', 'video_file_2', 'video_file_3', 'video_file_219'].includes(fieldName);
-  if (esVideo) {
-    await marcarActividad('video');
-  }
+    const handleConfirmarSubida = async () => {
+      if (!metadatos.titulo.trim())      { setErrorMeta('El título es obligatorio.');      return; }
+      if (!metadatos.descripcion.trim()) { setErrorMeta('La descripción es obligatoria.'); return; }
+      setErrorMeta('');
+      const fakeEvent = { target: { files: [archivoSeleccionado] } };
+      await handleUploadUniversal(fakeEvent, fieldName, metadatos);
+      const esVideo = ['video_file', 'video_file_2', 'video_file_3', 'video_file_219'].includes(fieldName);
+      if (esVideo) await marcarActividad('video');
+      setAcordeonAbierto(false);
+      setArchivoSeleccionado(null);
+      setMetadatos({ titulo: '', descripcion: '', tipo: 'original' });
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    };
 
-  // Limpiamos el acordeón
-  setAcordeonAbierto(false);
-  setArchivoSeleccionado(null);
-  setMetadatos({ titulo: '', descripcion: '', tipo: 'original' });
-  if (fileInputRef.current) fileInputRef.current.value = '';
-};
+    const handleCancelar = () => {
+      setAcordeonAbierto(false);
+      setArchivoSeleccionado(null);
+      setMetadatos({ titulo: '', descripcion: '', tipo: 'original' });
+      setErrorMeta('');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    };
 
-  const handleCancelar = () => {
-    setAcordeonAbierto(false);
-    setArchivoSeleccionado(null);
-    setMetadatos({ titulo: '', descripcion: '', tipo: 'original' });
-    setErrorMeta('');
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
+    const TIPO_LABELS = {
+      original:   { label: 'Contenido Original', color: 'text-emerald-400 border-emerald-500/40 bg-emerald-500/10' },
+      ia:         { label: 'Hecho con IA',        color: 'text-violet-400  border-violet-500/40  bg-violet-500/10'  },
+      publicidad: { label: 'Publicidad',           color: 'text-amber-400  border-amber-500/40   bg-amber-500/10'   },
+    };
 
-  // Etiqueta visual del tipo
-  const TIPO_LABELS = {
-    original:   { label: 'Contenido Original', color: 'text-emerald-400 border-emerald-500/40 bg-emerald-500/10' },
-    ia:         { label: 'Hecho con IA',        color: 'text-violet-400  border-violet-500/40  bg-violet-500/10'  },
-    publicidad: { label: 'Publicidad',           color: 'text-amber-400  border-amber-500/40   bg-amber-500/10'   },
-  };
-
-  return (
-    <div className="bg-black/40 rounded-2xl border border-white/5 overflow-hidden group transition-all duration-300">
-
-      {/* ── CABECERA DEL SLOT ── */}
-      <div className="p-4">
-        <label className="text-[10px] font-bold text-gray-300 uppercase tracking-widest block mb-1">
-          {title}
-        </label>
-        <p className="text-[9px] text-gray-500 mb-3">{description}</p>
-
-        {/* ESTADO OCUPADO */}
-        {isOccupied && !acordeonAbierto ? (
-          <div className="bg-cyan-900/20 p-3 rounded-xl border border-cyan-500/30 flex justify-between items-center backdrop-blur-md">
-            <span className="text-[10px] text-cyan-400 font-bold">✓ Ocupado</span>
-            <button
-              onClick={() => handleDeleteMedia(fieldName)}
-              className="bg-red-500/10 text-red-400 border border-red-500/50 hover:bg-red-500 hover:text-white text-[10px] font-bold px-4 py-2 rounded-lg transition-all"
-            >
-              REEMPLAZAR
-            </button>
-          </div>
-        ) : !acordeonAbierto ? (
-          /* ESTADO VACÍO */
-          <div className="relative">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept={type}
-              onChange={handleFileSelected}
-              className="w-full text-[10px] text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border file:border-cyan-500/40 file:bg-cyan-500/10 file:text-cyan-400 file:text-[10px] file:font-bold file:cursor-pointer hover:file:bg-cyan-500/20 transition-all cursor-pointer"
-            />
-            <div className="absolute top-1/2 right-4 -translate-y-1/2 pointer-events-none">
-              <span className="text-xs text-gray-500 font-bold border border-gray-600 px-2 py-1 rounded">
-                HUECO LIBRE
-              </span>
+    return (
+      <div className="bg-black/40 rounded-2xl border border-white/5 overflow-hidden group transition-all duration-300">
+        <div className="p-4">
+          <label className="text-[10px] font-bold text-gray-300 uppercase tracking-widest block mb-1">{title}</label>
+          <p className="text-[9px] text-gray-500 mb-3">{description}</p>
+          {isOccupied && !acordeonAbierto ? (
+            <div className="bg-cyan-900/20 p-3 rounded-xl border border-cyan-500/30 flex justify-between items-center">
+              <span className="text-[10px] text-cyan-400 font-bold">✓ Ocupado</span>
+              <button onClick={() => handleDeleteMedia(fieldName)}
+                className="bg-red-500/10 text-red-400 border border-red-500/50 hover:bg-red-500 hover:text-white text-[10px] font-bold px-4 py-2 rounded-lg transition-all">
+                REEMPLAZAR
+              </button>
             </div>
-          </div>
-        ) : null}
-      </div>
-
-      {/* ── ACORDEÓN DE METADATOS ── */}
-      {acordeonAbierto && (
-        <div className="border-t border-fuchsia-500/20 bg-black/60 p-4 space-y-4 animate-fadeIn">
-
-          {/* Nombre del archivo seleccionado */}
-          <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg">
-            <span className="text-[9px] text-gray-500 uppercase tracking-widest">Archivo:</span>
-            <span className="text-[10px] text-cyan-300 truncate">{archivoSeleccionado?.name}</span>
-          </div>
-
-          {/* TÍTULO */}
-          <div>
-            <label className="text-[9px] font-bold text-fuchsia-400 uppercase tracking-widest block mb-1">
-              Título <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="text"
-              maxLength={60}
-              placeholder="Ej: Mi aventura en el bosque neon"
-              value={metadatos.titulo}
-              onChange={e => setMetadatos(prev => ({ ...prev, titulo: e.target.value }))}
-              className="w-full bg-white/5 border border-white/10 focus:border-fuchsia-500/50 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 outline-none transition-all"
-            />
-            <p className="text-[9px] text-gray-600 mt-1 text-right">{metadatos.titulo.length}/60</p>
-          </div>
-
-          {/* DESCRIPCIÓN */}
-          <div>
-            <label className="text-[9px] font-bold text-fuchsia-400 uppercase tracking-widest block mb-1">
-              Descripción <span className="text-red-400">*</span>
-            </label>
-            <textarea
-              maxLength={200}
-              rows={3}
-              placeholder="Cuéntale al mundo de qué va este contenido..."
-              value={metadatos.descripcion}
-              onChange={e => setMetadatos(prev => ({ ...prev, descripcion: e.target.value }))}
-              className="w-full bg-white/5 border border-white/10 focus:border-fuchsia-500/50 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 outline-none transition-all resize-none"
-            />
-            <p className="text-[9px] text-gray-600 mt-1 text-right">{metadatos.descripcion.length}/200</p>
-          </div>
-
-          {/* TIPO DE CONTENIDO */}
-          <div>
-            <label className="text-[9px] font-bold text-fuchsia-400 uppercase tracking-widest block mb-2">
-              Tipo de contenido <span className="text-red-400">*</span>
-            </label>
-            <div className="flex gap-2 flex-wrap">
-              {Object.entries(TIPO_LABELS).map(([valor, { label, color }]) => (
-                <button
-                  key={valor}
-                  onClick={() => setMetadatos(prev => ({ ...prev, tipo: valor }))}
-                  className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all ${
-                    metadatos.tipo === valor
-                      ? color + ' scale-105'
-                      : 'text-gray-500 border-gray-700 bg-white/5 hover:border-gray-500'
-                  }`}
-                >
-                  {metadatos.tipo === valor ? '✓ ' : ''}{label}
-                </button>
-              ))}
+          ) : !acordeonAbierto ? (
+            <div className="relative">
+              <input ref={fileInputRef} type="file" accept={type} onChange={handleFileSelected}
+                className="w-full text-[10px] text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border file:border-cyan-500/40 file:bg-cyan-500/10 file:text-cyan-400 file:text-[10px] file:font-bold file:cursor-pointer hover:file:bg-cyan-500/20 transition-all cursor-pointer" />
+              <div className="absolute top-1/2 right-4 -translate-y-1/2 pointer-events-none">
+                <span className="text-xs text-gray-500 font-bold border border-gray-600 px-2 py-1 rounded">HUECO LIBRE</span>
+              </div>
             </div>
-          </div>
-
-          {/* ERROR */}
-          {errorMeta && (
-            <p className="text-[10px] text-red-400 bg-red-500/10 border border-red-500/30 px-3 py-2 rounded-lg">
-              ⚠️ {errorMeta}
-            </p>
-          )}
-
-          {/* BOTONES */}
-          <div className="flex gap-3 pt-2">
-            <button
-              onClick={handleCancelar}
-              className="flex-1 text-[10px] font-bold text-gray-400 border border-gray-700 hover:border-gray-500 py-2 rounded-lg transition-all"
-            >
-              CANCELAR
-            </button>
-            <button
-              onClick={handleConfirmarSubida}
-              disabled={loading}
-              className="flex-2 flex-grow text-[10px] font-bold bg-fuchsia-600/80 hover:bg-fuchsia-500 disabled:opacity-40 disabled:cursor-not-allowed text-white py-2 px-6 rounded-lg border border-fuchsia-500/50 transition-all"
-            >
-              {loading ? '⏳ INYECTANDO...' : '🚀 CONFIRMAR SUBIDA'}
-            </button>
-          </div>
+          ) : null}
         </div>
-      )}
-    </div>
-  );
-};
+        {acordeonAbierto && (
+          <div className="border-t border-fuchsia-500/20 bg-black/60 p-4 space-y-4 animate-fadeIn">
+            <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg">
+              <span className="text-[9px] text-gray-500 uppercase tracking-widest">Archivo:</span>
+              <span className="text-[10px] text-cyan-300 truncate">{archivoSeleccionado?.name}</span>
+            </div>
+            <div>
+              <label className="text-[9px] font-bold text-fuchsia-400 uppercase tracking-widest block mb-1">Título <span className="text-red-400">*</span></label>
+              <input type="text" maxLength={60} placeholder="Ej: Mi aventura en el bosque neon"
+                value={metadatos.titulo} onChange={e => setMetadatos(prev => ({ ...prev, titulo: e.target.value }))}
+                className="w-full bg-white/5 border border-white/10 focus:border-fuchsia-500/50 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 outline-none transition-all" />
+              <p className="text-[9px] text-gray-600 mt-1 text-right">{metadatos.titulo.length}/60</p>
+            </div>
+            <div>
+              <label className="text-[9px] font-bold text-fuchsia-400 uppercase tracking-widest block mb-1">Descripción <span className="text-red-400">*</span></label>
+              <textarea maxLength={200} rows={3} placeholder="Cuéntale al mundo de qué va este contenido..."
+                value={metadatos.descripcion} onChange={e => setMetadatos(prev => ({ ...prev, descripcion: e.target.value }))}
+                className="w-full bg-white/5 border border-white/10 focus:border-fuchsia-500/50 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 outline-none transition-all resize-none" />
+              <p className="text-[9px] text-gray-600 mt-1 text-right">{metadatos.descripcion.length}/200</p>
+            </div>
+            <div>
+              <label className="text-[9px] font-bold text-fuchsia-400 uppercase tracking-widest block mb-2">Tipo de contenido <span className="text-red-400">*</span></label>
+              <div className="flex gap-2 flex-wrap">
+                {Object.entries(TIPO_LABELS).map(([valor, { label, color }]) => (
+                  <button key={valor} onClick={() => setMetadatos(prev => ({ ...prev, tipo: valor }))}
+                    className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all ${metadatos.tipo === valor ? color + ' scale-105' : 'text-gray-500 border-gray-700 bg-white/5 hover:border-gray-500'}`}>
+                    {metadatos.tipo === valor ? '✓ ' : ''}{label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {errorMeta && (
+              <p className="text-[10px] text-red-400 bg-red-500/10 border border-red-500/30 px-3 py-2 rounded-lg">⚠️ {errorMeta}</p>
+            )}
+            <div className="flex gap-3 pt-2">
+              <button onClick={handleCancelar}
+                className="flex-1 text-[10px] font-bold text-gray-400 border border-gray-700 hover:border-gray-500 py-2 rounded-lg transition-all">
+                CANCELAR
+              </button>
+              <button onClick={handleConfirmarSubida} disabled={loading}
+                className="flex-2 flex-grow text-[10px] font-bold bg-fuchsia-600/80 hover:bg-fuchsia-500 disabled:opacity-40 disabled:cursor-not-allowed text-white py-2 px-6 rounded-lg border border-fuchsia-500/50 transition-all">
+                {loading ? '⏳ INYECTANDO...' : '🚀 CONFIRMAR SUBIDA'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
+  // ══════════════════════════════════════════════════════
+  // RENDER
+  // ══════════════════════════════════════════════════════
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-fadeIn font-sans">
-      <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none">
-        <source src="https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/deep_space.mp4" type="video/mp4" />
-      </video>
-      <div className="absolute inset-0 bg-transparent z-0" onClick={onClose}></div>
-      
-      <div className="relative z-10 w-full max-w-6xl bg-black/10 backdrop-blur-[25px] border border-white/20 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col h-[90vh]">
-        
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center animate-fadeIn font-sans">
+
+      {/* FONDO */}
+      <img src="/images/boosterstudio_bg.webp"
+        className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none" alt="Studio Background" />
+      <div className="absolute inset-0 bg-black/40 z-[5]" />
+
+      {/* MODAL PANTALLA COMPLETA */}
+      <div className="relative z-10 w-full h-full bg-black/10 backdrop-blur-[25px] border-0 shadow-none overflow-hidden flex flex-col">
+
         {/* HEADER */}
         <div className="bg-white/5 border-b border-white/10 p-5 flex justify-between items-center shrink-0">
-            <h2 className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-400 font-bold text-lg flex items-center gap-3 tracking-wider">
-               <span className="text-2xl drop-shadow-[0_0_5px_rgba(34,211,238,0.8)]">✨</span> BOOSTER STUDIO TERMINAL
-            </h2>
-            <button onClick={onClose} className="text-gray-400 hover:text-white hover:rotate-90 transition-transform duration-300 text-xl">✕</button>
+          <h2 className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-400 font-bold text-lg flex items-center gap-3 tracking-wider">
+            <span className="text-2xl drop-shadow-[0_0_5px_rgba(34,211,238,0.8)]">✨</span> BOOSTER STUDIO TERMINAL
+          </h2>
+          <button onClick={onClose}
+            className="text-gray-400 hover:text-white hover:rotate-90 transition-transform duration-300 text-xl">✕</button>
         </div>
 
         <div className="flex flex-col md:flex-row flex-1 overflow-hidden bg-transparent">
-            
-            {/* SIDEBAR NAVEGACIÓN */}
-            <div className="flex md:flex-col border-b md:border-b-0 md:border-r border-white/10 bg-black/10 p-3 gap-2 overflow-x-auto md:w-64 shrink-0 z-20">
-                {[
-                    { id: 'identity', label: '👤 Identidad', color: 'cyan' },
-                    { id: 'audio', label: '📡 Señal (Archivos)', color: 'fuchsia' },
-                    { id: 'Telefono Casa', label: '☝️ Telefono Casa', color: 'yellow' },
-                    { id: 'market', label: '🛒🦝 Tienda & IA', color: 'green' },
-                    { id: 'metrics', label: '🛰️ Órbita & Radar', color: 'orange' },
-                   ...(formData.rank ? [{ id: 'linaje', label: '👑 Linaje', color: 'orange' }] : []), 
-                    ...(isAdmin ? [{ id: 'admin', label: '👑 ADMIN NEXUS', color: 'red' }] : [])
-                ].map((item) => (
-                    <button 
-                        key={item.id}
-                        onClick={() => setTab(item.id)} 
-                        className={`text-left py-3 px-5 text-xs font-bold rounded-2xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap
-                        ${tab === item.id 
-                            ? `bg-gradient-to-r from-${item.color}-500/20 to-transparent text-${item.color}-300 border border-${item.color}-500/30 shadow-[0_0_15px_rgba(0,0,0,0.3)] translate-x-1` 
-                            : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}
-                    >
-                        {item.label}
-                    </button>
-                ))}
-            </div>
-            
-            {/* ÁREA DE CONTENIDO */}
-            <div className="p-8 overflow-y-auto custom-scrollbar flex-1 relative z-10">
-                
-                {/* 👤 IDENTIDAD */}
-{tab === 'identity' && (
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fadeIn">
-    <div className="space-y-6">
-      <div className={CardStyle}>
-        <h3 className="text-sm text-cyan-400 font-bold mb-4 flex items-center gap-2">📸 VISUALES (Carga R2)</h3>
-        <div className="space-y-4">
-          <MediaSlot title="Avatar (Circular)"      fieldName="avatar_url"      type="image/*" description="Tu foto de ciudadano." />
-          <MediaSlot title="Banner (LiveGrid)"      fieldName="banner_url"      type="image/*" description="Fondo para el mapa local." />
-          <MediaSlot title="Banner (Nexus Tarjeta)" fieldName="card_banner_url" type="image/*" description="Fondo para tu tarjeta principal." />
-        </div>
-      </div>
 
-      <div className={CardStyle}>
-        <label className={LabelStyle}>NICK DE CIUDADANO</label>
-        <input
-          type="text"
-          value={formData.alias}
-          onChange={e => setFormData({ ...formData, alias: e.target.value })}
-          className={`${InputStyle} text-lg font-bold text-center tracking-widest border-cyan-500/40`}
-        />
-
-        {/* ── SELECTOR DE GÉNERO ── */}
-        <div className="mt-5">
-          <label className={LabelStyle}>IDENTIDAD DE GÉNERO</label>
-          <div className="grid grid-cols-3 gap-2">
+          {/* SIDEBAR */}
+          <div className="flex md:flex-col border-b md:border-b-0 md:border-r border-white/10 bg-black/10 p-3 gap-2 overflow-x-auto md:w-64 shrink-0 z-20">
             {[
-              { id: 'm', label: '♂ Masculino',   desc: 'Rey · Don · Excelentísimo' },
-              { id: 'f', label: '♀ Femenino',    desc: 'Reina · Doña · Excelentísima' },
-              { id: 'n', label: '◈ Plural', desc: 'Reyes · Excelentísimos · Honorables' },
-            ].map((g) => (
-              <button
-                key={g.id}
-                onClick={() => setFormData({ ...formData, genero: g.id })}
-                className={`p-3 rounded-xl border text-left transition-all
-                  ${formData.genero === g.id
-                    ? 'bg-cyan-900/40 border-cyan-500/60 text-cyan-300'
-                    : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20 hover:text-gray-300'
-                  }`}
-              >
-                <p className="text-xs font-bold mb-1">{g.label}</p>
-                <p className="text-[9px] opacity-70 leading-tight">{g.desc}</p>
+              { id: 'identity',      label: '👤 Identidad',        color: 'cyan'   },
+              { id: 'audio',         label: '📡 Señal (Archivos)', color: 'fuchsia'},
+              { id: 'Telefono Casa', label: '☝️ Teléfono Casa',    color: 'yellow' },
+              { id: 'market',        label: '🛒 Tienda & IA',      color: 'green'  },
+              { id: 'metrics',       label: '🛰️ Órbita & Radar',   color: 'orange' },
+              ...(formData.rank ? [{ id: 'linaje', label: '👑 Linaje', color: 'orange' }] : []),
+            ].map((item) => (
+              <button key={item.id} onClick={() => setTab(item.id)}
+                className={`text-left py-3 px-5 text-xs font-bold rounded-2xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap
+                  ${tab === item.id
+                    ? `bg-gradient-to-r from-${item.color}-500/20 to-transparent text-${item.color}-300 border border-${item.color}-500/30 shadow-[0_0_15px_rgba(0,0,0,0.3)] translate-x-1`
+                    : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}>
+                {item.label}
               </button>
             ))}
           </div>
-        </div>
-        {/* ── FIN SELECTOR GÉNERO ── */}
 
-        <div className="mt-6 p-4 bg-black/20 rounded-2xl border border-white/5">
-          <h3 className={LabelStyle}>📍 COORDENADAS BASE</h3>
-          <div className="grid grid-cols-2 gap-3 mb-3">
-            <input type="text" value={country} onChange={(e) => setCountry(e.target.value)} className={InputStyle} placeholder="País" />
-            <input type="text" value={city}    onChange={(e) => setCity(e.target.value)}    className={InputStyle} placeholder="Ciudad" />
-          </div>
-          <input type="text" value={zipCode} onChange={(e) => setZipCode(e.target.value)} className={InputStyle} placeholder="Código Postal" />
-        </div>
-      </div>
-    </div>
-                                                
-                        {/* --- 💬 MENSAJE DE ESTADO (TWIT) --- */}
-                            <div className={`${CardStyle} border-cyan-500/20`}>
-                                <label className={LabelStyle}>💬 MENSAJE CORTO (TWIT RADAR)</label>
-                                <div className="relative">
-                                    <input 
-                                        type="text" 
-                                        maxLength={60} 
-                                        placeholder="Ej: 'Encontré unas llaves', 'Oferta Flash', 'Hola Barrio'..." 
-                                        value={formData.twit_message || ''} 
-                                        onChange={e => setFormData({...formData, twit_message: e.target.value})} 
-                                        className={`${InputStyle} pr-14`} 
-                                    />
-                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-cyan-500/70 font-bold">
-                                        {(formData.twit_message || '').length}/60
-                                    </span>
-                                </div>
-                                <p className="text-[10px] text-gray-500 mt-2">Este mensaje es interceptado por el Community Feed y visible en tu tarjeta.</p>
-                            </div>
+          {/* ÁREA DE CONTENIDO */}
+          <div className="p-8 overflow-y-auto custom-scrollbar flex-1 relative z-10">
 
-                        <div className="space-y-6">
-                            <div className={CardStyle}>
-                                <label className={LabelStyle}>ROLES DE SEÑAL</label>
-                                <div className="flex gap-3 flex-wrap">
-                                    {ROLES.map(r => (
-                                        <button key={r.id} onClick={() => toggleRole(r.id)} 
-                                            className={`py-2 px-4 text-xs font-bold rounded-full transition-all border 
-                                            ${String(formData.role || "").includes(r.id) 
-                                                ? 'bg-white text-black border-white shadow-[0_0_10px_white]' 
-                                                : 'bg-transparent text-gray-500 border-gray-700 hover:border-gray-500'}`}>
-                                            {r.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
+{/* ══ 👤 IDENTIDAD ══ */}
+            {tab === 'identity' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fadeIn">
 
-                            <div className={CardStyle}>
-                                <p className={LabelStyle}>⚡ ENERGÍA (Borde)</p>
-                                <div className="flex flex-wrap gap-3 mb-6">{ENERGY_COLORS.map(c => <button key={c.id} onClick={() => setEnergyColor(c.id)} className={`w-8 h-8 rounded-full transition-transform ${c.hex} ${energyColor === c.id ? 'scale-125 ring-2 ring-white' : 'opacity-40 hover:opacity-100 hover:scale-110'}`} />)}</div>
-                                
-                                <p className={LabelStyle}>🌑 MATERIA (Fondo)</p>
-                                <div className="flex flex-wrap gap-3">{MATTER_COLORS.map(c => <button key={c.id} onClick={() => setMatterColor(c.id)} className={`w-8 h-8 rounded-full border border-white/10 ${c.hex} ${matterColor === c.id ? 'scale-125 ring-2 ring-white shadow-[0_0_15px_rgba(255,255,255,0.2)]' : 'opacity-60 hover:opacity-100 hover:scale-110'}`} />)}</div>
-                            </div>
+                {/* ======================================= */}
+                {/* ⬅️ COLUMNA IZQUIERDA (Info y Oso IA)    */}
+                {/* ======================================= */}
+                <div className="space-y-6">
 
-                            <div className={`${CardStyle} border-fuchsia-500/20`}>
-                                <p className="text-xs font-bold text-fuchsia-400 mb-3 flex items-center gap-2">💎 HOLOPRISMA (3D)</p>
-                                <div className="grid grid-cols-2 gap-3">
-    				{['holo_1', 'holo_2', 'holo_3', 'holo_4'].map((h, i) => (
-       				 <MediaSlot 
-            				key={h}
-           				 title={`CARA ${i+1}`}
-            				fieldName={h}
-           				 type="image/*"
-            				description=""
-        				/>
-   				 ))}
-				</div>
-                                
-            		</div>
-                            
-                            {/* --- ZONA DE PELIGRO: BORRAR CUENTA --- */}
-                            <div className="bg-red-950/20 backdrop-blur-xl border border-red-500/30 p-6 rounded-3xl mt-6 shadow-[0_0_20px_rgba(239,68,68,0.15)]">
-                                <h3 className="text-sm text-red-400 font-bold mb-2 flex items-center gap-2">🚨 ZONA DE RIESGO</h3>
-                                <p className="text-xs text-gray-400 mb-4">Desintegrar tu identidad borrará tus Puntos, Vales y tu HoloPrisma de forma irreversible.</p>
-                                <button 
-                                    onClick={handleDeleteAccount}
-                                    className="w-full py-3 px-4 bg-red-600/10 hover:bg-red-600/90 text-red-400 hover:text-white text-xs font-bold uppercase tracking-widest rounded-xl border border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.8)] transition-all duration-300 flex justify-center items-center gap-2"
-                                >
-                                    <span>☠️</span> Iniciar Autodestrucción
-                                </button>
-                            </div>
-                            
-                        </div>
+                  {/* VISUALES */}
+                  <div className={CardStyle}>
+                    <h3 className="text-sm text-cyan-400 font-bold mb-4 flex items-center gap-2">📸 VISUALES (Carga R2)</h3>
+                    <div className="space-y-4">
+                      <MediaSlot title="Avatar (Circular)"      fieldName="avatar_url"      type="image/*" description="Tu foto de ciudadano." />
+                      <MediaSlot title="Banner (LiveGrid)"      fieldName="banner_url"      type="image/*" description="Fondo para el mapa local." />
+                      <MediaSlot title="Banner (Nexus Tarjeta)" fieldName="card_banner_url" type="image/*" description="Fondo para tu tarjeta principal." />
                     </div>
-                )}
+                  </div>
 
-                             {/* 📡 SEÑAL (MEDIOS) + LÓGICA DE CUPOS DINÁMICA */}
-                {tab === 'audio' && (
-                    <div className="space-y-6 max-w-4xl mx-auto animate-fadeIn">
-                        <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-2xl flex gap-4 items-start shadow-[0_0_20px_rgba(239,68,68,0.1)]">
-                            <div className="text-2xl mt-1">⚖️</div>
-                            <div>
-                                <h4 className="text-sm font-bold text-red-300 uppercase tracking-widest mb-1">Ley de Medios Bro7Vision</h4>
-                                <p className="text-xs text-red-200">Usa música propia o Licencia <span className="font-bold underline">CC 4.0</span>. Las cargas van directo al servidor. Tienes un cupo máximo de <span className="text-white font-bold">1 Audio, 3 Videos Verticales y 1 Horizontal</span>. Para subir uno nuevo, debes reemplazar uno existente.</p>
-                            </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* COLUMNA 1: Verticales y Audio */}
-                            <div className={`${CardStyle} space-y-4`}>
-                                <h3 className="text-sm font-bold text-fuchsia-400 mb-4 border-b border-fuchsia-500/20 pb-2">📱 SEÑAL MÓVIL (9:16)</h3>
-                                
-                                <MediaSlot 
-                                    title="Video Reality / Casa 1" fieldName="video_file" type="video/*" 
-                                    description="Video principal vertical." 
-                                />
-                                <MediaSlot 
-                                    title="Video Casa 2" fieldName="video_file_2" type="video/*" 
-                                    description="Video secundario vertical." 
-                                />
-                                <MediaSlot 
-                                    title="Video Casa 3" fieldName="video_file_3" type="video/*" 
-                                    description="Video terciario vertical." 
-                                />
-                                
-                                <div className="mt-6 pt-6 border-t border-white/10">
-                                    <MediaSlot 
-                                        title="📡 SEÑAL AUDIO LIVE" fieldName="audio_file" type="audio/*" 
-                                        description="Audio (MP3) para LiveGrid." 
-                                    />
-                                </div>
-                            </div>
+                  {/* NICK + GÉNERO + COORDENADAS */}
+                  <div className={CardStyle}>
+                    <label className={LabelStyle}>NICK DE CIUDADANO</label>
+                    <input type="text" value={formData.alias}
+                      onChange={e => setFormData({ ...formData, alias: e.target.value })}
+                      className={`${InputStyle} text-lg font-bold text-center tracking-widest border-cyan-500/40`} />
 
-                            {/* COLUMNA 2: Horizontal Cine */}
-                            <div className={`${CardStyle} h-fit`}>
-                                <h3 className="text-sm font-bold text-cyan-400 mb-4 border-b border-cyan-500/20 pb-2">🎬 FORMATO CINE (21:9)</h3>
-                                <MediaSlot 
-                                    title="Video Piso 219" fieldName="video_file_219" type="video/*" 
-                                    description="Formato horizontal panorámico para experiencias inmersivas." 
-                                />
-                            </div>
-                        </div>
+                    {/* ROL DE CIUDADANO */}
+                    <div className="mt-5">
+                      <label className={LabelStyle}>ROL EN BRO7VISION</label>
+                      <div className="grid grid-cols-2 gap-2 mt-2 sm:grid-cols-3">
+                        {[
+                          { id: 'citizen', label: '👤 Ciudadano',    desc: 'Explora y juega'         },
+                          { id: 'shop',    label: '🏪 Comercio',      desc: 'Vende productos'         },
+                          { id: 'service', label: '🤝 Profesional',   desc: 'Ofrece servicios'        },
+                          { id: 'talk',    label: '🎙️ Creador',       desc: 'Contenido & Blog'        },
+                          { id: 'music',   label: '🎵 Audio',          desc: 'Música & Podcast'        },
+                        ].map((r) => (
+                        <button
+                          key={r.id}
+                          onClick={() => {
+                            const current = Array.isArray(formData.role) ? formData.role : [];
+                            const updated = current.includes(r.id)
+                              ? current.filter(x => x !== r.id)
+                              : [...current, r.id];
+                            setFormData({ ...formData, role: updated });
+                          }}
+                          className={`p-3 rounded-xl border text-left transition-all
+                            ${(Array.isArray(formData.role) ? formData.role : []).includes(r.id)
+                              ? 'bg-cyan-900/40 border-cyan-500/60 text-cyan-300'
+                              : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20 hover:text-gray-300'}`}
+                        >
+                          <p className="text-xs font-bold mb-1">{r.label}</p>
+                          <p className="text-[9px] opacity-70 leading-tight">{r.desc}</p>
+                        </button>
+                        ))}
+                      </div>
                     </div>
-                )}                
-                
-                {/* 👑 ADMIN NEXUS */}
-                {tab === 'admin' && isAdmin && (
-                    <div className="space-y-6 max-w-4xl mx-auto animate-fadeIn">
-                        <div className="bg-red-900/20 border border-red-500/50 p-6 rounded-3xl shadow-[0_0_30px_rgba(239,68,68,0.2)]">
-                            <h2 className="text-xl font-black text-red-400 uppercase tracking-widest mb-6 flex items-center gap-3">
-                                <span>👑</span> CONSOLA DE ARQUITECTO (Admin)
-                            </h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="space-y-4">
-                                    <h3 className="text-xs font-bold text-white uppercase border-b border-red-500/30 pb-2">🌌 Fondos Reality</h3>
-                                    <MediaSlot title="Mañana (Video)" fieldName="admin_bg_morning" type="video/*" description="" />
-                                    <MediaSlot title="Tarde (Video)" fieldName="admin_bg_afternoon" type="video/*" description="" />
-                                    <MediaSlot title="Noche (Video)" fieldName="admin_bg_night" type="video/*" description="" />
-                                </div>
-                                <div className="space-y-4">
-                                    <h3 className="text-xs font-bold text-white uppercase border-b border-red-500/30 pb-2">🕹️ Activos de Sistema</h3>
-                                    <MediaSlot title="Base HoloPrisma Global" fieldName="admin_holoprisma_base" type="image/*" description="" />
-                                    <MediaSlot title="Imágenes Editorial Master" fieldName="admin_editorial_master" type="image/*" description="" />
-                                </div>
-                            </div>
-                        </div>
+
+                    {/* BRO-ID */}
+                    <div className="mt-5">
+                      <label className={LabelStyle}>ID EN BRO7VISION</label>
+                      <div className={`mt-1 px-4 py-3 rounded-xl border flex items-center gap-3
+                        ${formData.bro_id
+                          ? 'bg-black/40 border-cyan-500/30'
+                          : 'bg-black/20 border-white/5'}`}
+                      >
+                        {formData.bro_id ? (
+                          <>
+                            <span className={`w-2 h-2 rounded-full flex-shrink-0
+                              ${formData.bro_id.startsWith('COM') ? 'bg-yellow-400 shadow-[0_0_6px_rgba(251,191,36,0.8)]'  : ''}
+                              ${formData.bro_id.startsWith('PRO') ? 'bg-yellow-400 shadow-[0_0_6px_rgba(251,191,36,0.8)]'  : ''}
+                              ${formData.bro_id.startsWith('AUD') ? 'bg-cyan-400   shadow-[0_0_6px_rgba(34,211,238,0.8)]'  : ''}
+                              ${formData.bro_id.startsWith('BRO') ? 'bg-white      shadow-[0_0_6px_rgba(255,255,255,0.6)]' : ''}
+                              ${formData.bro_id.startsWith('ORG') ? 'bg-fuchsia-400 shadow-[0_0_6px_rgba(217,70,239,0.8)]' : ''}
+                            `} />
+                            <span style={{ fontFamily: "'Orbitron', monospace" }}
+                              className={`text-sm font-black tracking-widest
+                                ${formData.bro_id.startsWith('COM') || formData.bro_id.startsWith('PRO') ? 'text-yellow-400' : ''}
+                                ${formData.bro_id.startsWith('AUD') ? 'text-cyan-400'    : ''}
+                                ${formData.bro_id.startsWith('BRO') ? 'text-white'       : ''}
+                                ${formData.bro_id.startsWith('ORG') ? 'text-fuchsia-400' : ''}
+                              `}>
+                              {formData.bro_id}
+                            </span>
+                            <span className="text-[9px] text-gray-600 ml-auto">ID único · No editable</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="w-2 h-2 rounded-full bg-gray-700 flex-shrink-0" />
+                            <span className="text-xs text-gray-600 italic">Pendiente de asignación</span>
+                          </>
+                        )}
+                      </div>
+                      <p className="text-[9px] text-gray-600 mt-1">Tu identidad en BRO7VISION. Asignado por el equipo.</p>
                     </div>
-                )}
-                
-                
-                             
-                             
-                {/* ☝️ TELEFONO CASA */}
-                {tab === 'Telefono Casa' && (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fadeIn">
-                        <div className={`${CardStyle} border-fuchsia-500/20 bg-fuchsia-900/3`}>
-                            <p className="text-sm text-fuchsia-300 font-bold mb-4 tracking-wider">🏠 ATMÓSFERA DE LA SUITE</p>
-                            
-                            <select value={formData.intimo_bg || ""} onChange={e => setFormData({...formData, intimo_bg: e.target.value})} className={`${InputStyle} appearance-none cursor-pointer mb-6`}>
-                                <option value="" disabled>--- SELECCIONAR ATMÓSFERA ---</option>
-                                <option value="salon">🍵 SALÓN PREMIUM (Classic)</option>
-                                <option value="cocina">🍳 COCINA GOURMET (Classic)</option>
-                                <option value="dormitorio">🌌 CYBER SUITE (Furry Style)</option>
-                                <option value="ducha">✨ LLUVIA BIO-FOREST (Therian Suite)</option> 
-                            </select>
 
-                            <label className="text-xs font-bold text-orange-300 ml-1 mb-1 block">RESPUESTA VISOR (Loop)</label>
-                            <input type="text" value={formData.creator_loop_reply} onChange={e => setFormData({...formData, creator_loop_reply: e.target.value})} placeholder="Ej: Hola Maggie, ya subí la foto!" className={`${InputStyle} border-orange-500/30 focus:border-orange-400 mb-8`} />
-
-                            <div className="border-t border-fuchsia-500/10 pt-6">
-                                <p className="text-xs font-bold text-cyan-300 mb-3">📝 BRO-LOG VIEWER (Editorial)</p>
-                                <input type="text" value={formData.editorial_title} onChange={e => setFormData({...formData, editorial_title: e.target.value})} placeholder="TÍTULO DEL ARTÍCULO..." className={`${InputStyle} font-bold mb-3`} />
-                                <textarea value={formData.editorial_content} onChange={e => setFormData({...formData, editorial_content: e.target.value})} placeholder="Escribe el cuerpo del artículo..." className={`${InputStyle} h-32 rounded-2xl resize-none mb-4`} />
-                                
-                                <label className={LabelStyle}>Link Imagen Mostrador</label>
-                                <input type="text" value={formData.showcase_url} onChange={e => setFormData({...formData, showcase_url: e.target.value})} className={InputStyle} />
-                            </div>
-                        </div>
-
-                        {/* BUZÓN */}
-                        <div className="bg-[#020617]/20 p-6 rounded-3xl border border-white/5 h-full flex flex-col shadow-inner">
-                            <p className="text-xs text-gray-400 font-bold uppercase mb-4 tracking-widest text-center">📥 Preguntas de la Audiencia</p>
-                            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3">
-                                {questions.length > 0 ? questions.map(q => (
-                                    <div key={q.id} className="bg-white/5 p-4 rounded-2xl border border-white/5 hover:bg-white/10 transition-colors">
-                                        <p className="text-[10px] text-fuchsia-400 font-bold uppercase mb-2">@{q.author_alias}</p>
-                                        <p className="text-sm text-gray-200 leading-relaxed font-light">"{q.text.replace('❓ PREGUNTA: ', '')}"</p>
-                                    </div>
-                                )) : (
-                                    <div className="flex flex-col items-center justify-center h-full text-gray-600 opacity-50">
-                                        <span className="text-4xl mb-2">📭</span>
-                                        <span className="text-xs italic">Sin mensajes nuevos</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                    {/* GÉNERO */}
+                    <div className="mt-5">
+                      <label className={LabelStyle}>IDENTIDAD DE GÉNERO</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { id: 'm', label: '♂ Masculino', desc: 'Rey · Don' },
+                          { id: 'f', label: '♀ Femenino',  desc: 'Reina · Doña' },
+                          { id: 'n', label: '◈ Plural',    desc: 'Reyes · Excmos' },
+                        ].map((g) => (
+                          <button key={g.id} onClick={() => setFormData({ ...formData, genero: g.id })}
+                            className={`p-3 rounded-xl border text-left transition-all
+                              ${formData.genero === g.id
+                                ? 'bg-cyan-900/40 border-cyan-500/60 text-cyan-300'
+                                : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20 hover:text-gray-300'}`}>
+                            <p className="text-xs font-bold mb-1">{g.label}</p>
+                            <p className="text-[9px] opacity-70 leading-tight">{g.desc}</p>
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                )}
 
-                {/* 🛒 TIENDA */}
-                {tab === 'market' && (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fadeIn">
-                        
-                        <div className="space-y-6">
-                            {/* Producto Físico */}
-                            <div className="p-6 border border-yellow-500/20 rounded-3xl bg-gradient-to-br from-yellow-900/10 to-transparent shadow-[0_0_20px_rgba(234,179,8,0.05)]">
-                                <div className="flex justify-between items-center mb-4">
-                                    <p className="text-xs text-yellow-400 font-bold uppercase tracking-widest flex items-center gap-2">📦 Añadir Producto <span className="text-[9px] bg-yellow-400/20 px-2 py-0.5 rounded text-yellow-200">BROSHOP</span></p>
-                                </div>
-                                <div className="space-y-3 mb-3">
-                                    <input type="text" placeholder="TÍTULO (Ej: Zapatillas Neón)" value={newProduct.title} onChange={e=>setNewProduct({...newProduct, title: e.target.value})} className={InputStyle} /> 
-                                    <div className="flex gap-3">
-                                        <input type="number" placeholder="PRECIO €" value={newProduct.price} onChange={e=>setNewProduct({...newProduct, price: e.target.value})} className={InputStyle} />
-                                        <input type="text" placeholder="LINK EXTERNO" value={newProduct.url} onChange={e=>setNewProduct({...newProduct, url: e.target.value})} className={InputStyle} /> 
-                                    </div>
-                                    <textarea placeholder="Descripción detallada para la terminal..." value={newProduct.desc} onChange={e=>setNewProduct({...newProduct, desc: e.target.value})} className={`${InputStyle} h-20 resize-none`} />
-                                    
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <input type="text" placeholder="Tallas (40, 41...)" value={newProduct.sizes} onChange={e=>setNewProduct({...newProduct, sizes: e.target.value})} className={`${InputStyle} border-yellow-500/30 placeholder:text-yellow-500/20`} />
-                                        <input type="text" placeholder="Colores (Rojo...)" value={newProduct.colors} onChange={e=>setNewProduct({...newProduct, colors: e.target.value})} className={`${InputStyle} border-yellow-500/30 placeholder:text-yellow-500/20`} />
-                                    </div>
-                                </div>
-                                <button onClick={handleAddProduct} className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-xs uppercase py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(234,179,8,0.4)] hover:shadow-[0_0_25px_rgba(234,179,8,0.6)]">+ GUARDAR EN INVENTARIO</button>
-                            </div>
+                    {/* COORDENADAS */}
+                    <CoordenadosBlock
+                      country={country} setCountry={setCountry}
+                      city={city} setCity={setCity}
+                      zipCode={zipCode} setZipCode={setZipCode}
+                      address={address} setAddress={setAddress}
+                      neighborhood={neighborhood} setNeighborhood={setNeighborhood}
+                      nearbyRef={nearbyRef} setNearbyRef={setNearbyRef}
+                      bizCategory={bizCategory} setBizCategory={setBizCategory}
+                      bizProfession={bizProfession} setBizProfession={setBizProfession}
+                      description={description} setDescription={setDescription}
+                      refPrice={refPrice} setRefPrice={setRefPrice}
+                      formData={formData} InputStyle={InputStyle} LabelStyle={LabelStyle}
+                    />
+                  </div>
 
-                            {/* Servicio */}
-                            <div className="p-6 border border-cyan-500/20 rounded-3xl bg-gradient-to-br from-cyan-900/10 to-transparent shadow-[0_0_20px_rgba(6,182,212,0.05)]">
-                                <p className="text-xs text-cyan-400 font-bold uppercase tracking-widest mb-4">🤝 Añadir Servicio</p>
-                                <div className="space-y-3 mb-3">
-                                    <input type="text" placeholder="TÍTULO (Ej: Consulta 1H)" value={newService.title} onChange={e=>setNewService({...newService, title: e.target.value})} className={InputStyle} /> 
-                                    <div className="flex gap-3">
-                                        <input type="number" placeholder="PRECIO €" value={newService.price} onChange={e=>setNewService({...newService, price: e.target.value})} className={InputStyle} />
-                                        <input type="text" placeholder="LINK CALENDARIO" value={newService.url} onChange={e=>setNewService({...newService, url: e.target.value})} className={InputStyle} /> 
-                                    </div>
-                                    <textarea placeholder="Descripción del servicio..." value={newService.desc} onChange={e=>setNewService({...newService, desc: e.target.value})} className={`${InputStyle} h-20 resize-none`} />
-                                </div>
-                                <button onClick={handleAddService} className="w-full bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs uppercase py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)] hover:shadow-[0_0_25px_rgba(6,182,212,0.6)]">+ AÑADIR SERVICIO</button>
-                            </div>
-                        </div>
-
-                        <div className="space-y-6 flex flex-col">
-                            
-                            <div className="p-6 border border-fuchsia-500/30 rounded-3xl bg-fuchsia-500/5 relative overflow-hidden group">
-                                <div className="absolute -right-5 -top-5 text-8xl opacity-5 group-hover:opacity-10 transition-opacity rotate-12">🦝</div>
-                                <h3 className="text-xs text-fuchsia-300 font-bold uppercase mb-2 tracking-widest">🧠 Instrucciones Mapache IA</h3>
-                                <textarea 
-                                    value={formData.mapache_rules} 
-                                    onChange={e=>setFormData({...formData, mapache_rules: e.target.value})} 
-                                    placeholder="Instruye a la IA sobre tu negocio..." 
-                                    className={`${InputStyle} border-fuchsia-500/30 focus:border-fuchsia-400 h-24 bg-black/40`} 
-                                />
-                            </div>
-
-                            <div className="p-6 border border-blue-500/30 rounded-3xl bg-blue-500/5">
-                                <h3 className="text-xs text-blue-300 font-bold uppercase tracking-widest mb-2">📸 Holo-Catálogo</h3>
-                                <input type="text" value={formData.catalog_url} onChange={e=>setFormData({...formData, catalog_url: e.target.value})} placeholder="https://docs.google.com/presentation/..." className={`${InputStyle} border-blue-500/30 focus:border-blue-400 bg-black/40`} />
-                            </div>
-
-                            <div className="flex-1 bg-[#020617]/20 border border-white/5 rounded-3xl p-5 overflow-hidden flex flex-col">
-                                <h3 className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-4 flex justify-between">
-                                    <span>Inventario Activo</span>
-                                    <span>{physicalProducts.length + serviceItems.length} items</span>
-                                </h3>
-                                <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-2">
-                                    {physicalProducts.map(p => (
-                                        <div key={p.id} className="flex justify-between items-center bg-white/5 hover:bg-white/10 p-3 rounded-xl border border-yellow-500/10 group transition-all">
-                                            <div>
-                                                <p className="text-sm font-bold text-yellow-100 group-hover:text-yellow-400 transition-colors">{p.title}</p>
-                                                <p className="text-[10px] text-gray-500">{p.price_fiat}€ | {p.sizes ? `Tallas: ${p.sizes}` : 'Standard'}</p>
-                                            </div>
-                                            <button onClick={() => handleDeleteItem(p.id)} className="text-[10px] text-red-500/50 group-hover:text-red-400 font-bold uppercase border border-transparent group-hover:border-red-500/30 px-2 py-1 rounded">✕</button>
-                                        </div>
-                                    ))}
-                                    {serviceItems.map(s => (
-                                        <div key={s.id} className="flex justify-between items-center bg-white/5 hover:bg-white/10 p-3 rounded-xl border border-cyan-500/10 group transition-all">
-                                            <div>
-                                                <p className="text-sm font-bold text-cyan-100 group-hover:text-cyan-400 transition-colors">{s.title}</p>
-                                                <p className="text-[10px] text-gray-500">{s.price_fiat}€ | Reserva</p>
-                                            </div>
-                                            <button onClick={() => handleDeleteItem(s.id)} className="text-[10px] text-red-500/50 group-hover:text-red-400 font-bold uppercase border border-transparent group-hover:border-red-500/30 px-2 py-1 rounded">✕</button>
-                                        </div>
-                                    ))}
-                                    {(physicalProducts.length === 0 && serviceItems.length === 0) && (
-                                        <p className="text-center text-gray-700 text-xs italic mt-10">Inventario vacío</p>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+                  {/* TWIT RADAR */}
+                  <div className={`${CardStyle} border-cyan-500/20`}>
+                    <label className={LabelStyle}>💬 MENSAJE CORTO (TWIT RADAR)</label>
+                    <div className="relative">
+                      <input type="text" maxLength={60}
+                        placeholder="Ej: 'Encontré unas llaves', 'Oferta Flash', 'Hola Barrio'..."
+                        value={formData.twit_message || ''}
+                        onChange={e => setFormData({ ...formData, twit_message: e.target.value })}
+                        className={`${InputStyle} pr-14`} />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-cyan-500/70 font-bold">
+                        {(formData.twit_message || '').length}/60
+                      </span>
                     </div>
-                )}
+                    <p className="text-[10px] text-gray-500 mt-2">Visible en el Community Feed y en tu tarjeta.</p>
+                  </div>
 
-                {/* 📦 ARCHIVOS DIGITALES */}
-                {tab === 'assets' && (
-                    <div className="space-y-6 max-w-4xl mx-auto animate-fadeIn">
-                        <div className="bg-[#0f172a]/20 p-6 rounded-3xl border border-blue-500/10 shadow-[0_0_30px_rgba(59,130,246,0.1)]">
-                            <div className="flex justify-between items-center mb-6">
-                                <p className="text-xs font-bold text-blue-300 uppercase tracking-widest">Gestión de Archivos Digitales </p>
-                                <button onClick={() => setIsMerchant(!isMerchant)} className={`px-4 py-2 text-[10px] font-bold rounded-full border transition-all ${isMerchant ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'bg-transparent border-gray-600 text-gray-400'}`}>
-                                    {isMerchant ? '✓ MERCHANT VERIFICADO' : 'MODO CREADOR BÁSICO'}
-                                </button>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <input type="text" placeholder="TÍTULO ACTIVO" value={newAsset.title} onChange={e => setNewAsset({...newAsset, title: e.target.value})} className={`${InputStyle} md:col-span-2`} />
-                                <select value={newAsset.type} onChange={e => setNewAsset({...newAsset, type: e.target.value})} className={InputStyle}>
-                                    <option value="video">🎥 VIDEO</option><option value="audio">🎵 AUDIO</option><option value="game">🎮 VIDEOJUEGO</option><option value="masterclass">🎓 FORMACIÓN</option>
-                                </select>
-                                <input type="number" placeholder="PRECIO €" value={newAsset.price} onChange={e => setNewAsset({...newAsset, price: e.target.value})} className={InputStyle} />
-                                <input type="text" placeholder="URL DIRECTA (Nube)" value={newAsset.url} onChange={e => setNewAsset({...newAsset, url: e.target.value})} className={`${InputStyle} md:col-span-3`} />
-                                <button onClick={handleAddDigitalAsset} className="bg-blue-600 text-white font-bold text-xs uppercase hover:bg-blue-500 rounded-xl transition-all shadow-[0_0_15px_rgba(37,99,235,0.4)]">SUBIR</button>
-                            </div>
-                        </div>
-                        
-                        <div className="space-y-3">
-                            <h3 className="text-xs text-gray-500 font-bold uppercase tracking-widest ml-4 mb-2">En la Nube ({digitalAssets.length})</h3>
-                            {digitalAssets.map(a => (
-                                <div key={a.id} className="flex justify-between items-center bg-[#020617] p-4 rounded-2xl border border-white/5 hover:border-blue-500/30 transition-all group">
-                                    <div className="flex flex-col gap-1">
-                                        <span className="text-white font-bold text-sm group-hover:text-blue-300 transition-colors">{a.title}</span>
-                                        <div className="flex gap-2 text-xs">
-                                            <span className="bg-blue-900/30 text-blue-400 px-2 rounded-full">{a.asset_type.toUpperCase()}</span>
-                                            <span className="text-gray-500">{a.price_fiat}€</span>
-                                        </div>
-                                    </div>
-                                    <button onClick={() => handleDeleteItem(a.id)} className="text-gray-600 hover:text-red-400 px-4 py-2 font-bold transition-all text-xl">
-                                        🗑
-                                    </button>
-                                </div>
-                            ))}
-                            {digitalAssets.length === 0 && <p className="text-center text-gray-700 text-xs italic py-10">Sin archivos digitales.</p>}
-                        </div>
+                  {/* ✦ OSOS IA (Se queda a la izquierda porque pertenece al perfil personal) */}
+                  <div className="bg-gradient-to-br from-cyan-950/30 to-fuchsia-950/20 backdrop-blur-xl border border-cyan-500/20 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+                    <div className="flex items-center gap-3 mb-5">
+                      <span className="text-2xl">🐻</span>
+                      <div>
+                        <p className="text-sm font-black text-cyan-300 tracking-wider">TU ASISTENTE OSO IA</p>
+                        <p className="text-[10px] text-gray-500 mt-0.5">Cuéntanos un poco y te atenderemos como mereces.</p>
+                      </div>
                     </div>
-                )}
-                
-                
-  {/* ========================================================= */}
-     {/*  TAB LINAJE — BOOSTER STUDIO TERMINAL*/}
-  {/* ========================================================= */}
 
-{/* 👑 LINAJE */}
-{tab === 'linaje' && formData.rank && (() => {
+                    <div className="space-y-5">
+                      {/* Selector de Oso */}
+                      <div>
+                        <label className={LabelStyle}>¿Quién quieres que te atienda?</label>
+                        <div className="grid grid-cols-3 gap-3 mt-2">
+                          {[
+                            { id: 'LARA',  img: '/emojis/lara.webp',  nombre: 'Lara',  desc: 'La Analítica' },
+                            { id: 'TITO',  img: '/emojis/tito.webp',  nombre: 'Tito',  desc: 'El Experto' },
+                            { id: 'PUFFO', img: '/emojis/puffo.webp', nombre: 'Puffo', desc: 'La Experiencia' },
+                          ].map(oso => (
+                            <button key={oso.id}
+                              onClick={() => setFormData({ ...formData, oso_id: oso.id })}
+                              className={`p-3 rounded-2xl border text-center transition-all
+                                ${formData.oso_id === oso.id
+                                  ? 'bg-cyan-900/40 border-cyan-500/60 text-cyan-300'
+                                  : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20 hover:text-gray-300'}`}>
+                              <img src={oso.img} alt={oso.nombre} className="w-16 h-16 mx-auto mb-2 object-contain drop-shadow-lg" />
+                              <p className="text-xs font-black">{oso.nombre}</p>
+                              <p className="text-[9px] opacity-70">{oso.desc}</p>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
 
- /* ── REINOS (100 Nombres Únicos y Corregidos) ── */
-  const REINOS = [
-    'Reino de Solaris',      'Reino de Lunaris',     'Reino de Polaris',
-    'Reino de Vega',         'Reino de Andrómeda',   'Reino de Cásiopea',
-    'Reino de las Pléyades', 'Reino de Orión',       'Reino de Ofiuco',
-    'Reino de Aries',        'Reino de Géminis',     'Reino de Leo',
-    'Reino del Zodíaco',     'Reino de Neptuno',     'Reino de Marte',
-    'Reino de Júpiter',      'Reino de Venus',       'Reino de Aurora',
-    'Reino del Cénit',       'Reino del Horizonte',  'Reino de la Nebulosa',
-    'Reino de los Elfos',    'Reino de los Eloi',    'Reino de MU',
-    'Reino de la Atlántida', 'Reino de Lemuria',     'Reino de Avalon',
-    'Reino de Lira',         'Reino del Éter',       'Reino de Hyperión',
-    'Reino de Mare Imbrium', 'Reino de KPax',        'Reino de Mare Tranquillitatis',
-    'Reino de Mare Nectaris', 'Reino de Altair',     'Reino de Mare Serenitatis',
-    'Reino de Mare Somniorum', 'Reino de Lacus Somniorum', 'Reino de Lacus Felicitatis',
-    'Reino de Arabia Terra', 'Reino de Tharsis',     'Reino de Elysium',
-    'Reino de Selene',       'Reino de Amazonis',    'Reino de Utopia',
-    'Reino de Syrtis Major', 'Reino de Hellas',      'Reino de Olympus',
-    'Reino de Arsia',        'Reino de Pavonis',     'Reino de Ascraeus',
-    'Reino de Elysium Mons', 'Reino de Marineris',   'Reino de Ares Vallis',
-    'Reino de Kasei',        'Reino de Tiu Vallis',  'Reino de Procellarum',
-    'Reino de Isidis',       'Reino de Tempe',       'Reino de Syrtis',
-    'Reino de Brazil',       'Reino de Chryse',      'Reino de Noachis',
-    'Reino de Aonia',        'Reino de Daedalia',    'Reino de Mareotis',
-    'Reino de Aeolis',       'Reino de Eridania',    'Reino de Memnonia',
-    'Reino de Promethei',    'Reino de Albor Tholus', 'Reino de Gale',
-    'Reino de Jezero',       'Reino de Gusev',       'Reino de Lyot',
-    'Reino de Korolev',      'Reino de Holden',      'Reino de Endeavour',
-    'Reino de los Montes Rook', 'Reino de los Montes Cárpatos', 'Reino de la Lealtad',
-    'Reino de la Pietatis',  'Reino de la Virtutis', 'Reino de la Sapientiae',
-    'Reino de la Concordiae', 'Reino de la Fortitudinis', 'Reino de la Clementiae',
-    'Reino del Honoris',     'Reino de Sirio',       'Reino de Brahma',
-    'Reino de la Caritatis', 'Reino de Urano',       'Reino de Antares',
-    'Reino de Cygnus',       'Reino de Tartaria',       'Reino de Polux',
-    'Reino de la Humanitatis', 'Reino de la Veritatis', 'Reino de Aquila',
-    'Reino de la Namibia',
-  ];
-  
-  /* ── LÓGICA DE GÉNERO ── */
-  const g = formData.genero || 'n'; // 'm' | 'f' | 'n'
-
-  const TITULOS = {
-    rey: {
-      m: { rango: 'Rey',      tratamiento: 'Don',   subtitulo: 'Alta Corte' },
-      f: { rango: 'Reina',    tratamiento: 'Doña',  subtitulo: 'Alta Corte' },
-      n: { rango: 'Reyes',    tratamiento: 'Excelentísimos',  subtitulo: 'Alta Corte' },
-    },
-    principe: {
-      m: { rango: 'Príncipe',   tratamiento: 'Excelentísimo',  subtitulo: 'Guardia Real' },
-      f: { rango: 'Princesa',   tratamiento: 'Excelentísima',  subtitulo: 'Guardia Real' },
-      n: { rango: 'Príncipes',  tratamiento: 'Excelentísimos', subtitulo: 'Guardia Real' },
-    },
-    duque: {
-      m: { rango: 'Duque',    tratamiento: 'Ilustrísimo',  subtitulo: 'Nobleza Mayor' },
-      f: { rango: 'Duquesa',  tratamiento: 'Ilustrísima',  subtitulo: 'Nobleza Mayor' },
-      n: { rango: 'Duques',   tratamiento: 'Ilustrísimos', subtitulo: 'Nobleza Mayor' },
-    },
-    marques: {
-      m: { rango: 'Marqués',   tratamiento: 'Honorable',   subtitulo: 'Nobleza' },
-      f: { rango: 'Marquesa',  tratamiento: 'Honorable',   subtitulo: 'Nobleza' },
-      n: { rango: 'Marqueses', tratamiento: 'Honorables',  subtitulo: 'Nobleza' },
-    },
-    conde: {
-      m: { rango: 'Conde',    tratamiento: 'Noble',   subtitulo: 'Nobleza' },
-      f: { rango: 'Condesa',  tratamiento: 'Noble',   subtitulo: 'Nobleza' },
-      n: { rango: 'Condes',   tratamiento: 'Nobles',  subtitulo: 'Nobleza' },
-    },
-    lord: {
-      m: { rango: 'Lord',   tratamiento: '',  subtitulo: 'Honor del Reino' },
-      f: { rango: 'Lady',   tratamiento: '',  subtitulo: 'Honor del Reino' },
-      n: { rango: 'Lords',  tratamiento: '',  subtitulo: 'Honor del Reino' },
-    },
-  };
-
-  const GENESIS = { rey: 2000, principe: 1000, duque: 500, marques: 300, conde: 200, lord: 100 };
-  const EMOJIS  = { rey: '👑', principe: '⚔️', duque: '🏰', marques: '📜', conde: '🌿', lord: '✦' };
-
-  const COLORES = {
-    rey:      { text:'text-orange-400', border:'border-orange-500/40', bg:'bg-orange-950/30', sel:'bg-orange-600', glow:'0 0 25px rgba(249,115,22,0.25)' },
-    principe: { text:'text-blue-400',   border:'border-blue-500/40',   bg:'bg-blue-950/30',   sel:'bg-blue-600',   glow:'0 0 25px rgba(59,130,246,0.25)' },
-    duque:    { text:'text-purple-400', border:'border-purple-500/40', bg:'bg-purple-950/30', sel:'bg-purple-600', glow:'0 0 25px rgba(168,85,247,0.25)' },
-    marques:  { text:'text-cyan-400',   border:'border-cyan-500/40',   bg:'bg-cyan-950/30',   sel:'bg-cyan-600',   glow:'0 0 25px rgba(6,182,212,0.25)'  },
-    conde:    { text:'text-green-400',  border:'border-green-500/40',  bg:'bg-green-950/30',  sel:'bg-green-600',  glow:'0 0 25px rgba(34,197,94,0.25)'  },
-    lord:     { text:'text-yellow-400', border:'border-yellow-500/40', bg:'bg-yellow-950/20', sel:'bg-yellow-500', glow:'0 0 25px rgba(234,179,8,0.25)'  },
-  };
-
-  const rank   = formData.rank || 'rey';
-  const titulo = (TITULOS[rank] || TITULOS.rey)[g];
-  const c      = COLORES[rank] || COLORES.rey;
-  const gen    = GENESIS[rank] || 0;
-  const emoji  = EMOJIS[rank]  || '👑';
-
-  /* ── ACTIVIDAD ── */
-  const actividad = [
-    { key:'video',    label:'Subir contenido',  done: formData.actividad_video,    emoji:'🎬' },
-    { key:'activo',   label:'Halo · Eco · Zap', done: formData.actividad_activo,   emoji:'⚡' },
-    { key:'games',    label:'Jugar en Games',    done: formData.actividad_games,    emoji:'🎮' },
-    { key:'brostory', label:'Ver BroStory',      done: formData.actividad_brostory, emoji:'👁️' },
-  ];
-  const done      = actividad.filter(a => a.done).length;
-  const barColor  = done === 4 ? 'bg-green-500' : done >= 2 ? 'bg-yellow-500' : 'bg-red-500';
-  const doneColor = done === 4 ? 'text-green-400' : done >= 2 ? 'text-yellow-400' : 'text-red-400';
-
-  return (
-    <div className="absolute inset-0 overflow-y-auto custom-scrollbar p-5 bg-black/20">
-      <div className="max-w-3xl mx-auto pb-20 space-y-6">
-
-        {/* ══ 1. IDENTIDAD NOBLE ══ */}
-        <div className={`rounded-2xl border ${c.border} p-8 text-center relative overflow-hidden`}
-          style={{ boxShadow: c.glow }}>
-          <div className="absolute inset-0 opacity-5 pointer-events-none"
-            style={{ backgroundImage:'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize:'28px 28px' }} />
-          <div className="relative z-10">
-            <img src="/assets/corona_rey.png" alt="corona" className="w-24 h-24 mx-auto mb-3 object-contain drop-shadow-[0_0_15px_rgba(249,115,22,0.6)]" />
-            <p className={`${c.text} text-[10px] uppercase tracking-[0.35em] mb-2`}
-              style={{ fontFamily:"'Georgia', serif" }}>
-              {titulo.subtitulo} · Bro7vision
-            </p>
-            {/* Bloque ceremonial */}
-            <div className="space-y-1">
-              {titulo.tratamiento && (
-                <p className={`${c.text} text-base font-bold uppercase tracking-[0.2em]`}
-                  style={{ fontFamily:"'Georgia', serif" }}>
-                  {titulo.tratamiento}
-                </p>
-              )}
-              <p className={`${c.text} text-xl font-black uppercase tracking-[0.15em]`}
-                style={{ fontFamily:"'Georgia', serif" }}>
-                {titulo.rango}
-              </p>
-              <p className="text-white text-3xl font-black"
-                style={{ fontFamily:"'Georgia', 'Times New Roman', serif" }}>
-                {formData.alias}
-              </p>
-              {reinoElegido && (
-                <>
-                  <p className="text-gray-500 text-xs uppercase tracking-[0.3em] mt-1">
-                    Proveniente del
-                  </p>
-                  <p className={`${c.text} text-lg font-bold`}
-                    style={{ fontFamily:"'Georgia', serif" }}>
-                    {reinoElegido}
-                  </p>
-                </>
-              )}
-            </div>
-            <div className={`h-px w-20 mx-auto mt-4 opacity-40 ${c.sel}`} />
-            <p className="text-gray-600 text-xs uppercase tracking-widest mt-3">
-              {gen.toLocaleString()} Génesis · mensual
-            </p>
-          </div>
-        </div>
-
-        {/* ══ 2. ELEGIR DOMINIO ══ */}
-        <div className={`rounded-2xl border ${c.border} p-6`}>
-          <p className={`${c.text} font-black text-base uppercase tracking-widest mb-1`}
-            style={{ fontFamily:"'Georgia', serif" }}>
-            {reinoElegido ? '✦ Tu Dominio' : '✦ Elige tu Dominio'}
-          </p>
-          <p className="text-gray-500 text-xs mb-5 leading-relaxed">
-            {reinoElegido
-              ? `Tu título completo: ${titulo.tratamiento ? titulo.tratamiento + ' ' : ''}${titulo.rango} ${formData.alias} del ${reinoElegido}`
-              : 'Selecciona el reino que gobernarás. Cada dominio solo puede ser reclamado por un ciudadano.'}
-          </p>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-5">
-            {REINOS.map((reino) => {
-              const sel = reinoElegido === reino;
-              return (
-                <button key={reino}
-                  onClick={() => handleGuardarReino(reino)}
-                  className={`px-3 py-2.5 rounded-xl text-xs font-bold text-left transition-all border
-                    ${sel
-                      ? `${c.sel} text-black border-transparent shadow-md`
-                      : `bg-white/5 border-white/10 text-gray-300 hover:bg-white/10`
-                    }`}>
-                  {sel && <span className="mr-1">✓</span>}
-                  {reino}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="border-t border-white/10 pt-4">
-            <p className="text-gray-500 text-xs uppercase tracking-widest mb-2">
-              ¿No encuentras el tuyo? Proponlo
-            </p>
-            <div className="flex gap-2">
-              <input type="text"
-                placeholder="Ej: Reino de Sirio..."
-                value={reinoPropuesto}
-                onChange={(e) => setReinoPropuesto(e.target.value)}
-                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-orange-500 focus:outline-none placeholder-gray-700" />
-              <button
-                onClick={async () => {
-                  if (!reinoPropuesto.trim()) return;
-                  const { data: { user } } = await supabase.auth.getUser();
-                  await supabase.from('reino_propuestas').insert([{
-                    user_id: user.id, alias: formData.alias,
-                    propuesta: reinoPropuesto.trim(), created_at: new Date().toISOString(),
-                  }]);
-                  alert('✅ Propuesta enviada. Si es aprobada aparecerá en la lista.');
-                  setReinoPropuesto('');
-                }}
-                className={`${c.sel} text-black font-black px-4 py-2.5 rounded-xl text-xs uppercase tracking-widest hover:brightness-110 transition-all`}>
-                Proponer
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* ══ 3. ACTIVIDAD DEL MES ══ */}
-        <div className="rounded-2xl border border-white/10 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-white font-black text-base uppercase tracking-widest"
-              style={{ fontFamily:"'Georgia', serif" }}>
-              ⚡ Actividad del Mes
-            </p>
-            <span className={`${doneColor} text-sm font-bold`}>
-              {done}/4 {done === 4 ? '— ✅ Al día' : '— pendiente'}
-            </span>
-          </div>
-          <div className="h-2 bg-white/10 rounded-full mb-5 overflow-hidden">
-            <div className={`h-full ${barColor} rounded-full transition-all duration-700`}
-              style={{ width:`${(done/4)*100}%` }} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {actividad.map((a) => (
-              <div key={a.key}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all
-                  ${a.done ? 'bg-green-950/20 border-green-700/30' : 'bg-white/3 border-white/10'}`}>
-                <span className="text-xl">{a.emoji}</span>
-                <p className={`text-xs font-bold flex-1 ${a.done ? 'text-green-300' : 'text-gray-500'}`}>
-                  {a.label}
-                </p>
-                <span className={a.done ? 'text-green-400 font-bold' : 'text-gray-700'}>
-                  {a.done ? '✓' : '○'}
-                </span>
-              </div>
-            ))}
-          </div>
-          {done < 4 && (
-            <p className="text-yellow-700 text-xs uppercase tracking-widest mt-4 text-center">
-              ⚠️ Completa al menos una acción de cada tipo para recibir tus Génesis este mes
-            </p>
-          )}
-        </div>
-
-        {/* ══ 4. HISTORIAL GÉNESIS ══ */}
-        <div className="rounded-2xl border border-white/10 p-6">
-          <p className="text-white font-black text-base uppercase tracking-widest mb-4"
-            style={{ fontFamily:"'Georgia', serif" }}>
-            🌙 Génesis del Reino
-          </p>
-          <div className="space-y-2">
-            {(formData.genesis_historial?.length > 0
-              ? formData.genesis_historial
-              : [{ mes:'Marzo 2026', cantidad: gen, estado:'pendiente' }]
-            ).map((item, i) => (
-              <div key={i} className="flex items-center justify-between px-4 py-3 bg-white/3 border border-white/5 rounded-xl">
-                <p className="text-gray-400 text-sm">{item.mes}</p>
-                <div className="flex items-center gap-3">
-                  <span className={`text-sm font-bold ${c.text}`}>+{item.cantidad.toLocaleString()} GEN</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider
-                    ${item.estado === 'entregado'    ? 'bg-green-900/40 text-green-400'  :
-                      item.estado === 'fuerza_mayor' ? 'bg-blue-900/40 text-blue-400'   :
-                                                       'bg-yellow-900/40 text-yellow-600'}`}>
-                    {item.estado === 'entregado'    ? '✓ Entregado'     :
-                     item.estado === 'fuerza_mayor' ? '🛡️ Fuerza Mayor' : '⏳ Pendiente'}
-                  </span>
+                      {/* Configuración Oso */}
+                      <div>
+                        <label className={LabelStyle}>¿Cómo quieres que te llamemos?</label>
+                        <input type="text" maxLength={30} placeholder="Ej: Profe, maestro..." value={formData.osos_nombre} onChange={e => setFormData({ ...formData, osos_nombre: e.target.value })} className={InputStyle} />
+                      </div>
+                      <div>
+                        <label className={LabelStyle}>¿Cómo prefieres que te hablemos?</label>
+                        <div className="flex gap-2 flex-wrap">
+                          {OSOS_TONOS.map(t => (
+                            <button key={t.id} onClick={() => setFormData({ ...formData, osos_tono: t.id })}
+                              className={`px-4 py-2 rounded-full text-xs font-bold border transition-all ${formData.osos_tono === t.id ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300' : 'bg-white/5 border-white/10 text-gray-500'}`}>
+                              {formData.osos_tono === t.id ? '✓ ' : ''}{t.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <label className={LabelStyle}>¿Qué sueles buscar en BRO7VISION?</label>
+                        <div className="flex gap-2 flex-wrap">
+                          {OSOS_INTERESES.map(i => (
+                            <button key={i.id} onClick={() => toggleOsosInteres(i.id)}
+                              className={`px-4 py-2 rounded-full text-xs font-bold border transition-all ${ososInteresesArr.includes(i.id) ? 'bg-fuchsia-500/20 border-fuchsia-400 text-fuchsia-300' : 'bg-white/5 border-white/10 text-gray-500'}`}>
+                              {ososInteresesArr.includes(i.id) ? '✓ ' : ''}{i.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <label className={LabelStyle}>Algo sobre ti (opcional)</label>
+                        <input type="text" maxLength={100} placeholder="Diseñador en Oviedo..." value={formData.osos_frase} onChange={e => setFormData({ ...formData, osos_frase: e.target.value })} className={InputStyle} />
+                      </div>                
+                    </div>      
+                  </div>                  
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
 
-        {/* ══ 5. JURAMENTO ══ */}
-        <div className="rounded-2xl overflow-hidden border border-white/10 relative">
-          <div className="absolute inset-0 z-0">
-            <img src="/assets/pergamino_bg.png" alt=""
-              className="w-full h-full object-cover opacity-90"
-              onError={(e) => { e.target.style.display='none'; }} />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/55 to-black/85" />
-          </div>
+                {/* ======================================= */}
+                {/* ➡️ COLUMNA DERECHA (Diseño y Equipo IA) */}
+                {/* ======================================= */}
+                <div className="space-y-6">
 
-          <div className="relative z-10 p-8 text-center">
-            <p className={`${c.text} text-[10px] uppercase tracking-[0.35em] mb-3`}>
-              — Orden Real de Bro7vision —
-            </p>
-            <h4 className="text-white text-2xl font-black mb-6"
-              style={{ fontFamily:"'Georgia', 'Times New Roman', serif" }}>
-              Juramento del Reino Interior
-            </h4>
-            <div className="max-w-lg mx-auto mb-6 p-6 rounded-xl bg-black/50 border border-white/10">
-              <p className="text-gray-300 text-sm leading-loose italic"
-                style={{ fontFamily:"'Georgia', serif" }}>
-                "Por la luz del Reino Interior, juro mantener mi presencia, honrar mi dominio
-                y servir con constancia. Que mis actos hablen por mí y que mi nombre permanezca
-                en el Listado de Honor mientras mi voluntad sea firme."
-              </p>
-            </div>
+                  {/* ENERGÍA Y MATERIA */}
+                  <div className={CardStyle}>
+                    <p className={LabelStyle}>⚡ ENERGÍA (Borde)</p>
+                    <div className="flex flex-wrap gap-3 mb-6">
+                      {ENERGY_COLORS.map(c => (
+                        <button key={c.id} onClick={() => setEnergyColor(c.id)}
+                          className={`w-8 h-8 rounded-full transition-transform ${c.hex} ${energyColor === c.id ? 'scale-125 ring-2 ring-white' : 'opacity-40 hover:opacity-100 hover:scale-110'}`} />
+                      ))}
+                    </div>
+                    <p className={LabelStyle}>🌑 MATERIA (Fondo)</p>
+                    <div className="flex flex-wrap gap-3">
+                      {MATTER_COLORS.map(c => (
+                        <button key={c.id} onClick={() => setMatterColor(c.id)}
+                          className={`w-8 h-8 rounded-full border border-white/10 ${c.hex} ${matterColor === c.id ? 'scale-125 ring-2 ring-white shadow-[0_0_15px_rgba(255,255,255,0.2)]' : 'opacity-60 hover:opacity-100 hover:scale-110'}`} />
+                      ))}
+                    </div>
+                  </div>
 
-            {juramentoFirmado ? (
-              <div className="space-y-2">
-                <div className={`inline-flex items-center gap-2 px-5 py-2 rounded-full ${c.bg} border ${c.border}`}>
-                  <span className="text-green-400">✓</span>
-                  <span className="text-gray-300 text-xs uppercase tracking-widest font-bold">Juramento sellado</span>
+                  {/* HOLOPRISMA */}
+                  <div className={`${CardStyle} border-fuchsia-500/20`}>
+                    <p className="text-xs font-bold text-fuchsia-400 mb-3 flex items-center gap-2">💎 HOLOPRISMA (3D)</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {['holo_1', 'holo_2', 'holo_3', 'holo_4'].map((h, i) => (
+                        <MediaSlot key={h} title={`CARA ${i + 1}`} fieldName={h} type="image/*" description="" />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* ✦ NOVA (Formato Puesto Fijo igual a Rumores) */}
+                  <div className="bg-gradient-to-br from-cyan-950/30 to-fuchsia-950/20 backdrop-blur-xl border border-cyan-500/20 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+                    <div className="flex items-center gap-3 mb-5">
+                      <span className="text-2xl">🛍️</span>
+                      <div>
+                        <p className="text-sm font-black text-cyan-300 tracking-wider">SECTOR BROSHOP</p>
+                        <p className="text-[10px] text-gray-500 mt-0.5">Gestión y atención de tu área comercial.</p>
+                      </div>
+                    </div>
+                    <div className="space-y-5">
+                      <div>
+                        <label className={LabelStyle}>Titular del Área</label>
+                        <div className="mt-2 max-w-[200px]">
+                          <div className="p-3 rounded-2xl border text-center bg-cyan-900/20 border-cyan-500/30 text-cyan-400 opacity-90 cursor-default shadow-inner">
+                            <img src="/emojis/nova.webp" alt="Nova" className="w-16 h-16 mx-auto mb-2 object-contain drop-shadow-lg" />
+                            <p className="text-xs font-black uppercase">Nova</p>
+                            <p className="text-[9px] opacity-70">La Comerciante</p>
+                            <div className="mt-3 text-[9px] font-bold bg-cyan-950/60 rounded-full py-1 px-2 border border-cyan-500/20 inline-block">🔒 PUESTO FIJO</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ✦ SERVICIOS IA (Isabella y PRMaestro) */}
+                  <div className="bg-gradient-to-br from-cyan-950/30 to-fuchsia-950/20 backdrop-blur-xl border border-cyan-500/20 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+                    <div className="flex items-center gap-3 mb-5">
+                      <span className="text-2xl">🛠️</span>
+                      <div>
+                        <p className="text-sm font-black text-cyan-300 tracking-wider">SECTOR DE SERVICIOS</p>
+                        <p className="text-[10px] text-gray-500 mt-0.5">Elige al experto que gestionará esta área.</p>
+                      </div>
+                    </div>
+                    <div className="space-y-5">
+                      <div>
+                        <label className={LabelStyle}>¿Quién quieres que se encargue?</label>
+                        <div className="grid grid-cols-2 gap-4 mt-2">
+                          {[
+                            { id: 'ISABELLA',  img: '/emojis/isabella.webp',  nombre: 'Isabella',  desc: 'La Madre' },
+                            { id: 'PRMAESTRO', img: '/emojis/prmaestro.webp', nombre: 'PRMaestro', desc: 'El Filósofo' },
+                          ].map(personaje => (
+                            <button key={personaje.id} onClick={() => setFormData({ ...formData, servicios_id: personaje.id, servicios_personaje: personaje.nombre })}
+                              className={`p-3 rounded-2xl border text-center transition-all ${formData.servicios_id === personaje.id ? 'bg-cyan-900/40 border-cyan-500/60 text-cyan-300' : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20'}`}>
+                              <img src={personaje.img} alt={personaje.nombre} className="w-16 h-16 mx-auto mb-2 object-contain drop-shadow-lg" />
+                              <p className="text-xs font-black uppercase">{personaje.nombre}</p>
+                              <p className="text-[9px] opacity-70">{personaje.desc}</p>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ✦ AUDIO & LIVES (Mapache y Ami) */}
+                  <div className="bg-gradient-to-br from-cyan-950/30 to-fuchsia-950/20 backdrop-blur-xl border border-cyan-500/20 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+                    <div className="flex items-center gap-3 mb-5">
+                      <span className="text-2xl">🎧</span>
+                      <div>
+                        <p className="text-sm font-black text-cyan-300 tracking-wider">SECTOR AUDIO & LIVES</p>
+                        <p className="text-[10px] text-gray-500 mt-0.5">Selecciona al host para tus transmisiones.</p>
+                      </div>
+                    </div>
+                    <div className="space-y-5">
+                      <div>
+                        <label className={LabelStyle}>Elige a tu personaje favorito</label>
+                        <div className="grid grid-cols-2 gap-4 mt-2">
+                          {[
+                            { id: 'MAPACHE', img: '/emojis/mapache.webp', nombre: 'Mapache', desc: 'El Gamer' },
+                            { id: 'AMI',     img: '/emojis/ami.webp',     nombre: 'Ami',     desc: 'La Tech' },
+                          ].map(personaje => (
+                            <button key={personaje.id} onClick={() => setFormData({ ...formData, audio_id: personaje.id, audio_personaje: personaje.nombre })}
+                              className={`p-3 rounded-2xl border text-center transition-all ${formData.audio_id === personaje.id ? 'bg-cyan-900/40 border-cyan-500/60 text-cyan-300' : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20'}`}>
+                              <img src={personaje.img} alt={personaje.nombre} className="w-16 h-16 mx-auto mb-2 object-contain drop-shadow-lg" />
+                              <p className="text-xs font-black uppercase">{personaje.nombre}</p>
+                              <p className="text-[9px] opacity-70">{personaje.desc}</p>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* ✦ EL ORÁCULO (Orumama y Jaguar) */}
+                  <div className="bg-gradient-to-br from-cyan-950/30 to-fuchsia-950/20 backdrop-blur-xl border border-cyan-500/20 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+                    <div className="flex items-center gap-3 mb-5">
+                      <span className="text-2xl">🔮</span>
+                      <div>
+                        <p className="text-sm font-black text-cyan-300 tracking-wider">SECTOR DEL ORÁCULO</p>
+                        <p className="text-[10px] text-gray-500 mt-0.5">Conecta con la sabiduría ancestral.</p>
+                      </div>
+                    </div>
+                    <div className="space-y-5">
+                      <div>
+                        <label className={LabelStyle}>¿A quién consultarás hoy?</label>
+                        <div className="grid grid-cols-2 gap-4 mt-2">
+                          {[
+                            { id: 'ORUMAMA', img: '/emojis/orumama.webp', nombre: 'Orumama', desc: 'La Experiencia' },
+                            { id: 'JAGUAR',  img: '/emojis/jaguar.webp',  nombre: 'Jaguar',  desc: 'La Redención' },
+                          ].map(personaje => (
+                            <button key={personaje.id} onClick={() => setFormData({ ...formData, oraculo_id: personaje.id, oraculo_personaje: personaje.nombre })}
+                              className={`p-3 rounded-2xl border text-center transition-all ${formData.oraculo_id === personaje.id ? 'bg-cyan-900/40 border-cyan-500/60 text-cyan-300' : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20'}`}>
+                              <img src={personaje.img} alt={personaje.nombre} className="w-16 h-16 mx-auto mb-2 object-contain drop-shadow-lg" />
+                              <p className="text-xs font-black uppercase">{personaje.nombre}</p>
+                              <p className="text-[9px] opacity-70">{personaje.desc}</p>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ✦ SECTOR DE AVISOS (Evelyn y Larry) */}
+                  <div className="bg-gradient-to-br from-cyan-950/30 to-fuchsia-950/20 backdrop-blur-xl border border-cyan-500/20 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+                    <div className="flex items-center gap-3 mb-5">
+                      <span className="text-2xl">📰</span>
+                      <div>
+                        <p className="text-sm font-black text-cyan-300 tracking-wider">SECTOR DE AVISOS</p>
+                        <p className="text-[10px] text-gray-500 mt-0.5">Tu especialista financiero para anuncios.</p>
+                      </div>
+                    </div>
+                    <div className="space-y-5">
+                      <div>
+                        <label className={LabelStyle}>¿Quién dará las noticias?</label>
+                        <div className="grid grid-cols-2 gap-4 mt-2">
+                          {[
+                            { id: 'EVELYN', img: '/emojis/evelyn.webp', nombre: 'Evelyn', desc: 'La Financiera' },
+                            { id: 'LARRY',  img: '/emojis/larry.webp',  nombre: 'Larry',  desc: 'El Inversor' },
+                          ].map(personaje => (
+                            <button key={personaje.id} onClick={() => setFormData({ ...formData, avisos_id: personaje.id, avisos_personaje: personaje.nombre })}
+                              className={`p-3 rounded-2xl border text-center transition-all ${formData.avisos_id === personaje.id ? 'bg-cyan-900/40 border-cyan-500/60 text-cyan-300' : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20'}`}>
+                              <img src={personaje.img} alt={personaje.nombre} className="w-16 h-16 mx-auto mb-2 object-contain drop-shadow-lg" />
+                              <p className="text-xs font-black uppercase">{personaje.nombre}</p>
+                              <p className="text-[9px] opacity-70">{personaje.desc}</p>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ✦ REINOS Y NOMBRAMIENTOS (Rumores) */}
+                  <div className="bg-gradient-to-br from-cyan-950/30 to-fuchsia-950/20 backdrop-blur-xl border border-cyan-500/20 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+                    <div className="flex items-center gap-3 mb-5">
+                      <span className="text-2xl">📜</span>
+                      <div>
+                        <p className="text-sm font-black text-cyan-300 tracking-wider">LISTADO DE REINOS</p>
+                        <p className="text-[10px] text-gray-500 mt-0.5">Encargado oficial de nombramientos.</p>
+                      </div>
+                    </div>
+                    <div className="space-y-5">
+                      <div>
+                        <label className={LabelStyle}>Titular del Área</label>
+                        <div className="mt-2 max-w-[200px]">
+                          <div className="p-3 rounded-2xl border text-center bg-cyan-900/20 border-cyan-500/30 text-cyan-400 opacity-90 cursor-default shadow-inner">
+                            <img src="/emojis/rumores.webp" alt="Rumores" className="w-16 h-16 mx-auto mb-2 object-contain drop-shadow-lg" />
+                            <p className="text-xs font-black uppercase">Rumores</p>
+                            <p className="text-[9px] opacity-70">La Elegancia</p>
+                            <div className="mt-3 text-[9px] font-bold bg-cyan-950/60 rounded-full py-1 px-2 border border-cyan-500/20 inline-block">🔒 PUESTO FIJO</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ZONA DE RIESGO */}
+                  <div className="bg-red-950/20 backdrop-blur-xl border border-red-500/30 p-6 rounded-3xl shadow-[0_0_20px_rgba(239,68,68,0.15)] mt-12">
+                    <h3 className="text-sm text-red-400 font-bold mb-2 flex items-center gap-2">🚨 ZONA DE RIESGO</h3>
+                    <p className="text-xs text-gray-400 mb-4">Desintegrar tu identidad borrará tus Puntos, Vales y tu HoloPrisma de forma irreversible.</p>
+                    <button onClick={handleDeleteAccount}
+                      className="w-full py-3 px-4 bg-red-600/10 hover:bg-red-600/90 text-red-400 hover:text-white text-xs font-bold uppercase tracking-widest rounded-xl border border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.8)] transition-all duration-300 flex justify-center items-center gap-2">
+                      <span>☠️</span> Iniciar Autodestrucción
+                    </button>
+                  </div>
+
                 </div>
-                {formData.juramento_fecha && (
-                  <p className="text-gray-600 text-xs mt-1">
-                    Firmado el {new Date(formData.juramento_fecha).toLocaleDateString('es-ES', { day:'numeric', month:'long', year:'numeric' })}
-                  </p>
-                )}
-                <p className="text-gray-700 text-xs uppercase tracking-widest mt-2">
-                  — {titulo.tratamiento ? titulo.tratamiento + ' ' : ''}{titulo.rango} {formData.alias}
-                  {reinoElegido ? ` · ${reinoElegido}` : ''} —
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <p className="text-gray-500 text-xs leading-relaxed max-w-sm mx-auto">
-                  Al firmar aceptas el compromiso de actividad mensual y las condiciones del Reino Interior.
-                  Recibirás una copia por email.
-                </p>
-                <button onClick={handleFirmarJuramento}
-                  className={`${c.sel} text-black font-black px-10 py-3 rounded-full text-sm uppercase tracking-widest hover:brightness-110 transition-all`}
-                  style={{ boxShadow: c.glow }}>
-                  📜 Firmar Juramento
-                </button>
               </div>
             )}
+            
+            {/* ══ 📡 SEÑAL ══ */}
+            {tab === 'audio' && (
+              <div className="space-y-6 max-w-4xl mx-auto animate-fadeIn">
+                <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-2xl flex gap-4 items-start">
+                  <div className="text-2xl mt-1">⚖️</div>
+                  <div>
+                    <h4 className="text-sm font-bold text-red-300 uppercase tracking-widest mb-1">Ley de Medios Bro7Vision</h4>
+                    <p className="text-xs text-red-200">Usa música propia o Licencia <span className="font-bold underline">CC 4.0</span>. Cupo máximo: <span className="text-white font-bold">1 Audio, 3 Videos Verticales y 1 Horizontal</span>.</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className={`${CardStyle} space-y-4`}>
+                    <h3 className="text-sm font-bold text-fuchsia-400 mb-4 border-b border-fuchsia-500/20 pb-2">📱 SEÑAL MÓVIL (9:16)</h3>
+                    <MediaSlot title="Video Reality / Casa 1" fieldName="video_file"   type="video/*" description="Video principal vertical." />
+                    <MediaSlot title="Video Casa 2"           fieldName="video_file_2" type="video/*" description="Video secundario vertical." />
+                    <MediaSlot title="Video Casa 3"           fieldName="video_file_3" type="video/*" description="Video terciario vertical." />
+                    <div className="mt-6 pt-6 border-t border-white/10">
+                      <MediaSlot title="📡 SEÑAL AUDIO LIVE" fieldName="audio_file" type="audio/*" description="Audio (MP3) para LiveGrid." />
+                    </div>
+                  </div>
+                  <div className={`${CardStyle} h-fit`}>
+                    <h3 className="text-sm font-bold text-cyan-400 mb-4 border-b border-cyan-500/20 pb-2">🎬 FORMATO CINE (21:9)</h3>
+                    <MediaSlot title="Video Piso 219" fieldName="video_file_219" type="video/*" description="Formato horizontal panorámico para experiencias inmersivas." />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ══ ☝️ TELÉFONO CASA ══ */}
+            {tab === 'Telefono Casa' && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fadeIn">
+                <div className={`${CardStyle} border-fuchsia-500/20`}>
+                  <p className="text-sm text-fuchsia-300 font-bold mb-4 tracking-wider">🏠 ATMÓSFERA DE LA SUITE</p>
+                  <select value={formData.intimo_bg || ""} onChange={e => setFormData({ ...formData, intimo_bg: e.target.value })}
+                    className={`${InputStyle} appearance-none cursor-pointer mb-6`}>
+                    <option value="" disabled>--- SELECCIONAR ATMÓSFERA ---</option>
+                    <option value="salon">🍵 SALÓN PREMIUM (Classic)</option>
+                    <option value="cocina">🍳 COCINA GOURMET (Classic)</option>
+                    <option value="dormitorio">🌌 CYBER SUITE (Furry Style)</option>
+                    <option value="ducha">✨ LLUVIA BIO-FOREST (Therian Suite)</option>
+                  </select>
+                  <label className="text-xs font-bold text-orange-300 ml-1 mb-1 block">RESPUESTA VISOR (Loop)</label>
+                  <input type="text" value={formData.creator_loop_reply}
+                    onChange={e => setFormData({ ...formData, creator_loop_reply: e.target.value })}
+                    placeholder="Ej: Hola Maggie, ya subí la foto!"
+                    className={`${InputStyle} border-orange-500/30 focus:border-orange-400 mb-8`} />
+                  <div className="border-t border-fuchsia-500/10 pt-6">
+                    <p className="text-xs font-bold text-cyan-300 mb-3">📝 BRO-LOG VIEWER (Editorial)</p>
+                    <input type="text" value={formData.editorial_title}
+                      onChange={e => setFormData({ ...formData, editorial_title: e.target.value })}
+                      placeholder="TÍTULO DEL ARTÍCULO..." className={`${InputStyle} font-bold mb-3`} />
+                    <textarea value={formData.editorial_content}
+                      onChange={e => setFormData({ ...formData, editorial_content: e.target.value })}
+                      placeholder="Escribe el cuerpo del artículo..."
+                      className={`${InputStyle} h-48 rounded-2xl resize-none mb-4`} />
+                    <label className={LabelStyle}>Link Imagen Mostrador</label>
+                    <input type="text" value={formData.showcase_url}
+                      onChange={e => setFormData({ ...formData, showcase_url: e.target.value })}
+                      className={InputStyle} />
+                  </div>
+                </div>
+                {/* BUZÓN */}
+                <div className="bg-[#020617]/20 p-6 rounded-3xl border border-white/5 h-full flex flex-col shadow-inner">
+                  <p className="text-xs text-gray-400 font-bold uppercase mb-4 tracking-widest text-center">📥 Preguntas de la Audiencia</p>
+                  <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3">
+                    {questions.length > 0 ? questions.map(q => (
+                      <div key={q.id} className="bg-white/5 p-4 rounded-2xl border border-white/5 hover:bg-white/10 transition-colors">
+                        <p className="text-[10px] text-fuchsia-400 font-bold uppercase mb-2">@{q.author_alias}</p>
+                        <p className="text-sm text-gray-200 leading-relaxed font-light">"{q.text.replace('❓ PREGUNTA: ', '')}"</p>
+                      </div>
+                    )) : (
+                      <div className="flex flex-col items-center justify-center h-full text-gray-600 opacity-50">
+                        <span className="text-4xl mb-2">📭</span>
+                        <span className="text-xs italic">Sin mensajes nuevos</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ══ 🛒 TIENDA ══ */}
+            {tab === 'market' && (
+              <MarketTab
+                serviceItems={serviceItems}
+                newService={newService} setNewService={setNewService}
+                handleAddService={handleAddService} handleDeleteItem={handleDeleteItem}
+                catalogItems={catalogItems} catalogTotal={catalogTotal}
+                catalogPage={catalogPage} setCatalogPage={setCatalogPage}
+                catalogSearch={catalogSearch} setCatalogSearch={setCatalogSearch}
+                catalogLoading={catalogLoading}
+                handleDeleteCatalogItem={handleDeleteCatalogItem}
+                handleCSVUpload={handleCSVUpload}
+                CATALOG_PAGE_SIZE={CATALOG_PAGE_SIZE}
+                formData={formData} setFormData={setFormData}
+                InputStyle={InputStyle} LabelStyle={LabelStyle} CardStyle={CardStyle}
+              />
+            )}
+
+            {/* ══ 🛰️ ÓRBITA & RADAR ══ */}
+            {tab === 'metrics' && (
+              <div className="space-y-8 animate-fadeIn max-w-5xl mx-auto">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-12 h-12 rounded-full border border-orange-500/50 flex items-center justify-center bg-orange-500/10 shadow-[0_0_20px_rgba(249,115,22,0.3)] animate-[spin_10s_linear_infinite]">
+                    <span className="animate-[spin_10s_linear_infinite_reverse] text-2xl">☄️</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-orange-400 tracking-widest uppercase">Radar de Sistema</h3>
+                    <p className="text-xs text-orange-200/50 font-bold tracking-widest">MONITOR DE TRÁFICO Y RETENCIÓN</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-black/20 backdrop-blur-md border border-white/5 p-6 rounded-3xl opacity-60 grayscale cursor-not-allowed">
+                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Total Visualización</p>
+                    <span className="bg-cyan-900/40 text-cyan-400 text-[10px] font-bold px-3 py-1 rounded-full border border-cyan-500/20 uppercase tracking-widest">🔒 Desbloqueo Fase 1</span>
+                    <p className="text-[10px] text-gray-600 mt-4 border-t border-white/5 pt-2">Requiere Motor de Video Nativo.</p>
+                  </div>
+                  <div className="bg-black/20 backdrop-blur-md border border-white/5 p-6 rounded-3xl opacity-60 grayscale cursor-not-allowed">
+                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Tráfico Hyper Zap</p>
+                    <span className="bg-fuchsia-900/40 text-fuchsia-400 text-[10px] font-bold px-3 py-1 rounded-full border border-fuchsia-500/20 uppercase tracking-widest">🔒 Desbloqueo Fase 1</span>
+                    <p className="text-[10px] text-gray-600 mt-4 border-t border-white/5 pt-2">Requiere Módulo de Tráfico.</p>
+                  </div>
+                  <div className="bg-black/20 backdrop-blur-md border border-orange-500/30 p-6 rounded-3xl relative overflow-hidden group hover:border-orange-400 transition-colors shadow-[0_0_15px_rgba(249,115,22,0.1)]">
+                    <div className="absolute top-2 right-4 w-2 h-2 rounded-full bg-orange-500 animate-pulse shadow-[0_0_8px_rgba(249,115,22,1)]" />
+                    <p className="text-[10px] text-orange-400 font-bold uppercase tracking-widest mb-2">Naves en Órbita</p>
+                    <p className="text-4xl font-black text-white drop-shadow-[0_0_10px_rgba(249,115,22,0.5)]">{followerCount}</p>
+                    <p className="text-[10px] text-gray-300 mt-2 border-t border-white/10 pt-2">Usuarios en seguimiento (En vivo).</p>
+                  </div>
+                </div>
+                <div className="mt-8 bg-black/20 backdrop-blur-md border border-white/10 p-6 rounded-3xl">
+                  <h3 className="text-xs text-gray-300 font-bold uppercase tracking-widest mb-4 flex justify-between items-center border-b border-white/10 pb-4">
+                    <span>Constelación Activa (Seguidores)</span>
+                    <span className="bg-orange-500/20 text-orange-300 border border-orange-500/30 px-3 py-1 rounded-full text-[10px]">EN DIRECTO</span>
+                  </h3>
+                  <p className="text-xs text-gray-600 italic text-center py-8">Los datos reales de seguidores se cargarán aquí en Fase 1.</p>
+                </div>
+              </div>
+            )}
+
+            {/* ══ 👑 LINAJE ══ */}
+            {tab === 'linaje' && formData.rank && (() => {
+
+              const REINOS = [
+                'Reino de Solaris','Reino de Lunaris','Reino de Polaris','Reino de Vega','Reino de Andrómeda',
+                'Reino de Cásiopea','Reino de las Pléyades','Reino de Orión','Reino de Ofiuco','Reino de Aries',
+                'Reino de Géminis','Reino de Leo','Reino de Zodíaco','Reino de Neptuno','Reino de Marte',
+                'Reino de Júpiter','Reino de Venus','Reino de Aurora','Reino del Cénit','Reino del Horizonte',
+                'Reino de la Nebulosa','Reino de los Elfos','Reino de los Eloi','Reino de MU','Reino de la Atlántida',
+                'Reino de Lemuria','Reino de Avalon','Reino de Lira','Reino del Éter','Reino de Hyperión',
+                'Reino de Mare Imbrium','Reino de KPax','Reino de Mare Tranquillitatis','Reino de Mare Nectaris',
+                'Reino de Altair','Reino de Mare Serenitatis','Reino de Mare Somniorum','Reino de Lacus Somniorum',
+                'Reino de Lacus Felicitatis','Reino de Arabia Terra','Reino de Tharsis','Reino de Elysium',
+                'Reino de Selene','Reino de Amazonis','Reino de Utopia','Reino de Syrtis Major','Reino de Hellas',
+                'Reino de Olympus','Reino de Arsia','Reino de Pavonis','Reino de Ascraeus','Reino de Elysium Mons',
+                'Reino de Marineris','Reino de Ares Vallis','Reino de Kasei','Reino de Tiu Vallis','Reino de Procellarum',
+                'Reino de Isidis','Reino de Tempe','Reino de Syrtis','Reino de Brazil','Reino de Chryse',
+                'Reino de Noachis','Reino de Aonia','Reino de Daedalia','Reino de Mareotis','Reino de Aeolis',
+                'Reino de Eridania','Reino de Memnonia','Reino de Promethei','Reino de Albor Tholus','Reino de Gale',
+                'Reino de Jezero','Reino de Gusev','Reino de Lyot','Reino de Korolev','Reino de Holden',
+                'Reino de Endeavour','Reino de los Montes Rook','Reino de los Montes Cárpatos','Reino de la Lealtad',
+                'Reino de la Pietatis','Reino de la Virtutis','Reino de la Sapientiae','Reino de la Concordiae',
+                'Reino de la Fortitudinis','Reino de la Clementiae','Reino del Honoris','Reino de Sirio',
+                'Reino de Brahma','Reino de la Caritatis','Reino de Urano','Reino de Antares','Reino de Cygnus',
+                'Reino de Tartaria','Reino de Polux','Reino de la Humanitatis','Reino de la Veritatis',
+                'Reino de Aquila','Reino de la Namibia',
+              ];
+
+              const g = formData.genero || 'n';
+              const TITULOS = {
+                rey:      { m:{ rango:'Rey',      tratamiento:'Don',            subtitulo:'Alta Corte'     }, f:{ rango:'Reina',    tratamiento:'Doña',           subtitulo:'Alta Corte'     }, n:{ rango:'Reyes',    tratamiento:'Excelentísimos',  subtitulo:'Alta Corte'     } },
+                principe: { m:{ rango:'Príncipe',  tratamiento:'Excelentísimo',  subtitulo:'Guardia Real'   }, f:{ rango:'Princesa', tratamiento:'Excelentísima',  subtitulo:'Guardia Real'   }, n:{ rango:'Príncipes',tratamiento:'Excelentísimos', subtitulo:'Guardia Real'   } },
+                duque:    { m:{ rango:'Duque',     tratamiento:'Ilustrísimo',    subtitulo:'Nobleza Mayor'  }, f:{ rango:'Duquesa', tratamiento:'Ilustrísima',    subtitulo:'Nobleza Mayor'  }, n:{ rango:'Duques',   tratamiento:'Ilustrísimos',   subtitulo:'Nobleza Mayor'  } },
+                marques:  { m:{ rango:'Marqués',   tratamiento:'Honorable',      subtitulo:'Nobleza'        }, f:{ rango:'Marquesa',tratamiento:'Honorable',      subtitulo:'Nobleza'        }, n:{ rango:'Marqueses',tratamiento:'Honorables',     subtitulo:'Nobleza'        } },
+                conde:    { m:{ rango:'Conde',     tratamiento:'Noble',          subtitulo:'Nobleza'        }, f:{ rango:'Condesa', tratamiento:'Noble',          subtitulo:'Nobleza'        }, n:{ rango:'Condes',   tratamiento:'Nobles',         subtitulo:'Nobleza'        } },
+                lord:     { m:{ rango:'Lord',      tratamiento:'',               subtitulo:'Honor del Reino'}, f:{ rango:'Lady',    tratamiento:'',               subtitulo:'Honor del Reino'}, n:{ rango:'Lords',    tratamiento:'',               subtitulo:'Honor del Reino'} },
+              };
+              const GENESIS = { rey:2000, principe:1000, duque:500, marques:300, conde:200, lord:100 };
+              const COLORES  = {
+                rey:      { text:'text-orange-400', border:'border-orange-500/40', bg:'bg-orange-950/30', sel:'bg-orange-600', glow:'0 0 25px rgba(249,115,22,0.25)' },
+                principe: { text:'text-blue-400',   border:'border-blue-500/40',   bg:'bg-blue-950/30',   sel:'bg-blue-600',   glow:'0 0 25px rgba(59,130,246,0.25)' },
+                duque:    { text:'text-purple-400', border:'border-purple-500/40', bg:'bg-purple-950/30', sel:'bg-purple-600', glow:'0 0 25px rgba(168,85,247,0.25)' },
+                marques:  { text:'text-cyan-400',   border:'border-cyan-500/40',   bg:'bg-cyan-950/30',   sel:'bg-cyan-600',   glow:'0 0 25px rgba(6,182,212,0.25)'  },
+                conde:    { text:'text-green-400',  border:'border-green-500/40',  bg:'bg-green-950/30',  sel:'bg-green-600',  glow:'0 0 25px rgba(34,197,94,0.25)'  },
+                lord:     { text:'text-yellow-400', border:'border-yellow-500/40', bg:'bg-yellow-950/20', sel:'bg-yellow-500', glow:'0 0 25px rgba(234,179,8,0.25)'  },
+              };
+
+              const rank   = formData.rank || 'rey';
+              const titulo = (TITULOS[rank] || TITULOS.rey)[g];
+              const c      = COLORES[rank]  || COLORES.rey;
+              const gen    = GENESIS[rank]  || 0;
+
+              const actividad = [
+                { key:'video',    label:'Subir contenido',  done: formData.actividad_video,    emoji:'🎬' },
+                { key:'activo',   label:'Halo · Eco · Zap', done: formData.actividad_activo,   emoji:'⚡' },
+                { key:'games',    label:'Jugar en Games',   done: formData.actividad_games,    emoji:'🎮' },
+                { key:'brostory', label:'Ver BroStory',     done: formData.actividad_brostory, emoji:'👁️' },
+              ];
+              const done      = actividad.filter(a => a.done).length;
+              const barColor  = done === 4 ? 'bg-green-500' : done >= 2 ? 'bg-yellow-500' : 'bg-red-500';
+              const doneColor = done === 4 ? 'text-green-400' : done >= 2 ? 'text-yellow-400' : 'text-red-400';
+
+              return (
+                <div className="space-y-6 animate-fadeIn max-w-3xl mx-auto pb-10">
+
+                  {/* IDENTIDAD NOBLE */}
+                  <div className={`rounded-2xl border ${c.border} p-8 text-center relative overflow-hidden`} style={{ boxShadow: c.glow }}>
+                    <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage:'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize:'28px 28px' }} />
+                    <div className="relative z-10">
+                      <img src="/assets/corona_rey.png" alt="corona" className="w-24 h-24 mx-auto mb-3 object-contain drop-shadow-[0_0_15px_rgba(249,115,22,0.6)]" onError={e => e.target.style.display='none'} />
+                      <p className={`${c.text} text-[10px] uppercase tracking-[0.35em] mb-2`} style={{ fontFamily:"'Georgia', serif" }}>{titulo.subtitulo} · Bro7vision</p>
+                      <div className="space-y-1">
+                        {titulo.tratamiento && <p className={`${c.text} text-base font-bold uppercase tracking-[0.2em]`} style={{ fontFamily:"'Georgia', serif" }}>{titulo.tratamiento}</p>}
+                        <p className={`${c.text} text-xl font-black uppercase tracking-[0.15em]`} style={{ fontFamily:"'Georgia', serif" }}>{titulo.rango}</p>
+                        <p className="text-white text-3xl font-black" style={{ fontFamily:"'Georgia', 'Times New Roman', serif" }}>{formData.alias}</p>
+                        {reinoElegido && (<>
+                          <p className="text-gray-500 text-xs uppercase tracking-[0.3em] mt-1">Proveniente del</p>
+                          <p className={`${c.text} text-lg font-bold`} style={{ fontFamily:"'Georgia', serif" }}>{reinoElegido}</p>
+                        </>)}
+                      </div>
+                      <div className={`h-px w-20 mx-auto mt-4 opacity-40 ${c.sel}`} />
+                      <p className="text-gray-600 text-xs uppercase tracking-widest mt-3">{gen.toLocaleString()} Génesis · mensual</p>
+                    </div>
+                  </div>
+
+                  {/* ELEGIR DOMINIO */}
+                  <div className={`rounded-2xl border ${c.border} p-6`}>
+                    <p className={`${c.text} font-black text-base uppercase tracking-widest mb-1`} style={{ fontFamily:"'Georgia', serif" }}>
+                      {reinoElegido ? '✦ Tu Dominio' : '✦ Elige tu Dominio'}
+                    </p>
+                    <p className="text-gray-500 text-xs mb-5 leading-relaxed">
+                      {reinoElegido ? `Tu título completo: ${titulo.tratamiento ? titulo.tratamiento + ' ' : ''}${titulo.rango} ${formData.alias} del ${reinoElegido}` : 'Selecciona el reino que gobernarás.'}
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-5">
+                      {REINOS.map((reino) => {
+                        const sel = reinoElegido === reino;
+                        return (
+                          <button key={reino} onClick={() => handleGuardarReino(reino)}
+                            className={`px-3 py-2.5 rounded-xl text-xs font-bold text-left transition-all border ${sel ? `${c.sel} text-black border-transparent shadow-md` : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'}`}>
+                            {sel && <span className="mr-1">✓</span>}{reino}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="border-t border-white/10 pt-4">
+                      <p className="text-gray-500 text-xs uppercase tracking-widest mb-2">¿No encuentras el tuyo? Proponlo</p>
+                      <div className="flex gap-2">
+                        <input type="text" placeholder="Ej: Reino de Sirio..."
+                          value={reinoPropuesto} onChange={(e) => setReinoPropuesto(e.target.value)}
+                          className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-orange-500 focus:outline-none placeholder-gray-700" />
+                        <button onClick={async () => {
+                          if (!reinoPropuesto.trim()) return;
+                          const { data: { user } } = await supabase.auth.getUser();
+                          await supabase.from('reino_propuestas').insert([{ user_id: user.id, alias: formData.alias, propuesta: reinoPropuesto.trim(), created_at: new Date().toISOString() }]);
+                          alert('✅ Propuesta enviada.');
+                          setReinoPropuesto('');
+                        }} className={`${c.sel} text-black font-black px-4 py-2.5 rounded-xl text-xs uppercase tracking-widest hover:brightness-110 transition-all`}>
+                          Proponer
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ACTIVIDAD */}
+                  <div className="rounded-2xl border border-white/10 p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="text-white font-black text-base uppercase tracking-widest" style={{ fontFamily:"'Georgia', serif" }}>⚡ Actividad del Mes</p>
+                      <span className={`${doneColor} text-sm font-bold`}>{done}/4 {done === 4 ? '— ✅ Al día' : '— pendiente'}</span>
+                    </div>
+                    <div className="h-2 bg-white/10 rounded-full mb-5 overflow-hidden">
+                      <div className={`h-full ${barColor} rounded-full transition-all duration-700`} style={{ width:`${(done/4)*100}%` }} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      {actividad.map((a) => (
+                        <div key={a.key} className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${a.done ? 'bg-green-950/20 border-green-700/30' : 'bg-white/3 border-white/10'}`}>
+                          <span className="text-xl">{a.emoji}</span>
+                          <p className={`text-xs font-bold flex-1 ${a.done ? 'text-green-300' : 'text-gray-500'}`}>{a.label}</p>
+                          <span className={a.done ? 'text-green-400 font-bold' : 'text-gray-700'}>{a.done ? '✓' : '○'}</span>
+                        </div>
+                      ))}
+                    </div>
+                    {done < 4 && <p className="text-yellow-700 text-xs uppercase tracking-widest mt-4 text-center">⚠️ Completa al menos una acción de cada tipo para recibir tus Génesis</p>}
+                  </div>
+
+                  {/* HISTORIAL GÉNESIS */}
+                  <div className="rounded-2xl border border-white/10 p-6">
+                    <p className="text-white font-black text-base uppercase tracking-widest mb-4" style={{ fontFamily:"'Georgia', serif" }}>🌙 Génesis del Reino</p>
+                    <div className="space-y-2">
+                      {(formData.genesis_historial?.length > 0 ? formData.genesis_historial : [{ mes:'Marzo 2026', cantidad: gen, estado:'pendiente' }]).map((item, i) => (
+                        <div key={i} className="flex items-center justify-between px-4 py-3 bg-white/3 border border-white/5 rounded-xl">
+                          <p className="text-gray-400 text-sm">{item.mes}</p>
+                          <div className="flex items-center gap-3">
+                            <span className={`text-sm font-bold ${c.text}`}>+{item.cantidad.toLocaleString()} GEN</span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${item.estado === 'entregado' ? 'bg-green-900/40 text-green-400' : item.estado === 'fuerza_mayor' ? 'bg-blue-900/40 text-blue-400' : 'bg-yellow-900/40 text-yellow-600'}`}>
+                              {item.estado === 'entregado' ? '✓ Entregado' : item.estado === 'fuerza_mayor' ? '🛡️ Fuerza Mayor' : '⏳ Pendiente'}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* JURAMENTO */}
+                  <div className="rounded-2xl overflow-hidden border border-white/10 relative">
+                    <div className="absolute inset-0 z-0">
+                      <img src="/assets/pergamino_bg.png" alt="" className="w-full h-full object-cover opacity-90" onError={e => e.target.style.display='none'} />
+                      <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/55 to-black/85" />
+                    </div>
+                    <div className="relative z-10 p-8 text-center">
+                      <p className={`${c.text} text-[10px] uppercase tracking-[0.35em] mb-3`}>— Orden Real de Bro7vision —</p>
+                      <h4 className="text-white text-2xl font-black mb-6" style={{ fontFamily:"'Georgia', 'Times New Roman', serif" }}>Juramento del Reino Interior</h4>
+                      <div className="max-w-lg mx-auto mb-6 p-6 rounded-xl bg-black/50 border border-white/10">
+                        <p className="text-gray-300 text-sm leading-loose italic" style={{ fontFamily:"'Georgia', serif" }}>
+                          "Por la luz del Reino Interior, juro mantener mi presencia, honrar mi dominio y servir con constancia. Que mis actos hablen por mí y que mi nombre permanezca en el Listado de Honor mientras mi voluntad sea firme."
+                        </p>
+                      </div>
+                      {juramentoFirmado ? (
+                        <div className="space-y-2">
+                          <div className={`inline-flex items-center gap-2 px-5 py-2 rounded-full ${c.bg} border ${c.border}`}>
+                            <span className="text-green-400">✓</span>
+                            <span className="text-gray-300 text-xs uppercase tracking-widest font-bold">Juramento sellado</span>
+                          </div>
+                          {formData.juramento_fecha && (
+                            <p className="text-gray-600 text-xs mt-1">Firmado el {new Date(formData.juramento_fecha).toLocaleDateString('es-ES', { day:'numeric', month:'long', year:'numeric' })}</p>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <p className="text-gray-500 text-xs leading-relaxed max-w-sm mx-auto">Al firmar aceptas el compromiso de actividad mensual y las condiciones del Reino Interior.</p>
+                          <button onClick={handleFirmarJuramento} className={`${c.sel} text-black font-black px-10 py-3 rounded-full text-sm uppercase tracking-widest hover:brightness-110 transition-all`} style={{ boxShadow: c.glow }}>
+                            📜 Firmar Juramento
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <p className="text-center text-xs text-gray-700 uppercase tracking-[0.3em]" style={{ fontFamily:"'Georgia', serif" }}>La grandeza se sostiene con presencia y dedicación.</p>
+                </div>
+              );
+            })()}
+
           </div>
         </div>
 
-        {/* ── PIE ── */}
-        <p className="text-center text-xs text-gray-700 uppercase tracking-[0.3em]"
-          style={{ fontFamily:"'Georgia', serif" }}>
-          La grandeza se sostiene con presencia y dedicación.
-        </p>
-
-      </div>
-    </div>
-  );
-})()}
-
-        
-
-                {/* ========================================================= */}
-                {/* 🛰️ NUEVA SECCIÓN: ÓRBITA Y RADAR (MÉTRICAS) */}
-                {/* ========================================================= */}
-                {tab === 'metrics' && (
-                    <div className="space-y-8 animate-fadeIn max-w-5xl mx-auto">
-                        
-                        {/* HEADER DE LA SECCIÓN */}
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="w-12 h-12 rounded-full border border-orange-500/50 flex items-center justify-center bg-orange-500/10 shadow-[0_0_20px_rgba(249,115,22,0.3)] animate-[spin_10s_linear_infinite]">
-                                <span className="animate-[spin_10s_linear_infinite_reverse] text-2xl">☄️</span>
-                            </div>
-                            <div>
-                                <h3 className="text-xl font-black text-orange-400 tracking-widest uppercase drop-shadow-lg">Radar de Sistema</h3>
-                                <p className="text-xs text-orange-200/50 font-bold tracking-widest">MONITOR DE TRÁFICO Y RETENCIÓN</p>
-                            </div>
-                        </div>
-
-                        {/* HUD MÉTRICAS (Fase 0) */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            
-                            {/* Card Tiempo (OFFLINE EN FASE 0) */}
-                            <div className="bg-black/20 backdrop-blur-md border border-white/5 p-6 rounded-3xl relative overflow-hidden opacity-60 grayscale cursor-not-allowed">
-                                <div className="absolute inset-0 bg-[url('/scanline.png')] opacity-10 mix-blend-overlay"></div>
-                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Total Visualización</p>
-                                <div className="mt-2">
-                                    <span className="bg-cyan-900/40 text-cyan-400 text-[10px] font-bold px-3 py-1 rounded-full border border-cyan-500/20 uppercase tracking-widest">
-                                        🔒 Desbloqueo Fase 1
-                                    </span>
-                                </div>
-                                <p className="text-[10px] text-gray-600 mt-4 border-t border-white/5 pt-2">Requiere Motor de Video Nativo.</p>
-                            </div>
-
-                            {/* Card Hyper Zap (OFFLINE EN FASE 0) */}
-                            <div className="bg-black/20 backdrop-blur-md border border-white/5 p-6 rounded-3xl relative overflow-hidden opacity-60 grayscale cursor-not-allowed">
-                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Tráfico Hyper Zap</p>
-                                <div className="mt-2">
-                                    <span className="bg-fuchsia-900/40 text-fuchsia-400 text-[10px] font-bold px-3 py-1 rounded-full border border-fuchsia-500/20 uppercase tracking-widest">
-                                        🔒 Desbloqueo Fase 1
-                                    </span>
-                                </div>
-                                <p className="text-[10px] text-gray-600 mt-4 border-t border-white/5 pt-2">Requiere Módulo de Tráfico.</p>
-                            </div>
-
-                            {/* Card Órbitas (ACTIVA 100% REAL) */}
-                            <div className="bg-black/20 backdrop-blur-md border border-orange-500/30 p-6 rounded-3xl relative overflow-hidden group hover:border-orange-400 transition-colors shadow-[0_0_15px_rgba(249,115,22,0.1)]">
-                                <div className="absolute -right-4 -top-4 text-6xl opacity-10 group-hover:opacity-20 transition-opacity">🛰️</div>
-                                <div className="absolute top-2 right-4 w-2 h-2 rounded-full bg-orange-500 animate-pulse shadow-[0_0_8px_rgba(249,115,22,1)]"></div>
-                                
-                                <p className="text-[10px] text-orange-400 font-bold uppercase tracking-widest mb-2">Naves en Órbita</p>
-                                <p className="text-4xl font-black text-white drop-shadow-[0_0_10px_rgba(249,115,22,0.5)]">
-                                    {/* AQUI INYECTAMOS EL DATO REAL DE SUPABASE */}
-                                    {followerCount} 
-                                </p>
-                                <p className="text-[10px] text-gray-300 mt-2 border-t border-white/10 pt-2">Usuarios en seguimiento (En vivo).</p>
-                            </div>
-                        </div>
-                        
-                        {/* LISTA DE USUARIOS EN ÓRBITA */}
-                        <div className="mt-8 bg-black/20 backdrop-blur-md border border-white/10 p-6 rounded-3xl flex flex-col h-80 shadow-inner">
-                            <h3 className="text-xs text-gray-300 font-bold uppercase tracking-widest mb-6 flex justify-between items-center border-b border-white/10 pb-4">
-                                <span>Constelación Activa (Seguidores)</span>
-                                <span className="bg-orange-500/20 text-orange-300 border border-orange-500/30 px-3 py-1 rounded-full text-[10px]">EN DIRECTO</span>
-                            </h3>
-                            
-                            <div className="flex-1 overflow-y-auto custom-scrollbar grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pr-2">
-                                {/* MOCKUP DE SEGUIDORES */}
-                                {[1, 2, 3, 4, 5, 6].map((orbit) => (
-                                    <div key={orbit} className="flex items-center gap-4 bg-white/5 hover:bg-white/10 transition-colors p-3 rounded-2xl border border-white/10 group">
-                                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-fuchsia-500 p-[2px]">
-                                            <div className="w-full h-full bg-black rounded-full flex items-center justify-center overflow-hidden">
-                                                <span className="text-xs">👾</span>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-gray-200 group-hover:text-white transition-colors">Usuario_Neón_{orbit}</p>
-                                            <p className="text-[9px] text-orange-400 uppercase tracking-wider">Órbita Estable</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                    </div>
-                )}
-
-            </div>
-        </div>
-        
-        {/* ========================================================= */}
-        {/* FOOTER CRISTALINO */}
-        {/* ========================================================= */}
+        {/* FOOTER */}
         <div className="p-5 border-t border-white/10 bg-black/10 backdrop-blur-3xl flex justify-end gap-4 shrink-0 relative z-20">
-            <button onClick={onClose} className="text-gray-300 text-xs px-6 py-3 font-bold uppercase hover:text-white transition-all hover:bg-white/5 rounded-full">Desconectar</button>
-            <button onClick={handleSave} disabled={loading} className="bg-white/90 text-black font-bold uppercase text-xs px-8 py-3 rounded-full hover:bg-white hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-                {loading ? '🚀 INYECTANDO...' : 'ACTUALIZAR NÚCLEO'}
-            </button>
+          <button onClick={onClose} className="text-gray-300 text-xs px-6 py-3 font-bold uppercase hover:text-white transition-all hover:bg-white/5 rounded-full">Desconectar</button>
+          <button onClick={handleSave} disabled={loading}
+            className="bg-white/90 text-black font-bold uppercase text-xs px-8 py-3 rounded-full hover:bg-white hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+            {loading ? '🚀 INYECTANDO...' : 'ACTUALIZAR NÚCLEO'}
+          </button>
         </div>
+
       </div>
     </div>
   );

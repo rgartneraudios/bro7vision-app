@@ -50,9 +50,20 @@ const RealityTuner = ({ onSelect }) => {
     <div className="absolute inset-0 opacity-0 group-hover:opacity-10 bg-gradient-to-t from-white to-transparent transition-opacity rounded-2xl"></div>
   </button>
 );
-  return (
-    <div className="absolute inset-0 z-[100] bg-[#020202] flex flex-col items-center justify-center p-6 animate-fadeIn overflow-y-auto custom-scrollbar">
-      
+ return (
+    <div className="absolute inset-0 z-[100] bg-black flex flex-col items-center justify-center animate-fadeIn overflow-hidden">
+        
+        {/* FONDO: VIDEO DEEP SPACE TRASLADADO AQUÍ */}
+        <video 
+          autoPlay 
+          loop 
+          muted 
+          playsInline 
+          className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none opacity-60"
+        >
+          <source src="https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/deep_space.mp4" type="video/mp4" />
+        </video>
+              
       {/* TITULO SUPERIOR */}
       <div className="text-center mb-8">
         <h2 className="text-5xl md:text-6xl font-black tracking-[0.5em] text-white">

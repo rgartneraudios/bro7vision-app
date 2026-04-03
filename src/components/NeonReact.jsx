@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { marcarActividad } from '../hooks/useActividad';
-await marcarActividad('games');
+import { useAudioContext } from '../context/AudioContext';
 
 export default function NeonReact({ onWin }) {
   const [sequence, setSequence] = useState([]);
@@ -15,6 +15,7 @@ export default function NeonReact({ onWin }) {
   const [activeButton, setActiveButton] = useState(null);
   const [message, setMessage] = useState('PRESS START');
   const [messageColor, setMessageColor] = useState('text-cyan-400');
+  const { gamesMuted } = useAudioContext();
   
   const audioContextRef = useRef(null);
 
@@ -26,12 +27,36 @@ export default function NeonReact({ onWin }) {
     { id: 3, name: 'YELLOW', bg: 'bg-yellow-500', glow: 'shadow-[0_0_30px_yellow] border-yellow-300', freq: 523.25 }
   ];
 
+  // --- REGISTRO DE ACTIVIDAD ARREGLADO (No puede ir flotando fuera del componente) ---
+  useEffect(() => {
+    if (gameOver) {
+      const registrarActividad = async () => {
+        try {
+          await marcarActividad('games');
+          console.log("Actividad de NeonReact guardada con éxito");
+        } catch (error) {
+          console.error("Error al marcar actividad:", error);
+        }
+      };
+      registrarActividad();
+    }
+  }, [gameOver]);
+
+  // Inicialización y limpieza del AudioContext
   useEffect(() => {
     audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    return () => {
+        if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+            audioContextRef.current.close();
+        }
+    };
   }, []);
 
+  // Función generadora de tonos con el if() de protección de Mute
   const playTone = (frequency, duration = 300) => {
-    if (!audioContextRef.current) return;
+    // PROTECCIÓN DE MUTE: Si no hay audio context o está muteado, no emitir sonido.
+    if (!audioContextRef.current || gamesMuted) return; 
+    
     const ctx = audioContextRef.current;
     const oscillator = ctx.createOscillator();
     const gainNode = ctx.createGain();
@@ -57,6 +82,11 @@ export default function NeonReact({ onWin }) {
     setIsPlaying(true);
     setMessage('MEMORIZA...');
     setMessageColor('text-yellow-400');
+    
+    // IMPORTANTE: Los navegadores bloquean el AudioContext hasta el primer click
+    if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+        audioContextRef.current.resume();
+    }
     
     const firstColor = Math.floor(Math.random() * 4);
     setTimeout(() => playSequence([firstColor]), 800);

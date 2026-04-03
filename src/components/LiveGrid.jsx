@@ -109,22 +109,44 @@ const LiveGrid = ({ items, onTuneIn, onUserClick, onClose, onOpenVideo, onSelect
             </div>
         )}
 
-        {/* FILTROS CENTRADOS */}
-        <div className="relative w-full flex justify-center items-center mb-6 bg-black/60 p-1.5 md:p-2 rounded-xl border border-white/10 backdrop-blur-md shrink-0">
-            <div className="flex gap-1 md:gap-2 overflow-x-auto no-scrollbar">
-                {['ALL', 'TALK', 'MUSIC', 'SHOP'].map(f => (
-                    <button 
-                        key={f} 
-                        onClick={() => setFilter(f)} 
-                        className={`px-4 py-1.5 md:px-5 md:py-2 text-[9px] md:text-[10px] font-black uppercase rounded-lg border transition-all ${filter === f ? 'bg-white text-black border-white shadow-[0_0_20px_white]' : 'bg-transparent border-white/10 text-gray-500 hover:text-white'}`}
-                    >
-                        {f}
-                    </button>
-                ))}
-            </div>
-            <button onClick={onClose} className="absolute right-3 text-gray-500 text-[9px] font-black uppercase hover:text-white transition-colors">✕</button>
-        </div>
+       {/* FILTROS CENTRADOS */}
+<div className="relative w-full flex justify-center items-center mb-3 bg-black/60 p-1.5 md:p-2 rounded-xl border border-white/10 backdrop-blur-md shrink-0">
+    <div className="flex gap-1 md:gap-2 overflow-x-auto no-scrollbar">
+        {['ALL', 'TALK', 'MUSIC', 'SHOP'].map(f => (
+            <button 
+                key={f} 
+                onClick={() => setFilter(f)} 
+                className={`px-4 py-1.5 md:px-5 md:py-2 text-[9px] md:text-[10px] font-black uppercase rounded-lg border transition-all ${filter === f ? 'bg-white text-black border-white shadow-[0_0_20px_white]' : 'bg-transparent border-white/10 text-gray-500 hover:text-white'}`}
+            >
+                {f}
+            </button>
+        ))}
+    </div>
+    <button onClick={onClose} className="absolute right-3 text-gray-500 text-[9px] font-black uppercase hover:text-white transition-colors">✕</button>
+</div>
 
+{/* 🚀 NUEVOS LADRILLOS DE ESTADO (LEYENDA) */}
+<div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mb-6 w-full shrink-0">
+    {/* AUDIO & LIVES - AZUL */}
+    <div className="h-10 md:h-12 bg-[#0033FF] rounded-xl border border-white/20 shadow-[0_0_15px_rgba(2,2,176,0.4)] flex items-center justify-center group hover:scale-[1.02] transition-transform">
+         <span className="text-[8px] md:text-[10px] text-white font-black uppercase tracking-[0.1em] drop-shadow-md">AUDIO & LIVES</span>
+    </div>
+
+    {/* TELEFONO CASA - VERDE */}
+    <div className="h-10 md:h-12 bg-[#00FF33] rounded-xl border border-black/20 shadow-[0_0_15px_rgba(103,255,74,0.4)] flex items-center justify-center group hover:scale-[1.02] transition-transform">
+         <span className="text-[8px] md:text-[10px] text-black font-black uppercase tracking-[0.1em]">TELEFONO CASA</span>
+    </div>
+
+    {/* BROSHOP - AMARILLO */}
+    <div className="h-10 md:h-12 bg-[#FFFF1F] rounded-xl border border-black/20 shadow-[0_0_15px_rgba(255,242,112,0.4)] flex items-center justify-center group hover:scale-[1.02] transition-transform">
+         <span className="text-[8px] md:text-[10px] text-black font-black uppercase tracking-[0.1em]">BROSHOP</span>
+    </div>
+
+    {/* HALO DE LUZ - BLANCO */}
+    <div className="h-10 md:h-12 bg-[#FFFAFA] rounded-xl border border-black/20 shadow-[0_0_15px_rgba(255,250,250,0.6)] flex items-center justify-center group hover:scale-[1.02] transition-transform">
+         <span className="text-[8px] md:text-[10px] text-black font-black uppercase tracking-[0.1em]">HALO DE LUZ</span>
+    </div>
+</div>
         {/* GRID CENTRADO CORREGIDO */}
         <div className="w-full flex-1 min-h-0 overflow-y-auto custom-scrollbar px-1">
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6 pb-48 justify-items-center">{filteredCreators.map((creator) => (
@@ -136,7 +158,7 @@ const LiveGrid = ({ items, onTuneIn, onUserClick, onClose, onOpenVideo, onSelect
                     className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-20 transition-opacity" 
                     alt={creator.alias || 'Usuario'} 
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-blue via-slate/10 to-transparent"></div>
                 
                 {/* Badge de Distancia */}
                 <div className="absolute top-2 right-2 bg-black/80 px-2 py-0.5 rounded text-[7px] text-cyan-400 font-bold border border-cyan-500/20 shadow-lg">📡 {creator.city || creator.distance || 'Online'}</div>
@@ -149,7 +171,7 @@ const LiveGrid = ({ items, onTuneIn, onUserClick, onClose, onOpenVideo, onSelect
     
     {/* Contenedor con altura mínima para que no salte el layout */}
     <div className="bg-black/50 backdrop-blur-sm rounded px-2 py-1 min-h-[30px] flex items-center justify-center">
-        <p className="text-[10px] md:text-[11px] font-bold text-[#FFD700] italic leading-tight line-clamp-2 text-center drop-shadow-[0_0_4px_rgba(255,215,0,0.8)]">
+        <p className="text-[10px] md:text-[11px] font-bold text-[#00FFFB] italic leading-tight line-clamp-2 text-center drop-shadow-[0_0_4px_rgba(0,3,255,0.8)]">
             "{creator.twit_message || creator.desc || 'Emitiendo...'}"
         </p>
     </div>
@@ -157,31 +179,31 @@ const LiveGrid = ({ items, onTuneIn, onUserClick, onClose, onOpenVideo, onSelect
                 {/* NUEVA BOTONERA ESTRATÉGICA - ESTILO NEÓN MULTICOLOR */}
 <div className="absolute bottom-2 left-2 right-2 flex flex-col gap-1.5">
     
-    {/* 1. BOTÓN DE ☝️ TELEFONO CASA - VERSIÓN VIOLETA MÍSTICO */}
+    {/* 1. BOTÓN DE 🎧 AUDIO & LIVES */}
     {(creator.video_file || creator.casa_video) && (
-        <button 
+         <button 
+        onMouseEnter={() => { if (typeof onUserClick === 'function') onUserClick(creator); }}
+        onClick={() => onTuneIn(creator)} 
+        className="py-2 bg-black text-white border-2 border-[#0033FF] rounded-xl text-[9px] font-black uppercase shadow-[0_0_10px_rgba(0,242,255,0.3)] hover:shadow-[0_0_15px_rgba(0,242,255,0.6)] transition-all flex items-center justify-center"
+    >
+        🎧 AUDIO & LIVES
+    </button>
+    )}
+    
+    {/* 2. FILA SECUNDARIA: AUDIO (AZUL), TIENDA (ORO) Y HALO (BLANCO) */}
+<div className="grid grid-cols-3 gap-1.5"> {/* Cambié a grid-cols-3 para que quepan 3 */}
+    
+    {/* BOTÓN DE ☝️ TELEFONO CASA - VERSIÓN Verde jardin */}
+     <button 
             // 💡 NOTA: Al hacer hover, activamos el prisma. Al hacer click, abre el video
             onMouseEnter={() => { if (typeof onUserClick === 'function') onUserClick(creator); }}
             onClick={() => onOpenVideo(creator)} 
-            className="w-full py-2.5 bg-black text-white border-2 border-[#bc13fe] rounded-xl text-[9px] font-black uppercase 
-                       shadow-[0_0_15px_rgba(188,19,254,0.4),inset_0_0_8px_rgba(188,19,254,0.2)] 
-                       hover:shadow-[0_0_20px_rgba(188,19,254,0.7)] transition-all active:scale-95 flex items-center justify-center gap-2"
+            className="w-full py-2.5 bg-black text-white border-2 border-[#13FE3E] rounded-xl text-[9px] font-black uppercase 
+                       shadow-[0_0_15px_rgba(45,245,24,0.4),inset_0_0_8px_rgba(45,245,24,0.2)] 
+                       hover:shadow-[0_0_20px_rgba(45,245,24,0.7)] transition-all active:scale-95 flex items-center justify-center gap-2"
         >
-            <span className="drop-shadow-[0_0_5px_rgba(188,19,254,0.8)]">☝️ TELÉFONO CASA</span>
+            <span className="drop-shadow-[0_0_5px_rgba(45,245,24,0.8)]">☝️</span>
         </button>
-    )}
-    
-    {/* 2. FILA SECUNDARIA: AUDIO (VERDE), TIENDA (ORO) Y HALO (FUCSIA) */}
-<div className="grid grid-cols-3 gap-1.5"> {/* Cambié a grid-cols-3 para que quepan 3 */}
-    
-    {/* Audio */}
-    <button 
-        onMouseEnter={() => { if (typeof onUserClick === 'function') onUserClick(creator); }}
-        onClick={() => onTuneIn(creator)} 
-        className="py-2 bg-black text-white border-2 border-[#00f2ff] rounded-xl text-[9px] font-black uppercase shadow-[0_0_10px_rgba(0,242,255,0.3)] hover:shadow-[0_0_15px_rgba(0,242,255,0.6)] transition-all flex items-center justify-center"
-    >
-        🎧
-    </button>
 
     {/* Tienda */}
     <button 
@@ -196,7 +218,7 @@ const LiveGrid = ({ items, onTuneIn, onUserClick, onClose, onOpenVideo, onSelect
     <button 
         onMouseEnter={() => { if (typeof onUserClick === 'function') onUserClick(creator); }}
         onClick={() => triggerHalo(creator)} 
-        className="py-2 bg-black text-white border-2 border-[#ff00ff] rounded-xl text-[9px] font-black uppercase shadow-[0_0_10px_rgba(255,0,255,0.3)] hover:shadow-[0_0_15px_rgba(255,0,255,0.6)] transition-all flex items-center justify-center"
+        className="py-2 bg-black text-white border-2 border-[#FFFFFF] rounded-xl text-[9px] font-black uppercase shadow-[0_0_10px_rgba(255,0,255,0.3)] hover:shadow-[0_0_15px_rgba(255,0,255,0.6)] transition-all flex items-center justify-center"
     >
         🌩️
     </button>

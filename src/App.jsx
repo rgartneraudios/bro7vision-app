@@ -17,12 +17,26 @@ import HoloProjector from './components/HoloProjector';
 import BioForest from './components/BioForest';
 import ChannelEste from './components/ChannelEste';
 import ChannelOeste from './components/ChannelOeste';
-import RacoonTerminal from './components/RacoonTerminal';
+import Reinos from './components/Reinos';
 import RealityTuner from './components/RealityTuner';
 import HoloPrism from './components/HoloPrism';
 import MoonMatrixCircle from './components/MoonMatrixCircle';
 import ChannelMoon from './components/ChannelMoon';
 import { getMoonSuffix } from './utils/moonUtils';
+import OsosBanner from './components/OsosBanner';
+import SlideRail from "./components/SlideRail";
+import { AudioProvider } from './context/AudioContext';
+import NovaBanner from './components/NovaBanner';
+import MapacheBanner from './components/MapacheBanner';
+import SlideRailAudio from "./components/SlideRailAudio";
+import { useAudioData } from './hooks/useAudioData';
+import BroCardStrip from "./components/BroCardStrip";
+import AgentChatInput from './components/AgentChatInput';
+import { useAgentChat } from './hooks/useAgentChat';
+import ServiciosBanner from './components/ServiciosBanner';
+import SlideRailServicios from './components/SlideRailServicios';
+import EvelynBanner from './components/EvelynBanner';
+import SlideRailAvisos from './components/SlideRailAvisos';
 
 function App() {
   const [realityMode, setRealityMode] = useState(null); 
@@ -50,7 +64,159 @@ function App() {
   const [activePrismUser, setActivePrismUser] = useState(null);
   const [activeUser, setActiveUser] = useState(null); // Usuario del proyector
   const [isShopOpen, setIsShopOpen] = useState(false); // Estado de la tienda
+  const [ososHandoffContext, setOsosHandoffContext] = useState(null);
+  const [holoPrismaIndex, setHoloPrismaIndex] = useState(0);
+  const [ososFooterOpen, setOsosFooterOpen] = useState(false);
+  const mapacheBannerRef                    = useRef(null);
+  const [stripCards,   setStripCards]   = useState([]);
+  const [stripLabel,   setStripLabel]   = useState('');
+  const [stripVisible, setStripVisible] = useState(false);
+  // 1. Añadir ref junto a mapacheBannerRef (ya existe)
+  const broTunerRef = useRef(null);
   
+  
+  // Estados de sesión de ubicación
+const [sessionCP, setSessionCP]     = useState('');
+const [sessionCity, setSessionCity] = useState('');
+const [sessionRef, setSessionRef]   = useState('');
+const [vlData, setVlData]           = useState(null);
+
+// SERVICIOS BANNER Conversacional ISABELLA
+const serviciosBannerRef = useRef(null);
+
+// AVISOS BANNER Conversacional EVELYN
+const evelynBannerRef = useRef(null);
+
+const handleServiciosInput = async (text) => {
+  if (!text.trim()) return;
+  await serviciosBannerRef.current?.sendMessage(text);
+};
+
+// NOVA BANNER Conversacional
+const novaBannerRef = useRef(null);
+
+const handleNovaInput = async (text) => {
+  if (!text.trim()) return;
+  await novaBannerRef.current?.sendMessage(text);
+};
+
+// MAPACHE AUDIO & LIVES — conversacional
+
+const [mapacheLoading, setmapacheLoading] = useState(false);
+
+const handleMapacheInput = async (text) => {
+  if (!text.trim()) return;
+  await mapacheBannerRef.current?.sendMessage(text);
+};
+
+// OSOS MENSAJES NAVEGACION
+
+const [ososModo, setOsosModo] = useState('entrada');
+const [perfilOso, setPerfilOso] = useState(null);
+
+const { 
+  mensaje: ososMensaje, 
+  bolas:   ososBolas, 
+  loading: ososLoading, 
+  enviar:  handleOsosInput, 
+  reset:   resetOsos 
+} = useAgentChat({
+  mode: 'osos',
+  realItems: realItems, 
+  contextData: {
+    oso_id:         perfilOso?.oso_id         || 'TITO',
+    alias:          perfilOso?.osos_nombre    || session?.user?.user_metadata?.alias || 'Ciudadano',
+    ciudad:         perfilOso?.city           || '',
+    cp:             perfilOso?.zip_code       || '',
+    osos_tono:      perfilOso?.osos_tono      || 'cercano',
+    osos_intereses: perfilOso?.osos_intereses || '',
+    osos_frase:     perfilOso?.osos_frase     || '',
+    modo:           ososModo,
+  },
+  
+  
+  // En el onHandoff de App.jsx desestructura modalidad:
+onHandoff: ({ agente, ciudad, cp, intencion, comercio, modalidad }) => {
+
+  setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
+
+  const intentMap = {
+    'BROSHOP_PRODUCTO': 'broshop',
+    'BROSHOP_SERVICIO': 'broshop',
+    'BROSHOP_AVISO':    'broshop', 
+    'AUDIO':            'lives',
+    'REINOS':           'internal_search',
+     'ORACULO':           'ai',
+    
+  };
+
+  const roleMap = {
+    'BROSHOP_PRODUCTO': 'shop',
+    'BROSHOP_SERVICIO': 'service',
+    'BROSHOP_AVISO':    'aviso', 
+    'AUDIO':            'music',
+  };
+
+  const esPais = modalidad === 'ONLINE';
+
+  // Query Supabase — no bloquea la navegación
+  (async () => {
+    try {
+      const roleBuscado = roleMap[agente];
+
+      let query = supabase
+        .from('profiles')
+        .select('bro_id, banner_url, alias, biz_category, biz_profession, city, address, nearby_ref, ref_price, description, role')
+        .limit(20);
+
+      // Si es ciudad filtramos, si es país traemos todos
+      if (!esPais && ciudad) {
+        query = query.ilike('city', `%${ciudad}%`);
+      }
+
+      const { data: perfiles, error } = await query;
+
+      const filtrados = perfiles?.filter(p =>
+        p.bro_id &&
+        (Array.isArray(p.role) ? p.role.includes(roleBuscado) : p.role === roleBuscado)
+      ) || [];
+
+      if (!error && filtrados.length > 0) {
+        setStripCards(filtrados.map(p => ({
+          bro_id:      p.bro_id,
+          banner_url:  p.banner_url                       || '',
+          nombre:      p.alias                            || '',
+          categoria:   p.biz_category || p.biz_profession || '',
+          ciudad:      p.city                             || '',
+          descripcion: p.description  || p.nearby_ref     || '',
+          ref_price:   p.ref_price                        || '',
+          address:     p.address                          || '',
+        })));
+        setStripLabel(intencion);
+        setStripVisible(true);
+      } else {
+        setStripCards([]);
+        setStripVisible(false);
+      }
+    } catch (err) {
+      console.error('Error cargando cards:', err);
+      setStripCards([]);
+      setStripVisible(false);
+    }
+  })();
+
+  // Navegación — independiente de la query
+  setTimeout(() => {
+    setScope({ city: ciudad, type: 'teleport' });
+    setSessionCity(ciudad);
+    setSessionCP(cp);
+    setIntent(intentMap[agente] || 'broshop');
+    setOsosModo('retorno');
+    setStep(2);
+  }, 2000);
+}
+});
+
   const [balances, setBalances] = useState({
   genesis: 0,
   vales: { nova: 0, crescens: 0, plena: 0, decrescens: 0 },
@@ -96,42 +262,26 @@ const handleOpenProfile = (user) => {
     }
   }
 };
+
   // --- LÓGICA DE NAVEGACIÓN ---
   const handleNavigation = (targetIntent) => {
-    console.log("Navegando a:", targetIntent); // <--- Mira si esto sale en la consola al hacer click
-    setIntent(targetIntent);;
+    setIntent(targetIntent);
     setIsLeftOpen(false);
     setIsRightOpen(false);
     
-    // Si el usuario clica específicamente en 'gps', forzamos el paso 1
     if (targetIntent === 'gps') {
-        setStep(1); 
+        setStep(1);
+        resetOsos();
+        setSessionCP('');
+        setSessionCity('');
     } 
-    // Para el resto, mantenemos la lógica de si tiene scope o no
     else if (['broshop', 'lives', 'internal_search'].includes(targetIntent) && !scope) {
         setStep(1);
+        setOsosModo('entrada');
     } else {
         setStep(2);
     }
 };
-
-  const handleActivateGPS = () => {
-    setGpsLoading(true);
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-        const { latitude: lat, longitude: lng } = pos.coords;
-        let loc = { type: 'gps', lat, lng, city: 'Localizando...' };
-        try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-            const data = await res.json();
-            if (data.address) loc.city = data.address.city || data.address.town || 'Ciudad Bro';
-        } catch (e) {}
-        setScope(loc); setGpsLoading(false); setStep(2);
-    }, () => { 
-        setGpsLoading(false); setScope({ city: 'Sintonía Manual', type: 'demo' }); setStep(2); 
-    });
-  };
-  
-  
 
   // --- SINCRONIZACIÓN DE DATOS ---
   useEffect(() => {
@@ -144,21 +294,24 @@ const handleOpenProfile = (user) => {
     const fetchData = async () => {
       if (!session) return;
       const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-      if (prof) setBalances({
-  genesis: prof.genesis,
-  vales: {
-    nova: prof.nova || 0,
-    crescens: prof.crescens || 0,
-    plena: prof.plena || 0,
-    decrescens: prof.decrescens || 0
-  },
-  eco_p: prof.eco_p || 0,
-  eco_gen: prof.eco_gen || 0,
-  halos_p: prof.halos_p || 0,
-  halos_gen: prof.halos_gen || 0,
-  zap_p: prof.zap_p || 0,
-  zap_gen: prof.zap_gen || 0
-});
+     if (prof) {
+  setPerfilOso(prof);
+  setBalances({
+    genesis: prof.genesis,
+    vales: {
+      nova: prof.nova || 0,
+      crescens: prof.crescens || 0,
+      plena: prof.plena || 0,
+      decrescens: prof.decrescens || 0
+    },
+    eco_p: prof.eco_p || 0,
+    eco_gen: prof.eco_gen || 0,
+    halos_p: prof.halos_p || 0,
+    halos_gen: prof.halos_gen || 0,
+    zap_p: prof.zap_p || 0,
+    zap_gen: prof.zap_gen || 0
+  });
+}      
       
       const { data: all } = await supabase.from('profiles').select('*');
       if (all) {
@@ -236,6 +389,9 @@ const handleOpenProfile = (user) => {
       ...supabaseVideos
     ];
   }, [realItems]); // Solo se recalcula cuando cambian los usuarios de Supabase
+  
+  // Junto a los otros hooks/useMemo, después de donde defines realItems:
+const { findChannelByAlias, checkIfNew } = useAudioData({ realItems });
     
   if (!session && !isGuest) {
     return <GenesisGate onGuestAccess={() => { setIsGuest(true); setStep(0); setRealityMode(null); setBalances({ genesis: 500, nova: 20 }); }} />;
@@ -289,15 +445,26 @@ const handleGoToShop = (user) => {
   savedUserIndex={savedUserIndex} />
   )}
     
-          {step === 1 && <video src="https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/portada.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover" />}
-        {step === 2 && (
-          <video 
-            key={intent} 
-            src={intent === 'ai' ? "https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/ai_bg.mp4" : intent === 'game' ? "https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/game_bg.mp4" : intent === 'lives' ? "https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/brolives1.mp4" : intent === 'internal_search' ? "https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/racoonask.mp4" : getVideoForLocation(scope)} 
-            autoPlay loop muted playsInline className="w-full h-full object-cover animate-fadeIn" 
-          />
-        )}
-      </div>
+          {(step === 1 || step === 2) && (
+  <video
+    key={step === 1 ? (ososModo === 'retorno' ? 'ososia_recepcion2' : 'ososia_recepcion_v3') : intent}
+    src={
+      step === 1
+        ? ososModo === 'retorno'
+          ? "https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/ososia_recepcion2.mp4"
+          : "https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/ososia_recepcion_v3.mp4"
+        : intent === 'ai'            ? "https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/oraculo.mp4"
+        : intent === 'game'          ? "https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/game_bg.mp4"
+        : intent === 'lives'         ? "https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/brolives1.mp4"
+        : intent === 'internal_search' ? "https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/reinos.mp4"
+        : getVideoForLocation(scope)
+    }
+    autoPlay loop muted playsInline
+    className="w-full h-full object-cover transition-opacity duration-1000 animate-fadeIn"
+  />
+)}     
+
+ </div>
 
     {/* 2. PUERTA IZQUIERDA */}
 <div className={`side-panel side-panel-left ${isLeftOpen ? 'open' : ''} flex flex-col items-stretch p-0 overflow-y-auto custom-scrollbar`}>
@@ -365,20 +532,21 @@ const handleGoToShop = (user) => {
                   <p className="text-[8px] text-blue-500 font-bold uppercase mb-2 tracking-widest ml-1">Audio & Lives Player</p>
                   
                   {/* AQUÍ PASAMOS EL ESTADO DEL AUDIO */}
-                  <BroLives 
-                      playingCreator={audioUser} 
-                      onToggleAudio={() => setAudioUser(prev => prev ? null : audioUser)} // Pausa si le das click
-                  />
+                 <BroLives 
+  		playingCreator={audioUser} 
+  		onToggleAudio={() => setAudioUser(prev => prev ? null : audioUser)}
+		/>
+
               </div>
               <div className="w-full px-4 pt-4 border-t border-white/5">
-                  <BroTuner />
+                 <BroTuner ref={broTunerRef} />
               </div>
           </div>
       </div>      
 
       {/* 3. PUERTA DERECHA: BROSTORIES, BOOSTER Y SECTORES */}
       <div className={`side-panel side-panel-right ${isRightOpen ? 'open' : ''} flex flex-col p-6 gap-3 items-end`}>
-          <div className="mt-10 w-full">
+          <div className="mt-0 w-full">
           </div>
 
          <div className="w-full flex flex-col gap-1 mt-4">
@@ -388,8 +556,8 @@ const handleGoToShop = (user) => {
               { id: 'gps',             label: 'GPS / RUTA',       icon: '📍' },
               { id: 'broshop',         label: 'BROSHOP',          icon: '🛒🦝' },
               { id: 'lives',           label: 'AUDIO & LIVES',    icon: '🎧' },
-              { id: 'internal_search', label: 'AVISOS',           icon: '📋' }, 
-              { id: 'ai',              label: 'GUÍA / ACCESS AI', icon: '🦝🤖' },
+              { id: 'internal_search', label: 'REINOS',           icon: '👑' }, 
+              { id: 'ai',              label: 'GUÍA / ORACULO', icon: '🐱🐯' },
               { id: 'game',            label: 'GAMES',            icon: '🖱️' }
             ].map((item) => (
               <button 
@@ -405,7 +573,7 @@ const handleGoToShop = (user) => {
             ))}
           </div>
           
-          <button onClick={() => setShowBooster(true)} className="w-full p-4 border border-cyan-500/30 bg-cyan-500/10 rounded-2xl text-cyan-400 font-mono text-[10px] hover:bg-cyan-500 hover:text-black mt-4">[ BOOSTER STUDIO ]</button>
+          <button onClick={() => setShowBooster(true)} className="w-full p-5 border border-cyan-500/30 bg-cyan-500/10 rounded-2xl text-cyan-400 font-mono text-[14px] hover:bg-cyan-500 hover:text-black mt-4">[ BOOSTER STUDIO ]</button>
           
             {/* BOTÓN BRO STORIES */}
           <button onClick={() => { setShowStory(true); setIsLeftOpen(false); }} className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-violet-900/40 to-fuchsia-900/40 border border-fuchsia-500/30 rounded-2xl">
@@ -467,35 +635,266 @@ const handleGoToShop = (user) => {
               handleGoToShop={handleGoToShop}
               onOpenLog={setSelectedLog} 
              onHoverCard={(user) => setActivePrismUser(user)} 
-            />
+             sessionCP={sessionCP}
+  		sessionCity={sessionCity}
+  		sessionRef={sessionRef}
+  		onVLChange={(vl) => setVlData(vl)}
+  		ososHandoffContext={ososHandoffContext}
+  		onHandoffConsumed={() => setOsosHandoffContext(null)}
+  		
+              />
           </div>
         </div>
       )}      
-      {/* HOLOPRISMA RECUPERADO (Solo en BroShop o Lives) */}
-      {step === 2 && (intent === 'broshop' || intent === 'lives') && ( 
-        <div className="hidden md:flex fixed right-2 top-[6%] -translate-y-1/2 z-[40] flex-col items-center w-24 animate-fadeIn pointer-events-none">
-             <div className="scale-[1.1] origin-bottom-right relative z-20 transition-transform hover:scale-[1.15]">
-                  <HoloPrism user={activePrismUser} /> 
-                 <HoloPrism user={activePrismUser} />
-             </div>
+      {/* HOLOPRISMA (Solo en BroShop o Lives) */}
+      {step === 2 && (intent === 'broshop' || intent === 'lives') && 
+ ososHandoffContext?.intencion !== 'BROSHOP_AVISO' && (
+  <div className="hidden md:flex fixed left-1/2 top-[24%] -translate-x-1/2 -translate-y-1/2 z-[40] flex-col items-center animate-fadeIn pointer-events-none">
+               <div className="scale-[1.1] origin-bottom-right relative z-20 transition-transform hover:scale-[1.15]">
+                  <HoloPrism 
+  		user={activePrismUser}
+  		showNumbers={true}
+		/>
+                 </div>
         </div>
       )}
-            
-      {/* 6. PÁGINA GPS/TELETRANSPORTE (BAJADO PARA NO TAPAR CARAS) */}
-      {step === 1 && (
-  <div className="relative z-[150] h-full flex flex-col items-center justify-end pb-32 pointer-events-none">
-      <div className="bg-black/40 backdrop-blur-xl p-8 rounded-[3rem] border border-white/10 pointer-events-auto w-full max-w-sm">
-          {/* Contenido del GPS bajado para dejar libre la parte superior del video */}
-          <button onClick={handleActivateGPS} className="bg-cyan-500 text-black py-4 w-full rounded-2xl font-black">
-              📍 ACTIVAR GPS
-          </button>                <div className="flex flex-col gap-2">
-                    <input type="text" placeholder="DESTINO CIUDAD..." onChange={(e) => setTeleportCoords({city: e.target.value})} className="bg-white/10 border border-white/20 p-4 rounded-xl text-center outline-none focus:border-fuchsia-500 font-mono text-xs text-white" />
-                    <button onClick={() => { setScope({city: teleportCoords.city, type: 'teleport'}); setStep(2); }} className="bg-fuchsia-600/90 text-white py-4 rounded-2xl font-black text-lg hover:bg-fuchsia-500 transition-all">🌀 SALTO CUÁNTICO</button>
-                </div>
-                <button onClick={() => setStep(0)} className="text-gray-400 text-[9px] font-bold uppercase tracking-widest mt-2">❮ Cancelar</button>
-            </div>
-        </div>
-      )}
+      
+      
+{/* SLIDE RAIL — BroShop y Audio & Lives */}
+{step === 2 && intent === 'broshop' && !ososHandoffContext?.intencion && <SlideRail />}
+{step === 2 && intent === 'broshop' && ososHandoffContext?.intencion === 'BROSHOP_PRODUCTO' && <SlideRail />}
+{step === 2 && intent === 'broshop' && ososHandoffContext?.intencion === 'BROSHOP_SERVICIO' && <SlideRailServicios />}
+{step === 2 && intent === 'broshop' && ososHandoffContext?.intencion === 'BROSHOP_AVISO'    && <SlideRailAvisos />}
+{step === 2 && intent === 'lives'   && <SlideRailAudio />}
+
+{/* NOVA BANNER — Personal Shopper BroShop */}
+{step === 2 && intent === 'broshop' && ososHandoffContext?.intencion !== 'BROSHOP_SERVICIO' && ( 
+  <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
+    
+    {stripVisible && (
+      <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
+        <BroCardStrip
+          cards={stripCards}
+          onSelectCard={(card) => novaBannerRef.current.sendMessage(`¿Qué es el ${card.bro_id}?`)}
+          accentColor="gold"
+          label={stripLabel}
+          visible={stripVisible}
+        />
+      </div>
+    )}
+
+    <div className="w-full max-w-2xl mb-3 pointer-events-auto">
+      <NovaBanner
+        ref={novaBannerRef}
+        sessionCity={sessionCity}
+        sessionCP={sessionCP}
+        realItems={realItems}
+        onOpenTerminal={handleGoToShop}
+        onSetActiveIndex={setHoloPrismaIndex}
+        onInvokeOsos={() => setOsosFooterOpen(true)}
+        onEntityFocus={(user) => setActivePrismUser(user)}
+      />
+    </div>
+
+    <div className="w-full max-w-2xl pointer-events-auto mb-4">
+      <AgentChatInput
+        onSend={handleNovaInput}
+        color="gold"
+        placeholder="✦  ¿Qué estás buscando hoy?"
+      />
+    </div>
+
+  </div>
+)}
+
+{/* ISABELLA BANNER — Servicios del BroShop */}
+ {step === 2 && intent === 'broshop' && ososHandoffContext?.intencion === 'BROSHOP_SERVICIO' && (
+  <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
+    {stripVisible && (
+      <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
+        <BroCardStrip
+          cards={stripCards}
+          onSelectCard={(card) => serviciosBannerRef.current.sendMessage(`¿Qué es ${card.bro_id}?`)}
+          accentColor="slate"
+          label={stripLabel}
+          visible={stripVisible}
+        />
+      </div>
+    )}
+    <div className="w-full max-w-2xl mb-3 pointer-events-auto">
+      <ServiciosBanner
+        ref={serviciosBannerRef}
+        personaje={perfilOso?.servicios_personaje || 'isabella'}
+        sessionCity={sessionCity}
+        sessionCP={sessionCP}
+        realItems={realItems}
+        onOpenTerminal={handleGoToShop}
+        onInvokeOsos={() => setOsosFooterOpen(true)}
+        onEntityFocus={(user) => setActivePrismUser(user)}
+      />
+    </div>
+    <div className="w-full max-w-2xl pointer-events-auto mb-4">
+      <AgentChatInput
+        onSend={handleServiciosInput}
+        color="slate"
+        placeholder="✦  ¿Qué servicio necesitas?"
+      />
+    </div>
+  </div>
+)}
+
+{/* EVELYN BANNER — Avisos del BroShop */}
+{step === 2 && intent === 'broshop' && ososHandoffContext?.intencion === 'BROSHOP_AVISO' && (
+  <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
+    {stripVisible && (
+      <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
+        <BroCardStrip
+          cards={stripCards}
+          onSelectCard={(card) => evelynBannerRef.current.sendMessage(`Dime qué es el ${card.bro_id}`)}
+          accentColor="orange"
+          label={stripLabel}
+          visible={stripVisible}
+        />
+      </div>
+    )}
+    <div className="w-full max-w-2xl mb-3 pointer-events-auto">
+      <EvelynBanner
+        ref={evelynBannerRef}
+        personaje={perfilOso?.avisos_personaje || 'evelyn'}
+        sessionCity={sessionCity}
+        sessionCP={sessionCP}
+        genesis={balances.genesis}
+        alias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'}
+        bro_id={perfilOso?.bro_id || ''}
+        realItems={realItems}
+        onInvokeOsos={() => setOsosFooterOpen(true)}
+        onAvisoConectar={(aviso) => {
+          // Cobrar 200 génesis y abrir TelefonoCasa
+          const newBalance = balances.genesis - 200;
+          setBalances(prev => ({ ...prev, genesis: newBalance }));
+          supabase.from('profiles').update({ genesis: newBalance }).eq('id', session.user.id);
+          // Guardar en mensajes_privados
+          supabase.from('mensajes_privados').insert([{
+            from_user_id: session.user.id,
+            to_user_id:   aviso.user_id,
+            from_alias:   perfilOso?.osos_nombre || 'Ciudadano',
+            text:         `Conexión iniciada desde aviso: ${aviso.title}`,
+            aviso_id:     aviso.id,
+          }]);
+          // Abrir TelefonoCasa del autor
+          const autorProfile = realItems.find(i => i.id === aviso.user_id);
+          if (autorProfile) setProjectingUser(autorProfile);
+        }}
+        onAvisoPublicar={async ({ titulo, contenido, tipo }) => {
+          if (balances.genesis < 200) return;
+          const expireDate = new Date();
+          expireDate.setDate(expireDate.getDate() + 7);
+          await supabase.from('avisos').insert([{
+            user_id:        session.user.id,
+            author_alias:   perfilOso?.osos_nombre || 'Ciudadano',
+            type:           tipo,
+            title:          titulo,
+            content:        contenido,
+            city:           sessionCity || '',
+            cost_to_reveal: 200,
+            expires_at:     expireDate.toISOString(),
+          }]);
+          const newBalance = balances.genesis - 200;
+          setBalances(prev => ({ ...prev, genesis: newBalance }));
+          supabase.from('profiles').update({ genesis: newBalance }).eq('id', session.user.id);
+        }}
+      />
+    </div>
+    <div className="w-full max-w-2xl pointer-events-auto mb-4">
+      <AgentChatInput
+        onSend={(text) => evelynBannerRef.current?.sendMessage(text)}
+        color="orange"
+        placeholder="✦  ¿Qué aviso buscas o quieres publicar?"
+      />
+    </div>
+  </div>
+)}
+
+{/* MAPACHE BANNER — Audio & Lives */}
+{step === 2 && intent === 'lives' && (
+  <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
+
+       {stripVisible && (
+      <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
+        <BroCardStrip
+          cards={stripCards}
+          onSelectCard={(card) => mapacheBannerRef.current.sendMessage(`Ponme algo de ${card.nombre}`)}
+          accentColor="cyan"
+          label={stripLabel}
+          visible={stripVisible}
+        />
+      </div>
+    )}
+
+    <div className="w-full max-w-2xl mb-3 pointer-events-auto">
+      <MapacheBanner
+        ref={mapacheBannerRef}
+        personaje={perfilOso?.audio_personaje || 'mapache'}
+        realItems={realItems}
+        findChannelByAlias={findChannelByAlias}
+        checkIfNew={checkIfNew}
+        onInvokeOsos={() => setStep(1)}
+        onInvokeNova={() => setIntent('broshop')}
+        onOpenProfile={handleOpenProfile}
+        onTuneIn={(user) => { setAudioUser(user); setActivePrismUser(user); }}
+        onTuneTuner={(id) => broTunerRef.current?.playById(id)}
+        onStopTuner={() => broTunerRef.current?.stop()}
+      />
+    </div>
+
+    <div className="w-full max-w-2xl pointer-events-auto mb-4">
+      <AgentChatInput
+        onSend={handleMapacheInput}
+        isLoading={mapacheLoading}
+        color="cyan"
+        placeholder="✦  ¿Qué ponemos? Dime el estado de ánimo, canal o artista..."
+      />
+    </div>
+
+  </div>
+)}
+     {/* 6 OSOS IA RECEPCION */}   
+    {step === 1 && (
+  <div className="relative z-[50] h-full flex flex-col items-center justify-end pb-0 px-4">
+
+   {/* BANNER */}
+<div className="w-full max-w-2xl mb-3">
+  <OsosBanner mensaje={ososMensaje} />
+</div>
+
+    {/* BOLAS DINÁMICAS */}
+    {ososBolas.length > 0 && (
+      <div className="flex gap-3 mb-3 flex-wrap justify-center max-w-2x1">
+        {ososBolas.map((bola, i) => (
+          <button
+            key={i}
+            onClick={() => handleOsosInput(bola.texto)}
+            className="px-5 py-3 rounded-full text-xs font-black uppercase tracking-widest border-2 transition-all hover:scale-105 active:scale-95"
+            style={{
+              background: 'radial-gradient(circle at 35% 35%, #ff69d4, #c800a1)',
+              borderColor: '#ff69d4',
+              color: '#fff',
+              boxShadow: '0 0 20px rgba(200,0,161,0.6), inset 0 0 10px rgba(255,255,255,0.15)',
+              animation: `floatBola ${1.8 + i * 0.3}s ease-in-out infinite`,
+            }}>
+            {bola.texto}
+          </button>
+        ))}
+      </div>
+    )}
+
+    {/* CAMPO DE TEXTO DE LOS OSOS OPTIMIZADO */}
+<AgentChatInput
+  onSend={(texto) => handleOsosInput(texto)} 
+  isLoading={ososLoading} 
+/>
+  </div>
+)}
 
       {/* 7. MODALES Y TELEFONO CASA */}
       
@@ -507,8 +906,8 @@ const handleGoToShop = (user) => {
           </div>
         </div>
       )}
-
-     
+      
+      
      {showStory && (
         <div className="fixed inset-0 z-[200] bg-black">
           <StoryPlayer 
@@ -559,7 +958,7 @@ const handleGoToShop = (user) => {
      setProjectingUser(null);
     setIs219Mode(false); // Reseteamos por si acaso
     }} 
-    onGoTo219={() => setIs219Mode(true)} // 👈 LE PASAMOS ESTA NUEVA PROP
+    onGoTo219={() => setIs219Mode(true)} 
   />
 )}
 
@@ -576,7 +975,7 @@ const handleGoToShop = (user) => {
 {/* En App.jsx, junto al BroLogViewer */}
 {intent === 'internal_search' && step === 2 && (
   <div className="fixed inset-x-0 top-[10%] bottom-[16%] z-[90] pointer-events-auto mx-auto max-w-5xl px-4">
-    <RacoonTerminal 
+    <Reinos
       onClose={() => { setStep(0); setIntent(null); }}
       session={session}
       balances={balances}

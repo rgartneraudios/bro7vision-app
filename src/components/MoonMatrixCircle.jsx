@@ -58,8 +58,14 @@ const MoonMatrixCircle = () => {
             <stop offset="100%" stopColor="#b0c4d8"/>
           </radialGradient>
           <clipPath id="diskClip"><circle cx="50" cy="50" r="38"/></clipPath>
-          <filter id="glowSoft"><feGaussianBlur stdDeviation="10"/></filter>
-          <filter id="glowHard"><feGaussianBlur stdDeviation="16"/></filter>
+          
+          {/* AQUÍ ESTÁ LA MAGIA: x, y, width y height ampliados para que no se corte el resplandor */}
+          <filter id="glowSoft" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="10"/>
+          </filter>
+          <filter id="glowHard" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="16"/>
+          </filter>
         </defs>
 
         {/* Glow exterior */}
@@ -88,4 +94,4 @@ const MoonMatrixCircle = () => {
   );
 };
 
-export default MoonMatrixCircle ;
+export default MoonMatrixCircle;

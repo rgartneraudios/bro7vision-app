@@ -1,11 +1,17 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { RADIO_CHANNELS_DB } from '../data/RadioChannels';
 
-const BroTuner = () => {  
+const BroTuner = forwardRef(function BroTuner(props, ref) {  
   const [activeChannel, setActiveChannel] = useState(null); 
   const [volume, setVolume] = useState(0.5);
   const audioRef = useRef(null);
 
+  // ── EXPUESTO AL PADRE ──────────────────────────────────────────
+  useImperativeHandle(ref, () => ({
+    playById: (id) => setActiveChannel(id),
+    stop:     ()   => setActiveChannel(null),
+  }));
+    
   const formatDropboxUrl = (url) => { 
     if (!url) return ''; 
     if (url.includes('dropbox.com')) { 
@@ -96,6 +102,6 @@ const BroTuner = () => {
       </div>
     </div>
   );
-};
 
+});
 export default BroTuner;

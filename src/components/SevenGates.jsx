@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { marcarActividad } from '../hooks/useActividad';
+import { useAudioContext } from '../context/AudioContext';
 
 // --- CONFIGURACIÓN DE MEDIOS ---
 const ASSETS = {
@@ -19,7 +20,10 @@ const SevenGates = ({ onWin, onClose }) => {
   const [question, setQuestion] = useState("");
   const [doorState, setDoorState] = useState('closed'); 
   const [isAdLevel, setIsAdLevel] = useState(false);
-  const [hasAdRun, setHasAdRun] = useState(false); // NUEVO: Control para que la marca salga solo una vez
+  const [hasAdRun, setHasAdRun] = useState(false); 
+  
+  // EXTRAEMOS LA VARIABLE MUTE UNA SOLA VEZ
+  const { gamesMuted } = useAudioContext();
   
   // AUDIO
   const entryAudio = useRef(new Audio(ASSETS.bgEntry));
@@ -40,28 +44,32 @@ const SevenGates = ({ onWin, onClose }) => {
       return () => stopAllAudio();
   }, []);
 
+  // Manejo de música de fondo reaccionando al estado Muted y a la fase del juego
   useEffect(() => {
       entryAudio.current.pause();
       exitAudio.current.pause();
-      if (phase === 'entry') entryAudio.current.play().catch(()=>{});
-      else if (phase === 'exit') exitAudio.current.play().catch(()=>{});
-  }, [phase]);
+      
+      if (!gamesMuted) {
+          if (phase === 'entry') entryAudio.current.play().catch(()=>{});
+          else if (phase === 'exit') exitAudio.current.play().catch(()=>{});
+      }
+  }, [phase, gamesMuted]);
 
+  // Manejo de puertas reaccionando al estado Muted
   useEffect(() => {
       if (phase === 'entry' || phase === 'exit') {
           setDoorState('closed');
           const openTimer = setTimeout(() => {
               setDoorState('opening');
               doorAudio.current.currentTime = 0;
-              doorAudio.current.play().catch(()=>{});
+              if (!gamesMuted) doorAudio.current.play().catch(()=>{});
           }, 1200); 
           return () => clearTimeout(openTimer);
       }
-  }, [level, phase]);
+  }, [level, phase, gamesMuted]);
 
   // --- GENERADOR DE NIVELES ---
   const generateLevel = (currentLevel) => {
-      // BASE DE DATOS ACTUALIZADA (Añadida una opción extra 'w' para los 5 carriles)
       const DB = [
           // --- CINE CIENCIA FICCIÓN (SCIFI) ---
           { q: "PLANETA DE AVATAR", a: "PANDORA", w: ["VULCANO", "TATOOINE", "ARRAKIS", "ENDOR"], isAd: false },
@@ -228,7 +236,8 @@ const SevenGates = ({ onWin, onClose }) => {
 
   const handleFail = () => {
       alarmAudio.current.currentTime = 0;
-      alarmAudio.current.play().catch(() => null);
+      if (!gamesMuted) alarmAudio.current.play().catch(() => null);
+      
       entryAudio.current.pause();
       exitAudio.current.pause();
       setDoorState('closed'); 
@@ -244,10 +253,10 @@ const SevenGates = ({ onWin, onClose }) => {
       }, 4000);
   };
   
-  // --- REGISTRO DE ACTIVIDAD (SUPABASE) ---
+  // --- REGISTRO DE ACTIVIDAD (SUPABASE) ARREGLADO ---
   useEffect(() => {
-    // En este juego usamos gameState === 'finished' en lugar de gameOver
-    if (gameState === 'finished') {
+    // En The 7 Gates, el estado del juego se maneja con 'phase'
+    if (phase === 'win' || phase === 'fail') {
       const registrarActividad = async () => {
         try {
           await marcarActividad('games'); 
@@ -258,7 +267,7 @@ const SevenGates = ({ onWin, onClose }) => {
       };
       registrarActividad();
     }
-  }, [gameState]); // Vigilamos el estado del juego
+  }, [phase]);
 
   return (
     // CAMBIO COLOR: Todo el borde y sombra ahora es CYAN siempre

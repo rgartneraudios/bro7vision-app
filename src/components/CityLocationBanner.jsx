@@ -111,7 +111,7 @@ export default function CityLocationBanner({ scope }) {
         }
       `}</style>
 
-      <div className="absolute bottom-[26%] md:bottom-32 w-full flex flex-col items-center z-[20000] pointer-events-none px-4">
+      <div className="absolute bottom-[28%] md:bottom-20 w-full flex flex-col items-center z-[20000] pointer-events-none px-4">
         {/* clb-wrap es la cápsula semitransparente detrás del texto */}
         <div className="clb-wrap flex flex-col items-center justify-center text-center">
           <span className="clb-label">◈ {etiqueta}</span>

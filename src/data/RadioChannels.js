@@ -101,6 +101,4 @@ export const RADIO_CHANNELS_DB = [
       genre: 'Comedy',
       src: "https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/Channel_Jocker.mp3"
   },
-  // ... COPIA Y PEGA EL RESTO DE TUS CANALES AQUÍ ...
-  // ... Y AÑADE EL CAMPO 'src' A CADA UNO
 ];

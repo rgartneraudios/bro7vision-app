@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom'; // <--- IMPORTANTE: Necesario para el Portal
 import { marcarActividad } from '../hooks/useActividad';
+import { useAudioContext } from '../context/AudioContext';
 
 
 const AtlasGame = ({ onWin, onClose }) => {
@@ -10,6 +11,7 @@ const AtlasGame = ({ onWin, onClose }) => {
   const [multiplier, setMultiplier] = useState(0); 
   const [player, setPlayer] = useState({ x: 50, y: 90, vx: 0, vy: 0 });
   const [enemies, setEnemies] = useState([]);
+  const { gamesMuted } = useAudioContext();
 
   const keysPressed = useRef({});
   const playerRef = useRef(player);
@@ -29,14 +31,25 @@ const AtlasGame = ({ onWin, onClose }) => {
     return '#ff0000';
   };
 
-  useEffect(() => {
-    // Audio configuration
+useEffect(() => {
     audioRef.current = new Audio("/audio/space.mp3");
     audioRef.current.loop = true;
     audioRef.current.volume = 0.4;
-    return () => { if(audioRef.current) audioRef.current.pause(); };
-  }, []);
-
+    
+    if (!gamesMuted) {
+      audioRef.current.play().catch(e => {
+        // Ignoramos el AbortError — es normal en StrictMode
+        if (e.name !== 'AbortError') console.error('Audio error:', e);
+      });
+    }
+    
+    return () => { 
+      if(audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+}, [gamesMuted]);
   useEffect(() => {
     const handleKeyDown = (e) => { 
         keysPressed.current[e.key] = true; 
