@@ -85,18 +85,36 @@ JUEGOS Y GÉNESIS:
 - Telecronos: 20 por gema (máx 180). Fantasma: -10 Génesis.
 `,
 
+  // ── NUEVO — solo viaja cuando mode === 'osos' ──────────────────────
+  osos: `
+SECTORES DE BROVISION — lo único que necesitas saber:
+1. AUDIO           → música, podcast, lives, radio, streams. NECESITA ciudad o país.
+2. BROSHOP_PRODUCTO → comprar productos físicos. NECESITA ciudad o país.
+3. BROSHOP_SERVICIO → contratar profesionales o servicios. NECESITA ciudad o país.
+4. BROSHOP_AVISO   → avisos, anuncios, tablón, segunda mano, busco/ofrezco. NECESITA ciudad o país.
+5. REINOS          → directorio nobiliario, títulos, rumores. SIN ubicación. Handoff directo.
+6. ORACULO         → horóscopo sideral, hierbas, espiritualidad, fases lunares. SIN ubicación. Handoff directo.
+
+REGLA DE UBICACIÓN:
+- Ciudad o país concreto → válido. Handoff inmediato si también tienes sector.
+- "España" solo → ambiguo. Pregunta con bolas Sí/No: "¿Buscamos en toda España?"
+- "Toda España", "España entera", "online", "global", "todo el mundo" → válido directo.
+- Si no hay ubicación → pregunta SOLO por la ubicación. Una pregunta, nada más.
+`,
+
 };
 
 // Helper — devuelve el bloque correcto según intención detectada por el PS
 export const getKnowledgeBlock = (intencion) => {
   const map = {
     sistema:     SK.sistema,
-    luna:        SK.luna + SK.sistema,   // luna siempre lleva contexto base
-    horoscopo:   SK.horoscopo + SK.luna, // horóscopo lleva fases lunares
+    luna:        SK.luna + SK.sistema,
+    horoscopo:   SK.horoscopo + SK.luna,
     hierbas:     SK.hierbas,
     reinos:      SK.reinos,
     juegos:      SK.juegos,
-    exploracion: SK.sistema,             // fallback: solo base
+    osos:        SK.osos,
+    exploracion: SK.sistema,
   };
   return (map[intencion] || SK.sistema).trim();
 };

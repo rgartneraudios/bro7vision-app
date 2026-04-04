@@ -435,7 +435,7 @@ function App() {
               step === 1
                 ? ososModo === 'retorno'
                   ? "https://media.bro7vision.com/ososia_recepcion2.mp4"
-                  : "https://media.bro7vision.com/ososia_recepcion_v3.mp4"
+                  : "https://media.bro7vision.com/ososia_recepcion1.mp4"
                 : intent === 'ai'              ? "https://media.bro7vision.com/oraculo.mp4"
                 : intent === 'game'            ? "https://media.bro7vision.com/game_bg.mp4"
                 : intent === 'lives'           ? "https://media.bro7vision.com/brolives1.mp4"

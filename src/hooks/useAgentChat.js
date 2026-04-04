@@ -46,6 +46,23 @@ const escanearEcosistema = (textoUsuario, realItems) => {
   })).slice(0, 3);
 };
 
+// ── Perfil base del usuario — se inyecta en TODOS los sobres ─────────
+// Una sola vez por envío, cero queries extra — viene de contextData
+// que ya cargó App.jsx desde Supabase al iniciar sesión.
+const armarPerfilBase = (contextData) => ({
+  usuario_nombre:  contextData?.osos_nombre    || contextData?.alias || 'Ciudadano',
+  usuario_tono:    contextData?.osos_tono      || 'amigos',
+  usuario_genero:  contextData?.genero         || '',
+  usuario_city:    contextData?.city           || '',
+  usuario_country: contextData?.country        || '',
+  usuario_reino:   contextData?.reino          || '',
+  usuario_rank:    contextData?.rank           || '',
+  audio_id:        contextData?.audio_id       || '',
+  servicios_id:    contextData?.servicios_id   || '',
+  oraculo_id:      contextData?.oraculo_id     || '',
+  avisos_id:       contextData?.avisos_id      || '',
+});
+
 // ── Sobre Nova (productos) ────────────────────────────────────────────
 const armarSobreNova = (textoUsuario, realItems, contextData) => {
   const intencion     = detectarIntencion(textoUsuario);
@@ -160,10 +177,10 @@ const armarSobreEvelyn = async (textoUsuario, contextData) => {
   }
 
   const sobreTexto = armarSobreEvelynTexto({
-    alias:      contextData?.alias    || 'Ciudadano',
-    bro_id:     contextData?.bro_id   || '',
-    ciudad:     contextData?.ciudad   || '',
-    genesis:    contextData?.genesis  || 0,
+    alias:      contextData?.osos_nombre  || contextData?.alias || 'Ciudadano',
+    bro_id:     contextData?.bro_id       || '',
+    ciudad:     contextData?.ciudad       || '',
+    genesis:    contextData?.genesis      || 0,
     intencion,
     avisos:     avisosFinales,
     codigoAvi,
@@ -178,12 +195,10 @@ const armarSobreEvelyn = async (textoUsuario, contextData) => {
 };
 
 // ── Sobre Oráculo (Orumama + Jaguar) ─────────────────────────────────
-// Sin async — solo inyecta el bloque de SystemKnowledge relevante + fase lunar.
 const armarSobreOraculo = (textoUsuario, contextData) => {
-  const faseActual = getMoonSuffix(); // 'crescens' | 'plena' | 'decrescens' | 'nova'
+  const faseActual = getMoonSuffix();
   const personaje  = (contextData?.oraculo_personaje || 'orumama').toLowerCase();
 
-  // Detectar intención para elegir el bloque mínimo de conocimiento
   const t = textoUsuario.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const intencion =
     t.includes('horoscopo') || t.includes('signo') || t.includes('astral') || t.includes('ofiuco') || t.includes('sideral')
@@ -200,7 +215,6 @@ const armarSobreOraculo = (textoUsuario, contextData) => {
       ? 'sistema'
     : 'exploracion';
 
-  // getKnowledgeBlock devuelve solo el bloque relevante desde SystemKnowledge.js
   const bloqueConocimiento = getKnowledgeBlock(intencion);
 
   return {
@@ -221,7 +235,6 @@ const ciudadEsValida = (ciudad) => {
   return !CIUDAD_INVALIDA.includes(ciudad.toLowerCase().trim());
 };
 
-// Sectores que NO necesitan ubicación — handoff directo
 const SECTORES_SIN_UBICACION = ['REINOS', 'ORACULO'];
 
 const BOLAS_CIUDAD = [
@@ -258,10 +271,14 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
     try {
       let paqueteContexto;
 
+      // ── Perfil base — se arma UNA vez y viaja en todos los sobres ──
+      const perfilBase = armarPerfilBase(contextData);
+
       // ── NOVA ──────────────────────────────────────────────────────
       if (mode === 'novaExplora') {
         paqueteContexto = {
           ...contextData,
+          ...perfilBase,
           ...armarSobreNova(textoUsuario, realItems, contextData),
         };
 
@@ -269,6 +286,7 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
       } else if (mode === 'servicios') {
         paqueteContexto = {
           ...contextData,
+          ...perfilBase,
           ...armarSobreIsabella(textoUsuario, realItems),
         };
 
@@ -278,6 +296,7 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
         const catalogoTuner = armarCatalogoTuner();
         paqueteContexto = {
           ...contextData,
+          ...perfilBase,
           catalogo_audio: catalogoLives,
           canales_tuner:  catalogoTuner,
         };
@@ -287,6 +306,7 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
         const { sobreTexto, intencion, avisosRaw } = await armarSobreEvelyn(textoUsuario, contextData);
         paqueteContexto = {
           ...contextData,
+          ...perfilBase,
           sobre_evelyn:     sobreTexto,
           intencion_avisos: intencion,
           avisos_raw:       avisosRaw,
@@ -296,6 +316,7 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
       } else if (mode === 'oraculo') {
         paqueteContexto = {
           ...contextData,
+          ...perfilBase,
           ...armarSobreOraculo(textoUsuario, contextData),
         };
 
@@ -315,35 +336,24 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
           setTipoMemoria(ciudadDetect.tipo);
         }
 
-        // Sectores sin ubicación — handoff rápido del PS sin pasar por Groq
+        // Handoff rápido PS — sectores SIN ubicación
         if (sectorFinal && SECTORES_SIN_UBICACION.includes(sectorFinal)) {
-          const frase = FRASES_HANDOFF[sectorFinal]?.() || 'Conectando...';
-          // Aún así pasamos por Groq para que el Oso haga la confirmación SI/NO
-          // El PS solo acelera si el sector ya fue confirmado (sectorMemoria ya estaba)
-          // Si es detección nueva, dejamos que Groq pregunte con bolas SI/NO
           if (sectorMemoria === sectorFinal) {
-            // Segunda vez — el user ya confirmó (llegó aquí de nuevo con el mismo sector)
+            const frase = FRASES_HANDOFF[sectorFinal]?.() || 'Conectando...';
             setMensaje(frase);
             setBolas([]);
             setSectorMemoria(null);
             setCiudadMemoria(null);
             setTipoMemoria(null);
             setTimeout(() => {
-              onHandoff?.({
-                agente:    sectorFinal,
-                ciudad:    null,
-                cp:        null,
-                intencion: sectorFinal,
-                comercio_especifico: null,
-                modalidad: null,
-              });
+              onHandoff?.({ agente: sectorFinal, ciudad: null, cp: null, intencion: sectorFinal, comercio_especifico: null, modalidad: null });
             }, 1500);
             return;
           }
-          // Primera vez — dejamos que Groq confirme con bolas SI/NO
+          // Primera vez — Groq confirma con bolas Sí/No
         }
 
-        // Handoff rápido PS para sectores CON ubicación
+        // Handoff rápido PS — sectores CON ubicación
         if (sectorFinal && ciudadFinal && !SECTORES_SIN_UBICACION.includes(sectorFinal)) {
           const frase = FRASES_HANDOFF[sectorFinal]?.(ciudadFinal) || `Conectando con ${ciudadFinal}...`;
           setMensaje(frase);
@@ -364,15 +374,21 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
           return;
         }
 
+        // Inyectar SK.osos — único bloque de conocimiento que necesitan
+        const skOsos = getKnowledgeBlock('osos');
+
         paqueteContexto = {
           ...contextData,
+          ...perfilBase,
           port_system_informa: infoChivada,
           sector_detectado:    sectorFinal,
           ciudad_detectada:    ciudadFinal,
           tipo_ubicacion:      tipoFinal,
+          system_knowledge:    skOsos,
         };
-      }
+      }  // ← cierre del else OSOS
 
+      // ── Llamada a Groq — común a todos los modos ──────────────────
       const rawResponse = await askGroq(textoUsuario, mode, paqueteContexto);
       const jsonStr     = rawResponse.replace(/```json/g, '').replace(/```/g, '').trim();
       const data        = JSON.parse(jsonStr);
@@ -384,52 +400,29 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
         setBolas(Array.isArray(data.bolas_sugerencia)
           ? data.bolas_sugerencia.map(b => ({ texto: typeof b === 'string' ? b : b.texto || '' }))
           : []);
-
         if (data.handoff && data.handoff.accion !== 'NINGUNA' && onHandoff) {
-          onHandoff({
-            accion:   data.handoff.accion,
-            objetivo: data.handoff.objetivo       || '',
-            tipo:     data.handoff.tipo            || 'NINGUNA',
-            agente:   data.handoff.destino_agente  || 'MAPACHE',
-          });
+          onHandoff({ accion: data.handoff.accion, objetivo: data.handoff.objetivo || '', tipo: data.handoff.tipo || 'NINGUNA', agente: data.handoff.destino_agente || 'MAPACHE' });
         }
 
       } else if (mode === 'avisos') {
         setMensaje(data.mensaje || '...');
         setBolas(Array.isArray(data.bolas) ? data.bolas : []);
-
         if (data.handoff === 'HANDOFF_AVISO_CONECTAR' && data.aviso_id) {
-          const avisoTarget = paqueteContexto.avisos_raw?.find(av =>
-            generarCodigoAvi(av.id) === data.aviso_id || av.id === data.aviso_id
-          );
-          if (avisoTarget) {
-            setAvisoPendiente(avisoTarget);
-            onAvisoConectar?.(avisoTarget);
-          }
+          const avisoTarget = paqueteContexto.avisos_raw?.find(av => generarCodigoAvi(av.id) === data.aviso_id || av.id === data.aviso_id);
+          if (avisoTarget) { setAvisoPendiente(avisoTarget); onAvisoConectar?.(avisoTarget); }
         }
-
         if (data.handoff === 'HANDOFF_AVISO_PUBLICAR' && data.titulo) {
-          onAvisoPublicar?.({
-            titulo:    data.titulo,
-            contenido: data.contenido,
-            tipo:      data.tipo || 'DEMANDA',
-          });
+          onAvisoPublicar?.({ titulo: data.titulo, contenido: data.contenido, tipo: data.tipo || 'DEMANDA' });
         }
-
-        if (data.handoff === 'HANDOFF_OSOS') {
-          onHandoff?.({ agente: 'OSOS' });
-        }
+        if (data.handoff === 'HANDOFF_OSOS') onHandoff?.({ agente: 'OSOS' });
 
       } else if (mode === 'servicios') {
         if (data.handoff) {
           setMensaje(data.mensaje_despedida || 'Un momento, te conecto...');
           setBolas([]);
           if (onHandoff) {
-            if (data.agente_destino === 'ISABELLA_VENTAS') {
-              onHandoff({ agente: 'ISABELLA_VENTAS', bro_id: data.bro_id_target });
-            } else {
-              onHandoff({ agente: data.agente_destino });
-            }
+            if (data.agente_destino === 'ISABELLA_VENTAS') onHandoff({ agente: 'ISABELLA_VENTAS', bro_id: data.bro_id_target });
+            else onHandoff({ agente: data.agente_destino });
           }
         } else {
           setMensaje(data.mensaje);
@@ -442,25 +435,18 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
         }
 
       } else if (mode === 'oraculo') {
-        // ── ORÁCULO ───────────────────────────────────────────────────
         setMensaje(data.mensaje || '...');
-        // Sin bolas — el Oráculo no tiene sugerencias clickables
         setBolas([]);
-
-        // Si el Oráculo quiere invocar a los Osos
-        if (data.handoff === 'HANDOFF_OSOS') {
-          onHandoff?.({ agente: 'OSOS' });
-        }
+        if (data.handoff === 'HANDOFF_OSOS') onHandoff?.({ agente: 'OSOS' });
 
       } else {
-        // ── NOVA / OSOS ───────────────────────────────────────────────
+        // ── NOVA / OSOS respuesta ─────────────────────────────────────
         if (data.handoff) {
           const agente         = data.agente_destino || '';
           const esSinUbicacion = SECTORES_SIN_UBICACION.includes(agente);
           const necesitaCiudad = ['BROSHOP_PRODUCTO', 'BROSHOP_SERVICIO', 'AUDIO', 'BROSHOP_AVISO'].includes(agente);
           const ciudadDestino  = data.contexto?.ciudad;
 
-          // Sectores sin ubicación — handoff directo
           if (esSinUbicacion) {
             setMensaje(data.mensaje_despedida || 'Iniciando transferencia...');
             setBolas([]);
@@ -468,19 +454,11 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
             setCiudadMemoria(null);
             setTipoMemoria(null);
             setTimeout(() => {
-              onHandoff?.({
-                agente:    agente,
-                ciudad:    null,
-                cp:        null,
-                intencion: agente,
-                comercio_especifico: null,
-                modalidad: null,
-              });
+              onHandoff?.({ agente, ciudad: null, cp: null, intencion: agente, comercio_especifico: null, modalidad: null });
             }, 1500);
             return;
           }
 
-          // Sectores con ubicación — validar ciudad
           if (necesitaCiudad && !ciudadEsValida(ciudadDestino)) {
             setMensaje('¿En qué país o ciudad necesitas buscar?');
             setBolas(BOLAS_CIUDAD);
@@ -507,7 +485,6 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
             const itemCompleto = realItems.find(i => i.bro_id === entidad.bro_id);
             if (itemCompleto) onEntityFocus?.(itemCompleto);
           }
-          // Bolas vienen del prompt — SI/NO o vacías según contexto
           setBolas(Array.isArray(data.bolas) ? data.bolas : []);
         }
       }
