@@ -279,7 +279,7 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
 
   const config = useMemo(() => {
     const t=getTimeSuffix();
-    const v = (n) => `https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/${n}_${t}.mp4`;
+    const v = (n) => `https://media.bro7vision.com/${n}_${t}.mp4`;
     switch(realityMode){
       case 'solo_earth':   return {video:v('solo_earth'),  colors:['text-emerald-600','text-cyan-300'],  reactionColor:'emerald',labelClass:'text-emerald-600',labelText:'SOLO EARTH',  navColor:'text-emerald-500'};
       case 'band_earth':   return {video:v('band_earth'),  colors:['text-blue-400','text-indigo-300'],   reactionColor:'blue',   labelClass:'text-blue-400',   labelText:'BAND EARTH',  navColor:'text-blue-400'   };
@@ -287,7 +287,7 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
       case 'band_fantasy': return {video:v('band_fantasy'),colors:['text-fuchsia-500','text-purple-300'],reactionColor:'fuchsia',labelClass:'text-fuchsia-400', labelText:'BAND FANTASY',navColor:'text-fuchsia-500'};
       case 'solo_cinema':  return {video:v('solo_cinema'), colors:['text-amber-500','text-orange-300'],  reactionColor:'amber',  labelClass:'text-amber-500',  labelText:'SOLO CINEMA', navColor:'text-amber-600'  };
       case 'band_cinema':  return {video:v('band_cinema'), colors:['text-orange-400','text-yellow-200'], reactionColor:'orange', labelClass:'text-orange-400', labelText:'BAND CINEMA', navColor:'text-orange-500' };
-      default:             return {video:'https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/eclipse_mode.mp4',colors:['text-cyan-400','text-white'],       reactionColor:'cyan',  labelClass:'text-cyan-400',  labelText:'GENESIS NODE',navColor:'text-cyan-400'  };
+      default:             return {video:'https://media.bro7vision.com/eclipse_mode.mp4',colors:['text-cyan-400','text-white'],       reactionColor:'cyan',  labelClass:'text-cyan-400',  labelText:'GENESIS NODE',navColor:'text-cyan-400'  };
     }
   },[realityMode]);
 

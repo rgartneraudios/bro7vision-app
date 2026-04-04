@@ -15,7 +15,7 @@ const HoloProjector219 = ({ user, balances, setBalances, session, onClose, onOpe
   const videoRef = useRef(null);
 
   const bgKey = user.intimo_bg && user.intimo_bg !== "" ? user.intimo_bg : 'salon';
-  const backgroundVideo = `https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/intimo_${bgKey}.mp4`;
+  const backgroundVideo = `https://media.bro7vision.com/intimo_${bgKey}.mp4`;
 
   // ── NUEVO: fetch slot horizontal de creator_media ──────────────
   useEffect(() => {

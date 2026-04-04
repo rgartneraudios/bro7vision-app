@@ -5,6 +5,8 @@ import { armarSobreMapache, armarCatalogoTuner } from '../services/portSystem';
 import { detectarSectorPS, detectarCiudadPS } from '../services/agents/ososPS';
 import { detectarIntencionAviso, extraerCodigoAviso, generarCodigoAvi, armarSobreEvelynTexto } from '../services/agents/evelynExploraPS';
 import { supabase } from '../supabaseClient';
+import { getMoonSuffix } from '../utils/moonUtils';
+import { getKnowledgeBlock } from '../data/SystemKnowledge';
 
 const INTENCION_KEYWORDS = {
   ubicacion:   ['dónde', 'donde', 'queda', 'está', 'ubicación', 'ubicacion', 'dirección', 'direccion', 'llegar', 'barrio', 'zona', 'cerca'],
@@ -136,7 +138,6 @@ const armarSobreEvelyn = async (textoUsuario, contextData) => {
   const intencion  = detectarIntencionAviso(textoUsuario);
   const codigoAvi  = extraerCodigoAviso(textoUsuario);
 
-  // Query a tabla avisos — filtra por ciudad si la tenemos
   let query = supabase
     .from('avisos')
     .select('id, type, title, content, author_alias, user_id, city, created_at')
@@ -148,10 +149,8 @@ const armarSobreEvelyn = async (textoUsuario, contextData) => {
   }
 
   const { data: avisos, error } = await query;
-
   if (error) console.error('[PS Evelyn] Error fetching avisos:', error);
 
-  // Si busca un AVI específico, buscamos también sin filtro de ciudad
   let avisosFinales = avisos || [];
   if (codigoAvi && avisosFinales.length > 0) {
     const encontrado = avisosFinales.find(av =>
@@ -178,11 +177,52 @@ const armarSobreEvelyn = async (textoUsuario, contextData) => {
   };
 };
 
+// ── Sobre Oráculo (Orumama + Jaguar) ─────────────────────────────────
+// Sin async — solo inyecta el bloque de SystemKnowledge relevante + fase lunar.
+const armarSobreOraculo = (textoUsuario, contextData) => {
+  const faseActual = getMoonSuffix(); // 'crescens' | 'plena' | 'decrescens' | 'nova'
+  const personaje  = (contextData?.oraculo_personaje || 'orumama').toLowerCase();
+
+  // Detectar intención para elegir el bloque mínimo de conocimiento
+  const t = textoUsuario.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const intencion =
+    t.includes('horoscopo') || t.includes('signo') || t.includes('astral') || t.includes('ofiuco') || t.includes('sideral')
+      ? 'horoscopo'
+    : t.includes('luna') || t.includes('fase') || t.includes('lunar')
+      ? 'luna'
+    : t.includes('hierba') || t.includes('planta') || t.includes('remedio') || t.includes('brebaje') || t.includes('natural')
+      ? 'hierbas'
+    : t.includes('reino') || t.includes('fundador') || t.includes('titulo') || t.includes('noble')
+      ? 'reinos'
+    : t.includes('juego') || t.includes('genesis') || t.includes('puntos') || t.includes('ganar')
+      ? 'juegos'
+    : t.includes('brovision') || t.includes('bro7') || t.includes('plataforma') || t.includes('que es') || t.includes('como funciona')
+      ? 'sistema'
+    : 'exploracion';
+
+  // getKnowledgeBlock devuelve solo el bloque relevante desde SystemKnowledge.js
+  const bloqueConocimiento = getKnowledgeBlock(intencion);
+
+  return {
+    port_system_context: {
+      entorno:             'ORACULO_EXPLORA',
+      personaje,
+      fase_lunar:          faseActual,
+      intencion_detectada: intencion,
+      system_knowledge:    bloqueConocimiento,
+    },
+  };
+};
+
+// ─────────────────────────────────────────────────────────────────────
 const CIUDAD_INVALIDA = ['', 'null', 'no especificada', 'no especificado', 'undefined', 'desconocida'];
 const ciudadEsValida = (ciudad) => {
   if (!ciudad) return false;
   return !CIUDAD_INVALIDA.includes(ciudad.toLowerCase().trim());
 };
+
+// Sectores que NO necesitan ubicación — handoff directo
+const SECTORES_SIN_UBICACION = ['REINOS', 'ORACULO'];
 
 const BOLAS_CIUDAD = [
   { texto: 'Madrid' },
@@ -194,7 +234,9 @@ const FRASES_HANDOFF = {
   AUDIO:            (lugar) => `¡Música en ${lugar}! Mapache te está esperando. 🎧`,
   BROSHOP_PRODUCTO: (lugar) => `${lugar}, vamos al escaparate. Nova tiene todo listo. 🛒`,
   BROSHOP_SERVICIO: (lugar) => `Buscando profesionales en ${lugar}. Te conecto ahora. 🔧`,
-  AVISOS:           (lugar) => `El tablón de ${lugar} está abierto. ¡Vamos! 📋`,
+  BROSHOP_AVISO:    (lugar) => `El tablón de ${lugar} está abierto. ¡Vamos! 📋`,
+  REINOS:           ()       => `Los reinos te esperan. Que empiece el recuento. 👑`,
+  ORACULO:          ()       => `El Oráculo está despierto. Pasa con cuidado. 🌿`,
 };
 
 // ── Hook principal ────────────────────────────────────────────────────
@@ -203,12 +245,10 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
   const [bolas,    setBolas]    = useState([]);
   const [loading,  setLoading]  = useState(false);
 
-  // ── MEMORIA INTERNA DEL PS ────────────────────────────────────────
   const [sectorMemoria, setSectorMemoria] = useState(null);
   const [ciudadMemoria,  setCiudadMemoria]  = useState(null);
   const [tipoMemoria,    setTipoMemoria]    = useState(null);
 
-  // ── Memoria Evelyn — aviso pendiente de confirmar ─────────────────
   const [avisoPendiente, setAvisoPendiente] = useState(null);
 
   const enviar = async (textoUsuario) => {
@@ -218,18 +258,21 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
     try {
       let paqueteContexto;
 
+      // ── NOVA ──────────────────────────────────────────────────────
       if (mode === 'novaExplora') {
         paqueteContexto = {
           ...contextData,
           ...armarSobreNova(textoUsuario, realItems, contextData),
         };
 
+      // ── ISABELLA ──────────────────────────────────────────────────
       } else if (mode === 'servicios') {
         paqueteContexto = {
           ...contextData,
           ...armarSobreIsabella(textoUsuario, realItems),
         };
 
+      // ── MAPACHE ───────────────────────────────────────────────────
       } else if (mode === 'mapache') {
         const catalogoLives = armarSobreMapache(realItems);
         const catalogoTuner = armarCatalogoTuner();
@@ -239,19 +282,25 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
           canales_tuner:  catalogoTuner,
         };
 
+      // ── EVELYN / LARRY ────────────────────────────────────────────
       } else if (mode === 'avisos') {
-        // ── EVELYN / LARRY ────────────────────────────────────────────
         const { sobreTexto, intencion, avisosRaw } = await armarSobreEvelyn(textoUsuario, contextData);
-
         paqueteContexto = {
           ...contextData,
-          sobre_evelyn: sobreTexto,
+          sobre_evelyn:     sobreTexto,
           intencion_avisos: intencion,
-          avisos_raw: avisosRaw,
+          avisos_raw:       avisosRaw,
         };
 
+      // ── ORÁCULO ───────────────────────────────────────────────────
+      } else if (mode === 'oraculo') {
+        paqueteContexto = {
+          ...contextData,
+          ...armarSobreOraculo(textoUsuario, contextData),
+        };
+
+      // ── OSOS ──────────────────────────────────────────────────────
       } else {
-        // ── OSOS ──────────────────────────────────────────────────────
         const infoChivada  = escanearEcosistema(textoUsuario, realItems);
         const sectorDetect = detectarSectorPS(textoUsuario);
         const ciudadDetect = detectarCiudadPS(textoUsuario);
@@ -266,7 +315,36 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
           setTipoMemoria(ciudadDetect.tipo);
         }
 
-        if (sectorFinal && ciudadFinal) {
+        // Sectores sin ubicación — handoff rápido del PS sin pasar por Groq
+        if (sectorFinal && SECTORES_SIN_UBICACION.includes(sectorFinal)) {
+          const frase = FRASES_HANDOFF[sectorFinal]?.() || 'Conectando...';
+          // Aún así pasamos por Groq para que el Oso haga la confirmación SI/NO
+          // El PS solo acelera si el sector ya fue confirmado (sectorMemoria ya estaba)
+          // Si es detección nueva, dejamos que Groq pregunte con bolas SI/NO
+          if (sectorMemoria === sectorFinal) {
+            // Segunda vez — el user ya confirmó (llegó aquí de nuevo con el mismo sector)
+            setMensaje(frase);
+            setBolas([]);
+            setSectorMemoria(null);
+            setCiudadMemoria(null);
+            setTipoMemoria(null);
+            setTimeout(() => {
+              onHandoff?.({
+                agente:    sectorFinal,
+                ciudad:    null,
+                cp:        null,
+                intencion: sectorFinal,
+                comercio_especifico: null,
+                modalidad: null,
+              });
+            }, 1500);
+            return;
+          }
+          // Primera vez — dejamos que Groq confirme con bolas SI/NO
+        }
+
+        // Handoff rápido PS para sectores CON ubicación
+        if (sectorFinal && ciudadFinal && !SECTORES_SIN_UBICACION.includes(sectorFinal)) {
           const frase = FRASES_HANDOFF[sectorFinal]?.(ciudadFinal) || `Conectando con ${ciudadFinal}...`;
           setMensaje(frase);
           setBolas([]);
@@ -299,7 +377,8 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
       const jsonStr     = rawResponse.replace(/```json/g, '').replace(/```/g, '').trim();
       const data        = JSON.parse(jsonStr);
 
-      // ── Procesar respuesta según modo ─────────────────────────────
+      // ── Procesar respuesta ─────────────────────────────────────────
+
       if (mode === 'mapache') {
         setMensaje(data.mensaje || 'Sintonizando frecuencias...');
         setBolas(Array.isArray(data.bolas_sugerencia)
@@ -316,13 +395,9 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
         }
 
       } else if (mode === 'avisos') {
-        // ── EVELYN / LARRY ────────────────────────────────────────────
         setMensaje(data.mensaje || '...');
-
-        // Bolas dinámicas — las manda Groq en data.bolas
         setBolas(Array.isArray(data.bolas) ? data.bolas : []);
 
-        // Handoff CONECTAR — el user confirmó con bola
         if (data.handoff === 'HANDOFF_AVISO_CONECTAR' && data.aviso_id) {
           const avisoTarget = paqueteContexto.avisos_raw?.find(av =>
             generarCodigoAvi(av.id) === data.aviso_id || av.id === data.aviso_id
@@ -333,7 +408,6 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
           }
         }
 
-        // Handoff PUBLICAR — el user confirmó con bola
         if (data.handoff === 'HANDOFF_AVISO_PUBLICAR' && data.titulo) {
           onAvisoPublicar?.({
             titulo:    data.titulo,
@@ -342,7 +416,6 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
           });
         }
 
-        // Handoff OSOS — volver a navegación
         if (data.handoff === 'HANDOFF_OSOS') {
           onHandoff?.({ agente: 'OSOS' });
         }
@@ -368,13 +441,46 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
           setBolas(data.bolas || []);
         }
 
+      } else if (mode === 'oraculo') {
+        // ── ORÁCULO ───────────────────────────────────────────────────
+        setMensaje(data.mensaje || '...');
+        // Sin bolas — el Oráculo no tiene sugerencias clickables
+        setBolas([]);
+
+        // Si el Oráculo quiere invocar a los Osos
+        if (data.handoff === 'HANDOFF_OSOS') {
+          onHandoff?.({ agente: 'OSOS' });
+        }
+
       } else {
-        // ── Nova / Osos ───────────────────────────────────────────────
+        // ── NOVA / OSOS ───────────────────────────────────────────────
         if (data.handoff) {
           const agente         = data.agente_destino || '';
-          const necesitaCiudad = ['BROSHOP_PRODUCTO', 'BROSHOP_SERVICIO', 'AUDIO', 'AVISOS'].includes(agente);
+          const esSinUbicacion = SECTORES_SIN_UBICACION.includes(agente);
+          const necesitaCiudad = ['BROSHOP_PRODUCTO', 'BROSHOP_SERVICIO', 'AUDIO', 'BROSHOP_AVISO'].includes(agente);
           const ciudadDestino  = data.contexto?.ciudad;
 
+          // Sectores sin ubicación — handoff directo
+          if (esSinUbicacion) {
+            setMensaje(data.mensaje_despedida || 'Iniciando transferencia...');
+            setBolas([]);
+            setSectorMemoria(null);
+            setCiudadMemoria(null);
+            setTipoMemoria(null);
+            setTimeout(() => {
+              onHandoff?.({
+                agente:    agente,
+                ciudad:    null,
+                cp:        null,
+                intencion: agente,
+                comercio_especifico: null,
+                modalidad: null,
+              });
+            }, 1500);
+            return;
+          }
+
+          // Sectores con ubicación — validar ciudad
           if (necesitaCiudad && !ciudadEsValida(ciudadDestino)) {
             setMensaje('¿En qué país o ciudad necesitas buscar?');
             setBolas(BOLAS_CIUDAD);
@@ -401,7 +507,8 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
             const itemCompleto = realItems.find(i => i.bro_id === entidad.bro_id);
             if (itemCompleto) onEntityFocus?.(itemCompleto);
           }
-          setBolas(data.bolas || []);
+          // Bolas vienen del prompt — SI/NO o vacías según contexto
+          setBolas(Array.isArray(data.bolas) ? data.bolas : []);
         }
       }
 

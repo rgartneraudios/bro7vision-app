@@ -9,7 +9,7 @@ const AGENT_COLORS = {
     borderFocus: 'focus:border-violet-300',
     placeholder: 'placeholder-violet-700/70',
     counter:     'text-violet-700/60',
-    pulse:       'text-violet-400',
+    pulse:       'text-violet-300',
     btn:         'bg-violet-500/30 hover:bg-violet-400/50 border-violet-400/60 hover:border-violet-300 text-violet-200',
   },
   gold: {

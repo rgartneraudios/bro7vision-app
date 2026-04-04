@@ -4,6 +4,7 @@ import { buildNovaExploraPrompt }     from './agents/novaExploraPS';
 import { buildMapachePrompt }         from './agents/mapachePS';
 import { buildIsabellaExploraPrompt } from './agents/isabellaExploraPS';
 import { buildEvelynExploraPrompt }   from './agents/evelynExploraPS';
+import { buildOraculoPrompt }         from './agents/oraculoPS';
 
 const rawKey = import.meta.env.VITE_GROQ_API_KEY || "";
 const API_KEY = rawKey.replace(/['"]+/g, '').trim();
@@ -18,7 +19,6 @@ EMPIEZA SIEMPRE con '{'.
 
 export const askGroq = async (prompt, mode = 'osos', contextData = null) => {
   try {
-    // ── Enrutador de agentes ─────────────────────────────────────────────
     let systemInstruction = "";
 
     switch (mode) {
@@ -40,11 +40,13 @@ export const askGroq = async (prompt, mode = 'osos', contextData = null) => {
           sobre:     contextData?.sobre_evelyn     || '',
         });
         break;
+      case 'oraculo':
+        systemInstruction = buildOraculoPrompt(contextData);
+        break;
       default:
         systemInstruction = "Eres una IA de BRO7VISION. Responde de forma concisa en JSON.";
     }
 
-    // ── Llamada a la API ─────────────────────────────────────────────────
     const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
@@ -54,7 +56,7 @@ export const askGroq = async (prompt, mode = 'osos', contextData = null) => {
           'Authorization': `Bearer ${API_KEY}`,
         },
         body: JSON.stringify({
-          model: "llama-3.1-8b-instant",
+          model:           "llama-3.1-8b-instant",
           messages: [
             {
               role:    "system",

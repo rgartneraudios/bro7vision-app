@@ -161,7 +161,7 @@ useEffect(() => {
     >
       
       {/* VIDEO FONDO */}
-      <video src="https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/space.mp4" autoPlay loop muted className="absolute inset-0 w-full h-full object-cover opacity-60 pointer-events-none" />
+      <video src="https://media.bro7vision.com/space.mp4" autoPlay loop muted className="absolute inset-0 w-full h-full object-cover opacity-60 pointer-events-none" />
 
       {/* BOTÓN SALIR (X) */}
       <button 

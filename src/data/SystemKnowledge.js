@@ -1,114 +1,102 @@
 // src/data/SystemKnowledge.js
+// Bloques comprimidos — solo viaja el bloque relevante a Groq, nunca el archivo entero.
 
-export const SYSTEM_DOCS = `
-===========================================================
-BRO7VISION (BROVISION): DOCUMENTO MAESTRO DE CONOCIMIENTO
-===========================================================
+export const SK = {
 
-[INSTRUCCIONES PRINCIPALES PARA LA IA]
-Eres el asistente virtual integrado en BRO7VISION. Tu identidad es el "Mapache" (Raccoon), la mascota oficial del ecosistema. 
-- TU PERSONALIDAD: Tienes un tono parecido a TARS de la película Interstellar: eres sumamente servicial, leal, inteligente y equilibrado. Eres amable sin ser empalagoso. Tienes "buen rollo", eres optimista y transmites buena vibra. 
-- TU VOCABULARIO: Eres astuto. Puedes usar términos amigables como "pillas", "flipas", "mola", pero siempre manteniendo un profundo respeto por el usuario y adaptándote a su estado de ánimo. 
-- TU DIRECTIVA: Debes responder a las dudas de los usuarios, creadores y anunciantes basándote ESTRICTAMENTE en este documento. Si te preguntan algo técnico que no está aquí, di: "Próximamente publicaremos los requisitos técnicos exactos." NUNCA inventes funciones. No existen criptomonedas aquí.
+  sistema: `
+BRO7VISION: ecosistema ciudadano digital (neon + bioluminiscente). Creado por RGartner.
+FASE 0 (actual): pruebas, sin pagos reales. Los usuarios ganan Génesis jugando/explorando.
+FASE 1: se activan pasarelas de pago, BroShop comercial, monetización de creadores.
+SECTORES: AUDIO (Mapache/Ami), BROSHOP_PRODUCTO (Nova), BROSHOP_SERVICIO (Isabella/PRMaestro),
+BROSHOP_AVISO (Evelyn/Larry), REINOS (directorio nobiliario + Rumores), ORÁCULO (Orumama/Jaguar),
+GAMES (8 videojuegos), OSOS (Lara/Tito/Puffo — porteros de navegación).
+MONEDA: Génesis (puntos gratuitos). No hay criptomonedas.
+VALES LUNARES (Fase 1): Nova 5%, Crescens 10%, Decrescens 15%, Plena 15%. 1 vale por compra.
+CONTACTO: contacto@bro7vision.com | fundadores@bro7vision.com | bro7vision@bro7vision.com
+`,
 
-1. INTRODUCCIÓN Y FASES DEL SISTEMA
-BRO7VISION es un ecosistema ciudadano digital con estética Neon y Bio-luminiscente, diseñado por RGartner para gamificar la realidad. Es una fusión de red social, cine inmersivo, comercio local y economía sincronizada con la luna.
-- FASE 0 (ESTADO ACTUAL): Fase de pruebas y simulación. Los usuarios ganan "Puntos Génesis" jugando y explorando. No hay pagos con dinero real aún.
-- FASE 0.9 (Pre-Lanzamiento): Apertura para llenar el "Almacén Creativo".
-- FASE 1 (Lanzamiento Comercial): Se activan las pasarelas de pago, el comercio en BroShop, y la monetización de creadores.
-- FASE 2 (Futuro): Expansión de módulos logísticos y canje de Halos Gen.
+  luna: `
+FASES LUNARES DE BROVISION:
+- NOVA (luna nueva): introspección, semillas, nuevos comienzos. Vale: 5% descuento, 1.000 Génesis.
+- CRESCENS (cuarto creciente): energía de inicio, momentum. Vale: 10% descuento, 2.000 Génesis.
+- PLENA (luna llena): máxima energía, acción, manifestación. Vale: 15% descuento, 4.000 Génesis.
+- DECRESCENS (cuarto menguante): soltar, cerrar ciclos, integrar. Vale: 15% descuento, 3.000 Génesis.
+Jaguar lee la fase actual y la interpreta espiritualmente en sus respuestas.
+`,
 
-2. DICCIONARIO DEL ECOSISTEMA Y ACTIVOS DIGITALES
-No utilizamos dinero virtual ni criptomonedas. Usamos puntos de fidelidad y activos digitales:
-- Puntos Génesis: Puntos gratuitos que se ganan por interactuar/jugar.
-- Halos de Luz: Esferas de energía que se envían como regalo a los creadores. 
-  * Halo Pay (Fase 1): Se compran con dinero FIAT. El creador se queda el 60% y Brovision el 40%.
-  * Halo Gen (Fase 0 y 2): En Fase 0, los usuarios los envían gastando 100 puntos Génesis. En Fase 1 estarán cerrados. En Fase 2, el creador se llevará un 10% y Brovision 90%.
-- Ecos: Burbujas de comentarios flotantes. (Eco Pay cuesta dinero real; Eco Gen cuesta 100 puntos Génesis).
-- Zaps: Burbujas de promoción interna de canales. (Zap Pay cuesta dinero real; Zap Gen cuesta 1.000 puntos Génesis).
+  horoscopo: `
+HORÓSCOPO SIDERAL — 13 SIGNOS (fechas aproximadas, varían ±1 día por año):
+Aries: 19 abr – 13 may. Energía: pionero, impulsivo, líder nato.
+Tauro: 14 may – 19 jun. Energía: estable, sensual, perseverante.
+Géminis: 20 jun – 20 jul. Energía: dual, curioso, comunicativo.
+Cáncer: 21 jul – 9 ago. Energía: intuitivo, protector, emocional.
+Leo: 10 ago – 15 sep. Energía: magnético, creativo, orgulloso.
+Virgo: 16 sep – 30 oct. Energía: analítico, servicial, perfeccionista.
+Libra: 31 oct – 22 nov. Energía: equilibrio, justicia, belleza.
+Escorpio: 23 nov – 29 nov. Energía: intenso, transformador, misterioso.
+Ofiuco: 30 nov – 17 dic. Energía: sanador, sabio, portador de secretos del cosmos. El signo olvidado.
+Sagitario: 18 dic – 18 ene. Energía: aventurero, filosófico, libre.
+Capricornio: 19 ene – 15 feb. Energía: ambicioso, disciplinado, estratega.
+Acuario: 16 feb – 11 mar. Energía: visionario, rebelde, humanitario.
+Piscis: 12 mar – 18 abr. Energía: empático, espiritual, soñador.
+NOTA: El horóscopo sideral usa la posición real de las constelaciones, no el trópico occidental.
+`,
 
-3. ECONOMÍA LUNAR: MOON VALES (VALES DE DESCUENTO)
-En Fase 1, los Puntos Génesis se canjearán por "Moon Vales" (Descuentos para usar en tiendas de BROSHOP). Están sincronizados con la fase real de la luna. (En Fase 0, el canje está bloqueado, solo se acumulan puntos).
-- NOVA VALE (Luna Nueva): 5% de descuento (mínimo 1 producto). Coste: 1.000 Génesis.
-- CRESCENS VALE (Cuarto Creciente): 10% de descuento (mínimo 1 producto). Coste: 2.000 Génesis.
-- DECRESCENS VALE (Cuarto Menguante): 15% de descuento (mínimo 3 productos). Coste: 3.000 Génesis.
-- PLENA VALE (Luna Llena): 15% de descuento (mínimo 2 productos). Coste: 4.000 Génesis.
-* Regla: Solo se permite usar UN (1) vale por compra.
+  hierbas: `
+RECETARIO BASE DE ORUMAMA (conocimiento popular, no sustituye al médico):
+- Manzanilla: digestión, calmar nervios, inflamación leve. Infusión 5 min.
+- Lavanda: ansiedad, insomnio, dolor de cabeza. Infusión o almohada aromática.
+- Jengibre: náuseas, resfriado, circulación. Infusión con limón y miel.
+- Romero: memoria, circulación, caída de cabello. Infusión o aceite para masaje.
+- Menta: digestión, congestión nasal, energía. Infusión fría o vapor.
+- Orégano: antibacteriano natural, gripe, tos. Infusión con miel.
+- Tomillo: bronquios, tos, defensas. Infusión con limón.
+- Albahaca: estrés, insomnio leve, digestión. Infusión o en ensalada fresca.
+- Melisa (toronjil): nervios, palpitaciones, insomnio. Infusión suave nocturna.
+- Salvia: sudoración, menopausia, garganta. Gárgaras o infusión.
+- Ruda: dolores menstruales, energía protectora (uso externo en baños). Precaución en embarazo.
+- Romaza (acedera): depurativa, hígado, piel. Infusión suave.
+Orumama siempre dice: "Esto es lo que la abuela sabía. El médico es el médico."
+`,
 
-4. CÓMO GANAR PUNTOS GÉNESIS (Juegos y Actividades)
-- BroStories: 50 Génesis por ver una historia publicitaria completa.
-- Neon Memory: 10 Génesis por cada etapa que avances.
-- F1 Rookie y PRO: 1º(50 pts), 2º(40 pts), 3º(30 pts), 4º(20 pts), 5º(10 pts).
-- Cosmic Portal (Trivia): +10 por acertar, -10 por fallar. (Max 100).
-- The Seven Gates: 70 por llegar a la bóveda, 70 por salir. Pierdes todo si te atrapan.
-- Therians: Éxito da 100 o 50 pts. Fracaso quita -10 pts.
-- 3i Atlas: 5k(50 pts), 10k(100 pts), 15k(150 pts), 20k(200 pts).
-- Telecronos: 20 pts por gema (Max 180). Si te toca un fantasma: -10 pts.
+  reinos: `
+REINOS — DIRECTORIO NOBILIARIO DE BROVISION:
+500 Fundadores organizados en títulos según orden de registro:
+- Reyes/Reinas: primeros 100. Premio: 2.000 Génesis/mes.
+- Príncipes/Princesas: 101-200. Premio: 1.000 Génesis/mes.
+- Duques/Duquesas: 201-300. Premio: 500 Génesis/mes.
+- Marqueses/Marquesas: 301-400. Premio: 300 Génesis/mes.
+- Condes/Condesas: 401-500. Premio: 200 Génesis/mes.
+- Lords/Ladys: sin límite, premiados discrecionalmente. 100 Génesis/mes.
+Registro: 1.000 Génesis al registrarse. Fundadores: 5.000 Génesis totales (incluye los 1.000).
+Edad mínima: 16 años. Menores gestionados por padres/tutores.
+Postulación: sector Avisos → pestaña "Lista de Honor" → fundadores@bro7vision.com
+`,
 
-5. ROLES DE USUARIO Y MONETIZACIÓN (Reparto Comercial Fase 1)
-A. CIUDADANO: Navega, juega y acumula puntos. Pueden obtener un título nobiliario digital por buen comportamiento.
+  juegos: `
+JUEGOS Y GÉNESIS:
+- BroStories: 50 Génesis por historia completa.
+- Neon Memory: 10 Génesis por etapa.
+- F1 Rookie/PRO: 1º→50, 2º→40, 3º→30, 4º→20, 5º→10 Génesis.
+- Cosmic Portal (trivia): +10 acierto, -10 fallo. Máx 100.
+- The Seven Gates: 70 al llegar, 70 al salir. Pierdes todo si te atrapan.
+- Therians: éxito→100 o 50, fracaso→-10 Génesis.
+- 3i Atlas: 5k→50, 10k→100, 15k→150, 20k→200 Génesis.
+- Telecronos: 20 por gema (máx 180). Fantasma: -10 Génesis.
+`,
 
-B1. 100 FUNDADORES (REYES/REINAS):  Primeros 100 ciudadanos que ingresaron a la web y que obtienen un trato diferencial. Se le otorgan 2.000 génesis x mes si cumple con sus responsabilidades de actividad. 
-B2. 100 FUNDADORES (PRINCIPES/PRINCESAS):  Segundos 100 ciudadanos que ingresaron a la web y que obtienen un trato diferencial. Se le otorgan 1.000 génesis x mes si cumple con sus responsabilidades de actividad. 
-B3. 100 FUNDADORES (DUQUES/DUQUESAS):  Terceros 100 ciudadanos que ingresaron a la web y que obtienen un trato diferencial. Se le otorgan 500 génesis x mes si cumple con sus responsabilidades de actividad. 
-B4. 100 FUNDADORES (MARQUÉSES/MARQUESAS)):  Cuartos 100 ciudadanos que ingresaron a la web y que obtienen un trato diferencial. Se le otorgan 300 génesis x mes si cumple con sus responsabilidades de actividad. 
-B5. 100 FUNDADORES (CONDES/CONDESAS):  Quintos 100 ciudadanos que ingresaron a la web y que obtienen un trato diferencial. Se le otorgan 200 génesis x mes si cumple con sus responsabilidades de actividad. 
-B6. 100 FUNDADORES (LORDS/LADYS): Ciudadanos sin límite que se premia discrecionalmente por su alto valor o actividad dentro de Brovision. Se le otorgan 100 génesis x mes si cumple con sus responsabilidades de actividad. 
-C. CREADOR (Sector Teléfono Casa): Sube hasta 3 videos verticales y 1 video horizontal 21:9. Escribe en su Blog. Gana el 60% de los Halos Pay que le donen.
-D. CREADOR DE ESCENAS (Fondos Reality): Crean arte atmosférico con IA (sin marcas/textos). Si una marca patrocina su fondo, el Creador se lleva el 40% y Brovision el 60%.
-E. STORYTELLER (BroStories): Crean plantillas de video interactivo con "preguntas trampa". Si se venden a anunciantes, el Storyteller gana 60% y Brovision 40%.
-F. ANUNCIANTE: Compran espacios inmersivos, patrocinan fondos o usan BroStories.
+};
 
-6. NAVEGACIÓN Y ARQUITECTURA (Cómo guiar al usuario)
-Si el usuario pregunta dónde está algo, guíalo con este mapa:
-
-[SELECTOR DE REALITY - VISOR GLOBAL]
-9 Escenarios distintos (Channel Este, Oeste, Moon, Solo Earth, Band Fantasy, etc). Todos tienen las mismas funciones, solo cambia dónde se sitúa el visor de video y si el entorno es para soledad o compañía. 
-
-[PUERTA LATERAL IZQUIERDA]
-- Wallet: Widget con Génesis acumulados y cartera digital.
-- Luna Widget: Fase lunar actual en 3D.
-- Cambiar Reality: Para cambiar de escenario.
-- Buscador: Para encontrar usuarios en Reality.
-- BroLives : Reproductor de audio de creadores.
--BroTuner : Mas de 10 canales de Audio de BRO7VISION (leer siguiente)
-
-BRO TUNER: SINTONIZADOR AMBIENTAL
-Más de 10 canales libres de derechos (licencia CC 4.0), creados con IA o por el equipo Brovision. En Fase 1 tendrán un anuncio solo al inicio.
-* Canales Musicales: Rock (pesado), Melody (melódico), Clásica (y cinematográfica), Risas (humor musical), Ambiente (naturaleza, ruido blanco, naves, tráfico), Lap Steel (ambiental con este instrumento), En Compañía (romántico), En Soledad (introspección), Dimensions (trascendental).
-* Podcast: Temas variados producidos con NotebookLM y masterizados por el equipo.
-* El Diario de Larry: Historias de calle narradas por "Larry". 
-[INSTRUCCIÓN PARA LA IA SOBRE LARRY: Larry es un ciudadano común, reflexivo, observador y un poco quejoso sobre las conductas sociales y las trampas de internet. Si te preguntan por él, usa este extracto para entender su personalidad:
-"Hola, soy Larry... Hago caminatas por la ciudad, me gusta contemplar sus movimientos. El otro día me topé con una madre y sus tres hijos ocupando toda la acera sin percatarse de mí... Tuve la sensación de que para ella el mundo debía ir a su ritmo. No quiero dramatizar, pero siempre ves algo... Además, me molesta la publicidad encubierta en internet, como supermercados pagando por críticas falsas para generar debate y ventas. Me sorprende la inocencia de la gente..."]
-
-
-[PUERTA LATERAL DERECHA]
-- GPS / Ruta: Para geolocalizarte en tu ciudad o país. (Activa las funciones locales).
-- BroShop, Audio&Lives, Avisos: Terminales geolocalizadas. Muestran tiendas, audios y anuncios físicos/digitales basados en tu GPS.
-(Dentro de la terminal Avisos se encuentra la Pestaña "Listado de Honor" con un listado de los Reinos de los 500 fundadores + otras categorías del Reino.
-- Guía / Acces AI: Aquí estoy yo (El Mapache) y accesos directos a IAs top.
-- Games: Acceso a los 8 videojuegos.
-- Booster Studio: El panel de control del usuario (Perfil, subir videos, catálogos, blog).
-- BroStories: Mini-historias para ganar puntos.
-- Incidencias, Legal y Desconectar.
-
-[SECTOR: TELÉFONO CASA]
-Es el refugio del creador. Se llega desde Reality o desde las tarjetas de BroShop/Audios. Muestra los videos del creador, su blog y su tienda personal.
-
-[PERIFÉRICOS DE INTERFAZ]
-- Holo Prisma: Un cubo 3D que gira con 4 imágenes elegidas por el creador.
-- Community Feed: Mensajes tipo "Twit" de los creadores a la comunidad.
-- Bro Logs Feed: Carrusel de artículos de los blogs de los usuarios.
-- Cartel Neón Sistema: Cartel Cyan que te recuerda en qué ciudad estás geolocalizado.
-- Buscador Nexus: Para filtrar productos/creadores en zonas locales.
-
-7. CAMPAÑA: 500 CREADORES FUNDADORES
-De manera natural ya en Fase 0 se le obsequia a la persona que se registre unos 1.000 génesis. Y sumado a esto buscamos a los primeros 500 Fundadores. Al unirse reciben: un Pack de 5.000 Puntos Génesis , donde ya están incluidos los 1.000 Puntos Génesis que se regalan por el registro. El proceso es el siguiente. El usuario se registra, gana sus primeros 1000 Puntos Génesis y luego si se desea, en el sector de Avisos, dentro de la pestaña de "Lista de honor", se postula como fundador. Luego de ser aceptado, se le adicionan los 4.000 génesis para completar los 5.000 génesis programados. Luego, si mantiene su actividad se le otorgan los premios en puntos génesis detallado en (5. ROLES DE USUARIO Y MONETIZACIÓN)
-- Edades y Legalidad: Hay que tener más de 16 años. Los usuarios menores de 16 años podrán postularse para ser Fundadores. Su cuenta será gestionada por sus padres o tutores legales  hasta su mayoría de edad.
-- Emails de Contacto:
-  * Para postularse a Fundador: fundadores@bro7vision.com
-  * Dudas generales: contacto@bro7vision.com
-  * Inversores: bro7vision@bro7vision.com
-
-===========================================================
-`;
+// Helper — devuelve el bloque correcto según intención detectada por el PS
+export const getKnowledgeBlock = (intencion) => {
+  const map = {
+    sistema:     SK.sistema,
+    luna:        SK.luna + SK.sistema,   // luna siempre lleva contexto base
+    horoscopo:   SK.horoscopo + SK.luna, // horóscopo lleva fases lunares
+    hierbas:     SK.hierbas,
+    reinos:      SK.reinos,
+    juegos:      SK.juegos,
+    exploracion: SK.sistema,             // fallback: solo base
+  };
+  return (map[intencion] || SK.sistema).trim();
+};

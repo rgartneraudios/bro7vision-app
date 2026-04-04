@@ -61,7 +61,7 @@ const RealityTuner = ({ onSelect }) => {
           playsInline 
           className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none opacity-60"
         >
-          <source src="https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/deep_space.mp4" type="video/mp4" />
+          <source src="https://media.bro7vision.com/deep_space.mp4" type="video/mp4" />
         </video>
               
       {/* TITULO SUPERIOR */}

@@ -275,7 +275,7 @@ const ChannelMoon = ({ videoUsers, balances, setBalances, session, realityMode, 
   }; 
 
 
-const BG_VIDEO = `https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/moon_bg_${getMoonSuffix()}.mp4`;
+const BG_VIDEO = `https://media.bro7vision.com/moon_bg_${getMoonSuffix()}.mp4`;
 
   const cleanUrl=(url)=>{
     if(!url)return'';

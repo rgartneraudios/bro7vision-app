@@ -25,7 +25,7 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
   const prevVideo = () => { setVideoIndex((prev) => (prev - 1 + videos.length) % videos.length); setAcordeonAbierto(false); };
 
   const bgKey = user.intimo_bg && user.intimo_bg !== "" ? user.intimo_bg : 'salon';
-  const backgroundVideo = `https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/intimo_${bgKey}.mp4`;
+  const backgroundVideo = `https://media.bro7vision.com/intimo_${bgKey}.mp4`;
 
   // ── NUEVO: fetch creator_media ─────────────────────────────────
   useEffect(() => {

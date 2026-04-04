@@ -457,7 +457,7 @@ const BoosterModal = ({ onClose }) => {
       const { uploadUrl } = await res.json();
       if (!uploadUrl) throw new Error("La API no devolvió el ticket de subida.");
       await fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
-      const publicUrl = `https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/${safeFileName}`;
+      const publicUrl = `https://media.bro7vision.com/${safeFileName}`;
       const slot = SLOT_MAP[fieldName];
       if (VERTICAL_SLOTS.includes(fieldName)) {
         const slot1 = formData.video_file   || null;

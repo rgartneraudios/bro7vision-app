@@ -283,7 +283,7 @@ const ChannelEste = ({ videoUsers, balances, setBalances, session, realityMode, 
   if(h >= 17 && h < 23) return '3';
   return '4';
 };
-const BG_VIDEO = `https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/este_bg_${getTimeSuffix()}.mp4`;
+const BG_VIDEO = `https://media.bro7vision.com/este_bg_${getTimeSuffix()}.mp4`;
 
   const cleanUrl=(url)=>{
     if(!url)return'';

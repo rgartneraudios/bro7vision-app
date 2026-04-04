@@ -61,7 +61,7 @@ const [showBusiness, setShowBusiness] = useState(false);
       {/* --- 1. FONDO DE VIDEO (CINE) --- */}
        <div className="absolute inset-0 z-0">
         <video 
-            src="https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/genesisgate.mp4" 
+            src="https://media.bro7vision.com/genesisgate.mp4" 
             autoPlay 
             loop 
             muted 

@@ -69,7 +69,7 @@ const BroLogViewer = ({ log, onClose, balances, setBalances, session }) => {
       
       <div className="relative w-full h-full flex flex-col animate-slideUp">
          <div className="absolute inset-0 z-0"> 
-  	        <video src="https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/loop_log.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover" />
+  	        <video src="https://media.bro7vision.com/loop_log.mp4" autoPlay loop muted playsInline className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-black/70"></div>
 	     </div>
                   
