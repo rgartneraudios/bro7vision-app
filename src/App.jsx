@@ -523,10 +523,10 @@ function App() {
           <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest text-right mb-2 font-mono">Navegación</p>
           
           {[
-            { id: 'gps',             label: 'GPS / RUTA',       icon: '📍' },
-            { id: 'broshop',         label: 'BROSHOP',          icon: '🛒🦝' },
-            { id: 'lives',           label: 'AUDIO & LIVES',    icon: '🎧' },
-            { id: 'internal_search', label: 'REINOS',           icon: '👑' }, 
+            { id: 'gps',             label: 'OSOS/ RUTA',       icon: '🐻🐻🐻' },
+            { id: 'broshop',         label: 'BROSHOP',          icon: '👩🏻🐺🐘' },
+            { id: 'lives',           label: 'AUDIO & LIVES',    icon: '🎧🦝🐺' },
+            { id: 'internal_search', label: 'REINOS',           icon: '😎👑' }, 
             { id: 'ai',              label: 'GUÍA / ORÁCULO',   icon: '🐱🐯' },
             { id: 'game',            label: 'GAMES',            icon: '🖱️' }
           ].map((item) => (

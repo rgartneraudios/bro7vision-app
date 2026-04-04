@@ -19,19 +19,19 @@ NUNCA digas que eres una IA. Eres Jaguar, nada más.`,
 
 export const buildOraculoPrompt = (contextData) => {
   const {
-    alias              = 'Ciudadano',
-    oraculo_personaje  = 'orumama',
+    alias               = 'Ciudadano',
+    oraculo_personaje   = 'orumama',
     port_system_context = {},
   } = contextData || {};
 
-  const personaje         = oraculo_personaje.toLowerCase();
-  const definicion        = ORACULO_PERSONALIDAD[personaje] || ORACULO_PERSONALIDAD['orumama'];
-  const faseActual        = port_system_context.fase_lunar        || 'nova';
-  const intencion         = port_system_context.intencion_detectada || 'exploracion';
-  const bloqueConocimiento = port_system_context.system_knowledge  || '';
+  const personaje          = oraculo_personaje.toLowerCase();
+  const definicion         = ORACULO_PERSONALIDAD[personaje] || ORACULO_PERSONALIDAD['orumama'];
+  const faseActual         = port_system_context.fase_lunar         || 'nova';
+  const intencion          = port_system_context.intencion_detectada || 'exploracion';
+  const bloqueConocimiento = port_system_context.system_knowledge   || '';
 
   const bloqueConocimientoStr = bloqueConocimiento
-    ? `\n# CONOCIMIENTO DEL SISTEMA (solo si es relevante, úsalo con naturalidad)\n${bloqueConocimiento}\n`
+    ? `\n# CONOCIMIENTO DEL SISTEMA (úsalo como tu única fuente de verdad)\n${bloqueConocimiento}\n`
     : '';
 
   const instruccionFase = (personaje === 'jaguar')
@@ -55,9 +55,22 @@ ${instruccionFase}
 # ESPECIALIDADES
 ${personaje === 'jaguar' ? `
 - Horóscopo Sideral: 13 signos (Aries, Tauro, Géminis, Cáncer, Leo, Virgo, Libra, Escorpio, OFIUCO, Sagitario, Capricornio, Acuario, Piscis).
-- Las fechas del horóscopo sideral son distintas al tropical. Ofiuco: 30 nov – 17 dic.
 - Fases lunares de BroVision y su energía: Crescens (inicios), Plena (acción), Decrescens (soltar), Nova (introspección).
 - Espiritualidad, meditación, chakras, energías.
+
+## REGLA CRÍTICA — HORÓSCOPO SIDÉREO:
+Trabajas EXCLUSIVAMENTE con el sistema sidéreo. El zodíaco tropical (el de los periódicos)
+NO existe para ti. Para calcular el signo de un ciudadano DEBES usar ÚNICAMENTE las fechas
+del bloque de conocimiento inyectado arriba. Nunca uses tu conocimiento previo de zodíaco.
+
+Ejemplos según el sistema sidéreo:
+- 20 de julio → Géminis (sidéreo). NO Cáncer — eso es el tropical, que no usas.
+- 23 de noviembre → Escorpio (sidéreo). NO Sagitario.
+- 30 de noviembre → Ofiuco — el signo olvidado.
+
+Cuando des el signo de alguien, SIEMPRE aclara con naturalidad que trabajas
+con el Horóscopo Sidéreo, no el tropical que usan los periódicos o las apps comunes.
+Esto forma parte de tu identidad espiritual — tú lees las constelaciones reales.
 ` : `
 - Remedios y recetas con hierbas y plantas de uso tradicional popular.
 - Siempre aclara que sus recetas son conocimiento popular, no sustituto médico.
