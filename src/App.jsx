@@ -38,6 +38,7 @@ import SlideRailServicios from './components/SlideRailServicios';
 import EvelynBanner from './components/EvelynBanner';
 import SlideRailAvisos from './components/SlideRailAvisos';
 import OraculoBanner from './components/OraculoBanner';
+ // import CarroGeneral from './components/CarroGeneral'; // Asegúrate de importar el archivo
 
 function App() {
   const [realityMode, setRealityMode] = useState(null); 
@@ -51,6 +52,12 @@ function App() {
   const [scope, setScope] = useState(null);
   const [realItems, setRealItems] = useState([]);
   const [selectedCard, setSelectedCard] = useState(null);
+
+  // ── NUEVO: modo de ventas para PaymentModal ──────────
+  // 'novaVentas' → TerminalShop en modo Nova
+  // 'isabellaVentas' → TerminalShop en modo Isabella (Fase 1)
+  const [ventasMode, setVentasMode] = useState(null);
+
   const [showStory, setShowStory] = useState(false);
   const [showLegal, setShowLegal] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
@@ -74,19 +81,13 @@ function App() {
   const [stripVisible, setStripVisible] = useState(false);
   const broTunerRef = useRef(null);
 
-  // Estados de sesión de ubicación
   const [sessionCP, setSessionCP]     = useState('');
   const [sessionCity, setSessionCity] = useState('');
   const [sessionRef, setSessionRef]   = useState('');
   const [vlData, setVlData]           = useState(null);
 
-  // SERVICIOS BANNER Conversacional ISABELLA
   const serviciosBannerRef = useRef(null);
-
-  // AVISOS BANNER Conversacional EVELYN
   const evelynBannerRef = useRef(null);
-
-  // ORÁCULO BANNER
   const oraculoBannerRef = useRef(null);
 
   const handleServiciosInput = async (text) => {
@@ -94,7 +95,6 @@ function App() {
     await serviciosBannerRef.current?.sendMessage(text);
   };
 
-  // NOVA BANNER Conversacional
   const novaBannerRef = useRef(null);
 
   const handleNovaInput = async (text) => {
@@ -102,13 +102,11 @@ function App() {
     await novaBannerRef.current?.sendMessage(text);
   };
 
-  // ORÁCULO input
   const handleOraculoInput = async (text) => {
     if (!text.trim()) return;
     await oraculoBannerRef.current?.sendMessage(text);
   };
 
-  // MAPACHE AUDIO & LIVES
   const [mapacheLoading, setmapacheLoading] = useState(false);
 
   const handleMapacheInput = async (text) => {
@@ -116,9 +114,22 @@ function App() {
     await mapacheBannerRef.current?.sendMessage(text);
   };
 
-  // OSOS MENSAJES NAVEGACION
   const [ososModo, setOsosModo] = useState('entrada');
   const [perfilOso, setPerfilOso] = useState(null);
+
+  // ── NUEVO: abrir tienda directamente en modo ventas ──
+  // mode = 'novaVentas' | 'isabellaVentas'
+  // Usado por handleGoToShop, onHandoff NOVA_VENTAS e ISABELLA_VENTAS
+  const abrirTienda = (comercio, mode = 'novaVentas') => {
+    setProjectingUser(null);
+    setSelectedCard(comercio);
+    setVentasMode(mode);
+  };
+
+  // handleGoToShop — mantiene compatibilidad con HoloProjector y NexusDashboard
+  const handleGoToShop = (user, mode = 'novaVentas') => {
+    abrirTienda(user, mode);
+  };
 
   const { 
     mensaje: ososMensaje, 
@@ -141,6 +152,26 @@ function App() {
     },
 
     onHandoff: ({ agente, ciudad, cp, intencion, comercio, modalidad }) => {
+
+      // ── NUEVO: Handoff directo a tienda individual ────────────────
+      // El user dice "quiero comprar en Manolo" sin pasar por Explora.
+      // Los Osos detectan NOVA_VENTAS o ISABELLA_VENTAS con bro_id_target.
+      if (agente === 'NOVA_VENTAS') {
+        const comercioTarget = realItems.find(i =>
+          i.bro_id === comercio || i.id === comercio
+        );
+        if (comercioTarget) abrirTienda(comercioTarget, 'novaVentas');
+        return;
+      }
+
+      if (agente === 'ISABELLA_VENTAS') {
+        const comercioTarget = realItems.find(i =>
+          i.bro_id === comercio || i.id === comercio
+        );
+        if (comercioTarget) abrirTienda(comercioTarget, 'isabellaVentas');
+        return;
+      }
+      // ─────────────────────────────────────────────────────────────
 
       // Sectores sin ubicación — handoff directo sin preguntar ciudad
       if (agente === 'REINOS') {
@@ -248,7 +279,6 @@ function App() {
     setProjectingUser(cleanUser);
   };
 
-  // Paneles Laterales
   const [isLeftOpen, setIsLeftOpen] = useState(false);
   const [isRightOpen, setIsRightOpen] = useState(false);
   
@@ -408,11 +438,6 @@ function App() {
 
   const handleOpenProjector = (user) => {
     setActiveUser(user);
-  };
-
-  const handleGoToShop = (user) => {
-    setProjectingUser(null);
-    setSelectedCard(user);
   };
 
   return (
@@ -612,7 +637,7 @@ function App() {
         </div>
       )}      
 
-      {/* HOLOPRISMA — BroShop o Lives, excluido en Avisos y Oráculo */}
+      {/* HOLOPRISMA */}
       {step === 2 && (intent === 'broshop' || intent === 'lives') && 
        ososHandoffContext?.intencion !== 'BROSHOP_AVISO' && (
         <div className="hidden md:flex fixed left-1/2 top-[24%] -translate-x-1/2 -translate-y-1/2 z-[40] flex-col items-center animate-fadeIn pointer-events-none">
@@ -632,7 +657,7 @@ function App() {
       {step === 2 && intent === 'broshop' && ososHandoffContext?.intencion === 'BROSHOP_AVISO'    && <SlideRailAvisos />}
       {step === 2 && intent === 'lives'   && <SlideRailAudio />}
 
-      {/* NOVA BANNER — BroShop Productos */}
+      {/* NOVA BANNER */}
       {step === 2 && intent === 'broshop' && ososHandoffContext?.intencion !== 'BROSHOP_SERVICIO' && ososHandoffContext?.intencion !== 'BROSHOP_AVISO' && ( 
         <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
           {stripVisible && (
@@ -652,7 +677,7 @@ function App() {
               sessionCity={sessionCity}
               sessionCP={sessionCP}
               realItems={realItems}
-              onOpenTerminal={handleGoToShop}
+              onOpenTerminal={(card) => abrirTienda(card, 'novaVentas')}
               onSetActiveIndex={setHoloPrismaIndex}
               onInvokeOsos={() => setOsosFooterOpen(true)}
               onEntityFocus={(user) => setActivePrismUser(user)}
@@ -668,7 +693,7 @@ function App() {
         </div>
       )}
 
-      {/* ISABELLA BANNER — BroShop Servicios */}
+      {/* ISABELLA BANNER */}
       {step === 2 && intent === 'broshop' && ososHandoffContext?.intencion === 'BROSHOP_SERVICIO' && (
         <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
           {stripVisible && (
@@ -689,7 +714,7 @@ function App() {
               sessionCity={sessionCity}
               sessionCP={sessionCP}
               realItems={realItems}
-              onOpenTerminal={handleGoToShop}
+              onOpenTerminal={(card) => abrirTienda(card, 'isabellaVentas')}
               onInvokeOsos={() => setOsosFooterOpen(true)}
               onEntityFocus={(user) => setActivePrismUser(user)}
             />
@@ -704,7 +729,7 @@ function App() {
         </div>
       )}
 
-      {/* EVELYN BANNER — BroShop Avisos */}
+      {/* EVELYN BANNER */}
       {step === 2 && intent === 'broshop' && ososHandoffContext?.intencion === 'BROSHOP_AVISO' && (
         <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
           {stripVisible && (
@@ -773,7 +798,7 @@ function App() {
         </div>
       )}
 
-      {/* MAPACHE BANNER — Audio & Lives */}
+      {/* MAPACHE BANNER */}
       {step === 2 && intent === 'lives' && (
         <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
           {stripVisible && (
@@ -813,7 +838,7 @@ function App() {
         </div>
       )}
 
-      {/* ORÁCULO BANNER — Orumama / Jaguar */}
+      {/* ORÁCULO BANNER */}
       {step === 2 && intent === 'ai' && (
         <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
           <div className="w-full max-w-2xl mb-3 pointer-events-auto">
@@ -834,6 +859,9 @@ function App() {
           </div>
         </div>
       )}
+      
+
+
 
       {/* 6. OSOS IA RECEPCION */}   
       {step === 1 && (
@@ -866,8 +894,10 @@ function App() {
           />
         </div>
       )}
+      
+      
 
-      {/* 7. MODALES Y TELEFONO CASA */}
+      {/* 7. MODALES */}
       
       {showLegal && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/95 p-4 backdrop-blur-md">
@@ -927,13 +957,28 @@ function App() {
         />
       )}
 
-      {/* TERMINAL SHOP (PAGOS) */}
+      {/* ── TERMINAL SHOP — NovaVentas / IsabellaVentas ── */}
       {selectedCard && (
-        <PaymentModal 
-          card={selectedCard} 
+        <PaymentModal
+          card={selectedCard}
           balances={balances}
           setBalances={setBalances}
-          onClose={() => setSelectedCard(null)} 
+          ventasMode={ventasMode}          // 'novaVentas' | 'isabellaVentas'
+          currentUser={perfilOso}          // para useCarrito (user_id, vales, etc.)
+          onClose={() => {
+            setSelectedCard(null);
+            setVentasMode(null);
+          }}
+          onHandoff={(handoffData) => {
+            // CarroGeneral handoffea a Evelyn/Larry si el user no tiene vales
+            if (handoffData.agente === 'BROSHOP_AVISO') {
+              setSelectedCard(null);
+              setVentasMode(null);
+              setOsosHandoffContext({ intencion: 'BROSHOP_AVISO' });
+              setIntent('broshop');
+              setStep(2);
+            }
+          }}
         />
       )}
 

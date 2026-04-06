@@ -4,6 +4,7 @@ import { askGroq } from '../services/groq';
 import { armarSobreMapache, armarCatalogoTuner } from '../services/portSystem';
 import { detectarSectorPS, detectarCiudadPS } from '../services/agents/ososPS';
 import { detectarIntencionAviso, extraerCodigoAviso, generarCodigoAvi, armarSobreEvelynTexto } from '../services/agents/evelynExploraPS';
+import { parsearRespuestaNova } from '../services/agents/novaVentasPS';
 import { supabase } from '../supabaseClient';
 import { getMoonSuffix } from '../utils/moonUtils';
 import { getKnowledgeBlock } from '../data/SystemKnowledge';
@@ -47,8 +48,6 @@ const escanearEcosistema = (textoUsuario, realItems) => {
 };
 
 // ── Perfil base del usuario — se inyecta en TODOS los sobres ─────────
-// Una sola vez por envío, cero queries extra — viene de contextData
-// que ya cargó App.jsx desde Supabase al iniciar sesión.
 const armarPerfilBase = (contextData) => ({
   usuario_nombre:  contextData?.osos_nombre    || contextData?.alias || 'Ciudadano',
   usuario_tono:    contextData?.osos_tono      || 'amigos',
@@ -63,7 +62,7 @@ const armarPerfilBase = (contextData) => ({
   avisos_id:       contextData?.avisos_id      || '',
 });
 
-// ── Sobre Nova (productos) ────────────────────────────────────────────
+// ── Sobre Nova Explora (productos) ────────────────────────────────────
 const armarSobreNova = (textoUsuario, realItems, contextData) => {
   const intencion     = detectarIntencion(textoUsuario);
   const coincidencias = escanearEcosistema(textoUsuario, realItems);
@@ -105,7 +104,7 @@ const armarSobreNova = (textoUsuario, realItems, contextData) => {
   };
 };
 
-// ── Sobre Isabella (servicios) ────────────────────────────────────────
+// ── Sobre Isabella Explora (servicios) ────────────────────────────────
 const armarSobreIsabella = (textoUsuario, realItems) => {
   const intencion     = detectarIntencion(textoUsuario, INTENCION_KEYWORDS_SERVICIOS);
   const coincidencias = escanearEcosistema(textoUsuario, realItems);
@@ -253,7 +252,16 @@ const FRASES_HANDOFF = {
 };
 
 // ── Hook principal ────────────────────────────────────────────────────
-export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAvisoConectar, onAvisoPublicar, realItems = [] }) => {
+export const useAgentChat = ({
+  mode,
+  contextData,
+  onHandoff,
+  onEntityFocus,
+  onAvisoConectar,
+  onAvisoPublicar,
+  onAccionNova,     // ← NUEVO: callback para acciones de NovaVentas → useCarrito
+  realItems = [],
+}) => {
   const [mensaje,  setMensaje]  = useState(null);
   const [bolas,    setBolas]    = useState([]);
   const [loading,  setLoading]  = useState(false);
@@ -274,7 +282,7 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
       // ── Perfil base — se arma UNA vez y viaja en todos los sobres ──
       const perfilBase = armarPerfilBase(contextData);
 
-      // ── NOVA ──────────────────────────────────────────────────────
+      // ── NOVA EXPLORA ──────────────────────────────────────────────
       if (mode === 'novaExplora') {
         paqueteContexto = {
           ...contextData,
@@ -282,7 +290,19 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
           ...armarSobreNova(textoUsuario, realItems, contextData),
         };
 
-      // ── ISABELLA ──────────────────────────────────────────────────
+      // ── NOVA VENTAS — nodo independiente ─────────────────────────
+      // Gestiona el carrito conversacionalmente dentro del comercio.
+      // Devuelve JSON { mensaje, accion } — no bolas, no handoff estándar.
+      } else if (mode === 'novaVentas') {
+        paqueteContexto = {
+          perfilBase,
+          comercio:  contextData?.comercio  || {},
+          carrito:   contextData?.carrito   || [],
+          vales:     contextData?.vales     || { nova:0, crescens:0, plena:0, decrescens:0 },
+          catalogo:  contextData?.catalogo  || [],
+        };
+
+      // ── ISABELLA EXPLORA ──────────────────────────────────────────
       } else if (mode === 'servicios') {
         paqueteContexto = {
           ...contextData,
@@ -350,7 +370,6 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
             }, 1500);
             return;
           }
-          // Primera vez — Groq confirma con bolas Sí/No
         }
 
         // Handoff rápido PS — sectores CON ubicación
@@ -374,7 +393,6 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
           return;
         }
 
-        // Inyectar SK.osos — único bloque de conocimiento que necesitan
         const skOsos = getKnowledgeBlock('osos');
 
         paqueteContexto = {
@@ -386,14 +404,42 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
           tipo_ubicacion:      tipoFinal,
           system_knowledge:    skOsos,
         };
-      }  // ← cierre del else OSOS
+      } // ← cierre del else OSOS
 
-      // ── Llamada a Groq — común a todos los modos ──────────────────
+      // ── Llamada a Groq ─────────────────────────────────────────────
       const rawResponse = await askGroq(textoUsuario, mode, paqueteContexto);
-      const jsonStr     = rawResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-      const data        = JSON.parse(jsonStr);
 
-      // ── Procesar respuesta ─────────────────────────────────────────
+      // ── NOVA VENTAS — procesamiento especial ──────────────────────
+      // Usa parsearRespuestaNova en lugar del parse genérico,
+      // y emite la acción via onAccionNova en lugar de bolas/handoff.
+      if (mode === 'novaVentas') {
+        const { mensaje, accion } = parsearRespuestaNova(rawResponse);
+
+        setMensaje(mensaje);
+        setBolas([]);
+
+        // Emitir acción al componente padre (PaymentModal → useCarrito)
+        if (accion && onAccionNova) {
+          onAccionNova(accion);
+        }
+
+        // IR_A_PAGAR y HANDOFF_FINANZAS también disparan onHandoff
+        // para que el componente pueda navegar
+        if (accion?.tipo === 'IR_A_PAGAR') {
+          onHandoff?.({ agente: 'CARRO_GENERAL' });
+        }
+        if (accion?.tipo === 'HANDOFF_FINANZAS') {
+          onHandoff?.({ agente: 'BROSHOP_AVISO' });
+        }
+
+        return; // ← NovaVentas no sigue al bloque genérico de abajo
+      }
+
+      // ── Parse genérico — resto de modos ───────────────────────────
+      const jsonStr = rawResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+      const data    = JSON.parse(jsonStr);
+
+      // ── Procesar respuesta por modo ────────────────────────────────
 
       if (mode === 'mapache') {
         setMensaje(data.mensaje || 'Sintonizando frecuencias...');
@@ -440,7 +486,7 @@ export const useAgentChat = ({ mode, contextData, onHandoff, onEntityFocus, onAv
         if (data.handoff === 'HANDOFF_OSOS') onHandoff?.({ agente: 'OSOS' });
 
       } else {
-        // ── NOVA / OSOS respuesta ─────────────────────────────────────
+        // ── NOVA EXPLORA / OSOS respuesta ──────────────────────────
         if (data.handoff) {
           const agente         = data.agente_destino || '';
           const esSinUbicacion = SECTORES_SIN_UBICACION.includes(agente);

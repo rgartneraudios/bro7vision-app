@@ -1,9 +1,27 @@
 // src/components/PaymentModal.jsx
+// ═══════════════════════════════════════════════════
+// Orquestador principal de la experiencia de compra.
+// Pantallas:
+//   'novaVentas'     → VentasBanner[nova]
+//   'isabellaVentas' → VentasBanner[isabella]
+//   'carro'          → CarroGeneral
+//
+// Flujo:
+//   novaVentas ──→ carro
+//   isabellaVentas → carro
+//   carro ──← Volver Productos  → novaVentas
+//   carro ──← Volver Servicios  → isabellaVentas
+// ═══════════════════════════════════════════════════
 
-import React, { useState } from 'react';
-import { PACKS_REGALOS, REGLAS_DESCUENTOS } from '../data/MoonMatrix';
-import TerminalShop, { TERMINAL_CSS, SECTION } from './TerminalShop';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { supabase } from '../supabaseClient';
+import NovaCierre from './NovaCierre';
+import IsabellaCierre from './IsabellaCierre';
+import CarroGeneral from './CarroGeneral';
+import { useCarrito } from '../hooks/useCarrito';
+import { useAgentChat } from '../hooks/useAgentChat';
 
+// ── Helper precio ─────────────────────────────────────
 const parsePrice = (input) => {
   if (input === null || input === undefined) return 0;
   if (typeof input === 'number') return input;
@@ -11,225 +29,221 @@ const parsePrice = (input) => {
   return isNaN(parseFloat(s)) ? 0 : parseFloat(s);
 };
 
-const MODAL_CSS = `
-  ${TERMINAL_CSS}
+// ── PaymentModal ──────────────────────────────────────
+const PaymentModal = ({
+  card,
+  balances,
+  setBalances,
+  ventasMode   = 'novaVentas',   // 'novaVentas' | 'isabellaVentas'
+  currentUser  = null,
+  onClose,
+  onHandoff,
+  onConfirmPayment,
+}) => {
+  if (!card) return null;
 
-  @keyframes modalIn { from{opacity:0;transform:scale(0.98) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
-  @keyframes fadeBack { from{opacity:0} to{opacity:1} }
+  // ── Pantalla activa ───────────────────────────────
+  // Arranca en la zona de entrada según ventasMode
+  const [pantalla, setPantalla] = useState(ventasMode); // 'novaVentas'|'isabellaVentas'|'carro'
 
-  .pm-btn    { transition:all 0.2s ease; cursor:pointer; border:none; outline:none; text-shadow:none !important; }
-  .pm-btn:hover { filter:brightness(1.15); transform:translateY(-2px); }
+  // ── Personaje activo según pantalla ──────────────
+  const personaje = pantalla === 'isabellaVentas'
+    ? (currentUser?.servicios_personaje || 'isabella')
+    : 'nova';
+
+  // ── Datos del comercio ────────────────────────────
+  const [comercioPerfil, setComercioPerfil] = useState(null);
+  const [catalogoItems,  setCatalogoItems]  = useState([]);
+  const [cargando,       setCargando]       = useState(true);
+
+  useEffect(() => {
+    const cargar = async () => {
+      if (!card?.id) return;
+      setCargando(true);
+      try {
+        const { data: perfil } = await supabase
+  	.from('comercio_perfil')
+  	.select('*')
+  	.eq('bro_id', card.id)
+  	.maybeSingle();
   
-  .pm-moon   { transition:all 0.2s ease; cursor:pointer; text-shadow:none !important; }
-  .pm-moon:hover { filter:brightness(1.15); transform:translateY(-2px); }
+        if (perfil) setComercioPerfil(perfil);
 
-  /* Mobile layout horizontal */
-  @media (max-width: 950px) {
-    .pm-body   { flex-direction: column !important; overflow-y: auto !important; }
-    .pm-center { order: 1; flex: 0 0 auto !important; width: 100% !important; min-height: 500px !important; }
-    
-    .pm-left, .pm-right { 
-      order: 2; width: 100% !important; height: auto !important; 
-      flex-direction: row !important; flex-wrap: wrap !important; 
-      border: none !important; border-top: 2px solid rgba(255,255,255,0.1) !important; 
-      padding: 20px !important; gap: 16px !important;
+        const { data: assets } = await supabase
+          .from('assets')
+          .select('id, title, price_fiat, asset_type, description, sizes, colors')
+          .eq('owner_id', card.id);
+
+        if (assets) {
+          setCatalogoItems(assets.map(a => ({
+            id:          a.id,
+            item_codigo: a.id.slice(0, 6).toUpperCase(),
+            nombre:      a.title,
+            precio_base: parsePrice(a.price_fiat),
+            tallas:      a.sizes        || '',
+            colores:     a.colors       || '',
+            desc_corta:  (a.description || '').slice(0, 80),
+          })));
+        }
+      } catch (err) {
+        console.error('[PaymentModal] Error cargando comercio:', err);
+      } finally {
+        setCargando(false);
+      }
+    };
+    cargar();
+  }, [card?.id]);
+
+  // ── useCarrito ────────────────────────────────────
+  const {
+    items,
+    vale_activo,
+    delivery,
+    precios,
+    procesarAccion,
+    vaciarCarrito,
+    buildPedidoSnapshot,
+  } = useCarrito({
+    user_id:     currentUser?.id,
+    comercio_id: card?.id,
+    iva_pct:     comercioPerfil?.iva_pct || 21,
+  });
+
+  // ── Vales del usuario ─────────────────────────────
+  const valesUsuario = useMemo(() => ({
+    nova:       balances?.vales?.nova       || 0,
+    crescens:   balances?.vales?.crescens   || 0,
+    plena:      balances?.vales?.plena      || 0,
+    decrescens: balances?.vales?.decrescens || 0,
+  }), [balances]);
+
+  // ── Contexto para useAgentChat ────────────────────
+  const agentContext = useMemo(() => ({
+    comercio:  comercioPerfil || {},
+    carrito:   items,
+    vales:     valesUsuario,
+    catalogo:  catalogoItems,
+    personaje,
+  }), [comercioPerfil, items, valesUsuario, catalogoItems, personaje]);
+
+  // ── Callback: acción de la IA → useCarrito ────────
+  const handleAccionIA = useCallback(async (accion) => {
+    await procesarAccion(accion);
+    if (accion?.tipo === 'IR_A_PAGAR')       setPantalla('carro');
+    if (accion?.tipo === 'HANDOFF_FINANZAS') onHandoff?.({ agente: 'BROSHOP_AVISO' });
+  }, [procesarAccion, onHandoff]);
+
+  // ── useAgentChat ──────────────────────────────────
+  const modeChat = pantalla === 'isabellaVentas' ? 'isabellaVentas' : 'novaVentas';
+
+  const { mensaje, bolas, loading, enviar } = useAgentChat({
+    mode:         modeChat,
+    contextData:  agentContext,
+    onHandoff: (data) => {
+      if (data.agente === 'CARRO_GENERAL')  setPantalla('carro');
+      if (data.agente === 'BROSHOP_AVISO')  onHandoff?.({ agente: 'BROSHOP_AVISO' });
+    },
+    onAccionNova: handleAccionIA,
+  });
+
+  // ── Confirmar pedido → Stripe ─────────────────────
+  const handleConfirmarPedido = useCallback(async () => {
+    if (!currentUser?.id) return;
+    const snapshot = buildPedidoSnapshot();
+
+    try {
+      const { data: pedido, error } = await supabase
+        .from('pedidos')
+        .insert(snapshot)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (vale_activo) {
+        await supabase.rpc('decrementar_vale', {
+          p_user_id: currentUser.id,
+          p_campo:   `vales_${vale_activo}`,
+        });
+        setBalances(prev => ({
+          ...prev,
+          vales: {
+            ...prev.vales,
+            [vale_activo]: Math.max((prev.vales?.[vale_activo] || 1) - 1, 0),
+          },
+        }));
+      }
+
+      await vaciarCarrito();
+      onConfirmPayment?.('stripe', snapshot.total_final, card, pedido.id);
+      onClose?.();
+    } catch (err) {
+      console.error('[PaymentModal] Error confirmando pedido:', err);
     }
-    .pm-moon-card { flex: 1 1 200px !important; min-width: 180px !important; }
-    .pm-ctrl-btn  { flex: 1 1 200px !important; min-width: 180px !important; }
-  }
-`;
+  }, [buildPedidoSnapshot, vale_activo, currentUser, vaciarCarrito, onConfirmPayment, card, onClose, setBalances]);
 
-const COINS = [
-  { key:'nova',       emoji:'🌑', color:'#A855F7', glow:'rgba(168,85,247,0.8)', label:'NOVA'     },
-  { key:'crescens',   emoji:'🌙', color:'#0EA5E9', glow:'rgba(14,165,233,0.8)', label:'CRESCENS' },
-  { key:'plena',      emoji:'🌕', color:'#FFD000', glow:'rgba(255,208,0,0.8)',  label:'PLENA'    },
-  { key:'decrescens', emoji:'🌗', color:'#F97316', glow:'rgba(249,115,22,0.8)', label:'DECRESC.' },
-];
+  // ── Render ────────────────────────────────────────
 
-const PaymentModal = ({ isOpen, onClose, card, balances, currentPhase, onConfirmPayment }) => {
-  const product = card;
-  if (!product) return null;
-
-  const [activeTab, setActiveTab] = useState('products');
-  const [dynamicTotal, setDynamicTotal] = useState(0);
-  const [deliveryMode, setDeliveryMode] = useState('pickup');
-  
-  // ESTE ES EL CAMBIO CLAVE:
-  // En lugar de selectedCoin, ahora seleccionamos el VALE (nova, plena, etc)
-  const [selectedVale, setSelectedVale] = useState(null); 
-
-  const sc = SECTION[activeTab] || SECTION.products;
-  const baseFiatTotal = parsePrice(dynamicTotal) + (deliveryMode === 'delivery' ? 2.00 : 0);
-
-  // Lógica: Aplicar descuento del vale seleccionado
-  const getDescuento = (valeKey) => {
-    if (!valeKey || !balances?.vales?.[valeKey]) return 0;
-    const regla = REGLAS_DESCUENTOS[valeKey];
-    // Aquí puedes añadir la lógica de min_items si quieres ser estricto
-    return regla.pct; 
-  };
-
-  const pct = getDescuento(selectedVale);
-  const totalFinal = baseFiatTotal * (1 - pct);
-
-  /* ── Tarjetas Lunas Horizontales (MANTENIENDO TU DISEÑO) ── */
-  const MoonCard = ({ coin }) => {
-    const isSel = selectedVale === coin.key;
-    const userBal = balances?.vales?.[coin.key] || 0; // Leemos vales desde balances.vales
-    
-     return (
-      <div className="pm-moon pm-moon-card" onClick={() => setSelectedVale(isSel ? null : coin.key)} style={{
-        flex: 1, width:'100%', padding:'16px 20px', borderRadius:16,
-        background: coin.color,
-        filter: isSel ? 'brightness(1) saturate(1.1)' : 'brightness(0.5) saturate(0.8)',
-        border: `3px solid ${isSel ? '#FFF' : 'transparent'}`,
-        display:'flex', alignItems:'center', justifyContent:'space-between', gap:10,
-        boxShadow: isSel ? `0 0 24px ${coin.glow}` : 'none',
-        color: '#000', minHeight: 80
-      }}>
-        <div style={{display:'flex', alignItems:'center', gap:12}}>
-            <span style={{fontSize:36, lineHeight:1}}>{coin.emoji}</span>
-            <div style={{display:'flex', flexDirection:'column', alignItems:'flex-start'}}>
-                <span style={{fontSize:18,fontFamily:'Rajdhani,sans-serif',fontWeight:800,textTransform:'uppercase'}}>{coin.label}</span>
-                <span style={{fontSize:14,fontFamily:'Rajdhani,sans-serif',fontWeight:600,opacity:0.8}}>VALES: {userBal}</span>
-            </div>
-        </div>
-        
-        <div style={{background:'rgba(255,255,255,0.4)', padding:'6px 12px', borderRadius:10}}>
-            <span style={{fontSize:20,fontWeight:800,fontFamily:'Chakra Petch,sans-serif'}}>
-                {pct > 0 && selectedVale === coin.key ? `-${(pct*100)}%` : 'DCTO'}
-            </span>
-        </div>
-      </div>
+  // VentasBanner (Nova o Isabella)
+if (pantalla === 'novaVentas') {
+    return (
+      <NovaCierre
+        comercio     = {comercioPerfil || { nombre_comercio: card?.alias || card?.name }}
+        mensaje      = {mensaje}
+        bolas        = {bolas || []}
+        carrito      = {items}
+        precios      = {precios}
+        vale_activo  = {vale_activo}
+        delivery     = {delivery}
+        valesUsuario = {valesUsuario}
+        loading      = {loading}
+        onSend       = {enviar}
+        onIrAPagar   = {() => setPantalla('carro')}
+        onClose      = {onClose}  // 👈 Esto hace que funcione el botón Cerrar
+      />
     );
-  };
-  
-  return (
-    <>
-      <style>{MODAL_CSS}</style>
+  }
 
-      {/* Fondo cristalino */}
-      <div style={{position:'fixed',inset:0,zIndex:3000,display:'flex',alignItems:'center',justifyContent:'center',padding:'16px',animation:'fadeBack 0.3s ease'}}>
-        <div onClick={onClose} style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.65)',backdropFilter:'blur(12px)'}}/>
+  // Ruta 2: Servicios (Isabella o PRMaestro)
+  if (pantalla === 'isabellaVentas') {
+    return (
+      <IsabellaCierre
+        personaje    = {personaje} 
+        comercio     = {comercioPerfil || { nombre_comercio: card?.alias || card?.name }}
+        mensaje      = {mensaje}
+        bolas        = {bolas || []}
+        carrito      = {items}
+        precios      = {precios}
+        vale_activo  = {vale_activo}
+        delivery     = {delivery}
+        valesUsuario = {valesUsuario} // 👈 Esto enciende los vales de Isabella
+        loading      = {loading}
+        onSend       = {enviar}
+        onIrAPagar   = {() => setPantalla('carro')}
+        onClose      = {onClose}      // 👈 Esto hace que funcione el botón Cerrar
+      />
+    );
+  }
 
-        {/* CONTENEDOR PRINCIPAL */}
-        <div style={{
-          position:'relative', width:'min(1400px, 98vw)', height:'min(850px, 94vh)',
-          display:'flex',flexDirection:'column',
-          background:'rgba(10,10,15,0.85)', backdropFilter: 'blur(20px)',
-          borderRadius:24, overflow:'hidden', border:`2px solid rgba(255,255,255,0.1)`,
-          boxShadow:`0 0 40px rgba(0,0,0,0.9), inset 0 0 50px rgba(255,255,255,0.03)`,
-          animation:'modalIn 0.3s ease',
-        }}>
+  // Ruta 3: Carro General
+  if (pantalla === 'carro') {
+    return (
+      <CarroGeneral
+        items            = {items}
+        vale_activo      = {vale_activo}
+        delivery         = {delivery}
+        precios          = {precios}
+        regalo_precio    = {comercioPerfil?.regalo_precio || 0}
+        onConfirmar      = {handleConfirmarPedido}
+        onVolverNova     = {() => setPantalla('novaVentas')}
+        onVolverIsabella = {() => setPantalla('isabellaVentas')}
+        usuario_nombre   = {currentUser?.osos_nombre || currentUser?.alias || 'ciudadano'}
+        videoUrl         = "/videos/CerrarCarrito.mp4"
+      />
+    );
+  }
 
-          {/* ── HEADER ── */}
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'20px 30px',background:'rgba(0,0,0,0.5)',borderBottom:'2px solid rgba(255,255,255,0.05)',flexShrink:0}}>
-            <div style={{display:'flex',alignItems:'center',gap:16}}>
-              <div style={{width:48,height:48,borderRadius:'50%',border:`2px solid ${sc.primary}`,overflow:'hidden',boxShadow:`0 0 16px ${sc.glow}`}}>
-                <img src={product.avatar_url||product.img} style={{width:'100%',height:'100%',objectFit:'cover'}} onError={e=>e.target.src='https://placehold.co/100/121218/FFD000?text=B7'} alt="av"/>
-              </div>
-              <div>
-                <div style={{fontSize:22,fontWeight:700,fontFamily:'Chakra Petch,sans-serif',color:'#fff',textTransform:'uppercase',letterSpacing:'0.05em'}}>{product.name}</div>
-              </div>
-            </div>
-            <button className="pm-close" onClick={onClose} style={{background:'rgba(255,255,255,0.1)',border:'none',color:'#fff',fontFamily:'Rajdhani,sans-serif',fontWeight:700,fontSize:14,padding:'10px 20px',borderRadius:10,textTransform:'uppercase'}}>✕ CERRAR</button>
-          </div>
-
-          {/* ── SECTION TABS ── */}
-          <div style={{display:'flex',gap:16,padding:'20px 30px',background:'rgba(0,0,0,0.3)',borderBottom:'2px solid rgba(255,255,255,0.05)',flexShrink:0}}>
-            {['products','services','assets'].map(key=>{
-              const s = SECTION[key];
-              const active = activeTab===key;
-              return (
-                <button key={key} className="pm-btn" onClick={()=>setActiveTab(key)} style={{
-                  flex:1,padding:'16px',borderRadius:14,
-                  background: active ? s.primary : 'rgba(255,255,255,0.05)',
-                  color: active ? '#000' : s.primary,
-                  fontFamily:'Chakra Petch,sans-serif',fontSize:18,fontWeight:700,
-                  border:`2px solid ${active ? '#fff' : 'transparent'}`,
-                  boxShadow: active ? `0 0 20px ${s.glow}` : 'none',
-                }}>{s.label}</button>
-              );
-            })}
-          </div>
-
-          {/* ── BODY ── */}
-          <div className="pm-body" style={{flex:1,display:'flex',overflow:'hidden'}}>
-
-            {/* ── LUNAS (PANEL IZQUIERDO AMPLIADO) ── */}
-            <div className="pm-left" style={{
-              flex: 1, maxWidth: 360, 
-              borderRight:'2px solid rgba(255,255,255,0.05)', background:'rgba(0,0,0,0.3)', 
-              display:'flex',flexDirection:'column', padding:'24px', gap:16, overflowY:'auto',
-            }}>
-              <div style={{fontSize:14,fontFamily:'Rajdhani',fontWeight:700,color:'#aaa',textTransform:'uppercase',letterSpacing:'0.1em'}}>MÉTODO DE PAGO</div>
-              {COINS.map(coin=><MoonCard key={coin.key} coin={coin}/>)}
-            </div>
-
-            {/* ── TERMINAL SHOP (CENTRO) ── */}
-            <div className="pm-center" style={{
-              flex: '0 0 auto', width: '100%', maxWidth: 680,
-              margin: '0 auto',
-              overflow:'hidden', display:'flex',flexDirection:'column'
-            }}>
-                <TerminalShop initialItem={product} onUpdateTotal={setDynamicTotal} activeSection={activeTab} />
-            </div>
-
-            {/* ── CONTROLES Y STRIPE (PANEL DERECHO AMPLIADO) ── */}
-            <div className="pm-right" style={{
-              flex: 1, maxWidth: 360,
-              borderLeft:'2px solid rgba(255,255,255,0.05)', background:'rgba(0,0,0,0.3)', 
-              display:'flex',flexDirection:'column', padding:'24px', gap:16, overflowY:'auto',
-            }}>
-              <div style={{fontSize:14,fontFamily:'Rajdhani',fontWeight:700,color:'#aaa',textTransform:'uppercase',letterSpacing:'0.1em'}}>TIPO DE ENTREGA</div>
-              
-              <button className="pm-btn pm-ctrl-btn" onClick={()=>setDeliveryMode('pickup')} style={{
-                flex: 1, width:'100%',padding:'16px',borderRadius:16, background: '#00E5FF',
-                filter: deliveryMode==='pickup' ? 'brightness(1)' : 'brightness(0.5)',
-                border:`3px solid ${deliveryMode==='pickup'?'#FFF':'transparent'}`,
-                color: '#000', fontFamily:'Chakra Petch,sans-serif',fontSize:18,fontWeight:700,
-                display:'flex', alignItems:'center', justifyContent:'center', gap:12,
-                boxShadow: deliveryMode==='pickup' ? '0 0 24px rgba(0,229,255,0.6)' : 'none', minHeight: 80
-              }}><span style={{fontSize:28}}>⚡</span> RECOGER TIENDA</button>
-
-              <button className="pm-btn pm-ctrl-btn" onClick={()=>setDeliveryMode('delivery')} style={{
-                flex: 1, width:'100%',padding:'16px',borderRadius:16, background: '#FF6B00',
-                filter: deliveryMode==='delivery' ? 'brightness(1)' : 'brightness(0.5)',
-                border:`3px solid ${deliveryMode==='delivery'?'#FFF':'transparent'}`,
-                color: '#000', fontFamily:'Chakra Petch,sans-serif',fontSize:18,fontWeight:700,
-                display:'flex', alignItems:'center', justifyContent:'center', gap:12,
-                boxShadow: deliveryMode==='delivery' ? '0 0 24px rgba(255,107,0,0.6)' : 'none', minHeight: 80
-              }}><span style={{fontSize:28}}>📦</span> ENVÍO (+2€)</button>
-
-              <div style={{padding:'16px 0', textAlign:'center'}}>
-                <div style={{fontSize:14,fontFamily:'Rajdhani',fontWeight:700,color:'#fff',textTransform:'uppercase'}}>TOTAL FIAT</div>
-                <div style={{fontSize:36,fontWeight:700,fontFamily:'Chakra Petch',color:'#fff'}}>{baseFiatTotal.toFixed(2)}€</div>
-              </div>
-
-              <button className="pm-btn pm-ctrl-btn" onClick={() => onConfirmPayment(selectedVale, totalFinal, product)} style={{
-  flex: 1, width:'100%',padding:'16px',borderRadius:16, background: selectedVale ? '#FF2EF7' : '#444',
-  color:'#000', border:'3px solid #FFF',
-  fontFamily:'Chakra Petch,sans-serif',fontSize:20,fontWeight:700, textTransform:'uppercase',
-  boxShadow: selectedVale ? `0 0 24px rgba(255,46,247,0.8)` : 'none', 
-  display:'flex', alignItems:'center', justifyContent:'center', gap:10, minHeight: 80
-}}>
-  {selectedVale ? `USAR VALE ${selectedVale.toUpperCase()}` : 'SIN VALE'}
-</button>
-
-              <button className="pm-btn pm-ctrl-btn" onClick={()=>onConfirmPayment('stripe', baseFiatTotal, product)} style={{
-                flex: 1, width:'100%',padding:'16px',borderRadius:16, background:'#6366F1',color:'#FFF', border:'3px solid #FFF',
-                fontFamily:'Chakra Petch,sans-serif',fontSize:20,fontWeight:700, textTransform:'uppercase',
-                boxShadow:`0 0 24px rgba(99,102,241,0.8)`, display:'flex', alignItems:'center', justifyContent:'center', gap:10, minHeight: 80
-              }}>
-                {totalFinal.toFixed(2)}€ PAGAR TOTAL
-              </button>
-            </div>
-
-          </div>
-        </div>
-      </div>
-    </>
-  );
+  return null;
 };
 
 export default PaymentModal;

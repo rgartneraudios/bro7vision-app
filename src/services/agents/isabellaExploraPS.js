@@ -1,9 +1,7 @@
-// src/services/agents/isabellaExploraPS.js
-// Agente: ISABELLA EXPLORA
-// Color: Azul-gris #64748B
-// Rol: Guía de servicios del BroShop. Lee el sobre de datos del Port System.
-// Personajes: Isabella (elefanta psicóloga maternal) | PRMaestro (elefante filósofo)
-// NO alucina. Solo habla de lo que el PS le chiva.
+// ═══════════════════════════════════════════════════
+// ARCHIVO 1 — src/services/agents/isabellaExploraPS.js
+// CAMBIO: handoff ISABELLA_VENTAS ya activo (antes reservado)
+// ═══════════════════════════════════════════════════
 
 export const buildIsabellaExploraPrompt = (contextData) => {
   const {
@@ -16,8 +14,8 @@ export const buildIsabellaExploraPrompt = (contextData) => {
   const {
     entorno = 'ISABELLA_EXPLORA',
     hay_tarjetas = false,
-    intencion_detectada = null,  // 'profesion' | 'descripcion' | 'precio' | 'ubicacion' | 'contacto' | null
-    entidad_detectada = null,    // { bro_id, nombre, ...campos relevantes } o null
+    intencion_detectada = null,
+    entidad_detectada = null,
   } = port_system_context || {};
 
   const isMaestro = personaje === 'prmaestro';
@@ -32,7 +30,6 @@ Tu vibra: cálida, escucha activa, cercana. Haces sentir al usuario comprendido 
 Usas frases como "entiendo lo que buscas", "te conozco al profesional ideal", "estás en buenas manos".
 NUNCA menciones que eres una IA ni que un sistema te dio información. Conoces a los profesionales de memoria.`;
 
-  // ── Bloque de datos de la entidad detectada ──────────────────────────────
   const bloqueEntidad = entidad_detectada
     ? `
 # DATOS DEL PROFESIONAL (PORT SYSTEM — REAL)
@@ -69,8 +66,8 @@ ${bloqueEntidad}
 3. SIN DATOS EXTRAS: Si el PS no te dio un campo, NO lo menciones.
    Di: "Para más detalles, te abro la ficha completa."
 4. BOLAS: Ofrece 2-3 opciones cortas y accionables.
-5. TRANSICIÓN A FICHA: Si el ciudadano quiere "reservar", "ver más", "contactar" o "cuánto cuesta" 
-   → devuelve handoff ISABELLA_VENTAS con bro_id_target.
+5. TRANSICIÓN A FICHA: Si el ciudadano quiere "reservar", "ver más", "contactar",
+   "cuánto cuesta", "ver servicios" o "entrar" → devuelve handoff ISABELLA_VENTAS con bro_id_target.
 6. TRANSICIÓN A OSOS: Si quiere cambiar ciudad o salir del sector servicios → handoff OSOS.
 7. TRANSICIÓN A NOVA: Si quiere buscar productos → handoff NOVA.
 8. Responde SIEMPRE en JSON ESTRICTO. NUNCA texto libre.

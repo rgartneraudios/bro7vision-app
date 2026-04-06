@@ -1,7 +1,7 @@
 // src/components/ServiciosBanner.jsx
 // Agente: SERVICIOS EXPLORA — Color azul-gris #64748B
 // Personajes: Isabella (elefanta psicóloga) | Prof Robles Maestro (elefante filósofo)
-// Consume: useAgentChat (mode='servicios') → groq.js → serviciosPS.js
+// Consume: useAgentChat (mode='servicios') → groq.js → isabellaExploraPS.js
 
 import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { useAgentChat } from '../hooks/useAgentChat';
@@ -21,7 +21,7 @@ const GREETINGS_MAESTRO = [
 ];
 
 const ServiciosBanner = forwardRef(function ServiciosBanner({
-  personaje = 'isabella',   // 'isabella' | 'prmaestro'
+  personaje = 'isabella',
   sessionCity,
   sessionCP,
   realItems = [],
@@ -52,14 +52,29 @@ const ServiciosBanner = forwardRef(function ServiciosBanner({
     },
     realItems,
     onEntityFocus,
+
+    // ── HANDOFF corregido — escucha ISABELLA_VENTAS ──────────────
     onHandoff: ({ agente, bro_id }) => {
-      if (agente === 'SERVICIOS_VENTAS' && bro_id) {
-        const comercio = realItems.find(i => i.bro_id === bro_id);
-        if (comercio) onOpenTerminal?.(comercio);
-      } else if (agente === 'OSOS') {
-        onInvokeOsos?.();
-      } else if (agente === 'MAPACHE') {
-        onInvokeMapache?.();
+
+      if (agente === 'ISABELLA_VENTAS' && bro_id) {
+        // Buscar el comercio en realItems por bro_id
+        const comercio = realItems.find(i =>
+          i.bro_id === bro_id || i.id === bro_id
+        );
+        if (comercio) {
+          // onOpenTerminal en App llama a abrirTienda(comercio, 'isabellaVentas')
+          onOpenTerminal?.(comercio, 'isabellaVentas');
+        }
+        return;
+      }
+
+      if (agente === 'OSOS')    { onInvokeOsos?.();    return; }
+      if (agente === 'MAPACHE') { onInvokeMapache?.(); return; }
+
+      // NOVA — cambiar a sector productos
+      if (agente === 'NOVA') {
+        onOpenTerminal?.(null, 'novaExplora');
+        return;
       }
     },
   });
