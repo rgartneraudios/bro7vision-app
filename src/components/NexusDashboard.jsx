@@ -50,7 +50,7 @@ const NexusDashboard = ({
 
   // DETECCIÓN DE MODOS
   const isGameMode = intent === 'game';
-  const isCardMode = (intent === 'broshop' || intent === 'product' || intent === 'service' || intent === 'lives');
+  const isCardMode = ['productos', 'servicios', 'avisos', 'lives'].includes(intent);
 
   const handleLogClick = () => { 
     onOpenLog({ title: MOCK_LOGS[currentLogIndex], category: "MERCANTIL", author: "Sistema" }); 

@@ -234,13 +234,14 @@ const ciudadEsValida = (ciudad) => {
   return !CIUDAD_INVALIDA.includes(ciudad.toLowerCase().trim());
 };
 
-const SECTORES_SIN_UBICACION = ['REINOS', 'ORACULO'];
 
 const BOLAS_CIUDAD = [
   { texto: 'Madrid' },
   { texto: 'Barcelona' },
   { texto: 'Otra ciudad' },
 ];
+
+const SECTORES_SIN_UBICACION = ['REINOS', 'ORACULO', 'GAMES'];
 
 const FRASES_HANDOFF = {
   AUDIO:            (lugar) => `¡Música en ${lugar}! Mapache te está esperando. 🎧`,
@@ -249,6 +250,7 @@ const FRASES_HANDOFF = {
   BROSHOP_AVISO:    (lugar) => `El tablón de ${lugar} está abierto. ¡Vamos! 📋`,
   REINOS:           ()       => `Los reinos te esperan. Que empiece el recuento. 👑`,
   ORACULO:          ()       => `El Oráculo está despierto. Pasa con cuidado. 🌿`,
+  GAMES:            ()       => `Abriendo sala de simuladores. ¡Suerte! 🎮`,
 };
 
 // ── Hook principal ────────────────────────────────────────────────────

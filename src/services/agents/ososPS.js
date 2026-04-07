@@ -25,8 +25,8 @@ const SECTOR_KEYWORDS = {
   BROSHOP_AVISO:    ['aviso', 'avisos', 'anuncio', 'anuncios', 'tablón', 'tablon', 'segunda mano', 'vendo', 'alquilo', 'busco piso', 'busco trabajo', 'ofrezco', 'demanda', 'oferta personal', 'larry', 'evelyn'],
   REINOS:           ['reinos', 'reino', 'rumores', 'rumor', 'rey', 'reyes', 'reina', 'reinas', 'príncipe', 'principe', 'princesa', 'duque', 'duquesa', 'marqués', 'marques', 'marquesa', 'lord', 'lords', 'lady', 'ladies'],
   ORACULO:          ['oráculo', 'oraculo', 'orumama', 'jaguar', 'horóscopo', 'horoscopo', 'sideral', 'ofiuco', 'carta astral', 'signo', 'ascendente', 'hierbas', 'hierba', 'brebaje', 'remedio natural', 'planta medicinal', 'curandera', 'espiritual', 'espiritualidad', 'luna', 'fase lunar', 'meditación', 'meditacion', 'energía', 'energia', 'chakra', 'vela', 'velas', 'ritual'],
+  GAMES:            ['jugar', 'juego', 'juegos', '3iatlas', 'telecronos', 'games', 'game', 'arcade', 'partida', 'divertirse', 'divertirme', 'carrera', 'scalextric', 'neon', 'scalextric',, 'neonmemory',, 'f1rookie',, 'f1pro',, 'cosmicportal',, 'the7gates',, 'therians',, 'telecronos',]
 };
-
 // ─────────────────────────────────────────────────────────────────────
 // ALIASES GLOBALES — se comprueban ANTES que ciudades/países
 // ─────────────────────────────────────────────────────────────────────
@@ -180,10 +180,10 @@ En cualquier otro caso → bolas vacías [].
   }
 }
 
-// Con handoff — REINOS o ORACULO (sin ubicación):
+// Con handoff — REINOS , ORACULO , GAMES (sin ubicación):
 {
   "handoff": true,
-  "agente_destino": "REINOS" | "ORACULO",
+  "agente_destino": "REINOS" | "ORACULO" | "GAMES",
   "mensaje_despedida": "frase corta con personalidad",
   "bolas": [],
   "contexto": {
