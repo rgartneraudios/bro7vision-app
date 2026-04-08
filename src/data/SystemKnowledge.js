@@ -1,6 +1,8 @@
 // src/data/SystemKnowledge.js
 // Bloques comprimidos — solo viaja el bloque relevante a Groq, nunca el archivo entero.
 
+import { getDirectorioTexto } from './system_profiles';
+
 export const SK = {
 
   sistema: `
@@ -85,26 +87,31 @@ JUEGOS Y GÉNESIS:
 - Telecronos: 20 por gema (máx 180). Fantasma: -10 Génesis.
 `,
 
-  // ── NUEVO — solo viaja cuando mode === 'osos' ──────────────────────
-  osos: `
+};
+
+// ── Bloque osos — se construye en tiempo de ejecución ─────────────────
+// El directorio viene de system_profiles para no duplicar datos.
+const buildOsosBlock = () => `
 SECTORES DE BROVISION — lo único que necesitas saber:
-1. AUDIO           → música, podcast, lives, radio, streams. NECESITA ciudad o país.
+1. AUDIO            → música, podcast, lives, radio, streams. NECESITA ciudad o país.
 2. BROSHOP_PRODUCTO → comprar productos físicos. NECESITA ciudad o país.
 3. BROSHOP_SERVICIO → contratar profesionales o servicios. NECESITA ciudad o país.
-4. BROSHOP_AVISO   → avisos, anuncios, tablón, segunda mano, busco/ofrezco. NECESITA ciudad o país.
-5. REINOS          → directorio nobiliario, títulos, rumores. SIN ubicación. Handoff directo.
-6. ORACULO         → horóscopo sideral, hierbas, espiritualidad, fases lunares. SIN ubicación. Handoff directo.
+4. BROSHOP_AVISO    → avisos, anuncios, tablón, segunda mano, busco/ofrezco. NECESITA ciudad o país.
+5. REINOS           → directorio nobiliario, títulos, rumores. SIN ubicación. Handoff directo.
+6. ORACULO          → horóscopo sideral, hierbas, espiritualidad, fases lunares. SIN ubicación. Handoff directo.
+7. GAMES            → videojuegos, Génesis, puntuaciones. SIN ubicación. Handoff directo.
 
 REGLA DE UBICACIÓN:
 - Ciudad o país concreto → válido. Handoff inmediato si también tienes sector.
 - "España" solo → ambiguo. Pregunta con bolas Sí/No: "¿Buscamos en toda España?"
 - "Toda España", "España entera", "online", "global", "todo el mundo" → válido directo.
 - Si no hay ubicación → pregunta SOLO por la ubicación. Una pregunta, nada más.
-`,
 
-};
+EQUIPO BROVISION — personajes a los que puedes derivar:
+${getDirectorioTexto()}
+`.trim();
 
-// Helper — devuelve el bloque correcto según intención detectada por el PS
+// ── Helper — devuelve el bloque correcto según intención ──────────────
 export const getKnowledgeBlock = (intencion) => {
   const map = {
     sistema:     SK.sistema,
@@ -113,7 +120,7 @@ export const getKnowledgeBlock = (intencion) => {
     hierbas:     SK.hierbas,
     reinos:      SK.reinos,
     juegos:      SK.juegos,
-    osos:        SK.osos,
+    osos:        buildOsosBlock(),
     exploracion: SK.sistema,
   };
   return (map[intencion] || SK.sistema).trim();

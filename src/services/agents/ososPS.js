@@ -1,14 +1,10 @@
 // src/services/agents/ososPS.js
 
-// ─────────────────────────────────────────────────────────────────────
-// PERSONALIDADES — 3 líneas por oso, nada más
-// ─────────────────────────────────────────────────────────────────────
-const OSOS_PERSONALIDAD = {
-  LARA:  "Eres Lara: intelectual, analítica, directa. No usas plásticos. Te gustan las tartas de queso y la cocina mediterránea.",
-  TITO:  "Eres Tito: filósofo y escritor, reflexivo y cercano. No usas plásticos. Amas el té de especialidad y los mercados locales.",
-  PUFFO: "Eres Puffo: la voz de la experiencia, sabio y carismático. No usas plásticos. Fan de los quesos especiales, las pizzas y las pastas.",
-};
+import { getPerfil } from '../../data/system_profiles';
 
+// ─────────────────────────────────────────────────────────────────────
+// SALUDOS — sin cambios
+// ─────────────────────────────────────────────────────────────────────
 const SALUDOS = {
   TITO:  { amigos: ["Tito al habla. ¿A qué zona del mundo te llevo hoy?", "Buenas. ¿Ciudad, país, o me dices directamente qué buscas?"], formal: ["Buenas tardes, soy Tito. ¿A qué ciudad o país le llevo?", "Tito a su disposición. ¿Dónde desea buscar?"] },
   LARA:  { amigos: ["Lara aquí. ¿Ciudad o país? Directo.", "Hola, soy Lara. ¿Dónde buscamos hoy?"], formal: ["Buenas, soy Lara. ¿En qué ciudad o país busca usted?", "Lara a su servicio. ¿Dónde le sitúo?"] },
@@ -16,7 +12,7 @@ const SALUDOS = {
 };
 
 // ─────────────────────────────────────────────────────────────────────
-// SECTOR KEYWORDS — el PS los detecta ANTES de llamar a Groq
+// SECTOR KEYWORDS — sin cambios
 // ─────────────────────────────────────────────────────────────────────
 const SECTOR_KEYWORDS = {
   AUDIO:            ['música', 'musica', 'escuchar', 'canción', 'cancion', 'podcast', 'streaming', 'stream', 'live', 'radio', 'artista', 'banda', 'dj', 'beat', 'playlist', 'song', 'listen'],
@@ -25,10 +21,11 @@ const SECTOR_KEYWORDS = {
   BROSHOP_AVISO:    ['aviso', 'avisos', 'anuncio', 'anuncios', 'tablón', 'tablon', 'segunda mano', 'vendo', 'alquilo', 'busco piso', 'busco trabajo', 'ofrezco', 'demanda', 'oferta personal', 'larry', 'evelyn'],
   REINOS:           ['reinos', 'reino', 'rumores', 'rumor', 'rey', 'reyes', 'reina', 'reinas', 'príncipe', 'principe', 'princesa', 'duque', 'duquesa', 'marqués', 'marques', 'marquesa', 'lord', 'lords', 'lady', 'ladies'],
   ORACULO:          ['oráculo', 'oraculo', 'orumama', 'jaguar', 'horóscopo', 'horoscopo', 'sideral', 'ofiuco', 'carta astral', 'signo', 'ascendente', 'hierbas', 'hierba', 'brebaje', 'remedio natural', 'planta medicinal', 'curandera', 'espiritual', 'espiritualidad', 'luna', 'fase lunar', 'meditación', 'meditacion', 'energía', 'energia', 'chakra', 'vela', 'velas', 'ritual'],
-  GAMES:            ['jugar', 'juego', 'juegos', '3iatlas', 'telecronos', 'games', 'game', 'arcade', 'partida', 'divertirse', 'divertirme', 'carrera', 'scalextric', 'neon', 'scalextric',, 'neonmemory',, 'f1rookie',, 'f1pro',, 'cosmicportal',, 'the7gates',, 'therians',, 'telecronos',]
+  GAMES:            ['jugar', 'juego', 'juegos', '3iatlas', 'telecronos', 'games', 'game', 'arcade', 'partida', 'divertirse', 'divertirme', 'carrera', 'scalextric', 'neon', 'neonmemory', 'f1rookie', 'f1pro', 'cosmicportal', 'the7gates', 'therians'],
 };
+
 // ─────────────────────────────────────────────────────────────────────
-// ALIASES GLOBALES — se comprueban ANTES que ciudades/países
+// ALIASES Y LISTAS DE UBICACIÓN — sin cambios
 // ─────────────────────────────────────────────────────────────────────
 const ALIASES_UBICACION = [
   { aliases: ['toda españa', 'toda espana', 'en españa', 'en espana', 'españa entera', 'espana entera', 'por españa', 'por espana', 'españa completa'], valor: 'españa', tipo: 'pais' },
@@ -66,7 +63,7 @@ const PAISES = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────
-// DETECTORES — exportados para el PS en useAgentChat
+// DETECTORES — sin cambios
 // ─────────────────────────────────────────────────────────────────────
 export const detectarCiudadPS = (texto) => {
   const t = texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -96,30 +93,35 @@ export const detectarSectorPS = (texto) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────
-// PROMPT BUILDER — liviano, sin listas, sin duplicación
+// PROMPT BUILDER — personalidad desde system_profiles
 // ─────────────────────────────────────────────────────────────────────
 export const buildOsosPrompt = (contextData) => {
   const {
     oso_id              = 'TITO',
     alias               = 'Ciudadano',
     osos_tono,
-    modo,
     port_system_informa,
     sector_detectado,
     ciudad_detectada,
     tipo_ubicacion,
-    system_knowledge    = '',   // SK.osos inyectado desde useAgentChat
+    system_knowledge    = '',
   } = contextData || {};
 
-  const tono            = osos_tono === 'formal' ? 'formal' : 'amigos';
-  const osoDefinicion   = OSOS_PERSONALIDAD[oso_id] || OSOS_PERSONALIDAD['TITO'];
-  const saludosOso      = SALUDOS[oso_id]?.[tono]   || SALUDOS['TITO']['amigos'];
+  const tono = osos_tono === 'formal' ? 'formal' : 'amigos';
+
+  // ── Perfil desde system_profiles ──────────────────────────────────
+  // oso_id llega como 'TITO'|'LARA'|'PUFFO' — lo pasamos en minúsculas
+  const perfil          = getPerfil(oso_id.toLowerCase()) || getPerfil('tito');
+  const frase_ancla     = perfil.frase_ancla;
+  const personalidad    = perfil.personalidad;
+  const gustos          = perfil.gustos_comida.join(', ');
+
+  const saludosOso      = SALUDOS[oso_id]?.[tono] || SALUDOS['TITO']['amigos'];
   const saludoAleatorio = saludosOso[Math.floor(Math.random() * saludosOso.length)];
 
-  // El PS ya detectó sector y ciudad — solo se los informamos al prompt, sin listas
   const psResumen = [
-    sector_detectado  ? `SECTOR YA DETECTADO: ${sector_detectado}. No preguntes el sector.`          : '',
-    ciudad_detectada  ? `UBICACIÓN YA DETECTADA: "${ciudad_detectada}" (${tipo_ubicacion === 'pais' ? 'país/región' : 'ciudad'}). No la preguntes.` : '',
+    sector_detectado ? `SECTOR YA DETECTADO: ${sector_detectado}. No preguntes el sector.`                                                             : '',
+    ciudad_detectada ? `UBICACIÓN YA DETECTADA: "${ciudad_detectada}" (${tipo_ubicacion === 'pais' ? 'país/región' : 'ciudad'}). No la preguntes.` : '',
   ].filter(Boolean).join('\n');
 
   const datosInternos = port_system_informa?.length > 0
@@ -127,11 +129,15 @@ export const buildOsosPrompt = (contextData) => {
     : '';
 
   return `
+# IDENTIDAD
+${frase_ancla}
+Carácter: ${personalidad}
+Lo que te gusta comer: ${gustos}
+
 # ROLE
-${osoDefinicion}
 Eres el portero de BRO7VISION. Tu único trabajo: saber A QUÉ SECTOR va el ciudadano y DÓNDE quiere buscar. Nada más.
 
-# CONOCIMIENTO DE SECTORES
+# CONOCIMIENTO DE SECTORES Y EQUIPO
 ${system_knowledge}
 
 # ESTADO ACTUAL (resuelto por el sistema antes de llegar aquí)
@@ -141,7 +147,7 @@ ${datosInternos}
 # REGLAS — solo 5
 1. MÁXIMO 1 pregunta por turno. Una frase de personalidad + la pregunta. Nunca más de 2 frases.
 2. No preguntes detalles del sector (qué artista, qué producto, qué servicio). Eso lo hacen los otros agentes.
-3. REINOS y ORACULO no necesitan ubicación. Si el ciudadano los pide → bolas Sí/No para confirmar → handoff.
+3. REINOS, ORACULO y GAMES no necesitan ubicación. Si el ciudadano los pide → bolas Sí/No para confirmar → handoff.
 4. Si tienes sector Y ubicación válida → handoff inmediato. Sin preguntar nada más.
 5. INMERSIÓN ABSOLUTA. Nunca menciones "sistema", "base de datos" ni "código".
 
@@ -151,9 +157,10 @@ Las bolas son SIEMPRE [{texto:"Sí"},{texto:"No"}] o [] (vacías). NUNCA otro co
 - "España" sola sin contexto → "¿Buscamos en toda España?" + bolas Sí/No
 - REINOS detectado → "¿Quieres ir a Reinos?" + bolas Sí/No
 - ORACULO detectado → "¿Consulto al Oráculo?" + bolas Sí/No
+- GAMES detectado  → "¿Abrimos la sala de juegos?" + bolas Sí/No
 En cualquier otro caso → bolas vacías [].
 
-# SALUDO INICIAL (solo modo 'entrada', primer turno)
+# SALUDO INICIAL (solo primer turno)
 "${saludoAleatorio}"
 
 # FORMATO JSON OBLIGATORIO
@@ -180,7 +187,7 @@ En cualquier otro caso → bolas vacías [].
   }
 }
 
-// Con handoff — REINOS , ORACULO , GAMES (sin ubicación):
+// Con handoff — REINOS, ORACULO, GAMES (sin ubicación):
 {
   "handoff": true,
   "agente_destino": "REINOS" | "ORACULO" | "GAMES",
