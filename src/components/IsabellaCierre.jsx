@@ -16,13 +16,6 @@ const CSS = `
   .vb-close-btn { transition: all 0.15s; cursor:pointer; }
   .vb-close-btn:hover { background:rgba(255,255,255,0.15) !important; transform:scale(1.05); }
 
-  .vb-iframe-wrap {
-    border-radius: 14px; overflow: hidden; border: 2px solid var(--accent-soft);
-    box-shadow: 0 0 30px var(--accent-glow); background: #000;
-    transition: box-shadow 0.3s; width: 100%; height: 100%;
-  }
-  .vb-iframe-wrap:hover { box-shadow: 0 0 50px var(--accent-glow); }
-
   .vb-cursor { display:inline-block; width:3px; height:0.85em; background:var(--accent); margin-left:3px; vertical-align:middle; box-shadow: 0 0 8px var(--accent); animation: vb-typing 0.8s step-end infinite; }
   .vb-loading-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); animation: vb-dot 1.2s ease-in-out infinite; }
 
@@ -82,20 +75,6 @@ const DELIVERY = {
   regalo:   { emoji:'🎁', label:'Regalo',   color:'#FF2EF7' },
 };
 
-const formatEmbedUrl = (rawUrl) => {
-  if (!rawUrl) return '';
-  const url = rawUrl.trim();
-  if (url.includes('docs.google.com/presentation/d/')) {
-    const m = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
-    if (m?.[1]) return `https://docs.google.com/presentation/d/${m[1]}/embed?rm=minimal`;
-  }
-  if (url.includes('drive.google.com/file/d/')) {
-    const m = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
-    if (m?.[1]) return `https://drive.google.com/file/d/${m[1]}/preview`;
-  }
-  return url;
-};
-
 const ItemChip = ({ item, color, idx }) => (
   <div className="vb-item-chip" style={{
     animationDelay:`${idx*0.04}s`, display:'flex', alignItems:'center', gap:5,
@@ -112,19 +91,51 @@ const IsabellaCierre = ({ personaje = 'isabella', comercio = {}, mensaje = null,
   const inputRef = useRef(null);
   const cfg = CFG[personaje] || CFG.isabella;
 
+  // Estados del Reproductor 21:9
+  const videoRef = useRef(null);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [progress, setProgress] = useState(0);
+
   const total_items = carrito.reduce((s, i) => s + i.qty, 0);
   const delivery_extra = delivery === 'delivery' ? 2.00 : delivery === 'regalo' ? (comercio?.regalo_precio || 0) : 0;
   const total_con_delivery = parseFloat(((precios.total_final || 0) + delivery_extra).toFixed(2));
 
-  // Subtotal neto de Servicios
   const subtotal_zona = carrito.filter(i => i.tipo === cfg.tipoItem).reduce((s, i) => s + (i.item_precio_base || 0) * i.qty, 0);
   const items_zona = carrito.filter(i => i.tipo === cfg.tipoItem).reduce((s,i) => s + i.qty, 0);
-  const hasItems = items_zona > 0; // Interruptor de encendido
+  const hasItems = items_zona > 0;
 
   useEffect(() => { setTimeout(() => inputRef.current?.focus(), 350); }, []);
 
   const handleSend = () => { if (!input.trim() || loading) return; onSend?.(input.trim()); setInput(''); inputRef.current?.focus(); };
   const handleKey = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } };
+
+  // Funciones del Reproductor
+  const getCleanUrl = (url) => {
+    if (!url) return "";
+    let clean = url.trim();
+    if (clean.includes('dropbox.com')) {
+      clean = clean.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '').replace('&dl=0', '');
+      return clean.includes('?') ? `${clean}&raw=1` : `${clean}?raw=1`;
+    }
+    return clean;
+  };
+
+  const handleSeek = (e) => {
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pos = (e.clientX - rect.left) / rect.width;
+    if (videoRef.current) videoRef.current.currentTime = pos * videoRef.current.duration;
+  };
+
+  const togglePlayPause = (e) => {
+    e.stopPropagation();
+    if (!videoRef.current) return;
+    if (videoRef.current.paused) { videoRef.current.play(); setIsPaused(false); }
+    else { videoRef.current.pause(); setIsPaused(true); }
+  };
+
+  const video_catalogo = comercio?.video_file_219 || comercio?.video_file;
 
   return (
     <>
@@ -150,20 +161,63 @@ const IsabellaCierre = ({ personaje = 'isabella', comercio = {}, mensaje = null,
           <button className="vb-close-btn" onClick={onClose} style={{ background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.1)', color:'rgba(255,255,255,0.5)', fontFamily:'Rajdhani,sans-serif', fontWeight:700, fontSize:12, padding:'6px 14px', borderRadius:7, textTransform:'uppercase' }}>✕ CERRAR</button>
         </div>
 
-        {/* CUERPO: IFRAME CALENDARIO + VALES */}
+        {/* CUERPO CENTRAL: VISOR 21:9 + VALES */}
         <div style={{ position:'relative', zIndex:2, flex:1, minHeight:0, display:'flex', alignItems:'stretch', padding:'10px 16px 6px', gap:20 }}>
-          <div style={{ flex:1, minWidth:0, display:'flex', alignItems:'center', justifyContent:'center', paddingLeft: '80px' }}>
-            <div style={{width:'100%', maxWidth:'960px', maxHeight:'60vh', aspectRatio:'16/9'}}>
-              {comercio?.calendario_url ? (
-                <div className="vb-iframe-wrap"><iframe src={formatEmbedUrl(comercio.calendario_url)} width="100%" height="100%" style={{border:'none', display:'block'}} sandbox="allow-scripts allow-same-origin allow-popups" title="Calendario"/></div>
-              ) : (
-                <div style={{ width:'100%', height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:12, background:'rgba(0,0,0,0.42)', borderRadius:12, border:`2px dashed ${cfg.accentSoft}` }}>
-                  <span style={{fontSize:36}}>📅</span>
-                  <span style={{ fontFamily:'Chakra Petch,sans-serif', fontSize:13, color:cfg.accent, fontWeight:600, textTransform:'uppercase', letterSpacing:'0.1em' }}>Calendario de reservas</span>
-                  <span style={{ fontFamily:'Rajdhani,sans-serif', fontSize:11, color:'rgba(255,255,255,0.3)' }}>{cfg.nombre} gestiona la cita por chat</span>
+          <div style={{ flex:1, minWidth:0, display:'flex', alignItems:'center', justifyContent:'center', paddingLeft: '180px' }}>
+            
+            {video_catalogo ? (
+              <div style={{
+                position: 'relative', width: '100%', maxWidth: '960px', aspectRatio: '21/9',
+                borderRadius: '1.25rem', background: '#000', overflow: 'hidden',
+                border: '2px solid var(--accent)',
+                boxShadow: '0 0 18px var(--accent-glow), 0 0 36px var(--accent-soft), inset 0 0 16px var(--accent-soft)'
+              }}>
+                <video
+                  ref={videoRef} src={getCleanUrl(video_catalogo)}
+                  autoPlay loop playsInline muted={isMuted}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onTimeUpdate={() => { if (videoRef.current?.duration) setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100); }}
+                />
+
+                {/* MUTE */}
+                <button onClick={() => setIsMuted(!isMuted)} style={{
+                  position: 'absolute', top: '12px', right: '12px', zIndex: 50,
+                  width: '28px', height: '28px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
+                  borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', color: '#fff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', cursor: 'pointer'
+                }}>
+                  {isMuted ? '🔇' : '🔊'}
+                </button>
+
+                {/* CONTROLES */}
+                <div style={{ position: 'absolute', bottom: '16px', left: 0, width: '100%', zIndex: 50, padding: '0 16px' }}>
+                  <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '99px', cursor: 'pointer', marginBottom: '8px' }} onClick={handleSeek}>
+                    <div style={{ height: '100%', background: 'var(--accent)', borderRadius: '99px', boxShadow: '0 0 8px var(--accent-glow)', transition: 'width 0.1s linear', width: `${progress}%` }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <button onClick={togglePlayPause} style={{
+                      background: 'rgba(0,0,0,0.5)', border: '1px solid var(--accent-soft)', backdropFilter: 'blur(8px)',
+                      width: '32px', height: '32px', borderRadius: '50%', color: '#fff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px'
+                    }}>
+                      {isPaused ? '▶' : '⏸'}
+                    </button>
+                  </div>
                 </div>
-              )}
-            </div>
+
+                {/* ESQUINAS */}
+                <div style={{ position: 'absolute', top: 0, left: 0, width: '24px', height: '24px', borderTop: '2px solid var(--accent)', borderLeft: '2px solid var(--accent)', borderTopLeftRadius: '1.25rem', zIndex: 50, pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', top: 0, right: 0, width: '24px', height: '24px', borderTop: '2px solid var(--accent)', borderRight: '2px solid var(--accent)', borderTopRightRadius: '1.25rem', zIndex: 50, pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', bottom: 0, left: 0, width: '24px', height: '24px', borderBottom: '2px solid var(--accent)', borderLeft: '2px solid var(--accent)', borderBottomLeftRadius: '1.25rem', zIndex: 50, pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', bottom: 0, right: 0, width: '24px', height: '24px', borderBottom: '2px solid var(--accent)', borderRight: '2px solid var(--accent)', borderBottomRightRadius: '1.25rem', zIndex: 50, pointerEvents: 'none' }} />
+              </div>
+            ) : (
+              <div style={{ width:'100%', maxWidth:'960px', aspectRatio:'21/9', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:12, background:'rgba(0,0,0,0.42)', borderRadius:'1.25rem', border:`2px dashed ${cfg.accentSoft}` }}>
+                <span style={{fontSize:36}}>🎥</span>
+                <span style={{ fontFamily:'Chakra Petch,sans-serif', fontSize:13, color:cfg.accent, fontWeight:600, textTransform:'uppercase', letterSpacing:'0.1em' }}>Sin video de catálogo</span>
+                <span style={{ fontFamily:'Rajdhani,sans-serif', fontSize:11, color:'rgba(255,255,255,0.3)' }}>El profesional puede subir su video 21:9 en el Booster</span>
+              </div>
+            )}
           </div>
 
           <div style={{ flexShrink:0, width: 110, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:12, paddingRight: 10, marginTop: '160px' }}>
@@ -189,8 +243,12 @@ const IsabellaCierre = ({ personaje = 'isabella', comercio = {}, mensaje = null,
           </div>
         </div>
 
+        {/* ========================================================= */}
+        {/* ZONA INFERIOR: ALINEADA MAGNÉTICAMENTE AL VISOR CENTRAL   */}
+        {/* ========================================================= */}
+
         {/* BANNER MENSAJE */}
-        <div style={{ position:'relative', zIndex:2, flexShrink:0, padding:'0 24px 10px', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ position:'relative', zIndex:2, flexShrink:0, paddingTop:0, paddingRight:'140px', paddingBottom:'10px', paddingLeft:'160px', display: 'flex', justifyContent: 'center' }}>
           <div className={`vb-msg-wrap ${cfg.wrapClass}`} style={{ width: '100%', maxWidth: '750px' }}>
             {!mensaje && !loading && ( <p style={{ fontFamily:'Chakra Petch,sans-serif', fontSize:11, color:`${cfg.accent}88`, textTransform:'uppercase', letterSpacing:'0.15em', fontWeight:700, marginBottom:8, textAlign:'center' }}>◈ {cfg.nombre} · EN LÍNEA</p> )}
             <div style={{textAlign:'center', minHeight:26, display:'flex', alignItems:'center', justifyContent:'center'}}>
@@ -209,13 +267,13 @@ const IsabellaCierre = ({ personaje = 'isabella', comercio = {}, mensaje = null,
 
         {/* BOLAS */}
         {!loading && bolas.length > 0 && (
-          <div style={{ position:'relative', zIndex:2, flexShrink:0, display:'flex', gap:12, flexWrap:'wrap', justifyContent:'center', padding:'0 24px 12px' }}>
+          <div style={{ position:'relative', zIndex:2, flexShrink:0, display:'flex', gap:12, flexWrap:'wrap', justifyContent:'center', paddingTop:0, paddingRight:'140px', paddingBottom:'12px', paddingLeft:'160px' }}>
             {bolas.map((bola, i) => ( <button key={i} onClick={() => onSend?.(bola.texto)} className={cfg.bolaClass} style={{ padding:'12px 24px', borderRadius:'999px', fontSize:12, fontWeight:900, fontFamily:'Chakra Petch,sans-serif', textTransform:'uppercase', letterSpacing:'0.08em', cursor:'pointer', transition:'all 0.15s', animation:`floatBola ${1.8 + i*0.3}s ease-in-out infinite` }}>{bola.texto}</button> ))}
           </div>
         )}
 
         {/* INPUT + CARRO */}
-        <div style={{ position:'relative', zIndex:2, flexShrink:0, padding:'0 24px 22px', display:'flex', justifyContent:'center' }}>
+        <div style={{ position:'relative', zIndex:2, flexShrink:0, paddingTop:0, paddingRight:'140px', paddingBottom:'22px', paddingLeft:'260px', display:'flex', justifyContent:'center' }}>
           <div style={{ display:'flex', alignItems:'flex-end', gap:12, width:'100%', maxWidth:'900px' }}>
             <div style={{ flex:1, background:'rgba(0,0,0,0.72)', border:`1.5px solid ${cfg.accentSoft}`, borderRadius:16, padding:'14px 18px', backdropFilter:'blur(10px)', display:'flex', flexDirection:'column', gap:10 }}>
               <div style={{display:'flex', alignItems:'flex-start', gap:12}}>
@@ -229,19 +287,11 @@ const IsabellaCierre = ({ personaje = 'isabella', comercio = {}, mensaje = null,
             </div>
 
             <div style={{flexShrink:0, display:'flex', flexDirection:'column', gap:6, alignSelf:'stretch'}}>
-              
-              {/* SUBTOTAL SIEMPRE VISIBLE - CAMBIA CON HASITEMS */}
-              <div style={{
-                background: hasItems ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.4)',
-                border: hasItems ? `1px solid ${cfg.accentSoft}` : '1px solid rgba(255,255,255,0.1)',
-                borderRadius: 10, padding: '6px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-                backdropFilter: 'blur(8px)', transition: 'all 0.3s ease'
-              }}>
+              <div style={{ background: hasItems ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.4)', border: hasItems ? `1px solid ${cfg.accentSoft}` : '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '6px 12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, backdropFilter: 'blur(8px)', transition: 'all 0.3s ease' }}>
                 <span style={{ fontFamily:'Chakra Petch,sans-serif', fontSize:9, color: hasItems ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)', textTransform:'uppercase', letterSpacing:'0.15em', transition: 'color 0.3s' }}>{cfg.labelSubtotal}</span>
                 <span style={{ fontFamily:'Chakra Petch,sans-serif', fontSize:15, fontWeight:900, color: hasItems ? cfg.accent : 'rgba(255,255,255,0.3)', textShadow: hasItems ? `0 0 10px ${cfg.accentGlow}` : 'none', transition: 'all 0.3s' }}>{subtotal_zona.toFixed(2)}€</span>
                 <span style={{ fontFamily:'Rajdhani,sans-serif', fontSize:10, color: hasItems ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.15)', transition: 'color 0.3s' }}>{items_zona} {items_zona === 1 ? 'item' : 'items'}</span>
               </div>
-
               <button className={`vb-cart-btn ${total_items > 0 ? 'has-items' : ''}`} onClick={onIrAPagar} disabled={total_items === 0} style={{ flex: 1, minWidth:82, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:5, borderRadius:14, padding:'10px 14px', background: total_items > 0 ? `linear-gradient(160deg, ${cfg.accent}, #334155)` : 'rgba(255,255,255,0.05)', border:`2px solid ${total_items > 0 ? cfg.accent : 'rgba(255,255,255,0.1)'}`, color: total_items > 0 ? '#000' : 'rgba(255,255,255,0.25)', fontFamily:'Chakra Petch,sans-serif', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.04em', boxShadow: total_items > 0 ? `0 0 22px ${cfg.accentGlow}` : 'none' }}>
                 <span style={{fontSize:24}}>🛒</span>
                 {total_items > 0 ? ( <><span style={{fontSize:10, fontWeight: 700}}>{total_items} items</span><span style={{fontSize:14, fontWeight:900}}>{total_con_delivery.toFixed(2)}€</span></> ) : ( <span style={{fontSize:10}}>Vacío</span> )}

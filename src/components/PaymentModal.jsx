@@ -62,13 +62,23 @@ const PaymentModal = ({
       setCargando(true);
       try {
         const { data: perfil } = await supabase
-  	.from('comercio_perfil')
-  	.select('*')
-  	.eq('bro_id', card.id)
-  	.maybeSingle();
-  
-        if (perfil) setComercioPerfil(perfil);
+  .from('comercio_perfil')
+  .select('*')
+  .eq('bro_id', card.id)
+  .maybeSingle();
 
+if (perfil) setComercioPerfil(perfil);
+
+// 👇 Añadir esto
+const { data: profileData } = await supabase
+  .from('profiles')
+  .select('video_file_219')
+  .eq('id', card.id)
+  .maybeSingle();
+
+if (profileData?.video_file_219) {
+  setComercioPerfil(prev => ({ ...(prev || {}), video_file_219: profileData.video_file_219 }));
+}
         const { data: assets } = await supabase
           .from('assets')
           .select('id, title, price_fiat, asset_type, description, sizes, colors')

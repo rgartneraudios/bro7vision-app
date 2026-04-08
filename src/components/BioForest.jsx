@@ -307,26 +307,31 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
   };
 
   // FIX AUDIO — Efecto A: solo carga cuando cambia usuario
-  useEffect(()=>{
-    const video=videoRef.current;
-    const bgVideo=bgVideoRef.current;
-    if(!video||!currentUser)return;
-    const playUrl=cleanUrl(currentUser.video_file||"");
-    if(hlsRef.current){hlsRef.current.destroy();hlsRef.current=null;}
-    const isHLS=playUrl.includes('.m3u8');
-    if(isHLS){
-      if(video.canPlayType('application/vnd.apple.mpegurl')){video.src=playUrl;video.muted=isMuted;video.play().catch(()=>{});}
-      else if(Hls.isSupported()){const hls=new Hls();hls.loadSource(playUrl);hls.attachMedia(video);hls.on(Hls.Events.MANIFEST_PARSED,()=>{video.muted=isMuted;video.play().catch(()=>{});});hlsRef.current=hls;}
-    } else {
-      const same=video.src===playUrl||video.src===window.location.origin+playUrl;
-      if(!same){
-        video.pause();video.src="";video.load();
-        video.src=playUrl;video.muted=isMuted;video.load();video.play().catch(()=>{});
-        setIsPaused(false);
-      }
+useEffect(()=>{
+  const video=videoRef.current;
+  const bgVideo=bgVideoRef.current;
+  if(!video||!currentUser)return;
+  const playUrl=cleanUrl(currentUser.video_file||"");
+  if(hlsRef.current){hlsRef.current.destroy();hlsRef.current=null;}
+  const isHLS=playUrl.includes('.m3u8');
+  if(isHLS){
+    if(video.canPlayType('application/vnd.apple.mpegurl')){video.src=playUrl;video.muted=isMuted;video.play().catch(()=>{});}
+    else if(Hls.isSupported()){const hls=new Hls();hls.loadSource(playUrl);hls.attachMedia(video);hls.on(Hls.Events.MANIFEST_PARSED,()=>{video.muted=isMuted;video.play().catch(()=>{});});hlsRef.current=hls;}
+  } else {
+    const same=video.src===playUrl||video.src===window.location.origin+playUrl;
+    if(!same){
+      video.pause();video.src="";video.load();
+      video.src=playUrl;video.muted=isMuted;video.load();video.play().catch(()=>{});
+      setIsPaused(false);
     }
-    setVisualEchos([]);setFloatingEcos([]); // solo resetea Eco Text, los HyperZap sobreviven
-  },[currentUser]); // SOLO currentUser
+  }
+  setVisualEchos([]);setFloatingEcos([]);
+  return () => {
+    if(video) video.pause();
+    if(bgVideo) bgVideo.pause();
+    if(hlsRef.current){ hlsRef.current.destroy(); hlsRef.current=null; }
+  };
+},[currentUser]); // SOLO currentUser
 
   // FIX AUDIO — Efecto B: mute sin recargar
   useEffect(()=>{ if(videoRef.current) videoRef.current.muted=isMuted; },[isMuted]);

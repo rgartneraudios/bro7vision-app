@@ -329,7 +329,7 @@ function App() {
       
       {/* 1. FONDO DE VIDEOS */}
       <div className="absolute inset-0 z-0">
-        {step === 0 && !projectingUser && (
+       {step === 0 && !projectingUser && !selectedCard && (
           !realityMode ? <RealityTuner onSelect={setRealityMode} /> :
           realityMode === 'este'  ? <ChannelEste  videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={handleOpenProfile} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
           realityMode === 'oeste' ? <ChannelOeste videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={handleOpenProfile} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :

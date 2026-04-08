@@ -1,9 +1,9 @@
 // src/services/agents/ososPS.js
 
-import { getPerfil } from '../../data/system_profiles';
+import { getPerfil, TABLA_PER, PREFIJOS_COMERCIO } from '../../data/system_profiles';
 
 // ─────────────────────────────────────────────────────────────────────
-// SALUDOS — sin cambios
+// SALUDOS
 // ─────────────────────────────────────────────────────────────────────
 const SALUDOS = {
   TITO:  { amigos: ["Tito al habla. ¿A qué zona del mundo te llevo hoy?", "Buenas. ¿Ciudad, país, o me dices directamente qué buscas?"], formal: ["Buenas tardes, soy Tito. ¿A qué ciudad o país le llevo?", "Tito a su disposición. ¿Dónde desea buscar?"] },
@@ -12,7 +12,7 @@ const SALUDOS = {
 };
 
 // ─────────────────────────────────────────────────────────────────────
-// SECTOR KEYWORDS — sin cambios
+// SECTOR KEYWORDS
 // ─────────────────────────────────────────────────────────────────────
 const SECTOR_KEYWORDS = {
   AUDIO:            ['música', 'musica', 'escuchar', 'canción', 'cancion', 'podcast', 'streaming', 'stream', 'live', 'radio', 'artista', 'banda', 'dj', 'beat', 'playlist', 'song', 'listen'],
@@ -25,7 +25,7 @@ const SECTOR_KEYWORDS = {
 };
 
 // ─────────────────────────────────────────────────────────────────────
-// ALIASES Y LISTAS DE UBICACIÓN — sin cambios
+// ALIASES Y LISTAS DE UBICACIÓN
 // ─────────────────────────────────────────────────────────────────────
 const ALIASES_UBICACION = [
   { aliases: ['toda españa', 'toda espana', 'en españa', 'en espana', 'españa entera', 'espana entera', 'por españa', 'por espana', 'españa completa'], valor: 'españa', tipo: 'pais' },
@@ -63,7 +63,7 @@ const PAISES = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────
-// DETECTORES — sin cambios
+// DETECTORES EXISTENTES
 // ─────────────────────────────────────────────────────────────────────
 export const detectarCiudadPS = (texto) => {
   const t = texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -93,6 +93,112 @@ export const detectarSectorPS = (texto) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────
+// NUEVO — detectarEntidadPS
+// Actúa ANTES que detectarSectorPS en useAgentChat.
+//
+// Detecta:
+//   1. Nombre propio de personaje → PER (interno o externo)
+//   2. Código PER001-013 explícito
+//   3. Código COM/SER/AVI con sufijo D o A
+//      D = describe → handoff a Explora con bro_id precargado
+//      A = acceder  → handoff directo a Ventas/Cierre con bro_id
+//      Sin sufijo   → bolas [D] [A] para que el usuario elija
+//
+// Retorna null si no detecta nada → el flujo sigue normal hacia detectarSectorPS
+// ─────────────────────────────────────────────────────────────────────
+
+// Normaliza el texto del usuario para comparar:
+// quita acentos, guiones, espacios, pasa a mayúsculas
+const normalizar = (str) =>
+  str
+    .toUpperCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[-\s]/g, '');
+
+// Construye alias de prefijos (COM, KOM, SER, CER, AVI, ABI)
+const ALIAS_PREFIJO = {};
+for (const [prefijo, config] of Object.entries(PREFIJOS_COMERCIO)) {
+  ALIAS_PREFIJO[prefijo] = prefijo;
+  for (const alias of config.alias) {
+    ALIAS_PREFIJO[alias] = prefijo;
+  }
+}
+
+export const detectarEntidadPS = (texto) => {
+  const t = normalizar(texto);
+
+  // ── 1. Detectar código COM/SER/AVI con o sin sufijo ──────────────
+  // Patrón: (COM|KOM|SER|CER|AVI|ABI)(número)(D|A?)
+  // Ejemplos: COM001A, KOM-001-D, SER002, AVI-003A
+  const regexCodigo = /\b(COM|KOM|SER|CER|AVI|ABI)(\d{3,4})(D|A)?\b/;
+  const matchCodigo = t.match(regexCodigo);
+
+  if (matchCodigo) {
+    const prefijoBruto = matchCodigo[1];          // ej: KOM
+    const numero       = matchCodigo[2];           // ej: 001
+    const sufijo       = matchCodigo[3] || null;   // D | A | null
+
+    const prefijoNorm = ALIAS_PREFIJO[prefijoBruto]; // KOM → COM
+    if (!prefijoNorm) return null;
+
+    const config   = PREFIJOS_COMERCIO[prefijoNorm];
+    const bro_id   = `${prefijoNorm}${numero}`;     // ej: COM001
+
+    if (sufijo === 'A') {
+      // Acceso directo a Ventas/Cierre — sin Groq, sin bolas
+      return {
+        tipo:     'COMERCIO',
+        accion:   'VENTAS',
+        bro_id,
+        destino:  config.ventas,   // NOVA_VENTAS | ISABELLA_CIERRE | EVELYN_CONECTAR
+      };
+    }
+
+    if (sufijo === 'D') {
+      // Describe el comercio — handoff a Explora con bro_id precargado
+      return {
+        tipo:     'COMERCIO',
+        accion:   'DESCRIBE',
+        bro_id,
+        destino:  config.explora,  // BROSHOP_PRODUCTO | BROSHOP_SERVICIO | BROSHOP_AVISO
+      };
+    }
+
+    // Sin sufijo — mostrar bolas D/A
+    return {
+      tipo:    'COMERCIO',
+      accion:  'BOLAS',
+      bro_id,
+      destino: null,
+      bolas: [
+        { texto: `${bro_id}D — Descríbemelo` },
+        { texto: `${bro_id}A — Entrar` },
+      ],
+    };
+  }
+
+  // ── 2. Detectar nombre propio o código PER ────────────────────────
+  for (const entrada of TABLA_PER) {
+    const nombreNorm  = normalizar(entrada.nombre);
+    const codigoNorm  = normalizar(entrada.codigo);
+
+    if (t.includes(nombreNorm) || t.includes(codigoNorm)) {
+      return {
+        tipo:            'PER',
+        codigo:          entrada.codigo,
+        key:             entrada.key,
+        destino:         entrada.destino,
+        interno:         entrada.interno,
+        requiere_ciudad: entrada.requiere_ciudad,
+      };
+    }
+  }
+
+  return null;
+};
+
+// ─────────────────────────────────────────────────────────────────────
 // PROMPT BUILDER — personalidad desde system_profiles
 // ─────────────────────────────────────────────────────────────────────
 export const buildOsosPrompt = (contextData) => {
@@ -110,7 +216,6 @@ export const buildOsosPrompt = (contextData) => {
   const tono = osos_tono === 'formal' ? 'formal' : 'amigos';
 
   // ── Perfil desde system_profiles ──────────────────────────────────
-  // oso_id llega como 'TITO'|'LARA'|'PUFFO' — lo pasamos en minúsculas
   const perfil          = getPerfil(oso_id.toLowerCase()) || getPerfil('tito');
   const frase_ancla     = perfil.frase_ancla;
   const personalidad    = perfil.personalidad;

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { askGroq } from '../services/groq';
 import { armarSobreMapache, armarCatalogoTuner } from '../services/portSystem';
-import { detectarSectorPS, detectarCiudadPS } from '../services/agents/ososPS';
+import { detectarSectorPS, detectarCiudadPS, detectarEntidadPS } from '../services/agents/ososPS';
 import { detectarIntencionAviso, extraerCodigoAviso, generarCodigoAvi, armarSobreEvelynTexto } from '../services/agents/evelynExploraPS';
 import { parsearRespuestaNova } from '../services/agents/novaVentasPS';
 import { supabase } from '../supabaseClient';
@@ -47,7 +47,7 @@ const escanearEcosistema = (textoUsuario, realItems) => {
   })).slice(0, 3);
 };
 
-// ── Perfil base del usuario — se inyecta en TODOS los sobres ─────────
+// ── Perfil base del usuario ───────────────────────────────────────────
 const armarPerfilBase = (contextData) => ({
   usuario_nombre:  contextData?.osos_nombre    || contextData?.alias || 'Ciudadano',
   usuario_tono:    contextData?.osos_tono      || 'amigos',
@@ -62,7 +62,7 @@ const armarPerfilBase = (contextData) => ({
   avisos_id:       contextData?.avisos_id      || '',
 });
 
-// ── Sobre Nova Explora (productos) ────────────────────────────────────
+// ── Sobre Nova Explora ────────────────────────────────────────────────
 const armarSobreNova = (textoUsuario, realItems, contextData) => {
   const intencion     = detectarIntencion(textoUsuario);
   const coincidencias = escanearEcosistema(textoUsuario, realItems);
@@ -104,7 +104,7 @@ const armarSobreNova = (textoUsuario, realItems, contextData) => {
   };
 };
 
-// ── Sobre Isabella Explora (servicios) ────────────────────────────────
+// ── Sobre Isabella Explora ────────────────────────────────────────────
 const armarSobreIsabella = (textoUsuario, realItems) => {
   const intencion     = detectarIntencion(textoUsuario, INTENCION_KEYWORDS_SERVICIOS);
   const coincidencias = escanearEcosistema(textoUsuario, realItems);
@@ -149,7 +149,7 @@ const armarSobreIsabella = (textoUsuario, realItems) => {
   };
 };
 
-// ── Sobre Evelyn (avisos) ─────────────────────────────────────────────
+// ── Sobre Evelyn ──────────────────────────────────────────────────────
 const armarSobreEvelyn = async (textoUsuario, contextData) => {
   const intencion  = detectarIntencionAviso(textoUsuario);
   const codigoAvi  = extraerCodigoAviso(textoUsuario);
@@ -185,15 +185,10 @@ const armarSobreEvelyn = async (textoUsuario, contextData) => {
     codigoAvi,
   });
 
-  return {
-    sobreTexto,
-    intencion,
-    codigoAvi,
-    avisosRaw: avisosFinales,
-  };
+  return { sobreTexto, intencion, codigoAvi, avisosRaw: avisosFinales };
 };
 
-// ── Sobre Oráculo (Orumama + Jaguar) ─────────────────────────────────
+// ── Sobre Oráculo ─────────────────────────────────────────────────────
 const armarSobreOraculo = (textoUsuario, contextData) => {
   const faseActual = getMoonSuffix();
   const personaje  = (contextData?.oraculo_personaje || 'orumama').toLowerCase();
@@ -234,7 +229,6 @@ const ciudadEsValida = (ciudad) => {
   return !CIUDAD_INVALIDA.includes(ciudad.toLowerCase().trim());
 };
 
-
 const BOLAS_CIUDAD = [
   { texto: 'Madrid' },
   { texto: 'Barcelona' },
@@ -253,6 +247,23 @@ const FRASES_HANDOFF = {
   GAMES:            ()       => `Abriendo sala de simuladores. ¡Suerte! 🎮`,
 };
 
+// Frases de handoff PER — el personaje activo despide al ciudadano
+const FRASES_PER_INTERNO = {
+  OSOS_LARA:  () => 'Lara al habla. ¿En qué te ayudo?',
+  OSOS_TITO:  () => 'Tito aquí. Cuéntame.',
+  OSOS_PUFFO: () => 'Puffo en la línea. ¿Qué necesitas?',
+};
+
+const FRASES_PER_EXTERNO = {
+  BROSHOP_PRODUCTO: (ciudad) => ciudad ? `Nova te espera en ${ciudad}. ¡Vamos! 🛒` : 'Nova está lista. ¡Adelante! 🛒',
+  BROSHOP_SERVICIO: (ciudad) => ciudad ? `Isabella te recibe en ${ciudad}. 🔧`     : 'Isabella te recibe. 🔧',
+  BROSHOP_AVISO:    (ciudad) => ciudad ? `Evelyn abre el tablón de ${ciudad}. 📋`  : 'Evelyn abre el tablón. 📋',
+  AUDIO:            (ciudad) => ciudad ? `Mapache sintoniza ${ciudad}. 🎧`          : 'Mapache en cabina. 🎧',
+  ORACULO_ORUMAMA:  ()       => 'Orumama enciende las velas. 🌿',
+  ORACULO_JAGUAR:   ()       => 'Jaguar abre el umbral. 🐆',
+  REINOS:           ()       => 'Los Reinos te esperan. 👑',
+};
+
 // ── Hook principal ────────────────────────────────────────────────────
 export const useAgentChat = ({
   mode,
@@ -261,7 +272,7 @@ export const useAgentChat = ({
   onEntityFocus,
   onAvisoConectar,
   onAvisoPublicar,
-  onAccionNova,     // ← NUEVO: callback para acciones de NovaVentas → useCarrito
+  onAccionNova,
   realItems = [],
 }) => {
   const [mensaje,  setMensaje]  = useState(null);
@@ -280,21 +291,69 @@ export const useAgentChat = ({
 
     try {
       let paqueteContexto;
-
-      // ── Perfil base — se arma UNA vez y viaja en todos los sobres ──
       const perfilBase = armarPerfilBase(contextData);
 
       // ── NOVA EXPLORA ──────────────────────────────────────────────
       if (mode === 'novaExplora') {
-        paqueteContexto = {
-          ...contextData,
-          ...perfilBase,
-          ...armarSobreNova(textoUsuario, realItems, contextData),
-        };
 
-      // ── NOVA VENTAS — nodo independiente ─────────────────────────
-      // Gestiona el carrito conversacionalmente dentro del comercio.
-      // Devuelve JSON { mensaje, accion } — no bolas, no handoff estándar.
+        // Detector de entidad también actúa en NovaExplora
+        // COM001A desde Nova → NovaVentas directo
+        // COM001D desde Nova → Nova describe precargando bro_id
+        // PER externo desde Nova → handoff al sector con ciudad heredada
+        const entidadNova = detectarEntidadPS(textoUsuario);
+
+        if (entidadNova) {
+          if (entidadNova.tipo === 'COMERCIO' && entidadNova.accion === 'VENTAS') {
+            // COM001A — handoff directo a NovaVentas
+            setMensaje(`Abriendo ${entidadNova.bro_id}... 🛒`);
+            setBolas([]);
+            setTimeout(() => {
+              onHandoff?.({ agente: entidadNova.destino, bro_id: entidadNova.bro_id });
+            }, 1000);
+            return;
+          }
+
+          if (entidadNova.tipo === 'COMERCIO' && entidadNova.accion === 'DESCRIBE') {
+            // COM001D — Nova describe ese comercio específico
+            // Continúa al flujo normal pero con bro_id inyectado en contexto
+            paqueteContexto = {
+              ...contextData,
+              ...perfilBase,
+              ...armarSobreNova(textoUsuario, realItems, { ...contextData, bro_id_forzado: entidadNova.bro_id }),
+              bro_id_forzado: entidadNova.bro_id,
+            };
+          } else if (entidadNova.tipo === 'COMERCIO' && entidadNova.accion === 'BOLAS') {
+            // COM001 sin sufijo — mostrar bolas D/A
+            setMensaje(`¿Qué quieres hacer con ${entidadNova.bro_id}?`);
+            setBolas(entidadNova.bolas);
+            return;
+          } else if (entidadNova.tipo === 'PER' && !entidadNova.interno) {
+            // PER externo desde Nova — handoff con ciudad heredada
+            const ciudadActual = contextData?.ciudad || ciudadMemoria || null;
+            const frase = FRASES_PER_EXTERNO[entidadNova.destino]?.(ciudadActual) || 'Conectando...';
+            setMensaje(frase);
+            setBolas([]);
+            setTimeout(() => {
+              onHandoff?.({
+                agente:   entidadNova.destino,
+                ciudad:   ciudadActual,
+                intencion: entidadNova.destino,
+                per_solicitado: entidadNova.key,
+              });
+            }, 1200);
+            return;
+          }
+        }
+
+        if (!paqueteContexto) {
+          paqueteContexto = {
+            ...contextData,
+            ...perfilBase,
+            ...armarSobreNova(textoUsuario, realItems, contextData),
+          };
+        }
+
+      // ── NOVA VENTAS ───────────────────────────────────────────────
       } else if (mode === 'novaVentas') {
         paqueteContexto = {
           perfilBase,
@@ -344,6 +403,99 @@ export const useAgentChat = ({
 
       // ── OSOS ──────────────────────────────────────────────────────
       } else {
+
+        // ── PASO 0: Detector de entidad — actúa antes que todo ─────
+        // PER interno  → cambia oso_id en contexto, no hace handoff externo
+        // PER externo  → handoff directo con ciudad heredada, sin Groq
+        // COM sufijo A → handoff directo NovaVentas
+        // COM sufijo D → handoff NovaExplora con bro_id precargado
+        // COM sin sufijo → bolas [D] [A]
+
+        const entidad = detectarEntidadPS(textoUsuario);
+
+        if (entidad) {
+          // ── PER interno (Lara, Tito, Puffo) ──────────────────────
+          if (entidad.tipo === 'PER' && entidad.interno) {
+            const oso_nuevo = entidad.destino.replace('OSOS_', ''); // OSOS_LARA → LARA
+            const frase = FRASES_PER_INTERNO[entidad.destino]?.() || `${oso_nuevo} al habla.`;
+            setMensaje(frase);
+            setBolas([]);
+            // Notifica al padre para que actualice oso_id en contextData
+            onHandoff?.({ agente: 'OSOS_INTERNO', oso_id: oso_nuevo });
+            return;
+          }
+
+          // ── PER externo ───────────────────────────────────────────
+          if (entidad.tipo === 'PER' && !entidad.interno) {
+            const ciudadActual = ciudadMemoria || contextData?.ciudad || null;
+
+            // Si requiere ciudad y no la tenemos → pedir ciudad primero
+            if (entidad.requiere_ciudad && !ciudadActual) {
+              setMensaje(`Para pasarte con ${entidad.key}, dime primero en qué ciudad buscas.`);
+              setBolas(BOLAS_CIUDAD);
+              // Guardamos el PER pendiente en memoria de sector para el siguiente turno
+              setSectorMemoria(`PER_PENDIENTE_${entidad.destino}`);
+              return;
+            }
+
+            const frase = FRASES_PER_EXTERNO[entidad.destino]?.(ciudadActual) || 'Conectando...';
+            setMensaje(frase);
+            setBolas([]);
+            setSectorMemoria(null);
+            setCiudadMemoria(null);
+            setTipoMemoria(null);
+            setTimeout(() => {
+              onHandoff?.({
+                agente:         entidad.destino,
+                ciudad:         ciudadActual,
+                intencion:      entidad.destino,
+                per_solicitado: entidad.key,
+              });
+            }, 1200);
+            return;
+          }
+
+          // ── COMERCIO sufijo A — directo a Ventas ─────────────────
+          if (entidad.tipo === 'COMERCIO' && entidad.accion === 'VENTAS') {
+            setMensaje(`Abriendo ${entidad.bro_id}... 🛒`);
+            setBolas([]);
+            setSectorMemoria(null);
+            setCiudadMemoria(null);
+            setTipoMemoria(null);
+            setTimeout(() => {
+              onHandoff?.({ agente: entidad.destino, bro_id: entidad.bro_id });
+            }, 1000);
+            return;
+          }
+
+          // ── COMERCIO sufijo D — describe en Explora ───────────────
+          if (entidad.tipo === 'COMERCIO' && entidad.accion === 'DESCRIBE') {
+            const ciudadActual = ciudadMemoria || contextData?.ciudad || null;
+            setMensaje(`Buscando ${entidad.bro_id}... 🔍`);
+            setBolas([]);
+            setSectorMemoria(null);
+            setCiudadMemoria(null);
+            setTipoMemoria(null);
+            setTimeout(() => {
+              onHandoff?.({
+                agente:              entidad.destino,
+                ciudad:              ciudadActual,
+                intencion:           entidad.destino,
+                comercio_especifico: entidad.bro_id,
+              });
+            }, 1000);
+            return;
+          }
+
+          // ── COMERCIO sin sufijo — bolas D/A ──────────────────────
+          if (entidad.tipo === 'COMERCIO' && entidad.accion === 'BOLAS') {
+            setMensaje(`¿Qué quieres hacer con ${entidad.bro_id}?`);
+            setBolas(entidad.bolas);
+            return;
+          }
+        }
+
+        // ── PASO 1: Detectores de sector y ciudad (flujo existente) ─
         const infoChivada  = escanearEcosistema(textoUsuario, realItems);
         const sectorDetect = detectarSectorPS(textoUsuario);
         const ciudadDetect = detectarCiudadPS(textoUsuario);
@@ -412,36 +564,19 @@ export const useAgentChat = ({
       const rawResponse = await askGroq(textoUsuario, mode, paqueteContexto);
 
       // ── NOVA VENTAS — procesamiento especial ──────────────────────
-      // Usa parsearRespuestaNova en lugar del parse genérico,
-      // y emite la acción via onAccionNova en lugar de bolas/handoff.
       if (mode === 'novaVentas') {
         const { mensaje, accion } = parsearRespuestaNova(rawResponse);
-
         setMensaje(mensaje);
         setBolas([]);
-
-        // Emitir acción al componente padre (PaymentModal → useCarrito)
-        if (accion && onAccionNova) {
-          onAccionNova(accion);
-        }
-
-        // IR_A_PAGAR y HANDOFF_FINANZAS también disparan onHandoff
-        // para que el componente pueda navegar
-        if (accion?.tipo === 'IR_A_PAGAR') {
-          onHandoff?.({ agente: 'CARRO_GENERAL' });
-        }
-        if (accion?.tipo === 'HANDOFF_FINANZAS') {
-          onHandoff?.({ agente: 'BROSHOP_AVISO' });
-        }
-
-        return; // ← NovaVentas no sigue al bloque genérico de abajo
+        if (accion && onAccionNova) onAccionNova(accion);
+        if (accion?.tipo === 'IR_A_PAGAR') onHandoff?.({ agente: 'CARRO_GENERAL' });
+        if (accion?.tipo === 'HANDOFF_FINANZAS') onHandoff?.({ agente: 'BROSHOP_AVISO' });
+        return;
       }
 
-      // ── Parse genérico — resto de modos ───────────────────────────
+      // ── Parse genérico ─────────────────────────────────────────────
       const jsonStr = rawResponse.replace(/```json/g, '').replace(/```/g, '').trim();
       const data    = JSON.parse(jsonStr);
-
-      // ── Procesar respuesta por modo ────────────────────────────────
 
       if (mode === 'mapache') {
         setMensaje(data.mensaje || 'Sintonizando frecuencias...');
