@@ -158,12 +158,6 @@ const ServiciosBanner = forwardRef(function ServiciosBanner({
           background: #64748b;
           box-shadow: 0 0 8px #64748b;
         }
-        .sv-bola {
-          background: radial-gradient(circle at 35% 35%, #94a3b8, #334155);
-          border: 2px solid #64748b;
-          color: #fff;
-          box-shadow: 0 0 20px rgba(100,116,139,0.5), inset 0 0 10px rgba(255,255,255,0.1);
-        }
         .sv-loading {
           display: inline-flex;
           gap: 4px;
@@ -203,25 +197,6 @@ const ServiciosBanner = forwardRef(function ServiciosBanner({
             )
           )}
         </div>
-
-        {/* BOLAS DE RESPUESTA */}
-        {!loading && bolas.length > 0 && (
-          <div className="flex gap-3 flex-wrap justify-center max-w-2xl">
-            {bolas.map((bola, i) => (
-              <button
-                key={i}
-                onClick={() => enviar(bola.texto)}
-                className="sv-bola px-5 py-3 rounded-full text-xs font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
-                style={{
-                  animation: `floatBolaSlate ${1.8 + i * 0.3}s ease-in-out infinite`,
-                }}
-              >
-                {bola.texto}
-              </button>
-            ))}
-          </div>
-        )}
-
       </div>
     </>
   );

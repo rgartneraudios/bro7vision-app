@@ -39,18 +39,26 @@ const NovaBanner = forwardRef(function NovaBanner({
     },
     realItems,
     onEntityFocus,
-    onHandoff: ({ agente, bro_id }) => {
-      if (agente === 'NOVA_VENTAS' && bro_id) {
-        // Nova Explora → Nova Ventas
-        // Buscamos el comercio completo en realItems y abrimos su ficha
-        const comercio = realItems.find(i => i.bro_id === bro_id);
-        if (comercio) onOpenTerminal?.(comercio);
-      } else if (agente === 'OSOS') {
-        onInvokeOsos?.();
-      } else if (agente === 'MAPACHE') {
-        onInvokeMapache?.();
-      }
-    },
+    onHandoff: ({ agente, bro_id, ciudad, intencion, per_solicitado }) => {
+  if (agente === 'NOVA_VENTAS' && bro_id) {
+    const comercio = realItems.find(i => i.bro_id === bro_id);
+    if (comercio) onOpenTerminal?.(comercio);
+
+  } else if (agente === 'ISABELLA_CIERRE' && bro_id) {
+    // Cross-sector — sube al padre via onInvokeOsos con contexto
+    onInvokeOsos?.({ agente, bro_id });
+
+  } else if (agente === 'OSOS') {
+    onInvokeOsos?.();
+
+  } else if (agente === 'MAPACHE') {
+    onInvokeMapache?.();
+
+  } else if (agente) {
+    // Cualquier otro PER externo — sube al padre
+    onInvokeOsos?.({ agente, ciudad, intencion, per_solicitado });
+  }
+},
   });
 
   // ── Exponer sendMessage al padre (App.jsx lo usa con ref) ───────────────
@@ -125,13 +133,7 @@ const NovaBanner = forwardRef(function NovaBanner({
           background: #fbbf24;
           box-shadow: 0 0 8px #fbbf24;
         }
-        .nv-bola {
-          background: radial-gradient(circle at 35% 35%, #fbbf24, #b45309);
-          border: 2px solid #fbbf24;
-          color: #000;
-          box-shadow: 0 0 20px rgba(251,191,36,0.6), inset 0 0 10px rgba(255,255,255,0.15);
-        }
-        .nv-loading {
+         .nv-loading {
           display: inline-flex;
           gap: 4px;
           align-items: center;
@@ -174,25 +176,6 @@ const NovaBanner = forwardRef(function NovaBanner({
             )
           )}
         </div>
-
-        {/* BOLAS DE RESPUESTA */}
-        {!loading && bolas.length > 0 && (
-          <div className="flex gap-3 flex-wrap justify-center max-w-2xl">
-            {bolas.map((bola, i) => (
-              <button
-                key={i}
-                onClick={() => enviar(bola.texto)}
-                className="nv-bola px-5 py-3 rounded-full text-xs font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
-                style={{
-                  animation: `floatBola ${1.8 + i * 0.3}s ease-in-out infinite`,
-                }}
-              >
-                {bola.texto}
-              </button>
-            ))}
-          </div>
-        )}
-
       </div>
     </>
   );

@@ -77,9 +77,17 @@ const armarSobreNova = (textoUsuario, realItems, contextData) => {
           entidadEnriquecida = { bro_id: itemCompleto.bro_id, nombre: itemCompleto.alias, nearby_ref: itemCompleto.nearby_ref || '', neighborhood: itemCompleto.neighborhood || '', address: itemCompleto.address || '', city: itemCompleto.city || '' };
           break;
         case 'descripcion':
-          entidadEnriquecida = { bro_id: itemCompleto.bro_id, nombre: itemCompleto.alias, description: itemCompleto.description || '', biz_category: itemCompleto.biz_category || '', biz_profession: itemCompleto.biz_profession || '' };
-          break;
-        case 'precio':
+  entidadEnriquecida = { 
+    bro_id:        itemCompleto.bro_id, 
+    nombre:        itemCompleto.alias, 
+    description:   itemCompleto.description   || '', 
+    biz_category:  itemCompleto.biz_category  || '', 
+    biz_profession:itemCompleto.biz_profession|| '',
+    nearby_ref:    itemCompleto.nearby_ref    || '',
+    neighborhood:  itemCompleto.neighborhood  || '',
+  };
+  break;
+          case 'precio':
           entidadEnriquecida = { bro_id: itemCompleto.bro_id, nombre: itemCompleto.alias, ref_price: itemCompleto.ref_price || '', product_title: itemCompleto.product_title || '', product_price: itemCompleto.product_price || '', service_title: itemCompleto.service_title || '', service_price: itemCompleto.service_price || '' };
           break;
         case 'catalogo':
@@ -302,18 +310,19 @@ export const useAgentChat = ({
         // PER externo desde Nova → handoff al sector con ciudad heredada
         const entidadNova = detectarEntidadPS(textoUsuario);
 
-        if (entidadNova) {
+        if (entidadNova) { // <--- FALTABA ABRIR ESTE IF
           if (entidadNova.tipo === 'COMERCIO' && entidadNova.accion === 'VENTAS') {
-            // COM001A — handoff directo a NovaVentas
-            setMensaje(`Abriendo ${entidadNova.bro_id}... 🛒`);
+            setMensaje(
+              entidadNova.destino === 'ISABELLA_CIERRE'
+                ? `Conectando con Isabella para ${entidadNova.bro_id}... 🔧`
+                : `Abriendo ${entidadNova.bro_id}... 🛒`
+            );
             setBolas([]);
             setTimeout(() => {
               onHandoff?.({ agente: entidadNova.destino, bro_id: entidadNova.bro_id });
             }, 1000);
             return;
-          }
-
-          if (entidadNova.tipo === 'COMERCIO' && entidadNova.accion === 'DESCRIBE') {
+          } else if (entidadNova.tipo === 'COMERCIO' && entidadNova.accion === 'DESCRIBE') {
             // COM001D — Nova describe ese comercio específico
             // Continúa al flujo normal pero con bro_id inyectado en contexto
             paqueteContexto = {
@@ -339,11 +348,11 @@ export const useAgentChat = ({
                 ciudad:   ciudadActual,
                 intencion: entidadNova.destino,
                 per_solicitado: entidadNova.key,
-              });
+              }); // <--- CORREGIDO EL CIERRE AQUÍ
             }, 1200);
             return;
           }
-        }
+        } // <--- AHORA ESTA LLAVE CIERRA CORRECTAMENTE EL IF
 
         if (!paqueteContexto) {
           paqueteContexto = {
@@ -353,6 +362,7 @@ export const useAgentChat = ({
           };
         }
 
+      
       // ── NOVA VENTAS ───────────────────────────────────────────────
       } else if (mode === 'novaVentas') {
         paqueteContexto = {
@@ -662,15 +672,16 @@ export const useAgentChat = ({
           }
 
         } else {
-          setMensaje(data.mensaje);
-          if (paqueteContexto?.port_system_context?.entidad_detectada) {
-            const entidad = paqueteContexto.port_system_context.entidad_detectada;
-            const itemCompleto = realItems.find(i => i.bro_id === entidad.bro_id);
-            if (itemCompleto) onEntityFocus?.(itemCompleto);
-          }
-          setBolas(Array.isArray(data.bolas) ? data.bolas : []);
-        }
-      }
+  setMensaje(data.mensaje);
+  const broIdTarget = paqueteContexto?.bro_id_forzado
+    || paqueteContexto?.port_system_context?.entidad_detectada?.bro_id;
+  if (broIdTarget) {
+    const itemCompleto = realItems.find(i => i.bro_id === broIdTarget);
+    if (itemCompleto) onEntityFocus?.(itemCompleto);
+  }
+  setBolas(Array.isArray(data.bolas) ? data.bolas : []);
+}
+ }
 
     } catch (error) {
       console.error('Error en Agentes Groq:', error);

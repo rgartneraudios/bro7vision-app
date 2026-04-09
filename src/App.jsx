@@ -124,93 +124,115 @@ function App() {
       osos_frase:     perfilOso?.osos_frase     || '',
       modo:           ososModo,
     },
-    onHandoff: ({ agente, ciudad, cp, intencion, comercio, modalidad }) => {
-      
-      if (agente === 'NOVA_VENTAS') {
-        const comercioTarget = realItems.find(i => i.bro_id === comercio || i.id === comercio);
-        if (comercioTarget) abrirTienda(comercioTarget, 'novaVentas');
-        return;
-      }
+    onHandoff: ({ agente, ciudad, cp, intencion, comercio, modalidad, oso_id, per_solicitado }) => {
 
-      if (agente === 'ISABELLA_VENTAS') {
-        const comercioTarget = realItems.find(i => i.bro_id === comercio || i.id === comercio);
-        if (comercioTarget) abrirTienda(comercioTarget, 'isabellaVentas');
-        return;
-      }
+  // ── OSOS_INTERNO — cambio de oso sin salir del sector ──
+  if (agente === 'OSOS_INTERNO') {
+    setPerfilOso(prev => ({ ...prev, oso_id: oso_id }));
+    return;
+  }
 
-      // ── MAPEO DE NUEVOS INTENTS ──
-      const intentMap = {
-        'BROSHOP_PRODUCTO': 'productos',
-        'BROSHOP_SERVICIO': 'servicios',
-        'BROSHOP_AVISO':    'avisos', 
-        'AUDIO':            'lives',
-        'REINOS':           'internal_search',
-        'ORACULO':          'ai',
-        'GAMES':            'game',
-      };
+  // ── NOVA_VENTAS ────────────────────────────────────────
+  if (agente === 'NOVA_VENTAS') {
+  const comercioTarget = realItems.find(i => i.bro_id === comercio || i.bro_id === intencion);
+  if (comercioTarget) abrirTienda(comercioTarget, 'novaVentas');
+  return;
+}
 
-      // Sectores que NO necesitan ubicación para avanzar
-      if (agente === 'REINOS' || agente === 'ORACULO' || agente === 'GAMES') {
-        setIntent(intentMap[agente] || 'internal_search');
-        setOsosModo('retorno');
-        setStep(2);
-        return;
-      }
+  // ── ISABELLA_CIERRE────────────────────────────────────
+  if (agente === 'ISABELLA_CIERRE') {
+  const comercioTarget = realItems.find(i => i.bro_id === comercio || i.bro_id === intencion);
+  if (comercioTarget) abrirTienda(comercioTarget, 'isabellaVentas');
+  return;
+}
 
-      setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
+  // ── MAPEO DE INTENTS — incluye destinos PER del Oráculo ─
+  const intentMap = {
+    'BROSHOP_PRODUCTO': 'productos',
+    'BROSHOP_SERVICIO': 'servicios',
+    'BROSHOP_AVISO':    'avisos',
+    'AUDIO':            'lives',
+    'REINOS':           'internal_search',
+    'ORACULO':          'ai',
+    'ORACULO_ORUMAMA':  'ai',   // ← nuevo
+    'ORACULO_JAGUAR':   'ai',   // ← nuevo
+    'GAMES':            'game',
+  };
 
-      const roleMap = {
-        'BROSHOP_PRODUCTO': 'shop',
-        'BROSHOP_SERVICIO': 'service',
-        'BROSHOP_AVISO':    'aviso', 
-        'AUDIO':            'music',
-      };
+  // ── Sectores sin ubicación ─────────────────────────────
+  const SIN_UBICACION = ['REINOS', 'ORACULO', 'ORACULO_ORUMAMA', 'ORACULO_JAGUAR', 'GAMES'];
 
-      const esPais = modalidad === 'ONLINE';
-
-      (async () => {
-        try {
-          const roleBuscado = roleMap[agente];
-          let query = supabase.from('profiles').select('bro_id, banner_url, alias, biz_category, biz_profession, city, address, nearby_ref, ref_price, description, role').limit(20);
-          if (!esPais && ciudad) query = query.ilike('city', `%${ciudad}%`);
-
-          const { data: perfiles, error } = await query;
-          const filtrados = perfiles?.filter(p => p.bro_id && (Array.isArray(p.role) ? p.role.includes(roleBuscado) : p.role === roleBuscado)) || [];
-
-          if (!error && filtrados.length > 0) {
-            setStripCards(filtrados.map(p => ({
-              bro_id:      p.bro_id,
-              banner_url:  p.banner_url || '',
-              nombre:      p.alias || '',
-              categoria:   p.biz_category || p.biz_profession || '',
-              ciudad:      p.city || '',
-              descripcion: p.description || p.nearby_ref || '',
-              ref_price:   p.ref_price || '',
-              address:     p.address || '',
-            })));
-            setStripLabel(intencion);
-            setStripVisible(true);
-          } else {
-            setStripCards([]);
-            setStripVisible(false);
-          }
-        } catch (err) {
-          console.error('Error cargando cards:', err);
-          setStripCards([]);
-          setStripVisible(false);
-        }
-      })();
-
-      setTimeout(() => {
-        setScope({ city: ciudad, type: 'teleport' });
-        setSessionCity(ciudad);
-        setSessionCP(cp);
-        setIntent(intentMap[agente] || 'productos');
-        setOsosModo('retorno');
-        setStep(2);
-      }, 2000);
+  if (SIN_UBICACION.includes(agente)) {
+    // Si lleva per_solicitado (Orumama/Jaguar), se lo pasamos a perfilOso
+    // para que OraculoBanner arranque con el personaje correcto
+    if (per_solicitado) {
+      setPerfilOso(prev => ({ ...prev, oraculo_personaje: per_solicitado }));
     }
-  });
+    setIntent(intentMap[agente] || 'ai');
+    setOsosModo('retorno');
+    setStep(2);
+    return;
+  }
+
+  // ── Sectores con ubicación ─────────────────────────────
+  setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
+
+  const roleMap = {
+    'BROSHOP_PRODUCTO': 'shop',
+    'BROSHOP_SERVICIO': 'service',
+    'BROSHOP_AVISO':    'aviso',
+    'AUDIO':            'music',
+  };
+
+  const esPais = modalidad === 'ONLINE';
+
+  (async () => {
+    try {
+      const roleBuscado = roleMap[agente];
+      let query = supabase
+        .from('profiles')
+        .select('bro_id, banner_url, alias, biz_category, biz_profession, city, address, nearby_ref, ref_price, description, role')
+        .limit(20);
+      if (!esPais && ciudad) query = query.ilike('city', `%${ciudad}%`);
+
+      const { data: perfiles, error } = await query;
+      const filtrados = perfiles?.filter(p =>
+        p.bro_id && (Array.isArray(p.role) ? p.role.includes(roleBuscado) : p.role === roleBuscado)
+      ) || [];
+
+      if (!error && filtrados.length > 0) {
+        setStripCards(filtrados.map(p => ({
+          bro_id:      p.bro_id,
+          banner_url:  p.banner_url || '',
+          nombre:      p.alias || '',
+          categoria:   p.biz_category || p.biz_profession || '',
+          ciudad:      p.city || '',
+          descripcion: p.description || p.nearby_ref || '',
+          ref_price:   p.ref_price || '',
+          address:     p.address || '',
+        })));
+        setStripLabel(intencion);
+        setStripVisible(true);
+      } else {
+        setStripCards([]);
+        setStripVisible(false);
+      }
+    } catch (err) {
+      console.error('Error cargando cards:', err);
+      setStripCards([]);
+      setStripVisible(false);
+    }
+  })();
+
+  setTimeout(() => {
+    setScope({ city: ciudad, type: 'teleport' });
+    setSessionCity(ciudad);
+    setSessionCP(cp);
+    setIntent(intentMap[agente] || 'productos');
+    setOsosModo('retorno');
+    setStep(2);
+  }, 2000);
+},  });
 
   const [balances, setBalances] = useState({ genesis: 0, vales: { nova: 0, crescens: 0, plena: 0, decrescens: 0 }, eco_p: 0, eco_gen: 0, halos_p: 0, halos_gen: 0, zap_p: 0, zap_gen: 0 });
   const [savedUserIndex, setSavedUserIndex] = useState(0);
@@ -314,11 +336,11 @@ function App() {
 
   // ─── NAV ITEMS (PUERTA DERECHA) ───────────────────────────
   const navItems = [
-    { id: 'gps',             label: 'OSOS/ RUTA', color: 'border-fuchsia-500/40 hover:bg-fuchsia-900/40 hover:border-fuchsia-400 group-hover:text-fuchsia-300', images: ['/emojis/lara.webp', '/emojis/tito.webp', '/emojis/puffo.webp'] },
+    { id: 'gps',             label: 'RUTA', color: 'border-fuchsia-500/40 hover:bg-fuchsia-900/40 hover:border-fuchsia-400 group-hover:text-fuchsia-300', images: ['/emojis/lara.webp', '/emojis/tito.webp', '/emojis/puffo.webp'] },
     { id: 'productos',       label: 'PRODUCTOS',  color: 'border-yellow-500/40 hover:bg-yellow-900/40 hover:border-yellow-400 group-hover:text-yellow-400', images: ['/emojis/nova.webp'] },
     { id: 'servicios',       label: 'SERVICIOS',  color: 'border-rose-900/50 hover:bg-rose-900/40 hover:border-rose-600 group-hover:text-rose-400', images: ['/emojis/isabella.webp', '/emojis/prmaestro.webp'] },
     { id: 'avisos',          label: 'AVISOS',     color: 'border-slate-500/40 hover:bg-slate-800/60 hover:border-slate-400 group-hover:text-slate-300', images: ['/emojis/evelyn.webp', '/emojis/larry.webp'] },
-    { id: 'lives',           label: 'AUDIO/LIVES',color: 'border-cyan-500/40 hover:bg-cyan-900/40 hover:border-cyan-400 group-hover:text-cyan-400', images: ['/emojis/mapache.webp', '/emojis/ami.webp'] },
+    { id: 'lives',           label: 'AUDIOS',color: 'border-cyan-500/40 hover:bg-cyan-900/40 hover:border-cyan-400 group-hover:text-cyan-400', images: ['/emojis/mapache.webp', '/emojis/ami.webp'] },
     { id: 'internal_search', label: 'REINOS',     color: 'border-orange-500/40 hover:bg-orange-900/40 hover:border-orange-400 group-hover:text-orange-400', images: ['/emojis/rumores.webp'] },
     { id: 'ai',              label: 'ORÁCULO',    color: 'border-lime-500/40 hover:bg-lime-900/40 hover:border-lime-400 group-hover:text-lime-400', images: ['/emojis/orumama.webp', '/emojis/jaguar.webp'] },
     { id: 'game',            label: 'GAMES',      color: 'border-white/20 hover:bg-white/10 hover:border-white/50 group-hover:text-white', images: ['/emojis/emoji_5.webp', '/emojis/emoji_7.webp'] }
@@ -499,7 +521,7 @@ function App() {
             <NovaBanner ref={novaBannerRef} sessionCity={sessionCity} sessionCP={sessionCP} realItems={realItems} onOpenTerminal={(card) => abrirTienda(card, 'novaVentas')} onSetActiveIndex={setHoloPrismaIndex} onInvokeOsos={() => setStep(1)} onEntityFocus={(user) => setActivePrismUser(user)} />
           </div>
           <div className="w-full max-w-2xl pointer-events-auto mb-4">
-            <AgentChatInput onSend={handleNovaInput} color="gold" placeholder="✦  ¿Qué producto estás buscando hoy?" />
+            <AgentChatInput onSend={handleNovaInput} color="gold" placeholder="✦  CODIGO + D · Descripción del Comercio  |  CODIGO + A  Entrar al Comercio" /> onSend={handleNovaInput} color="gold" placeholder="✦  ¿Qué producto estás buscando hoy?" />
           </div>
         </div>
       )}
@@ -516,7 +538,7 @@ function App() {
             <ServiciosBanner ref={serviciosBannerRef} personaje={perfilOso?.servicios_personaje || 'isabella'} sessionCity={sessionCity} sessionCP={sessionCP} realItems={realItems} onOpenTerminal={(card) => abrirTienda(card, 'isabellaVentas')} onInvokeOsos={() => setStep(1)} onEntityFocus={(user) => setActivePrismUser(user)} />
           </div>
           <div className="w-full max-w-2xl pointer-events-auto mb-4">
-            <AgentChatInput onSend={handleServiciosInput} color="slate" placeholder="✦  ¿Qué servicio necesitas?" />
+        <AgentChatInput onSend={handleServiciosInput} color="slate" placeholder="✦  CODIGO + D · Descripción del Comercio  |  CODIGO + A  Entrar al Comercio" />
           </div>
         </div>
       )}
@@ -588,14 +610,7 @@ function App() {
       {step === 1 && (
         <div className="relative z-[50] h-full flex flex-col items-center justify-end pb-0 px-4">
           <div className="w-full max-w-2xl mb-3"><OsosBanner mensaje={ososMensaje} /></div>
-          {ososBolas.length > 0 && (
-            <div className="flex gap-3 mb-3 flex-wrap justify-center max-w-2xl">
-              {ososBolas.map((bola, i) => (
-                <button key={i} onClick={() => handleOsosInput(bola.texto)} className="px-5 py-3 rounded-full text-xs font-black uppercase tracking-widest border-2 transition-all hover:scale-105 active:scale-95" style={{ background: 'radial-gradient(circle at 35% 35%, #ff69d4, #c800a1)', borderColor: '#ff69d4', color: '#fff', boxShadow: '0 0 20px rgba(200,0,161,0.6), inset 0 0 10px rgba(255,255,255,0.15)', animation: `floatBola ${1.8 + i * 0.3}s ease-in-out infinite` }}>{bola.texto}</button>
-              ))}
-            </div>
-          )}
-          <AgentChatInput onSend={(texto) => handleOsosInput(texto)} isLoading={ososLoading} />
+               <AgentChatInput onSend={(texto) => handleOsosInput(texto)} isLoading={ososLoading} />
         </div>
       )}
       

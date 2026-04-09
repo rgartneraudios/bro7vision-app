@@ -152,13 +152,7 @@ const EvelynBanner = forwardRef(function EvelynBanner({
           background: ${colorPrimario};
           box-shadow: 0 0 8px ${colorPrimario};
         }
-        .av-bola {
-          background: radial-gradient(circle at 35% 35%, ${colorPrimario}, ${colorSecundario});
-          border: 2px solid ${colorPrimario};
-          color: #fff;
-          box-shadow: 0 0 20px ${glowColor}, inset 0 0 10px rgba(255,255,255,0.1);
-        }
-        .av-loading {
+         .av-loading {
           display: inline-flex;
           gap: 4px;
           align-items: center;
@@ -198,25 +192,6 @@ const EvelynBanner = forwardRef(function EvelynBanner({
             )
           )}
         </div>
-
-        {/* BOLAS DE RESPUESTA */}
-        {!loading && bolas.length > 0 && (
-          <div className="flex gap-3 flex-wrap justify-center max-w-2xl">
-            {bolas.map((bola, i) => (
-              <button
-                key={i}
-                onClick={() => enviar(bola.texto)}
-                className="av-bola px-5 py-3 rounded-full text-xs font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
-                style={{
-                  animation: `floatBolaOrange ${1.8 + i * 0.3}s ease-in-out infinite`,
-                }}
-              >
-                {bola.texto}
-              </button>
-            ))}
-          </div>
-        )}
-
       </div>
     </>
   );
