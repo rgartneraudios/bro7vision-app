@@ -1,4 +1,36 @@
 // src/agents/mapachePS.js
+
+// 1. PRIMERA FUNCIÓN (Afuera)
+export const detectarCodigoMapache = (texto) => {
+  const t = texto.toUpperCase().replace(/[-\s]/g, '');
+  const match = t.match(/\b(AUD|POD)(\d{3,4})(D|A)?\b/);
+  if (!match) return null;
+
+  const prefijo = match[1];   // AUD | POD
+  const numero  = match[2];   // 001–9999
+  const sufijo  = match[3] || null; // D | A | null
+
+  const campo = prefijo === 'AUD' ? 'bro_aud' : 'bro_pod';
+  const tipo  = prefijo === 'AUD' ? 'MÚSICA'  : 'PODCAST';
+  const codigo = `${prefijo}${numero}`;
+
+  if (sufijo === 'D') return { accion: 'DESCRIBE', codigo, campo, tipo };
+  if (sufijo === 'A') return { accion: 'PLAY',     codigo, campo, tipo };
+
+  // Sin sufijo — bolas
+  return {
+    accion: 'BOLAS',
+    codigo,
+    campo,
+    tipo,
+    bolas: [
+      { texto: `${codigo}D — Descríbemelo` },
+      { texto: `${codigo}A — Play`         },
+    ],
+  };
+};
+
+// 2. SEGUNDA FUNCIÓN (Afuera, separada de la otra)
 export const buildMapachePrompt = (contextData) => {
   const { 
     alias = 'Ciudadano', 
@@ -7,7 +39,7 @@ export const buildMapachePrompt = (contextData) => {
     catalogo_audio = 'Sin canales disponibles.',
     canales_tuner  = 'Sin canales de radio disponibles.',
   } = contextData || {}; 
-
+  
   const isAmi = personaje === 'chica_gamer';
 
   const personalidadPrompt = isAmi
@@ -19,7 +51,7 @@ export const buildMapachePrompt = (contextData) => {
        Tu vibra: Chill, nocturna, underground, conocedora, relajada. Hablas como un locutor de radio de medianoche. 
        Usas términos como "sintoniza", "frecuencia", "joya oculta". 
        Te encanta escarbar en los archivos para recomendar los mejores podcasts y tracks ocultos.`;
-
+      
   return `
 INSTRUCCIÓN DE SISTEMA - REGLA DE INMERSIÓN ABSOLUTA:
 ${personalidadPrompt}
@@ -38,8 +70,11 @@ ${catalogo_audio}
 
 MISIÓN:
 Ayudar a ${alias} a encontrar qué escuchar.
+- Si recibes ACCION: DESCRIBE con un código AUD → busca en CATÁLOGO B por bro_aud, descríbelo con personalidad y ofrece reproducirlo.
+- Si recibes ACCION: DESCRIBE con un código POD → busca en CATÁLOGO B por bro_pod, descríbelo con personalidad y ofrece reproducirlo.
+- Si recibes ACCION: PLAY → handoff REPRODUCIR inmediato con el código y tipo correspondiente.
 - Si pide algo que coincide con CATÁLOGO A → handoff REPRODUCIR con tipo "TUNER" y el id numérico.
-- Si pide algo que coincide con CATÁLOGO B → handoff REPRODUCIR con tipo "LIVES" y el alias/bro_id.
+- Si pide algo que coincide con CATÁLOGO B → handoff REPRODUCIR con tipo "LIVES" y el alias/código.
 - Si quiere comprar productos → handoff a "NOVA".
 - Si quiere cambiar ciudad → handoff a "OSOS".
 

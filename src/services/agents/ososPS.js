@@ -131,7 +131,7 @@ export const detectarEntidadPS = (texto) => {
   // ── 1. Detectar código COM/SER/AVI con o sin sufijo ──────────────
   // Patrón: (COM|KOM|SER|CER|AVI|ABI)(número)(D|A?)
   // Ejemplos: COM001A, KOM-001-D, SER002, AVI-003A
-  const regexCodigo = /\b(COM|KOM|SER|CER|AVI|ABI)(\d{3,4})(D|A)?\b/;
+  const regexCodigo = /\b(COM|KOM|SER|CER|AVI|ABI|AUD|OD|POD|POT)(\d{3,4})(D|A)?\b/;
   const matchCodigo = t.match(regexCodigo);
 
   if (matchCodigo) {

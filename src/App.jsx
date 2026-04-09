@@ -589,7 +589,7 @@ function App() {
             <MapacheBanner ref={mapacheBannerRef} personaje={perfilOso?.audio_personaje || 'mapache'} realItems={realItems} findChannelByAlias={findChannelByAlias} checkIfNew={checkIfNew} onInvokeOsos={() => setStep(1)} onInvokeNova={() => setIntent('productos')} onOpenProfile={handleOpenProfile} onTuneIn={(user) => { setAudioUser(user); setActivePrismUser(user); }} onTuneTuner={(id) => broTunerRef.current?.playById(id)} onStopTuner={() => broTunerRef.current?.stop()} />
           </div>
           <div className="w-full max-w-2xl pointer-events-auto mb-4">
-            <AgentChatInput onSend={handleMapacheInput} isLoading={mapacheLoading} color="cyan" placeholder="✦  ¿Qué ponemos? Dime el estado de ánimo, canal o artista..." />
+            <AgentChatInput onSend={handleMapacheInput} isLoading={mapacheLoading} color="cyan" placeholder="✦  CODIGO + D · Descripción del Audio  |  CODIGO + A  Le damos PLAY" />
           </div>
         </div>
       )}

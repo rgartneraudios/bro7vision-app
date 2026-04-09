@@ -16,17 +16,26 @@ export const armarSobreMapache = (realItems) => {
   if (!realItems || realItems.length === 0)
     return 'Sin canales activos hoy.';
 
-  const canales = realItems.filter(item => {
-    const role = item.role;
-    const tieneRolMusic = Array.isArray(role) 
-      ? role.includes('music') 
-      : role === 'music';
-    return tieneRolMusic || item.audio_file || item.video_file;
+  const roles = Array.isArray ? true : false; // helper inline abajo
+
+  const musica = realItems.filter(item => {
+    const role = Array.isArray(item.role) ? item.role : [item.role];
+    return (role.includes('music') || item.audio_file) && item.bro_aud;
   });
 
-  if (canales.length === 0) return 'La radio está en silencio absoluto hoy.';
+  const podcasts = realItems.filter(item => {
+    const role = Array.isArray(item.role) ? item.role : [item.role];
+    return (role.includes('talk') || item.audio_file) && item.bro_pod;
+  });
 
-  return canales.map(c =>
-    `- [ID: ${c.bro_id || c.id}] ${c.alias || ''} | ${c.biz_category || c.biz_profession || 'Música/Live'} | ${c.description || c.nearby_ref || ''}`
-  ).join('\n');
+  const lineasMusica = musica.map(c =>
+    `- [AUD:${c.bro_aud}] ${c.alias || ''} | ${c.biz_category || 'Música'} | ${c.description || ''}`
+  );
+
+  const lineasPodcast = podcasts.map(c =>
+    `- [POD:${c.bro_pod}] ${c.alias || ''} | ${c.biz_category || 'Podcast'} | ${c.description || ''}`
+  );
+
+  const resultado = [...lineasMusica, ...lineasPodcast];
+  return resultado.length > 0 ? resultado.join('\n') : 'La radio está en silencio absoluto hoy.';
 };

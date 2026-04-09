@@ -711,44 +711,116 @@ const BoosterModal = ({ onClose }) => {
                       </div>
                     </div>
 
-                    {/* BRO-ID */}
-                    <div className="mt-5">
-                      <label className={LabelStyle}>ID EN BRO7VISION</label>
-                      <div className={`mt-1 px-4 py-3 rounded-xl border flex items-center gap-3
-                        ${formData.bro_id
-                          ? 'bg-black/40 border-cyan-500/30'
-                          : 'bg-black/20 border-white/5'}`}
-                      >
-                        {formData.bro_id ? (
-                          <>
-                            <span className={`w-2 h-2 rounded-full flex-shrink-0
-                              ${formData.bro_id.startsWith('COM') ? 'bg-yellow-400 shadow-[0_0_6px_rgba(251,191,36,0.8)]'  : ''}
-                              ${formData.bro_id.startsWith('PRO') ? 'bg-yellow-400 shadow-[0_0_6px_rgba(251,191,36,0.8)]'  : ''}
-                              ${formData.bro_id.startsWith('AUD') ? 'bg-cyan-400   shadow-[0_0_6px_rgba(34,211,238,0.8)]'  : ''}
-                              ${formData.bro_id.startsWith('BRO') ? 'bg-white      shadow-[0_0_6px_rgba(255,255,255,0.6)]' : ''}
-                              ${formData.bro_id.startsWith('ORG') ? 'bg-fuchsia-400 shadow-[0_0_6px_rgba(217,70,239,0.8)]' : ''}
-                            `} />
-                            <span style={{ fontFamily: "'Orbitron', monospace" }}
-                              className={`text-sm font-black tracking-widest
-                                ${formData.bro_id.startsWith('COM') || formData.bro_id.startsWith('PRO') ? 'text-yellow-400' : ''}
-                                ${formData.bro_id.startsWith('AUD') ? 'text-cyan-400'    : ''}
-                                ${formData.bro_id.startsWith('BRO') ? 'text-white'       : ''}
-                                ${formData.bro_id.startsWith('ORG') ? 'text-fuchsia-400' : ''}
-                              `}>
-                              {formData.bro_id}
-                            </span>
-                            <span className="text-[9px] text-gray-600 ml-auto">ID único · No editable</span>
-                          </>
-                        ) : (
-                          <>
-                            <span className="w-2 h-2 rounded-full bg-gray-700 flex-shrink-0" />
-                            <span className="text-xs text-gray-600 italic">Pendiente de asignación</span>
-                          </>
-                        )}
-                      </div>
-                      <p className="text-[9px] text-gray-600 mt-1">Tu identidad en BRO7VISION. Asignado por el equipo.</p>
-                    </div>
+                    {/* CÓDIGOS BRO7VISION — uno por rol activo */}
+{(() => {
+  const rolesActivos = Array.isArray(formData.role) ? formData.role : [];
 
+  const CONFIG_CODIGOS = [
+    {
+      rol:    'shop',
+      label:  '🏪 Productos',
+      campo:  'bro_id',
+      prefijo: 'COM',
+      color:  { dot: 'bg-yellow-400 shadow-[0_0_6px_rgba(251,191,36,0.8)]', text: 'text-yellow-400' },
+    },
+    {
+      rol:    'service',
+      label:  '🤝 Servicios',
+      campo:  'bro_ser',
+      prefijo: 'SER',
+      color:  { dot: 'bg-blue-400 shadow-[0_0_6px_rgba(96,165,250,0.8)]', text: 'text-blue-400' },
+    },
+    {
+      rol:    'music',
+      label:  '🎵 Audio',
+      campo:  'bro_aud',
+      prefijo: 'AUD',
+      color:  { dot: 'bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.8)]', text: 'text-cyan-400' },
+    },
+    {
+      rol:    'talk',
+      label:  '🎙️ Podcast',
+      campo:  'bro_pod',
+      prefijo: 'POD',
+      color:  { dot: 'bg-fuchsia-400 shadow-[0_0_6px_rgba(217,70,239,0.8)]', text: 'text-fuchsia-400' },
+    },
+  ];
+
+  const visibles = CONFIG_CODIGOS.filter(c => rolesActivos.includes(c.rol));
+  
+  return (
+  <div className="mt-5 space-y-3">
+    <label className={LabelStyle}>CÓDIGOS EN BRO7VISION</label>
+
+    {/* AVI — siempre visible, es del ciudadano base */}
+    {(() => {
+      const codigo = formData.bro_avi;
+      return (
+        <div className={`px-4 py-3 rounded-xl border flex items-center gap-3
+          ${codigo ? 'bg-black/40 border-cyan-500/30' : 'bg-black/20 border-white/5'}`}
+        >
+          <span className={`w-2 h-2 rounded-full flex-shrink-0
+            ${codigo
+              ? 'bg-orange-400 shadow-[0_0_6px_rgba(251,146,60,0.8)]'
+              : 'bg-gray-700'}`}
+          />
+          <span className="text-[10px] text-gray-500 w-20 flex-shrink-0">📢 Avisos</span>
+          {codigo ? (
+            <>
+              <span
+                style={{ fontFamily: "'Orbitron', monospace" }}
+                className="text-sm font-black tracking-widest text-orange-400"
+              >
+                {codigo}
+              </span>
+              <span className="text-[9px] text-gray-600 ml-auto">No editable</span>
+            </>
+          ) : (
+            <span className="text-xs text-gray-600 italic">
+              Sin código asignado · Activo en Reality
+            </span>
+          )}
+        </div>
+      );
+    })()}
+
+    {/* Roles comerciales — solo si están activos */}
+    {visibles.map(({ rol, label, campo, color }) => {
+      const codigo = formData[campo];
+      return (
+        <div key={rol}
+          className={`px-4 py-3 rounded-xl border flex items-center gap-3
+            ${codigo ? 'bg-black/40 border-cyan-500/30' : 'bg-black/20 border-white/5'}`}
+        >
+          <span className={`w-2 h-2 rounded-full flex-shrink-0
+            ${codigo ? color.dot : 'bg-gray-700'}`}
+          />
+          <span className="text-[10px] text-gray-500 w-20 flex-shrink-0">{label}</span>
+          {codigo ? (
+            <>
+              <span
+                style={{ fontFamily: "'Orbitron', monospace" }}
+                className={`text-sm font-black tracking-widest ${color.text}`}
+              >
+                {codigo}
+              </span>
+              <span className="text-[9px] text-gray-600 ml-auto">No editable</span>
+            </>
+          ) : (
+            <span className="text-xs text-gray-600 italic">
+              Sin código asignado · Activo en Reality
+            </span>
+          )}
+        </div>
+      );
+    })}
+
+    <p className="text-[9px] text-gray-600">
+      Los códigos habilitan tu presencia en los sectores localizados. Asignados por el equipo.
+    </p>
+  </div>
+);
+})()}
                     {/* GÉNERO */}
                     <div className="mt-5">
                       <label className={LabelStyle}>IDENTIDAD DE GÉNERO</label>

@@ -238,6 +238,10 @@ export const PREFIJOS_COMERCIO = {
   SER: { explora: 'BROSHOP_SERVICIO', ventas: 'ISABELLA_CIERRE',  alias: ['CER'] },
   // Avisos
   AVI: { explora: 'BROSHOP_AVISO',    ventas: 'EVELYN_CONECTAR',  alias: ['ABI'] },
+  // Audio — música
+  AUD: { explora: 'AUDIO',            ventas: 'AUDIO_PLAY',       alias: ['OD']  },
+  // Audio — podcast
+  POD: { explora: 'AUDIO',            ventas: 'AUDIO_PLAY',       alias: ['POT'] },
 };
 
 // ── DIRECTORIO BROVISION ──────────────────────────────────────────────

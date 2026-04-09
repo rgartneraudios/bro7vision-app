@@ -8,6 +8,7 @@ import { parsearRespuestaNova } from '../services/agents/novaVentasPS';
 import { supabase } from '../supabaseClient';
 import { getMoonSuffix } from '../utils/moonUtils';
 import { getKnowledgeBlock } from '../data/SystemKnowledge';
+import { detectarCodigoMapache } from '../services/agents/mapachePS';
 
 const INTENCION_KEYWORDS = {
   ubicacion:   ['dónde', 'donde', 'queda', 'está', 'ubicación', 'ubicacion', 'dirección', 'direccion', 'llegar', 'barrio', 'zona', 'cerca'],
@@ -391,6 +392,24 @@ export const useAgentChat = ({
           catalogo_audio: catalogoLives,
           canales_tuner:  catalogoTuner,
         };
+        
+        // En el bloque mapache, antes del fetch a Groq:
+const entidadAudio = detectarCodigoMapache(userMessage);
+if (entidadAudio) {
+  if (entidadAudio.accion === 'BOLAS') {
+    // Mostrar bolas sin ir a Groq
+    setMessages(prev => [...prev, {
+      role: 'assistant',
+      content: `¿Qué quieres hacer con ${entidadAudio.codigo}?`,
+      bolas: entidadAudio.bolas,
+    }]);
+    return;
+  }
+  // DESCRIBE o PLAY — inyectar en contextData para que Mapache sepa
+  contextData.accion_codigo = entidadAudio.accion;
+  contextData.codigo_target = entidadAudio.codigo;
+  contextData.tipo_target   = entidadAudio.tipo;
+}
 
       // ── EVELYN / LARRY ────────────────────────────────────────────
       } else if (mode === 'avisos') {
