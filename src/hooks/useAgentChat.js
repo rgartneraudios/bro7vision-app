@@ -3,12 +3,12 @@ import { useState } from 'react';
 import { askGroq } from '../services/groq';
 import { armarSobreMapache, armarCatalogoTuner } from '../services/portSystem';
 import { detectarSectorPS, detectarCiudadPS, detectarEntidadPS } from '../services/agents/ososPS';
-import { detectarIntencionAviso, extraerCodigoAviso, generarCodigoAvi, armarSobreEvelynTexto } from '../services/agents/evelynExploraPS';
 import { parsearRespuestaNova } from '../services/agents/novaVentasPS';
 import { supabase } from '../supabaseClient';
 import { getMoonSuffix } from '../utils/moonUtils';
 import { getKnowledgeBlock } from '../data/SystemKnowledge';
 import { detectarCodigoMapache } from '../services/agents/mapachePS';
+import { detectarIntencionAviso, extraerCodigoAviso, generarCodigoAvi, armarSobreEvelynTexto, esConfirmacion,} from '../services/agents/evelynExploraPS';
 
 const INTENCION_KEYWORDS = {
   ubicacion:   ['dónde', 'donde', 'queda', 'está', 'ubicación', 'ubicacion', 'dirección', 'direccion', 'llegar', 'barrio', 'zona', 'cerca'],
@@ -36,13 +36,15 @@ const escanearEcosistema = (textoUsuario, realItems) => {
   if (!realItems || realItems.length === 0) return [];
   const t = textoUsuario.toLowerCase();
   const coincidencias = realItems.filter(item => {
-    const matchAlias = item.alias && t.includes(item.alias.toLowerCase());
-    const matchBroId = item.bro_id && t.includes(item.bro_id.toLowerCase());
-    return matchAlias || matchBroId;
+    const matchAlias  = item.alias && t.includes(item.alias.toLowerCase());
+    const matchBroId  = item.bro_id  && t.includes(item.bro_id.toLowerCase());
+    const matchBroSer = item.bro_ser && t.includes(item.bro_ser.toLowerCase());
+    const matchBroAvi = item.bro_avi && t.includes(item.bro_avi.toLowerCase());
+    return matchAlias || matchBroId || matchBroSer || matchBroAvi;
   });
   return coincidencias.map(c => ({
     nombre:    c.alias,
-    bro_id:    c.bro_id,
+    bro_id:    c.bro_ser || c.bro_avi || c.bro_id, // ← prioriza el código del sector
     ciudad:    c.city,
     categoria: c.biz_category || c.biz_profession,
   })).slice(0, 3);
@@ -113,6 +115,7 @@ const armarSobreNova = (textoUsuario, realItems, contextData) => {
   };
 };
 
+
 // ── Sobre Isabella Explora ────────────────────────────────────────────
 const armarSobreIsabella = (textoUsuario, realItems) => {
   const intencion     = detectarIntencion(textoUsuario, INTENCION_KEYWORDS_SERVICIOS);
@@ -122,28 +125,34 @@ const armarSobreIsabella = (textoUsuario, realItems) => {
   const itemsServicio = realItems.filter(i =>
     Array.isArray(i.role) ? i.role.includes('service') : i.role === 'service'
   );
+  
 
   let entidadEnriquecida = null;
   if (entidad) {
-    const itemCompleto = itemsServicio.find(i => i.bro_id === entidad.bro_id)
-      || realItems.find(i => i.bro_id === entidad.bro_id);
-
+    const itemCompleto = itemsServicio.find(i => 
+    i.bro_ser === entidad.bro_id ||
+    i.bro_id  === entidad.bro_id
+  ) || realItems.find(i => 
+    i.bro_ser === entidad.bro_id ||
+    i.bro_id  === entidad.bro_id
+  );
+  
     if (itemCompleto) {
       switch (intencion) {
         case 'profesion':
-          entidadEnriquecida = { bro_id: itemCompleto.bro_id, nombre: itemCompleto.alias, biz_profession: itemCompleto.biz_profession || '', biz_category: itemCompleto.biz_category || '' };
+          entidadEnriquecida = { bro_id: itemCompleto.bro_ser, nombre: itemCompleto.alias, biz_profession: itemCompleto.biz_profession || '', biz_category: itemCompleto.biz_category || '' };
           break;
         case 'descripcion':
-          entidadEnriquecida = { bro_id: itemCompleto.bro_id, nombre: itemCompleto.alias, biz_profession: itemCompleto.biz_profession || '', description: itemCompleto.description || '' };
+          entidadEnriquecida = { bro_id: itemCompleto.bro_ser, nombre: itemCompleto.alias, biz_profession: itemCompleto.biz_profession || '', description: itemCompleto.description || '' };
           break;
         case 'precio':
-          entidadEnriquecida = { bro_id: itemCompleto.bro_id, nombre: itemCompleto.alias, service_title: itemCompleto.service_title || '', service_price: itemCompleto.service_price || '' };
+          entidadEnriquecida = { bro_id: itemCompleto.bro_ser, nombre: itemCompleto.alias, service_title: itemCompleto.service_title || '', service_price: itemCompleto.service_price || '' };
           break;
         case 'ubicacion':
-          entidadEnriquecida = { bro_id: itemCompleto.bro_id, nombre: itemCompleto.alias, nearby_ref: itemCompleto.nearby_ref || '', address: itemCompleto.address || '' };
+          entidadEnriquecida = { bro_id: itemCompleto.bro_ser, nombre: itemCompleto.alias, nearby_ref: itemCompleto.nearby_ref || '', address: itemCompleto.address || '' };
           break;
         default:
-          entidadEnriquecida = { bro_id: itemCompleto.bro_id, nombre: itemCompleto.alias, ciudad: itemCompleto.city || '', biz_profession: itemCompleto.biz_profession || '' };
+          entidadEnriquecida = { bro_id: itemCompleto.bro_ser, nombre: itemCompleto.alias, ciudad: itemCompleto.city || '', biz_profession: itemCompleto.biz_profession || '' };
       }
     }
   }
@@ -293,6 +302,7 @@ export const useAgentChat = ({
   const [tipoMemoria,    setTipoMemoria]    = useState(null);
 
   const [avisoPendiente, setAvisoPendiente] = useState(null);
+  const [avisoEnConstruccion, setAvisoEnConstruccion] = useState(null);
 
   const enviar = async (textoUsuario) => {
     if (!textoUsuario.trim()) return;
@@ -375,53 +385,148 @@ export const useAgentChat = ({
         };
 
       // ── ISABELLA EXPLORA ──────────────────────────────────────────
-      } else if (mode === 'servicios') {
-        paqueteContexto = {
-          ...contextData,
-          ...perfilBase,
-          ...armarSobreIsabella(textoUsuario, realItems),
-        };
+    } else if (mode === 'servicios') {
+  const entidadServ = detectarEntidadPS(textoUsuario);
+  console.log('[SERV DEBUG]', {
+    texto:      textoUsuario,
+    entidad:    entidadServ,
+  });
+     
 
-      // ── MAPACHE ───────────────────────────────────────────────────
-      } else if (mode === 'mapache') {
-        const catalogoLives = armarSobreMapache(realItems);
-        const catalogoTuner = armarCatalogoTuner();
-        paqueteContexto = {
-          ...contextData,
-          ...perfilBase,
-          catalogo_audio: catalogoLives,
-          canales_tuner:  catalogoTuner,
-        };
-        
-        // En el bloque mapache, antes del fetch a Groq:
-const entidadAudio = detectarCodigoMapache(userMessage);
-if (entidadAudio) {
-  if (entidadAudio.accion === 'BOLAS') {
-    // Mostrar bolas sin ir a Groq
-    setMessages(prev => [...prev, {
-      role: 'assistant',
-      content: `¿Qué quieres hacer con ${entidadAudio.codigo}?`,
-      bolas: entidadAudio.bolas,
-    }]);
-    return;
-  }
-  // DESCRIBE o PLAY — inyectar en contextData para que Mapache sepa
-  contextData.accion_codigo = entidadAudio.accion;
-  contextData.codigo_target = entidadAudio.codigo;
-  contextData.tipo_target   = entidadAudio.tipo;
+
+  if (entidadServ) {
+    if (entidadServ.tipo === 'COMERCIO' && entidadServ.accion === 'VENTAS') {
+  setMensaje(`Conectando con Isabella para ${entidadServ.bro_id}... 🔧`);
+  setBolas([]);
+  setLoading(false);
+  setTimeout(() => {
+    onHandoff?.({ agente: entidadServ.destino, bro_id: entidadServ.bro_id });
+  }, 1000);
+  return; // ← fuera del setTimeout
 }
 
-      // ── EVELYN / LARRY ────────────────────────────────────────────
-      } else if (mode === 'avisos') {
-        const { sobreTexto, intencion, avisosRaw } = await armarSobreEvelyn(textoUsuario, contextData);
-        paqueteContexto = {
-          ...contextData,
-          ...perfilBase,
-          sobre_evelyn:     sobreTexto,
-          intencion_avisos: intencion,
-          avisos_raw:       avisosRaw,
-        };
+    if (entidadServ.tipo === 'COMERCIO' && entidadServ.accion === 'DESCRIBE') {
+      paqueteContexto = {
+        ...contextData,
+        ...perfilBase,
+        ...armarSobreIsabella(textoUsuario, realItems),
+        bro_id_forzado: entidadServ.bro_id,
+      };
+    }
+    if (entidadServ.tipo === 'COMERCIO' && entidadServ.accion === 'BOLAS') {
+      setMensaje(`¿Qué quieres hacer con ${entidadServ.bro_id}?`);
+      setBolas(entidadServ.bolas);
+      setLoading(false);
+      return;
+    }
+  }
 
+  if (!paqueteContexto) {
+    paqueteContexto = {
+      ...contextData,
+      ...perfilBase,
+      ...armarSobreIsabella(textoUsuario, realItems),
+    };
+  }
+      // ── MAPACHE ───────────────────────────────────────────────────────
+} else if (mode === 'mapache') {
+  const catalogoLives = armarSobreMapache(realItems);
+  const catalogoTuner = armarCatalogoTuner();
+
+  // Detector de códigos AUD/POD — actúa antes que Groq
+  const entidadAudio = detectarCodigoMapache(textoUsuario);
+
+  if (entidadAudio) {
+    if (entidadAudio.accion === 'BOLAS') {
+      setMensaje(`¿Qué quieres hacer con ${entidadAudio.codigo}?`);
+      setBolas(entidadAudio.bolas);
+      setLoading(false);
+      return;
+    }
+    if (entidadAudio.accion === 'PLAY') {
+      setMensaje(null);
+      setBolas([]);
+      onHandoff?.({
+        accion:  'REPRODUCIR',
+        objetivo: entidadAudio.codigo,
+        tipo:    'LIVES',
+        agente:  'MAPACHE',
+      });
+      setLoading(false);
+      return;
+    }
+    // DESCRIBE — inyecta en contexto para que Mapache sepa qué describir
+    paqueteContexto = {
+      ...contextData,
+      ...perfilBase,
+      catalogo_audio:  catalogoLives,
+      canales_tuner:   catalogoTuner,
+      accion_codigo:   entidadAudio.accion,
+      codigo_target:   entidadAudio.codigo,
+      tipo_target:     entidadAudio.tipo,
+      campo_target:    entidadAudio.campo,
+    };
+  } else {
+    paqueteContexto = {
+      ...contextData,
+      ...perfilBase,
+      catalogo_audio: catalogoLives,
+      canales_tuner:  catalogoTuner,
+    };
+  }
+      // ── EVELYN / LARRY ────────────────────────────────────────────
+} else if (mode === 'avisos') {
+
+  // Detectar CONFIRMO antes de ir a Groq
+  if (esConfirmacion(textoUsuario) && avisoPendiente) {
+    // El user confirmó — publicar directamente sin Groq
+    const ciudad_usuario = perfilBase.usuario_city || contextData?.ciudad || '';
+    const expireDate = new Date();
+    expireDate.setDate(expireDate.getDate() + 7);
+    await supabase.from('avisos').insert([{
+      user_id:       contextData?.user_id  || '',
+      author_alias:  perfilBase.usuario_nombre || 'Ciudadano',
+      type:          avisoPendiente.tipo    || 'DEMANDA',
+      title:         avisoPendiente.titulo  || '',
+      content:       avisoPendiente.contenido || '',
+      city:          avisoPendiente.alcance === 'local'
+                       ? ciudad_usuario
+                       : avisoPendiente.alcance === 'españa'
+                         ? 'españa'
+                         : 'global',
+      cost_to_reveal: 200,
+      expires_at:    expireDate.toISOString(),
+    }]);
+    onAvisoPublicar?.({ confirmado: true });
+    setAvisoPendiente(null);
+    setAvisoEnConstruccion(null);
+    // Dejar que Groq diga el cierre con intencion: 'confirmado'
+    const { sobreTexto, intencion, avisosRaw } = await armarSobreEvelyn(
+      textoUsuario, { ...contextData, confirmado: true }
+    );
+    paqueteContexto = {
+      ...contextData,
+      ...perfilBase,
+      sobre_evelyn:     sobreTexto,
+      intencion_avisos: 'confirmado',
+      avisos_raw:       avisosRaw,
+    };
+
+  } else {
+    // Flujo normal — pasar estado de construcción al sobre
+    const { sobreTexto, intencion, avisosRaw } = await armarSobreEvelyn(
+      textoUsuario,
+      { ...contextData, aviso_en_construccion: avisoEnConstruccion }
+    );
+    paqueteContexto = {
+      ...contextData,
+      ...perfilBase,
+      sobre_evelyn:          sobreTexto,
+      intencion_avisos:      intencion,
+      avisos_raw:            avisosRaw,
+      aviso_en_construccion: avisoEnConstruccion,
+    };
+  }
       // ── ORÁCULO ───────────────────────────────────────────────────
       } else if (mode === 'oraculo') {
         paqueteContexto = {
@@ -616,27 +721,39 @@ if (entidadAudio) {
           onHandoff({ accion: data.handoff.accion, objetivo: data.handoff.objetivo || '', tipo: data.handoff.tipo || 'NINGUNA', agente: data.handoff.destino_agente || 'MAPACHE' });
         }
 
-      } else if (mode === 'avisos') {
-        setMensaje(data.mensaje || '...');
-        setBolas(Array.isArray(data.bolas) ? data.bolas : []);
-        if (data.handoff === 'HANDOFF_AVISO_CONECTAR' && data.aviso_id) {
-          const avisoTarget = paqueteContexto.avisos_raw?.find(av => generarCodigoAvi(av.id) === data.aviso_id || av.id === data.aviso_id);
-          if (avisoTarget) { setAvisoPendiente(avisoTarget); onAvisoConectar?.(avisoTarget); }
-        }
-        if (data.handoff === 'HANDOFF_AVISO_PUBLICAR' && data.titulo) {
-          onAvisoPublicar?.({ titulo: data.titulo, contenido: data.contenido, tipo: data.tipo || 'DEMANDA' });
-        }
-        if (data.handoff === 'HANDOFF_OSOS') onHandoff?.({ agente: 'OSOS' });
+     } else if (mode === 'avisos') {
+  setMensaje(data.mensaje || '...');
+  setBolas([]);
 
+  // AVISO_PREVIEW — Groq tiene los 4 datos, mostrar banner de confirmación
+  if (data.handoff === 'AVISO_PREVIEW' && data.aviso) {
+    setAvisoEnConstruccion(data.aviso); // guarda en estado para el CONFIRMO
+    setAvisoPendiente(data.aviso);      // dispara AvisoPreviewCard en App.jsx
+  }
+
+  // Conectar con autor
+  if (data.handoff === 'HANDOFF_AVISO_CONECTAR' && data.aviso_id) {
+    const avisoTarget = paqueteContexto.avisos_raw?.find(av =>
+      generarCodigoAvi(av.id) === data.aviso_id || av.id === data.aviso_id
+    );
+    if (avisoTarget) onAvisoConectar?.(avisoTarget);
+  }
+
+  // Handoff a Osos
+  if (data.handoff === 'HANDOFF_OSOS') onHandoff?.({ agente: 'OSOS' });
+  
       } else if (mode === 'servicios') {
-        if (data.handoff) {
-          setMensaje(data.mensaje_despedida || 'Un momento, te conecto...');
-          setBolas([]);
-          if (onHandoff) {
-            if (data.agente_destino === 'ISABELLA_VENTAS') onHandoff({ agente: 'ISABELLA_VENTAS', bro_id: data.bro_id_target });
-            else onHandoff({ agente: data.agente_destino });
-          }
-        } else {
+  if (data.handoff) {
+    setMensaje(data.mensaje_despedida || 'Un momento, te conecto...');
+    setBolas([]);
+    if (onHandoff) {
+      if (data.agente_destino === 'ISABELLA_VENTAS') 
+        onHandoff({ agente: 'ISABELLA_CIERRE', bro_id: data.bro_id_target }); // ← normaliza a CIERRE
+      else 
+        onHandoff({ agente: data.agente_destino });
+    }
+    
+            } else {
           setMensaje(data.mensaje);
           if (paqueteContexto?.port_system_context?.entidad_detectada) {
             const entidad = paqueteContexto.port_system_context.entidad_detectada;

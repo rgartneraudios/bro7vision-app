@@ -32,19 +32,19 @@ const MapacheBanner = forwardRef(function MapacheBanner({
   if (agente === 'OSOS') { onInvokeOsos?.(); return; }
 
   if (accion === 'REPRODUCIR' && objetivo) {
-
-    if (tipo === 'TUNER') {
-      onTuneTuner?.(Number(objetivo));
-
-    } else {
-      // LIVES — busca en realItems
-      const canal = realItems.find(c => 
-        String(c.bro_id) === String(objetivo) || 
-        c.alias?.toLowerCase() === objetivo?.toLowerCase()
-      );
-      console.log('🎧 LIVES — buscando:', objetivo, '→', canal);
-      if (canal) onTuneIn?.(canal);
-    }
+  if (tipo === 'TUNER') {
+    onTuneTuner?.(Number(objetivo));
+  } else {
+    // LIVES — busca por bro_aud, bro_pod, bro_id o alias
+    const canal = realItems.find(c =>
+      String(c.bro_aud) === String(objetivo) ||
+      String(c.bro_pod) === String(objetivo) ||
+      String(c.bro_id)  === String(objetivo) ||
+      c.alias?.toLowerCase() === objetivo?.toLowerCase()
+    );
+    console.log('🎧 LIVES — buscando:', objetivo, '→', canal);
+    if (canal) onTuneIn?.(canal);
+  }
 
   } else if (accion === 'STOP') {
     onStopTuner?.();

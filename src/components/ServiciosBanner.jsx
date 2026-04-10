@@ -55,28 +55,19 @@ const ServiciosBanner = forwardRef(function ServiciosBanner({
 
     // ── HANDOFF corregido — escucha ISABELLA_VENTAS ──────────────
     onHandoff: ({ agente, bro_id }) => {
-
-      if (agente === 'ISABELLA_VENTAS' && bro_id) {
-        // Buscar el comercio en realItems por bro_id
-        const comercio = realItems.find(i =>
-          i.bro_id === bro_id || i.id === bro_id
-        );
-        if (comercio) {
-          // onOpenTerminal en App llama a abrirTienda(comercio, 'isabellaVentas')
-          onOpenTerminal?.(comercio, 'isabellaVentas');
-        }
-        return;
-      }
-
-      if (agente === 'OSOS')    { onInvokeOsos?.();    return; }
-      if (agente === 'MAPACHE') { onInvokeMapache?.(); return; }
-
-      // NOVA — cambiar a sector productos
-      if (agente === 'NOVA') {
-        onOpenTerminal?.(null, 'novaExplora');
-        return;
-      }
-    },
+  if (agente === 'ISABELLA_CIERRE' && bro_id) {  // ← era ISABELLA_VENTAS
+    const comercio = realItems.find(i =>
+      i.bro_ser === bro_id ||
+      i.bro_id  === bro_id ||
+      i.id      === bro_id
+    );
+    if (comercio) onOpenTerminal?.(comercio, 'isabellaVentas');
+    return;
+  }
+    if (agente === 'OSOS')    { onInvokeOsos?.();    return; }
+  if (agente === 'MAPACHE') { onInvokeMapache?.(); return; }
+  if (agente === 'NOVA')    { onOpenTerminal?.(null, 'novaExplora'); return; }
+},
   });
 
   // ── Exponer sendMessage al padre ──────────────────────────────────

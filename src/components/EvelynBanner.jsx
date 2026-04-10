@@ -102,12 +102,12 @@ const EvelynBanner = forwardRef(function EvelynBanner({
   }, [currentMsg]);
 
   // ── Colores según personaje ───────────────────────────────────────
-  // Evelyn → naranja cálido #F97316
-  // Larry  → naranja oxidado #C2410C
-  const colorPrimario   = esLarry ? '#C2410C' : '#F97316';
-  const colorSecundario = esLarry ? '#9A3412' : '#EA580C';
-  const colorTexto      = esLarry ? '#FED7AA' : '#FDBA74';
-  const glowColor       = esLarry ? 'rgba(194,65,12,0.5)' : 'rgba(249,115,22,0.5)';
+  // Evelyn → naranja cálido #0C21C2
+  // Larry  → naranja oxidado #1E2D94
+  const colorPrimario   = esLarry ? '#0C21C2' : '#161AF9';
+  const colorSecundario = esLarry ? '#1E2D94' : '#3552B8';
+  const colorTexto      = esLarry ? '#AAB9FE' : '#748BFD';
+  const glowColor       = esLarry ? 'rgba(12,14,194,0.5)' : 'rgba(22,25,250,0.5)';
 
   return (
     <>

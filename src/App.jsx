@@ -38,6 +38,7 @@ import SlideRailServicios from './components/SlideRailServicios';
 import EvelynBanner from './components/EvelynBanner';
 import SlideRailAvisos from './components/SlideRailAvisos';
 import OraculoBanner from './components/OraculoBanner';
+import AvisoPreviewCard from './components/AvisoPreviewCard';
 
 function App() {
   const [realityMode, setRealityMode] = useState(null); 
@@ -75,6 +76,7 @@ function App() {
   const [stripLabel,   setStripLabel]   = useState('');
   const [stripVisible, setStripVisible] = useState(false);
   const broTunerRef = useRef(null);
+  
 
   const [sessionCP, setSessionCP]     = useState('');
   const [sessionCity, setSessionCity] = useState('');
@@ -94,6 +96,7 @@ function App() {
   const [mapacheLoading, setmapacheLoading] = useState(false);
   const [ososModo, setOsosModo] = useState('entrada');
   const [perfilOso, setPerfilOso] = useState(null);
+  const [avisoPendiente, setAvisoPendiente] = useState(null);
 
   const abrirTienda = (comercio, mode = 'novaVentas') => {
     setProjectingUser(null);
@@ -134,14 +137,21 @@ function App() {
 
   // ── NOVA_VENTAS ────────────────────────────────────────
   if (agente === 'NOVA_VENTAS') {
-  const comercioTarget = realItems.find(i => i.bro_id === comercio || i.bro_id === intencion);
+  const bro_id_target = comercio || intencion;
+  const comercioTarget = realItems.find(i => 
+    i.bro_id  === bro_id_target ||
+    i.bro_ser === bro_id_target
+  );
   if (comercioTarget) abrirTienda(comercioTarget, 'novaVentas');
   return;
 }
-
   // ── ISABELLA_CIERRE────────────────────────────────────
   if (agente === 'ISABELLA_CIERRE') {
-  const comercioTarget = realItems.find(i => i.bro_id === comercio || i.bro_id === intencion);
+  const bro_id_target = comercio || intencion;
+  const comercioTarget = realItems.find(i => 
+    i.bro_ser === bro_id_target ||
+    i.bro_id  === bro_id_target
+  );
   if (comercioTarget) abrirTienda(comercioTarget, 'isabellaVentas');
   return;
 }
@@ -154,8 +164,8 @@ function App() {
     'AUDIO':            'lives',
     'REINOS':           'internal_search',
     'ORACULO':          'ai',
-    'ORACULO_ORUMAMA':  'ai',   // ← nuevo
-    'ORACULO_JAGUAR':   'ai',   // ← nuevo
+    'ORACULO_ORUMAMA':  'ai',
+    'ORACULO_JAGUAR':   'ai',
     'GAMES':            'game',
   };
 
@@ -188,42 +198,89 @@ function App() {
 
   (async () => {
     try {
-      const roleBuscado = roleMap[agente];
-      let query = supabase
-        .from('profiles')
-        .select('bro_id, banner_url, alias, biz_category, biz_profession, city, address, nearby_ref, ref_price, description, role')
-        .limit(20);
-      if (!esPais && ciudad) query = query.ilike('city', `%${ciudad}%`);
+  const roleBuscado = roleMap[agente];
+  let query = supabase
+    .from('profiles')
+    .select('bro_id, bro_ser, bro_avi, bro_aud, bro_pod, banner_url, alias, biz_category, biz_profession, city, address, nearby_ref, ref_price, description, role, audio_type, track_name, audio_description, audio_file')
+    .limit(20);
+  if (!esPais && ciudad) query = query.ilike('city', `%${ciudad}%`);
 
-      const { data: perfiles, error } = await query;
-      const filtrados = perfiles?.filter(p =>
-        p.bro_id && (Array.isArray(p.role) ? p.role.includes(roleBuscado) : p.role === roleBuscado)
-      ) || [];
+  const { data: perfiles, error } = await query;
 
-      if (!error && filtrados.length > 0) {
-        setStripCards(filtrados.map(p => ({
-          bro_id:      p.bro_id,
-          banner_url:  p.banner_url || '',
-          nombre:      p.alias || '',
-          categoria:   p.biz_category || p.biz_profession || '',
-          ciudad:      p.city || '',
-          descripcion: p.description || p.nearby_ref || '',
-          ref_price:   p.ref_price || '',
-          address:     p.address || '',
-        })));
-        setStripLabel(intencion);
-        setStripVisible(true);
-      } else {
-        setStripCards([]);
-        setStripVisible(false);
-      }
-    } catch (err) {
-      console.error('Error cargando cards:', err);
-      setStripCards([]);
-      setStripVisible(false);
-    }
+  const filtrados = perfiles?.filter(p =>
+  Array.isArray(p.role) ? p.role.includes(roleBuscado) : p.role === roleBuscado
+) || [];
+
+  console.log('[AUDIO DEBUG]', {
+    agente,
+    roleBuscado,
+    totalPerfiles: perfiles?.length,
+    filtrados: filtrados.length,
+    muestraFiltrado: filtrados[0],
+  });
+
+  const cards = agente === 'AUDIO'
+  ? filtrados.flatMap(p => {
+      if (!p.bro_aud && !p.bro_pod) return [];
+      const esPodcast = p.audio_type === 'podcast';
+      const codigo    = esPodcast ? p.bro_pod : p.bro_aud;
+      if (!codigo) return [];
+      return [{
+        bro_id:      codigo,
+        banner_url:  p.banner_url || '',
+        nombre:      p.alias || '',
+        categoria:   esPodcast ? 'Podcast' : 'Música',
+        ciudad:      p.city || '',
+        descripcion: p.audio_description || p.description || '',
+        track_name:  p.track_name || '',
+        audio_type:  p.audio_type || 'music',
+      }];
+    })
+  : agente === 'BROSHOP_SERVICIO'
+  ? filtrados.filter(p => p.bro_ser).map(p => ({
+      bro_id:      p.bro_ser,
+      banner_url:  p.banner_url || '',
+      nombre:      p.alias || '',
+      categoria:   p.biz_profession || p.biz_category || '',
+      ciudad:      p.city || '',
+      descripcion: p.description || '',
+      ref_price:   p.ref_price || '',
+      address:     p.address || '',
+    }))
+  : agente === 'BROSHOP_AVISO'
+  ? filtrados.filter(p => p.bro_avi).map(p => ({
+      bro_id:      p.bro_avi,
+      banner_url:  p.banner_url || '',
+      nombre:      p.alias || '',
+      categoria:   'Avisos',
+      ciudad:      p.city || '',
+      descripcion: p.description || '',
+    }))
+  : filtrados.filter(p => p.bro_id).map(p => ({
+      bro_id:      p.bro_id,
+      banner_url:  p.banner_url || '',
+      nombre:      p.alias || '',
+      categoria:   p.biz_category || p.biz_profession || '',
+      ciudad:      p.city || '',
+      descripcion: p.description || p.nearby_ref || '',
+      ref_price:   p.ref_price || '',
+      address:     p.address || '',
+    }));    
+      if (!error && cards.length > 0) {
+    setStripCards(cards);
+    setStripLabel(intencion);
+    setStripVisible(true);
+  } else {
+    setStripCards([]);
+    setStripVisible(false);
+  }
+
+} catch (err) {
+  console.error('Error cargando cards:', err);
+  setStripCards([]);
+  setStripVisible(false);
+}
   })();
-
   setTimeout(() => {
     setScope({ city: ciudad, type: 'teleport' });
     setSessionCity(ciudad);
@@ -293,12 +350,24 @@ function App() {
         });
       }      
       const { data: all } = await supabase.from('profiles').select('*');
-      if (all) {
-        setRealItems(all.map(u => ({
-          ...u, shopName: u.alias, name: u.product_title || u.alias, img: u.card_banner_url || u.banner_url,
-          type: u.video_file ? ['shop', 'live'] : ['shop']
-        })).filter(u => u.video_file || u.audio_file || u.product_title));
-      }
+     if (all) {
+  setRealItems(all.map(u => ({
+    ...u,
+    shopName: u.alias,
+    name:     u.product_title || u.alias,
+    img:      u.card_banner_url || u.banner_url,
+    type:     u.video_file ? ['shop', 'live'] : ['shop'],
+  })).filter(u => 
+    u.video_file   ||
+    u.audio_file   ||
+    u.product_title ||
+    u.bro_ser      ||   // ← profesional de servicios
+    u.bro_aud      ||   // ← creador de música
+    u.bro_pod      ||   // ← podcaster
+    u.bro_avi      ||   // ← usuario con avisos
+    u.bro_id            // ← comercio de productos
+  ));
+}
     };
     fetchData();
   }, [session, step]);
@@ -514,7 +583,7 @@ function App() {
         <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
           {stripVisible && (
             <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
-              <BroCardStrip cards={stripCards} onSelectCard={(card) => novaBannerRef.current.sendMessage(`¿Qué es el ${card.bro_id}?`)} accentColor="gold" label={stripLabel} visible={stripVisible} />
+              <BroCardStrip cards={stripCards} onSelectCard={(card) => novaBannerRef.current.sendMessage(`${card.bro_id}D`)} accentColor="gold" label={stripLabel} visible={stripVisible} />
             </div>
           )}
           <div className="w-full max-w-2xl mb-3 pointer-events-auto">
@@ -531,7 +600,7 @@ function App() {
         <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
           {stripVisible && (
             <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
-              <BroCardStrip cards={stripCards} onSelectCard={(card) => serviciosBannerRef.current.sendMessage(`¿Qué es ${card.bro_id}?`)} accentColor="slate" label={stripLabel} visible={stripVisible} />
+              <BroCardStrip cards={stripCards} onSelectCard={(card) => serviciosBannerRef.current.sendMessage(`${card.bro_id}D`)} accentColor="slate" label={stripLabel} visible={stripVisible} />
             </div>
           )}
           <div className="w-full max-w-2xl mb-3 pointer-events-auto">
@@ -546,9 +615,24 @@ function App() {
       {/* EVELYN BANNER */}
       {step === 2 && intent === 'avisos' && (
         <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
+          
+          {/* BroCardStrip de avisos — perfiles con bro_avi */}
+    {stripVisible && (
+      <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
+        <BroCardStrip cards={stripCards} onSelectCard={(card) => evelynBannerRef.current.sendMessage(`${card.bro_id}D`)} accentColor="blue" label={stripLabel} visible={stripVisible} />
+      </div>
+    )}
+
+    {/* AvisoPreviewCard — aparece cuando Evelyn tiene el preview listo */}
+    {avisoPendiente && (           // ← NUEVO
+      <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
+        <AvisoPreviewCard aviso={avisoPendiente} visible={!!avisoPendiente} />
+      </div>
+    )}
+          
           {stripVisible && (
             <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
-              <BroCardStrip cards={stripCards} onSelectCard={(card) => evelynBannerRef.current.sendMessage(`Dime qué es el ${card.bro_id}`)} accentColor="orange" label={stripLabel} visible={stripVisible} />
+              <BroCardStrip cards={stripCards} onSelectCard={(card) => evelynBannerRef.current.sendMessage(`${card.bro_id}D`)} accentColor="orange" label={stripLabel} visible={stripVisible} />
             </div>
           )}
           <div className="w-full max-w-2xl mb-3 pointer-events-auto">
@@ -572,7 +656,7 @@ function App() {
             />
           </div>
           <div className="w-full max-w-2xl pointer-events-auto mb-4">
-            <AgentChatInput onSend={(text) => evelynBannerRef.current?.sendMessage(text)} color="orange" placeholder="✦  ¿Qué aviso buscas o quieres publicar?" />
+            <AgentChatInput onSend={(text) => evelynBannerRef.current?.sendMessage(text)} color="orange" placeholder="✦  ¿Qué aviso buscas o quieres publicar? | ✦  CODIGO + D · Descripción del Aviso  |  CODIGO + A conectar con el autor del Aviso" />
           </div>
         </div>
       )}
@@ -582,14 +666,14 @@ function App() {
         <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
           {stripVisible && (
             <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
-              <BroCardStrip cards={stripCards} onSelectCard={(card) => mapacheBannerRef.current.sendMessage(`Ponme algo de ${card.nombre}`)} accentColor="cyan" label={stripLabel} visible={stripVisible} />
+              <BroCardStrip cards={stripCards} onSelectCard={(card) => mapacheBannerRef.current.sendMessage(`${card.bro_id}D`)} accentColor="cyan" label={stripLabel} visible={stripVisible} />
             </div>
           )}
           <div className="w-full max-w-2xl mb-3 pointer-events-auto">
             <MapacheBanner ref={mapacheBannerRef} personaje={perfilOso?.audio_personaje || 'mapache'} realItems={realItems} findChannelByAlias={findChannelByAlias} checkIfNew={checkIfNew} onInvokeOsos={() => setStep(1)} onInvokeNova={() => setIntent('productos')} onOpenProfile={handleOpenProfile} onTuneIn={(user) => { setAudioUser(user); setActivePrismUser(user); }} onTuneTuner={(id) => broTunerRef.current?.playById(id)} onStopTuner={() => broTunerRef.current?.stop()} />
           </div>
           <div className="w-full max-w-2xl pointer-events-auto mb-4">
-            <AgentChatInput onSend={handleMapacheInput} isLoading={mapacheLoading} color="cyan" placeholder="✦  CODIGO + D · Descripción del Audio  |  CODIGO + A  Le damos PLAY" />
+            <AgentChatInput onSend={handleMapacheInput} isLoading={mapacheLoading} color="cyan" placeholder="✦  CODIGO + D · Descripción del Audio  |  CODIGO + A  Le damos PLAY | PON STOP | PON PAUSA | DALE PLAY " />
           </div>
         </div>
       )}

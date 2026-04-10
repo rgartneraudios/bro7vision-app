@@ -27,8 +27,12 @@ import { useRef, useEffect, useState, useCallback } from "react";
  */
 
 const THEMES = {
-  gold: { glow: "rgba(251,191,36,0.5)", border: "#fbbf24", idColor: "#fbbf24" },
-  cyan: { glow: "rgba(34,211,238,0.5)", border: "#22d3ee", idColor: "#22d3ee" },
+  gold:  { glow: "rgba(251,191,36,0.5)",  border: "#fbbf24", idColor: "#fbbf24", footerBg: "#000000" },
+  cyan:  { glow: "rgba(34,211,238,0.5)",  border: "#22d3ee", idColor: "#22d3ee", footerBg: "#000000" },
+  // Isabella — footer gris slate, letras blancas
+  slate: { glow: "rgba(100,116,139,0.5)", border: "#64748b", idColor: "#ffffff", footerBg: "#475569" },
+  // Evelyn — footer azul marino, letras blancas
+  blue:  { glow: "rgba(30,58,138,0.5)",   border: "#1e3a8a", idColor: "#ffffff", footerBg: "#1e3a8a" },
 };
 
 function BroCard({ card, theme, onClick, index }) {
@@ -103,20 +107,20 @@ function BroCard({ card, theme, onClick, index }) {
         )}
       </div>
 
-      {/* FOOTER — negro + BRO-ID */}
-      <div style={{
-        height: "44px", background: "#000",
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
-        <span style={{
-          fontFamily: "'Orbitron', 'Courier New', monospace",
-          fontWeight: 900, fontSize: "16px", letterSpacing: "0.1em",
-          color: t.idColor,
-        }}>
-          {card.bro_id}
-        </span>
-      </div>
-    </div>
+      {/* FOOTER — color por theme + letras blancas para slate/blue */}
+<div style={{
+  height: "44px", background: t.footerBg,
+  display: "flex", alignItems: "center", justifyContent: "center",
+}}>
+  <span style={{
+    fontFamily: "'Orbitron', 'Courier New', monospace",
+    fontWeight: 900, fontSize: "16px", letterSpacing: "0.1em",
+    color: t.idColor,
+  }}>
+    {card.bro_id}
+  </span>
+</div>
+   </div>
   );
 }
 

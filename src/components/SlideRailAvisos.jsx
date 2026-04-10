@@ -57,7 +57,7 @@ export default function SlideRailAvisos() {
         style={{
           aspectRatio: "5 / 12",
           maxHeight: "80vh",
-          boxShadow: "0 0 20px rgba(249,115,22,0.4)",  // naranja — color de Avisos
+          boxShadow: "0 0 20px rgba(7,23,182,0.4)",  // naranja — color de Avisos
         }}
       />
     </div>
