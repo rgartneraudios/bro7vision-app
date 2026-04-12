@@ -72,7 +72,7 @@ const AGENT_COLORS = {
 const AGENT_PROFILES = {
   osos: {
     theme: 'violet',
-    text: '✦  Cuéntame qué buscas y dónde quieres ir ? | Saluda o Pon Sector o Personaje + ubicación'
+    text: '✦  Dame con Nova · Dame con Isabella · Dame con Evelyn · o dime qué buscas ? | Saluda o Pon Sector o Personaje + ubicación | Te cuento una historia?'
   },
   nova: {
     theme: 'gold',

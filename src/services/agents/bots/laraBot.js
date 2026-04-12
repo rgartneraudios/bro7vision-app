@@ -2,7 +2,7 @@
 // Personalidad: sensible, crítica, detectora de vende humos, intuición aguda.
 // Host del podcast OSOS IA junto a Puffo.
 // Le encanta: enrollados dulce-salados, ensalada de tomate con atún, chocolates.
-// Lee: podcast_resumen, historia, ads de personaje_semana.
+// Lee: podcast_resumen, historia, ads de personaje_update.
 
 import { frase, construirRespuesta } from './ososUtils.js';
 
@@ -32,14 +32,14 @@ const FRASE_REDIRIGIR = "¿Y tú, a dónde quieres ir hoy?";
 
 // ─── Respuesta sobre el podcast ───────────────────────────────────────────────
 // Lara es host — habla del tema del episodio con criterio propio.
-// Lee podcast_resumen de personaje_semana.
+// Lee podcast_resumen de personaje_update.
 
-function responderPodcast(semana) {
-  if (!semana?.podcast_resumen) return null;
+function responderPodcast(update) {
+  if (!update?.podcast_resumen) return null;
   const comentarios = [
-    `Esta semana en OSOS IA estuvimos hablando de ${semana.podcast_resumen}. Hay cosas que me llegaron profundo, la verdad.`,
-    `En el último episodio tocamos ${semana.podcast_resumen}. Yo lo tenía claro desde el principio, pero verlo desplegado así fue otro nivel.`,
-    `Hablamos de ${semana.podcast_resumen} en el podcast. Hay mucho vende humos en ese tema, así que no nos cortamos.`,
+    `Esta semana en OSOS IA estuvimos hablando de ${update.podcast_resumen}. Hay cosas que me llegaron profundo, la verdad.`,
+    `En el último episodio tocamos ${update.podcast_resumen}. Yo lo tenía claro desde el principio, pero verlo desplegado así fue otro nivel.`,
+    `Hablamos de ${update.podcast_resumen} en el podcast. Hay mucho vende humos en ese tema, así que no nos cortamos.`,
   ];
   return frase(comentarios);
 }
@@ -47,9 +47,9 @@ function responderPodcast(semana) {
 // ─── Respuesta sobre vivencias o menciones ────────────────────────────────────
 // Lee el campo ads o historia si contiene algo que contar.
 
-function responderVivencia(semana) {
-  if (semana?.ads) return semana.ads;
-  if (semana?.historia) return semana.historia;
+function responderVivencia(update) {
+  if (update?.ads) return update.ads;
+  if (update?.historia) return update.historia;
   return null;
 }
 
@@ -66,12 +66,14 @@ const datosLara = {
 
 // ─── Exportación principal ────────────────────────────────────────────────────
 
-export function laraResponder({ textoUsuario, sectorFinal, ciudadFinal, semana }) {
+export function laraResponder({ textoUsuario, sectorFinal, ciudadFinal, update, actoActual, ramaActual }) {
   return construirRespuesta({
     datosBot: datosLara,
-    semana,
+    update,
     sectorFinal,
     ciudadFinal,
     textoUsuario,
+    actoActual,
+    ramaActual,
   });
 }

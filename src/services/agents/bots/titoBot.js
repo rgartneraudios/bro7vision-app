@@ -2,7 +2,7 @@
 // Personalidad: callado, escritor, siempre tomando notas, voz de la audiencia.
 // Lee los comentarios del podcast en el canal OSOS IA.
 // Le encanta: flan con crema o flan con dulce de leche.
-// Lee: comentarios_audiencia, historia, ads de personaje_semana.
+// Lee: comentarios_audiencia, historia, ads de personaje_update.
 
 import { frase, construirRespuesta } from './ososUtils.js';
 
@@ -34,9 +34,9 @@ const FRASE_REDIRIGIR = "¿A dónde te llevo?";
 // Tito no es host — es el que lee los comentarios de la audiencia.
 // Lee comentarios_audiencia (array) de personaje_semana.
 
-function responderPodcast(semana) {
-  if (!semana?.comentarios_audiencia?.length) return null;
-  const comentario = frase(semana.comentarios_audiencia);
+function responderPodcast(update) {
+  if (!update?.comentarios_audiencia?.length) return null;
+  const comentario = frase(update.comentarios_audiencia);
   const intro = [
     `Los comentarios esta semana están que arden. Uno decía: "${comentario}"`,
     `La audiencia no se quedó callada. Alguien escribió: "${comentario}"`,
@@ -47,9 +47,9 @@ function responderPodcast(semana) {
 
 // ─── Respuesta sobre vivencias o menciones ────────────────────────────────────
 
-function responderVivencia(semana) {
-  if (semana?.ads) return semana.ads;
-  if (semana?.historia) return semana.historia;
+function responderVivencia(update) {
+  if (update?.ads) return update.ads;
+  if (update?.historia) return update.historia;
   return null;
 }
 
@@ -66,12 +66,14 @@ const datosTito = {
 
 // ─── Exportación principal ────────────────────────────────────────────────────
 
-export function titoResponder({ textoUsuario, sectorFinal, ciudadFinal, semana }) {
+export function titoResponder({ textoUsuario, sectorFinal, ciudadFinal, update, actoActual, ramaActual }) {
   return construirRespuesta({
     datosBot: datosTito,
-    semana,
+    update,
     sectorFinal,
     ciudadFinal,
     textoUsuario,
+    actoActual,
+    ramaActual,
   });
 }

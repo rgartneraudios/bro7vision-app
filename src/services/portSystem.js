@@ -1,9 +1,5 @@
 import { RADIO_CHANNELS_DB } from '../data/RadioChannels';
 
-export const armarSobreNova = (contextData, realItems) => {
-  return {}; 
-};
-
 // Catálogo A — canales fijos BroVision (BroTuner)
 export const armarCatalogoTuner = () => {
   return RADIO_CHANNELS_DB.map(c =>

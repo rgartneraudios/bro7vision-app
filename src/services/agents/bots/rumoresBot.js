@@ -23,7 +23,7 @@ const FRASES_DETALLE = [
 
 const FRASES_NOVEDADES = [
   "Últimas noticias de los Reinos — esto es lo más reciente que tengo.",
-  "Las novedades de esta semana en los Reinos, en primicia —",
+  "Las novedades de esta update en los Reinos, en primicia —",
   "Acabo de actualizar el registro. Esto es lo nuevo —",
 ];
 
@@ -65,7 +65,7 @@ export function responder({
   intencion = null,
   reinos = [],
   reinoDetalle = null,
-  semana = null,
+  update = null,
 }) {
   const intent = intencion || detectarIntencion(textoUser);
   const t = textoUser.toLowerCase();
@@ -76,7 +76,7 @@ export function responder({
 
   const esSaludo = ['hola', 'hey', 'buenas', 'ey', 'hi', 'buenos'].some(s => t.startsWith(s));
   if (esSaludo) {
-    if (semana?.historia) return { handoff: false, mensaje: semana.historia + ' ¿Qué Reino te interesa?', bolas: [] };
+    if (update?.historia) return { handoff: false, mensaje: update.historia + ' ¿Qué Reino te interesa?', bolas: [] };
     return { handoff: false, mensaje: elegir(FRASES_BIENVENIDA), bolas: [] };
   }
 
@@ -93,8 +93,8 @@ export function responder({
       return { handoff: false, mensaje: elegir(FRASES_SIN_RESULTADOS), bolas: [] };
 
     case 'novedades':
-      if (semana?.historia) {
-        return { handoff: false, mensaje: `${elegir(FRASES_NOVEDADES)} ${semana.historia}`, bolas: [] };
+      if (update?.historia) {
+        return { handoff: false, mensaje: `${elegir(FRASES_NOVEDADES)} ${update.historia}`, bolas: [] };
       }
       return { handoff: false, mensaje: elegir(FRASES_NOVEDADES) + ' Nada nuevo por ahora.', bolas: [] };
 

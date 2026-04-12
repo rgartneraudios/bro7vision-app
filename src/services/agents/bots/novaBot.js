@@ -93,7 +93,7 @@ export function responder({
   intencion = null,
   entidad = null,      // entidad detectada por el PS (nombre, bro_id, datos)
   hayTarjetas = false,
-  semana = null,
+  update = null,
 }) {
 
   const intent = intencion || detectarIntencion(textoUser);
@@ -172,10 +172,10 @@ export function responder({
   // ── Saludo / bienvenida ─────────────────────────────────────────────
   const esSaludo = ['hola', 'hey', 'buenas', 'ey', 'hi', 'buenos'].some(s => t.startsWith(s));
   if (esSaludo) {
-    if (semana?.historia) {
+    if (update?.historia) {
       return {
         handoff: false,
-        mensaje: semana.historia + ' ¿Qué producto buscas?',
+        mensaje: update.historia + ' ¿Qué producto buscas?',
         bolas:   [],
       };
     }

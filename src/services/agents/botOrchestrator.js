@@ -19,14 +19,14 @@ import { generarCodigoAvi }               from './evelynExploraPS';
 import { getKnowledgeBlock }              from '../../data/SystemKnowledge';
 import { getMoonSuffix }                  from '../../utils/moonUtils';
 
-// ─── Helper: contenido semanal ────────────────────────────────────────────────
+// ─── Helper: contenido update ────────────────────────────────────────────────
 
-async function cargarSemana(supabase, personaje_id) {
+async function cargarUpdate(supabase, personaje_id) {
   if (!supabase || !personaje_id) return null;
   try {
     const hoy = new Date().toISOString().split('T')[0];
     const { data } = await supabase
-      .from('personaje_semana')
+      .from('personaje_update')
       .select('*')
       .eq('personaje_id', personaje_id.toLowerCase())
       .lte('semana', hoy)
@@ -112,65 +112,67 @@ function detectarIntencionReinos(texto) {
 
 // ─── Bloques por mode ─────────────────────────────────────────────────────────
 
-async function modoOsos({ textoUsuario, oso_id, sectorFinal, ciudadFinal, supabase }) {
+async function modoOsos({ textoUsuario, oso_id, sectorFinal, ciudadFinal, actoActual, ramaActual, supabase }) {
   const id     = (oso_id || 'lara').toLowerCase();
-  const semana = await cargarSemana(supabase, id);
-  const args   = { textoUsuario, sectorFinal, ciudadFinal, semana };
+  const update= await cargarUpdate(supabase, id);
+  const args   = { textoUsuario, sectorFinal, ciudadFinal, actoActual: actoActual || 'acto_1', ramaActual: ramaActual || null, update
+ };
+    
   if (id === 'tito')  return titoResponder(args);
   if (id === 'puffo') return puffoResponder(args);
   return laraResponder(args);
 }
 
 async function modoNova({ textoUsuario, entidad, hayTarjetas, supabase }) {
-  const semana = await cargarSemana(supabase, 'nova');
+  const update = await cargarUpdate(supabase, 'nova');
   return novaResponder({
     textoUser:  textoUsuario,
     intencion:  detectarIntencionNova(textoUsuario),
     entidad,
     hayTarjetas,
-    semana,
+    update,
   });
 }
 
 async function modoServicios({ textoUsuario, entidad, hayTarjetas, personaje, supabase }) {
   const id     = (personaje || 'isabella').toLowerCase();
-  const semana = await cargarSemana(supabase, id);
-  const args   = { textoUser: textoUsuario, intencion: detectarIntencionServicios(textoUsuario), entidad, hayTarjetas, semana };
+  const update = await cargarUpdate(supabase, id);
+  const args   = { textoUser: textoUsuario, intencion: detectarIntencionServicios(textoUsuario), entidad, hayTarjetas, update };
   if (id === 'prmaestro') return prmaestroResponder(args);
   return isabellaResponder(args);
 }
 
 async function modoAudio({ textoUsuario, entidad, hayTarjetas, personaje, supabase }) {
   const id     = (personaje || 'mapache').toLowerCase();
-  const semana = await cargarSemana(supabase, id);
-  const args   = { textoUser: textoUsuario, intencion: detectarIntencionAudio(textoUsuario), entidad, hayTarjetas, semana };
+  const update = await cargarUpdate(supabase, id);
+  const args   = { textoUser: textoUsuario, intencion: detectarIntencionAudio(textoUsuario), entidad, hayTarjetas, update};
   if (id === 'ami') return amiResponder(args);
   return mapacheResponder(args);
 }
 
 async function modoOraculo({ textoUsuario, personaje, supabase }) {
   const id       = (personaje || 'orumama').toLowerCase();
-  const semana   = await cargarSemana(supabase, id);
+  const update   = await cargarUpdate(supabase, id);
   const intencion = detectarIntencionOraculo(textoUsuario);
   const args = {
     textoUser:         textoUsuario,
     intencion,
     faselunar:         getMoonSuffix(),
     bloqueConocimiento: getKnowledgeBlock(intencion),
-    semana,
+    update,
   };
   if (id === 'jaguar') return jaguarResponder(args);
   return orumamaResponder(args);
 }
 
 async function modoReinos({ textoUsuario, reinos, reinoDetalle, supabase }) {
-  const semana = await cargarSemana(supabase, 'rumores');
+  const update = await cargarUpdate(supabase, 'rumores');
   return rumoresResponder({
     textoUser:   textoUsuario,
     intencion:   detectarIntencionReinos(textoUsuario),
     reinos:      reinos      || [],
     reinoDetalle: reinoDetalle || null,
-    semana,
+    update,
   });
 }
 
@@ -278,7 +280,7 @@ export async function botOrchestrator({
   mode,
   textoUsuario,
   // OSOS
-  oso_id, sectorFinal, ciudadFinal,
+  oso_id, sectorFinal, ciudadFinal, actoActual, ramaActual,
   // NOVA / SERVICIOS / AUDIO — entidad ya armada por el PS en el hook
   entidad, hayTarjetas,
   // Personajes activos por sector
@@ -296,7 +298,7 @@ export async function botOrchestrator({
   supabase,
 }) {
   switch (mode) {
-    case 'osos':        return modoOsos({ textoUsuario, oso_id, sectorFinal, ciudadFinal, supabase });
+    case 'osos': return modoOsos({ textoUsuario, oso_id, sectorFinal, ciudadFinal, actoActual, ramaActual, supabase });
     case 'novaExplora': return modoNova({ textoUsuario, entidad, hayTarjetas, supabase });
     case 'servicios':   return modoServicios({ textoUsuario, entidad, hayTarjetas, personaje: servicios_personaje, supabase });
     case 'mapache':     return modoAudio({ textoUsuario, entidad, hayTarjetas, personaje: audio_personaje, supabase });

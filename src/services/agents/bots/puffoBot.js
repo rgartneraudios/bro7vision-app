@@ -3,7 +3,7 @@
 // desde bolsa de valores hasta fontanería. Host del podcast junto a Lara.
 // Le encanta: quesos exóticos, pizzas, canelones italianos,
 //             bebidas gaseosas, dulce de membrillo con queso al plato.
-// Lee: podcast_resumen, historia, ads de personaje_semana.
+// Lee: podcast_resumen, historia, ads de personaje_update.
 
 import { frase, construirRespuesta } from './ososUtils.js';
 
@@ -33,23 +33,23 @@ const FRASE_REDIRIGIR = "Cuéntame, ¿a dónde quieres ir hoy?";
 
 // ─── Respuesta sobre el podcast ───────────────────────────────────────────────
 // Puffo es host — habla desde la experiencia y el criterio de vida.
-// Lee podcast_resumen de personaje_semana.
+// Lee podcast_resumen de personaje_update.
 
-function responderPodcast(semana) {
-  if (!semana?.podcast_resumen) return null;
+function responderPodcast(update) {
+  if (!update?.podcast_resumen) return null;
   const comentarios = [
-    `Esta semana en OSOS IA estuvimos con ${semana.podcast_resumen}. Con los años ves ese tema de otra manera, te lo digo yo.`,
-    `Hablamos de ${semana.podcast_resumen} en el último episodio. Hay cosas que solo se entienden cuando las has vivido.`,
-    `El podcast de esta semana fue sobre ${semana.podcast_resumen}. Me lo pasé bien, aunque Lara y yo no estuvimos del todo de acuerdo, como siempre.`,
+    `Esta semana en OSOS IA estuvimos con ${update.podcast_resumen}. Con los años ves ese tema de otra manera, te lo digo yo.`,
+    `Hablamos de ${update.podcast_resumen} en el último episodio. Hay cosas que solo se entienden cuando las has vivido.`,
+    `El podcast de esta semana fue sobre ${update.podcast_resumen}. Me lo pasé bien, aunque Lara y yo no estuvimos del todo de acuerdo, como siempre.`,
   ];
   return frase(comentarios);
 }
 
 // ─── Respuesta sobre vivencias o menciones ────────────────────────────────────
 
-function responderVivencia(semana) {
-  if (semana?.ads) return semana.ads;
-  if (semana?.historia) return semana.historia;
+function responderVivencia(update) {
+  if (update?.ads) return update.ads;
+  if (update?.historia) return update.historia;
   return null;
 }
 
@@ -66,12 +66,14 @@ const datosPuffo = {
 
 // ─── Exportación principal ────────────────────────────────────────────────────
 
-export function puffoResponder({ textoUsuario, sectorFinal, ciudadFinal, semana }) {
+export function puffoResponder({ textoUsuario, sectorFinal, ciudadFinal, update, actoActual, ramaActual }) {
   return construirRespuesta({
     datosBot: datosPuffo,
-    semana,
+    update,
     sectorFinal,
     ciudadFinal,
     textoUsuario,
+    actoActual,
+    ramaActual,
   });
 }

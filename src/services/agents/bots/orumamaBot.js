@@ -60,7 +60,7 @@ export function responder({
   intencion = null,
   faselunar = null,
   bloqueConocimiento = null,
-  semana = null,
+  update = null,
 }) {
   const intent = intencion || detectarIntencion(textoUser);
   const t = textoUser.toLowerCase();
@@ -71,7 +71,7 @@ export function responder({
 
   const esSaludo = ['hola', 'hey', 'buenas', 'ey', 'hi', 'buenos'].some(s => t.startsWith(s));
   if (esSaludo) {
-    if (semana?.historia) return { handoff: false, mensaje: semana.historia + ' ¿Qué quieres consultar?', bolas: [] };
+    if (update?.historia) return { handoff: false, mensaje: update.historia + ' ¿Qué quieres consultar?', bolas: [] };
     return { handoff: false, mensaje: elegir(FRASES_BIENVENIDA), bolas: [] };
   }
 

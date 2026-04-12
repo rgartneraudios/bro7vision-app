@@ -76,7 +76,6 @@ function App() {
   const [stripLabel,   setStripLabel]   = useState('');
   const [stripVisible, setStripVisible] = useState(false);
   const broTunerRef = useRef(null);
-  
 
   const [sessionCP, setSessionCP]     = useState('');
   const [sessionCity, setSessionCity] = useState('');
@@ -273,13 +272,14 @@ function App() {
 }
   })();
   setTimeout(() => {
-    setScope({ city: ciudad, type: 'teleport' });
-    setSessionCity(ciudad);
-    setSessionCP(cp);
-    setIntent(intentMap[agente] || 'productos');
-    setOsosModo('retorno');
-    setStep(2);
-  }, 2000);
+  const ciudadFinal = ciudad || perfilOso?.city || null;
+  setScope({ city: ciudadFinal, type: 'teleport' });
+  setSessionCity(ciudadFinal);
+  setSessionCP(cp);
+  setIntent(intentMap[agente] || 'productos');
+  setOsosModo('retorno');
+  setStep(2);
+}, 2000);
 },  });
 
   const [balances, setBalances] = useState({ genesis: 0, vales: { nova: 0, crescens: 0, plena: 0, decrescens: 0 }, eco_p: 0, eco_gen: 0, halos_p: 0, halos_gen: 0, zap_p: 0, zap_gen: 0 });
@@ -425,7 +425,7 @@ function App() {
             src={
               step === 1
                 ? ososModo === 'retorno'
-                  ? "https://media.bro7vision.com/ososia_recepcion2.mp4"
+                  ? "https://media.bro7vision.com/ososia_recepcion1.mp4"
                   : "https://media.bro7vision.com/ososia_recepcion1.mp4"
                 : intent === 'ai'              ? "https://media.bro7vision.com/oraculo.mp4"
                 : intent === 'game'            ? "https://media.bro7vision.com/game_bg.mp4"
