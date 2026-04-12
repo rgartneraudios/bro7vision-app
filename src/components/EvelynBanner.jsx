@@ -1,10 +1,12 @@
 // src/components/EvelynBanner.jsx
-// Agente: AVISOS EXPLORA — Color naranja #F97316
-// Personajes: Evelyn (loba bancaria) | Larry (perro empresario urbano)
-// Consume: useAgentChat (mode='avisos') → groq.js → evelynExploraPS.js
+// v4 — Todo incluido (Banner + Input + Carrusel). Sin forwardRef.
+// Recibe avisoEnConstruccion internamente desde el hook.
 
-import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAgentChat } from '../hooks/useAgentChat';
+import AvisoPreviewCard from './AvisoPreviewCard';
+import AgentChatInput from './AgentChatInput'; // <-- Importamos el Input
+import BroCardStrip from './BroCardStrip';     // <-- Importamos el Carrusel
 
 const GREETINGS_EVELYN = [
   "Hola, soy Evelyn. ¿Qué aviso buscas o quieres publicar? 🐺",
@@ -20,36 +22,56 @@ const GREETINGS_LARRY = [
   "Soy Larry. La ciudad siempre tiene algo interesante. ¿Qué aviso te trae?",
 ];
 
-const EvelynBanner = forwardRef(function EvelynBanner({
-  personaje    = 'evelyn',  // 'evelyn' | 'larry'
+export default function EvelynBanner({
+  // Props de estado y datos
+  personaje = 'evelyn',
   sessionCity,
   sessionCP,
-  genesis      = 0,
-  alias        = 'Ciudadano',
-  bro_id       = '',
-  realItems    = [],
+  genesis = 0,
+  alias = 'Ciudadano',
+  bro_id = '',
+  realItems = [],
+  stripVisible,
+  stripCards,
+  stripLabel,
+  
+  // Callbacks de navegación y acciones
   onInvokeOsos,
   onAvisoConectar,
   onAvisoPublicar,
-}, ref) {
+  setProjectingUser, // Para abrir el perfil del autor si es necesario
+}) {
 
-  const [display,    setDisplay]    = useState('');
-  const [cursor,     setCursor]     = useState(true);
+  // ── UI state ──────────────────────────────────────────────────────
+  const [display, setDisplay] = useState('');
+  const [cursor, setCursor] = useState(true);
   const [currentMsg, setCurrentMsg] = useState('');
   const charIdx = useRef(0);
 
-  const esLarry      = personaje === 'larry';
+  const esLarry = personaje === 'larry';
   const nombreAgente = esLarry ? 'LARRY' : 'EVELYN';
-  const GREETINGS    = esLarry ? GREETINGS_LARRY : GREETINGS_EVELYN;
+  const GREETINGS = esLarry ? GREETINGS_LARRY : GREETINGS_EVELYN;
 
-  // ── Hook Port System ──────────────────────────────────────────────
-  const { mensaje, bolas, loading, enviar, reset } = useAgentChat({
+  // ── Colores ───────────────────────────────────────────────────────
+  const colorPrimario = esLarry ? '#0C21C2' : '#161AF9';
+  const colorSecundario = esLarry ? '#1E2D94' : '#3552B8';
+  const colorTexto = esLarry ? '#AAB9FE' : '#748BFD';
+  const glowColor = esLarry ? 'rgba(12,14,194,0.5)' : 'rgba(22,25,250,0.5)';
+
+  // ── Hook — useAgentChat es el dueño del estado del aviso ──────────
+  const { 
+    mensaje, 
+    loading, 
+    enviar, 
+    avisoPendiente,
+    avisoEnConstruccion,
+  } = useAgentChat({
     mode: 'avisos',
     contextData: {
       alias,
       bro_id,
-      ciudad:           sessionCity || '',
-      cp:               sessionCP   || '',
+      ciudad: sessionCity || '',
+      cp: sessionCP || '',
       genesis,
       avisos_personaje: personaje,
     },
@@ -57,38 +79,17 @@ const EvelynBanner = forwardRef(function EvelynBanner({
     onHandoff: ({ agente }) => {
       if (agente === 'OSOS') onInvokeOsos?.();
     },
-    onAvisoConectar: (aviso) => {
-      onAvisoConectar?.(aviso);
-    },
-    onAvisoPublicar: ({ titulo, contenido, tipo }) => {
-      onAvisoPublicar?.({ titulo, contenido, tipo });
+    onAvisoConectar: (aviso) => onAvisoConectar?.(aviso),
+    onAvisoPublicar: ({ confirmado }) => {
+      if (confirmado) onAvisoPublicar?.({ confirmado: true });
     },
   });
 
-  // ── Exponer sendMessage al padre ──────────────────────────────────
-  useImperativeHandle(ref, () => ({
-    sendMessage: (text) => enviar(text),
-    reset,
-  }));
+  // ── Efectos Visuales (Máquina de escribir, etc) ─────────────────────────
+  useEffect(() => { const t = setInterval(() => setCursor(c => !c), 530); return () => clearInterval(t); }, []);
+  useEffect(() => { setCurrentMsg(GREETINGS[Math.floor(Math.random() * GREETINGS.length)]); }, [personaje]);
+  useEffect(() => { if (mensaje) setCurrentMsg(mensaje); }, [mensaje]);
 
-  // ── Cursor parpadeante ────────────────────────────────────────────
-  useEffect(() => {
-    const t = setInterval(() => setCursor(c => !c), 530);
-    return () => clearInterval(t);
-  }, []);
-
-  // ── Saludo inicial aleatorio ──────────────────────────────────────
-  useEffect(() => {
-    const greeting = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
-    setCurrentMsg(greeting);
-  }, [personaje]);
-
-  // ── Mensaje nuevo del hook ────────────────────────────────────────
-  useEffect(() => {
-    if (mensaje) setCurrentMsg(mensaje);
-  }, [mensaje]);
-
-  // ── Máquina de escribir ───────────────────────────────────────────
   useEffect(() => {
     if (!currentMsg) return;
     charIdx.current = 0;
@@ -101,17 +102,25 @@ const EvelynBanner = forwardRef(function EvelynBanner({
     return () => clearInterval(t);
   }, [currentMsg]);
 
-  // ── Colores según personaje ───────────────────────────────────────
-  // Evelyn → naranja cálido #0C21C2
-  // Larry  → naranja oxidado #1E2D94
-  const colorPrimario   = esLarry ? '#0C21C2' : '#161AF9';
-  const colorSecundario = esLarry ? '#1E2D94' : '#3552B8';
-  const colorTexto      = esLarry ? '#AAB9FE' : '#748BFD';
-  const glowColor       = esLarry ? 'rgba(12,14,194,0.5)' : 'rgba(22,25,250,0.5)';
+  // ── Aviso para el preview ───────────────────────────────────────────────
+  const avisoParaPreview = avisoEnConstruccion
+    ? { ...avisoEnConstruccion, ciudad: sessionCity || '' }
+    : null;
 
+  // ── Indicador de progreso ─────────────────────────────────────────
+  const CAMPOS_AVISO = ['tipo', 'titulo', 'contenido', 'alcance'];
+  function labelCampo(campo) {
+    return { tipo: 'Tipo', titulo: 'Título', contenido: 'Descripción', alcance: 'Alcance' }[campo] || '';
+  }
+  const campoActual = avisoEnConstruccion
+    ? CAMPOS_AVISO.find(c => !avisoEnConstruccion[c]) || 'confirmar'
+    : null;
+
+  // ── UI Completa de Evelyn / Larry ───────────────────────────────────────
   return (
-    <>
+    <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
       <style>{`
+        /* Tus estilos originales se mantienen intactos */
         @keyframes neonPulseAvisos {
           0%, 100% { text-shadow: 0 0 8px ${colorPrimario}, 0 0 22px ${colorSecundario}, 0 0 45px ${colorSecundario}; }
           50%       { text-shadow: 0 0 4px ${colorSecundario}, 0 0 10px ${colorSecundario}; }
@@ -119,10 +128,6 @@ const EvelynBanner = forwardRef(function EvelynBanner({
         @keyframes avDot {
           0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
           40%            { opacity: 1;   transform: scale(1.2); }
-        }
-        @keyframes floatBolaOrange {
-          0%, 100% { transform: translateY(0) scale(1); }
-          50%      { transform: translateY(-5px) scale(1.05); }
         }
         .av-wrap {
           background: rgba(0,0,0,0.75);
@@ -152,49 +157,109 @@ const EvelynBanner = forwardRef(function EvelynBanner({
           background: ${colorPrimario};
           box-shadow: 0 0 8px ${colorPrimario};
         }
-         .av-loading {
+        .av-loading {
           display: inline-flex;
           gap: 4px;
           align-items: center;
         }
         .av-loading span {
-          width: 6px;
-          height: 6px;
+          width: 6px; height: 6px;
           border-radius: 50%;
           background: ${colorPrimario};
           animation: avDot 1.2s ease-in-out infinite;
         }
         .av-loading span:nth-child(2) { animation-delay: 0.2s; }
         .av-loading span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes stepIn {
+          from { opacity: 0; transform: translateX(-6px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        .av-step { animation: stepIn 0.25s ease both; }
       `}</style>
 
-      <div className="w-full flex flex-col items-center gap-3 px-4">
+      {/* 1. CARRUSEL DE AVISOS (BroCardStrip) */}
+      {stripVisible && (
+        <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
+          <BroCardStrip 
+            cards={stripCards} 
+            onSelectCard={(card) => enviar(`${card.bro_id}D`)} 
+            accentColor="blue" 
+            label={stripLabel} 
+            visible={stripVisible} 
+          />
+        </div>
+      )}
 
-        {/* BANNER PRINCIPAL */}
+      {/* 2. AVISO PREVIEW (Tarjeta que se va armando) */}
+      {avisoParaPreview && (
+        <div className="w-full max-w-2xl pointer-events-auto mb-3">
+          <AvisoPreviewCard
+            aviso={avisoParaPreview}
+            visible={true}
+            esperandoConfirmar={!!avisoPendiente}
+          />
+        </div>
+      )}
+
+      {/* 3. INDICADOR DE PROGRESO */}
+      {avisoEnConstruccion && campoActual && (
+        <div className="flex items-center gap-2 w-full max-w-2xl px-2 mb-2">
+          {CAMPOS_AVISO.map((campo) => {
+            const completado = !!avisoEnConstruccion[campo];
+            const activo = campo === campoActual;
+            return (
+              <div key={campo} className="av-step flex items-center gap-1.5">
+                <div style={{
+                  width: activo ? '10px' : '8px',
+                  height: activo ? '10px' : '8px',
+                  borderRadius: '50%',
+                  background: completado ? colorPrimario : activo ? colorTexto : `${colorPrimario}33`,
+                  boxShadow: activo ? `0 0 8px ${colorPrimario}` : 'none',
+                  transition: 'all 0.3s ease',
+                }} />
+                <span style={{
+                  fontSize: '9px', fontWeight: 700, letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  color: completado ? colorPrimario : activo ? colorTexto : `${colorPrimario}44`,
+                  transition: 'all 0.3s ease',
+                }}>
+                  {labelCampo(campo)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* 4. EL BANNER DE TEXTO DE EVELYN/LARRY */}
+      <div className="w-full max-w-2xl mb-3 pointer-events-auto">
         <div className="av-wrap w-full flex flex-col items-center justify-center text-center">
           {!currentMsg && !loading && (
-            <p className="text-xs uppercase tracking-widest font-bold"
-               style={{ color: `${colorPrimario}99` }}>
+            <p className="text-xs uppercase tracking-widest font-bold" style={{ color: `${colorPrimario}99` }}>
               ◈ {nombreAgente} · AVISOS
             </p>
           )}
-
           {loading ? (
-            <div className="av-loading">
-              <span /><span /><span />
-            </div>
+            <div className="av-loading"><span /><span /><span /></div>
           ) : (
             currentMsg && (
               <p className="av-texto">
-                {display}
-                <span className="av-cursor" style={{ opacity: cursor ? 1 : 0 }} />
+                {display}<span className="av-cursor" style={{ opacity: cursor ? 1 : 0 }} />
               </p>
             )
           )}
         </div>
       </div>
-    </>
-  );
-});
 
-export default EvelynBanner;
+      {/* 5. INPUT DE CHAT */}
+      <div className="w-full max-w-2xl pointer-events-auto mb-4">
+        <AgentChatInput 
+          agent="evelyn" 
+          onSend={enviar} 
+          isLoading={loading} 
+        />
+      </div>
+
+    </div>
+  );
+}

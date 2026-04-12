@@ -328,7 +328,6 @@ useEffect(()=>{
   setVisualEchos([]);setFloatingEcos([]);
   return () => {
     if(video) video.pause();
-    if(bgVideo) bgVideo.pause();
     if(hlsRef.current){ hlsRef.current.destroy(); hlsRef.current=null; }
   };
 },[currentUser]); // SOLO currentUser

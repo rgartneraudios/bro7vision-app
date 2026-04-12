@@ -1,32 +1,34 @@
 // src/components/AvisoPreviewCard.jsx
-// Banner de confirmación de aviso — aparece encima de EvelynBanner
-// cuando Evelyn tiene los 4 datos y espera que el user escriba CONFIRMO
+// v3 — Diseño imponente cyberpunk para sector Avisos
+// Ocupa el espacio central libre sobre EvelynBanner
 
 import { useState, useEffect } from 'react';
 
 const ALCANCE_LABEL = {
-  local:   { icon: '📍', texto: 'Local'        },
-  españa:  { icon: '🇪🇸', texto: 'Toda España'  },
-  global:  { icon: '🌐', texto: 'Global'        },
+  local:   { icon: '◈', texto: 'Local'        },
+  españa:  { icon: '◉', texto: 'Toda España'  },
+  global:  { icon: '◎', texto: 'Global'        },
 };
 
-const TIPO_COLOR = {
-  OFERTA:   { text: 'text-emerald-400', border: 'border-emerald-500/40', bg: 'bg-emerald-500/10', glow: 'rgba(52,211,153,0.3)' },
-  DEMANDA:  { text: 'text-blue-400',    border: 'border-blue-500/40',    bg: 'bg-blue-500/10',    glow: 'rgba(59,130,246,0.3)' },
-  SERVICIO: { text: 'text-fuchsia-400', border: 'border-fuchsia-500/40', bg: 'bg-fuchsia-500/10', glow: 'rgba(217,70,239,0.3)' },
+const TIPO_CONFIG = {
+  OFERTA:  { 
+    color: '#00FF9C', glow: 'rgba(12,14,194,0.4)', 
+    border: 'rgba(22,25,250,0.3)', label: 'OFERTA' 
+  },
+  DEMANDA: { 
+    color: '#00C3FF', glow: 'rgba(12,14,194,0.4)', 
+    border: 'rgba(22,25,250,0.3)', label: 'DEMANDA' 
+  },
 };
 
-export default function AvisoPreviewCard({ aviso, visible = true }) {
-  const [show, setShow] = useState(false);
+export default function AvisoPreviewCard({ aviso, visible = true, esperandoConfirmar = false }) {
+  const [show,  setShow]  = useState(false);
   const [pulse, setPulse] = useState(false);
 
   useEffect(() => {
     if (visible && aviso) {
       setTimeout(() => setShow(true), 80);
-      // Pulso neón periódico
-      const t = setInterval(() => {
-        setPulse(p => !p);
-      }, 1800);
+      const t = setInterval(() => setPulse(p => !p), 2000);
       return () => clearInterval(t);
     } else {
       setShow(false);
@@ -35,140 +37,323 @@ export default function AvisoPreviewCard({ aviso, visible = true }) {
 
   if (!aviso) return null;
 
-  const tipo   = (aviso.tipo || 'DEMANDA').toUpperCase();
-  const c      = TIPO_COLOR[tipo] || TIPO_COLOR.DEMANDA;
+  const tipo    = (aviso.tipo || 'DEMANDA').toUpperCase();
+  const c       = TIPO_CONFIG[tipo] || TIPO_CONFIG.DEMANDA;
   const alcance = ALCANCE_LABEL[aviso.alcance] || ALCANCE_LABEL.local;
+
+  // Campos completados para la barra de progreso visual
+  const campos = [
+    { key: 'tipo',      label: 'TIPO',      done: !!aviso.tipo },
+    { key: 'titulo',    label: 'TÍTULO',    done: !!aviso.titulo },
+    { key: 'contenido', label: 'DESC',      done: !!aviso.contenido },
+    { key: 'alcance',   label: 'ALCANCE',   done: !!aviso.alcance },
+  ];
+  const completados = campos.filter(f => f.done).length;
+  const pct = Math.round((completados / campos.length) * 100);
 
   return (
     <>
       <style>{`
-        @keyframes avisoIn {
-          from { opacity: 0; transform: translateY(12px) scale(0.97); }
+        @keyframes avisoEntrada {
+          from { opacity: 0; transform: translateY(20px) scale(0.96); }
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
-        @keyframes neonPulseAviso {
-          0%, 100% { box-shadow: 0 0 18px rgba(30,58,138,0.5), 0 0 40px rgba(30,58,138,0.2), inset 0 0 12px rgba(0,0,0,0.4); }
-          50%       { box-shadow: 0 0 28px rgba(30,58,138,0.8), 0 0 60px rgba(30,58,138,0.35), inset 0 0 12px rgba(0,0,0,0.4); }
+        @keyframes scanH {
+          0%   { transform: translateY(0%);    opacity: 0; }
+          5%   { opacity: 0.6; }
+          95%  { opacity: 0.6; }
+          100% { transform: translateY(1800%); opacity: 0; }
         }
-        @keyframes scanLine {
-          0%   { transform: translateY(-100%); opacity: 0; }
-          10%  { opacity: 0.4; }
-          90%  { opacity: 0.4; }
-          100% { transform: translateY(400%); opacity: 0; }
-        }
-        @keyframes confirmoHint {
-          0%, 100% { opacity: 0.5; }
+        @keyframes cornerPulse {
+          0%, 100% { opacity: 0.4; }
           50%      { opacity: 1; }
         }
-        .aviso-wrap {
-          background: rgba(0,0,0,0.82);
-          backdrop-filter: blur(16px);
-          border: 1px solid rgba(30,58,138,0.6);
-          border-radius: 1.25rem;
-          padding: 18px 24px 20px;
+        @keyframes glitchSlice {
+          0%, 94%, 100% { clip-path: none; transform: none; }
+          95% { clip-path: polygon(0 30%, 100% 30%, 100% 32%, 0 32%); transform: translateX(4px); }
+          96% { clip-path: polygon(0 60%, 100% 60%, 100% 62%, 0 62%); transform: translateX(-3px); }
+          97% { clip-path: none; transform: none; }
+        }
+        @keyframes confirmoFlash {
+          0%, 100% { opacity: 0.7; letter-spacing: 0.3em; }
+          50%      { opacity: 1;   letter-spacing: 0.5em; }
+        }
+        @keyframes barFill {
+          from { width: 0%; }
+          to   { width: ${pct}%; }
+        }
+        .aviso-card {
           position: relative;
+          background: rgba(0, 0, 8, 0.88);
+          backdrop-filter: blur(20px);
+          border: 1px solid ${c.border};
+          border-radius: 1.5rem;
           overflow: hidden;
-          animation: avisoIn 0.4s ease both, neonPulseAviso 3s ease-in-out infinite;
+          animation: avisoEntrada 0.5s cubic-bezier(0.16,1,0.3,1) both;
+          box-shadow: 
+            0 0 40px ${c.glow},
+            0 0 80px rgba(0,0,0,0.6),
+            inset 0 0 30px rgba(0,0,0,0.5);
         }
-        .aviso-scanline {
+        .aviso-scan {
           position: absolute;
-          left: 0; right: 0;
+          left: 0; right: 0; top: 0;
           height: 2px;
-          background: linear-gradient(90deg, transparent, rgba(30,58,138,0.6), transparent);
-          animation: scanLine 3s ease-in-out infinite;
+          background: linear-gradient(90deg, 
+            transparent 0%, ${c.color}88 30%, 
+            ${c.color} 50%, ${c.color}88 70%, transparent 100%);
+          animation: scanH 4s ease-in-out infinite;
           pointer-events: none;
+          z-index: 10;
         }
-        .confirmo-hint {
-          animation: confirmoHint 2s ease-in-out infinite;
+        .aviso-corner {
+          position: absolute;
+          width: 20px; height: 20px;
+          animation: cornerPulse 2s ease-in-out infinite;
+        }
+        .aviso-corner-tl { top: 12px; left: 12px; 
+          border-top: 2px solid ${c.color}; 
+          border-left: 2px solid ${c.color}; }
+        .aviso-corner-tr { top: 12px; right: 12px;
+          border-top: 2px solid ${c.color};
+          border-right: 2px solid ${c.color}; }
+        .aviso-corner-bl { bottom: 12px; left: 12px;
+          border-bottom: 2px solid ${c.color};
+          border-left: 2px solid ${c.color}; }
+        .aviso-corner-br { bottom: 12px; right: 12px;
+          border-bottom: 2px solid ${c.color};
+          border-right: 2px solid ${c.color}; }
+        .aviso-tipo-badge {
+          font-family: 'Orbitron', 'Courier New', monospace;
+          font-size: 11px;
+          font-weight: 900;
+          letter-spacing: 0.3em;
+          color: ${c.color};
+          text-shadow: 0 0 12px ${c.glow};
+          padding: 6px 16px;
+          border: 1px solid ${c.border};
+          border-radius: 2rem;
+          background: ${c.color}11;
+        }
+        .aviso-titulo {
+          font-family: 'Orbitron', 'Courier New', monospace;
+          font-size: clamp(18px, 3vw, 28px);
+          font-weight: 900;
+          color: #ffffff;
+          letter-spacing: 0.04em;
+          line-height: 1.2;
+          text-shadow: 0 0 20px rgba(255,255,255,0.3);
+          animation: glitchSlice 8s ease-in-out infinite;
+        }
+        .aviso-contenido {
+          font-size: clamp(13px, 1.6vw, 15px);
+          color: rgba(200, 220, 255, 0.75);
+          line-height: 1.7;
+          font-family: 'Courier New', monospace;
+        }
+        .aviso-campo-dot {
+          width: 8px; height: 8px;
+          border-radius: 50%;
+          transition: all 0.4s ease;
+        }
+        .aviso-bar-track {
+          height: 3px;
+          background: rgba(255,255,255,0.08);
+          border-radius: 2px;
+          overflow: hidden;
+        }
+        .aviso-bar-fill {
+          height: 100%;
+          background: linear-gradient(90deg, ${c.color}88, ${c.color});
+          border-radius: 2px;
+          width: ${pct}%;
+          transition: width 0.6s cubic-bezier(0.16,1,0.3,1);
+        }
+        .aviso-confirmo {
+          font-family: 'Orbitron', 'Courier New', monospace;
+          font-size: clamp(14px, 2vw, 18px);
+          font-weight: 900;
+          color: ${c.color};
+          text-shadow: 0 0 20px ${c.glow}, 0 0 40px ${c.glow};
+          animation: confirmoFlash 1.5s ease-in-out infinite;
+        }
+        .aviso-genesis {
+          font-family: 'Orbitron', monospace;
+          font-size: 13px;
+          font-weight: 900;
+          color: #FFD700;
+          text-shadow: 0 0 10px rgba(255,215,0,0.5);
+        }
+        .aviso-alcance {
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.4);
+        }
+        .aviso-divider {
+          height: 1px;
+          background: linear-gradient(90deg, 
+            transparent, ${c.border}, transparent);
         }
       `}</style>
 
       <div
-        className="w-full"
         style={{
           opacity:    show ? 1 : 0,
-          transform:  show ? 'translateY(0)' : 'translateY(10px)',
-          transition: 'opacity 0.35s ease, transform 0.35s ease',
+          transform:  show ? 'translateY(0)' : 'translateY(16px)',
+          transition: 'opacity 0.4s ease, transform 0.4s ease',
+          width: '100%',
         }}
       >
-        <div className="aviso-wrap">
+        <div className="aviso-card">
 
-          {/* Línea de scan */}
-          <div className="aviso-scanline" />
+          {/* Scan line */}
+          <div className="aviso-scan" />
 
-          {/* Esquina decorativa */}
-          <div style={{
-            position: 'absolute', top: 0, right: 0,
-            width: '60px', height: '60px',
-            background: 'linear-gradient(225deg, rgba(30,58,138,0.3) 0%, transparent 60%)',
-            borderBottomLeftRadius: '100%',
-          }} />
+          {/* Esquinas decorativas */}
+          <div className="aviso-corner aviso-corner-tl" />
+          <div className="aviso-corner aviso-corner-tr" />
+          <div className="aviso-corner aviso-corner-bl" />
+          <div className="aviso-corner aviso-corner-br" />
 
-          {/* Header — tipo + alcance */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span
-                className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${c.text} ${c.border} ${c.bg}`}
-                style={{ fontFamily: "'Orbitron', monospace" }}
-              >
-                {tipo}
-              </span>
-              <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
-                {alcance.icon} {alcance.texto}
-                {aviso.alcance === 'local' && aviso.ciudad && (
-                  <span className="text-gray-600"> · {aviso.ciudad}</span>
+          {/* Contenido principal */}
+          <div style={{ padding: '32px 36px 28px' }}>
+
+            {/* Header — tipo + alcance + coste */}
+            <div style={{ 
+              display: 'flex', alignItems: 'center', 
+              justifyContent: 'space-between', marginBottom: '20px' 
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                {aviso.tipo && (
+                  <span className="aviso-tipo-badge">{c.label}</span>
                 )}
-              </span>
+                {aviso.alcance && (
+                  <span className="aviso-alcance">
+                    {alcance.icon} {alcance.texto}
+                    {aviso.alcance === 'local' && aviso.ciudad && (
+                      <span style={{ color: 'rgba(255,255,255,0.25)' }}>
+                        {' '}· {aviso.ciudad}
+                      </span>
+                    )}
+                  </span>
+                )}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span className="aviso-genesis">200</span>
+                <span style={{ 
+                  fontSize: '10px', color: 'rgba(255,215,0,0.5)',
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
+                  fontFamily: 'monospace'
+                }}>génesis</span>
+              </div>
             </div>
 
-            {/* Coste */}
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-blue-400 font-black"
-                style={{ fontFamily: "'Orbitron', monospace" }}>
-                200
-              </span>
-              <span className="text-[9px] text-gray-500 uppercase tracking-widest">génesis</span>
+            {/* Título */}
+            {aviso.titulo ? (
+              <p className="aviso-titulo" style={{ marginBottom: '16px' }}>
+                {aviso.titulo}
+              </p>
+            ) : (
+              <div style={{
+                height: '32px', marginBottom: '16px',
+                background: `${c.color}08`,
+                border: `1px dashed ${c.border}`,
+                borderRadius: '8px',
+              }} />
+            )}
+
+            {/* Divider */}
+            <div className="aviso-divider" style={{ marginBottom: '16px' }} />
+
+            {/* Contenido */}
+            {aviso.contenido ? (
+              <p className="aviso-contenido" style={{ marginBottom: '24px' }}>
+                {aviso.contenido}
+              </p>
+            ) : (
+              <div style={{
+                height: '52px', marginBottom: '24px',
+                background: `${c.color}05`,
+                border: `1px dashed ${c.border}`,
+                borderRadius: '8px',
+              }} />
+            )}
+
+            {/* Barra de progreso */}
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ 
+                display: 'flex', justifyContent: 'space-between',
+                alignItems: 'center', marginBottom: '8px'
+              }}>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                  {campos.map(({ key, label, done }) => (
+                    <div key={key} style={{ 
+                      display: 'flex', alignItems: 'center', gap: '5px' 
+                    }}>
+                      <div className="aviso-campo-dot" style={{
+                        background: done ? c.color : 'rgba(255,255,255,0.1)',
+                        boxShadow: done ? `0 0 6px ${c.glow}` : 'none',
+                      }} />
+                      <span style={{
+                        fontSize: '9px', fontWeight: 700,
+                        letterSpacing: '0.12em',
+                        textTransform: 'uppercase',
+                        fontFamily: 'monospace',
+                        color: done ? c.color : 'rgba(255,255,255,0.2)',
+                        transition: 'color 0.3s ease',
+                      }}>
+                        {label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <span style={{
+                  fontSize: '10px', fontFamily: 'monospace',
+                  color: 'rgba(255,255,255,0.3)', letterSpacing: '0.1em',
+                }}>
+                  {pct}%
+                </span>
+              </div>
+              <div className="aviso-bar-track">
+                <div className="aviso-bar-fill" />
+              </div>
             </div>
+
+            {/* Divider */}
+            <div className="aviso-divider" style={{ marginBottom: '16px' }} />
+
+            {/* Confirmo o instrucción */}
+            <div style={{ 
+              display: 'flex', alignItems: 'center', 
+              justifyContent: 'space-between' 
+            }}>
+              {esperandoConfirmar ? (
+                <>
+                  <span style={{
+                    fontSize: '11px', color: 'rgba(255,255,255,0.3)',
+                    fontFamily: 'monospace', letterSpacing: '0.05em',
+                  }}>
+                    Revisa y confirma para publicar
+                  </span>
+                  <span className="aviso-confirmo">CONFIRMO</span>
+                </>
+              ) : (
+                <span style={{
+                  fontSize: '11px', color: 'rgba(255,255,255,0.25)',
+                  fontFamily: 'monospace', letterSpacing: '0.05em',
+                  fontStyle: 'italic',
+                }}>
+                  Completando aviso campo a campo...
+                </span>
+              )}
+            </div>
+
           </div>
-
-          {/* Título */}
-          <p
-            className="text-white font-black text-base mb-2 leading-snug"
-            style={{ fontFamily: "'Orbitron', 'Courier New', monospace", letterSpacing: '0.05em' }}
-          >
-            {aviso.titulo}
-          </p>
-
-          {/* Contenido */}
-          <p className="text-gray-300 text-xs leading-relaxed mb-4">
-            {aviso.contenido}
-          </p>
-
-          {/* Separador */}
-          <div style={{
-            height: '1px',
-            background: 'linear-gradient(90deg, transparent, rgba(30,58,138,0.6), transparent)',
-            marginBottom: '14px',
-          }} />
-
-          {/* Instrucción CONFIRMO */}
-          <div className="flex items-center justify-between">
-            <p className="text-[10px] text-gray-500 italic">
-              Revisa que todo esté correcto antes de confirmar.
-            </p>
-            <div className="confirmo-hint flex items-center gap-2">
-              <span
-                className="text-blue-300 font-black text-sm tracking-widest"
-                style={{ fontFamily: "'Orbitron', monospace" }}
-              >
-                CONFIRMO
-              </span>
-              <span className="text-[10px] text-gray-600">para publicar</span>
-            </div>
-          </div>
-
         </div>
       </div>
     </>
   );
 }
+

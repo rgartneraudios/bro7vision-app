@@ -1,7 +1,7 @@
 // src/components/AgentChatInput.jsx
 import React, { useState } from 'react';
 
-// ─── PALETA DE COLORES POR AGENTE ────────────────────────────────────────────
+// ─── PALETA DE COLORES ────────────────────────────────────────────
 const AGENT_COLORS = {
   violet: {
     rgb:         '139,92,246',
@@ -30,7 +30,7 @@ const AGENT_COLORS = {
     pulse:       'text-cyan-400',
     btn:         'bg-cyan-500/30 hover:bg-cyan-400/50 border-cyan-400/60 hover:border-cyan-300 text-cyan-200',
   },
-  slateblue: {
+  slate: { // Cambiado de 'slateblue' a 'slate' para coincidir
     rgb:         '107,143,168',
     border:      'border-slate-400/50',
     borderFocus: 'focus:border-slate-300',
@@ -48,7 +48,7 @@ const AGENT_COLORS = {
     pulse:       'text-emerald-400',
     btn:         'bg-emerald-500/30 hover:bg-emerald-400/50 border-emerald-400/60 hover:border-emerald-300 text-emerald-200',
   },
-  amber: {
+  amber: { // Funciona como Naranja/Orange
     rgb:         '245,158,11',
     border:      'border-amber-400/50',
     borderFocus: 'focus:border-amber-300',
@@ -68,23 +68,59 @@ const AGENT_COLORS = {
   },
 };
 
+// ─── CONFIGURACIÓN POR AGENTE (Color + Textos) ─────────────────────────────
+const AGENT_PROFILES = {
+  osos: {
+    theme: 'violet',
+    text: '✦  Cuéntame qué buscas y dónde quieres ir ? | Saluda o Pon Sector o Personaje + ubicación'
+  },
+  nova: {
+    theme: 'gold',
+    text: '✦  CODIGO + D · Descripción | CODIGO + A Entrar | ¿Qué producto buscas hoy?'
+  },
+  isabella: {
+    theme: 'slate',
+    text: '✦  CODIGO + D · Descripción del Comercio | CODIGO + A Entrar al Comercio'
+  },
+  evelyn: {
+    theme: 'amber',
+    text: '✦  ¿Qué aviso buscas o quieres publicar? | CODIGO + D Descripción | CODIGO + A Conectar'
+  },
+  mapache: {
+    theme: 'cyan',
+    text: '✦  CODIGO + D · Info | CODIGO + A Play | PON STOP | PON PAUSA | DALE PLAY'
+  },
+  oraculo: {
+    theme: 'green',
+    text: '✦  Consulta al oráculo...'
+  }
+};
+
 // ─── COMPONENTE ───────────────────────────────────────────────────────────────
 /**
  * @param {function} onSend      — Callback al enviar el mensaje
  * @param {boolean}  isLoading   — Estado de carga del agente
- * @param {string}   color       — 'violet' | 'gold' | 'cyan' | 'slateblue' | 'green' | 'amber' | 'pink'
- * @param {string}   placeholder — Texto del placeholder personalizado por agente
+ * @param {string}   agent       — 'osos' | 'nova' | 'isabella' | 'evelyn' | 'mapache' | 'oraculo'
+ * @param {string}   placeholder — (Opcional) Sobrescribe el texto por defecto del agente
  * @param {number}   maxLength   — Límite de caracteres (default 120)
  */
 export default function AgentChatInput({
   onSend,
   isLoading,
-  color       = 'violet',
-  placeholder = '✦  Cuéntame qué buscas y dónde quieres ir...',
+  agent       = 'osos',
+  placeholder, 
   maxLength   = 120,
 }) {
   const [text, setText] = useState('');
-  const c = AGENT_COLORS[color] || AGENT_COLORS.violet;
+  
+  // Obtenemos el perfil del agente, si no existe usamos 'osos' por defecto
+  const profile = AGENT_PROFILES[agent] || AGENT_PROFILES.osos;
+  
+  // Obtenemos los colores. Si el theme no existe, usamos violet
+  const c = AGENT_COLORS[profile.theme] || AGENT_COLORS.violet;
+  
+  // Si le pasamos un placeholder por prop, lo usa. Si no, usa el del perfil.
+  const finalPlaceholder = placeholder || profile.text;
 
   const handleSend = () => {
     if (!text.trim() || isLoading) return;
@@ -118,7 +154,7 @@ export default function AgentChatInput({
       <textarea
         maxLength={maxLength}
         rows={3}
-        placeholder={placeholder}
+        placeholder={finalPlaceholder}
         value={text}
         onChange={e => setText(e.target.value)}
         onKeyDown={handleKeyDown}

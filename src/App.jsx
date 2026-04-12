@@ -33,7 +33,7 @@ import { useAudioData } from './hooks/useAudioData';
 import BroCardStrip from "./components/BroCardStrip";
 import AgentChatInput from './components/AgentChatInput';
 import { useAgentChat } from './hooks/useAgentChat';
-import ServiciosBanner from './components/ServiciosBanner';
+import IsabellaBanner from './components/IsabellaBanner';
 import SlideRailServicios from './components/SlideRailServicios';
 import EvelynBanner from './components/EvelynBanner';
 import SlideRailAvisos from './components/SlideRailAvisos';
@@ -71,7 +71,7 @@ function App() {
   const [ososHandoffContext, setOsosHandoffContext] = useState(null);
   const [holoPrismaIndex, setHoloPrismaIndex] = useState(0);
   const [ososFooterOpen, setOsosFooterOpen] = useState(false);
-  const mapacheBannerRef = useRef(null);
+
   const [stripCards,   setStripCards]   = useState([]);
   const [stripLabel,   setStripLabel]   = useState('');
   const [stripVisible, setStripVisible] = useState(false);
@@ -83,16 +83,7 @@ function App() {
   const [sessionRef, setSessionRef]   = useState('');
   const [vlData, setVlData]           = useState(null);
 
-  const serviciosBannerRef = useRef(null);
-  const evelynBannerRef = useRef(null);
-  const oraculoBannerRef = useRef(null);
-  const novaBannerRef = useRef(null);
-
-  const handleServiciosInput = async (text) => { if (text.trim()) await serviciosBannerRef.current?.sendMessage(text); };
-  const handleNovaInput = async (text) => { if (text.trim()) await novaBannerRef.current?.sendMessage(text); };
-  const handleOraculoInput = async (text) => { if (text.trim()) await oraculoBannerRef.current?.sendMessage(text); };
-  const handleMapacheInput = async (text) => { if (text.trim()) await mapacheBannerRef.current?.sendMessage(text); };
-
+ 
   const [mapacheLoading, setmapacheLoading] = useState(false);
   const [ososModo, setOsosModo] = useState('entrada');
   const [perfilOso, setPerfilOso] = useState(null);
@@ -580,124 +571,117 @@ function App() {
 
       {/* NOVA BANNER */}
       {step === 2 && intent === 'productos' && ( 
-        <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
-          {stripVisible && (
-            <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
-              <BroCardStrip cards={stripCards} onSelectCard={(card) => novaBannerRef.current.sendMessage(`${card.bro_id}D`)} accentColor="gold" label={stripLabel} visible={stripVisible} />
-            </div>
-          )}
-          <div className="w-full max-w-2xl mb-3 pointer-events-auto">
-            <NovaBanner ref={novaBannerRef} sessionCity={sessionCity} sessionCP={sessionCP} realItems={realItems} onOpenTerminal={(card) => abrirTienda(card, 'novaVentas')} onSetActiveIndex={setHoloPrismaIndex} onInvokeOsos={() => setStep(1)} onEntityFocus={(user) => setActivePrismUser(user)} />
-          </div>
-          <div className="w-full max-w-2xl pointer-events-auto mb-4">
-            <AgentChatInput onSend={handleNovaInput} color="gold" placeholder="✦  CODIGO + D · Descripción del Comercio  |  CODIGO + A  Entrar al Comercio" /> onSend={handleNovaInput} color="gold" placeholder="✦  ¿Qué producto estás buscando hoy?" />
-          </div>
-        </div>
+        <NovaBanner 
+          sessionCity={sessionCity} 
+          sessionCP={sessionCP} 
+          realItems={realItems} 
+          stripVisible={stripVisible}
+          stripCards={stripCards}
+          stripLabel={stripLabel}
+          onOpenTerminal={(card) => abrirTienda(card, 'novaVentas')} 
+          onSetActiveIndex={setHoloPrismaIndex} 
+          onInvokeOsos={() => setStep(1)} 
+          onInvokeMapache={() => setIntent('lives')}
+          onEntityFocus={(user) => setActivePrismUser(user)}
+          setIntent={setIntent}
+        />
       )}
-
+      
       {/* ISABELLA BANNER */}
       {step === 2 && intent === 'servicios' && (
-        <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
-          {stripVisible && (
-            <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
-              <BroCardStrip cards={stripCards} onSelectCard={(card) => serviciosBannerRef.current.sendMessage(`${card.bro_id}D`)} accentColor="slate" label={stripLabel} visible={stripVisible} />
-            </div>
-          )}
-          <div className="w-full max-w-2xl mb-3 pointer-events-auto">
-            <ServiciosBanner ref={serviciosBannerRef} personaje={perfilOso?.servicios_personaje || 'isabella'} sessionCity={sessionCity} sessionCP={sessionCP} realItems={realItems} onOpenTerminal={(card) => abrirTienda(card, 'isabellaVentas')} onInvokeOsos={() => setStep(1)} onEntityFocus={(user) => setActivePrismUser(user)} />
-          </div>
-          <div className="w-full max-w-2xl pointer-events-auto mb-4">
-        <AgentChatInput onSend={handleServiciosInput} color="slate" placeholder="✦  CODIGO + D · Descripción del Comercio  |  CODIGO + A  Entrar al Comercio" />
-          </div>
-        </div>
+        <IsabellaBanner 
+          personaje={perfilOso?.servicios_personaje || 'isabella'} 
+          sessionCity={sessionCity} 
+          sessionCP={sessionCP} 
+          realItems={realItems} 
+          stripVisible={stripVisible}
+          stripCards={stripCards}
+          stripLabel={stripLabel}
+          onOpenTerminal={(card) => abrirTienda(card, 'isabellaVentas')} 
+          onSetActiveIndex={setHoloPrismaIndex} 
+          onInvokeOsos={() => setStep(1)} 
+          onInvokeMapache={() => setIntent('lives')}
+          onEntityFocus={(user) => setActivePrismUser(user)} 
+          setIntent={setIntent}
+        />
       )}
-
+      
       {/* EVELYN BANNER */}
       {step === 2 && intent === 'avisos' && (
-        <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
+        <EvelynBanner 
+          personaje={perfilOso?.avisos_personaje || 'evelyn'} 
+          sessionCity={sessionCity} 
+          sessionCP={sessionCP} 
+          genesis={balances.genesis} 
+          alias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'} 
+          bro_id={perfilOso?.bro_id || ''} 
+          realItems={realItems} 
+          stripVisible={stripVisible}
+          stripCards={stripCards}
+          stripLabel={stripLabel}
+          onInvokeOsos={() => setStep(1)} 
           
-          {/* BroCardStrip de avisos — perfiles con bro_avi */}
-    {stripVisible && (
-      <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
-        <BroCardStrip cards={stripCards} onSelectCard={(card) => evelynBannerRef.current.sendMessage(`${card.bro_id}D`)} accentColor="blue" label={stripLabel} visible={stripVisible} />
-      </div>
-    )}
+          // Lógica de conexión a Supabase se mantiene aquí en App.jsx
+          onAvisoConectar={(aviso) => {
+            const newBalance = balances.genesis - 200;
+            setBalances(prev => ({ ...prev, genesis: newBalance }));
+            supabase.from('profiles').update({ genesis: newBalance }).eq('id', session.user.id);
+            supabase.from('mensajes_privados').insert([{ 
+              from_user_id: session.user.id, 
+              to_user_id: aviso.user_id, 
+              from_alias: perfilOso?.osos_nombre || 'Ciudadano', 
+              text: `Conexión iniciada desde aviso: ${aviso.title}`, 
+              aviso_id: aviso.id 
+            }]);
+            const autorProfile = realItems.find(i => i.id === aviso.user_id);
+            if (autorProfile) setProjectingUser(autorProfile);
+          }}
 
-    {/* AvisoPreviewCard — aparece cuando Evelyn tiene el preview listo */}
-    {avisoPendiente && (           // ← NUEVO
-      <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
-        <AvisoPreviewCard aviso={avisoPendiente} visible={!!avisoPendiente} />
-      </div>
-    )}
-          
-          {stripVisible && (
-            <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
-              <BroCardStrip cards={stripCards} onSelectCard={(card) => evelynBannerRef.current.sendMessage(`${card.bro_id}D`)} accentColor="orange" label={stripLabel} visible={stripVisible} />
-            </div>
-          )}
-          <div className="w-full max-w-2xl mb-3 pointer-events-auto">
-            <EvelynBanner ref={evelynBannerRef} personaje={perfilOso?.avisos_personaje || 'evelyn'} sessionCity={sessionCity} sessionCP={sessionCP} genesis={balances.genesis} alias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'} bro_id={perfilOso?.bro_id || ''} realItems={realItems} onInvokeOsos={() => setStep(1)} 
-              onAvisoConectar={(aviso) => {
-                const newBalance = balances.genesis - 200;
-                setBalances(prev => ({ ...prev, genesis: newBalance }));
-                supabase.from('profiles').update({ genesis: newBalance }).eq('id', session.user.id);
-                supabase.from('mensajes_privados').insert([{ from_user_id: session.user.id, to_user_id: aviso.user_id, from_alias: perfilOso?.osos_nombre || 'Ciudadano', text: `Conexión iniciada desde aviso: ${aviso.title}`, aviso_id: aviso.id }]);
-                const autorProfile = realItems.find(i => i.id === aviso.user_id);
-                if (autorProfile) setProjectingUser(autorProfile);
-              }}
-              onAvisoPublicar={async ({ titulo, contenido, tipo }) => {
-                if (balances.genesis < 200) return;
-                const expireDate = new Date(); expireDate.setDate(expireDate.getDate() + 7);
-                await supabase.from('avisos').insert([{ user_id: session.user.id, author_alias: perfilOso?.osos_nombre || 'Ciudadano', type: tipo, title: titulo, content: contenido, city: sessionCity || '', cost_to_reveal: 200, expires_at: expireDate.toISOString() }]);
-                const newBalance = balances.genesis - 200;
-                setBalances(prev => ({ ...prev, genesis: newBalance }));
-                supabase.from('profiles').update({ genesis: newBalance }).eq('id', session.user.id);
-              }}
-            />
-          </div>
-          <div className="w-full max-w-2xl pointer-events-auto mb-4">
-            <AgentChatInput onSend={(text) => evelynBannerRef.current?.sendMessage(text)} color="orange" placeholder="✦  ¿Qué aviso buscas o quieres publicar? | ✦  CODIGO + D · Descripción del Aviso  |  CODIGO + A conectar con el autor del Aviso" />
-          </div>
-        </div>
+          onAvisoPublicar={async ({ confirmado }) => {
+            if (!confirmado) return;
+            const newBalance = balances.genesis - 200;
+            setBalances(prev => ({ ...prev, genesis: newBalance }));
+            await supabase.from('profiles').update({ genesis: newBalance }).eq('id', session.user.id);
+          }}
+        />
       )}
-
+      
       {/* MAPACHE BANNER */}
-      {step === 2 && intent === 'lives' && (
-        <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
-          {stripVisible && (
-            <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
-              <BroCardStrip cards={stripCards} onSelectCard={(card) => mapacheBannerRef.current.sendMessage(`${card.bro_id}D`)} accentColor="cyan" label={stripLabel} visible={stripVisible} />
-            </div>
-          )}
-          <div className="w-full max-w-2xl mb-3 pointer-events-auto">
-            <MapacheBanner ref={mapacheBannerRef} personaje={perfilOso?.audio_personaje || 'mapache'} realItems={realItems} findChannelByAlias={findChannelByAlias} checkIfNew={checkIfNew} onInvokeOsos={() => setStep(1)} onInvokeNova={() => setIntent('productos')} onOpenProfile={handleOpenProfile} onTuneIn={(user) => { setAudioUser(user); setActivePrismUser(user); }} onTuneTuner={(id) => broTunerRef.current?.playById(id)} onStopTuner={() => broTunerRef.current?.stop()} />
-          </div>
-          <div className="w-full max-w-2xl pointer-events-auto mb-4">
-            <AgentChatInput onSend={handleMapacheInput} isLoading={mapacheLoading} color="cyan" placeholder="✦  CODIGO + D · Descripción del Audio  |  CODIGO + A  Le damos PLAY | PON STOP | PON PAUSA | DALE PLAY " />
-          </div>
-        </div>
+       {step === 2 && intent === 'lives' && (
+        <MapacheBanner 
+          personaje={perfilOso?.audio_personaje || 'mapache'} 
+          realItems={realItems} 
+          stripVisible={stripVisible}
+          stripCards={stripCards}
+          stripLabel={stripLabel}
+          findChannelByAlias={findChannelByAlias} 
+          checkIfNew={checkIfNew} 
+          onInvokeOsos={() => setStep(1)} 
+          onInvokeNova={() => setIntent('productos')} 
+          onOpenProfile={handleOpenProfile} 
+          onTuneIn={(user) => { setAudioUser(user); setActivePrismUser(user); }} 
+          onTuneTuner={(id) => broTunerRef.current?.playById(id)} 
+          onStopTuner={() => broTunerRef.current?.stop()} 
+        />
       )}
-
-      {/* ORÁCULO BANNER */}
+      
+      {/* ORÁCULO BOT (Todo incluido) */}
       {step === 2 && intent === 'ai' && (
-        <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
-          <div className="w-full max-w-2xl mb-3 pointer-events-auto">
-            <OraculoBanner ref={oraculoBannerRef} oraculo_personaje={perfilOso?.oraculo_personaje || 'orumama'} alias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'} realItems={realItems} onInvokeOsos={() => { setStep(1); setOsosModo('entrada'); }} />
-          </div>
-          <div className="w-full max-w-2xl pointer-events-auto mb-4">
-            <AgentChatInput onSend={handleOraculoInput} color="green" placeholder="✦  Consulta al oráculo..." />
-          </div>
-        </div>
+        <OraculoBanner 
+          oraculo_personaje={perfilOso?.oraculo_personaje || 'orumama'} 
+          alias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'} 
+          realItems={realItems} 
+          onInvokeOsos={() => { setStep(1); setOsosModo('entrada'); }} 
+        />
       )}
-
+      
       {/* 6. OSOS IA RECEPCION */}   
       {step === 1 && (
         <div className="relative z-[50] h-full flex flex-col items-center justify-end pb-0 px-4">
           <div className="w-full max-w-2xl mb-3"><OsosBanner mensaje={ososMensaje} /></div>
-               <AgentChatInput onSend={(texto) => handleOsosInput(texto)} isLoading={ososLoading} />
+          <AgentChatInput onSend={(texto) => handleOsosInput(texto)} isLoading={ososLoading} agent="osos" />
         </div>
-      )}
-      
+      )}      
       {/* 7. MODALES */}
       {showLegal && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/95 p-4 backdrop-blur-md">

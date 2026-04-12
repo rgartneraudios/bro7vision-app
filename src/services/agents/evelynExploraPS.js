@@ -1,6 +1,14 @@
 // src/services/agents/evelynExploraPS.js
 // PORT SYSTEM — Sector Avisos
 // Instancia: Evelyn / Larry
+//
+// ARQUITECTURA v2 — Estado del aviso en React (EvelynBanner), NO en Groq.
+// Groq recibe UNA sola instrucción por turno: "pide este campo".
+// El PS parsea la respuesta del user y devuelve el dato limpio al banner.
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DETECCIÓN DE INTENCIÓN
+// ─────────────────────────────────────────────────────────────────────────────
 
 export const INTENCION_KEYWORDS_AVISOS = {
   buscar:   ['busco', 'buscas', 'hay alguien', 'necesito', 'buscame', 'buscar', 'existe', 'tienes', 'encuentras', 'hay'],
@@ -31,6 +39,70 @@ export function esConfirmacion(texto) {
   return texto.trim().toUpperCase() === 'CONFIRMO';
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// PARSEO DE CAMPOS — EL PS EXTRAE, GROQ NO RECUERDA
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Devuelve el valor limpio del campo, o null si no lo detecta.
+// EvelynBanner llama esto ANTES de enviar a Groq cuando campoActual !== null.
+
+export function extraerCampo(campo, textoUser) {
+  const t = textoUser.trim();
+  const lower = t.toLowerCase();
+
+  switch (campo) {
+
+    case 'tipo': {
+  if (lower.includes('ofrezco') || lower.includes('oferta') || 
+      lower.includes('ofrec')   || lower.includes('vendo')) return 'OFREZCO';
+  if (lower.includes('necesito') || lower.includes('busco') || 
+      lower.includes('demanda')  || lower.includes('quiero encontrar')) return 'NECESITO';
+  if (lower === 'o' || lower === 'ofrezco') return 'OFREZCO';
+  if (lower === 'n' || lower === 'necesito') return 'NECESITO';
+  return null;
+}
+
+    case 'titulo': {
+      // Todo lo que escriba el user ES el título — limpiamos comillas y trim
+      const clean = t.replace(/^["'«»]|["'»«]$/g, '').trim();
+      return clean.length >= 3 ? clean : null;
+    }
+
+    case 'contenido': {
+      const clean = t.trim();
+      return clean.length >= 10 ? clean : null;
+    }
+
+    case 'alcance': {
+      if (lower.includes('global') || lower.includes('mundo') || lower.includes('internacional')) return 'global';
+      if (lower.includes('españa') || lower.includes('espana') || lower.includes('nacional') || lower.includes('país') || lower.includes('pais')) return 'españa';
+      // Por defecto si dice ciudad o local
+      if (lower.includes('local') || lower.includes('ciudad') || lower.includes('aquí') || lower.includes('aqui') || lower.includes('mi ciudad')) return 'local';
+      // Si escribe algo corto que parece nombre de ciudad → local
+      if (t.length < 30 && !lower.includes(' ')) return 'local';
+      return 'local'; // Fallback razonable
+    }
+
+    default:
+      return null;
+  }
+}
+
+// Secuencia de campos en orden
+export const CAMPOS_AVISO = ['tipo', 'titulo', 'contenido', 'alcance'];
+
+// Devuelve el primer campo vacío del aviso en construcción
+export function siguienteCampo(aviso) {
+  for (const campo of CAMPOS_AVISO) {
+    if (!aviso[campo]) return campo;
+  }
+  return null; // Todos completos
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BUILDER DE PROMPT — TURNO ÚNICO, UN SOLO CAMPO
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function buildEvelynExploraPrompt({ personaje = 'evelyn', sobre }) {
 
   const esLarry = personaje === 'larry';
@@ -47,8 +119,8 @@ A veces sueltas que llevas horas sin comer o que ya son las tres y todavía no h
 Eres la que cierra — presentas, explicas, cobras, conectas. Sin floreos innecesarios.`;
 
   const tono = esLarry
-    ? `Habla en primera persona, con pausas narrativas y observaciones urbanas. Máximo 3 frases por respuesta salvo que el user pida detalle.`
-    : `Habla directo, cálido pero sin rodeos. Máximo 2-3 frases. Cuando cobras 200 génesis lo dices como un trámite natural.`;
+    ? `Habla en primera persona, con pausas narrativas y observaciones urbanas. Máximo 2 frases por respuesta.`
+    : `Habla directo, cálido pero sin rodeos. Máximo 2 frases. Cuando cobras 200 génesis lo dices como un trámite natural.`;
 
   const sobreTexto = sobre
     ? `\n\n══ SOBRE DE DATOS (PORT SYSTEM) ══\n${sobre}\n══════════════════════════════════`
@@ -58,56 +130,34 @@ Eres la que cierra — presentas, explicas, cobras, conectas. Sin floreos innece
 
 ${tono}
 
-REGLAS DEL SECTOR AVISOS:
+REGLAS ABSOLUTAS:
 - Nunca menciones que tienes un sistema detrás dándote información. Inmersión total.
-- Los avisos son publicaciones de ciudadanos: buscan trabajo, ofrecen servicios, alquilan cosas, buscan piso, etc.
-- Cada aviso tiene un código AVI (ej: AVI-3F2A). Úsalo siempre al referirte a ellos.
-- Publicar un aviso cuesta 200 génesis. Conectar con el autor cuesta 200 génesis.
-- Explorar y pedir detalle es GRATIS.
-- NUNCA uses listas con bullets. Todo en frases naturales conversacionales.
-- NUNCA ofrezcas opciones numeradas ni botones. El user escribe libremente.
+- NUNCA uses listas con bullets ni opciones numeradas.
+- NUNCA hagas más de UNA pregunta por respuesta.
+- NUNCA ofrezcas ejemplos ni subpreguntas.
+- NUNCA resumas ni confirmes lo que el user ya dijo. Ve directo al siguiente paso.
+- Todo en frases naturales conversacionales.
+- Los avisos tienen código AVI (ej: AVI-3F2A). Úsalo al referirte a ellos.
+- Publicar cuesta 200 génesis. Conectar cuesta 200 génesis. Explorar es gratis.
 
-FLUJO PUBLICAR AVISO — 4 turnos exactos, ni uno más:
-
-TURNO 1 — el user dice que quiere publicar:
-  Pregunta SOLO: "Es una oferta (ofreces algo) o una demanda (buscas algo)?"
-  Nada más. Sin ejemplos extra, sin subpreguntas.
-
-TURNO 2 — el user responde oferta o demanda. Tienes el tipo.
-  Pregunta SOLO: "Como lo titulamos?"
-  Nada más.
-
-TURNO 3 — el user da el título.
-  Pregunta SOLO: "Cuentame que quieres que sepan los interesados."
-  Nada más.
-
-TURNO 4 — el user da la descripción.
-  Pregunta SOLO el alcance usando ciudad_usuario del sobre.
-  Nada más.
-
-Cuando tengas los 4 datos devuelve AVISO_PREVIEW inmediatamente.
-NUNCA hagas mas de 4 preguntas. NUNCA subdividas ninguna pregunta. NUNCA pidas aclaraciones extra.
-Si el user da varios datos en un mensaje, recógelos todos y salta al turno correspondiente.
-Si el sobre indica TODOS COMPLETOS en aviso en construcción, devuelve AVISO_PREVIEW directamente.
-Si el saldo es insuficiente (genesis menor a 200), díselo antes de arrancar el flujo.
+FLUJO PUBLICAR — MODO CAMPO A CAMPO:
+El PORT SYSTEM te indica exactamente qué campo pedir en este turno.
+Tu único trabajo es pedir ESE campo con tu personalidad. Nada más.
+No preguntes otros campos. No anticipes. No resumas.
 
 FLUJO CONECTAR CON AUTOR:
-Si el user quiere conectar con el autor de un aviso:
-  1. Confirma el aviso por código AVI o descripción.
-  2. Dile: "Conectar con el autor de AVI-XXXX son 200 génesis. Escribe CONTACTAR para confirmar."
-  3. Si el saldo es insuficiente díselo sin rodeos.
+1. Confirma el aviso por código o descripción.
+2. Di: "Conectar con el autor de AVI-XXXX son 200 génesis. Escribe CONTACTAR para confirmar."
+3. Si saldo insuficiente, díselo sin rodeos.
 
 FLUJO DETALLE:
-Narra el aviso con tu personalidad, no leas el texto plano, cuéntalo.
-Termina ofreciendo conectar con el autor si les interesa.
+Narra el aviso con tu personalidad. No leas el texto plano, cuéntalo.
+Termina ofreciendo conectar si les interesa.
 
 FORMATO DE SALIDA — SIEMPRE JSON ESTRICTO. NUNCA texto libre fuera del JSON:
 
-Respuesta conversacional estandar:
-{"handoff": false, "mensaje": "tu respuesta en 2-3 frases máximo", "bolas": []}
-
-Preview de aviso listo para confirmar:
-{"handoff": "AVISO_PREVIEW", "aviso": {"tipo": "OFERTA o DEMANDA", "titulo": "...", "contenido": "...", "alcance": "local o espana o global", "ciudad": "ciudad_usuario del sobre"}, "mensaje": "Este es tu aviso. Escribe CONFIRMO y lo publicamos — 200 génesis.", "bolas": []}
+Respuesta conversacional estándar:
+{"handoff": false, "mensaje": "tu respuesta en 1-2 frases máximo", "bolas": []}
 
 Handoff a Osos:
 {"handoff": "HANDOFF_OSOS", "mensaje": "frase de despedida", "bolas": []}
@@ -116,6 +166,10 @@ Conectar con autor confirmado:
 {"handoff": "HANDOFF_AVISO_CONECTAR", "aviso_id": "AVI-XXXX", "to_user_id": "uuid del autor", "mensaje": "frase de cierre", "bolas": []}
 ${sobreTexto}`;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BUILDER DEL SOBRE — LIVIANO, SOLO LO QUE GROQ NECESITA AHORA
+// ─────────────────────────────────────────────────────────────────────────────
 
 export function armarSobreEvelynTexto({
   alias,
@@ -126,7 +180,9 @@ export function armarSobreEvelynTexto({
   intencion,
   avisos = [],
   codigoAvi = null,
-  aviso_en_construccion = null,
+  // v2: campo actual + estado parcial (solo para contexto, no para que Groq recuerde)
+  campoActual = null,
+  avisoEnConstruccion = null,
   confirmado = false,
 }) {
   const lines = [
@@ -138,28 +194,41 @@ export function armarSobreEvelynTexto({
   ];
 
   if (confirmado) {
-    lines.push(`CONFIRMADO: el user escribio CONFIRMO. El PS ejecuto el insert. Cierra el flujo con una frase natural.`);
+    lines.push(`CONFIRMADO: el user escribió CONFIRMO. El PS ejecutó el insert. Cierra el flujo con una frase natural celebrando la publicación.`);
+    return lines.join('\n');
   }
 
   if (codigoAvi) {
     lines.push(`Codigo AVI solicitado: ${codigoAvi}`);
   }
 
-  if (aviso_en_construccion) {
-    lines.push(`\nAVISO EN CONSTRUCCION (datos recogidos hasta ahora):`);
-    if (aviso_en_construccion.tipo)      lines.push(`  tipo:      ${aviso_en_construccion.tipo}`);
-    if (aviso_en_construccion.titulo)    lines.push(`  titulo:    ${aviso_en_construccion.titulo}`);
-    if (aviso_en_construccion.contenido) lines.push(`  contenido: ${aviso_en_construccion.contenido}`);
-    if (aviso_en_construccion.alcance)   lines.push(`  alcance:   ${aviso_en_construccion.alcance}`);
-    lines.push(`  Siguiente dato que falta: ${
-      !aviso_en_construccion.tipo      ? 'tipo (oferta/demanda)' :
-      !aviso_en_construccion.titulo    ? 'titulo' :
-      !aviso_en_construccion.contenido ? 'descripcion' :
-      !aviso_en_construccion.alcance   ? 'alcance (local/espana/global)' :
-      'TODOS COMPLETOS — devuelve AVISO_PREVIEW'
-    }`);
+  // ── Modo publicar campo a campo ──────────────────────────────────
+  if (campoActual) {
+    lines.push(`\nMODO PUBLICAR — CAMPO ACTUAL A PEDIR: "${campoActual}"`);
+
+    // Le decimos exactamente qué pedir y cómo
+    const instruccion = {
+      tipo:      `Pregunta al user si su aviso es una OFERTA (ofrece algo) o una DEMANDA (busca algo). Solo esa pregunta, con tu estilo.`,
+      titulo:    `Pregunta al user cómo quiere titular su aviso. Solo esa pregunta, con tu estilo.`,
+      contenido: `Pregunta al user qué quiere que sepan los interesados. Solo esa pregunta, con tu estilo.`,
+      alcance:   `Pregunta al user si quiere que el aviso sea Local (solo ${ciudad_usuario || ciudad || 'su ciudad'}), España o Global. Solo esa pregunta, con tu estilo.`,
+    };
+
+    lines.push(`INSTRUCCIÓN: ${instruccion[campoActual]}`);
+    lines.push(`NO hagas ninguna otra pregunta. NO menciones otros campos.`);
+
+    // Datos ya recogidos — solo para contexto, no para que los repita
+    if (avisoEnConstruccion) {
+      const recogidos = CAMPOS_AVISO.filter(c => avisoEnConstruccion[c]);
+      if (recogidos.length > 0) {
+        lines.push(`(Datos ya recogidos por el PS — no los repitas ni los confirmes: ${recogidos.map(c => `${c}=${avisoEnConstruccion[c]}`).join(', ')})`);
+      }
+    }
+
+    return lines.join('\n');
   }
 
+  // ── Modo explorar/buscar — lista de avisos disponibles ───────────
   if (avisos.length > 0) {
     lines.push(`\nAvisos disponibles (${avisos.length}):`);
     avisos.forEach(av => {
@@ -167,7 +236,7 @@ export function armarSobreEvelynTexto({
       lines.push(`• ${codigo} | ${av.type} | "${av.title}" — ${av.content?.slice(0, 80)}... | Autor: ${av.author_alias} | Ciudad: ${av.city}`);
     });
   } else {
-    lines.push('\nNo hay avisos disponibles para esta busqueda.');
+    lines.push('\nNo hay avisos disponibles para esta búsqueda.');
   }
 
   return lines.join('\n');

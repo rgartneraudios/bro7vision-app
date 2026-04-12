@@ -1,10 +1,12 @@
-// src/components/ServiciosBanner.jsx
+// src/components/IsabellaBanner.jsx
 // Agente: SERVICIOS EXPLORA — Color azul-gris #64748B
 // Personajes: Isabella (elefanta psicóloga) | Prof Robles Maestro (elefante filósofo)
-// Consume: useAgentChat (mode='servicios') → groq.js → isabellaExploraPS.js
+// Consume: useAgentChat (mode='servicios') → botOrchestrator
 
-import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAgentChat } from '../hooks/useAgentChat';
+import AgentChatInput from './AgentChatInput'; // <-- Importamos el Input
+import BroCardStrip from './BroCardStrip';     // <-- Importamos el Carrusel
 
 const GREETINGS_ISABELLA = [
   "Hola, soy Isabella. ¿En qué puedo ayudarte hoy? 🐘",
@@ -20,80 +22,58 @@ const GREETINGS_MAESTRO = [
   "¡Hola! Soy el Profesor Robles. ¿Qué tipo de servicio buscas hoy?",
 ];
 
-const ServiciosBanner = forwardRef(function ServiciosBanner({
+export default function IsabellaBanner({
+  // Props de estado y datos
   personaje = 'isabella',
-  sessionCity,
-  sessionCP,
-  realItems = [],
-  onEntityFocus,
-  onOpenTerminal,
-  onSetActiveIndex,
-  onInvokeOsos,
+  sessionCity, 
+  sessionCP, 
+  realItems = [], 
+  stripVisible, 
+  stripCards, 
+  stripLabel,
+  
+  // Callbacks de navegación
+  onEntityFocus, 
+  onOpenTerminal, 
+  onSetActiveIndex, 
+  onInvokeOsos, 
   onInvokeMapache,
-}, ref) {
-
-  const [display,    setDisplay]    = useState('');
-  const [cursor,     setCursor]     = useState(true);
+  setIntent
+}) {
+  const [display, setDisplay] = useState('');
+  const [cursor, setCursor] = useState(true);
   const [currentMsg, setCurrentMsg] = useState('');
   const charIdx = useRef(0);
 
-  const isMaestro    = personaje === 'prmaestro';
+  const isMaestro = personaje === 'prmaestro';
   const nombreAgente = isMaestro ? 'PROF. ROBLES' : 'ISABELLA';
-  const GREETINGS    = isMaestro ? GREETINGS_MAESTRO : GREETINGS_ISABELLA;
+  const GREETINGS = isMaestro ? GREETINGS_MAESTRO : GREETINGS_ISABELLA;
 
-  // ── Hook Port System ──────────────────────────────────────────────
-  const { mensaje, bolas, loading, enviar, reset } = useAgentChat({
-    mode:        'servicios',
-    contextData: {
-      alias:    'viajero',
-      ciudad:   sessionCity || '',
-      cp:       sessionCP   || '',
-      personaje,
-    },
+  // ── Hook del Bot ────────────────────────────────────────────────────────
+  const { mensaje, loading, enviar } = useAgentChat({
+    mode: 'servicios',
+    contextData: { alias: 'viajero', ciudad: sessionCity || '', cp: sessionCP || '', personaje },
     realItems,
     onEntityFocus,
-
-    // ── HANDOFF corregido — escucha ISABELLA_VENTAS ──────────────
     onHandoff: ({ agente, bro_id }) => {
-  if (agente === 'ISABELLA_CIERRE' && bro_id) {  // ← era ISABELLA_VENTAS
-    const comercio = realItems.find(i =>
-      i.bro_ser === bro_id ||
-      i.bro_id  === bro_id ||
-      i.id      === bro_id
-    );
-    if (comercio) onOpenTerminal?.(comercio, 'isabellaVentas');
-    return;
-  }
-    if (agente === 'OSOS')    { onInvokeOsos?.();    return; }
-  if (agente === 'MAPACHE') { onInvokeMapache?.(); return; }
-  if (agente === 'NOVA')    { onOpenTerminal?.(null, 'novaExplora'); return; }
-},
+      if (agente === 'ISABELLA_CIERRE' && bro_id) {
+        const comercio = realItems.find(i => i.bro_ser === bro_id || i.bro_id === bro_id || i.id === bro_id);
+        if (comercio) onOpenTerminal?.(comercio, 'isabellaVentas');
+      } else if (agente === 'OSOS') {
+        onInvokeOsos?.();
+      } else if (agente === 'MAPACHE') {
+        onInvokeMapache?.();
+      } else if (agente === 'NOVA') {
+        onOpenTerminal?.(null, 'novaExplora');
+      }
+    },
   });
 
-  // ── Exponer sendMessage al padre ──────────────────────────────────
-  useImperativeHandle(ref, () => ({
-    sendMessage: (text) => enviar(text),
-    reset,
-  }));
+  // ── Efectos Visuales (Máquina de escribir, etc) ─────────────────────────
+  useEffect(() => { const t = setInterval(() => setCursor(c => !c), 530); return () => clearInterval(t); }, []);
+  useEffect(() => { setCurrentMsg(GREETINGS[Math.floor(Math.random() * GREETINGS.length)]); }, [personaje]);
+  useEffect(() => { if (mensaje) setCurrentMsg(mensaje); }, [mensaje]);
 
-  // ── Cursor parpadeante ────────────────────────────────────────────
-  useEffect(() => {
-    const t = setInterval(() => setCursor(c => !c), 530);
-    return () => clearInterval(t);
-  }, []);
-
-  // ── Saludo inicial aleatorio ──────────────────────────────────────
-  useEffect(() => {
-    const greeting = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
-    setCurrentMsg(greeting);
-  }, [personaje]);
-
-  // ── Mensaje nuevo del hook ────────────────────────────────────────
-  useEffect(() => {
-    if (mensaje) setCurrentMsg(mensaje);
-  }, [mensaje]);
-
-  // ── Máquina de escribir ───────────────────────────────────────────
   useEffect(() => {
     if (!currentMsg) return;
     charIdx.current = 0;
@@ -106,8 +86,9 @@ const ServiciosBanner = forwardRef(function ServiciosBanner({
     return () => clearInterval(t);
   }, [currentMsg]);
 
+  // ── UI Completa de Isabella / Maestro ───────────────────────────────────
   return (
-    <>
+    <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
       <style>{`
         @keyframes neonPulseServicios {
           0%, 100% { text-shadow: 0 0 8px #94a3b8, 0 0 22px #475569, 0 0 45px #475569; }
@@ -116,10 +97,6 @@ const ServiciosBanner = forwardRef(function ServiciosBanner({
         @keyframes svDot {
           0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
           40%            { opacity: 1;   transform: scale(1.2); }
-        }
-        @keyframes floatBolaSlate {
-          0%, 100% { transform: translateY(0) scale(1); }
-          50%      { transform: translateY(-5px) scale(1.05); }
         }
         .sv-wrap {
           background: rgba(0,0,0,0.75);
@@ -165,13 +142,26 @@ const ServiciosBanner = forwardRef(function ServiciosBanner({
         .sv-loading span:nth-child(3) { animation-delay: 0.4s; }
       `}</style>
 
-      <div className="w-full flex flex-col items-center gap-3 px-4">
+      {/* 1. CARRUSEL (Si está visible) */}
+      {stripVisible && (
+        <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
+          <BroCardStrip 
+            cards={stripCards} 
+            // Llamamos directo a 'enviar'
+            onSelectCard={(card) => enviar(`${card.bro_id || card.bro_ser}D`)} 
+            accentColor="slate" 
+            label={stripLabel} 
+            visible={stripVisible} 
+          />
+        </div>
+      )}
 
-        {/* BANNER PRINCIPAL */}
+      {/* 2. EL BANNER DE TEXTO */}
+      <div className="w-full max-w-2xl mb-3 pointer-events-auto">
         <div className="sv-wrap w-full flex flex-col items-center justify-center text-center">
           {!currentMsg && !loading && (
             <p className="text-slate-500/60 text-xs uppercase tracking-widest font-bold">
-              ◈ {nombreAgente} · SERVICIOS
+              ◈ {nombreAgente} · EN LÍNEA
             </p>
           )}
 
@@ -189,8 +179,16 @@ const ServiciosBanner = forwardRef(function ServiciosBanner({
           )}
         </div>
       </div>
-    </>
-  );
-});
 
-export default ServiciosBanner;
+      {/* 3. INPUT DE CHAT */}
+      <div className="w-full max-w-2xl pointer-events-auto mb-4">
+        <AgentChatInput 
+          agent="isabella" 
+          onSend={enviar} 
+          isLoading={loading} 
+        />
+      </div>
+
+    </div>
+  );
+}
