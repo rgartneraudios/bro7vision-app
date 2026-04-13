@@ -26,3 +26,8 @@ dist-ssr
 .vercel
 
 public/videos/
+.env
+.env.local
+.env.*.local
+node_modules/
+dist/
