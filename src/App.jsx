@@ -40,6 +40,7 @@ import SlideRailAvisos from './components/SlideRailAvisos';
 import OraculoBanner from './components/OraculoBanner';
 import AvisoPreviewCard from './components/AvisoPreviewCard';
 import CityLocationBanner from './components/CityLocationBanner';
+import { WebLLMButton } from './components/WebLLMButton';
 
 function App() {
   const [realityMode, setRealityMode] = useState(null); 
@@ -454,7 +455,27 @@ const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'live
           <button onClick={() => { setStep(0); setRealityMode(null); setIsRightOpen(false); }} className="w-full flex justify-between items-center p-3 bg-fuchsia-500/10 border border-fuchsia-400/40 rounded-2xl hover:bg-cyan-500 hover:text-black transition-all group">
             <span className="text-[10px] font-black uppercase group-hover:text-black">Cambiar Reality</span><span className="text-lg">🌐</span>
           </button>
-        </div>                  
+        </div>    
+       <div className="w-full flex justify-center my-2">
+       <WebLLMButton
+  mode={
+    intent === 'productos'       ? 'novaExplora'  :
+    intent === 'servicios'       ? 'servicios'    :
+    intent === 'lives'           ? 'mapache'      :
+    intent === 'avisos'          ? 'avisos'       :
+    intent === 'ai'              ? 'oraculo'      :
+    intent === 'internal_search' ? 'reinos'       :
+    'osos'
+  }
+  contextData={{
+    oso_id:              perfilOso?.oso_id              || 'TITO',
+    oraculo_personaje:   perfilOso?.oraculo_personaje   || 'orumama',
+    servicios_personaje: perfilOso?.servicios_personaje || 'isabella',
+    audio_personaje:     perfilOso?.audio_personaje     || 'mapache',
+    avisos_personaje:    perfilOso?.avisos_personaje    || 'evelyn',
+  }}
+/>
+            </div>
         <div className="flex flex-col gap-2 px-4 mt-4">
           <button onClick={() => setShowRadar(!showRadar)} className={`flex items-center gap-4 p-4 border rounded-2xl transition-all ${showRadar ? 'bg-cyan-500 text-black border-cyan-400' : 'bg-white/5 border-yellow/10'}`}>
             <span className="text-xl">🔍</span><span className="text-[10px] font-black uppercase">Scan Reality</span>
