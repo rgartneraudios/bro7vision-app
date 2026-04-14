@@ -456,7 +456,7 @@ const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'live
             <span className="text-[10px] font-black uppercase group-hover:text-black">Cambiar Reality</span><span className="text-lg">🌐</span>
           </button>
         </div>    
-                  </div>
+        
         <div className="flex flex-col gap-2 px-4 mt-4">
           <button onClick={() => setShowRadar(!showRadar)} className={`flex items-center gap-4 p-4 border rounded-2xl transition-all ${showRadar ? 'bg-cyan-500 text-black border-cyan-400' : 'bg-white/5 border-yellow/10'}`}>
             <span className="text-xl">🔍</span><span className="text-[10px] font-black uppercase">Scan Reality</span>
@@ -476,7 +476,7 @@ const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'live
           <div className="w-full px-4 mb-4"><BroLives playingCreator={audioUser} onToggleAudio={() => setAudioUser(prev => prev ? null : audioUser)} /></div>
           <div className="w-full px-4 pt-4 border-t border-white/5"><BroTuner ref={broTunerRef} /></div>
         </div>
-   
+      </div>      
 
       {/* 3. PUERTA DERECHA */}
       <div className={`side-panel side-panel-right ${isRightOpen ? 'open' : ''} flex flex-col p-4 gap-2 overflow-y-auto custom-scrollbar`}>
