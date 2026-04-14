@@ -40,7 +40,8 @@ import SlideRailAvisos from './components/SlideRailAvisos';
 import OraculoBanner from './components/OraculoBanner';
 import AvisoPreviewCard from './components/AvisoPreviewCard';
 import CityLocationBanner from './components/CityLocationBanner';
-// import { WebLLMButton } from './components/WebLLMButton';
+import { OllamaButton } from './components/OllamaButton';
+import { useOllama } from './hooks/useOllama';
 
 function App() {
   const [realityMode, setRealityMode] = useState(null); 
@@ -54,6 +55,7 @@ function App() {
   const [scope, setScope] = useState(null);
   const [realItems, setRealItems] = useState([]);
   const [selectedCard, setSelectedCard] = useState(null);
+  const ollama = useOllama();
 
   const [ventasMode, setVentasMode] = useState(null);
   const [showStory, setShowStory] = useState(false);
@@ -456,6 +458,27 @@ const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'live
             <span className="text-[10px] font-black uppercase group-hover:text-black">Cambiar Reality</span><span className="text-lg">🌐</span>
           </button>
         </div>    
+    <div className="flex flex-col gap-2 px-4 mt-4">    
+        <OllamaButton
+        ollama={ollama}
+  mode={ /* Todo esto queda exactamente igual */
+    intent === 'productos'       ? 'novaExplora'  :
+    intent === 'servicios'       ? 'servicios'    :
+    intent === 'lives'           ? 'mapache'      :
+    intent === 'avisos'          ? 'avisos'       :
+    intent === 'ai'              ? 'oraculo'      :
+    intent === 'internal_search' ? 'reinos'       :
+    'osos'
+  }
+  contextData={{
+    oso_id:              perfilOso?.oso_id              || 'TITO',
+    oraculo_personaje:   perfilOso?.oraculo_personaje   || 'orumama',
+    servicios_personaje: perfilOso?.servicios_personaje || 'isabella',
+    audio_personaje:     perfilOso?.audio_personaje     || 'mapache',
+    avisos_personaje:    perfilOso?.avisos_personaje    || 'evelyn',
+  }}
+/>
+</div>
         
         <div className="flex flex-col gap-2 px-4 mt-4">
           <button onClick={() => setShowRadar(!showRadar)} className={`flex items-center gap-4 p-4 border rounded-2xl transition-all ${showRadar ? 'bg-cyan-500 text-black border-cyan-400' : 'bg-white/5 border-yellow/10'}`}>
@@ -588,6 +611,7 @@ const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'live
       {/* NOVA BANNER */}
       {step === 2 && intent === 'productos' && ( 
         <NovaBanner 
+        ollama={ollama} 
           sessionCity={sessionCity} 
           sessionCP={sessionCP} 
           realItems={realItems} 
@@ -606,6 +630,7 @@ const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'live
       {/* ISABELLA BANNER */}
       {step === 2 && intent === 'servicios' && (
         <IsabellaBanner 
+        ollama={ollama} 
           personaje={perfilOso?.servicios_personaje || 'isabella'} 
           sessionCity={sessionCity} 
           sessionCP={sessionCP} 
@@ -625,6 +650,7 @@ const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'live
       {/* EVELYN BANNER */}
       {step === 2 && intent === 'avisos' && (
         <EvelynBanner 
+        ollama={ollama} 
           personaje={perfilOso?.avisos_personaje || 'evelyn'} 
           sessionCity={sessionCity} 
           sessionCP={sessionCP} 
@@ -665,6 +691,7 @@ const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'live
       {/* MAPACHE BANNER */}
        {step === 2 && intent === 'lives' && (
         <MapacheBanner 
+        ollama={ollama} 
           personaje={perfilOso?.audio_personaje || 'mapache'} 
           realItems={realItems} 
           stripVisible={stripVisible}
@@ -681,9 +708,10 @@ const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'live
         />
       )}
       
-      {/* ORÁCULO BOT (Todo incluido) */}
+      {/* ORÁCULO BANNER (Todo incluido) */}
       {step === 2 && intent === 'ai' && (
         <OraculoBanner 
+        ollama={ollama} 
           oraculo_personaje={perfilOso?.oraculo_personaje || 'orumama'} 
           alias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'} 
           realItems={realItems} 
@@ -694,10 +722,32 @@ const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'live
       {/* 6. OSOS IA RECEPCION */}   
       {step === 1 && (
         <div className="relative z-[50] h-full flex flex-col items-center justify-end pb-0 px-4">
-          <div className="w-full max-w-2xl mb-3"><OsosBanner mensaje={ososMensaje} /></div>
-          <AgentChatInput onSend={(texto) => handleOsosInput(texto)} isLoading={ososLoading} agent="osos" />
+          <div className="w-full max-w-2xl mb-3">
+            <OsosBanner 
+              mensaje={
+                ollama.isReady 
+                  ? (ollama.respuesta || `⚡ ENLACE NEURONAL ESTABLECIDO. SOY ${perfilOso?.oso_id || 'TITO'}. ¿QUÉ NECESITAS?`)
+                  : ososMensaje
+              } 
+            />
+          </div>
+          
+          {/* Si la IA está lista, el input le manda el texto a Ollama. Si no, a tu bot clásico */}
+          <AgentChatInput 
+            onSend={(texto) => {
+              if (ollama.isReady) {
+                // Secuestramos el envío hacia el nodo local
+                ollama.chat(texto, perfilOso?.oso_id?.toLowerCase() || 'lara');
+              } else {
+                // Flujo normal de tus scripts
+                handleOsosInput(texto);
+              }
+            }} 
+            isLoading={ollama.isReady ? ollama.isChatting : ososLoading} 
+            agent="osos" 
+          />
         </div>
-      )}      
+      )}   
       {/* 7. MODALES */}
       {showLegal && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/95 p-4 backdrop-blur-md">
