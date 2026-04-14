@@ -51,7 +51,7 @@ export default function SlideRail() {
 
   return (
   <div
-    className="hidden lg:block fixed left-[6%] top-1/2 -translate-y-1/2 z-30 pointer-events-none"
+    className="hidden lg:block fixed left-[6%] top-[55%] -translate-y-1/2 z-30 pointer-events-none"
     style={{
       opacity,
       transition: `opacity ${FADE_DURATION}ms ease-in-out`,

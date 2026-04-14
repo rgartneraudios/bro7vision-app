@@ -18,6 +18,7 @@ import { responder as larryResponder }     from './bots/larryBot';
 import { generarCodigoAvi }               from './evelynExploraPS';
 import { getKnowledgeBlock }              from '../../data/SystemKnowledge';
 import { getMoonSuffix }                  from '../../utils/moonUtils';
+import { responder as smisterioResponder } from './bots/smisterioBot';
 
 // ─── Helper: contenido update ────────────────────────────────────────────────
 
@@ -99,6 +100,8 @@ function detectarIntencionOraculo(texto) {
   if (t.includes('horoscopo') || t.includes('signo') || t.includes('astral') || t.includes('sidereo')) return 'horoscopo';
   if (t.includes('luna') || t.includes('fase') || t.includes('lunar')) return 'luna';
   if (t.includes('hierba') || t.includes('planta') || t.includes('remedio') || t.includes('brebaje') || t.includes('natural')) return 'hierbas';
+  // NUEVAS KEYWORDS PARA EL SEÑOR MISTERIO:
+  if (t.includes('misterio') || t.includes('secreto') || t.includes('egipto') || t.includes('atlantida') || t.includes('lemuria') || t.includes('historia')) return 'misterio';
   return 'explorar';
 }
 
@@ -161,7 +164,9 @@ async function modoOraculo({ textoUsuario, personaje, supabase }) {
     bloqueConocimiento: getKnowledgeBlock(intencion),
     update,
   };
+  
   if (id === 'jaguar') return jaguarResponder(args);
+  if (id === 'smisterio') return smisterioResponder(args); // Agregamos al Señor Misterio
   return orumamaResponder(args);
 }
 

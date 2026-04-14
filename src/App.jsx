@@ -39,6 +39,7 @@ import EvelynBanner from './components/EvelynBanner';
 import SlideRailAvisos from './components/SlideRailAvisos';
 import OraculoBanner from './components/OraculoBanner';
 import AvisoPreviewCard from './components/AvisoPreviewCard';
+import CityLocationBanner from './components/CityLocationBanner';
 
 function App() {
   const [realityMode, setRealityMode] = useState(null); 
@@ -155,15 +156,17 @@ function App() {
     'REINOS':           'internal_search',
     'ORACULO':          'ai',
     'ORACULO_ORUMAMA':  'ai',
+    'ORACULO_SMISTERIO':   'ai',
     'ORACULO_JAGUAR':   'ai',
     'GAMES':            'game',
   };
+  
 
   // ── Sectores sin ubicación ─────────────────────────────
-  const SIN_UBICACION = ['REINOS', 'ORACULO', 'ORACULO_ORUMAMA', 'ORACULO_JAGUAR', 'GAMES'];
+  const SIN_UBICACION = ['REINOS', 'ORACULO', 'ORACULO_ORUMAMA', 'ORACULO_SMISTERIO', 'ORACULO_JAGUAR', 'GAMES'];
 
   if (SIN_UBICACION.includes(agente)) {
-    // Si lleva per_solicitado (Orumama/Jaguar), se lo pasamos a perfilOso
+    // Si lleva per_solicitado (Orumama/SMisterio/Jaguar), se lo pasamos a perfilOso
     // para que OraculoBanner arranque con el personaje correcto
     if (per_solicitado) {
       setPerfilOso(prev => ({ ...prev, oraculo_personaje: per_solicitado }));
@@ -272,8 +275,8 @@ function App() {
 }
   })();
   setTimeout(() => {
-  const ciudadFinal = ciudad || perfilOso?.city || null;
-  setScope({ city: ciudadFinal, type: 'teleport' });
+  const ciudadFinal = ciudad || perfilOso?.city || '';
+  setScope({ city: String(ciudadFinal), type: 'teleport' });
   setSessionCity(ciudadFinal);
   setSessionCP(cp);
   setIntent(intentMap[agente] || 'productos');
@@ -402,9 +405,13 @@ function App() {
     { id: 'avisos',          label: 'AVISOS',     color: 'border-slate-500/40 hover:bg-slate-800/60 hover:border-slate-400 group-hover:text-slate-300', images: ['/emojis/evelyn.webp', '/emojis/larry.webp'] },
     { id: 'lives',           label: 'AUDIOS',color: 'border-cyan-500/40 hover:bg-cyan-900/40 hover:border-cyan-400 group-hover:text-cyan-400', images: ['/emojis/mapache.webp', '/emojis/ami.webp'] },
     { id: 'internal_search', label: 'REINOS',     color: 'border-orange-500/40 hover:bg-orange-900/40 hover:border-orange-400 group-hover:text-orange-400', images: ['/emojis/rumores.webp'] },
-    { id: 'ai',              label: 'ORÁCULO',    color: 'border-lime-500/40 hover:bg-lime-900/40 hover:border-lime-400 group-hover:text-lime-400', images: ['/emojis/orumama.webp', '/emojis/jaguar.webp'] },
+    { id: 'ai',              label: 'ORÁCULO',    color: 'border-lime-500/40 hover:bg-lime-900/40 hover:border-lime-400 group-hover:text-lime-400', images: ['/emojis/orumama.webp', '/emojis/smisterio.webp', '/emojis/jaguar.webp'] },
     { id: 'game',            label: 'GAMES',      color: 'border-white/20 hover:bg-white/10 hover:border-white/50 group-hover:text-white', images: ['/emojis/emoji_5.webp', '/emojis/emoji_7.webp'] }
   ];
+  
+  // CITYLOCATIONBANNER
+const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'lives']);
+
 
   return (
     <div className="relative w-full h-screen bg-black text-white overflow-hidden font-sans">
@@ -427,7 +434,7 @@ function App() {
                 ? ososModo === 'retorno'
                   ? "https://media.bro7vision.com/ososia_recepcion1.mp4"
                   : "https://media.bro7vision.com/ososia_recepcion1.mp4"
-                : intent === 'ai'              ? "https://media.bro7vision.com/oraculo.mp4"
+                : intent === 'ai'              ? "https://media.bro7vision.com/oraculo1.mp4"
                 : intent === 'game'            ? "https://media.bro7vision.com/game_bg.mp4"
                 : intent === 'lives'           ? "https://media.bro7vision.com/brolives1.mp4"
                 : intent === 'internal_search' ? "https://media.bro7vision.com/reinos.mp4"
@@ -562,6 +569,13 @@ function App() {
           <div className="scale-[1.1] origin-bottom-right relative z-20 transition-transform hover:scale-[1.15]"><HoloPrism user={activePrismUser} showNumbers={true} /></div>
         </div>
       )}
+      
+       {/* CityLocation */}
+
+{step === 2 && INTENTS_CON_UBICACION.has(intent) && <CityLocationBanner scope={scope} />}
+
+
+
 
       {/* SLIDE RAILS EXACTOS POR INTENT */}
       {step === 2 && intent === 'productos' && <SlideRail />}

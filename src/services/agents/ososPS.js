@@ -20,7 +20,7 @@ const SECTOR_KEYWORDS = {
   BROSHOP_SERVICIO: ['servicio', 'profesional', 'peluquería', 'peluqueria', 'taller', 'clases', 'fontanero', 'electricista', 'médico', 'medico', 'abogado', 'asesor'],
   BROSHOP_AVISO:    ['aviso', 'avisos', 'anuncio', 'anuncios', 'tablón', 'tablon', 'segunda mano', 'vendo', 'alquilo', 'busco piso', 'busco trabajo', 'ofrezco', 'demanda', 'oferta personal', 'larry', 'evelyn'],
   REINOS:           ['reinos', 'reino', 'rumores', 'rumor', 'rey', 'reyes', 'reina', 'reinas', 'príncipe', 'principe', 'princesa', 'duque', 'duquesa', 'marqués', 'marques', 'marquesa', 'lord', 'lords', 'lady', 'ladies'],
-  ORACULO:          ['oráculo', 'oraculo', 'orumama', 'jaguar', 'horóscopo', 'horoscopo', 'sideral', 'ofiuco', 'carta astral', 'signo', 'ascendente', 'hierbas', 'hierba', 'brebaje', 'remedio natural', 'planta medicinal', 'curandera', 'espiritual', 'espiritualidad', 'luna', 'fase lunar', 'meditación', 'meditacion', 'energía', 'energia', 'chakra', 'vela', 'velas', 'ritual'],
+  ORACULO:          ['oráculo', 'oraculo', 'orumama', 'jaguar', 'horóscopo', 'horoscopo', 'sideral', 'ofiuco', 'carta astral', 'signo', 'ascendente', 'misterio', 'conspiraciones', 'piramides', 'pirámides', 'egipto', 'señor misterio', 'hierbas', 'hierba', 'brebaje', 'remedio natural', 'planta medicinal', 'curandera', 'espiritual', 'espiritualidad', 'luna', 'fase lunar', 'meditación', 'meditacion', 'energía', 'energia', 'chakra', 'vela', 'velas', 'ritual'],
   GAMES:            ['jugar', 'juego', 'juegos', '3iatlas', 'telecronos', 'games', 'game', 'arcade', 'partida', 'divertirse', 'divertirme', 'carrera', 'scalextric', 'neon', 'neonmemory', 'f1rookie', 'f1pro', 'cosmicportal', 'the7gates', 'therians'],
 };
 
@@ -33,35 +33,117 @@ const ALIASES_UBICACION = [
 ];
 
 const CIUDADES = [
+  // Ciudades VIP
   'paris', 'nueva york', 'tokyo', 'tokio', 'londres',
+  
+  // Asturias
   'gijon', 'oviedo', 'aviles', 'siero',
+  
+  // Galicia
   'vigo', 'a coruna', 'ourense', 'lugo', 'santiago de compostela', 'pontevedra', 'ferrol',
+  
+  // Cantabria
   'santander', 'torrelavega',
-  'bilbao', 'vitoria gasteiz', 'san sebastian', 'barakaldo', 'getxo', 'irun', 'portugalete',
+  
+  // País Vasco y Navarra
+  'bilbao', 'vitoria gasteiz', 'san sebastian', 'barakaldo', 'getxo', 'irun', 'portugalete', 'santurtzi', 'basauri',
   'pamplona',
+  
+  // Aragón y La Rioja
   'zaragoza', 'huesca', 'teruel', 'logrono',
-  'barcelona', 'terrassa', 'badalona', 'sabadell', 'lleida', 'tarragona', 'girona', 'manresa', 'mataro', 'reus', 'granollers',
-  'sevilla', 'malaga', 'cordoba', 'granada', 'jerez de la frontera', 'almeria', 'huelva', 'marbella', 'cadiz', 'jaen',
-  'toledo', 'albacete', 'guadalajara', 'ciudad real', 'cuenca',
-  'badajoz', 'caceres', 'merida',
-  'palma', 'ibiza', 'ceuta', 'melilla',
-  'las palmas de gran canaria', 'santa cruz de tenerife', 'arrecife',
-  'valencia', 'alicante', 'elche', 'castellon de la plana', 'torrevieja', 'murcia', 'cartagena',
-  'valladolid', 'burgos', 'salamanca', 'leon', 'palencia', 'avila', 'segovia',
-  'madrid', 'mostoles', 'alcala de henares', 'fuenlabrada', 'leganes', 'getafe', 'alcorcon',
+  
+  // Cataluña
+  'barcelona', 'l hospitalet de llobregat', 'terrassa', 'badalona', 'sabadell', 'lleida', 'calella', 'calella de mar', 
+  'sant pol', 'sant pol de mar', 'tarragona', 'girona', 'manresa', 'mataro', 'santa coloma de gramenet', 'reus', 
+  'sant cugat del valles', 'cornella de llobregat', 'sant boi de llobregat', 'rubi', 'vilanova i la geltru', 
+  'castelldefels', 'viladecans', 'el prat de llobregat', 'granollers', 'cerdanyola del valles', 'mollet del valles',
+  
+  // Andalucía
+  'sevilla', 'malaga', 'cordoba', 'granada', 'jerez de la frontera', 'jerez', 'almeria', 'huelva', 'marbella', 'dos hermanas', 
+  'algeciras', 'cadiz', 'jaen', 'roquetas de mar', 'san fernando', 'el puerto de santa maria', 'mijas', 
+  'chiclana de la frontera', 'el ejido', 'fuengirola', 'velez malaga', 'alcala de guadaira', 'torremolinos', 
+  'estepona', 'benalmadena', 'sanlucar de barrameda', 'linares', 'la linea de la concepcion', 'motril', 'utrera',
+  
+  // Castilla La Mancha
+  'toledo', 'albacete', 'guadalajara', 'talavera de la reina', 'talavera', 'ciudad real', 'cuenca', 'puertollano',
+  
+  // Extremadura y zona Oeste
+  'badajoz', 'caceres', 'merida', 'zamora',
+  
+  // Baleares (Ciudades)
+  'palma', 'calvia', 'eivissa', 'manacor', 'ibiza',
+  
+  // Canarias (Ciudades e islas tratadas como ciudades)
+  'las palmas de gran canaria', 'santa cruz de tenerife', 'tenerife', 'san cristobal de la laguna', 'telde', 
+  'arona', 'santa lucia de tirajana', 'arrecife', 'san bartolome de tirajana', 'adeje', 'puerto del rosario',
+  
+  // Ceuta y Melilla
+  'ceuta', 'melilla',
+  
+  // Comunidad Valenciana y Murcia
+  'valencia', 'alicante', 'elche', 'castellon de la plana', 'torrevieja', 'torrent', 'orihuela', 'gandia', 
+  'paterna', 'benidorm', 'sagunto', 'alcoy', 'san vicente del raspeig', 'elda', 'vila real', 'denia',
+  'murcia', 'cartagena', 'lorca', 'molina de segura',
+  
+  // Castilla y León
+  'valladolid', 'burgos', 'salamanca', 'leon', 'palencia', 'avila', 'segovia', 'ponferrada',
+  
+  // Comunidad de Madrid
+  'madrid', 'mostoles', 'alcala de henares', 'fuenlabrada', 'leganes', 'getafe', 'alcorcon', 'torrejon de ardoz', 
+  'parla', 'alcobendas', 'las rozas de madrid', 'san sebastian de los reyes', 'rivas vaciamadrid', 
+  'pozuelo de alarcon', 'coslada', 'valdemoro', 'majadahonda', 'collado villalba', 'aranjuez', 
+  'boadilla del monte', 'arganda del rey', 'pinto', 'colmenar viejo'
 ];
 
 const PAISES = [
-  'estados unidos', 'mexico', 'mejico', 'argentina', 'brasil', 'chile', 'colombia', 'peru', 'venezuela', 'uruguay', 'paraguay', 'bolivia', 'ecuador',
-  'cuba', 'republica dominicana', 'puerto rico', 'costa rica', 'panama', 'guatemala', 'honduras', 'nicaragua', 'el salvador',
-  'francia', 'italia', 'austria', 'españa', 'espana', 'reino unido', 'noruega', 'suecia', 'dinamarca', 'finlandia', 'polonia', 'alemania', 'suiza', 'belgica', 'paises bajos', 'portugal', 'grecia', 'irlanda', 'andorra',
-  'china', 'japon', 'india', 'corea del sur', 'singapur', 'tailandia', 'vietnam', 'filipinas', 'indonesia', 'malasia',
-  'australia', 'nueva zelanda',
-  'marruecos', 'egipto', 'sudafrica', 'nigeria', 'kenia',
-  'turquia', 'israel', 'emiratos arabes unidos', 'arabia saudi',
-  'canada', 'baleares', 'canarias', 'global',
+  // América del Norte y Sur
+  'estados unidos', 'mexico', 'mejico', 'argentina', 'brasil', 'chile', 'colombia', 'peru', 'venezuela', 'uruguay', 
+  'paraguay', 'bolivia', 'ecuador', 'belice', 'guyana', 'surinam', 'canada',
+  
+  // Centroamérica y Caribe
+  'cuba', 'republica dominicana', 'puerto rico', 'jamaica', 'bahamas', 'costa rica', 'panama', 'guatemala', 
+  'honduras', 'nicaragua', 'el salvador', 'antigua y barbuda', 'barbados', 'dominica', 'granada caribe', 
+  'haiti', 'san cristobal y nieves', 'san vicente y las granadinas', 'santa lucia', 'trinidad y tobago',
+  
+  // Europa Central, Occidental y Sur
+  'francia', 'italia', 'austria', 'españa', 'espana', 'reino unido', 'alemania', 'suiza', 'belgica', 
+  'paises bajos', 'luxemburgo', 'irlanda', 'monaco', 'andorra', 'portugal', 'grecia', 'malta', 'chipre',
+  
+  // Europa Norte, Este y Balcanes
+  'noruega', 'suecia', 'dinamarca', 'finlandia', 'islandia', 'estonia', 'letonia', 'lituania', 'polonia', 
+  'republica checa', 'eslovaquia', 'hungria', 'albania', 'croacia', 'serbia', 'bosnia y herzegovina', 
+  'montenegro', 'macedonia del norte', 'eslovenia', 'bulgaria', 'rumania', 'ucrania', 'moldavia', 'rusia', 'bielorrusia',
+  
+  // Asia Oriental y Sudeste Asiático
+  'china', 'japon', 'corea del norte', 'corea del sur', 'mongolia', 'taiwan', 'singapur', 'tailandia', 
+  'vietnam', 'filipinas', 'indonesia', 'malasia', 'brunei', 'camboya', 'laos', 'myanmar', 'timor oriental',
+  
+  // Asia Central y Sur
+  'india', 'afganistan', 'kazajistan', 'kirguistan', 'tayikistan', 'turkmenistan', 'uzbekistan', 
+  'banglades', 'butan', 'maldivas', 'nepal', 'pakistan', 'sri lanka',
+  
+  // Oriente Medio y el Cáucaso
+  'turquia', 'israel', 'emiratos arabes unidos', 'arabia saudi', 'armenia', 'azerbaiyan', 'barein', 
+  'georgia', 'irak', 'iran', 'jordania', 'kuwait', 'libano', 'oman', 'palestina', 'catar', 'siria', 'yemen',
+  
+  // África (Norte)
+  'marruecos', 'egipto', 'argelia', 'libia', 'tunez', 'mauritania', 'sahara occidental',
+  
+  // África (Subsahariana)
+  'sudafrica', 'nigeria', 'kenia', 'benin', 'burkina faso', 'cabo verde', 'costa de marfil', 'gambia', 
+  'ghana', 'guinea', 'guinea bisau', 'liberia', 'mali', 'niger', 'senegal', 'sierra leona', 'togo', 
+  'burundi', 'comoras', 'yibuti', 'eritrea', 'etiopia', 'madagascar', 'malaui', 'mauricio', 'mozambique', 
+  'ruanda', 'seychelles', 'somalia', 'tanzania', 'uganda', 'zambia', 'zimbabue', 'angola', 'botsuana', 
+  'camerun', 'chad', 'congo', 'gabon', 'guinea ecuatorial', 'lesoto', 'namibia', 'republica centroafricana', 
+  'republica democratica del congo', 'suazilandia',
+  
+  // Oceanía
+  'australia', 'nueva zelanda', 'fiyi', 'islas marshall', 'islas salomon', 'kiribati', 'micronesia', 
+  'nauru', 'palaos', 'papua nueva guinea', 'samoa', 'tonga', 'tuvalu', 'vanuatu',
+  
+  // Zonas genéricas o agrupaciones autonómicas usadas como país
+  'baleares', 'canarias', 'global'
 ];
-
 // ─────────────────────────────────────────────────────────────────────
 // DETECTORES EXISTENTES
 // ─────────────────────────────────────────────────────────────────────

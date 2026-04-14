@@ -164,12 +164,13 @@ const FRASES_PER_EXTERNO = {
   BROSHOP_AVISO:    (ciudad) => ciudad ? `Evelyn abre el tablón de ${ciudad}. 📋`        : 'Evelyn abre el tablón. 📋',
   AUDIO:            (ciudad) => ciudad ? `Mapache sintoniza ${ciudad}. 🎧`               : 'Mapache en cabina. 🎧',
   ORACULO_ORUMAMA:  ()       => 'Orumama enciende las velas. 🌿',
+  ORACULO_SMISTERIO:  ()       => 'SMisterio abre el Misterio. 📞',
   ORACULO_JAGUAR:   ()       => 'Jaguar abre el umbral. 🐆',
   REINOS:           ()       => 'Los Reinos te esperan. 👑',
 };
 
 // Sectores PER externos que NO requieren ciudad (van directo)
-const PER_SIN_CIUDAD = ['ORACULO_ORUMAMA', 'ORACULO_JAGUAR', 'REINOS'];
+const PER_SIN_CIUDAD = ['ORACULO_ORUMAMA', 'ORACULO_SMISTERIO', 'ORACULO_JAGUAR', 'REINOS'];
 
 // ─── Hook principal ───────────────────────────────────────────────────────────
 

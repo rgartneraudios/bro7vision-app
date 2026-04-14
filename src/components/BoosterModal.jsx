@@ -450,17 +450,19 @@ const BoosterModal = ({ onClose }) => {
 
   // ── R2 ──
   const deleteFromR2 = async (fileUrl) => {
-    if (!fileUrl) return;
-    try {
-      await fetch('/api/delete-r2', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileUrl }),
-      });
-    } catch (err) {
-      console.warn('[deleteFromR2]', err);
-    }
-  };
+  if (!fileUrl) return;
+  try {
+    const res = await fetch('/api/delete-r2', { // Ruta relativa, igual que upload
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fileUrl }),
+    });
+    const data = await res.json();
+    if (!data.success) console.error("Error al borrar en R2:", data.error);
+  } catch (err) {
+    console.error("Error al llamar a delete-r2:", err);
+  }
+};
 
   const handleDeleteMedia = async (fieldName) => {
     const confirm1 = window.confirm("⚠️ ALERTA DE SISTEMA\n¿Quieres desintegrar este archivo para liberar el espacio?");
@@ -1103,35 +1105,41 @@ const BoosterModal = ({ onClose }) => {
                     </div>
                   </div>
                   
-                  {/* ✦ EL ORÁCULO (Orumama y Jaguar) */}
-                  <div className="bg-gradient-to-br from-cyan-950/30 to-fuchsia-950/20 backdrop-blur-xl border border-cyan-500/20 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
-                    <div className="flex items-center gap-3 mb-5">
-                      <span className="text-2xl">🔮</span>
-                      <div>
-                        <p className="text-sm font-black text-cyan-300 tracking-wider">SECTOR DEL ORÁCULO</p>
-                        <p className="text-[10px] text-gray-500 mt-0.5">Conecta con la sabiduría ancestral.</p>
-                      </div>
-                    </div>
-                    <div className="space-y-5">
-                      <div>
-                        <label className={LabelStyle}>¿A quién consultarás hoy?</label>
-                        <div className="grid grid-cols-2 gap-4 mt-2">
-                          {[
-                            { id: 'ORUMAMA', img: '/emojis/orumama.webp', nombre: 'Orumama', desc: 'La Experiencia' },
-                            { id: 'JAGUAR',  img: '/emojis/jaguar.webp',  nombre: 'Jaguar',  desc: 'La Redención' },
-                          ].map(personaje => (
-                            <button key={personaje.id} onClick={() => setFormData({ ...formData, oraculo_id: personaje.id, oraculo_personaje: personaje.nombre })}
-                              className={`p-3 rounded-2xl border text-center transition-all ${formData.oraculo_id === personaje.id ? 'bg-cyan-900/40 border-cyan-500/60 text-cyan-300' : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20'}`}>
-                              <img src={personaje.img} alt={personaje.nombre} className="w-16 h-16 mx-auto mb-2 object-contain drop-shadow-lg" />
-                              <p className="text-xs font-black uppercase">{personaje.nombre}</p>
-                              <p className="text-[9px] opacity-70">{personaje.desc}</p>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
+                 {/* ✦ EL ORÁCULO (Orumama, SMisterio, Jaguar) */}
+<div className="bg-gradient-to-br from-cyan-950/30 to-fuchsia-950/20 backdrop-blur-xl border border-cyan-500/20 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+  <div className="flex items-center gap-3 mb-5">
+    <span className="text-2xl">🔮</span>
+    <div>
+      <p className="text-sm font-black text-cyan-300 tracking-wider">SECTOR DEL ORÁCULO</p>
+      <p className="text-[10px] text-gray-500 mt-0.5">Conecta con la sabiduría ancestral.</p>
+    </div>
+  </div>
+  <div className="space-y-5">
+    <div>
+      <label className={LabelStyle}>¿A quién consultarás hoy?</label>
+      {/* grid-cols-3 para las 3 columnas */}
+      <div className="grid grid-cols-3 gap-2 mt-2">
+        {[
+          { id: 'ORUMAMA', img: '/emojis/orumama.webp', nombre: 'Orumama', desc: 'La Experiencia' },
+          { id: 'SMISTERIO', img: '/emojis/smisterio.webp', nombre: 'SMisterio', desc: 'El Misterio' },  
+          { id: 'JAGUAR',  img: '/emojis/jaguar.webp',  nombre: 'Jaguar',  desc: 'La Redención' },
+        ].map(personaje => (
+          <button 
+            key={personaje.id} 
+            onClick={() => setFormData({ ...formData, oraculo_id: personaje.id, oraculo_personaje: personaje.nombre })}
+            // Reduje el padding a p-2 para ganar espacio interno
+            className={`p-2 rounded-2xl border text-center transition-all ${formData.oraculo_id === personaje.id ? 'bg-cyan-900/40 border-cyan-500/60 text-cyan-300' : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20'}`}
+          >
+            {/* Aumenté las imágenes a w-20 h-20 (puedes probar con w-24 si quieres más) */}
+            <img src={personaje.img} alt={personaje.nombre} className="w-20 h-20 mx-auto mb-1 object-contain drop-shadow-lg" />
+            <p className="text-[10px] font-black uppercase">{personaje.nombre}</p>
+            <p className="text-[8px] opacity-70">{personaje.desc}</p>
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+</div>
                   {/* ✦ SECTOR DE AVISOS (Evelyn y Larry) */}
                   <div className="bg-gradient-to-br from-cyan-950/30 to-fuchsia-950/20 backdrop-blur-xl border border-cyan-500/20 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
                     <div className="flex items-center gap-3 mb-5">

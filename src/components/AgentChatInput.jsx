@@ -72,7 +72,7 @@ const AGENT_COLORS = {
 const AGENT_PROFILES = {
   osos: {
     theme: 'violet',
-    text: '✦  Dame con Nova · Dame con Isabella · Dame con Evelyn · o dime qué buscas ? | Saluda o Pon Sector o Personaje + ubicación | Te cuento una historia?'
+    text: '✦  Ejemplos: Hola Lara · Nova en Medellín · Productos en España · Avisos en Madrid · Cuéntame una historia'
   },
   nova: {
     theme: 'gold',
