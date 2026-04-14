@@ -57,14 +57,14 @@ const AGENT_COLORS = {
     pulse:       'text-amber-400',
     btn:         'bg-amber-500/30 hover:bg-amber-400/50 border-amber-400/60 hover:border-amber-300 text-amber-200',
   },
-  pink: {
-    rgb:         '236,72,153',
-    border:      'border-pink-400/50',
-    borderFocus: 'focus:border-pink-300',
-    placeholder: 'placeholder-pink-300/70',
-    counter:     'text-pink-700/60',
-    pulse:       'text-pink-400',
-    btn:         'bg-pink-500/30 hover:bg-pink-400/50 border-pink-400/60 hover:border-pink-300 text-pink-200',
+blue: {
+    rgb:         '0,32,130',
+    border:      'border-blue-700/50',
+    borderFocus: 'focus:border-blue-500',
+    placeholder: 'placeholder-blue-400/70',
+    counter:     'text-blue-300/60',
+    pulse:       'text-blue-500',
+    btn:         'bg-blue-800/30 hover:bg-blue-700/50 border-blue-700/60 hover:border-blue-500 text-blue-100',
   },
 };
 
@@ -83,7 +83,7 @@ const AGENT_PROFILES = {
     text: '✦  CODIGO + D · Descripción del Comercio | CODIGO + A Entrar al Comercio'
   },
   evelyn: {
-    theme: 'amber',
+    theme: 'blue',
     text: '✦  ¿Qué aviso buscas o quieres publicar? | CODIGO + D Descripción | CODIGO + A Conectar'
   },
   mapache: {
