@@ -476,7 +476,7 @@ const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'live
           <div className="w-full px-4 mb-4"><BroLives playingCreator={audioUser} onToggleAudio={() => setAudioUser(prev => prev ? null : audioUser)} /></div>
           <div className="w-full px-4 pt-4 border-t border-white/5"><BroTuner ref={broTunerRef} /></div>
         </div>
-      </div>      
+   
 
       {/* 3. PUERTA DERECHA */}
       <div className={`side-panel side-panel-right ${isRightOpen ? 'open' : ''} flex flex-col p-4 gap-2 overflow-y-auto custom-scrollbar`}>
