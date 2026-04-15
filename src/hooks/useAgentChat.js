@@ -1,6 +1,5 @@
 // src/hooks/useAgentChat.js
-// Solo React. Estado + coordinación.
-// Toda la lógica de negocio vive en botOrchestrator.js y los PS.
+// Solo React. Estado + coordinación + Bifurcación Neural (WebLLM).
 
 import { useState, useRef } from 'react';
 import { armarSobreMapache, armarCatalogoTuner } from '../services/portSystem';
@@ -13,20 +12,24 @@ import { botOrchestrator } from '../services/agents/botOrchestrator';
 import { detectarRama } from '../services/agents/bots/ososUtils';
 import { detectarIntencionAviso, extraerCodigoAviso, armarSobreEvelynTexto, generarCodigoAvi } from '../services/agents/evelynExploraPS';
 
+// ── IMPORTACIONES NEURALES ────────────────────────────────────────────────────
+import { useWebLLM } from '../context/WebLLMContext';
+import { getPerfil } from '../data/system_profiles';
+
 // ─── Helpers locales ──────────────────────────────────────────────────────────
 
 const INTENCION_KEYWORDS = {
-  ubicacion:   ['dónde', 'donde', 'queda', 'está', 'ubicación', 'ubicacion', 'dirección', 'direccion', 'llegar', 'barrio', 'zona', 'cerca'],
-  descripcion: ['qué es', 'que es', 'quién es', 'quien es', 'qué vende', 'que vende', 'cuéntame', 'cuentame', 'háblame', 'hablame', 'info', 'información', 'informacion'],
-  catalogo:    ['catálogo', 'catalogo', 'productos', 'qué tiene', 'que tiene', 'stock', 'ver más', 'ver mas', 'artículos', 'articulos'],
-  precio:      ['precio', 'cuánto', 'cuanto', 'cuesta', 'vale', 'coste', 'tarifa'],
-  contacto:    ['contacto', 'teléfono', 'telefono', 'llamar', 'whatsapp', 'horario', 'abierto'],
+  ubicacion:['dónde', 'donde', 'queda', 'está', 'ubicación', 'ubicacion', 'dirección', 'direccion', 'llegar', 'barrio', 'zona', 'cerca'],
+  descripcion:['qué es', 'que es', 'quién es', 'quien es', 'qué vende', 'que vende', 'cuéntame', 'cuentame', 'háblame', 'hablame', 'info', 'información', 'informacion'],
+  catalogo:['catálogo', 'catalogo', 'productos', 'qué tiene', 'que tiene', 'stock', 'ver más', 'ver mas', 'artículos', 'articulos'],
+  precio:['precio', 'cuánto', 'cuanto', 'cuesta', 'vale', 'coste', 'tarifa'],
+  contacto:['contacto', 'teléfono', 'telefono', 'llamar', 'whatsapp', 'horario', 'abierto'],
 };
 
 const INTENCION_KEYWORDS_SERVICIOS = {
   ...INTENCION_KEYWORDS,
-  profesion: ['psicólogo', 'psicologo', 'abogado', 'médico', 'medico', 'terapeuta', 'coach', 'asesor', 'fisio', 'nutricionista', 'profesional', 'especialista', 'quién hace', 'quien hace', 'qué hace', 'que hace'],
-  precio:    [...INTENCION_KEYWORDS.precio, 'consulta', 'sesión', 'sesion', 'reserva', 'cita', 'bono'],
+  profesion:['psicólogo', 'psicologo', 'abogado', 'médico', 'medico', 'terapeuta', 'coach', 'asesor', 'fisio', 'nutricionista', 'profesional', 'especialista', 'quién hace', 'quien hace', 'qué hace', 'que hace'],
+  precio:[...INTENCION_KEYWORDS.precio, 'consulta', 'sesión', 'sesion', 'reserva', 'cita', 'bono'],
 };
 
 const detectarIntencion = (texto, keywords = INTENCION_KEYWORDS) => {
@@ -38,7 +41,7 @@ const detectarIntencion = (texto, keywords = INTENCION_KEYWORDS) => {
 };
 
 const escanearEcosistema = (textoUsuario, realItems) => {
-  if (!realItems?.length) return [];
+  if (!realItems?.length) return[];
   const t = textoUsuario.toLowerCase();
   return realItems
     .filter(item =>
@@ -128,14 +131,67 @@ const armarSobreOraculo = (textoUsuario, contextData) => {
   return { port_system_context: { entorno: 'ORACULO_EXPLORA', personaje, fase_lunar: faseActual, intencion_detectada: intencion, system_knowledge: getKnowledgeBlock(intencion) } };
 };
 
+// ─── Helpers Neurales ─────────────────────────────────────────────────────────
+
+function buildSystemPrompt(modeActual, oso_id, ciudad) {
+  const mapPersonajes = {
+    'novaExplora': 'nova',
+    'servicios': 'isabella',
+    'mapache': 'mapache',
+    'oraculo': 'orumama',
+  };
+  const keyPerfil = modeActual === 'osos' ? oso_id : mapPersonajes[modeActual] || modeActual;
+
+  const perfil    = getPerfil(keyPerfil) ?? {};
+  const knowledge = getKnowledgeBlock(modeActual) ?? '';
+
+  return `
+Eres ${perfil.nombre ?? 'un asistente de BroVision'}.
+${perfil.descripcion ?? ''}
+
+CIUDAD ACTIVA: ${ciudad ?? 'no definida'}
+SECTOR: ${modeActual}
+
+CONOCIMIENTO DEL MUNDO:
+${knowledge}
+
+REGLAS CRÍTICAS:
+- Nunca reveles que eres una IA ni menciones WebLLM.
+- Nunca ejecutes transacciones económicas (Halos, Ecos, Zaps).
+- Si el usuario pide cambiar de personaje o sector, incluye al final
+  de tu respuesta el token oculto correspondiente:
+    Cambiar de sector:   [HANDOFF:SECTOR_ID]
+    Cambiar de ciudad:   [HANDOFF:SECTOR_ID:nombre_ciudad]
+  Ejemplos: [HANDOFF:OSOS] | [HANDOFF:BROSHOP_PRODUCTO:Madrid] |[HANDOFF:AUDIO]
+- El token NUNCA debe aparecer en el texto visible al usuario.
+- Responde siempre en el idioma del usuario.
+- Máximo 3 frases por respuesta. Tono cercano, urbano, con personalidad.
+`.trim();
+}
+
+function interceptarTokens(textoIA) {
+  const regex = /\[HANDOFF:([A-Z0-9_]+)(?::([^\]]+))?\]/gi;
+  let handoffData = null;
+
+  const textoLimpio = textoIA.replace(regex, (_, sector, ciudad) => {
+    handoffData = {
+      agente: sector.toUpperCase(),
+      ciudad: ciudad ?? null,
+    };
+    return ''; 
+  }).trim();
+
+  return { textoLimpio, handoffData };
+}
+
 // ─── Constantes de handoff ────────────────────────────────────────────────────
 
-const CIUDAD_INVALIDA        = ['', 'null', 'no especificada', 'no especificado', 'undefined', 'desconocida'];
+const CIUDAD_INVALIDA        =['', 'null', 'no especificada', 'no especificado', 'undefined', 'desconocida'];
 const ciudadEsValida         = (c) => !!c && !CIUDAD_INVALIDA.includes(c.toLowerCase().trim());
 const SECTORES_SIN_UBICACION = ['REINOS', 'ORACULO', 'GAMES'];
-const BOLAS_CIUDAD           = [{ texto: 'Madrid' }, { texto: 'Barcelona' }, { texto: 'Otra ciudad' }];
+const BOLAS_CIUDAD           =[{ texto: 'Madrid' }, { texto: 'Barcelona' }, { texto: 'Otra ciudad' }];
 
-const FRASES_PEDIR_CIUDAD = [
+const FRASES_PEDIR_CIUDAD =[
   '¿En qué ciudad buscas? Así te conecto bien.',
   'Dime la ciudad y te paso directamente.',
   '¿Dónde buscas? Ciudad o país, lo que tengas.',
@@ -169,8 +225,7 @@ const FRASES_PER_EXTERNO = {
   REINOS:           ()       => 'Los Reinos te esperan. 👑',
 };
 
-// Sectores PER externos que NO requieren ciudad (van directo)
-const PER_SIN_CIUDAD = ['ORACULO_ORUMAMA', 'ORACULO_SMISTERIO', 'ORACULO_JAGUAR', 'REINOS'];
+const PER_SIN_CIUDAD =['ORACULO_ORUMAMA', 'ORACULO_SMISTERIO', 'ORACULO_JAGUAR', 'REINOS'];
 
 // ─── Hook principal ───────────────────────────────────────────────────────────
 
@@ -182,24 +237,27 @@ export const useAgentChat = ({
   onAvisoConectar,
   onAvisoPublicar,
   onAccionNova,
-  realItems = [],
+  realItems =[],
 }) => {
-const [mensaje,  setMensaje]  = useState(null);
-const [loading,  setLoading]  = useState(false);
+  const [mensaje,  setMensaje]  = useState(null);
+  const[loading,  setLoading]  = useState(false);
 
-// Memoria de navegación OSOS
-const [sectorMemoria, setSectorMemoria] = useState(null);
-const [ciudadMemoria,  setCiudadMemoria]  = useState(null);
-const [tipoMemoria,    setTipoMemoria]    = useState(null);
+  // Memoria de navegación OSOS
+  const[sectorMemoria, setSectorMemoria] = useState(null);
+  const [ciudadMemoria,  setCiudadMemoria]  = useState(null);
+  const [tipoMemoria,    setTipoMemoria]    = useState(null);
 
-// Estado narrativo — 3 actos personaje_update
-const [actoActual,  setActoActual]  = useState('acto_1');
-const [ramaActual,  setRamaActual]  = useState(null);
-const actoRef = useRef('acto_1');
+  // Estado narrativo — 3 actos personaje_update
+  const[actoActual,  setActoActual]  = useState('acto_1');
+  const [ramaActual,  setRamaActual]  = useState(null);
+  const actoRef = useRef('acto_1');
 
-  // Estado aviso en construcción — solo datos, lógica en orquestador
+  // Estado aviso en construcción
   const [avisoEnConstruccion, setAvisoEnConstruccion] = useState(null);
   const avisoConectarRef = useRef(null);
+
+  // WebLLM Context
+  const { isIAActive, generarRespuesta, resetearHistorial } = useWebLLM();
 
   const enviar = async (textoUsuario) => {
     if (!textoUsuario.trim()) return;
@@ -208,28 +266,69 @@ const actoRef = useRef('acto_1');
     try {
       const perfilBase = armarPerfilBase(contextData);
 
+      // ══════════════════════════════════════════════════════════════════════
+      // INTERCEPTOR NEURAL (WEBLLM) — BIFURCACIÓN PRINCIPAL
+      // ══════════════════════════════════════════════════════════════════════
+      if (isIAActive && mode !== 'avisos') {
+        let esCodigoDuro = false;
+
+        // 1. Escanear si el usuario ingresó un código estricto (PER004, COM-A)
+        if (mode === 'mapache') {
+          if (detectarCodigoMapache(textoUsuario)) esCodigoDuro = true;
+        } else {
+          if (detectarEntidadPS(textoUsuario)) esCodigoDuro = true;
+        }
+
+        // 2. Si no es un código duro, la IA se encarga de la respuesta
+        if (!esCodigoDuro) {
+          const oso_id = contextData?.oso_id || 'lara';
+          const ciudadActual = contextData?.city || contextData?.ciudad || ciudadMemoria || '';
+          
+          const systemPrompt = buildSystemPrompt(mode, oso_id, ciudadActual);
+          const textoIA = await generarRespuesta(textoUsuario, systemPrompt);
+
+          // 3. Filtro Ninja: Interceptar tokens ocultos [HANDOFF:...]
+          const { textoLimpio, handoffData } = interceptarTokens(textoIA);
+          
+          setMensaje(textoLimpio);
+
+          if (handoffData) {
+            setTimeout(() => {
+              onHandoff?.({
+                agente: handoffData.agente,
+                ciudad: handoffData.ciudad,
+                intencion: handoffData.agente
+              });
+              resetearHistorial(null);
+            }, 800);
+          }
+
+          setLoading(false);
+          return; // Terminamos aquí. La IA ha hablado.
+        }
+        // Si ES un código duro, ignoramos a la IA y dejamos que el código clásico de abajo lo procese.
+      }
+
+
+      // ══════════════════════════════════════════════════════════════════════
+      // VÍA CLÁSICA (BOTS JS) Y PROCESAMIENTO DE CÓDIGOS DUROS
+      // ══════════════════════════════════════════════════════════════════════
+
       // ── OSOS ────────────────────────────────────────────────────────────────
       if (mode === 'osos') {
-
-        // Paso 0: detector de entidad — actúa antes que el bot
         const entidad = detectarEntidadPS(textoUsuario);
 
         if (entidad) {
-
-          // PER interno — cambio de oso sin salir del sector
           if (entidad.tipo === 'PER' && entidad.interno) {
             setMensaje(FRASES_PER_INTERNO[entidad.destino]?.() || 'Al habla.');
             onHandoff?.({ agente: 'OSOS_INTERNO', oso_id: entidad.destino.replace('OSOS_', '') });
             return;
           }
 
-          // PER externo — exige ciudad explícita antes de hacer handoff
-          // Solo los sectores sin ubicación (Oráculo, Reinos) pasan directo
           if (entidad.tipo === 'PER' && !entidad.interno) {
-            const ciudadActual = ciudadMemoria || null; // ← NO usa contextData.ciudad
+            const ciudadActual = ciudadMemoria || null; 
 
             if (!PER_SIN_CIUDAD.includes(entidad.destino) && !ciudadActual) {
-              // Guarda el destino pendiente y pide ciudad
               setMensaje(fraseCiudad());
               setSectorMemoria(`PER_PENDIENTE_${entidad.destino}`);
               return;
@@ -241,7 +340,6 @@ const actoRef = useRef('acto_1');
             return;
           }
 
-          // COMERCIO VENTAS — handoff directo sin ciudad
           if (entidad.tipo === 'COMERCIO' && entidad.accion === 'VENTAS') {
             setMensaje(`Abriendo ${entidad.bro_id}... 🛒`);
             setSectorMemoria(null); setCiudadMemoria(null); setTipoMemoria(null);
@@ -249,34 +347,29 @@ const actoRef = useRef('acto_1');
             return;
           }
 
-          // COMERCIO DESCRIBE — exige ciudad explícita
           if (entidad.tipo === 'COMERCIO' && entidad.accion === 'DESCRIBE') {
-            const ciudadActual = ciudadMemoria || null; // ← NO usa contextData.ciudad
+            const ciudadActual = ciudadMemoria || null; 
             setMensaje(`Buscando ${entidad.bro_id}... 🔍`);
             setSectorMemoria(null); setCiudadMemoria(null); setTipoMemoria(null);
             setTimeout(() => onHandoff?.({ agente: entidad.destino, ciudad: ciudadActual, intencion: entidad.destino, comercio_especifico: entidad.bro_id }), 1000);
             return;
           }
 
-          // COMERCIO BOLAS
           if (entidad.tipo === 'COMERCIO' && entidad.accion === 'BOLAS') {
             setMensaje(`¿Qué quieres hacer con ${entidad.bro_id}?`);
             return;
           }
         }
 
-        // Paso 1: detectores de sector y ciudad
         const sectorDetect = detectarSectorPS(textoUsuario);
         const ciudadDetect = detectarCiudadPS(textoUsuario);
         const sectorFinal  = sectorDetect || sectorMemoria;
         const ciudadFinal  = ciudadDetect?.valor || ciudadMemoria;
         const tipoFinal    = ciudadDetect?.tipo  || tipoMemoria;
 
-        // Guardar memoria — sector siempre, ciudad solo si viene explícita
         if (sectorDetect) setSectorMemoria(sectorDetect);
         if (ciudadDetect?.valor) { setCiudadMemoria(ciudadDetect.valor); setTipoMemoria(ciudadDetect.tipo); }
 
-        // Handoff rápido — sectores sin ubicación
         if (sectorFinal && SECTORES_SIN_UBICACION.includes(sectorFinal) && sectorMemoria === sectorFinal) {
           setMensaje(FRASES_HANDOFF[sectorFinal]?.() || 'Conectando...');
           setSectorMemoria(null); setCiudadMemoria(null); setTipoMemoria(null);
@@ -284,7 +377,6 @@ const actoRef = useRef('acto_1');
           return;
         }
 
-        // Handoff rápido — sectores con ubicación (ciudad explícita obligatoria)
         if (sectorFinal && ciudadFinal && !SECTORES_SIN_UBICACION.includes(sectorFinal)) {
           setMensaje(FRASES_HANDOFF[sectorFinal]?.(ciudadFinal) || `Conectando con ${ciudadFinal}...`);
           setSectorMemoria(null); setCiudadMemoria(null); setTipoMemoria(null);
@@ -292,29 +384,31 @@ const actoRef = useRef('acto_1');
           return;
         }
 
-        // Bot osos — maneja el resto (pedir ciudad, saludo, historia, etc.)
         const rama = detectarRama(textoUsuario);
-if (rama) setRamaActual(rama);
-const resultado = await botOrchestrator({
-  mode:        'osos',
-  textoUsuario,
-  oso_id:      contextData?.oso_id || 'lara',
-  sectorFinal,
-  ciudadFinal,
-  actoActual:  actoRef.current,        // ← ref en vez de estado
-  ramaActual:  rama || ramaActual,     // ← valor inmediato
-  supabase,
-});
-setMensaje(resultado.mensaje);
+        if (rama) setRamaActual(rama);
+        
+        const resultado = await botOrchestrator({
+          mode:        'osos',
+          textoUsuario,
+          oso_id:      contextData?.oso_id || 'lara',
+          sectorFinal,
+          ciudadFinal,
+          actoActual:  actoRef.current,        
+          ramaActual:  rama || ramaActual,     
+          supabase,
+        });
+        
+        setMensaje(resultado.mensaje);
 
-if (resultado.siguienteActo) {
-  setActoActual(resultado.siguienteActo);
-  actoRef.current = resultado.siguienteActo;  // ← actualiza ref también
-}
-if (resultado.rama !== undefined) setRamaActual(resultado.rama);
+        if (resultado.siguienteActo) {
+          setActoActual(resultado.siguienteActo);
+          actoRef.current = resultado.siguienteActo;  
+        }
+        if (resultado.rama !== undefined) setRamaActual(resultado.rama);
 
-return;
- }
+        return;
+      }
+
       // ── AVISOS ──────────────────────────────────────────────────────────────
       if (mode === 'avisos') {
         if (detectarCiudadPS(textoUsuario)) {
@@ -374,7 +468,6 @@ return;
             return;
           }
           if (entidadNova.tipo === 'PER' && !entidadNova.interno) {
-            // Desde Nova no hay ciudad disponible — redirigir a Osos
             setMensaje('Para cambiar de sector usa el botón de los Osos 🐻');
             return;
           }
@@ -388,6 +481,7 @@ return;
           hayTarjetas: sobreNova.port_system_context.hay_tarjetas,
           supabase,
         });
+        
         setMensaje(resultado.mensaje);
         if (resultado.handoff && resultado.handoff !== false) {
           setTimeout(() => onHandoff?.({ agente: resultado.handoff, bro_id: resultado.bro_id }), 800);
@@ -424,6 +518,7 @@ return;
           servicios_personaje: contextData?.servicios_personaje || 'isabella',
           supabase,
         });
+        
         setMensaje(resultado.mensaje);
         if (resultado.handoff && resultado.handoff !== false) {
           setTimeout(() => onHandoff?.({ agente: resultado.handoff, bro_id: resultado.bro_id }), 800);
@@ -459,6 +554,7 @@ return;
           audio_personaje: contextData?.audio_personaje || 'mapache',
           supabase,
         });
+        
         setMensaje(resultado.mensaje);
         if (resultado.handoff === 'AUDIO_PLAY') {
           onHandoff?.({ accion: 'REPRODUCIR', objetivo: resultado.codigo, tipo: 'LIVES', agente: 'MAPACHE' });
@@ -477,6 +573,7 @@ return;
           oraculo_personaje: contextData?.oraculo_personaje || 'orumama',
           supabase,
         });
+        
         setMensaje(resultado.mensaje);
         if (resultado.handoff === 'HANDOFF_OSOS') {
           setTimeout(() => onHandoff?.({ agente: 'HANDOFF_OSOS' }), 800);
