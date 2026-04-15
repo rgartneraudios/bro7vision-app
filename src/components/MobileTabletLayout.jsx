@@ -5,115 +5,33 @@ import NeuralButton from './NeuralButton';
 
 // ─── ESTILOS NEÓN ───────────────────────────────────────────────────────────
 const MOBILE_STYLES = `
-  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;900&display=swap');
 
-  .mobile-root { font-family: 'Share Tech Mono', monospace; }
-  .mobile-display-font { font-family: 'Bebas Neue', sans-serif; }
-
-  @keyframes scanline {
-    0%   { transform: translateY(-100%); }
-    100% { transform: translateY(100vh); }
-  }
-  .scanline {
-    position: absolute; top: 0; left: 0; width: 100%; height: 40px;
-    background: linear-gradient(to bottom, transparent, rgba(0,255,255,0.04), transparent);
-    animation: scanline 6s linear infinite;
-    pointer-events: none; z-index: 1;
+  .mobile-root { font-family: 'Outfit', sans-serif; }
+  
+  /* Gradiente orgánico tipo Pandora */
+  .pandora-bg {
+    background: radial-gradient(circle at 50% 100%, rgba(20, 40, 60, 0.8) 0%, rgba(0, 0, 0, 1) 100%);
   }
 
-  @keyframes neon-pulse {
-    0%,100% { box-shadow: 0 0 8px rgba(0,255,255,0.4), 0 0 20px rgba(0,255,255,0.1); }
-    50%      { box-shadow: 0 0 16px rgba(0,255,255,0.7), 0 0 40px rgba(0,255,255,0.2); }
-  }
-  .neon-border { animation: neon-pulse 3s ease-in-out infinite; }
-
-  @keyframes neon-pulse-fuchsia {
-    0%,100% { box-shadow: 0 0 8px rgba(217,70,239,0.4), 0 0 20px rgba(217,70,239,0.1); }
-    50%      { box-shadow: 0 0 16px rgba(217,70,239,0.7), 0 0 40px rgba(217,70,239,0.2); }
-  }
-  .neon-border-fuchsia { animation: neon-pulse-fuchsia 3s ease-in-out infinite; }
-
-  @keyframes door-slide-left {
-    from { transform: translateX(-100%); opacity: 0; }
-    to   { transform: translateX(0);    opacity: 1; }
-  }
-  @keyframes door-slide-right {
-    from { transform: translateX(100%); opacity: 0; }
-    to   { transform: translateX(0);    opacity: 1; }
-  }
-  .door-open-left  { animation: door-slide-left  0.25s cubic-bezier(0.16,1,0.3,1) forwards; }
-  .door-open-right { animation: door-slide-right 0.25s cubic-bezier(0.16,1,0.3,1) forwards; }
-
-  @keyframes msg-in {
-    from { opacity: 0; transform: translateY(12px) scale(0.97); }
-    to   { opacity: 1; transform: translateY(0)    scale(1);    }
-  }
-  .msg-in { animation: msg-in 0.2s ease-out forwards; }
-
-  @keyframes accordion-open {
-    from { max-height: 0;   opacity: 0; }
-    to   { max-height: 72px; opacity: 1; }
-  }
-  .accordion-open { animation: accordion-open 0.2s ease-out forwards; overflow: hidden; }
-
-  @keyframes dpad-press {
-    0%,100% { transform: scale(1); }
-    50%      { transform: scale(0.88); }
-  }
-  .dpad-press { animation: dpad-press 0.15s ease-in-out; }
-
-  /* Scrollbar neón */
-  .bro-scroll::-webkit-scrollbar       { width: 3px; }
-  .bro-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.4); }
-  .bro-scroll::-webkit-scrollbar-thumb { background: #00ffff; border-radius: 4px; box-shadow: 0 0 6px #00ffff; }
-
-  .grid-bg {
-    background-image:
-      linear-gradient(rgba(0,255,255,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,255,255,0.03) 1px, transparent 1px);
-    background-size: 32px 32px;
+  /* Efecto de "Pulso de Vida" en los contenedores */
+  .bio-glow {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 20, 30, 0.6);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.15), inset 0 0 10px rgba(0, 255, 255, 0.05);
+    border-radius: 24px;
   }
 
-  @keyframes sector-hover {
-    0%,100% { background-position: 0% 50%; }
-    50%      { background-position: 100% 50%; }
+  /* Letras con resplandor suave */
+  .text-neon {
+    text-shadow: 0 0 10px currentColor;
   }
 
-  .dpad-btn {
-    width: 56px; height: 56px;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 12px;
-    background: rgba(0,0,0,0.7);
-    border: 1px solid rgba(0,255,255,0.25);
-    color: rgba(0,255,255,0.8);
-    font-size: 20px;
-    cursor: pointer;
-    transition: all 0.1s;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .dpad-btn:active {
-    background: rgba(0,255,255,0.15);
-    border-color: rgba(0,255,255,0.7);
-    box-shadow: 0 0 12px rgba(0,255,255,0.4);
-  }
-  .dpad-ok {
-    width: 56px; height: 56px;
-    border-radius: 50%;
-    background: rgba(0,255,255,0.1);
-    border: 2px solid rgba(0,255,255,0.5);
-    color: #00ffff;
-    font-size: 11px;
-    font-weight: 900;
-    letter-spacing: 0.1em;
-    cursor: pointer;
-    transition: all 0.1s;
-    box-shadow: 0 0 10px rgba(0,255,255,0.2);
-    -webkit-tap-highlight-color: transparent;
-  }
-  .dpad-ok:active {
-    background: rgba(0,255,255,0.3);
-    box-shadow: 0 0 20px rgba(0,255,255,0.6);
+  /* Scrollbar tipo raíz luminosa */
+  .bro-scroll::-webkit-scrollbar-thumb { 
+    background: linear-gradient(to bottom, #d946ef, #00ffff);
+    border-radius: 10px; 
   }
 `;
 
