@@ -42,7 +42,9 @@ import AvisoPreviewCard from './components/AvisoPreviewCard';
 import CityLocationBanner from './components/CityLocationBanner';
 import NeuralButton from './components/NeuralButton';
 import DesktopLayout from './components/DesktopLayout';
+import MobileTabletLayout from './components/MobileTabletLayout';
 
+console.log("¿Qué es MobileTabletLayout?", MobileTabletLayout);
 
 function App() {
   const [realityMode, setRealityMode] = useState(null); 
