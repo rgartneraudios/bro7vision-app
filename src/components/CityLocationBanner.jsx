@@ -9,12 +9,12 @@ const MENSAJES = [
   { etiqueta: 'AVISO',            texto: 'Nuevos comercios disponibles en tu zona. ¡Explóralos!' },
 ];
 
-export default function CityLocationBanner({ scope }) {
+export default function CityLocationBanner({ scope, isMobile }) {
   const ciudad = useMemo(() => {
-  const raw = scope?.city || 'RED GLOBAL';
-  return (raw === 'Detectando...' ? 'SINTONIZANDO...' : raw).toUpperCase();
-}, [scope?.city]);   // ← solo el string, no el objeto entero
-
+    const raw = scope?.city || 'RED GLOBAL';
+    return (raw === 'Detectando...' ? 'SINTONIZANDO...' : raw).toUpperCase();
+  }, [scope?.city]);  
+  
   const [display, setDisplay]   = useState('');
   const [etiqueta, setEtiqueta] = useState('');
   const [cursor, setCursor]     = useState(true);
@@ -111,7 +111,13 @@ export default function CityLocationBanner({ scope }) {
     box-shadow: 0 0 6px #00f0ff;
   }
 `}</style>
-      <div className="fixed top-12 left-[22%] -translate-x-1/2 w-full max-w-2xl flex flex-col items-center z-[99999] pointer-events-none px-4">
+      <div 
+        className={`w-full max-w-2xl flex flex-col items-center pointer-events-none px-4 ${
+          isMobile 
+            ? 'relative' // En móvil le quitamos la posición fija para que el layout principal lo baje y lo centre
+            : 'fixed top-12 left-[22%] -translate-x-1/2 z-[99999]' // Tu configuración original para PC
+        }`}
+      >
         {/* clb-wrap es la cápsula semitransparente detrás del texto */}
         <div className="clb-wrap flex flex-col items-center justify-center text-center">
           <span className="clb-label">◈ {etiqueta}</span>
