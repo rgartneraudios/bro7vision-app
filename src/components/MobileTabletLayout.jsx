@@ -7,7 +7,13 @@ import NeuralButton from './NeuralButton';
 const MOBILE_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Courier+New&display=swap');
 
-  .mobile-root { font-family: 'Share Tech Mono', monospace; }
+  .mobile-root { 
+    font-family: 'Share Tech Mono', monospace; 
+    height: 100%;
+    min-height: 100dvh; 
+    display: flex;
+    flex-direction: column;
+  }
   .mobile-display-font { font-family: 'Bebas Neue', sans-serif; }
 
   /* ESTILO ENORME TIPO BANNER */
@@ -57,11 +63,14 @@ const MOBILE_STYLES = `
   .msg-in { animation: msg-in 0.3s ease-out forwards; }
 
   @keyframes accordion-open {
-    from { max-height: 0;   opacity: 0; }
-    to   { max-height: 90px; opacity: 1; }
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
-  .accordion-open { animation: accordion-open 0.2s ease-out forwards; overflow: hidden; }
-
+  .accordion-open { 
+    animation: accordion-open 0.2s ease-out forwards; 
+    /* ¡Eliminamos el overflow: hidden y el max-height! */
+  }
+  
   @keyframes dpad-press {
     0%,100% { transform: scale(1); }
     50%      { transform: scale(0.88); }
@@ -386,8 +395,8 @@ const MobileTabletLayout = ({
 
         {/* ── FOOTER — CAJON ENORME TRANSPARENTE ── */}
         <footer className="flex-shrink-0 border-t backdrop-blur-md pb-safe"
-                style={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.6)' }}>
-
+        style={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.6)' }}>
+        
           <div className="flex border-b" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
             <button onClick={() => setFooterMode('chat')}
               className="flex-1 py-4 text-sm uppercase tracking-widest font-black transition-all"
