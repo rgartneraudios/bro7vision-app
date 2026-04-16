@@ -147,6 +147,8 @@ const MobileTabletLayout = ({
   const [inputText,  setInputText]    = useState('');
   const [messages,   setMessages]     = useState([]);
   const[dpadActive, setDpadActive]   = useState(null);
+  
+  const inputRef = useRef(null);
 
   useEffect(() => {
     if (!ososMensaje) return;
@@ -190,7 +192,7 @@ const MobileTabletLayout = ({
   const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
 
   return (
-    <div className="mobile-root relative w-screen h-screen overflow-hidden bg-black text-white select-none">
+    <div className="mobile-root fixed inset-0 overflow-hidden bg-black text-white select-none">
       <style>{MOBILE_STYLES}</style>
 
       {/* ── FONDO WEBP ── */}
@@ -338,7 +340,15 @@ const MobileTabletLayout = ({
         
         
         {/* ── DISPLAY CENTRAL — CHAT UNICO SIN FONDOS ── */}
-        <section className="flex-1 overflow-y-auto bro-scroll px-6 py-4 flex flex-col">
+        <section 
+  className="flex-1 min-h-0 overflow-y-auto bro-scroll px-6 py-4 flex flex-col cursor-text"
+  onClick={() => {
+    // Si estaba en MANDO, lo pasa a CHAT automáticamente
+    if (footerMode !== 'chat') setFooterMode('chat');
+    // Le da el foco al input para que salte el teclado nativo
+    setTimeout(() => inputRef.current?.focus(), 50);
+  }}
+>
           <div className="flex-1 flex flex-col items-center justify-center w-full">
             
             {/* Si no hay mensajes */}
@@ -420,6 +430,7 @@ const MobileTabletLayout = ({
             <div className="accordion-open px-4 py-4 flex items-center gap-3">
               {/* Input gigante transparente */}
               <input
+              ref={inputRef} 
                 type="text"
                 value={inputText}
                 onChange={e => setInputText(e.target.value)}
