@@ -44,7 +44,6 @@ import NeuralButton from './components/NeuralButton';
 import DesktopLayout from './components/DesktopLayout';
 import MobileTabletLayout from './components/MobileTabletLayout';
 
-console.log("¿Qué es MobileTabletLayout?", MobileTabletLayout);
 
 function App() {
   const [realityMode, setRealityMode] = useState(null); 
@@ -58,6 +57,7 @@ function App() {
   const [scope, setScope] = useState(null);
   const [realItems, setRealItems] = useState([]);
   const [selectedCard, setSelectedCard] = useState(null);
+  const [isTouch, setIsTouch] = useState(false);
   
   const [ventasMode, setVentasMode] = useState(null);
   const [showStory, setShowStory] = useState(false);
@@ -329,6 +329,12 @@ function App() {
       setStep(2);
     }
   };
+  
+  useEffect(() => {
+  // detectamos si el dispositivo es táctil
+  const checkTouch = window.matchMedia("(pointer: coarse)").matches;
+  setIsTouch(checkTouch);
+}, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
@@ -459,15 +465,11 @@ const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'live
   return (
     <div className="relative w-full h-screen bg-black text-white overflow-hidden font-sans">
       
-    {isMobile ? (
-      <MobileTabletLayout {...layoutProps}>
-        {/* Aquí va el contenido del chat móvil */}
-      </MobileTabletLayout>
-    ) : (
-      <DesktopLayout {...layoutProps}>
-        {/* Aquí va el contenido del chat PC */}
-      </DesktopLayout>
-    )}
+    {isTouch ? (
+  <MobileTabletLayout {...layoutProps} />
+) : (
+  <DesktopLayout {...layoutProps} />
+)}
     
           {/* 2. MODALES GLOBALES (Superpuestos a todo, iguales en PC y Móvil) */}
       {showLegal && (
