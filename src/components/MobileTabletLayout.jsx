@@ -350,19 +350,20 @@ const MobileTabletLayout = ({
           </div>
         )}
         
-        // EMOJIS
-        <div className="flex items-center justify-center gap-2 mt-1">
-  {activeSector?.images?.length > 0 && (
+     {activeSector?.images?.length > 0 && (
   <div className="flex items-center justify-center gap-2 mt-1">
     {activeSector.images.map((img, i) => (
-      <img key={i} src={img} alt=""
+      <img
+        key={i}
+        src={img}
+        alt=""
         className="w-10 h-10 rounded-full object-cover border-2"
         style={{ borderColor: accent, boxShadow: `0 0 8px ${accent}` }}
       />
     ))}
   </div>
-  )}
-</div>
+)}
+
         
         {/* ── DISPLAY CENTRAL — CHAT UNICO SIN FONDOS ── */}
         <section 
