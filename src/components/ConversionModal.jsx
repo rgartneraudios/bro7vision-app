@@ -3,7 +3,7 @@ import { PACKS_REGALOS, REGLAS_DESCUENTOS } from '../data/MoonMatrix';
 import { supabase } from '../supabaseClient';
 
 const ConversionModal = ({ balances, setBalances, session, activePhase, onClose }) => {
-  const [activeTab, setActiveTab] = useState('strategy');
+  const[activeTab, setActiveTab] = useState('strategy'); // 'strategy', 'packs', 'ai'
   const faseActual = activePhase || 'nova';
 
   const handleBuyGen = async (type) => {
@@ -67,29 +67,47 @@ const ConversionModal = ({ balances, setBalances, session, activePhase, onClose 
                     </div>
                 </div>
              ) : (
-                /* INVENTARIO ACTIVOS PREMIUM (P) */
-                <div className="space-y-2 text-white text-[9px] md:text-[10px] font-bold uppercase">
-                    <p className="text-purple-500/80 mb-2 tracking-widest text-[8px]">ACTIVOS PREMIUM (FIAT)</p>
-                    <div className="flex justify-between p-2.5 bg-purple-900/10 rounded-lg border border-purple-500/20"><span>HALOS (P)</span><span className="text-yellow-400">{balances?.halos_p || 0}</span></div>
-                    <div className="flex justify-between p-2.5 bg-purple-900/10 rounded-lg border border-purple-500/20"><span>ECOS (P)</span><span className="text-orange-400">{balances?.eco_p || 0}</span></div>
-                    <div className="flex justify-between p-2.5 bg-purple-900/10 rounded-lg border border-purple-500/20"><span>ZAPS (P)</span><span className="text-pink-400">{balances?.zap_p || 0}</span></div>
+                /* INVENTARIO ACTIVOS PREMIUM / IA */
+                <div className="space-y-4 text-white text-[9px] md:text-[10px] font-bold uppercase">
+                    <div>
+                        <p className="text-purple-500/80 mb-2 tracking-widest text-[8px]">ACTIVOS PREMIUM (FIAT)</p>
+                        <div className="flex justify-between p-2.5 bg-purple-900/10 rounded-lg border border-purple-500/20 mb-2"><span>HALOS (P)</span><span className="text-yellow-400">{balances?.halos_p || 0}</span></div>
+                        <div className="flex justify-between p-2.5 bg-purple-900/10 rounded-lg border border-purple-500/20 mb-2"><span>ECOS (P)</span><span className="text-orange-400">{balances?.eco_p || 0}</span></div>
+                        <div className="flex justify-between p-2.5 bg-purple-900/10 rounded-lg border border-purple-500/20"><span>ZAPS (P)</span><span className="text-pink-400">{balances?.zap_p || 0}</span></div>
+                    </div>
+
+                    {/* MOSTRAR TOKENS IA SI EXISTEN EN EL BALANCE */}
+                    <div className="border-t border-white/10 pt-3">
+                        <p className="text-blue-500/80 mb-2 tracking-widest text-[8px]">SALDO INTELIGENCIA ARTIFICIAL</p>
+                        <div className="flex justify-between p-2.5 bg-blue-800/10 rounded-lg border border-blue-400/20">
+                            <span className="text-blue-300">TOKENS IA</span>
+                            <span className="text-white">{balances?.ai_tokens?.toLocaleString() || 0}</span>
+                        </div>
+                    </div>
                 </div>
              )}
            </div>
            
            {/* BOTONES NAVEGACIÓN SIDEBAR */}
-           <nav className="flex flex-row md:flex-col gap-2 mt-auto">
-               <button onClick={() => setActiveTab('strategy')} className={`flex-1 p-3 rounded-xl text-center md:text-left text-[10px] md:text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'strategy' ? 'bg-white text-black shadow-lg shadow-white/10' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}>😎 Vales & Gen</button>
-               <button onClick={() => setActiveTab('packs')} className={`flex-1 p-3 rounded-xl text-center md:text-left text-[10px] md:text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'packs' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}>🎁 Packs (FIAT)</button>
+           <nav className="grid grid-cols-3 md:flex md:flex-col gap-2 mt-auto">
+               <button onClick={() => setActiveTab('strategy')} className={`flex-1 p-2 md:p-3 rounded-xl flex items-center justify-center md:justify-start gap-2 text-[9px] md:text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'strategy' ? 'bg-white text-black shadow-lg shadow-white/10' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}>
+                   <span className="text-sm">😎</span> <span className="hidden md:inline">Vales & Gen</span>
+               </button>
+               <button onClick={() => setActiveTab('packs')} className={`flex-1 p-2 md:p-3 rounded-xl flex items-center justify-center md:justify-start gap-2 text-[9px] md:text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'packs' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}>
+                   <span className="text-sm">🎁</span> <span className="hidden md:inline">Packs (FIAT)</span>
+               </button>
+               <button onClick={() => setActiveTab('ai')} className={`flex-1 p-2 md:p-3 rounded-xl flex items-center justify-center md:justify-start gap-2 text-[9px] md:text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'ai' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}>
+                   <span className="text-sm">🤖</span> <span className="hidden md:inline">Prepago IA</span>
+               </button>
            </nav>
         </div>
 
         {/* ================= CONTENIDO DERECHO ================= */}
         <div className="flex-1 p-4 md:p-6 lg:p-8 bg-black overflow-y-auto">
-           {activeTab === 'strategy' ? (
-              
-              /* ---------------- PESTAÑA 1: ESTRATEGIA (VALES + GEN) ---------------- */
-              <div className="h-full flex flex-col">
+           
+           {/* ---------------- PESTAÑA 1: ESTRATEGIA (VALES + GEN) ---------------- */}
+           {activeTab === 'strategy' && (
+              <div className="h-full flex flex-col animate-fadeIn">
                  <h3 className="text-xl md:text-2xl font-black text-white uppercase mb-4 md:mb-6">Canje de Vales <span className="text-cyan-500">(Fase: {faseActual.toUpperCase()})</span></h3>
                  
                  <div className="grid grid-cols-1 gap-3 md:gap-4 mb-8">
@@ -118,7 +136,6 @@ const ConversionModal = ({ balances, setBalances, session, activePhase, onClose 
                     Activos Digitales <span className="text-cyan-500">(Gasto Génesis)</span>
                  </h3>
                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    
                     {/* ECO GEN */}
                     <div className="bg-[#151515] p-4 rounded-2xl border border-orange-500/30 flex flex-col justify-between">
                        <div className="mb-3">
@@ -127,12 +144,7 @@ const ConversionModal = ({ balances, setBalances, session, activePhase, onClose 
                        </div>
                        <div className="mt-auto">
                            <div className="text-xl font-black text-white mb-2">100 G</div>
-                           <button 
-  				disabled={(balances?.genesis || 0) < 100} 
-  				onClick={() => handleBuyGen('eco')}
-  				className="w-full py-2 rounded-lg text-[10px] font-black uppercase tracking-widest bg-orange-600/20 text-orange-400 border border-orange-500/50 hover:bg-orange-600 hover:text-white transition-colors disabled:opacity-50">
-  				COMPRAR ECO GEN
-		        </button>
+                           <button disabled={(balances?.genesis || 0) < 100} onClick={() => handleBuyGen('eco')} className="w-full py-2 rounded-lg text-[10px] font-black uppercase tracking-widest bg-orange-600/20 text-orange-400 border border-orange-500/50 hover:bg-orange-600 hover:text-white transition-colors disabled:opacity-50">COMPRAR ECO GEN</button>
                        </div>
                     </div>
 
@@ -144,14 +156,9 @@ const ConversionModal = ({ balances, setBalances, session, activePhase, onClose 
                        </div>
                        <div className="mt-auto">
                            <div className="text-xl font-black text-white mb-2">1000 G</div>
-                           <button 
-  				disabled={(balances?.genesis || 0) < 1000} 
-  				onClick={() => handleBuyGen('zap')}
- 				 className="w-full py-2 rounded-lg text-[10px] font-black uppercase tracking-widest bg-pink-600/20 text-pink-400 				 border border-pink-500/50 hover:bg-pink-600 hover:text-white transition-colors disabled:opacity-50">
- 				 COMPRAR ZAP GEN
- 		       </button>                       			
- 		</div>
-                  </div>
+                           <button disabled={(balances?.genesis || 0) < 1000} onClick={() => handleBuyGen('zap')} className="w-full py-2 rounded-lg text-[10px] font-black uppercase tracking-widest bg-pink-600/20 text-pink-400 border border-pink-500/50 hover:bg-pink-600 hover:text-white transition-colors disabled:opacity-50">COMPRAR ZAP GEN</button>                       			
+                       </div>
+                    </div>
 
                     {/* HALO GEN (BLOQUEADO) */}
                     <div className="bg-[#111] p-4 rounded-2xl border border-yellow-500/10 flex flex-col justify-between relative overflow-hidden">
@@ -168,15 +175,13 @@ const ConversionModal = ({ balances, setBalances, session, activePhase, onClose 
                            <button disabled className="w-full py-2 rounded-lg text-[10px] font-black uppercase tracking-widest bg-gray-800 text-gray-500">REQUERIDO FASE 2</button>
                        </div>
                     </div>
-
                  </div>
               </div>
+           )}
 
-           ) : (
-
-              /* ---------------- PESTAÑA 2: PACKS PREMIUM Y QUEMA ---------------- */
-              <div className="h-full flex flex-col">
-                 
+           {/* ---------------- PESTAÑA 2: PACKS PREMIUM Y QUEMA ---------------- */}
+           {activeTab === 'packs' && (
+              <div className="h-full flex flex-col animate-fadeIn">
                  {/* ZONA DE QUEMA */}
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 md:mb-8">
                      <div className="bg-[#151515] p-4 md:p-5 rounded-2xl border border-orange-500/30 flex flex-col justify-between">
@@ -223,6 +228,73 @@ const ConversionModal = ({ balances, setBalances, session, activePhase, onClose 
                  </div>
               </div>
            )}
+
+           {/* ---------------- PESTAÑA 3: INTELIGENCIA ARTIFICIAL ---------------- */}
+           {activeTab === 'ai' && (
+              <div className="h-full flex flex-col animate-fadeIn">
+                 
+                 <div className="mb-6 md:mb-8">
+                     <h3 className="text-xl md:text-2xl font-black text-white uppercase mb-2">Prepago IA <span className="text-blue-500">(BRO7VISION)</span></h3>
+                     <p className="text-xs md:text-sm text-gray-400 border-l-2 border-blue-500 pl-3">
+                        Desbloquea el modelo avanzado de Inteligencia Artificial. Los personajes de <strong className="text-white">Bro7Vision</strong> cobran vida con respuestas fluidas, memoria de la historia y una experiencia conversacional 100% realista.
+                     </p>
+                 </div>
+                 
+                 {/* GRID DE PACKS IA */}
+                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    
+                    {/* PACK 5 EUROS */}
+                    <div className="bg-gradient-to-br from-blue-900/20 to-[#0a0a0a] p-5 md:p-6 rounded-2xl border border-blue-500/30 hover:border-blue-400/60 hover:shadow-[0_0_20px_rgba(16,185,129,0.15)] transition-all flex flex-col justify-between">
+                        <div>
+                           <div className="flex justify-between items-start mb-3">
+                               <h4 className="font-black text-blue-400 text-sm md:text-base uppercase tracking-widest">Pack IA Básico</h4>
+                               <span className="bg-blue-500/20 text-blue-300 text-[9px] px-2 py-1 rounded font-black uppercase tracking-wider">Recomendado</span>
+                           </div>
+                           <p className="text-[10px] md:text-xs text-gray-400 mb-5 leading-relaxed">Ideal para comenzar a interactuar con los protagonistas y adentrarte en su universo mental.</p>
+                           
+                           <div className="flex items-center justify-between mb-6">
+                               <div className="text-3xl md:text-4xl font-black text-white">5.00€</div>
+                               <div className="text-right">
+                                   <div className="text-blue-400 font-black text-sm md:text-base tracking-widest">500.000 TOKENS</div>
+                                   <div className="text-[9px] md:text-[10px] text-gray-500 uppercase font-bold mt-1">~ 1.000 Consultas/Msjs</div>
+                               </div>
+                           </div>
+                        </div>
+                        <button className="w-full py-3 bg-blue-600/90 text-white rounded-lg text-xs md:text-sm font-black uppercase tracking-widest hover:bg-blue-500 shadow-lg shadow-blue-900/50 transition-all">
+                            COMPRAR PACK 5€
+                        </button>
+                    </div>
+
+                    {/* PACK 10 EUROS */}
+                    <div className="bg-gradient-to-br from-blue-900/30 to-[#0a0a0a] p-5 md:p-6 rounded-2xl border-2 border-blue-500/50 hover:border-blue-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.2)] transition-all flex flex-col justify-between relative overflow-hidden">
+                        {/* Etiqueta BONUS */}
+                        <div className="absolute top-4 -right-8 bg-blue-500 text-black text-[9px] font-black uppercase px-10 py-1 rotate-45 shadow-lg">
+                            +200K BONUS
+                        </div>
+
+                        <div>
+                           <div className="flex justify-between items-start mb-3">
+                               <h4 className="font-black text-blue-400 text-sm md:text-base uppercase tracking-widest">Pack IA Pro</h4>
+                           </div>
+                           <p className="text-[10px] md:text-xs text-gray-400 mb-5 leading-relaxed">Máxima inmersión. Conversaciones extensas sin preocuparte de los límites para explorar cada secreto.</p>
+                           
+                           <div className="flex items-center justify-between mb-6">
+                               <div className="text-3xl md:text-4xl font-black text-white">10.00€</div>
+                               <div className="text-right">
+                                   <div className="text-blue-400 font-black text-sm md:text-base tracking-widest">1.200.000 TOKENS</div>
+                                   <div className="text-[9px] md:text-[10px] text-gray-500 uppercase font-bold mt-1">~ 2.400 Consultas/Msjs</div>
+                               </div>
+                           </div>
+                        </div>
+                        <button className="w-full py-3 bg-blue-500 text-black rounded-lg text-xs md:text-sm font-black uppercase tracking-widest hover:bg-blue-400 shadow-lg shadow-blue-900/50 transition-all">
+                            COMPRAR PACK 10€
+                        </button>
+                    </div>
+
+                 </div>
+              </div>
+           )}
+
         </div>
       </div>
     </div>

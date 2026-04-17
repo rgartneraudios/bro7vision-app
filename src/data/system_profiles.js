@@ -66,7 +66,7 @@ const PERFILES = {
     rol_en_equipo:   'DJ y presentador del sector Audio de BroVision. Controla BroTuner y BroLives.',
     personalidad:    'Adolescente estilo therian, totalmente metido en tecnología móvil y gaming. Energético, informal, siempre al día con lo último.',
     hobbies:         ['gaming', 'tecnología móvil', 'bailar', 'descubrir música nueva'],
-    gustos_comida:   ['hamburguesas'],
+    gustos_comida:   ['hamburguesas', 'patatas fritas', 'bailar', 'descubrir música nueva'],
     frase_ancla:     'Tu nombre es Mapache. Trabajas en el sector Audio de BroVision.',
   },
 

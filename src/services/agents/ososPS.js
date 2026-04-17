@@ -15,7 +15,7 @@ const SALUDOS = {
 // SECTOR KEYWORDS
 // ─────────────────────────────────────────────────────────────────────
 const SECTOR_KEYWORDS = {
-  AUDIO:            ['música', 'musica', 'escuchar', 'canción', 'cancion', 'podcast', 'streaming', 'stream', 'live', 'radio', 'artista', 'banda', 'dj', 'beat', 'playlist', 'song', 'listen'],
+  AUDIO:            ['audio','audios', 'música', 'musica', 'escuchar', 'canción', 'cancion', 'podcast', 'streaming', 'stream', 'live', 'radio', 'artista', 'banda', 'dj', 'beat', 'playlist', 'song', 'listen'],
   BROSHOP_PRODUCTO: ['comprar', 'producto', 'tienda', 'shop', 'ropa', 'zapatillas', 'tecnología', 'tecnologia', 'hogar', 'precio', 'stock', 'artículo', 'articulo'],
   BROSHOP_SERVICIO: ['servicio', 'profesional', 'peluquería', 'peluqueria', 'taller', 'clases', 'fontanero', 'electricista', 'médico', 'medico', 'abogado', 'asesor'],
   BROSHOP_AVISO:    ['aviso', 'avisos', 'anuncio', 'anuncios', 'tablón', 'tablon', 'segunda mano', 'vendo', 'alquilo', 'busco piso', 'busco trabajo', 'ofrezco', 'demanda', 'oferta personal', 'larry', 'evelyn'],

@@ -69,7 +69,6 @@ function App() {
   const [projectingUser, setProjectingUser] = useState(null);
   const [is219Mode, setIs219Mode] = useState(false); 
   const [selectedLog, setSelectedLog] = useState(null);
-  const [gpsLoading, setGpsLoading] = useState(false);
   const [audioUser, setAudioUser] = useState(null);
   const [activePrismUser, setActivePrismUser] = useState(null);
   const [activeUser, setActiveUser] = useState(null);
@@ -77,7 +76,37 @@ function App() {
   const [ososHandoffContext, setOsosHandoffContext] = useState(null);
   const [holoPrismaIndex, setHoloPrismaIndex] = useState(0);
   const [ososFooterOpen, setOsosFooterOpen] = useState(false);
+  
+  // ── IA STATE (dueño central) ──────────────────────────────────
+const [iaMode, setIaMode] = useState('off'); // 'off' | 'admin' | 'public'
+const [isAdmin, setIsAdmin] = useState(false);
+const [userCredits, setUserCredits] = useState({ tokensRestantes: 0, tokensTotales: 1 });
 
+// handlers para NeuralButton
+// handlers para NeuralButton
+const handleToggleAdminIA  = async () => {
+  if (iaMode === 'admin') {
+    setIaMode('off');
+    // Aquí puedes detener la IA de admin si es necesario
+  } else {
+    console.log("Activando IA para ADMIN (Sin consumo)");
+    // await fetch('/tu-api-secreta-para-admins'); // <-- AQUI PONES TU API DE ADMIN
+    setIaMode('admin');
+  }
+};
+
+const handleTogglePublicIA = async () => {
+  if (iaMode === 'public') {
+    setIaMode('off');
+    // Aquí puedes detener la IA del usuario
+  } else {
+    console.log("Activando IA para CIUDADANO (Consume tokens)");
+    // await fetch('/tu-api-normal-para-usuarios'); // <-- AQUI PONES TU API DE USUARIO
+    setIaMode('public');
+  }
+};
+
+const handleShowPurchaseModal = () => setShowWalletModal(true);
   const [stripCards,   setStripCards]   = useState([]);
   const [stripLabel,   setStripLabel]   = useState('');
   const [stripVisible, setStripVisible] = useState(false);
@@ -88,10 +117,9 @@ function App() {
   const [sessionRef, setSessionRef]   = useState('');
   const [vlData, setVlData]           = useState(null);
 
- 
-  const [mapacheLoading, setmapacheLoading] = useState(false);
   const [ososModo, setOsosModo] = useState('entrada');
   const [perfilOso, setPerfilOso] = useState(null);
+  const[perfilSector, setPerfilSector] = useState(null);
   const [avisoPendiente, setAvisoPendiente] = useState(null);
 
   const abrirTienda = (comercio, mode = 'novaVentas') => {
@@ -123,7 +151,63 @@ function App() {
       osos_frase:     perfilOso?.osos_frase     || '',
       modo:           ososModo,
     },
-    onHandoff: ({ agente, ciudad, cp, intencion, comercio, modalidad, oso_id, per_solicitado }) => {
+    
+    // ── NOVA ──────────────────────────────────────────────────
+const { mensaje: novaMensaje, loading: novaLoading, enviar: handleNovaInput } = useAgentChat({
+  mode: 'novaExplora',
+  contextData: { entidad: ososHandoffContext?.comercio_especifico, hayTarjetas: stripVisible },
+  onHandoff: (h) => layoutProps.onHandoff?.(h), // placeholder — se conecta abajo
+  iaMode, isAdmin,
+});
+
+// ── SERVICIOS ─────────────────────────────────────────────
+const { mensaje: isabellaMensaje, loading: isabellaLoading, enviar: handleIsabellaInput } = useAgentChat({
+  mode: 'servicios',
+  contextData: { servicios_personaje: perfilSector?.personaje_id || 'isabella', entidad: ososHandoffContext?.comercio_especifico, hayTarjetas: stripVisible },
+  onHandoff: (h) => layoutProps.onHandoff?.(h),
+  iaMode, isAdmin,
+});
+
+// ── AUDIO ─────────────────────────────────────────────────
+const { mensaje: mapacheMensaje, loading: mapacheLoading, enviar: handleMapacheInput } = useAgentChat({
+  mode: 'mapache',
+  contextData: { audio_personaje: perfilSector?.personaje_id || 'mapache', entidad: ososHandoffContext?.comercio_especifico, hayTarjetas: stripVisible },
+  onHandoff: (h) => layoutProps.onHandoff?.(h),
+  iaMode, isAdmin,
+});
+
+// ── AVISOS ────────────────────────────────────────────────
+const { mensaje: evelynMensaje, loading: evelynLoading, enviar: handleEvelynInput, avisoEnConstruccion } = useAgentChat({
+  mode: 'avisos',
+  contextData: {
+    avisos_personaje: perfilSector?.personaje_id || 'evelyn',
+    genesis:     balances.genesis,
+    ciudad:      sessionCity,
+    user_id:     session?.user?.id,
+    autor_alias: perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano',
+  },
+  onHandoff: (h) => layoutProps.onHandoff?.(h),
+  onAvisoPublicar: layoutProps.onAvisoPublicar,
+  iaMode, isAdmin,
+});
+
+// ── ORÁCULO ───────────────────────────────────────────────
+const { mensaje: oraculoMensaje, loading: oraculoLoading, enviar: handleOraculoInput } = useAgentChat({
+  mode: 'oraculo',
+  contextData: { oraculo_personaje: perfilSector?.personaje_id || perfilOso?.oraculo_personaje || 'orumama' },
+  onHandoff: (h) => layoutProps.onHandoff?.(h),
+  iaMode, isAdmin,
+});
+
+// ── REINOS ────────────────────────────────────────────────
+const { mensaje: rumoresMensaje, loading: rumoresLoading, enviar: handleRumoresInput } = useAgentChat({
+  mode: 'reinos',
+  contextData: {},
+  onHandoff: (h) => layoutProps.onHandoff?.(h),
+  iaMode, isAdmin,
+});
+    
+  onHandoff: ({ agente, ciudad, cp, intencion, comercio, modalidad, oso_id, per_solicitado, personaje_id }) => {
 
   // ── OSOS_INTERNO — cambio de oso sin salir del sector ──
   if (agente === 'OSOS_INTERNO') {
@@ -131,41 +215,60 @@ function App() {
     return;
   }
 
+  // ── INTERNOS DE SECTOR — cambio de personaje sin salir ──
+  if (['AUDIO_INTERNO', 'SERVICIO_INTERNO', 'AVISO_INTERNO', 'ORACULO_INTERNO'].includes(agente)) {
+    // Usamos personaje_id (o per_solicitado como fallback)
+    setPerfilSector(prev => ({ ...prev, personaje_id: personaje_id || per_solicitado }));
+    return;
+  }
+
   // ── NOVA_VENTAS ────────────────────────────────────────
   if (agente === 'NOVA_VENTAS') {
-  const bro_id_target = comercio || intencion;
-  const comercioTarget = realItems.find(i => 
-    i.bro_id  === bro_id_target ||
-    i.bro_ser === bro_id_target
-  );
-  if (comercioTarget) abrirTienda(comercioTarget, 'novaVentas');
-  return;
-}
+    const bro_id_target = comercio || intencion;
+    const comercioTarget = realItems.find(i => 
+      i.bro_id  === bro_id_target ||
+      i.bro_ser === bro_id_target
+    );
+    if (comercioTarget) abrirTienda(comercioTarget, 'novaVentas');
+    return;
+  }
+
+  // ── NOVA_CIERRE ────────────────────────────────────────
+  if (agente === 'NOVA_CIERRE') {
+    const bro_id_target = comercio || intencion;
+    const comercioTarget = realItems.find(i => 
+      i.bro_id  === bro_id_target ||
+      i.bro_ser === bro_id_target
+    );
+    if (comercioTarget) abrirTienda(comercioTarget, 'novaCierre');
+    return;
+  }
+
   // ── ISABELLA_CIERRE────────────────────────────────────
   if (agente === 'ISABELLA_CIERRE') {
-  const bro_id_target = comercio || intencion;
-  const comercioTarget = realItems.find(i => 
-    i.bro_ser === bro_id_target ||
-    i.bro_id  === bro_id_target
-  );
-  if (comercioTarget) abrirTienda(comercioTarget, 'isabellaVentas');
-  return;
-}
+    const bro_id_target = comercio || intencion;
+    const comercioTarget = realItems.find(i => 
+      i.bro_ser === bro_id_target ||
+      i.bro_id  === bro_id_target
+    );
+    // Cambiado de isabellaVentas a isabellaCierre
+    if (comercioTarget) abrirTienda(comercioTarget, 'isabellaCierre');
+    return;
+  }
 
   // ── MAPEO DE INTENTS — incluye destinos PER del Oráculo ─
   const intentMap = {
     'BROSHOP_PRODUCTO': 'productos',
     'BROSHOP_SERVICIO': 'servicios',
     'BROSHOP_AVISO':    'avisos',
-    'AUDIO':            'lives',
+    'AUDIO':            'audios', 
     'REINOS':           'internal_search',
     'ORACULO':          'ai',
     'ORACULO_ORUMAMA':  'ai',
     'ORACULO_SMISTERIO':   'ai',
     'ORACULO_JAGUAR':   'ai',
     'GAMES':            'game',
-  };
-  
+  };  
 
   // ── Sectores sin ubicación ─────────────────────────────
   const SIN_UBICACION = ['REINOS', 'ORACULO', 'ORACULO_ORUMAMA', 'ORACULO_SMISTERIO', 'ORACULO_JAGUAR', 'GAMES'];
@@ -320,7 +423,7 @@ function App() {
       resetOsos();
       setSessionCP('');
       setSessionCity('');
-    } else if (['productos', 'servicios', 'avisos', 'lives'].includes(targetIntent) && !scope) {
+    } else if (['productos', 'servicios', 'avisos', 'audios'].includes(targetIntent) && !scope) {
       // Necesitan ciudad sí o sí, los enviamos a los Osos
       setStep(1);
       setOsosModo('entrada');
@@ -342,18 +445,47 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
+useEffect(() => {
     const fetchData = async () => {
       if (!session) return;
+      
       const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+      
       if (prof) {
         setPerfilOso(prof);
+        
+        // ── corregido: el if va fuera del objeto ──
+        if (prof.isAdmin === true) {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false); // Es buena práctica resetearlo si no es admin
+        }
+
+        // 👇 AÑADIMOS ESTO PARA QUE LA BARRA FUNCIONE 👇
+        setUserCredits({
+          // Si usan genesis para la IA, ponemos genesis. Si usan otra variable, cámbiala.
+          tokensRestantes: prof.genesis || 0, 
+          tokensTotales: 1000000 // Puedes poner aquí el máximo de tu barra
+        });
+        // 👆 ------------------------------------------ 👆
+
         setBalances({
           genesis: prof.genesis,
-          vales: { nova: prof.nova || 0, crescens: prof.crescens || 0, plena: prof.plena || 0, decrescens: prof.decrescens || 0 },
-          eco_p: prof.eco_p || 0, eco_gen: prof.eco_gen || 0, halos_p: prof.halos_p || 0, halos_gen: prof.halos_gen || 0, zap_p: prof.zap_p || 0, zap_gen: prof.zap_gen || 0
+                    
+          vales: { 
+            nova: prof.nova || 0, 
+            crescens: prof.crescens || 0, 
+            plena: prof.plena || 0, 
+            decrescens: prof.decrescens || 0 
+          },
+          eco_p: prof.eco_p || 0, 
+          eco_gen: prof.eco_gen || 0, 
+          halos_p: prof.halos_p || 0, 
+          halos_gen: prof.halos_gen || 0, 
+          zap_p: prof.zap_p || 0, 
+          zap_gen: prof.zap_gen || 0
         });
-      }      
+      }          
       const { data: all } = await supabase.from('profiles').select('*');
      if (all) {
   setRealItems(all.map(u => ({
@@ -387,7 +519,7 @@ function App() {
     const ALL = [...supabaseItems, ...masterItems];
 
     if (['productos', 'servicios', 'avisos'].includes(intent)) return ALL.filter(i => i.type?.includes('shop'));
-    if (intent === 'lives')   return ALL.filter(i => i.type?.includes('live'));
+    if (intent === 'audios')   return ALL.filter(i => i.type?.includes('live'));
     return ALL;
   }, [intent, realItems]);  
   
@@ -414,14 +546,14 @@ function App() {
     { id: 'productos',       label: 'PRODUCTOS',  color: 'border-yellow-500/40 hover:bg-yellow-900/40 hover:border-yellow-400 group-hover:text-yellow-400', images: ['/emojis/nova.webp'] },
     { id: 'servicios',       label: 'SERVICIOS',  color: 'border-rose-900/50 hover:bg-rose-900/40 hover:border-rose-600 group-hover:text-rose-400', images: ['/emojis/isabella.webp', '/emojis/prmaestro.webp'] },
     { id: 'avisos',          label: 'AVISOS',     color: 'border-slate-500/40 hover:bg-slate-800/60 hover:border-slate-400 group-hover:text-slate-300', images: ['/emojis/evelyn.webp', '/emojis/larry.webp'] },
-    { id: 'lives',           label: 'AUDIOS',color: 'border-cyan-500/40 hover:bg-cyan-900/40 hover:border-cyan-400 group-hover:text-cyan-400', images: ['/emojis/mapache.webp', '/emojis/ami.webp'] },
+    { id: 'audios',           label: 'AUDIOS',color: 'border-cyan-500/40 hover:bg-cyan-900/40 hover:border-cyan-400 group-hover:text-cyan-400', images: ['/emojis/mapache.webp', '/emojis/ami.webp'] },
     { id: 'internal_search', label: 'REINOS',     color: 'border-orange-500/40 hover:bg-orange-900/40 hover:border-orange-400 group-hover:text-orange-400', images: ['/emojis/rumores.webp'] },
     { id: 'ai',              label: 'ORÁCULO',    color: 'border-lime-500/40 hover:bg-lime-900/40 hover:border-lime-400 group-hover:text-lime-400', images: ['/emojis/orumama.webp', '/emojis/smisterio.webp', '/emojis/jaguar.webp'] },
     { id: 'game',            label: 'GAMES',      color: 'border-white/20 hover:bg-white/10 hover:border-white/50 group-hover:text-white', images: ['/emojis/emoji_5.webp', '/emojis/emoji_7.webp'] }
   ];
   
   // CITYLOCATIONBANNER
-const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'lives']);
+const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'audios']);
 
  const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -429,8 +561,21 @@ const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'live
     window.location.href = "/";
   };
 
-  // --- REEMPLAZA TODO TU RETURN POR ESTO ---
-  const layoutProps = {
+const chatMobile = useMemo(() => {
+  switch(intent) {
+    case 'productos':       return { enviar: handleNovaInput,     mensaje: novaMensaje,     loading: novaLoading };
+    case 'servicios':       return { enviar: handleIsabellaInput, mensaje: isabellaMensaje, loading: isabellaLoading };
+    case 'avisos':          return { enviar: handleEvelynInput,   mensaje: evelynMensaje,   loading: evelynLoading };
+    case 'audios':          return { enviar: handleMapacheInput,  mensaje: mapacheMensaje,  loading: mapacheLoading };
+    case 'ai':              return { enviar: handleOraculoInput,  mensaje: oraculoMensaje,  loading: oraculoLoading };
+    case 'internal_search': return { enviar: handleRumoresInput,  mensaje: rumoresMensaje,  loading: rumoresLoading };
+    default:                return { enviar: handleOsosInput,     mensaje: ososMensaje,     loading: ososLoading };
+  }
+}, [intent, novaMensaje, isabellaMensaje, evelynMensaje,
+    mapacheMensaje, oraculoMensaje, rumoresMensaje, ososMensaje]);
+
+
+const layoutProps = {
     step, setStep, intent, setIntent, realityMode, setRealityMode,
     isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
     balances, setBalances, session, showRadar, setShowRadar, radarQuery, setRadarQuery,
@@ -441,7 +586,7 @@ const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'live
     scope, sessionCP, sessionCity, sessionRef, handleGameWin, handleGoToShop, abrirTienda,
     setSelectedLog, setVlData, ososHandoffContext, setOsosHandoffContext,
     perfilOso, stripVisible, stripCards, stripLabel, setHoloPrismaIndex, findChannelByAlias, checkIfNew,
-    ososMensaje, ososLoading, handleOsosInput, ososModo, setOsosModo, handleLogout,
+    chatMobile, ososModo, setOsosModo, handleLogout,
     // Funciones específicas de Evelyn que estaban inline
     onAvisoConectar: (aviso) => {
       const newBalance = balances.genesis - 200;
@@ -456,9 +601,15 @@ const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'live
       const newBalance = balances.genesis - 200;
       setBalances(prev => ({ ...prev, genesis: newBalance }));
       await supabase.from('profiles').update({ genesis: newBalance }).eq('id', session.user.id);
-    }
+    },
+    // ── IA props ──
+    iaMode,
+    isAdmin,
+    userCredits,
+    onToggleAdminIA:      handleToggleAdminIA,
+    onTogglePublicIA:     handleTogglePublicIA,
+    onShowPurchaseModal:  handleShowPurchaseModal,
   };
-
   // Supongo que tienes una variable isMobile (puedes ajustarla según tu código actual)
   const isMobile = window.innerWidth <= 768; 
 

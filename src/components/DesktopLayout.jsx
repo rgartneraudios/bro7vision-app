@@ -40,7 +40,8 @@ export default function DesktopLayout(props) {
     scope, sessionCP, sessionCity, sessionRef, handleGameWin, handleGoToShop, abrirTienda,
     setSelectedLog, setVlData, ososHandoffContext, setOsosHandoffContext,
     perfilOso, stripVisible, stripCards, stripLabel, setHoloPrismaIndex, findChannelByAlias, checkIfNew,
-    ososMensaje, ososLoading, handleOsosInput, ososModo, setOsosModo, handleLogout, selectedCard
+    ososMensaje, ososLoading, handleOsosInput, ososModo, setOsosModo, handleLogout, selectedCard,
+   iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA, onShowPurchaseModal
   } = props;
 
   const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'lives']);
@@ -82,6 +83,16 @@ export default function DesktopLayout(props) {
           <button onClick={() => { setStep(0); setRealityMode(null); setIsRightOpen(false); }} className="w-full flex justify-between items-center p-3 bg-fuchsia-500/10 border border-fuchsia-400/40 rounded-2xl hover:bg-cyan-500 hover:text-black transition-all group">
             <span className="text-[10px] font-black uppercase group-hover:text-black">Cambiar Reality</span><span className="text-lg">🌐</span>
           </button>
+         <NeuralButton
+  isAdmin={isAdmin}
+  iaMode={iaMode}
+  tokensRestantes={userCredits?.tokensRestantes || 0} // <-- Añadido ?. y || 0
+  tokensTotales={userCredits?.tokensTotales || 1000000} // <-- Añadido ?. y un total por defecto
+  onToggleAdmin={onToggleAdminIA}
+  onTogglePublic={onTogglePublicIA}
+  onShowPurchaseModal={onShowPurchaseModal}
+	/>
+          
         </div>                  
         <div className="flex flex-col gap-2 px-4 mt-4">
           <button onClick={() => setShowRadar(!showRadar)} className={`flex items-center gap-4 p-4 border rounded-2xl transition-all ${showRadar ? 'bg-cyan-500 text-black border-cyan-400' : 'bg-white/5 border-yellow/10'}`}>
@@ -115,8 +126,7 @@ export default function DesktopLayout(props) {
             </button>
           ))}
         </div>   
-        <NeuralButton />
-        <div className="mt-2 border-t border-white/10 pt-3 flex flex-col gap-2">
+               <div className="mt-2 border-t border-white/10 pt-3 flex flex-col gap-2">
           <button onClick={() => setShowBooster(true)} className="w-full p-3 border border-cyan-500/30 bg-cyan-500/10 rounded-xl text-cyan-400 font-mono text-[11px] hover:bg-cyan-500 hover:text-black transition-all">[ BOOSTER STUDIO ]</button>
           <button onClick={() => { setShowStory(true); setIsLeftOpen(false); }} className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-violet-900/40 to-fuchsia-900/40 border border-fuchsia-500/30 rounded-xl hover:border-fuchsia-400 transition-all">
             <span className="text-sm">❄️</span><span className="text-[9px] font-black italic text-fuchsia-200">BRO STORIES</span>

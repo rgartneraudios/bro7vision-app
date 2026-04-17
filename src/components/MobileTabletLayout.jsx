@@ -130,9 +130,7 @@ const MobileTabletLayout = ({
   balances,
   navItems,
   handleNavigation,
-  ososMensaje,
-  ososLoading,
-  handleOsosInput,
+  chatMobile,
   ososModo,
   perfilOso,
   setShowBooster,
@@ -140,6 +138,12 @@ const MobileTabletLayout = ({
   handleLogout,
   isLeftOpen,  setIsLeftOpen,
   isRightOpen, setIsRightOpen,
+  iaMode,
+  isAdmin,
+  userCredits,
+  onToggleAdminIA,
+  onTogglePublicIA,
+  onShowPurchaseModal,
   ...props
 }) => {
 
@@ -147,23 +151,23 @@ const MobileTabletLayout = ({
   const [inputText,  setInputText]    = useState('');
   const [messages,   setMessages]     = useState([]);
   const[dpadActive, setDpadActive]   = useState(null);
-  
+  const { enviar, mensaje: chatMensaje, loading: chatLoading } = chatMobile || {};
   const inputRef = useRef(null);
 
   useEffect(() => {
-    if (!ososMensaje) return;
+    if (!chatMensaje) return;
     setMessages(prev => {
       const last = prev[prev.length - 1];
-      if (last?.text === ososMensaje && last?.from === 'bot') return prev;
-      return[...prev, { from: 'bot', text: ososMensaje, ts: Date.now() }];
+      if (last?.text === chatMensaje && last?.from === 'bot') return prev;
+      return[...prev, { from: 'bot', text: chatMensaje, ts: Date.now() }];
     });
-  },[ososMensaje]);
+  },[chatMensaje]);
 
   const handleSend = () => {
     const txt = inputText.trim();
-    if (!txt || ososLoading) return;
+    if (!txt || chatMobile) return;
     setMessages(prev =>[...prev, { from: 'user', text: txt, ts: Date.now() }]);
-    handleOsosInput(txt);
+    enviar?.(txt);
     setInputText('');
   };
 
@@ -235,7 +239,15 @@ const MobileTabletLayout = ({
               </span>
             </div>
             {NeuralButton && (
-              <NeuralButton session={session} balances={balances} perfilOso={perfilOso} />
+              <NeuralButton
+ 	 isAdmin={isAdmin}
+  	iaMode={iaMode}
+  	tokensRestantes={userCredits.tokensRestantes}
+  	tokensTotales={userCredits.tokensTotales}
+  	onToggleAdmin={onToggleAdminIA}
+  	onTogglePublic={onTogglePublicIA}
+  	onShowPurchaseModal={onShowPurchaseModal}
+	/>
             )}
           </div>
 
@@ -338,6 +350,19 @@ const MobileTabletLayout = ({
           </div>
         )}
         
+        // EMOJIS
+        <div className="flex items-center justify-center gap-2 mt-1">
+  {activeSector?.images?.length > 0 && (
+  <div className="flex items-center justify-center gap-2 mt-1">
+    {activeSector.images.map((img, i) => (
+      <img key={i} src={img} alt=""
+        className="w-10 h-10 rounded-full object-cover border-2"
+        style={{ borderColor: accent, boxShadow: `0 0 8px ${accent}` }}
+      />
+    ))}
+  </div>
+  )}
+</div>
         
         {/* ── DISPLAY CENTRAL — CHAT UNICO SIN FONDOS ── */}
         <section 
@@ -352,7 +377,7 @@ const MobileTabletLayout = ({
           <div className="flex-1 flex flex-col items-center justify-center w-full">
             
             {/* Si no hay mensajes */}
-            {messages.length === 0 && !ososLoading && (
+            {messages.length === 0 && !chatLoading && (
               <div className="flex flex-col items-center text-center gap-6 animate-pulse">
                 <div className="huge-neon-text"
                      style={{ color: accent, textShadow: `0 0 12px ${accent}, 0 0 24px ${accent}` }}>
@@ -365,7 +390,7 @@ const MobileTabletLayout = ({
             )}
 
             {/* Mostrar Solo el último mensaje flotando (sin cajas) */}
-            {lastMessage && !ososLoading && (
+            {lastMessage && !chatLoading && (
               <div key={lastMessage.ts} className="msg-in flex flex-col items-center text-center w-full">
                 {lastMessage.from === 'bot' && (
                   <div className="text-xl uppercase tracking-widest mb-4 font-black"
@@ -387,7 +412,7 @@ const MobileTabletLayout = ({
             )}
 
             {/* Animación Sintonizando (Loading) */}
-            {ososLoading && (
+            {chatLoading && (
               <div className="msg-in flex flex-col items-center justify-center w-full gap-6">
                 <div className="text-2xl uppercase tracking-widest font-black" style={{ color: accent, textShadow: `0 0 16px ${accent}` }}>
                   SINTONIZANDO...
@@ -436,7 +461,7 @@ const MobileTabletLayout = ({
                 onChange={e => setInputText(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSend()}
                 placeholder="ESCRIBE AQUÍ..."
-                disabled={ososLoading}
+                disabled={chatLoading}
                 className="flex-1 bg-transparent border-b-2 px-2 py-3 text-2xl font-black text-center text-white placeholder-white/30 outline-none transition-all uppercase"
                 style={{
                   fontFamily: "'Courier New', monospace",
@@ -446,10 +471,10 @@ const MobileTabletLayout = ({
               />
               <button
                 onClick={handleSend}
-                disabled={!inputText.trim() || ososLoading}
+                disabled={!inputText.trim() || chatLoading}
                 className="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-black font-black text-2xl transition-all active:scale-90"
                 style={{
-                  background:   inputText.trim() && !ososLoading ? accent : 'rgba(255,255,255,0.1)',
+                  background:   inputText.trim() && !chatLoading ? accent : 'rgba(255,255,255,0.1)',
                   boxShadow:    inputText.trim() ? `0 0 16px ${accent}` : 'none',
                   color:        inputText.trim() ? 'black' : 'rgba(255,255,255,0.3)',
                 }}>

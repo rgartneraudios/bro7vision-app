@@ -13,7 +13,7 @@ SECTORES: AUDIO (Mapache/Ami), BROSHOP_PRODUCTO (Nova), BROSHOP_SERVICIO (Isabel
 BROSHOP_AVISO (Evelyn/Larry), REINOS (directorio nobiliario + Rumores), ORÁCULO (Orumama/Sr.Misterio/Jaguar),
 GAMES (8 videojuegos), OSOS (Lara/Tito/Puffo — porteros de navegación).
 MONEDA: Génesis (puntos gratuitos). No hay criptomonedas.
-VALES LUNARES (Fase 1): Nova 5%, Crescens 10%, Decrescens 15%, Plena 15%. 1 vale por compra.
+VALES DE DESCUENTO SEGUN FASES LUNARES (Fase 1): Nova 5%, Crescens 10%, Decrescens 15%, Plena 15%. 1 vale por compra.
 CONTACTO: contacto@bro7vision.com | fundadores@bro7vision.com | bro7vision@bro7vision.com
 `,
 

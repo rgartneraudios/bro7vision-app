@@ -1,148 +1,113 @@
-// src/components/NeuralButton.jsx
-// ─────────────────────────────────────────────────────────────
-// BOTÓN NEURAL — Puerta Izquierda (solo MobileTabletLayout)
-// Estados:
-//   · Apagado   → icono gris, toca → Modal Protocolo de Calle
-//   · Descargando → barra de progreso en el propio botón
-//   · Encendido  → icono neón brillante pulsante
-// ─────────────────────────────────────────────────────────────
+export default function NeuralButton({
+  isAdmin = false,
+  iaMode = 'off',
+  tokensRestantes = 0,
+  tokensTotales = 1,
+  onToggleAdmin,
+  onTogglePublic,
+  onShowPurchaseModal,
+}) {
 
-import { useState } from 'react';
-import { useWebLLM } from '../context/WebLLMContext';
-
-export default function NeuralButton() {
-  const {
-    isIAActive,
-    isDownloading,
-    downloadProgress,
-    downloadError,
-    descargarYEncender,
-    apagar,
-  } = useWebLLM();
-
-  const [showModal, setShowModal] = useState(false);
-
-  // ── Handlers ────────────────────────────────────────────
+  // --- Lógica de Interacción ---
   const handleTap = () => {
-    if (isDownloading) return; // descargando, nada que hacer
-    if (isIAActive) {
-      apagar();               // apagar si ya está activo
+    // 1. SI ES ADMIN: Solo togglea el modo admin, nunca abre el modal
+    if (isAdmin) {
+      onToggleAdmin();
       return;
     }
-    setShowModal(true);       // mostrar aviso WiFi antes de descargar
+
+    // 2. SI ES USUARIO COMÚN:
+    if (iaMode === 'public') {
+      onTogglePublic(); // Apaga si está encendido
+    } else if (tokensRestantes > 0) {
+      onTogglePublic(); // Enciende si tiene tokens
+    } else {
+      onShowPurchaseModal(); // Solo aquí abre el modal
+    }
   };
 
-  const handleConfirmar = () => {
-    setShowModal(false);
-    descargarYEncender();
+  // --- Estilos ---
+  const estaActivo = (isAdmin && iaMode === 'admin') || (!isAdmin && iaMode === 'public');
+  
+  // Color: Amarillo para Admin, Cyan para User
+  const colorActivo = isAdmin ? '#facc15' : '#22d3ee';
+  const colorInactivo = '#4b5563'; // Gris oscuro para apagado
+  const colorActual = estaActivo ? colorActivo : colorInactivo;
+
+  const borderStyle = { 
+    borderColor: colorActual, 
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    // Resplandor si está activo
+    boxShadow: estaActivo ? `0 0 10px 1px ${isAdmin ? 'rgba(250,204,21,0.3)' : 'rgba(34,211,238,0.3)'}` : 'none'
   };
-
-  const handleCancelar = () => setShowModal(false);
-
-  // ── Estilos dinámicos del botón ──────────────────────────
-  const btnBase =
-    'relative flex flex-col items-center justify-center w-12 h-12 rounded-full border transition-all duration-300 select-none';
-
-  const btnEstado = isIAActive
-    ? 'border-cyan-400 shadow-[0_0_12px_2px_rgba(34,211,238,0.7)] bg-black animate-pulse'
-    : isDownloading
-    ? 'border-yellow-400 bg-black'
-    : 'border-gray-600 bg-black opacity-60';
-
-  // ── Icono SVG del cerebro/neural ─────────────────────────
-  const iconColor = isIAActive ? '#22d3ee' : isDownloading ? '#facc15' : '#6b7280';
 
   return (
-    <>
-      {/* ── BOTÓN ─────────────────────────────────────────── */}
+    <div className="relative w-full my-3">
       <button
-        className={`${btnBase} ${btnEstado}`}
+        className={`relative flex items-center justify-between w-full px-4 py-3 rounded-2xl transition-all duration-300 select-none bg-black hover:bg-white/5`}
+        style={borderStyle}
         onClick={handleTap}
-        aria-label={isIAActive ? 'Desactivar IA neural' : 'Activar IA neural'}
       >
-        {/* Icono cerebro simple SVG */}
-        <svg
-          width="24" height="24" viewBox="0 0 24 24"
-          fill="none" stroke={iconColor} strokeWidth="1.5"
-          strokeLinecap="round" strokeLinejoin="round"
-        >
-          <path d="M9.5 2a4.5 4.5 0 0 1 4.5 4.5v.5" />
-          <path d="M14 7a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5" />
-          <path d="M16 14.5A3.5 3.5 0 0 1 12.5 18H12" />
-          <path d="M12 18a3 3 0 0 1-3 3" />
-          <path d="M9 21a3 3 0 0 1-3-3v-.5" />
-          <path d="M6 17.5A4 4 0 0 1 2 14c0-1.6.9-3 2.2-3.7" />
-          <path d="M4.3 10.3A4.5 4.5 0 0 1 9.5 6" />
-          <circle cx="12" cy="12" r="1" fill={iconColor} />
-        </svg>
+        {/* IZQUIERDA: Icono + Textos */}
+        <div className="flex items-center gap-3">
+          
+          {/* ICONO */}
+          <svg 
+            className={`w-5 h-5 ${estaActivo ? 'animate-pulse' : ''}`}
+            style={{ color: colorActual }}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            {isAdmin ? (
+              // ICONO ADMIN
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            ) : (
+              // ICONO USUARIO
+              <>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 2a4.5 4.5 0 0 1 4.5 4.5v.5" />
+                <circle cx="12" cy="12" r="1" style={{ fill: colorActual }} />
+              </>
+            )}
+          </svg>
 
-        {/* Barra de progreso superpuesta durante descarga */}
-        {isDownloading && (
-          <div className="absolute bottom-0 left-0 h-1 rounded-b-full bg-yellow-400 transition-all duration-300"
-            style={{ width: `${downloadProgress}%` }}
-          />
-        )}
+          {/* TEXTO */}
+          <div className="flex flex-col items-start">
+            <span className="text-white text-xs font-bold tracking-widest uppercase">
+              {isAdmin ? 'IA ADMIN' : 'NEURAL IA'}
+            </span>
+            <span className="text-[10px] font-mono mt-0.5" style={{ color: colorActual }}>
+              {!isAdmin 
+                ? (iaMode === 'public' ? `ONLINE · ${Math.floor(tokensRestantes / 1000)}k TKNS` : 'SYSTEM OFFLINE')
+                : (iaMode === 'admin' ? 'SYSTEM ONLINE' : 'SYSTEM OFFLINE')
+              }
+            </span>
+          </div>
+        </div>
 
-        {/* Texto de porcentaje durante descarga */}
-        {isDownloading && (
-          <span className="absolute -bottom-5 text-[9px] text-yellow-400 font-mono">
-            {downloadProgress}%
-          </span>
-        )}
+        {/* DERECHA: Indicador LED */}
+        <div 
+          className="w-2 h-2 rounded-full transition-all duration-300"
+          style={{ 
+            backgroundColor: colorActual,
+            boxShadow: estaActivo ? `0 0 8px 2px ${colorActual}` : 'none'
+          }}
+        />
       </button>
 
-      {/* ── MODAL PROTOCOLO DE CALLE ──────────────────────── */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-6">
-          <div className="bg-[#0a0a0a] border border-cyan-500/40 rounded-2xl p-6 max-w-sm w-full shadow-[0_0_30px_rgba(34,211,238,0.15)]">
-
-            {/* Cabecera */}
-            <div className="flex items-center gap-3 mb-4">
-              <span className="text-2xl">⚠️</span>
-              <h2 className="text-cyan-300 font-bold text-base leading-tight">
-                PROTOCOLO DE CALLE
-              </h2>
-            </div>
-
-            {/* Cuerpo */}
-            <p className="text-gray-300 text-sm leading-relaxed mb-4">
-              Requiere{' '}
-              <span className="text-yellow-400 font-semibold">WiFi (≈1.5 GB)</span>.
-              Descarga el cerebro neural de BroVision para que tu dispositivo
-              piense por sí mismo{' '}
-              <span className="text-cyan-400">sin gastar datos en la calle</span>.
-            </p>
-
-            <p className="text-gray-500 text-xs mb-6">
-              El modelo se guarda en tu dispositivo. Solo se descarga una vez.
-              Mientras descarga puedes seguir chateando en Modo JS.
-            </p>
-
-            {/* Error si hubo fallo previo */}
-            {downloadError && (
-              <p className="text-red-400 text-xs mb-4 bg-red-400/10 rounded p-2">
-                Error anterior: {downloadError}
-              </p>
-            )}
-
-            {/* Acciones */}
-            <div className="flex gap-3">
-              <button
-                onClick={handleCancelar}
-                className="flex-1 py-2 rounded-lg border border-gray-700 text-gray-400 text-sm hover:border-gray-500 transition-colors"
-              >
-                Ahora no
-              </button>
-              <button
-                onClick={handleConfirmar}
-                className="flex-1 py-2 rounded-lg bg-cyan-500/20 border border-cyan-500 text-cyan-300 text-sm font-semibold hover:bg-cyan-500/30 transition-colors"
-              >
-                Descargar IA
-              </button>
-            </div>
+      {/* BARRA DE CONSUMO (Solo ciudadanos) - Ubicada discretamente abajo */}
+      {!isAdmin && iaMode === 'public' && (
+        <div className="absolute -bottom-1.5 left-0 w-full px-3">
+          <div className="h-[2px] rounded-full bg-gray-800 overflow-hidden shadow-sm">
+            <div
+              className="h-full transition-all duration-500"
+              style={{ width: `${(tokensRestantes / tokensTotales) * 100}%`, backgroundColor: colorActivo }}
+            />
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
