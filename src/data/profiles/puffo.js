@@ -1,6 +1,6 @@
 // src/data/profiles/puffo.js
 
-export const pufo  = {
+export const puffo  = {
   personaje_id: "puffo",
   nombre: "Puffo",
   sector_id: "osos",

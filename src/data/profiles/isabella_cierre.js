@@ -21,4 +21,4 @@ Su misión es ofrecer a los usuarios los servicios del profesional elegido. Isab
   ],
 }
 
-export default tito
+export default isabella_cierre

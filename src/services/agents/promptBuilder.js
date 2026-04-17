@@ -13,32 +13,41 @@ import { creadores_monetizacion } from '../../data/knowledge/creadores_monetizac
 import { normas_legal }       from '../../data/knowledge/normas_legal.js'
 
 // ── Importa perfiles individuales ─────────────────────────
-import { tito }      from '../../data/profiles/tito.js'
-import { lara }      from '../../data/profiles/lara.js'
-import { puffo }     from '../../data/profiles/puffo.js'
-import { nova }      from '../../data/profiles/nova.js'
-import { nova_cierre } from '../../data/profiles/nova_cierre.js'
-import { isabella }  from '../../data/profiles/isabella.js'
-import { prmaestro } from '../../data/profiles/prmaestro.js'
-import { isabella_cierre } from '../../data/profiles/isabella_cierre.js'
-import { evelyn }    from '../../data/profiles/evelyn.js'
-import { larry }     from '../../data/profiles/larry.js'
-import { mapache }   from '../../data/profiles/mapache.js'
-import { ami }       from '../../data/profiles/ami.js'
-import { orumama }   from '../../data/profiles/orumama.js'
-import { smisterio } from '../../data/profiles/smisterio.js'
-import { jaguar }    from '../../data/profiles/jaguar.js'
-import { rumores }   from '../../data/profiles/rumores.js'
+import titoProfile      from '../../data/profiles/tito.js'
+import laraProfile      from '../../data/profiles/lara.js'
+import puffoProfile     from '../../data/profiles/puffo.js'
+import novaProfile      from '../../data/profiles/nova.js'
+import novaCierreProfile from '../../data/profiles/nova_cierre.js'
+import isabellaProfile  from '../../data/profiles/isabella.js'
+import prmaestroProfile from '../../data/profiles/prmaestro.js'
+import isabellaCierreProfile from '../../data/profiles/isabella_cierre.js'
+import evelynProfile    from '../../data/profiles/evelyn.js'
+import larryProfile     from '../../data/profiles/larry.js'
+import mapacheProfile   from '../../data/profiles/mapache.js'
+import amiProfile       from '../../data/profiles/ami.js'
+import orumamaProfile   from '../../data/profiles/orumama.js'
+import smisterioProfile from '../../data/profiles/smisterio.js'
+import jaguarProfile    from '../../data/profiles/jaguar.js'
+import rumoresProfile   from '../../data/profiles/rumores.js'
 
-// ── Mapa de perfiles ───────────────────────────────────────
+// ── Mapa de perfiles ──────────────────────────────────────
 const PERFILES = {
-  tito, lara, puffo,
-  nova, nova_cierre,
-  isabella, prmaestro, isabella_cierre,
-  evelyn, larry,
-  mapache, ami,
-  orumama, smisterio, jaguar,
-  rumores,
+  tito:             titoProfile,
+  lara:             laraProfile,
+  puffo:            puffoProfile,
+  nova:             novaProfile,
+  nova_cierre:      novaCierreProfile,
+  isabella:         isabellaProfile,
+  prmaestro:        prmaestroProfile,
+  isabella_cierre:  isabellaCierreProfile,
+  evelyn:           evelynProfile,
+  larry:            larryProfile,
+  mapache:          mapacheProfile,
+  ami:              amiProfile,
+  orumama:          orumamaProfile,
+  smisterio:        smisterioProfile,
+  jaguar:           jaguarProfile,
+  rumores:          rumoresProfile,
 }
 
 // ── Detector de bloques de knowledge ──────────────────────

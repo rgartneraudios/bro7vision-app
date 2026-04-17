@@ -46,81 +46,66 @@ import MobileTabletLayout from './components/MobileTabletLayout';
 
 
 function App() {
-  const [realityMode, setRealityMode] = useState(null); 
-  const [session, setSession] = useState(null);
-  const [step, setStep] = useState(0);
-  const [intent, setIntent] = useState(null);
-  const [isGuest, setIsGuest] = useState(false);
-  const [showRadar, setShowRadar] = useState(false);
-  const [radarQuery, setRadarQuery] = useState("");
+
+  // ══════════════════════════════════════════════════════
+  // 1. TODOS LOS USESTATE
+  // ══════════════════════════════════════════════════════
+
+  const [realityMode, setRealityMode]           = useState(null);
+  const [session, setSession]                   = useState(null);
+  const [step, setStep]                         = useState(0);
+  const [intent, setIntent]                     = useState(null);
+  const [isGuest, setIsGuest]                   = useState(false);
+  const [showRadar, setShowRadar]               = useState(false);
+  const [radarQuery, setRadarQuery]             = useState('');
   const [selectedForestUser, setSelectedForestUser] = useState(null);
-  const [scope, setScope] = useState(null);
-  const [realItems, setRealItems] = useState([]);
-  const [selectedCard, setSelectedCard] = useState(null);
-  const [isTouch, setIsTouch] = useState(false);
-  
-  const [ventasMode, setVentasMode] = useState(null);
-  const [showStory, setShowStory] = useState(false);
-  const [showLegal, setShowLegal] = useState(false);
-  const [showWalletModal, setShowWalletModal] = useState(false);
-  const [showBooster, setShowBooster] = useState(false);
-  const [isTeleporting, setIsTeleporting] = useState(false);
-  const [teleportCoords, setTeleportCoords] = useState({ city: '' });
-  const [projectingUser, setProjectingUser] = useState(null);
-  const [is219Mode, setIs219Mode] = useState(false); 
-  const [selectedLog, setSelectedLog] = useState(null);
-  const [audioUser, setAudioUser] = useState(null);
-  const [activePrismUser, setActivePrismUser] = useState(null);
-  const [activeUser, setActiveUser] = useState(null);
-  const [isShopOpen, setIsShopOpen] = useState(false);
+  const [scope, setScope]                       = useState(null);
+  const [realItems, setRealItems]               = useState([]);
+  const [selectedCard, setSelectedCard]         = useState(null);
+  const [isTouch, setIsTouch]                   = useState(false);
+  const [ventasMode, setVentasMode]             = useState(null);
+  const [showStory, setShowStory]               = useState(false);
+  const [showLegal, setShowLegal]               = useState(false);
+  const [showWalletModal, setShowWalletModal]   = useState(false);
+  const [showBooster, setShowBooster]           = useState(false);
+  const [isTeleporting, setIsTeleporting]       = useState(false);
+  const [teleportCoords, setTeleportCoords]     = useState({ city: '' });
+  const [projectingUser, setProjectingUser]     = useState(null);
+  const [is219Mode, setIs219Mode]               = useState(false);
+  const [selectedLog, setSelectedLog]           = useState(null);
+  const [audioUser, setAudioUser]               = useState(null);
+  const [activePrismUser, setActivePrismUser]   = useState(null);
+  const [activeUser, setActiveUser]             = useState(null);
+  const [isShopOpen, setIsShopOpen]             = useState(false);
   const [ososHandoffContext, setOsosHandoffContext] = useState(null);
-  const [holoPrismaIndex, setHoloPrismaIndex] = useState(0);
-  const [ososFooterOpen, setOsosFooterOpen] = useState(false);
-  
-  // ── IA STATE (dueño central) ──────────────────────────────────
-const [iaMode, setIaMode] = useState('off'); // 'off' | 'admin' | 'public'
-const [isAdmin, setIsAdmin] = useState(false);
-const [userCredits, setUserCredits] = useState({ tokensRestantes: 0, tokensTotales: 1 });
+  const [holoPrismaIndex, setHoloPrismaIndex]   = useState(0);
+  const [ososFooterOpen, setOsosFooterOpen]     = useState(false);
+  const [stripCards, setStripCards]             = useState([]);
+  const [stripLabel, setStripLabel]             = useState('');
+  const [stripVisible, setStripVisible]         = useState(false);
+  const [sessionCP, setSessionCP]               = useState('');
+  const [sessionCity, setSessionCity]           = useState('');
+  const [sessionRef, setSessionRef]             = useState('');
+  const [vlData, setVlData]                     = useState(null);
+  const [ososModo, setOsosModo]                 = useState('entrada');
+  const [perfilOso, setPerfilOso]               = useState(null);
+  const [perfilSector, setPerfilSector]         = useState(null);
+  const [avisoPendiente, setAvisoPendiente]     = useState(null);
+  const [balances, setBalances]                 = useState({ genesis: 0, vales: { nova: 0, crescens: 0, plena: 0, decrescens: 0 }, eco_p: 0, eco_gen: 0, halos_p: 0, halos_gen: 0, zap_p: 0, zap_gen: 0 });
+  const [savedUserIndex, setSavedUserIndex]     = useState(0);
+  const [isLeftOpen, setIsLeftOpen]             = useState(false);
+  const [isRightOpen, setIsRightOpen]           = useState(false);
 
-// handlers para NeuralButton
-// handlers para NeuralButton
-const handleToggleAdminIA  = async () => {
-  if (iaMode === 'admin') {
-    setIaMode('off');
-    // Aquí puedes detener la IA de admin si es necesario
-  } else {
-    console.log("Activando IA para ADMIN (Sin consumo)");
-    // await fetch('/tu-api-secreta-para-admins'); // <-- AQUI PONES TU API DE ADMIN
-    setIaMode('admin');
-  }
-};
+  // ── IA STATE ──────────────────────────────────────────
+  const [iaMode, setIaMode]       = useState('off');
+  const [isAdmin, setIsAdmin]     = useState(false);
+  const [userCredits, setUserCredits] = useState({ tokensRestantes: 0, tokensTotales: 1 });
 
-const handleTogglePublicIA = async () => {
-  if (iaMode === 'public') {
-    setIaMode('off');
-    // Aquí puedes detener la IA del usuario
-  } else {
-    console.log("Activando IA para CIUDADANO (Consume tokens)");
-    // await fetch('/tu-api-normal-para-usuarios'); // <-- AQUI PONES TU API DE USUARIO
-    setIaMode('public');
-  }
-};
-
-const handleShowPurchaseModal = () => setShowWalletModal(true);
-  const [stripCards,   setStripCards]   = useState([]);
-  const [stripLabel,   setStripLabel]   = useState('');
-  const [stripVisible, setStripVisible] = useState(false);
   const broTunerRef = useRef(null);
 
-  const [sessionCP, setSessionCP]     = useState('');
-  const [sessionCity, setSessionCity] = useState('');
-  const [sessionRef, setSessionRef]   = useState('');
-  const [vlData, setVlData]           = useState(null);
-
-  const [ososModo, setOsosModo] = useState('entrada');
-  const [perfilOso, setPerfilOso] = useState(null);
-  const[perfilSector, setPerfilSector] = useState(null);
-  const [avisoPendiente, setAvisoPendiente] = useState(null);
+  // ══════════════════════════════════════════════════════
+  // 2. FUNCIONES SIMPLES (no dependen de hooks)
+  // ══════════════════════════════════════════════════════
 
   const abrirTienda = (comercio, mode = 'novaVentas') => {
     setProjectingUser(null);
@@ -132,15 +117,191 @@ const handleShowPurchaseModal = () => setShowWalletModal(true);
     abrirTienda(user, mode);
   };
 
-  const { 
-    mensaje: ososMensaje, 
-    bolas:   ososBolas, 
-    loading: ososLoading, 
-    enviar:  handleOsosInput, 
-    reset:   resetOsos 
-  } = useAgentChat({
+  const handleToggleAdminIA = async () => {
+    if (iaMode === 'admin') { setIaMode('off'); } 
+    else { setIaMode('admin'); }
+  };
+
+  const handleTogglePublicIA = async () => {
+    if (iaMode === 'public') { setIaMode('off'); } 
+    else { setIaMode('public'); }
+  };
+
+  const handleShowPurchaseModal = () => setShowWalletModal(true);
+
+  const handleAvisoConectar = (aviso) => {
+    const newBalance = balances.genesis - 200;
+    setBalances(prev => ({ ...prev, genesis: newBalance }));
+    supabase.from('profiles').update({ genesis: newBalance }).eq('id', session.user.id);
+    supabase.from('mensajes_privados').insert([{
+      from_user_id: session.user.id,
+      to_user_id:   aviso.user_id,
+      from_alias:   perfilOso?.osos_nombre || 'Ciudadano',
+      text:         `Conexión iniciada desde aviso: ${aviso.title}`,
+      aviso_id:     aviso.id,
+    }]);
+    const autorProfile = realItems.find(i => i.id === aviso.user_id);
+    if (autorProfile) setProjectingUser(autorProfile);
+  };
+
+  const handleAvisoPublicar = async ({ confirmado }) => {
+    if (!confirmado) return;
+    const newBalance = balances.genesis - 200;
+    setBalances(prev => ({ ...prev, genesis: newBalance }));
+    await supabase.from('profiles').update({ genesis: newBalance }).eq('id', session.user.id);
+  };
+
+  // ══════════════════════════════════════════════════════
+  // 3. HANDLER CENTRAL DE HANDOFF
+  // ══════════════════════════════════════════════════════
+
+  const handleCentralHandoff = ({ agente, ciudad, cp, intencion, comercio, modalidad, oso_id, per_solicitado, personaje_id }) => {
+
+    // ── OSOS_INTERNO ──────────────────────────────────
+    if (agente === 'OSOS_INTERNO') {
+      setPerfilOso(prev => ({ ...prev, oso_id }));
+      return;
+    }
+
+    // ── INTERNOS DE SECTOR ────────────────────────────
+    if (['AUDIO_INTERNO', 'SERVICIO_INTERNO', 'AVISO_INTERNO', 'ORACULO_INTERNO'].includes(agente)) {
+      setPerfilSector(prev => ({ ...prev, personaje_id: personaje_id || per_solicitado }));
+      return;
+    }
+
+    // ── VOLVER A OSOS ─────────────────────────────────
+    if (agente === 'OSOS') {
+      setIntent('gps');
+      setStep(1);
+      setOsosModo('retorno');
+      return;
+    }
+
+    // ── NOVA_VENTAS ───────────────────────────────────
+    if (agente === 'NOVA_VENTAS') {
+      const bro_id_target  = comercio || intencion;
+      const comercioTarget = realItems.find(i => i.bro_id === bro_id_target || i.bro_ser === bro_id_target);
+      if (comercioTarget) abrirTienda(comercioTarget, 'novaVentas');
+      return;
+    }
+
+    // ── NOVA_CIERRE ───────────────────────────────────
+    if (agente === 'NOVA_CIERRE') {
+      const bro_id_target  = comercio || intencion;
+      const comercioTarget = realItems.find(i => i.bro_id === bro_id_target || i.bro_ser === bro_id_target);
+      if (comercioTarget) abrirTienda(comercioTarget, 'novaCierre');
+      return;
+    }
+
+    // ── ISABELLA_CIERRE ───────────────────────────────
+    if (agente === 'ISABELLA_CIERRE') {
+      const bro_id_target  = comercio || intencion;
+      const comercioTarget = realItems.find(i => i.bro_ser === bro_id_target || i.bro_id === bro_id_target);
+      if (comercioTarget) abrirTienda(comercioTarget, 'isabellaCierre');
+      return;
+    }
+
+    // ── MAPEO DE INTENTS ──────────────────────────────
+    const intentMap = {
+      'BROSHOP_PRODUCTO':  'productos',
+      'BROSHOP_SERVICIO':  'servicios',
+      'BROSHOP_AVISO':     'avisos',
+      'AUDIO':             'audios',
+      'REINOS':            'internal_search',
+      'ORACULO':           'ai',
+      'ORACULO_ORUMAMA':   'ai',
+      'ORACULO_SMISTERIO': 'ai',
+      'ORACULO_JAGUAR':    'ai',
+      'GAMES':             'game',
+    };
+
+    // ── SECTORES SIN UBICACIÓN ────────────────────────
+    const SIN_UBICACION = ['REINOS', 'ORACULO', 'ORACULO_ORUMAMA', 'ORACULO_SMISTERIO', 'ORACULO_JAGUAR', 'GAMES'];
+
+    if (SIN_UBICACION.includes(agente)) {
+      if (per_solicitado) {
+        setPerfilOso(prev => ({ ...prev, oraculo_personaje: per_solicitado }));
+      }
+      setIntent(intentMap[agente] || 'ai');
+      setOsosModo('retorno');
+      setStep(2);
+      return;
+    }
+
+    // ── SECTORES CON UBICACIÓN ────────────────────────
+    setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
+
+    const roleMap = {
+      'BROSHOP_PRODUCTO': 'shop',
+      'BROSHOP_SERVICIO': 'service',
+      'BROSHOP_AVISO':    'aviso',
+      'AUDIO':            'music',
+    };
+
+    const esPais = modalidad === 'ONLINE';
+
+    (async () => {
+      try {
+        const roleBuscado = roleMap[agente];
+        let query = supabase
+          .from('profiles')
+          .select('bro_id, bro_ser, bro_avi, bro_aud, bro_pod, banner_url, alias, biz_category, biz_profession, city, address, nearby_ref, ref_price, description, role, audio_type, track_name, audio_description, audio_file')
+          .limit(20);
+        if (!esPais && ciudad) query = query.ilike('city', `%${ciudad}%`);
+
+        const { data: perfiles, error } = await query;
+
+        const filtrados = perfiles?.filter(p =>
+          Array.isArray(p.role) ? p.role.includes(roleBuscado) : p.role === roleBuscado
+        ) || [];
+
+        const cards = agente === 'AUDIO'
+          ? filtrados.flatMap(p => {
+              if (!p.bro_aud && !p.bro_pod) return [];
+              const esPodcast = p.audio_type === 'podcast';
+              const codigo    = esPodcast ? p.bro_pod : p.bro_aud;
+              if (!codigo) return [];
+              return [{ bro_id: codigo, banner_url: p.banner_url || '', nombre: p.alias || '', categoria: esPodcast ? 'Podcast' : 'Música', ciudad: p.city || '', descripcion: p.audio_description || p.description || '', track_name: p.track_name || '', audio_type: p.audio_type || 'music' }];
+            })
+          : agente === 'BROSHOP_SERVICIO'
+          ? filtrados.filter(p => p.bro_ser).map(p => ({ bro_id: p.bro_ser, banner_url: p.banner_url || '', nombre: p.alias || '', categoria: p.biz_profession || p.biz_category || '', ciudad: p.city || '', descripcion: p.description || '', ref_price: p.ref_price || '', address: p.address || '' }))
+          : agente === 'BROSHOP_AVISO'
+          ? filtrados.filter(p => p.bro_avi).map(p => ({ bro_id: p.bro_avi, banner_url: p.banner_url || '', nombre: p.alias || '', categoria: 'Avisos', ciudad: p.city || '', descripcion: p.description || '' }))
+          : filtrados.filter(p => p.bro_id).map(p => ({ bro_id: p.bro_id, banner_url: p.banner_url || '', nombre: p.alias || '', categoria: p.biz_category || p.biz_profession || '', ciudad: p.city || '', descripcion: p.description || p.nearby_ref || '', ref_price: p.ref_price || '', address: p.address || '' }));
+
+        if (!error && cards.length > 0) {
+          setStripCards(cards);
+          setStripLabel(intencion);
+          setStripVisible(true);
+        } else {
+          setStripCards([]);
+          setStripVisible(false);
+        }
+      } catch (err) {
+        console.error('Error cargando cards:', err);
+        setStripCards([]);
+        setStripVisible(false);
+      }
+    })();
+
+    setTimeout(() => {
+      const ciudadFinal = ciudad || perfilOso?.city || '';
+      setScope({ city: String(ciudadFinal), type: 'teleport' });
+      setSessionCity(ciudadFinal);
+      setSessionCP(cp);
+      setIntent(intentMap[agente] || 'productos');
+      setOsosModo('retorno');
+      setStep(2);
+    }, 2000);
+  };
+
+  // ══════════════════════════════════════════════════════
+  // 4. HOOKS useAgentChat
+  // ══════════════════════════════════════════════════════
+
+  const { mensaje: ososMensaje, loading: ososLoading, enviar: handleOsosInput, reset: resetOsos } = useAgentChat({
     mode: 'osos',
-    realItems: realItems, 
+    realItems,
     contextData: {
       oso_id:         perfilOso?.oso_id         || 'TITO',
       alias:          perfilOso?.osos_nombre    || session?.user?.user_metadata?.alias || 'Ciudadano',
@@ -151,250 +312,63 @@ const handleShowPurchaseModal = () => setShowWalletModal(true);
       osos_frase:     perfilOso?.osos_frase     || '',
       modo:           ososModo,
     },
-    
-    // ── NOVA ──────────────────────────────────────────────────
-const { mensaje: novaMensaje, loading: novaLoading, enviar: handleNovaInput } = useAgentChat({
-  mode: 'novaExplora',
-  contextData: { entidad: ososHandoffContext?.comercio_especifico, hayTarjetas: stripVisible },
-  onHandoff: (h) => layoutProps.onHandoff?.(h), // placeholder — se conecta abajo
-  iaMode, isAdmin,
-});
-
-// ── SERVICIOS ─────────────────────────────────────────────
-const { mensaje: isabellaMensaje, loading: isabellaLoading, enviar: handleIsabellaInput } = useAgentChat({
-  mode: 'servicios',
-  contextData: { servicios_personaje: perfilSector?.personaje_id || 'isabella', entidad: ososHandoffContext?.comercio_especifico, hayTarjetas: stripVisible },
-  onHandoff: (h) => layoutProps.onHandoff?.(h),
-  iaMode, isAdmin,
-});
-
-// ── AUDIO ─────────────────────────────────────────────────
-const { mensaje: mapacheMensaje, loading: mapacheLoading, enviar: handleMapacheInput } = useAgentChat({
-  mode: 'mapache',
-  contextData: { audio_personaje: perfilSector?.personaje_id || 'mapache', entidad: ososHandoffContext?.comercio_especifico, hayTarjetas: stripVisible },
-  onHandoff: (h) => layoutProps.onHandoff?.(h),
-  iaMode, isAdmin,
-});
-
-// ── AVISOS ────────────────────────────────────────────────
-const { mensaje: evelynMensaje, loading: evelynLoading, enviar: handleEvelynInput, avisoEnConstruccion } = useAgentChat({
-  mode: 'avisos',
-  contextData: {
-    avisos_personaje: perfilSector?.personaje_id || 'evelyn',
-    genesis:     balances.genesis,
-    ciudad:      sessionCity,
-    user_id:     session?.user?.id,
-    autor_alias: perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano',
-  },
-  onHandoff: (h) => layoutProps.onHandoff?.(h),
-  onAvisoPublicar: layoutProps.onAvisoPublicar,
-  iaMode, isAdmin,
-});
-
-// ── ORÁCULO ───────────────────────────────────────────────
-const { mensaje: oraculoMensaje, loading: oraculoLoading, enviar: handleOraculoInput } = useAgentChat({
-  mode: 'oraculo',
-  contextData: { oraculo_personaje: perfilSector?.personaje_id || perfilOso?.oraculo_personaje || 'orumama' },
-  onHandoff: (h) => layoutProps.onHandoff?.(h),
-  iaMode, isAdmin,
-});
-
-// ── REINOS ────────────────────────────────────────────────
-const { mensaje: rumoresMensaje, loading: rumoresLoading, enviar: handleRumoresInput } = useAgentChat({
-  mode: 'reinos',
-  contextData: {},
-  onHandoff: (h) => layoutProps.onHandoff?.(h),
-  iaMode, isAdmin,
-});
-    
-  onHandoff: ({ agente, ciudad, cp, intencion, comercio, modalidad, oso_id, per_solicitado, personaje_id }) => {
-
-  // ── OSOS_INTERNO — cambio de oso sin salir del sector ──
-  if (agente === 'OSOS_INTERNO') {
-    setPerfilOso(prev => ({ ...prev, oso_id: oso_id }));
-    return;
-  }
-
-  // ── INTERNOS DE SECTOR — cambio de personaje sin salir ──
-  if (['AUDIO_INTERNO', 'SERVICIO_INTERNO', 'AVISO_INTERNO', 'ORACULO_INTERNO'].includes(agente)) {
-    // Usamos personaje_id (o per_solicitado como fallback)
-    setPerfilSector(prev => ({ ...prev, personaje_id: personaje_id || per_solicitado }));
-    return;
-  }
-
-  // ── NOVA_VENTAS ────────────────────────────────────────
-  if (agente === 'NOVA_VENTAS') {
-    const bro_id_target = comercio || intencion;
-    const comercioTarget = realItems.find(i => 
-      i.bro_id  === bro_id_target ||
-      i.bro_ser === bro_id_target
-    );
-    if (comercioTarget) abrirTienda(comercioTarget, 'novaVentas');
-    return;
-  }
-
-  // ── NOVA_CIERRE ────────────────────────────────────────
-  if (agente === 'NOVA_CIERRE') {
-    const bro_id_target = comercio || intencion;
-    const comercioTarget = realItems.find(i => 
-      i.bro_id  === bro_id_target ||
-      i.bro_ser === bro_id_target
-    );
-    if (comercioTarget) abrirTienda(comercioTarget, 'novaCierre');
-    return;
-  }
-
-  // ── ISABELLA_CIERRE────────────────────────────────────
-  if (agente === 'ISABELLA_CIERRE') {
-    const bro_id_target = comercio || intencion;
-    const comercioTarget = realItems.find(i => 
-      i.bro_ser === bro_id_target ||
-      i.bro_id  === bro_id_target
-    );
-    // Cambiado de isabellaVentas a isabellaCierre
-    if (comercioTarget) abrirTienda(comercioTarget, 'isabellaCierre');
-    return;
-  }
-
-  // ── MAPEO DE INTENTS — incluye destinos PER del Oráculo ─
-  const intentMap = {
-    'BROSHOP_PRODUCTO': 'productos',
-    'BROSHOP_SERVICIO': 'servicios',
-    'BROSHOP_AVISO':    'avisos',
-    'AUDIO':            'audios', 
-    'REINOS':           'internal_search',
-    'ORACULO':          'ai',
-    'ORACULO_ORUMAMA':  'ai',
-    'ORACULO_SMISTERIO':   'ai',
-    'ORACULO_JAGUAR':   'ai',
-    'GAMES':            'game',
-  };  
-
-  // ── Sectores sin ubicación ─────────────────────────────
-  const SIN_UBICACION = ['REINOS', 'ORACULO', 'ORACULO_ORUMAMA', 'ORACULO_SMISTERIO', 'ORACULO_JAGUAR', 'GAMES'];
-
-  if (SIN_UBICACION.includes(agente)) {
-    // Si lleva per_solicitado (Orumama/SMisterio/Jaguar), se lo pasamos a perfilOso
-    // para que OraculoBanner arranque con el personaje correcto
-    if (per_solicitado) {
-      setPerfilOso(prev => ({ ...prev, oraculo_personaje: per_solicitado }));
-    }
-    setIntent(intentMap[agente] || 'ai');
-    setOsosModo('retorno');
-    setStep(2);
-    return;
-  }
-
-  // ── Sectores con ubicación ─────────────────────────────
-  setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
-
-  const roleMap = {
-    'BROSHOP_PRODUCTO': 'shop',
-    'BROSHOP_SERVICIO': 'service',
-    'BROSHOP_AVISO':    'aviso',
-    'AUDIO':            'music',
-  };
-
-  const esPais = modalidad === 'ONLINE';
-
-  (async () => {
-    try {
-  const roleBuscado = roleMap[agente];
-  let query = supabase
-    .from('profiles')
-    .select('bro_id, bro_ser, bro_avi, bro_aud, bro_pod, banner_url, alias, biz_category, biz_profession, city, address, nearby_ref, ref_price, description, role, audio_type, track_name, audio_description, audio_file')
-    .limit(20);
-  if (!esPais && ciudad) query = query.ilike('city', `%${ciudad}%`);
-
-  const { data: perfiles, error } = await query;
-
-  const filtrados = perfiles?.filter(p =>
-  Array.isArray(p.role) ? p.role.includes(roleBuscado) : p.role === roleBuscado
-) || [];
-
-  console.log('[AUDIO DEBUG]', {
-    agente,
-    roleBuscado,
-    totalPerfiles: perfiles?.length,
-    filtrados: filtrados.length,
-    muestraFiltrado: filtrados[0],
+    onHandoff: handleCentralHandoff,
+    iaMode, isAdmin,
   });
 
-  const cards = agente === 'AUDIO'
-  ? filtrados.flatMap(p => {
-      if (!p.bro_aud && !p.bro_pod) return [];
-      const esPodcast = p.audio_type === 'podcast';
-      const codigo    = esPodcast ? p.bro_pod : p.bro_aud;
-      if (!codigo) return [];
-      return [{
-        bro_id:      codigo,
-        banner_url:  p.banner_url || '',
-        nombre:      p.alias || '',
-        categoria:   esPodcast ? 'Podcast' : 'Música',
-        ciudad:      p.city || '',
-        descripcion: p.audio_description || p.description || '',
-        track_name:  p.track_name || '',
-        audio_type:  p.audio_type || 'music',
-      }];
-    })
-  : agente === 'BROSHOP_SERVICIO'
-  ? filtrados.filter(p => p.bro_ser).map(p => ({
-      bro_id:      p.bro_ser,
-      banner_url:  p.banner_url || '',
-      nombre:      p.alias || '',
-      categoria:   p.biz_profession || p.biz_category || '',
-      ciudad:      p.city || '',
-      descripcion: p.description || '',
-      ref_price:   p.ref_price || '',
-      address:     p.address || '',
-    }))
-  : agente === 'BROSHOP_AVISO'
-  ? filtrados.filter(p => p.bro_avi).map(p => ({
-      bro_id:      p.bro_avi,
-      banner_url:  p.banner_url || '',
-      nombre:      p.alias || '',
-      categoria:   'Avisos',
-      ciudad:      p.city || '',
-      descripcion: p.description || '',
-    }))
-  : filtrados.filter(p => p.bro_id).map(p => ({
-      bro_id:      p.bro_id,
-      banner_url:  p.banner_url || '',
-      nombre:      p.alias || '',
-      categoria:   p.biz_category || p.biz_profession || '',
-      ciudad:      p.city || '',
-      descripcion: p.description || p.nearby_ref || '',
-      ref_price:   p.ref_price || '',
-      address:     p.address || '',
-    }));    
-      if (!error && cards.length > 0) {
-    setStripCards(cards);
-    setStripLabel(intencion);
-    setStripVisible(true);
-  } else {
-    setStripCards([]);
-    setStripVisible(false);
-  }
+  const { mensaje: novaMensaje, loading: novaLoading, enviar: handleNovaInput } = useAgentChat({
+    mode: 'novaExplora',
+    contextData: { entidad: ososHandoffContext?.comercio_especifico, hayTarjetas: stripVisible },
+    onHandoff: handleCentralHandoff,
+    iaMode, isAdmin,
+  });
 
-} catch (err) {
-  console.error('Error cargando cards:', err);
-  setStripCards([]);
-  setStripVisible(false);
-}
-  })();
-  setTimeout(() => {
-  const ciudadFinal = ciudad || perfilOso?.city || '';
-  setScope({ city: String(ciudadFinal), type: 'teleport' });
-  setSessionCity(ciudadFinal);
-  setSessionCP(cp);
-  setIntent(intentMap[agente] || 'productos');
-  setOsosModo('retorno');
-  setStep(2);
-}, 2000);
-},  });
+  const { mensaje: isabellaMensaje, loading: isabellaLoading, enviar: handleIsabellaInput } = useAgentChat({
+    mode: 'servicios',
+    contextData: { servicios_personaje: perfilSector?.personaje_id || 'isabella', entidad: ososHandoffContext?.comercio_especifico, hayTarjetas: stripVisible },
+    onHandoff: handleCentralHandoff,
+    iaMode, isAdmin,
+  });
 
-  const [balances, setBalances] = useState({ genesis: 0, vales: { nova: 0, crescens: 0, plena: 0, decrescens: 0 }, eco_p: 0, eco_gen: 0, halos_p: 0, halos_gen: 0, zap_p: 0, zap_gen: 0 });
-  const [savedUserIndex, setSavedUserIndex] = useState(0);
+  const { mensaje: mapacheMensaje, loading: mapacheLoading, enviar: handleMapacheInput } = useAgentChat({
+    mode: 'mapache',
+    contextData: { audio_personaje: perfilSector?.personaje_id || 'mapache', entidad: ososHandoffContext?.comercio_especifico, hayTarjetas: stripVisible },
+    onHandoff: handleCentralHandoff,
+    iaMode, isAdmin,
+  });
+
+  const { mensaje: evelynMensaje, loading: evelynLoading, enviar: handleEvelynInput } = useAgentChat({
+    mode: 'avisos',
+    contextData: {
+      avisos_personaje: perfilSector?.personaje_id || 'evelyn',
+      genesis:          balances.genesis,
+      ciudad:           sessionCity,
+      user_id:          session?.user?.id,
+      autor_alias:      perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano',
+    },
+    onHandoff:       handleCentralHandoff,
+    onAvisoConectar: handleAvisoConectar,
+    onAvisoPublicar: handleAvisoPublicar,
+    iaMode, isAdmin,
+  });
+
+  const { mensaje: oraculoMensaje, loading: oraculoLoading, enviar: handleOraculoInput } = useAgentChat({
+    mode: 'oraculo',
+    contextData: { oraculo_personaje: perfilSector?.personaje_id || perfilOso?.oraculo_personaje || 'orumama' },
+    onHandoff: handleCentralHandoff,
+    iaMode, isAdmin,
+  });
+
+  const { mensaje: rumoresMensaje, loading: rumoresLoading, enviar: handleRumoresInput } = useAgentChat({
+    mode: 'reinos',
+    contextData: {},
+    onHandoff: handleCentralHandoff,
+    iaMode, isAdmin,
+  });
+
+  // ══════════════════════════════════════════════════════
+  // 5. FUNCIONES QUE DEPENDEN DE HOOKS
+  // ══════════════════════════════════════════════════════
 
   const handleOpenProfile = (user) => {
     const { _savedIndex, ...cleanUser } = user;
@@ -402,9 +376,6 @@ const { mensaje: rumoresMensaje, loading: rumoresLoading, enviar: handleRumoresI
     setProjectingUser(cleanUser);
   };
 
-  const [isLeftOpen, setIsLeftOpen] = useState(false);
-  const [isRightOpen, setIsRightOpen] = useState(false);
-  
   const handleGameWin = async (amount) => {
     const newTotal = balances.genesis + amount;
     setBalances(prev => ({ ...prev, genesis: newTotal }));
@@ -417,27 +388,69 @@ const { mensaje: rumoresMensaje, loading: rumoresLoading, enviar: handleRumoresI
     setIntent(targetIntent);
     setIsLeftOpen(false);
     setIsRightOpen(false);
-    
     if (targetIntent === 'gps') {
       setStep(1);
       resetOsos();
       setSessionCP('');
       setSessionCity('');
     } else if (['productos', 'servicios', 'avisos', 'audios'].includes(targetIntent) && !scope) {
-      // Necesitan ciudad sí o sí, los enviamos a los Osos
       setStep(1);
       setOsosModo('entrada');
     } else {
-      // Tienen ciudad o no la necesitan (Games, Reinos, Oraculo)
       setStep(2);
     }
   };
-  
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    localStorage.clear();
+    window.location.href = '/';
+  };
+
+  const handleReportIssue = async () => {
+    const { error } = await supabase.from('reports_board').insert([{ user_id: session?.user?.id || null, scene: realityMode || 'lobby', reason: 'Reporte ciudadano', status: 'pendiente' }]);
+    if (!error) alert('Reporte enviado a la central de seguridad.');
+  };
+
+  // ══════════════════════════════════════════════════════
+  // 6. USEMEMO
+  // ══════════════════════════════════════════════════════
+
+  const chatMobile = useMemo(() => {
+    switch (intent) {
+      case 'productos':       return { enviar: handleNovaInput,     mensaje: novaMensaje,     loading: novaLoading };
+      case 'servicios':       return { enviar: handleIsabellaInput, mensaje: isabellaMensaje, loading: isabellaLoading };
+      case 'avisos':          return { enviar: handleEvelynInput,   mensaje: evelynMensaje,   loading: evelynLoading };
+      case 'audios':          return { enviar: handleMapacheInput,  mensaje: mapacheMensaje,  loading: mapacheLoading };
+      case 'ai':              return { enviar: handleOraculoInput,  mensaje: oraculoMensaje,  loading: oraculoLoading };
+      case 'internal_search': return { enviar: handleRumoresInput,  mensaje: rumoresMensaje,  loading: rumoresLoading };
+      default:                return { enviar: handleOsosInput,     mensaje: ososMensaje,     loading: ososLoading };
+    }
+  }, [intent, novaMensaje, isabellaMensaje, evelynMensaje, mapacheMensaje, oraculoMensaje, rumoresMensaje, ososMensaje]);
+
+  const filteredItems = useMemo(() => {
+    const supabaseItems = realItems.map(u => ({ ...u, id: u.id, name: u.product_title || u.alias, img: u.card_banner_url || u.banner_url || '/default.png', price: u.price || 0, type: u.video_file ? ['shop', 'live'] : ['shop'], source: 'supabase' }));
+    const masterItems   = MASTER_DB.map(m => ({ ...m, id: m.id, name: m.name, img: m.img || '/default.png', price: m.price || 15, type: m.type || ['shop'], source: 'master' }));
+    const ALL = [...supabaseItems, ...masterItems];
+    if (['productos', 'servicios', 'avisos'].includes(intent)) return ALL.filter(i => i.type?.includes('shop'));
+    if (intent === 'audios') return ALL.filter(i => i.type?.includes('live'));
+    return ALL;
+  }, [intent, realItems]);
+
+  const hubVideos = useMemo(() => {
+    const masterVideos   = MASTER_DB.filter(m => m.video_file).map(m => ({ ...m, id: m.id, alias: m.name || m.alias, source: 'master' }));
+    const supabaseVideos = realItems.filter(i => i.video_file).map(i => ({ ...i, alias: i.alias, id: i.id, source: 'supabase' }));
+    return [{ alias: 'BRO MASTER', video_file: 'https://media.bro7vision.com/Mapache-habla.mp4', id: 'bro_master' }, ...masterVideos, ...supabaseVideos];
+  }, [realItems]);
+
+  // ══════════════════════════════════════════════════════
+  // 7. USEEFFECTS
+  // ══════════════════════════════════════════════════════
+
   useEffect(() => {
-  // detectamos si el dispositivo es táctil
-  const checkTouch = window.matchMedia("(pointer: coarse)").matches;
-  setIsTouch(checkTouch);
-}, []);
+    const checkTouch = window.matchMedia('(pointer: coarse)').matches;
+    setIsTouch(checkTouch);
+  }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
@@ -445,199 +458,123 @@ const { mensaje: rumoresMensaje, loading: rumoresLoading, enviar: handleRumoresI
     return () => subscription.unsubscribe();
   }, []);
 
-useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
       if (!session) return;
-      
       const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-      
       if (prof) {
         setPerfilOso(prof);
-        
-        // ── corregido: el if va fuera del objeto ──
-        if (prof.isAdmin === true) {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false); // Es buena práctica resetearlo si no es admin
-        }
-
-        // 👇 AÑADIMOS ESTO PARA QUE LA BARRA FUNCIONE 👇
-        setUserCredits({
-          // Si usan genesis para la IA, ponemos genesis. Si usan otra variable, cámbiala.
-          tokensRestantes: prof.genesis || 0, 
-          tokensTotales: 1000000 // Puedes poner aquí el máximo de tu barra
-        });
-        // 👆 ------------------------------------------ 👆
-
+        setIsAdmin(prof.isAdmin === true);
+        setUserCredits({ tokensRestantes: prof.genesis || 0, tokensTotales: 1000000 });
         setBalances({
           genesis: prof.genesis,
-                    
-          vales: { 
-            nova: prof.nova || 0, 
-            crescens: prof.crescens || 0, 
-            plena: prof.plena || 0, 
-            decrescens: prof.decrescens || 0 
-          },
-          eco_p: prof.eco_p || 0, 
-          eco_gen: prof.eco_gen || 0, 
-          halos_p: prof.halos_p || 0, 
-          halos_gen: prof.halos_gen || 0, 
-          zap_p: prof.zap_p || 0, 
-          zap_gen: prof.zap_gen || 0
+          vales: { nova: prof.nova || 0, crescens: prof.crescens || 0, plena: prof.plena || 0, decrescens: prof.decrescens || 0 },
+          eco_p: prof.eco_p || 0, eco_gen: prof.eco_gen || 0,
+          halos_p: prof.halos_p || 0, halos_gen: prof.halos_gen || 0,
+          zap_p: prof.zap_p || 0, zap_gen: prof.zap_gen || 0,
         });
-      }          
+      }
       const { data: all } = await supabase.from('profiles').select('*');
-     if (all) {
-  setRealItems(all.map(u => ({
-    ...u,
-    shopName: u.alias,
-    name:     u.product_title || u.alias,
-    img:      u.card_banner_url || u.banner_url,
-    type:     u.video_file ? ['shop', 'live'] : ['shop'],
-  })).filter(u => 
-    u.video_file   ||
-    u.audio_file   ||
-    u.product_title ||
-    u.bro_ser      ||   // ← profesional de servicios
-    u.bro_aud      ||   // ← creador de música
-    u.bro_pod      ||   // ← podcaster
-    u.bro_avi      ||   // ← usuario con avisos
-    u.bro_id            // ← comercio de productos
-  ));
-}
+      if (all) {
+        setRealItems(all.map(u => ({
+          ...u,
+          shopName: u.alias,
+          name:     u.product_title || u.alias,
+          img:      u.card_banner_url || u.banner_url,
+          type:     u.video_file ? ['shop', 'live'] : ['shop'],
+        })).filter(u => u.video_file || u.audio_file || u.product_title || u.bro_ser || u.bro_aud || u.bro_pod || u.bro_avi || u.bro_id));
+      }
     };
     fetchData();
   }, [session, step]);
 
-  const filteredItems = useMemo(() => {
-    const supabaseItems = realItems.map(u => ({
-      ...u, id: u.id, name: u.product_title || u.alias, img: u.card_banner_url || u.banner_url || '/default.png',
-      price: u.price || 0, type: u.video_file ? ['shop', 'live'] : ['shop'], source: 'supabase'
-    }));
+  // ══════════════════════════════════════════════════════
+  // 8. DATOS ESTÁTICOS Y GUARDS
+  // ══════════════════════════════════════════════════════
 
-    const masterItems = MASTER_DB.map(m => ({ ...m, id: m.id, name: m.name, img: m.img || '/default.png', price: m.price || 15, type: m.type || ['shop'], source: 'master' }));
-    const ALL = [...supabaseItems, ...masterItems];
-
-    if (['productos', 'servicios', 'avisos'].includes(intent)) return ALL.filter(i => i.type?.includes('shop'));
-    if (intent === 'audios')   return ALL.filter(i => i.type?.includes('live'));
-    return ALL;
-  }, [intent, realItems]);  
-  
-  const hubVideos = useMemo(() => {
-    const masterVideos = MASTER_DB.filter(m => m.video_file).map(m => ({ ...m, id: m.id, alias: m.name || m.alias, source: 'master' }));
-    const supabaseVideos = realItems.filter(i => i.video_file).map(i => ({ ...i, alias: i.alias, id: i.id, source: 'supabase' }));
-    return [{ alias: "BRO MASTER", video_file: "https://media.bro7vision.com/Mapache-habla.mp4", id: "bro_master" }, ...masterVideos, ...supabaseVideos];
-  }, [realItems]);
-  
   const { findChannelByAlias, checkIfNew } = useAudioData({ realItems });
-    
+
   if (!session && !isGuest) {
     return <GenesisGate onGuestAccess={() => { setIsGuest(true); setStep(0); setRealityMode(null); setBalances({ genesis: 500, nova: 20 }); }} />;
   }
 
-  const handleReportIssue = async () => {
-    const { error } = await supabase.from('reports_board').insert([{ user_id: session?.user?.id || null, scene: realityMode || 'lobby', reason: 'Reporte ciudadano', status: 'pendiente' }]);
-    if (!error) alert("Reporte enviado a la central de seguridad.");
-  };
-
-  // ─── NAV ITEMS (PUERTA DERECHA) ───────────────────────────
   const navItems = [
-    { id: 'gps',             label: 'RUTA', color: 'border-fuchsia-500/40 hover:bg-fuchsia-900/40 hover:border-fuchsia-400 group-hover:text-fuchsia-300', images: ['/emojis/lara.webp', '/emojis/tito.webp', '/emojis/puffo.webp'] },
-    { id: 'productos',       label: 'PRODUCTOS',  color: 'border-yellow-500/40 hover:bg-yellow-900/40 hover:border-yellow-400 group-hover:text-yellow-400', images: ['/emojis/nova.webp'] },
-    { id: 'servicios',       label: 'SERVICIOS',  color: 'border-rose-900/50 hover:bg-rose-900/40 hover:border-rose-600 group-hover:text-rose-400', images: ['/emojis/isabella.webp', '/emojis/prmaestro.webp'] },
-    { id: 'avisos',          label: 'AVISOS',     color: 'border-slate-500/40 hover:bg-slate-800/60 hover:border-slate-400 group-hover:text-slate-300', images: ['/emojis/evelyn.webp', '/emojis/larry.webp'] },
-    { id: 'audios',           label: 'AUDIOS',color: 'border-cyan-500/40 hover:bg-cyan-900/40 hover:border-cyan-400 group-hover:text-cyan-400', images: ['/emojis/mapache.webp', '/emojis/ami.webp'] },
-    { id: 'internal_search', label: 'REINOS',     color: 'border-orange-500/40 hover:bg-orange-900/40 hover:border-orange-400 group-hover:text-orange-400', images: ['/emojis/rumores.webp'] },
-    { id: 'ai',              label: 'ORÁCULO',    color: 'border-lime-500/40 hover:bg-lime-900/40 hover:border-lime-400 group-hover:text-lime-400', images: ['/emojis/orumama.webp', '/emojis/smisterio.webp', '/emojis/jaguar.webp'] },
-    { id: 'game',            label: 'GAMES',      color: 'border-white/20 hover:bg-white/10 hover:border-white/50 group-hover:text-white', images: ['/emojis/emoji_5.webp', '/emojis/emoji_7.webp'] }
+    { id: 'gps',             label: 'RUTA',      images: ['/emojis/lara.webp', '/emojis/tito.webp', '/emojis/puffo.webp'] },
+    { id: 'productos',       label: 'PRODUCTOS',  images: ['/emojis/nova.webp'] },
+    { id: 'servicios',       label: 'SERVICIOS',  images: ['/emojis/isabella.webp', '/emojis/prmaestro.webp'] },
+    { id: 'avisos',          label: 'AVISOS',     images: ['/emojis/evelyn.webp', '/emojis/larry.webp'] },
+    { id: 'audios',          label: 'AUDIOS',     images: ['/emojis/mapache.webp', '/emojis/ami.webp'] },
+    { id: 'internal_search', label: 'REINOS',     images: ['/emojis/rumores.webp'] },
+    { id: 'ai',              label: 'ORÁCULO',    images: ['/emojis/orumama.webp', '/emojis/smisterio.webp', '/emojis/jaguar.webp'] },
+    { id: 'game',            label: 'GAMES',      images: ['/emojis/emoji_5.webp', '/emojis/emoji_7.webp'] },
   ];
-  
-  // CITYLOCATIONBANNER
-const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'audios']);
 
- const handleLogout = async () => {
-    await supabase.auth.signOut();
-    localStorage.clear();
-    window.location.href = "/";
-  };
+  const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'audios']);
 
-const chatMobile = useMemo(() => {
-  switch(intent) {
-    case 'productos':       return { enviar: handleNovaInput,     mensaje: novaMensaje,     loading: novaLoading };
-    case 'servicios':       return { enviar: handleIsabellaInput, mensaje: isabellaMensaje, loading: isabellaLoading };
-    case 'avisos':          return { enviar: handleEvelynInput,   mensaje: evelynMensaje,   loading: evelynLoading };
-    case 'audios':          return { enviar: handleMapacheInput,  mensaje: mapacheMensaje,  loading: mapacheLoading };
-    case 'ai':              return { enviar: handleOraculoInput,  mensaje: oraculoMensaje,  loading: oraculoLoading };
-    case 'internal_search': return { enviar: handleRumoresInput,  mensaje: rumoresMensaje,  loading: rumoresLoading };
-    default:                return { enviar: handleOsosInput,     mensaje: ososMensaje,     loading: ososLoading };
-  }
-}, [intent, novaMensaje, isabellaMensaje, evelynMensaje,
-    mapacheMensaje, oraculoMensaje, rumoresMensaje, ososMensaje]);
+  // ══════════════════════════════════════════════════════
+  // 9. LAYOUTPROPS — siempre al final, antes del return
+  // ══════════════════════════════════════════════════════
 
-
-const layoutProps = {
+  const layoutProps = {
     step, setStep, intent, setIntent, realityMode, setRealityMode,
     isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
-    balances, setBalances, session, showRadar, setShowRadar, radarQuery, setRadarQuery,
-    realItems, filteredItems, hubVideos, selectedForestUser, setSelectedForestUser, savedUserIndex,
-    audioUser, setAudioUser, activePrismUser, setActivePrismUser, projectingUser, setProjectingUser, selectedCard,
+    balances, setBalances, session,
+    showRadar, setShowRadar, radarQuery, setRadarQuery,
+    realItems, filteredItems, hubVideos,
+    selectedForestUser, setSelectedForestUser, savedUserIndex,
+    audioUser, setAudioUser, activePrismUser, setActivePrismUser,
+    projectingUser, setProjectingUser, selectedCard,
     broTunerRef, navItems, handleNavigation, handleReportIssue,
     setShowWalletModal, setShowBooster, setShowStory, setShowLegal,
-    scope, sessionCP, sessionCity, sessionRef, handleGameWin, handleGoToShop, abrirTienda,
-    setSelectedLog, setVlData, ososHandoffContext, setOsosHandoffContext,
-    perfilOso, stripVisible, stripCards, stripLabel, setHoloPrismaIndex, findChannelByAlias, checkIfNew,
+    scope, sessionCP, sessionCity, sessionRef,
+    handleGameWin, handleGoToShop, abrirTienda,
+    setSelectedLog, setVlData,
+    ososHandoffContext, setOsosHandoffContext,
+    perfilOso, stripVisible, stripCards, stripLabel,
+    setHoloPrismaIndex, findChannelByAlias, checkIfNew,
     chatMobile, ososModo, setOsosModo, handleLogout,
-    // Funciones específicas de Evelyn que estaban inline
-    onAvisoConectar: (aviso) => {
-      const newBalance = balances.genesis - 200;
-      setBalances(prev => ({ ...prev, genesis: newBalance }));
-      supabase.from('profiles').update({ genesis: newBalance }).eq('id', session.user.id);
-      supabase.from('mensajes_privados').insert([{ from_user_id: session.user.id, to_user_id: aviso.user_id, from_alias: perfilOso?.osos_nombre || 'Ciudadano', text: `Conexión iniciada desde aviso: ${aviso.title}`, aviso_id: aviso.id }]);
-      const autorProfile = realItems.find(i => i.id === aviso.user_id);
-      if (autorProfile) setProjectingUser(autorProfile);
-    },
-    onAvisoPublicar: async ({ confirmado }) => {
-      if (!confirmado) return;
-      const newBalance = balances.genesis - 200;
-      setBalances(prev => ({ ...prev, genesis: newBalance }));
-      await supabase.from('profiles').update({ genesis: newBalance }).eq('id', session.user.id);
-    },
-    // ── IA props ──
-    iaMode,
-    isAdmin,
-    userCredits,
-    onToggleAdminIA:      handleToggleAdminIA,
-    onTogglePublicIA:     handleTogglePublicIA,
-    onShowPurchaseModal:  handleShowPurchaseModal,
+    onAvisoConectar: handleAvisoConectar,
+    onAvisoPublicar: handleAvisoPublicar,
+    iaMode, isAdmin, userCredits,
+    onToggleAdminIA:     handleToggleAdminIA,
+    onTogglePublicIA:    handleTogglePublicIA,
+    onShowPurchaseModal: handleShowPurchaseModal,
   };
-  // Supongo que tienes una variable isMobile (puedes ajustarla según tu código actual)
-  const isMobile = window.innerWidth <= 768; 
+
+  // ══════════════════════════════════════════════════════
+  // 10. RETURN
+  // ══════════════════════════════════════════════════════
 
   return (
     <div className="relative w-full h-screen bg-black text-white overflow-hidden font-sans">
-      
-    {isTouch ? (
-  <MobileTabletLayout {...layoutProps} />
-) : (
-  <DesktopLayout {...layoutProps} />
-)}
-    
-          {/* 2. MODALES GLOBALES (Superpuestos a todo, iguales en PC y Móvil) */}
+
+      {isTouch ? (
+        <MobileTabletLayout {...layoutProps} />
+      ) : (
+        <DesktopLayout {...layoutProps} />
+      )}
+
+      {/* MODALES GLOBALES */}
       {showLegal && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/95 p-4 backdrop-blur-md">
           <div className="w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col border border-white/10 rounded-3xl bg-zinc-950 shadow-2xl">
-            <div className="p-6 border-b border-white/10 flex justify-between items-center bg-black"><span className="text-cyan-400 font-mono text-xs">LEGAL_TERMINAL_V1.0</span><button onClick={() => setShowLegal(false)} className="text-white text-2xl">×</button></div>
-            <div className="flex-1 overflow-y-auto p-8 text-gray-400 font-mono text-sm leading-relaxed"><LegalTerminal onClose={() => setShowLegal(false)} /></div>
+            <div className="p-6 border-b border-white/10 flex justify-between items-center bg-black">
+              <span className="text-cyan-400 font-mono text-xs">LEGAL_TERMINAL_V1.0</span>
+              <button onClick={() => setShowLegal(false)} className="text-white text-2xl">×</button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-8 text-gray-400 font-mono text-sm leading-relaxed">
+              <LegalTerminal onClose={() => setShowLegal(false)} />
+            </div>
           </div>
         </div>
       )}
-      
+
       {showStory && (
         <div className="fixed inset-0 z-[200] bg-black">
           <StoryPlayer src="https://media.bro7vision.com/brostories_demo.mp4" activePhase="nova" balances={balances} setBalances={setBalances} isAdsMode={true} onClose={() => setShowStory(false)} onComplete={(amount) => { setBalances(prev => ({ ...prev, genesis: prev.genesis + amount })); }} />
         </div>
       )}
-      
+
       {showWalletModal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-xl">
           <ConversionModal balances={balances} setBalances={setBalances} session={session} activePhase={getMoonSuffix()} onClose={() => setShowWalletModal(false)} />
@@ -649,15 +586,30 @@ const layoutProps = {
           <BoosterModal onClose={() => setShowBooster(false)} />
         </div>
       )}
-      
+
       {projectingUser && !is219Mode && (
-        <HoloProjector videoUrl={projectingUser.video_file || projectingUser.videoUrl} user={projectingUser} handleGoToShop={handleGoToShop} balances={balances} setBalances={setBalances} session={session} onOpenLog={setSelectedLog} onClose={() => { setProjectingUser(null); setIs219Mode(false); }} onGoTo219={() => setIs219Mode(true)} />
+        <HoloProjector
+          videoUrl={projectingUser.video_file || projectingUser.videoUrl}
+          user={projectingUser}
+          handleGoToShop={handleGoToShop}
+          balances={balances} setBalances={setBalances}
+          session={session}
+          onOpenLog={setSelectedLog}
+          onClose={() => { setProjectingUser(null); setIs219Mode(false); }}
+          onGoTo219={() => setIs219Mode(true)}
+        />
       )}
 
       {selectedCard && (
-        <PaymentModal card={selectedCard} balances={balances} setBalances={setBalances} ventasMode={ventasMode} currentUser={perfilOso} onClose={() => { setSelectedCard(null); setVentasMode(null); }} onHandoff={(handoffData) => {
+        <PaymentModal
+          card={selectedCard} balances={balances} setBalances={setBalances}
+          ventasMode={ventasMode} currentUser={perfilOso}
+          onClose={() => { setSelectedCard(null); setVentasMode(null); }}
+          onHandoff={(handoffData) => {
             if (handoffData.agente === 'BROSHOP_AVISO') {
-              setSelectedCard(null); setVentasMode(null); setOsosHandoffContext({ intencion: 'BROSHOP_AVISO' }); setIntent('avisos'); setStep(2);
+              setSelectedCard(null); setVentasMode(null);
+              setOsosHandoffContext({ intencion: 'BROSHOP_AVISO' });
+              setIntent('avisos'); setStep(2);
             }
           }}
         />
@@ -665,17 +617,20 @@ const layoutProps = {
 
       {intent === 'internal_search' && step === 2 && (
         <div className="fixed inset-x-0 top-[10%] bottom-[16%] z-[90] pointer-events-auto mx-auto max-w-5xl px-4">
-          <Reinos onClose={() => { setStep(0); setIntent(null); }} session={session} balances={balances} setBalances={setBalances} onNavigateToSantuario={(targetUserId) => {
+          <Reinos
+            onClose={() => { setStep(0); setIntent(null); }}
+            session={session} balances={balances} setBalances={setBalances}
+            onNavigateToSantuario={(targetUserId) => {
               const targetUser = realItems.find(u => u.id === targetUserId);
               if (targetUser) { setProjectingUser(targetUser); setIntent(null); }
             }}
           />
         </div>
       )}
-      
-          {selectedLog && <BroLogViewer log={selectedLog} onClose={() => setSelectedLog(null)} />}
+
+      {selectedLog && <BroLogViewer log={selectedLog} onClose={() => setSelectedLog(null)} />}
     </div>
   );
 }
 
-export default App; 
+export default App;
