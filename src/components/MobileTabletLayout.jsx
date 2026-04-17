@@ -210,7 +210,7 @@ const MobileTabletLayout = ({
       {/* ── GATILLOS PUERTAS (Estilo PC) ── */}
       <button 
         onClick={() => { setIsLeftOpen(!isLeftOpen); setIsRightOpen(false); }} 
-        className="fixed top-0 -translate-y-1/2 z-[210] h-24 w-8 bg-black/60 backdrop-blur-md border border-white/20 rounded-r-2xl flex items-center justify-center transition-all duration-300"
+        className="fixed top-[70%] -translate-y-1/2 z-[210] h-24 w-8 bg-black/60 backdrop-blur-md border border-white/20 rounded-r-2xl flex items-center justify-center transition-all duration-300"
         style={{ left: isLeftOpen ? 'min(72vw, 280px)' : '0' }}
       >
         <span className="text-cyan-400 text-xs">{isLeftOpen ? '◀' : '▶'}</span>
@@ -218,7 +218,7 @@ const MobileTabletLayout = ({
 
       <button 
         onClick={() => { setIsRightOpen(!isRightOpen); setIsLeftOpen(false); }} 
-        className="fixed top-0 -translate-y-1/2 z-[210] h-24 w-8 bg-black/60 backdrop-blur-md border border-white/20 rounded-l-2xl flex items-center justify-center transition-all duration-300"
+        className="fixed top-[70%] -translate-y-1/2 z-[210] h-24 w-8 bg-black/60 backdrop-blur-md border border-white/20 rounded-l-2xl flex items-center justify-center transition-all duration-300"
         style={{ right: isRightOpen ? 'min(72vw, 280px)' : '0' }}
       >
         <span className="text-fuchsia-400 text-xs">{isRightOpen ? '▶' : '◀'}</span>
