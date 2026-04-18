@@ -2,17 +2,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 const OSOS_GREETINGS = [
-  "Saludos, somos Osos IA 🐻 ¿En qué podemos asesorarte?",
+  "Saludos, somos Osos IA  ¿En qué podemos asesorarte?",
   "¡Hola! Osos al mando. Cuéntanos qué necesitas.",
   "Aquí la central de Osos. ¿Cómo podemos ayudarte hoy?",
-  "Osos en línea. Escribe tu consulta y nos ponemos a ello. ⚡",
+  "Osos en línea. Escribe tu consulta y nos ponemos a ello. ",
 ];
 
 // ── Info por personaje ────────────────────────────────────────────────────────
 const INFO = {
   tito:  { nombre: 'TITO',  icono: '🐻' },
   lara:  { nombre: 'LARA',  icono: '🐻' },
-  puffo: { nombre: 'PUFFO', icono: '🐼' },
+  puffo: { nombre: 'PUFFO', icono: '🐻' },
 };
 
 export default function OsosBanner({ mensaje, oso_id }) {
@@ -22,7 +22,7 @@ export default function OsosBanner({ mensaje, oso_id }) {
   const charIdx = useRef(0);
 
   const personajeActivo = (oso_id || 'tito').toLowerCase();
-  const color           = '#B552F7';
+  const color           = '#C9A2F2';
   const { nombre: nombrePersonaje, icono: iconoPersonaje } = INFO[personajeActivo] || INFO.tito;
 
   // ── Saludo inicial ────────────────────────────────────────────────────────
