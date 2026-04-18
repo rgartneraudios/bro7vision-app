@@ -30,8 +30,6 @@ async function cargarUpdate(supabase, personaje_id) {
       .from('personaje_update')
       .select('*')
       .eq('personaje_id', personaje_id.toLowerCase())
-      .lte('semana', hoy)
-      .order('semana', { ascending: false })
       .limit(1)
       .maybeSingle();
     return data || null;
@@ -117,13 +115,24 @@ function detectarIntencionReinos(texto) {
 
 async function modoOsos({ textoUsuario, oso_id, sectorFinal, ciudadFinal, actoActual, ramaActual, supabase }) {
   const id     = (oso_id || 'lara').toLowerCase();
-  const update= await cargarUpdate(supabase, id);
-  const args   = { textoUsuario, sectorFinal, ciudadFinal, actoActual: actoActual || 'acto_1', ramaActual: ramaActual || null, update
- };
+  const update = await cargarUpdate(supabase, id);
+  const args   = { textoUsuario, sectorFinal, ciudadFinal, actoActual: actoActual || 'acto_1', ramaActual: ramaActual || null, update };
     
-  if (id === 'tito')  return titoResponder(args);
-  if (id === 'puffo') return puffoResponder(args);
-  return laraResponder(args);
+  let resultado;
+  if (id === 'tito')  resultado = titoResponder(args);
+  else if (id === 'puffo') resultado = puffoResponder(args);
+  else resultado = laraResponder(args);
+
+  // ✅ Normalizar handoff de string a objeto
+  if (resultado.handoff && typeof resultado.handoff === 'string') {
+    resultado = {
+      ...resultado,
+      handoffData: { agente: resultado.handoff },
+      handoff: true,
+    };
+  }
+
+  return resultado;
 }
 
 async function modoNova({ textoUsuario, entidad, hayTarjetas, supabase }) {

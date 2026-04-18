@@ -176,6 +176,13 @@ function App() {
       setOsosModo('retorno');
       return;
     }
+    
+    if (agente === 'REALITY') {
+  setStep(0);
+  setIntent(null);
+  setRealityMode(null); // abre el selector
+  return;
+}
 
     // ── NOVA_VENTAS ───────────────────────────────────
     if (agente === 'NOVA_VENTAS') {
@@ -499,15 +506,15 @@ function App() {
   }
 
   const navItems = [
-    { id: 'gps',             label: 'RUTA',      images: ['/emojis/lara.webp', '/emojis/tito.webp', '/emojis/puffo.webp'] },
-    { id: 'productos',       label: 'PRODUCTOS',  images: ['/emojis/nova.webp'] },
-    { id: 'servicios',       label: 'SERVICIOS',  images: ['/emojis/isabella.webp', '/emojis/prmaestro.webp'] },
-    { id: 'avisos',          label: 'AVISOS',     images: ['/emojis/evelyn.webp', '/emojis/larry.webp'] },
-    { id: 'audios',          label: 'AUDIOS',     images: ['/emojis/mapache.webp', '/emojis/ami.webp'] },
-    { id: 'internal_search', label: 'REINOS',     images: ['/emojis/rumores.webp'] },
-    { id: 'ai',              label: 'ORÁCULO',    images: ['/emojis/orumama.webp', '/emojis/smisterio.webp', '/emojis/jaguar.webp'] },
-    { id: 'game',            label: 'GAMES',      images: ['/emojis/emoji_5.webp', '/emojis/emoji_7.webp'] },
-  ];
+  { id: 'gps',             label: 'RUTA',      color: 'border-fuchsia-500/30 hover:border-fuchsia-400',  images: ['/emojis/lara.webp', '/emojis/tito.webp', '/emojis/puffo.webp'] },
+  { id: 'productos',       label: 'PRODUCTOS',  color: 'border-yellow-500/30 hover:border-yellow-400',    images: ['/emojis/nova.webp'] },
+  { id: 'servicios',       label: 'SERVICIOS',  color: 'border-rose-500/30 hover:border-rose-400',        images: ['/emojis/isabella.webp', '/emojis/prmaestro.webp'] },
+  { id: 'avisos',          label: 'AVISOS',     color: 'border-slate-500/30 hover:border-slate-400',      images: ['/emojis/evelyn.webp', '/emojis/larry.webp'] },
+  { id: 'audios',          label: 'AUDIOS',     color: 'border-cyan-500/30 hover:border-cyan-400',        images: ['/emojis/mapache.webp', '/emojis/ami.webp'] },
+  { id: 'internal_search', label: 'REINOS',     color: 'border-orange-500/30 hover:border-orange-400',    images: ['/emojis/rumores.webp'] },
+  { id: 'ai',              label: 'ORÁCULO',    color: 'border-lime-500/30 hover:border-lime-400',        images: ['/emojis/orumama.webp', '/emojis/smisterio.webp', '/emojis/jaguar.webp'] },
+  { id: 'game',            label: 'GAMES',      color: 'border-white/30 hover:border-white/60',           images: ['/emojis/emoji_5.webp', '/emojis/emoji_7.webp'] },
+];
 
   const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'audios']);
 
@@ -532,7 +539,9 @@ function App() {
     ososHandoffContext, setOsosHandoffContext,
     perfilOso, stripVisible, stripCards, stripLabel,
     setHoloPrismaIndex, findChannelByAlias, checkIfNew,
-    chatMobile, ososModo, setOsosModo, handleLogout,
+    chatMobile, 
+    handleOsosInput, ososMensaje,ososLoading, ososModo, setOsosModo,
+    ososModo, setOsosModo, handleLogout,
     onAvisoConectar: handleAvisoConectar,
     onAvisoPublicar: handleAvisoPublicar,
     iaMode, isAdmin, userCredits,
@@ -549,7 +558,8 @@ function App() {
     <div className="relative w-full h-screen bg-black text-white overflow-hidden font-sans">
 
       {isTouch ? (
-        <MobileTabletLayout {...layoutProps} />
+        <MobileTabletLayout  realityMode={realityMode}
+  setRealityMode={setRealityMode} {...layoutProps} />
       ) : (
         <DesktopLayout {...layoutProps} />
       )}
@@ -616,18 +626,20 @@ function App() {
       )}
 
       {intent === 'internal_search' && step === 2 && (
-        <div className="fixed inset-x-0 top-[10%] bottom-[16%] z-[90] pointer-events-auto mx-auto max-w-5xl px-4">
-          <Reinos
-            onClose={() => { setStep(0); setIntent(null); }}
-            session={session} balances={balances} setBalances={setBalances}
-            onNavigateToSantuario={(targetUserId) => {
-              const targetUser = realItems.find(u => u.id === targetUserId);
-              if (targetUser) { setProjectingUser(targetUser); setIntent(null); }
-            }}
-          />
-        </div>
-      )}
-
+  <div className={`fixed inset-x-0 top-[10%] bottom-[16%] z-[90] mx-auto max-w-5xl px-4 ${
+    window.innerWidth < 768 ? 'pointer-events-none' : 'pointer-events-auto'
+  }`}>
+    <Reinos
+      isMobile={window.innerWidth < 768}  // ← añadir esto
+      onClose={() => { setStep(0); setIntent(null); }}
+      session={session} balances={balances} setBalances={setBalances}
+      onNavigateToSantuario={(targetUserId) => {
+        const targetUser = realItems.find(u => u.id === targetUserId);
+        if (targetUser) { setProjectingUser(targetUser); setIntent(null); }
+      }}
+    />
+  </div>
+)}
       {selectedLog && <BroLogViewer log={selectedLog} onClose={() => setSelectedLog(null)} />}
     </div>
   );

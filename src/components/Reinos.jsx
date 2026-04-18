@@ -25,7 +25,7 @@ function TarjetaNoble({ item, num, colorTexto, colorBg, colorBorder, colorHover 
   );
 }
 
-const Reinos = () => {
+const Reinos = ({ isMobile, }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   // Hook exclusivo para traer los datos del reino
@@ -65,9 +65,12 @@ const Reinos = () => {
   }
 };
 
-  return (
-    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-5xl z-[60] flex flex-col items-center font-mono">
 
+  return (
+  <>
+      {!isMobile && (
+    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-5xl z-[60] flex flex-col items-center font-mono">
+    
       {/* ── ÁREA DE CONTENIDO EXPANDIBLE (Acordeón) ── */}
       <div
         className={`w-full bg-[#080808]/90 backdrop-blur-md border-t border-x border-orange-500/50 rounded-t-3xl overflow-hidden shadow-[0_-10px_40px_rgba(249,115,22,0.15)] transition-all duration-500 ease-in-out flex flex-col ${
@@ -430,6 +433,8 @@ const Reinos = () => {
       </button>
 
     </div>
+    )}
+     </>
   );
 };
 

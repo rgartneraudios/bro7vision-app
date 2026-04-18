@@ -123,6 +123,8 @@ const MOBILE_STYLES = `
 // ─── COMPONENTE ─────────────────────────────────────────────────────────────
 const MobileTabletLayout = ({
   children,
+  realityMode,
+  setRealityMode,
   scope,
   step, setStep,
   intent, setIntent,
@@ -153,23 +155,37 @@ const MobileTabletLayout = ({
   const[dpadActive, setDpadActive]   = useState(null);
   const { enviar, mensaje: chatMensaje, loading: chatLoading } = chatMobile || {};
   const inputRef = useRef(null);
+  
+  const REALITIES = [
+  { id: 'moon',         title: 'MOON PHASE',   desc: 'Fase Luna',         icon: '🌕', color: '#ffffff', group: 'NEUTRAL' },
+  { id: 'solo_earth',   title: 'SOLO EARTH',   desc: 'Sincronía Vital',   icon: '🌍', color: '#34d399', group: 'SOLO' },
+  { id: 'solo_fantasy', title: 'SOLO FANTASY', desc: 'Exploración',       icon: '🏰', color: '#22d3ee', group: 'SOLO' },
+  { id: 'solo_cinema',  title: 'SOLO CINEMA',  desc: 'Viajero del Tiempo',icon: '🏛️', color: '#fbbf24', group: 'SOLO' },
+  { id: 'band_earth',   title: 'BAND EARTH',   desc: 'Nexo Ciudadano',    icon: '🏙️', color: '#60a5fa', group: 'BAND' },
+  { id: 'band_fantasy', title: 'BAND FANTASY', desc: 'Alien Lounge',      icon: '👾', color: '#e879f9', group: 'BAND' },
+  { id: 'band_cinema',  title: 'BAND CINEMA',  desc: 'El Ágora',          icon: '🎭', color: '#fb923c', group: 'BAND' },
+  { id: 'este',         title: 'CANAL ESTE',   desc: 'Horizonte Levante', icon: '📱', color: '#22d3ee', group: 'ESPACIO' },
+  { id: 'oeste',        title: 'CANAL OESTE',  desc: 'Horizonte Poniente',icon: '📱', color: '#e879f9', group: 'ESPACIO' },
+];
 
-  useEffect(() => {
-    if (!chatMensaje) return;
-    setMessages(prev => {
-      const last = prev[prev.length - 1];
-      if (last?.text === chatMensaje && last?.from === 'bot') return prev;
-      return[...prev, { from: 'bot', text: chatMensaje, ts: Date.now() }];
-    });
-  },[chatMensaje]);
+  const lastBotMsgId = useRef(null);
 
-  const handleSend = () => {
-    const txt = inputText.trim();
-    if (!txt || chatMobile) return;
-    setMessages(prev =>[...prev, { from: 'user', text: txt, ts: Date.now() }]);
-    enviar?.(txt);
-    setInputText('');
-  };
+useEffect(() => {
+  if (!chatMensaje) return;
+  const msgId = `${chatMensaje}-${Date.now()}`;
+  if (lastBotMsgId.current === chatMensaje) return; // solo bloquea duplicados inmediatos
+  lastBotMsgId.current = chatMensaje;
+  setMessages(prev => [...prev, { from: 'bot', text: chatMensaje, ts: Date.now() }]);
+}, [chatMensaje]);
+
+  // ✅ Fix
+const handleSend = () => {
+  const txt = inputText.trim();
+  if (!txt || chatLoading) return;  // chatLoading viene de la desestructuración de arriba
+  setMessages(prev => [...prev, { from: 'user', text: txt, ts: Date.now() }]);
+  enviar?.(txt);
+  setInputText('');
+};
 
   const handleDpad = (dir) => {
     setDpadActive(dir);
@@ -194,6 +210,300 @@ const MobileTabletLayout = ({
 
   // Solo mostraremos el último mensaje en pantalla
   const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+  
+  // ID PARA LOS EMOJIS
+const SECTOR_AVATARS = {
+  gps:             { osos: { lara: '/emojis/lara.webp', tito: '/emojis/tito.webp', puffo: '/emojis/puffo.webp' } },
+  productos:       ['/emojis/nova.webp'],
+  servicios:       ['/emojis/isabella.webp', '/emojis/prmaestro.webp'],
+  avisos:          ['/emojis/evelyn.webp', '/emojis/larry.webp'],
+  audios:          ['/emojis/mapache.webp', '/emojis/ami.webp'],
+  internal_search: ['/emojis/rumores.webp'],
+  ai:              ['/emojis/orumama.webp', '/emojis/smisterio.webp', '/emojis/jaguar.webp'],
+  game:            ['/emojis/emoji_5.webp', '/emojis/emoji_7.webp'],
+};
+
+// Resuelve qué avatares mostrar según sector y perfilOso
+const getActiveAvatars = () => {
+  if (intent === 'gps') {
+    const oso = (perfilOso?.oso_id || perfilOso)?.toLowerCase();
+    const url = SECTOR_AVATARS.gps.osos[oso];
+    return url ? [url] : ['/emojis/tito.webp'];
+  }
+  return SECTOR_AVATARS[intent] || [];
+};
+
+const activeAvatars = getActiveAvatars();
+
+// ── REALITY TUNER MÓVIL — selector ──────────────────────────────
+if (step === 0 && !realityMode) {
+  return (
+    <div className="mobile-root fixed inset-0 overflow-hidden bg-black text-white select-none">
+      <style>{MOBILE_STYLES}</style>
+      <div className="scanline z-[1]" />
+
+      {/* Gatillos */}
+      <button onClick={() => { setIsLeftOpen(!isLeftOpen); setIsRightOpen(false); }}
+        className="fixed top-[70%] -translate-y-1/2 z-[210] h-24 w-8 bg-black/60 backdrop-blur-md border border-white/20 rounded-r-2xl flex items-center justify-center"
+        style={{ left: isLeftOpen ? 'min(72vw, 280px)' : '0' }}>
+        <span className="text-cyan-400 text-xs">{isLeftOpen ? '◀' : '▶'}</span>
+      </button>
+      <button onClick={() => { setIsRightOpen(!isRightOpen); setIsLeftOpen(false); }}
+        className="fixed top-[70%] -translate-y-1/2 z-[210] h-24 w-8 bg-black/60 backdrop-blur-md border border-white/20 rounded-l-2xl flex items-center justify-center"
+        style={{ right: isRightOpen ? 'min(72vw, 280px)' : '0' }}>
+        <span className="text-fuchsia-400 text-xs">{isRightOpen ? '▶' : '◀'}</span>
+      </button>
+
+      {/* Overlay */}
+      {(isLeftOpen || isRightOpen) && (
+        <div className="fixed inset-0 z-[190] bg-black/60 backdrop-blur-md"
+             onClick={() => { setIsLeftOpen(false); setIsRightOpen(false); }} />
+      )}
+
+      {/* Puerta Izquierda */}
+      {isLeftOpen && (
+        <div className="door-open-left fixed top-0 left-0 h-full w-[72vw] max-w-[280px] z-[200] flex flex-col bg-black/95 border-r border-cyan-500/30 neon-border">
+          <div className="p-4 border-b border-white/10 flex flex-col gap-4">
+            <div className="flex flex-col items-center justify-center py-4 px-2 rounded-xl bg-cyan-900/10 border border-cyan-500/40">
+              <span className="text-[12px] text-cyan-200/60 uppercase tracking-widest mb-1">Génesis Wallet</span>
+              <span className="text-cyan-400 font-black text-4xl">{balances?.genesis ?? 0}</span>
+            </div>
+            <NeuralButton isAdmin={isAdmin} iaMode={iaMode}
+              tokensRestantes={userCredits?.tokensRestantes} tokensTotales={userCredits?.tokensTotales}
+              onToggleAdmin={onToggleAdminIA} onTogglePublic={onTogglePublicIA} onShowPurchaseModal={onShowPurchaseModal} />
+          </div>
+          <div className="flex-1 flex flex-col items-center justify-center gap-2 relative">
+            <span className="mobile-display-font text-2xl tracking-widest text-cyan-400/30 absolute top-4">MANDO</span>
+            <button className={`dpad-btn ${dpadActive === 'up' ? 'dpad-press' : ''}`} onTouchStart={() => handleDpad('up')} onClick={() => handleDpad('up')}>▲</button>
+            <div className="flex items-center gap-2">
+              <button className={`dpad-btn ${dpadActive === 'left' ? 'dpad-press' : ''}`} onTouchStart={() => handleDpad('left')} onClick={() => handleDpad('left')}>◄</button>
+              <button className={`dpad-ok ${dpadActive === 'enter' ? 'dpad-press' : ''}`} onTouchStart={() => handleDpad('enter')} onClick={() => handleDpad('enter')}>OK</button>
+              <button className={`dpad-btn ${dpadActive === 'right' ? 'dpad-press' : ''}`} onTouchStart={() => handleDpad('right')} onClick={() => handleDpad('right')}>►</button>
+            </div>
+            <button className={`dpad-btn ${dpadActive === 'down' ? 'dpad-press' : ''}`} onTouchStart={() => handleDpad('down')} onClick={() => handleDpad('down')}>▼</button>
+            <div className="w-16 h-px bg-white/10 my-4" />
+            <div className="flex gap-3">
+              <button className="dpad-btn" onClick={() => handleDpad('prev')}>⏮</button>
+              <button className="dpad-btn" onClick={() => handleDpad('next')}>⏭</button>
+            </div>
+          </div>
+          <div className="p-4 border-t border-white/10">
+            <button onClick={handleLogout} className="w-full text-[12px] text-red-400/40 uppercase tracking-widest text-center hover:text-red-400/80">[ SALIR ]</button>
+          </div>
+        </div>
+      )}
+
+      {/* Puerta Derecha */}
+      {isRightOpen && (
+        <div className="door-open-right fixed top-0 right-0 h-full w-[72vw] max-w-[280px] z-[200] flex flex-col bg-black/95 border-l border-cyan-500/30 neon-border">
+          <div className="flex items-center justify-center px-4 py-4 border-b border-white/10">
+            <span className="mobile-display-font text-2xl tracking-widest text-cyan-400">SECTORES</span>
+          </div>
+          <div className="flex-1 overflow-y-auto bro-scroll py-3 px-3 flex flex-col gap-2">
+            {navItems?.map(item => (
+              <button key={item.id}
+                onClick={() => { handleNavigation(item.id); setIsRightOpen(false); }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all active:scale-95"
+                style={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.4)' }}>
+                <div className="flex -space-x-2 flex-shrink-0">
+                  {item.images?.slice(0, 2).map((img, i) => (
+                    <img key={i} src={img} alt="" className="w-8 h-8 rounded-full border border-black/50 object-cover" />
+                  ))}
+                </div>
+                <span className="mobile-display-font text-xl tracking-widest text-white/70">{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="relative z-10 pt-8 pb-4 text-center">
+        <div className="mobile-display-font text-5xl tracking-widest"
+             style={{ color: '#00ffff', textShadow: '0 0 20px #00ffff' }}>
+          BRO<span style={{ color: '#fff' }}>7</span>VISION
+        </div>
+        <p className="text-[9px] text-white/30 uppercase tracking-[0.4em] mt-2 font-mono">SINTONIZA TU FRECUENCIA</p>
+      </div>
+
+      {/* Grid scrollable */}
+      <div className="relative z-10 overflow-y-auto bro-scroll px-4 pb-8 flex flex-col gap-6" style={{ maxHeight: 'calc(100dvh - 140px)' }}>
+        <div className="flex flex-col gap-3">
+          {REALITIES.filter(r => r.group === 'ESPACIO' || r.group === 'NEUTRAL').map(r => (
+            <button key={r.id} onClick={() => setRealityMode(r.id)}
+              className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border-2 active:scale-95 transition-all"
+              style={{ borderColor: `${r.color}66`, background: `${r.color}11` }}>
+              <span className="text-3xl">{r.icon}</span>
+              <div className="flex-1 text-left">
+                <div className="mobile-display-font text-2xl tracking-widest" style={{ color: r.color }}>{r.title}</div>
+                <div className="text-[10px] text-white/40 uppercase tracking-widest font-mono">{r.desc}</div>
+              </div>
+              <span className="text-[9px] font-black uppercase" style={{ color: `${r.color}88` }}>{r.group}</span>
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-3 opacity-40 px-1">
+            <div className="h-px flex-1 bg-emerald-500" />
+            <span className="text-[9px] text-emerald-500 font-black tracking-widest uppercase">SOLO</span>
+            <div className="h-px flex-1 bg-emerald-500" />
+          </div>
+          {REALITIES.filter(r => r.group === 'SOLO').map(r => (
+            <button key={r.id} onClick={() => setRealityMode(r.id)}
+              className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border active:scale-95 transition-all"
+              style={{ borderColor: `${r.color}44`, background: `${r.color}0d` }}>
+              <span className="text-2xl">{r.icon}</span>
+              <div className="flex-1 text-left">
+                <div className="mobile-display-font text-xl tracking-widest" style={{ color: r.color }}>{r.title}</div>
+                <div className="text-[10px] text-white/40 uppercase tracking-widest font-mono">{r.desc}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-3 opacity-40 px-1">
+            <div className="h-px flex-1 bg-blue-500" />
+            <span className="text-[9px] text-blue-500 font-black tracking-widest uppercase">BAND</span>
+            <div className="h-px flex-1 bg-blue-500" />
+          </div>
+          {REALITIES.filter(r => r.group === 'BAND').map(r => (
+            <button key={r.id} onClick={() => setRealityMode(r.id)}
+              className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border active:scale-95 transition-all"
+              style={{ borderColor: `${r.color}44`, background: `${r.color}0d` }}>
+              <span className="text-2xl">{r.icon}</span>
+              <div className="flex-1 text-left">
+                <div className="mobile-display-font text-xl tracking-widest" style={{ color: r.color }}>{r.title}</div>
+                <div className="text-[10px] text-white/40 uppercase tracking-widest font-mono">{r.desc}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── REALITY PLAYER MÓVIL — escenario activo ──────────────────────
+if (step === 0 && realityMode) {
+  const escena = REALITIES.find(r => r.id === realityMode);
+  return (
+    <div className="mobile-root fixed inset-0 overflow-hidden bg-black text-white select-none">
+      <style>{MOBILE_STYLES}</style>
+      <div className="scanline z-[1]" />
+
+      {/* Gatillos */}
+      <button onClick={() => { setIsLeftOpen(!isLeftOpen); setIsRightOpen(false); }}
+        className="fixed top-[70%] -translate-y-1/2 z-[210] h-24 w-8 bg-black/60 backdrop-blur-md border border-white/20 rounded-r-2xl flex items-center justify-center"
+        style={{ left: isLeftOpen ? 'min(72vw, 280px)' : '0' }}>
+        <span className="text-cyan-400 text-xs">{isLeftOpen ? '◀' : '▶'}</span>
+      </button>
+      <button onClick={() => { setIsRightOpen(!isRightOpen); setIsLeftOpen(false); }}
+        className="fixed top-[70%] -translate-y-1/2 z-[210] h-24 w-8 bg-black/60 backdrop-blur-md border border-white/20 rounded-l-2xl flex items-center justify-center"
+        style={{ right: isRightOpen ? 'min(72vw, 280px)' : '0' }}>
+        <span className="text-fuchsia-400 text-xs">{isRightOpen ? '▶' : '◀'}</span>
+      </button>
+
+      {/* Overlay */}
+      {(isLeftOpen || isRightOpen) && (
+        <div className="fixed inset-0 z-[190] bg-black/60 backdrop-blur-md"
+             onClick={() => { setIsLeftOpen(false); setIsRightOpen(false); }} />
+      )}
+
+      {/* Puerta Izquierda */}
+      {isLeftOpen && (
+        <div className="door-open-left fixed top-0 left-0 h-full w-[72vw] max-w-[280px] z-[200] flex flex-col bg-black/95 border-r border-cyan-500/30 neon-border">
+          <div className="p-4 border-b border-white/10 flex flex-col gap-4">
+            <div className="flex flex-col items-center justify-center py-4 px-2 rounded-xl bg-cyan-900/10 border border-cyan-500/40">
+              <span className="text-[12px] text-cyan-200/60 uppercase tracking-widest mb-1">Génesis Wallet</span>
+              <span className="text-cyan-400 font-black text-4xl">{balances?.genesis ?? 0}</span>
+            </div>
+            
+            <NeuralButton isAdmin={isAdmin} iaMode={iaMode}
+              tokensRestantes={userCredits?.tokensRestantes} tokensTotales={userCredits?.tokensTotales}
+              onToggleAdmin={onToggleAdminIA} onTogglePublic={onTogglePublicIA} onShowPurchaseModal={onShowPurchaseModal} />
+          </div>
+          <div className="flex-1 flex flex-col items-center justify-center gap-2 relative">
+            <span className="mobile-display-font text-2xl tracking-widest text-cyan-400/30 absolute top-4">MANDO</span>
+            <button className={`dpad-btn ${dpadActive === 'up' ? 'dpad-press' : ''}`} onTouchStart={() => handleDpad('up')} onClick={() => handleDpad('up')}>▲</button>
+            <div className="flex items-center gap-2">
+              <button className={`dpad-btn ${dpadActive === 'left' ? 'dpad-press' : ''}`} onTouchStart={() => handleDpad('left')} onClick={() => handleDpad('left')}>◄</button>
+              <button className={`dpad-ok ${dpadActive === 'enter' ? 'dpad-press' : ''}`} onTouchStart={() => handleDpad('enter')} onClick={() => handleDpad('enter')}>OK</button>
+              <button className={`dpad-btn ${dpadActive === 'right' ? 'dpad-press' : ''}`} onTouchStart={() => handleDpad('right')} onClick={() => handleDpad('right')}>►</button>
+            </div>
+            <button className={`dpad-btn ${dpadActive === 'down' ? 'dpad-press' : ''}`} onTouchStart={() => handleDpad('down')} onClick={() => handleDpad('down')}>▼</button>
+            <div className="w-16 h-px bg-white/10 my-4" />
+            <div className="flex gap-3">
+              <button className="dpad-btn" onClick={() => handleDpad('prev')}>⏮</button>
+              <button className="dpad-btn" onClick={() => handleDpad('next')}>⏭</button>
+            </div>
+          </div>
+          <div className="p-4 border-t border-white/10">
+            <button onClick={handleLogout} className="w-full text-[12px] text-red-400/40 uppercase tracking-widest text-center">[ SALIR ]</button>
+          </div>
+        </div>
+      )}
+
+      {/* Puerta Derecha */}
+      {isRightOpen && (
+        <div className="door-open-right fixed top-0 right-0 h-full w-[72vw] max-w-[280px] z-[200] flex flex-col bg-black/95 border-l border-cyan-500/30 neon-border">
+          <div className="flex items-center justify-center px-4 py-4 border-b border-white/10">
+            <span className="mobile-display-font text-2xl tracking-widest" style={{ color: escena?.color }}>SECTORES</span>
+          </div>
+          <div className="px-4 mt-4">
+          <button onClick={() => { setStep(0); setRealityMode(null); setIsRightOpen(false); }} className="w-full flex justify-between items-center p-3 bg-fuchsia-500/10 border border-fuchsia-400/40 rounded-2xl hover:bg-cyan-500 hover:text-black transition-all group">
+            <span className="text-[10px] font-black uppercase group-hover:text-black">Cambiar Reality</span><span className="text-lg">🌐</span>
+          </button>
+          </div>
+          <div className="flex-1 overflow-y-auto bro-scroll py-3 px-3 flex flex-col gap-2">
+            {navItems?.map(item => (
+              <button key={item.id}
+                onClick={() => { handleNavigation(item.id); setIsRightOpen(false); }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all active:scale-95"
+                style={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.4)' }}>
+                <div className="flex -space-x-2 flex-shrink-0">
+                  {item.images?.slice(0, 2).map((img, i) => (
+                    <img key={i} src={img} alt="" className="w-8 h-8 rounded-full border border-black/50 object-cover" />
+                  ))}
+                </div>
+                <span className="mobile-display-font text-xl tracking-widest text-white/70">{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Player */}
+      <main className="relative z-10 flex flex-col h-full w-full items-center justify-between py-8 px-6">
+        <div className="text-center">
+          <div className="mobile-display-font text-5xl tracking-widest"
+               style={{ color: escena?.color, textShadow: `0 0 20px ${escena?.color}` }}>
+            {escena?.title}
+          </div>
+          <p className="text-[10px] text-white/40 uppercase tracking-widest font-mono mt-1">{escena?.desc}</p>
+        </div>
+        <div className="flex flex-col items-center gap-6">
+          <div className="text-8xl animate-pulse">{escena?.icon}</div>
+          <div className="flex flex-col items-center gap-4">
+            <div className="text-white/20 text-sm uppercase tracking-widest font-mono">AUDIO DEL CANAL</div>
+            <div className="flex gap-4">
+              <button className="dpad-btn">⏮</button>
+              <button className="dpad-btn" style={{
+                background: `${escena?.color}22`, borderColor: `${escena?.color}88`,
+                color: escena?.color, width: 72, height: 72, fontSize: 28
+              }}>▶</button>
+              <button className="dpad-btn">⏭</button>
+            </div>
+          </div>
+        </div>
+        <button onClick={() => setRealityMode(null)}
+          className="px-8 py-3 rounded-2xl border font-black text-sm uppercase tracking-widest active:scale-95"
+          style={{ borderColor: `${escena?.color}66`, color: escena?.color, background: `${escena?.color}11` }}>
+          ← CAMBIAR CANAL
+        </button>
+      </main>
+    </div>
+  );
+}
 
   return (
     <div className="mobile-root fixed inset-0 overflow-hidden bg-black text-white select-none">
@@ -304,6 +614,11 @@ const MobileTabletLayout = ({
               SECTORES
             </span>
           </div>
+          <div className="px-4 mt-4">
+          <button onClick={() => { setStep(0); setRealityMode(null); setIsRightOpen(false); }} className="w-full flex justify-between items-center p-3 bg-fuchsia-500/10 border border-fuchsia-400/40 rounded-2xl hover:bg-cyan-500 hover:text-black transition-all group">
+            <span className="text-[10px] font-black uppercase group-hover:text-black">Cambiar Reality</span><span className="text-lg">🌐</span>
+          </button>
+          </div>
           <div className="flex-1 overflow-y-auto bro-scroll py-3 px-3 flex flex-col gap-2">
             {navItems?.map(item => {
               const isActive = intent === item.id;
@@ -350,20 +665,19 @@ const MobileTabletLayout = ({
           </div>
         )}
         
-     {activeSector?.images?.length > 0 && (
-  <div className="flex items-center justify-center gap-2 mt-1">
-    {activeSector.images.map((img, i) => (
+    {activeAvatars.length > 0 && (
+  <div className="flex-shrink-0 flex items-center justify-center gap-3 py-2">
+    {activeAvatars.map((img, i) => (
       <img
         key={i}
         src={img}
         alt=""
-        className="w-10 h-10 rounded-full object-cover border-2"
-        style={{ borderColor: accent, boxShadow: `0 0 8px ${accent}` }}
+        className="w-32 h-32 rounded-full object-cover border-2"
+        style={{ borderColor: accent, boxShadow: `0 0 12px ${accent}` }}
       />
     ))}
   </div>
 )}
-
         
         {/* ── DISPLAY CENTRAL — CHAT UNICO SIN FONDOS ── */}
         <section 

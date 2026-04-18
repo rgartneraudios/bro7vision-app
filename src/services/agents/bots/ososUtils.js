@@ -33,9 +33,12 @@ const PALABRAS_HANDOFF = [
   'jaguar', 'orumama', 'reinos', 'juegos', 'games', 'oráculo', 'oraculo'
 ];
 
+const PALABRAS_REALITY = ['reality', 'escenario', 'canal', 'tuner', 'visor', 'ver videos', 'canales'];
+
 export function detectarIntencion(textoUsuario) {
   const lower = textoUsuario.toLowerCase().trim();
-
+  
+  if (PALABRAS_REALITY.some(p => lower.includes(p))) return 'reality'; 
   if (PALABRAS_HANDOFF.some(p => lower.includes(p))) return 'handoff';
   if (PALABRAS_SALUDO.some(s => lower.startsWith(s) || lower === s)) return 'saludo';
   if (PALABRAS_PODCAST.some(p => lower.includes(p)))                  return 'podcast';
@@ -83,6 +86,18 @@ export function construirRespuesta({ datosBot, update, sectorFinal, ciudadFinal,
   if (!ciudadFinal) {
     return { mensaje: frase(datosBot.frasesPedirCiudad), handoff: false };
   }
+}
+
+// — Reality ─────────────────────────────────────────────────────────────────
+if (intencion === 'reality') {
+  return {
+    mensaje: frase([
+      '¡El Reality te espera! Elige tu escenario 🎬',
+      'Accediendo al Reality Tuner... elige tu canal 📡',
+      '¡Sintoniza tu frecuencia! El Reality está listo 🌐',
+    ]),
+    handoff: 'REALITY'
+  };
 }
 
   // — Saludo ──────────────────────────────────────────────────────────────────

@@ -184,10 +184,10 @@ export default function DesktopLayout(props) {
       
       {/* 6. OSOS IA RECEPCION */}   
       {step === 1 && (
-        <div className="relative z-[50] h-full flex flex-col items-center justify-end pb-0 px-4">
-          <div className="w-full max-w-2xl mb-3"><OsosBanner mensaje={ososMensaje} /></div>
-          <AgentChatInput onSend={(t) => handleOsosInput(t)} isLoading={ososLoading} agent="osos" />
-        </div>
+        <div className="relative z-[50] h-full flex flex-col items-center justify-end pb-0 px-4"
+     style={{ pointerEvents: 'auto' }}>          <div className="w-full max-w-2xl mb-3"><OsosBanner mensaje={ososMensaje} /></div>
+          <AgentChatInput onSend={(t) => handleOsosInput(t)} isLoading={ososLoading} agent="osos" style={{ pointerEvents: 'auto' }} />       
+           </div>
       )}
     </>
   );

@@ -230,9 +230,11 @@ export const useAgentChat = ({
         });
 
         setMensaje(resultado.mensaje);
-        if (resultado.siguienteActo) actoRef.current = resultado.siguienteActo;
-        if (resultado.rama !== undefined) setRamaActual(resultado.rama);
-        return;
+if (resultado.siguienteActo) actoRef.current = resultado.siguienteActo;
+if (resultado.rama !== undefined) setRamaActual(resultado.rama);
+// ✅ procesar handoff si existe
+if (resultado.handoff) onHandoff?.(resultado.handoffData);
+return;
       }
 
       // ── NOVA ──────────────────────────────────────────────────────────────
@@ -244,7 +246,7 @@ export const useAgentChat = ({
           supabase,
         });
         setMensaje(resultado.mensaje);
-        if (resultado.handoff) onHandoff?.(resultado.handoffData);
+        if (resultado.handoff) onHandoff?.(resultado.handoff);
         return;
       }
 
@@ -258,7 +260,7 @@ export const useAgentChat = ({
           supabase,
         });
         setMensaje(resultado.mensaje);
-        if (resultado.handoff) onHandoff?.(resultado.handoffData);
+        if (resultado.handoff) onHandoff?.(resultado.handoff);
         return;
       }
 
@@ -272,7 +274,7 @@ export const useAgentChat = ({
           supabase,
         });
         setMensaje(resultado.mensaje);
-        if (resultado.handoff) onHandoff?.(resultado.handoffData);
+        if (resultado.handoff) onHandoff?.(resultado.handoff);
         return;
       }
 
@@ -284,8 +286,8 @@ export const useAgentChat = ({
           supabase,
         });
         setMensaje(resultado.mensaje);
-        if (resultado.handoff) onHandoff?.(resultado.handoffData);
-        return;
+        if (resultado.handoff) onHandoff?.(resultado.handoff);
+       return;
       }
 
       // ── REINOS ────────────────────────────────────────────────────────────
