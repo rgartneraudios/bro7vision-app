@@ -134,9 +134,12 @@ export default function AgentChatInput({
       handleSend();
     }
   };
+  
+
 
   return (
     <div className="w-full max-w-2xl flex flex-col gap-2">
+
       <style>{`
         @keyframes agentPulse {
           0%, 100% { box-shadow: 0 0 12px rgba(${c.rgb},0.15), 0 0 0 1px rgba(${c.rgb},0.3); }

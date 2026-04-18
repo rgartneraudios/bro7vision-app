@@ -32,6 +32,13 @@ const FRASES_HANDOFF_OSOS = [
   "Los osos te atienden. Yo tenía algo pendiente de todos modos.",
 ];
 
+// ── Handoff interno → Ami ──────────────────────────────────────────────────
+const FRASES_HANDOFF_AMI = [
+  "Ami está por aquí. Te la paso 🌅",
+  "Ami, ¡tienes visita! Te paso con ella.",
+  "Ami lo tiene todo controlado. Un segundo 💪",
+];
+
 const FRASES_NO_ENTENDIDO = [
   "No te he pillado. ¿Música, podcast o lives?",
   "Repítemelo. Estaba mirando el móvil un segundo.",
@@ -41,6 +48,9 @@ const FRASES_SIN_RESULTADOS = [
   "No encuentro nada con eso. ¿Pruebas con otro nombre?",
   "No hay nada en el catálogo que encaje. ¿Buscas otra cosa?",
 ];
+
+// Nombres que activan el switch a Ami
+const NOMBRES_AMI = ['ami', 'amí', 'la ami', 'amy'];
 
 function elegir(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -63,10 +73,17 @@ export function responder({
   const intent = intencion || detectarIntencion(textoUser);
   const t = textoUser.toLowerCase();
 
+  // ── Handoff a Osos ───────────────────────────────────────────────────
   if (t.includes('volver') || t.includes('salir') || t.includes('osos')) {
     return { handoff: 'OSOS', mensaje: elegir(FRASES_HANDOFF_OSOS), bolas: [] };
   }
 
+  // ── Handoff interno → Ami ────────────────────────────────────────────
+  if (NOMBRES_AMI.some(n => t.includes(n))) {
+    return { handoff: 'AUDIO_INTERNO', personaje_id: 'ami', mensaje: elegir(FRASES_HANDOFF_AMI), bolas: [] };
+  }
+
+  // ── AUDIO_PLAY directo ───────────────────────────────────────────────
   if (entidad?.accion === 'PLAY') {
     return { handoff: 'AUDIO_PLAY', codigo: entidad.codigo, mensaje: elegir(FRASES_PLAY), bolas: [] };
   }

@@ -20,12 +20,31 @@ import { getKnowledgeBlock }              from '../../data/SystemKnowledge';
 import { getMoonSuffix }                  from '../../utils/moonUtils';
 import { responder as smisterioResponder } from './bots/smisterioBot';
 
-// ─── Helper: contenido update ────────────────────────────────────────────────
+// ─── Helper: normalizar handoff ───────────────────────────────────────────────
+// Convierte handoff string → objeto con handoffData completo.
+// extraData permite pasar campos adicionales (personaje_id, codigo, etc.)
+
+function normalizarHandoff(resultado, extraData = {}) {
+  if (!resultado.handoff) return resultado;
+  if (typeof resultado.handoff === 'string') {
+    return {
+      ...resultado,
+      handoffData: { agente: resultado.handoff, ...extraData },
+      handoff: true,
+    };
+  }
+  // Ya era booleano true — enriquecemos handoffData si falta algo
+  return {
+    ...resultado,
+    handoffData: { ...resultado.handoffData, ...extraData },
+  };
+}
+
+// ─── Helper: contenido update ─────────────────────────────────────────────────
 
 async function cargarUpdate(supabase, personaje_id) {
   if (!supabase || !personaje_id) return null;
   try {
-    const hoy = new Date().toISOString().split('T')[0];
     const { data } = await supabase
       .from('personaje_update')
       .select('*')
@@ -98,7 +117,6 @@ function detectarIntencionOraculo(texto) {
   if (t.includes('horoscopo') || t.includes('signo') || t.includes('astral') || t.includes('sidereo')) return 'horoscopo';
   if (t.includes('luna') || t.includes('fase') || t.includes('lunar')) return 'luna';
   if (t.includes('hierba') || t.includes('planta') || t.includes('remedio') || t.includes('brebaje') || t.includes('natural')) return 'hierbas';
-  // NUEVAS KEYWORDS PARA EL SEÑOR MISTERIO:
   if (t.includes('misterio') || t.includes('secreto') || t.includes('egipto') || t.includes('atlantida') || t.includes('lemuria') || t.includes('historia')) return 'misterio';
   return 'explorar';
 }
@@ -117,68 +135,53 @@ async function modoOsos({ textoUsuario, oso_id, sectorFinal, ciudadFinal, actoAc
   const id     = (oso_id || 'lara').toLowerCase();
   const update = await cargarUpdate(supabase, id);
   const args   = { textoUsuario, sectorFinal, ciudadFinal, actoActual: actoActual || 'acto_1', ramaActual: ramaActual || null, update };
-    
+
   let resultado;
-  if (id === 'tito')  resultado = titoResponder(args);
+  if (id === 'tito')       resultado = titoResponder(args);
   else if (id === 'puffo') resultado = puffoResponder(args);
-  else resultado = laraResponder(args);
+  else                     resultado = laraResponder(args);
 
-  // ✅ Normalizar handoff de string a objeto
-  if (resultado.handoff && typeof resultado.handoff === 'string') {
-    resultado = {
-      ...resultado,
-      handoffData: { agente: resultado.handoff },
-      handoff: true,
-    };
-  }
-
-  return resultado;
+  // OSOS_INTERNO lleva oso_id destino — lo pasa el propio bot en resultado.oso_id
+  return normalizarHandoff(resultado, { oso_id: resultado.oso_id });
 }
 
 async function modoNova({ textoUsuario, entidad, hayTarjetas, supabase }) {
-  const update = await cargarUpdate(supabase, 'nova');
-  let resultado = novaResponder({
+  const update    = await cargarUpdate(supabase, 'nova');
+  const resultado = novaResponder({
     textoUser:  textoUsuario,
     intencion:  detectarIntencionNova(textoUsuario),
     entidad,
     hayTarjetas,
     update,
   });
-
-  // ✅ Normalizar handoff string → objeto (igual que modoOsos)
-  if (resultado.handoff && typeof resultado.handoff === 'string') {
-    resultado = {
-      ...resultado,
-      handoffData: { agente: resultado.handoff },
-      handoff: true,
-    };
-  }
-
-  return resultado;
+  // Nova no tiene interno — normalización estándar
+  return normalizarHandoff(resultado);
 }
+
 async function modoServicios({ textoUsuario, entidad, hayTarjetas, personaje, supabase }) {
   const id     = (personaje || 'isabella').toLowerCase();
   const update = await cargarUpdate(supabase, id);
   const args   = { textoUser: textoUsuario, intencion: detectarIntencionServicios(textoUsuario), entidad, hayTarjetas, update };
-  let resultado = id === 'prmaestro' ? prmaestroResponder(args) : isabellaResponder(args);
-  if (resultado.handoff && typeof resultado.handoff === 'string') {
-    resultado = { ...resultado, handoffData: { agente: resultado.handoff }, handoff: true };
-  }
-  return resultado;
+
+  const resultado = id === 'prmaestro' ? prmaestroResponder(args) : isabellaResponder(args);
+
+  // SERVICIO_INTERNO lleva personaje_id destino — el bot lo pone en resultado.personaje_id
+  return normalizarHandoff(resultado, { personaje_id: resultado.personaje_id });
 }
 
 async function modoAudio({ textoUsuario, entidad, hayTarjetas, personaje, supabase }) {
   const id     = (personaje || 'mapache').toLowerCase();
   const update = await cargarUpdate(supabase, id);
   const args   = { textoUser: textoUsuario, intencion: detectarIntencionAudio(textoUsuario), entidad, hayTarjetas, update };
-  let resultado = id === 'ami' ? amiResponder(args) : mapacheResponder(args);
-  if (resultado.handoff && typeof resultado.handoff === 'string') {
-  resultado = {
-    ...resultado,
-    handoffData: { agente: resultado.handoff, codigo: resultado.codigo },
-    handoff: true,
-  };
-}  return resultado;
+
+  const resultado = id === 'ami' ? amiResponder(args) : mapacheResponder(args);
+
+  // AUDIO_INTERNO lleva personaje_id destino
+  // AUDIO_PLAY lleva codigo
+  return normalizarHandoff(resultado, {
+    personaje_id: resultado.personaje_id,
+    codigo:       resultado.codigo,
+  });
 }
 
 async function modoOraculo({ textoUsuario, personaje, supabase }) {
@@ -186,30 +189,32 @@ async function modoOraculo({ textoUsuario, personaje, supabase }) {
   const update    = await cargarUpdate(supabase, id);
   const intencion = detectarIntencionOraculo(textoUsuario);
   const args = {
-    textoUser: textoUsuario, intencion,
-    faselunar: getMoonSuffix(),
+    textoUser:          textoUsuario,
+    intencion,
+    faselunar:          getMoonSuffix(),
     bloqueConocimiento: getKnowledgeBlock(intencion),
     update,
   };
+
   let resultado;
   if (id === 'jaguar')         resultado = jaguarResponder(args);
   else if (id === 'smisterio') resultado = smisterioResponder(args);
   else                         resultado = orumamaResponder(args);
-  if (resultado.handoff && typeof resultado.handoff === 'string') {
-    resultado = { ...resultado, handoffData: { agente: resultado.handoff }, handoff: true };
-  }
-  return resultado;
+
+  // ORACULO_INTERNO lleva personaje_id destino
+  return normalizarHandoff(resultado, { personaje_id: resultado.personaje_id });
 }
 
 async function modoReinos({ textoUsuario, reinos, reinoDetalle, supabase }) {
   const update = await cargarUpdate(supabase, 'rumores');
-  return rumoresResponder({
-    textoUser:   textoUsuario,
-    intencion:   detectarIntencionReinos(textoUsuario),
-    reinos:      reinos      || [],
+  const resultado = rumoresResponder({
+    textoUser:    textoUsuario,
+    intencion:    detectarIntencionReinos(textoUsuario),
+    reinos:       reinos       || [],
     reinoDetalle: reinoDetalle || null,
     update,
   });
+  return normalizarHandoff(resultado);
 }
 
 async function modoAvisos({
@@ -219,12 +224,22 @@ async function modoAvisos({
 }) {
   const p     = (personaje || 'evelyn').toLowerCase();
   const bot   = p === 'larry' ? larryResponder : evelynResponder;
-  const f     = (intencion, aviso = null, codigoAvi = null) => bot({ intencion, aviso, codigoAvi }).mensaje;
+  const f     = (intencion, aviso = null, codigoAvi = null) => bot({ intencion, aviso, codigoAvi, textoUser: textoUsuario }).mensaje;
   const t     = textoUsuario.toLowerCase().trim();
   const aviso = avisoEnConstruccion || { tipo: null, titulo: null, contenido: null };
 
+  // ── Handoff a Osos — va PRIMERO siempre ─────────────────────────────
+  if (t.includes('osos') || t.includes('volver') || t.includes('salir'))
+    return { mensaje: 'Los osos te atienden.', handoff: true, handoffData: { agente: 'OSOS' } };
+
+  // ── Handoff interno — nombre de personaje detectado por el bot ───────
+  const checkInterno = bot({ intencion: '__check__', aviso: null, codigoAvi: null, textoUser: textoUsuario });
+  if (checkInterno.handoff === 'AVISO_INTERNO' && checkInterno.personaje_id) {
+    return normalizarHandoff(checkInterno, { personaje_id: checkInterno.personaje_id });
+  }
+
   // Cancelar
-  if (t.includes('cancelar') || t.includes('salir'))
+  if (t.includes('cancelar'))
     return { mensaje: f('cancelado'), handoff: false, avisoEnConstruccion: null };
 
   // Detectar código AVI
@@ -334,7 +349,7 @@ export async function botOrchestrator({
   supabase,
 }) {
   switch (mode) {
-    case 'osos': return modoOsos({ textoUsuario, oso_id, sectorFinal, ciudadFinal, actoActual, ramaActual, supabase });
+    case 'osos':        return modoOsos({ textoUsuario, oso_id, sectorFinal, ciudadFinal, actoActual, ramaActual, supabase });
     case 'novaExplora': return modoNova({ textoUsuario, entidad, hayTarjetas, supabase });
     case 'servicios':   return modoServicios({ textoUsuario, entidad, hayTarjetas, personaje: servicios_personaje, supabase });
     case 'mapache':     return modoAudio({ textoUsuario, entidad, hayTarjetas, personaje: audio_personaje, supabase });

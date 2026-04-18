@@ -38,14 +38,14 @@ const FRASES_HANDOFF_OSOS = [
   "Te mando con recepción. Que las hierbas te acompañen.",
 ];
 
-const FRASES_NO_ENTENDIDO = [
-  "No te he entendido del todo. ¿Horóscopo, luna o hierbas?",
-  "Cuéntame mejor. ¿Qué quieres consultar?",
-];
+// ── Handoffs internos ──────────────────────────────────────────────────────
+const FRASES_HANDOFF_JAGUAR   = ["Jaguar escucha más allá de las estrellas. Te lo paso 🐆", "Jaguar, tienes visita. Un momento."];
+const FRASES_HANDOFF_SMISTERIO = ["El Señor Misterio está en otro plano ☎️ Te lo paso.", "Señor Misterio, hay alguien aquí para ti."];
 
-function elegir(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
+const NOMBRES_JAGUAR    = ['jaguar', 'el jaguar'];
+const NOMBRES_SMISTERIO = ['misterio', 'señor misterio', 'smisterio', 'el señor misterio'];
+
+function elegir(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 function detectarIntencion(texto) {
   const t = texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -55,18 +55,20 @@ function detectarIntencion(texto) {
   return 'explorar';
 }
 
-export function responder({
-  textoUser = '',
-  intencion = null,
-  faselunar = null,
-  bloqueConocimiento = null,
-  update = null,
-}) {
+export function responder({ textoUser = '', intencion = null, faselunar = null, bloqueConocimiento = null, update = null }) {
   const intent = intencion || detectarIntencion(textoUser);
   const t = textoUser.toLowerCase();
 
   if (t.includes('volver') || t.includes('salir') || t.includes('osos')) {
     return { handoff: 'OSOS', mensaje: elegir(FRASES_HANDOFF_OSOS), bolas: [] };
+  }
+
+  // ── Handoffs internos ────────────────────────────────────────────────
+  if (NOMBRES_JAGUAR.some(n => t.includes(n))) {
+    return { handoff: 'ORACULO_INTERNO', personaje_id: 'jaguar', mensaje: elegir(FRASES_HANDOFF_JAGUAR), bolas: [] };
+  }
+  if (NOMBRES_SMISTERIO.some(n => t.includes(n))) {
+    return { handoff: 'ORACULO_INTERNO', personaje_id: 'smisterio', mensaje: elegir(FRASES_HANDOFF_SMISTERIO), bolas: [] };
   }
 
   const esSaludo = ['hola', 'hey', 'buenas', 'ey', 'hi', 'buenos'].some(s => t.startsWith(s));
@@ -77,29 +79,11 @@ export function responder({
 
   switch (intent) {
     case 'horoscopo':
-      return {
-        handoff: false,
-        mensaje: bloqueConocimiento
-          ? `${elegir(FRASES_HOROSCOPO)} ${bloqueConocimiento}`
-          : elegir(FRASES_HOROSCOPO),
-        bolas: [],
-      };
+      return { handoff: false, mensaje: bloqueConocimiento ? `${elegir(FRASES_HOROSCOPO)} ${bloqueConocimiento}` : elegir(FRASES_HOROSCOPO), bolas: [] };
     case 'luna':
-      return {
-        handoff: false,
-        mensaje: bloqueConocimiento
-          ? `${elegir(FRASES_LUNA)} ${bloqueConocimiento}`
-          : `${elegir(FRASES_LUNA)} ${faselunar || 'fase no disponible en este momento'}.`,
-        bolas: [],
-      };
+      return { handoff: false, mensaje: bloqueConocimiento ? `${elegir(FRASES_LUNA)} ${bloqueConocimiento}` : `${elegir(FRASES_LUNA)} ${faselunar || 'fase no disponible en este momento'}.`, bolas: [] };
     case 'hierbas':
-      return {
-        handoff: false,
-        mensaje: bloqueConocimiento
-          ? `${elegir(FRASES_HIERBAS)} ${bloqueConocimiento}`
-          : elegir(FRASES_HIERBAS),
-        bolas: [],
-      };
+      return { handoff: false, mensaje: bloqueConocimiento ? `${elegir(FRASES_HIERBAS)} ${bloqueConocimiento}` : elegir(FRASES_HIERBAS), bolas: [] };
     default:
       return { handoff: false, mensaje: elegir(FRASES_EXPLORAR), bolas: [] };
   }

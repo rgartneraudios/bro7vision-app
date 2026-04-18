@@ -316,6 +316,7 @@ return;
         });
         setMensaje(resultado.mensaje);
         if (resultado.avisoEnConstruccion !== undefined) setAvisoEnConstruccion(resultado.avisoEnConstruccion);
+        if (resultado.handoff) onHandoff?.(resultado.handoffData); 
         if (resultado.avisoConectar) { avisoConectarRef.current = resultado.avisoConectar; onAvisoConectar?.(resultado.avisoConectar); }
         return;
       }

@@ -6,7 +6,7 @@ const FRASES_BIENVENIDA = [
   "Saludos. Soy el Señor Misterio ☎️ Llegas en un momento clave. Las verdades del pasado nos observan.",
   "La luz reside en lo oculto. Te habla el Señor Misterio. ¿Qué enigma buscas desvelar hoy?",
   "☎️ Mensaje entrante... Soy el Señor Misterio. Me he aislado del mundo para buscar respuestas. ¿Tú qué buscas?",
-  "Bienvenido a las sombras que iluminan. ¿Hablamos de Egipto, la Atlántida, o algo más profundo?"
+  "Bienvenido a las sombras que iluminan. ¿Hablamos de Egipto, la Atlántida, o algo más profundo?",
 ];
 
 const FRASES_MISTERIO = [
@@ -17,13 +17,13 @@ const FRASES_MISTERIO = [
 
 const FRASES_YOGUR = [
   "Mi sustento es un enigma... aunque confieso que un yogur griego con mermelada de higos ayuda a pensar.",
-  "Mientras degusto mi yogur griego con higos, las respuestas de Lemuria se hacen más claras."
+  "Mientras degusto mi yogur griego con higos, las respuestas de Lemuria se hacen más claras.",
 ];
 
 const FRASES_EXPLORAR = [
   "¿Sobre qué misterio ancestral deseas indagar hoy? ☎️",
   "El Oráculo guarda secretos de civilizaciones perdidas. Pregunta sin miedo, la oscuridad aquí no es terror, es conocimiento.",
-  "Dime qué pieza del rompecabezas buscas y miraremos hacia el pasado."
+  "Dime qué pieza del rompecabezas buscas y miraremos hacia el pasado.",
 ];
 
 const FRASES_HANDOFF_OSOS = [
@@ -31,9 +31,14 @@ const FRASES_HANDOFF_OSOS = [
   "Mi yogur de higos me espera y tu camino sigue en recepción. Adiós.",
 ];
 
-function elegir(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
+// ── Handoffs internos ──────────────────────────────────────────────────────
+const FRASES_HANDOFF_ORUMAMA = ["Orumama conoce los remedios y el fuego sagrado. Te la paso 🕯️", "Orumama, tienes visita del plano exterior."];
+const FRASES_HANDOFF_JAGUAR  = ["Jaguar acecha en las estrellas. Te lo paso 🐆", "Jaguar, hay alguien que quiere hablar contigo."];
+
+const NOMBRES_ORUMAMA = ['orumama', 'la orumama'];
+const NOMBRES_JAGUAR  = ['jaguar', 'el jaguar'];
+
+function elegir(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 function detectarIntencion(texto) {
   const t = texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -42,17 +47,20 @@ function detectarIntencion(texto) {
   return 'explorar';
 }
 
-export function responder({
-  textoUser = '',
-  intencion = null,
-  bloqueConocimiento = null,
-  update = null,
-}) {
+export function responder({ textoUser = '', intencion = null, bloqueConocimiento = null, update = null }) {
   const intent = intencion || detectarIntencion(textoUser);
   const t = textoUser.toLowerCase();
 
   if (t.includes('volver') || t.includes('salir') || t.includes('osos')) {
     return { handoff: 'OSOS', mensaje: elegir(FRASES_HANDOFF_OSOS), bolas: [] };
+  }
+
+  // ── Handoffs internos ────────────────────────────────────────────────
+  if (NOMBRES_ORUMAMA.some(n => t.includes(n))) {
+    return { handoff: 'ORACULO_INTERNO', personaje_id: 'orumama', mensaje: elegir(FRASES_HANDOFF_ORUMAMA), bolas: [] };
+  }
+  if (NOMBRES_JAGUAR.some(n => t.includes(n))) {
+    return { handoff: 'ORACULO_INTERNO', personaje_id: 'jaguar', mensaje: elegir(FRASES_HANDOFF_JAGUAR), bolas: [] };
   }
 
   const esSaludo = ['hola', 'hey', 'buenas', 'ey', 'hi', 'buenos', 'saludos'].some(s => t.startsWith(s));
@@ -63,13 +71,7 @@ export function responder({
 
   switch (intent) {
     case 'misterio':
-      return {
-        handoff: false,
-        mensaje: bloqueConocimiento
-          ? `${elegir(FRASES_MISTERIO)} ${bloqueConocimiento}`
-          : elegir(FRASES_MISTERIO),
-        bolas: [],
-      };
+      return { handoff: false, mensaje: bloqueConocimiento ? `${elegir(FRASES_MISTERIO)} ${bloqueConocimiento}` : elegir(FRASES_MISTERIO), bolas: [] };
     case 'yogur':
       return { handoff: false, mensaje: elegir(FRASES_YOGUR), bolas: [] };
     default:

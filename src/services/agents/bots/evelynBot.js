@@ -62,17 +62,30 @@ const FRASES = {
     `*${av.title}*\n${av.content}\n\nCiudad: ${av.city || 'global'} · Tipo: ${av.type}\nSi te interesa escribe ${codigo} A para conectar con el autor.`,
   conectar:     (av) =>
     `Conectar con el autor de "${av.title}" cuesta 200 génesis. Escribe CONFIRMO para continuar.`,
+
+  // ── Handoff interno → Larry ──────────────────────────────────────────
+  handoff_larry: [
+    "Larry tiene más estilo para esto. Te lo paso.",
+    "Larry, ¡tienes visita! Un momento.",
+    "Larry está disponible. Ahora te conecto con él.",
+  ],
 };
 
-// ─── Utilidad ─────────────────────────────────────────────────────────────────
+// Nombres que activan el switch a Larry
+const NOMBRES_LARRY = ['larry', 'el larry'];
 
 function elegir(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// ─── Responder ────────────────────────────────────────────────────────────────
+export function responder({ intencion, aviso = null, codigoAvi = null, textoUser = '' }) {
+  const t = textoUser.toLowerCase();
 
-export function responder({ intencion, aviso = null, codigoAvi = null }) {
+  // ── Handoff interno → Larry ──────────────────────────────────────────
+  if (NOMBRES_LARRY.some(n => t.includes(n))) {
+    return { handoff: 'AVISO_INTERNO', personaje_id: 'larry', mensaje: elegir(FRASES.handoff_larry) };
+  }
+
   switch (intencion) {
     case 'inicio':       return { mensaje: elegir(FRASES.inicio) };
     case 'titulo':       return { mensaje: elegir(FRASES.titulo) };

@@ -32,6 +32,13 @@ const FRASES_HANDOFF_OSOS = [
   "Los osos te atienden. Hasta luego.",
 ];
 
+// ── Handoff interno → Mapache ──────────────────────────────────────────────
+const FRASES_HANDOFF_MAPACHE = [
+  "Mapache está en cabina. Te lo paso 🦝",
+  "¡Mapache! Tienes visita. Ahora te paso con él.",
+  "Mapache tiene lo tuyo. Un momento.",
+];
+
 const FRASES_NO_ENTENDIDO = [
   "No te he pillado bien. ¿Música, podcast o lives?",
   "Repítemelo. ¿Qué estás buscando exactamente?",
@@ -41,6 +48,9 @@ const FRASES_SIN_RESULTADOS = [
   "No encuentro nada con eso ahora mismo. ¿Pruebas con otro nombre?",
   "No hay nada en el catálogo que encaje. ¿Buscas otra cosa?",
 ];
+
+// Nombres que activan el switch a Mapache
+const NOMBRES_MAPACHE = ['mapache', 'el mapache'];
 
 function elegir(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -58,15 +68,22 @@ export function responder({
   intencion = null,
   entidad = null,
   hayTarjetas = false,
-  semana = null,
+  update = null,
 }) {
   const intent = intencion || detectarIntencion(textoUser);
   const t = textoUser.toLowerCase();
 
+  // ── Handoff a Osos ───────────────────────────────────────────────────
   if (t.includes('volver') || t.includes('salir') || t.includes('osos')) {
     return { handoff: 'OSOS', mensaje: elegir(FRASES_HANDOFF_OSOS), bolas: [] };
   }
 
+  // ── Handoff interno → Mapache ────────────────────────────────────────
+  if (NOMBRES_MAPACHE.some(n => t.includes(n))) {
+    return { handoff: 'AUDIO_INTERNO', personaje_id: 'mapache', mensaje: elegir(FRASES_HANDOFF_MAPACHE), bolas: [] };
+  }
+
+  // ── AUDIO_PLAY directo ───────────────────────────────────────────────
   if (entidad?.accion === 'PLAY') {
     return { handoff: 'AUDIO_PLAY', codigo: entidad.codigo, mensaje: elegir(FRASES_PLAY), bolas: [] };
   }

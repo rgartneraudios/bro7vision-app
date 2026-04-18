@@ -4,8 +4,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAudioContext } from '../context/AudioContext';
 import { useAgentChat } from '../hooks/useAgentChat';
-import AgentChatInput from './AgentChatInput'; 
-import BroCardStrip from './BroCardStrip';     
+import AgentChatInput from './AgentChatInput';
+import BroCardStrip from './BroCardStrip';
 
 const GREETINGS_MAPACHE = [
   "Mapache en cabina. ¿Qué ritmo buscamos hoy? 🎧",
@@ -21,11 +21,13 @@ const GREETINGS_AMI = [
 
 export default function MapacheBanner({
   personaje = 'mapache',
+  audio_personaje,
+
   realItems = [],
   stripVisible,
   stripCards,
   stripLabel,
-  
+
   findChannelByAlias,
   checkIfNew,
   onInvokeOsos,
@@ -34,57 +36,65 @@ export default function MapacheBanner({
   onTuneIn,
   onTuneTuner,
   onStopTuner,
+  // ── NUEVO: callback para cambiar personaje activo en App.jsx ──────────
+  onPersonajeChange,
 }) {
   const { playChannel, stopAudio } = useAudioContext();
 
-  const [display, setDisplay] = useState('');
-  const [cursor, setCursor] = useState(true);
+  const [display, setDisplay]     = useState('');
+  const [cursor, setCursor]       = useState(true);
   const [currentMsg, setCurrentMsg] = useState('');
   const charIdx = useRef(0);
 
-  const esAmi = personaje === 'ami' || personaje === 'chica_gamer';
+  const esAmi        = personaje === 'ami' || personaje === 'chica_gamer';
   const nombreAgente = esAmi ? 'AMI' : 'MAPACHE';
-  const GREETINGS = esAmi ? GREETINGS_AMI : GREETINGS_MAPACHE;
-  const color = '#00D0FF'; 
+  const GREETINGS    = esAmi ? GREETINGS_AMI : GREETINGS_MAPACHE;
+  const personajeActivo = (audio_personaje || personaje || 'mapache').toLowerCase();
+ const color        = '#00D0FF';
 
-  // ── Hook del Bot (Ya no extraemos "bolas") ──────────────────────────────
- const { mensaje, loading, enviar } = useAgentChat({
-  mode: 'mapache',
-  realItems,
-  contextData: { personaje },
-  onHandoff: ({ agente, codigo }) => {
+  const { mensaje, loading, enviar } = useAgentChat({
+    mode: 'mapache',
+    realItems,
+    contextData: { personaje },
+    onHandoff: ({ agente, codigo, personaje_id }) => {
 
-    // ── Externos ──────────────────────────────────────────────
-    if (agente === 'OSOS') { onInvokeOsos?.(); return; }
+      // ── AUDIO_INTERNO — cambio de personaje dentro del sector ────────
+      if (agente === 'AUDIO_INTERNO' && personaje_id) {
+        onPersonajeChange?.({ agente: 'AUDIO_INTERNO', personaje_id });
+        return;
+      }
 
-    // ── Play canal ────────────────────────────────────────────
-    if (agente === 'AUDIO_PLAY' && codigo) {
-      const canal = realItems.find(c =>
-        String(c.bro_aud) === String(codigo) ||
-        String(c.bro_pod) === String(codigo) ||
-        String(c.bro_id)  === String(codigo) ||
-        c.alias?.toLowerCase() === String(codigo).toLowerCase()
-      );
-      if (canal) onTuneIn?.(canal);
-      return;
-    }
+      // ── Externos ─────────────────────────────────────────────────────
+      if (agente === 'OSOS') { onInvokeOsos?.(); return; }
 
-    // ── Stop ──────────────────────────────────────────────────
-    if (agente === 'AUDIO_STOP') {
-      onStopTuner?.();
-      onTuneIn?.(null);
-      return;
-    }
+      // ── Play canal ───────────────────────────────────────────────────
+      if (agente === 'AUDIO_PLAY' && codigo) {
+        const canal = realItems.find(c =>
+          String(c.bro_aud) === String(codigo) ||
+          String(c.bro_pod) === String(codigo) ||
+          String(c.bro_id)  === String(codigo) ||
+          c.alias?.toLowerCase() === String(codigo).toLowerCase()
+        );
+        if (canal) onTuneIn?.(canal);
+        return;
+      }
 
-    // ── Tuner directo ─────────────────────────────────────────
-    if (agente === 'AUDIO_TUNER' && codigo) {
-      onTuneTuner?.(Number(codigo));
-      return;
-    }
-  }
-});
+      // ── Stop ─────────────────────────────────────────────────────────
+      if (agente === 'AUDIO_STOP') {
+        onStopTuner?.();
+        onTuneIn?.(null);
+        return;
+      }
 
-  // ── Efectos Visuales ────────────────────────────────────────────────────
+      // ── Tuner directo ─────────────────────────────────────────────────
+      if (agente === 'AUDIO_TUNER' && codigo) {
+        onTuneTuner?.(Number(codigo));
+        return;
+      }
+    },
+  });
+
+  // ── Efectos visuales ────────────────────────────────────────────────────
   useEffect(() => { const t = setInterval(() => setCursor(c => !c), 530); return () => clearInterval(t); }, []);
   useEffect(() => { setCurrentMsg(GREETINGS[Math.floor(Math.random() * GREETINGS.length)]); }, [personaje]);
   useEffect(() => { if (mensaje) setCurrentMsg(mensaje); }, [mensaje]);
@@ -100,6 +110,13 @@ export default function MapacheBanner({
     }, 28);
     return () => clearInterval(t);
   }, [currentMsg]);
+  
+    // ── Nombre e icono según personaje ──────────────────────────────────────
+    const INFO = {
+  mapache: { nombre: 'MAPACHE', icono: '🦝' },
+  ami:     { nombre: 'AMI',     icono: '🐺' },
+  };
+const { nombre: nombrePersonaje, icono: iconoPersonaje } = INFO[personajeActivo] || INFO.mapache;
 
   return (
     <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
@@ -112,7 +129,6 @@ export default function MapacheBanner({
           0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
           40%            { opacity: 1;   transform: scale(1.2); }
         }
-        
         .mp-wrap {
           background: rgba(0,0,0,0.75);
           backdrop-filter: blur(12px);
@@ -141,29 +157,36 @@ export default function MapacheBanner({
         .mp-loading span:nth-child(3) { animation-delay: 0.4s; }
       `}</style>
 
-      {/* 1. CARRUSEL DE RADIOS / PODCASTS */}
+      {/* 1. CARRUSEL */}
       {stripVisible && (
         <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
-          <BroCardStrip 
-            cards={stripCards} 
-            onSelectCard={(card) => enviar(`${card.bro_id}D`)} 
-            accentColor="cyan" 
-            label={stripLabel} 
-            visible={stripVisible} 
+          <BroCardStrip
+            cards={stripCards}
+            onSelectCard={(card) => enviar(`${card.bro_id}D`)}
+            accentColor="cyan"
+            label={stripLabel}
+            visible={stripVisible}
           />
         </div>
       )}
 
-      {/* 2. BANNER DE TEXTO MAPACHE/AMI */}
+      {/* 2. BANNER DE TEXTO */}
       <div className="w-full max-w-2xl mb-3 pointer-events-auto">
         <div className="mp-wrap w-full flex flex-col items-center justify-center text-center">
+        {/* Header — nombre + icono */}
+<div className="flex items-center gap-2 mb-2">
+  <span className="text-lg">{iconoPersonaje}</span>
+  <span style={{ color, fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
+    {nombrePersonaje}
+  </span>
+</div>
           {!currentMsg && !loading && (
             <p className="text-cyan-500/60 text-xs uppercase tracking-widest font-bold">
               ◈ {nombreAgente} · AUDIO DISPATCHER
             </p>
           )}
           {loading ? (
-             <div className="mp-loading"><span /><span /><span /></div>
+            <div className="mp-loading"><span /><span /><span /></div>
           ) : (
             currentMsg && (
               <p className="mp-texto">
@@ -172,13 +195,13 @@ export default function MapacheBanner({
             )
           )}
         </div>
+        
       </div>
 
-      {/* 3. INPUT DE CHAT */}
+      {/* 3. INPUT */}
       <div className="w-full max-w-2xl pointer-events-auto mb-4">
         <AgentChatInput agent="mapache" onSend={enviar} isLoading={loading} />
       </div>
-
     </div>
   );
 }

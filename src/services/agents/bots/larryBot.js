@@ -63,17 +63,30 @@ const FRASES = {
     `*${av.title}*\n${av.content}\n\nCiudad: ${av.city || 'global'} · Tipo: ${av.type}\nEscribe ${codigo} A si quieres contactar al autor.`,
   conectar:     (av) =>
     `Contactar al autor de "${av.title}" son 200 génesis. CONFIRMO para seguir.`,
+
+  // ── Handoff interno → Evelyn ─────────────────────────────────────────
+  handoff_evelyn: [
+    "Evelyn es más fina que yo para estas cosas. Te la paso.",
+    "Evelyn, tienes visita. Un segundo.",
+    "Evelyn lo gestiona mejor. Ahora te conecto.",
+  ],
 };
 
-// ─── Utilidad ─────────────────────────────────────────────────────────────────
+// Nombres que activan el switch a Evelyn
+const NOMBRES_EVELYN = ['evelyn', 'la evelyn'];
 
 function elegir(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// ─── Responder ────────────────────────────────────────────────────────────────
+export function responder({ intencion, aviso = null, codigoAvi = null, textoUser = '' }) {
+  const t = textoUser.toLowerCase();
 
-export function responder({ intencion, aviso = null, codigoAvi = null }) {
+  // ── Handoff interno → Evelyn ─────────────────────────────────────────
+  if (NOMBRES_EVELYN.some(n => t.includes(n))) {
+    return { handoff: 'AVISO_INTERNO', personaje_id: 'evelyn', mensaje: elegir(FRASES.handoff_evelyn) };
+  }
+
   switch (intencion) {
     case 'inicio':       return { mensaje: elegir(FRASES.inicio) };
     case 'titulo':       return { mensaje: elegir(FRASES.titulo) };

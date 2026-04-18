@@ -2,10 +2,6 @@
 // BOT JS PURO — Personaje: Profesor Robles (Filósofo, sector Servicios)
 // Sin IA, sin API, sin dependencias externas.
 
-// ─────────────────────────────────────────────────────────────────────────────
-// FRASES
-// ─────────────────────────────────────────────────────────────────────────────
-
 const FRASES_BIENVENIDA = [
   "Ah, sí, perdona. Estaba pensando en algo. ¿Qué profesional buscas?",
   "Robles aquí. Dime qué necesitas — tengo la mente en otro sitio pero te escucho.",
@@ -51,6 +47,13 @@ const FRASES_HANDOFF_OSOS = [
   "Te paso con recepción. Hasta luego.",
 ];
 
+// ── Handoff interno → Isabella ─────────────────────────────────────────────
+const FRASES_HANDOFF_ISABELLA = [
+  "Isabella está por aquí. Te la paso ahora.",
+  "Isabella, ¡tienes visita! Un momento.",
+  "Isabella lo tiene todo más ordenado que yo. Te la paso.",
+];
+
 const FRASES_NO_ENTENDIDO = [
   "No te he seguido. ¿Qué tipo de profesional estás buscando exactamente?",
   "Repítemelo. A veces me pierdo cuando estoy pensando en otra cosa.",
@@ -61,9 +64,8 @@ const FRASES_SIN_RESULTADOS = [
   "Ese profesional no está en el registro. Prueba con otra búsqueda.",
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// UTILIDAD
-// ─────────────────────────────────────────────────────────────────────────────
+// Nombres que activan el switch a Isabella
+const NOMBRES_ISABELLA = ['isabella', 'la isabella', 'isa'];
 
 function elegir(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -78,10 +80,6 @@ function detectarIntencion(texto) {
   return 'explorar';
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// RESPONDER
-// ─────────────────────────────────────────────────────────────────────────────
-
 export function responder({
   textoUser = '',
   intencion = null,
@@ -89,104 +87,52 @@ export function responder({
   hayTarjetas = false,
   update = null,
 }) {
-
   const intent = intencion || detectarIntencion(textoUser);
   const t = textoUser.toLowerCase();
 
-  // ── Handoff a Osos ──────────────────────────────────────────────────
+  // ── Handoff a Osos ───────────────────────────────────────────────────
   if (t.includes('volver') || t.includes('salir') || t.includes('osos')) {
-    return {
-      handoff: 'OSOS',
-      mensaje: elegir(FRASES_HANDOFF_OSOS),
-      bolas:   [],
-    };
+    return { handoff: 'OSOS', mensaje: elegir(FRASES_HANDOFF_OSOS), bolas: [] };
   }
 
-  // ── Handoff a Cierre ────────────────────────────────────────────────
+  // ── Handoff interno → Isabella ───────────────────────────────────────
+  if (NOMBRES_ISABELLA.some(n => t.includes(n))) {
+    return { handoff: 'SERVICIO_INTERNO', personaje_id: 'isabella', mensaje: elegir(FRASES_HANDOFF_ISABELLA), bolas: [] };
+  }
+
+  // ── Handoff a Cierre ─────────────────────────────────────────────────
   if (entidad?.accion === 'VENTAS') {
-    return {
-      handoff: 'ISABELLA_CIERRE',
-      bro_id:  entidad.bro_id,
-      mensaje: elegir(FRASES_HANDOFF_CIERRE),
-      bolas:   [],
-    };
+    return { handoff: 'ISABELLA_CIERRE', bro_id: entidad.bro_id, mensaje: elegir(FRASES_HANDOFF_CIERRE), bolas: [] };
   }
 
-  // ── Con entidad detectada ───────────────────────────────────────────
   if (entidad) {
     switch (intent) {
       case 'descripcion':
-        return {
-          handoff: false,
-          mensaje: `${elegir(FRASES_DESCRIPCION)} ${entidad.nombre || entidad.bro_id} — ${entidad.biz_profession || entidad.description || 'sin descripción disponible'}.`,
-          bolas:   [],
-        };
+        return { handoff: false, mensaje: `${elegir(FRASES_DESCRIPCION)} ${entidad.nombre || entidad.bro_id} — ${entidad.biz_profession || entidad.description || 'sin descripción disponible'}.`, bolas: [] };
       case 'precio':
-        return {
-          handoff: false,
-          mensaje: `${elegir(FRASES_PRECIO)} ${entidad.nombre || entidad.bro_id}: ${entidad.service_price || entidad.ref_price || 'precio no disponible'}.`,
-          bolas:   [],
-        };
+        return { handoff: false, mensaje: `${elegir(FRASES_PRECIO)} ${entidad.nombre || entidad.bro_id}: ${entidad.service_price || entidad.ref_price || 'precio no disponible'}.`, bolas: [] };
       case 'ubicacion':
-        return {
-          handoff: false,
-          mensaje: `${elegir(FRASES_UBICACION)} ${entidad.nombre || entidad.bro_id} — ${entidad.address || entidad.nearby_ref || 'ubicación no disponible'}.`,
-          bolas:   [],
-        };
+        return { handoff: false, mensaje: `${elegir(FRASES_UBICACION)} ${entidad.nombre || entidad.bro_id} — ${entidad.address || entidad.nearby_ref || 'ubicación no disponible'}.`, bolas: [] };
       case 'contacto':
-        return {
-          handoff: false,
-          mensaje: `${elegir(FRASES_CONTACTO)} ${entidad.nombre || entidad.bro_id} — ${entidad.address || 'datos no disponibles'}.`,
-          bolas:   [],
-        };
+        return { handoff: false, mensaje: `${elegir(FRASES_CONTACTO)} ${entidad.nombre || entidad.bro_id} — ${entidad.address || 'datos no disponibles'}.`, bolas: [] };
       default:
-        return {
-          handoff: false,
-          mensaje: `${elegir(FRASES_DESCRIPCION)} ${entidad.nombre || entidad.bro_id} — ${entidad.biz_profession || entidad.description || 'sin descripción disponible'}.`,
-          bolas:   [],
-        };
+        return { handoff: false, mensaje: `${elegir(FRASES_DESCRIPCION)} ${entidad.nombre || entidad.bro_id} — ${entidad.biz_profession || entidad.description || 'sin descripción disponible'}.`, bolas: [] };
     }
   }
 
-  // ── Sin entidad — sin tarjetas ──────────────────────────────────────
   if (!hayTarjetas) {
-    return {
-      handoff: false,
-      mensaje: elegir(FRASES_SIN_RESULTADOS),
-      bolas:   [],
-    };
+    return { handoff: false, mensaje: elegir(FRASES_SIN_RESULTADOS), bolas: [] };
   }
 
-  // ── Saludo ──────────────────────────────────────────────────────────
   const esSaludo = ['hola', 'hey', 'buenas', 'ey', 'hi', 'buenos'].some(s => t.startsWith(s));
   if (esSaludo) {
-    if (update?.historia) {
-      return {
-        handoff: false,
-        mensaje: update.historia + ' ¿Qué profesional estás buscando?',
-        bolas:   [],
-      };
-    }
-    return {
-      handoff: false,
-      mensaje: elegir(FRASES_BIENVENIDA),
-      bolas:   [],
-    };
+    if (update?.historia) return { handoff: false, mensaje: update.historia + ' ¿Qué profesional estás buscando?', bolas: [] };
+    return { handoff: false, mensaje: elegir(FRASES_BIENVENIDA), bolas: [] };
   }
 
-  // ── Explorar con tarjetas ───────────────────────────────────────────
   if (hayTarjetas) {
-    return {
-      handoff: false,
-      mensaje: elegir(FRASES_EXPLORAR),
-      bolas:   [],
-    };
+    return { handoff: false, mensaje: elegir(FRASES_EXPLORAR), bolas: [] };
   }
 
-  // ── Fallback ────────────────────────────────────────────────────────
-  return {
-    handoff: false,
-    mensaje: elegir(FRASES_NO_ENTENDIDO),
-    bolas:   [],
-  };
+  return { handoff: false, mensaje: elegir(FRASES_NO_ENTENDIDO), bolas: [] };
 }
