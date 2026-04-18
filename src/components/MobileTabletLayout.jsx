@@ -133,8 +133,9 @@ const MobileTabletLayout = ({
   navItems,
   handleNavigation,
   chatMobile,
-  ososModo,
+  ososModo, setOsosModo,
   perfilOso,
+  perfilSector,
   setShowBooster,
   setShowWalletModal,
   handleLogout,
@@ -194,7 +195,9 @@ const handleSend = () => {
   };
 
   const activeSector = navItems?.find(n => n.id === intent);
-  const sectorLabel  = activeSector?.label || 'OSOS';
+  const sectorLabel = (step === 1 || !intent) 
+  ? 'OSOS' 
+  : activeSector?.label || 'OSOS';
 
   const SECTOR_ACCENT = {
     gps:             '#d946ef',
@@ -213,26 +216,37 @@ const handleSend = () => {
   
   // ID PARA LOS EMOJIS
 const SECTOR_AVATARS = {
-  gps:             { osos: { lara: '/emojis/lara.webp', tito: '/emojis/tito.webp', puffo: '/emojis/puffo.webp' } },
-  productos:       ['/emojis/nova.webp'],
-  servicios:       ['/emojis/isabella.webp', '/emojis/prmaestro.webp'],
-  avisos:          ['/emojis/evelyn.webp', '/emojis/larry.webp'],
-  audios:          ['/emojis/mapache.webp', '/emojis/ami.webp'],
-  internal_search: ['/emojis/rumores.webp'],
-  ai:              ['/emojis/orumama.webp', '/emojis/smisterio.webp', '/emojis/jaguar.webp'],
-  game:            ['/emojis/emoji_5.webp', '/emojis/emoji_7.webp'],
+  gps: {
+    tito:  '/emojis/tito.webp',
+    lara:  '/emojis/lara.webp',
+    puffo: '/emojis/puffo.webp',
+  },
+  productos:       { nova:      '/emojis/nova.webp' },
+  servicios:       { isabella:  '/emojis/isabella.webp', profesor: '/emojis/prmaestro.webp' },
+  avisos:          { evelyn:    '/emojis/evelyn.webp',   larry:     '/emojis/larry.webp' },
+  audios:          { mapache:   '/emojis/mapache.webp',  ami:       '/emojis/ami.webp' },
+  internal_search: { rumores:   '/emojis/rumores.webp' },
+  ai:              { orumama:   '/emojis/orumama.webp',  jaguar:    '/emojis/jaguar.webp', smisterio: '/emojis/smisterio.webp' },
+  game:            { default:   '/emojis/emoji_5.webp' },
 };
-
-// Resuelve qué avatares mostrar según sector y perfilOso
+ 
 const getActiveAvatars = () => {
   if (intent === 'gps') {
-    const oso = (perfilOso?.oso_id || perfilOso)?.toLowerCase();
-    const url = SECTOR_AVATARS.gps.osos[oso];
-    return url ? [url] : ['/emojis/tito.webp'];
+    const oso = (perfilOso?.oso_id || 'tito').toLowerCase();
+    const url = SECTOR_AVATARS.gps[oso] || SECTOR_AVATARS.gps.tito;
+    return [url];
   }
-  return SECTOR_AVATARS[intent] || [];
+  // Sectores con handoff interno — resolver personaje activo desde perfilSector
+  const sectorMap = SECTOR_AVATARS[intent];
+  if (!sectorMap) return [];
+  const personajeActivo = perfilSector?.personaje_id;
+  if (personajeActivo && sectorMap[personajeActivo]) {
+    return [sectorMap[personajeActivo]];
+  }
+  // Fallback — primer avatar del sector (el default)
+  return [Object.values(sectorMap)[0]];
 };
-
+ 
 const activeAvatars = getActiveAvatars();
 
 // ── REALITY TUNER MÓVIL — selector ──────────────────────────────
@@ -302,7 +316,20 @@ if (step === 0 && !realityMode) {
           <div className="flex-1 overflow-y-auto bro-scroll py-3 px-3 flex flex-col gap-2">
             {navItems?.map(item => (
               <button key={item.id}
-                onClick={() => { handleNavigation(item.id); setIsRightOpen(false); }}
+                
+                onClick={() => {
+  setMessages([]);
+  if (['productos', 'servicios', 'avisos', 'audios'].includes(item.id) && !scope) {
+    setIntent(item.id);
+    setStep(1);
+    setOsosModo('entrada');
+  } else {
+    handleNavigation(item.id);
+  }
+  setIsRightOpen(false);
+}}
+                
+                
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all active:scale-95"
                 style={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.4)' }}>
                 <div className="flex -space-x-2 flex-shrink-0">
@@ -450,14 +477,25 @@ if (step === 0 && realityMode) {
             <span className="mobile-display-font text-2xl tracking-widest" style={{ color: escena?.color }}>SECTORES</span>
           </div>
           <div className="px-4 mt-4">
-          <button onClick={() => { setStep(0); setRealityMode(null); setIsRightOpen(false); }} className="w-full flex justify-between items-center p-3 bg-fuchsia-500/10 border border-fuchsia-400/40 rounded-2xl hover:bg-cyan-500 hover:text-black transition-all group">
+          <button onClick={() => { setStep(0); setRealityMode(null); setScope(null); setIsRightOpen(false); }} className="w-full flex justify-between items-center p-3 bg-fuchsia-500/10 border border-fuchsia-400/40 rounded-2xl hover:bg-cyan-500 hover:text-black transition-all group">
             <span className="text-[10px] font-black uppercase group-hover:text-black">Cambiar Reality</span><span className="text-lg">🌐</span>
           </button>
           </div>
           <div className="flex-1 overflow-y-auto bro-scroll py-3 px-3 flex flex-col gap-2">
             {navItems?.map(item => (
               <button key={item.id}
-                onClick={() => { handleNavigation(item.id); setIsRightOpen(false); }}
+                onClick={() => {
+  setMessages([]);
+  if (['productos', 'servicios', 'avisos', 'audios'].includes(item.id) && !scope) {
+    setIntent(item.id);   // ← guarda el destino
+    setStep(1);           // ← pero muestra osos
+    setOsosModo('entrada');
+    setIsRightOpen(false);
+  } else {
+    handleNavigation(item.id);
+    setIsRightOpen(false);
+  }
+}}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all active:scale-95"
                 style={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.4)' }}>
                 <div className="flex -space-x-2 flex-shrink-0">
@@ -615,7 +653,7 @@ if (step === 0 && realityMode) {
             </span>
           </div>
           <div className="px-4 mt-4">
-          <button onClick={() => { setStep(0); setRealityMode(null); setIsRightOpen(false); }} className="w-full flex justify-between items-center p-3 bg-fuchsia-500/10 border border-fuchsia-400/40 rounded-2xl hover:bg-cyan-500 hover:text-black transition-all group">
+          <button onClick={() => { setStep(0); setRealityMode(null); setScope(null); setIsRightOpen(false); }} className="w-full flex justify-between items-center p-3 bg-fuchsia-500/10 border border-fuchsia-400/40 rounded-2xl hover:bg-cyan-500 hover:text-black transition-all group">
             <span className="text-[10px] font-black uppercase group-hover:text-black">Cambiar Reality</span><span className="text-lg">🌐</span>
           </button>
           </div>

@@ -30,14 +30,14 @@ const AGENT_COLORS = {
     pulse:       'text-cyan-400',
     btn:         'bg-cyan-500/30 hover:bg-cyan-400/50 border-cyan-400/60 hover:border-cyan-300 text-cyan-200',
   },
-  slate: { // Cambiado de 'slateblue' a 'slate' para coincidir
-    rgb:         '107,143,168',
-    border:      'border-slate-400/50',
-    borderFocus: 'focus:border-slate-300',
-    placeholder: 'placeholder-slate-300/70',
-    counter:     'text-slate-600/60',
-    pulse:       'text-slate-400',
-    btn:         'bg-slate-500/30 hover:bg-slate-400/50 border-slate-400/60 hover:border-slate-300 text-slate-200',
+  pink: { 
+    rgb:         '254,109,184',
+    border:      'border-pink-400/50',
+    borderFocus: 'focus:border-pink-300',
+    placeholder: 'placeholder-pink-300/70',
+    counter:     'text-pink-600/60',
+    pulse:       'text-pink-400',
+    btn:         'bg-pink-500/30 hover:bg-pink-400/50 border-pink-400/60 hover:border-pink-300 text-pink-200',
   },
   green: {
     rgb:         '16,185,129',
@@ -79,7 +79,7 @@ const AGENT_PROFILES = {
     text: '✦  CODIGO + D · Descripción | CODIGO + A Entrar | ¿Qué producto buscas hoy?'
   },
   isabella: {
-    theme: 'slate',
+    theme: 'pink',
     text: '✦  CODIGO + D · Descripción del Comercio | CODIGO + A Entrar al Comercio'
   },
   evelyn: {

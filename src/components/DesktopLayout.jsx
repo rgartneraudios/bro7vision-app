@@ -31,7 +31,7 @@ export default function DesktopLayout(props) {
   // Desestructuramos todas las props que le manda App.jsx
   const {
     step, setStep, intent, setIntent, realityMode, setRealityMode,
-    isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
+    isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen, perfilSector, handleCentralHandoff,
     balances, setBalances, session, showRadar, setShowRadar, radarQuery, setRadarQuery,
     realItems, filteredItems, hubVideos, selectedForestUser, setSelectedForestUser, savedUserIndex,
     audioUser, setAudioUser, activePrismUser, setActivePrismUser, projectingUser, setProjectingUser,
@@ -45,6 +45,7 @@ export default function DesktopLayout(props) {
   } = props;
 
   const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'audios']);
+
 
   return (
     <>
@@ -165,21 +166,82 @@ export default function DesktopLayout(props) {
       {step === 2 && intent === 'servicios' && <SlideRailServicios />}
       {step === 2 && intent === 'avisos'    && <SlideRailAvisos />}
       {step === 2 && intent === 'audios'     && <SlideRailAudio />}
-
+      
+      
+      {/* ── PRODUCTOS ───────────────────────────────────────────────────── */}     
       {step === 2 && intent === 'productos' && ( 
         <NovaBanner sessionCity={sessionCity} sessionCP={sessionCP} realItems={realItems} stripVisible={stripVisible} stripCards={stripCards} stripLabel={stripLabel} onOpenTerminal={(c) => abrirTienda(c, 'novaVentas')} onSetActiveIndex={setHoloPrismaIndex} onInvokeOsos={() => setStep(1)} onInvokeMapache={() => setIntent('audios')} onEntityFocus={(u) => setActivePrismUser(u)} setIntent={setIntent} />
       )}
+      
+      {/* ── SERVICIOS ───────────────────────────────────────────────────── */}
       {step === 2 && intent === 'servicios' && (
-        <IsabellaBanner personaje={perfilOso?.servicios_personaje || 'isabella'} sessionCity={sessionCity} sessionCP={sessionCP} realItems={realItems} stripVisible={stripVisible} stripCards={stripCards} stripLabel={stripLabel} onOpenTerminal={(c) => abrirTienda(c, 'isabellaVentas')} onSetActiveIndex={setHoloPrismaIndex} onInvokeOsos={() => setStep(1)} onInvokeMapache={() => setIntent('audios')} onEntityFocus={(u) => setActivePrismUser(u)} setIntent={setIntent} />
+        <IsabellaBanner
+          personaje={perfilSector?.personaje_id || 'isabella'}
+          sessionCity={sessionCity}
+          sessionCP={sessionCP}
+          realItems={realItems}
+          stripVisible={stripVisible}
+          stripCards={stripCards}
+          stripLabel={stripLabel}
+          onOpenTerminal={(c) => abrirTienda(c, 'isabellaVentas')}
+          onSetActiveIndex={setHoloPrismaIndex}
+          onInvokeOsos={() => setStep(1)}
+          onInvokeMapache={() => setIntent('audios')}
+          onEntityFocus={(u) => setActivePrismUser(u)}
+          setIntent={setIntent}
+          onPersonajeChange={handleCentralHandoff}
+        />
       )}
+
+      {/* ── AVISOS ──────────────────────────────────────────────────────── */}
       {step === 2 && intent === 'avisos' && (
-        <EvelynBanner personaje={perfilOso?.avisos_personaje || 'evelyn'} sessionCity={sessionCity} sessionCP={sessionCP} genesis={balances.genesis} alias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'} bro_id={perfilOso?.bro_id || ''} realItems={realItems} stripVisible={stripVisible} stripCards={stripCards} stripLabel={stripLabel} onInvokeOsos={() => setStep(1)} onAvisoConectar={props.onAvisoConectar} onAvisoPublicar={props.onAvisoPublicar} />
+        <EvelynBanner
+          personaje={perfilSector?.personaje_id || 'evelyn'}
+          sessionCity={sessionCity}
+          sessionCP={sessionCP}
+          genesis={balances.genesis}
+          alias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'}
+          bro_id={perfilOso?.bro_id || ''}
+          realItems={realItems}
+          stripVisible={stripVisible}
+          stripCards={stripCards}
+          stripLabel={stripLabel}
+          onInvokeOsos={() => setStep(1)}
+          onAvisoConectar={props.onAvisoConectar}
+          onAvisoPublicar={props.onAvisoPublicar}
+          onPersonajeChange={handleCentralHandoff}
+        />
       )}
+
+      {/* ── AUDIO ───────────────────────────────────────────────────────── */}
       {step === 2 && intent === 'audios' && (
-        <MapacheBanner personaje={perfilOso?.audio_personaje || 'mapache'} realItems={realItems} stripVisible={stripVisible} stripCards={stripCards} stripLabel={stripLabel} findChannelByAlias={findChannelByAlias} checkIfNew={checkIfNew} onInvokeOsos={() => setStep(1)} onInvokeNova={() => setIntent('productos')} onOpenProfile={(u) => setProjectingUser(u)} onTuneIn={(u) => { setAudioUser(u); setActivePrismUser(u); }} onTuneTuner={(id) => broTunerRef.current?.playById(id)} onStopTuner={() => broTunerRef.current?.stop()} />
+        <MapacheBanner
+          personaje={perfilSector?.personaje_id || 'mapache'}
+          realItems={realItems}
+          stripVisible={stripVisible}
+          stripCards={stripCards}
+          stripLabel={stripLabel}
+          findChannelByAlias={findChannelByAlias}
+          checkIfNew={checkIfNew}
+          onInvokeOsos={() => setStep(1)}
+          onInvokeNova={() => setIntent('productos')}
+          onOpenProfile={(u) => setProjectingUser(u)}
+          onTuneIn={(u) => { setAudioUser(u); setActivePrismUser(u); }}
+          onTuneTuner={(id) => broTunerRef.current?.playById(id)}
+          onStopTuner={() => broTunerRef.current?.stop()}
+          onPersonajeChange={handleCentralHandoff}
+        />
       )}
+
+      {/* ── ORÁCULO ─────────────────────────────────────────────────────── */}
       {step === 2 && intent === 'ai' && (
-        <OraculoBanner oraculo_personaje={perfilOso?.oraculo_personaje || 'orumama'} alias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'} realItems={realItems} onInvokeOsos={() => { setStep(1); setOsosModo('entrada'); }} />
+        <OraculoBanner
+          oraculo_personaje={perfilSector?.personaje_id || perfilOso?.oraculo_personaje || 'orumama'}
+          alias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'}
+          realItems={realItems}
+          onInvokeOsos={() => { setStep(1); setOsosModo('entrada'); }}
+          onPersonajeChange={handleCentralHandoff}
+        />
       )}
       
       {/* 6. OSOS IA RECEPCION */}   

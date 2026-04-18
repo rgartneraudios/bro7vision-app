@@ -47,8 +47,8 @@ const FRASES_HANDOFF_OSOS = [
   "Los osos te atienden. Hasta luego.",
 ];
 
-// ── Handoff interno → PRMaestro ────────────────────────────────────────────
-const FRASES_HANDOFF_PRMAESTRO = [
+// ── Handoff interno → PROFESOR ────────────────────────────────────────────
+const FRASES_HANDOFF_PROFESOR = [
   "El Profesor Robles tiene algo que decirte. Te lo paso.",
   "Robles, ¡tienes visita! Un momento, te lo paso.",
   "El Profesor Robles está disponible. Ahora te conecto.",
@@ -64,8 +64,8 @@ const FRASES_SIN_RESULTADOS = [
   "No encuentro a nadie que encaje con eso. ¿Pruebas con otra búsqueda?",
 ];
 
-// Nombres que activan el switch a PRMaestro
-const NOMBRES_PRMAESTRO = ['robles', 'profesor robles', 'prmaestro', 'pr maestro', 'el profesor', 'el profe'];
+// Nombres que activan el switch a PROFESOR 
+const NOMBRES_PROFESOR = ['robles', 'profesor robles', 'profesor', 'profe', 'el profesor', 'el profe'];
 
 function elegir(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -95,9 +95,9 @@ export function responder({
     return { handoff: 'OSOS', mensaje: elegir(FRASES_HANDOFF_OSOS), bolas: [] };
   }
 
-  // ── Handoff interno → PRMaestro ──────────────────────────────────────
-  if (NOMBRES_PRMAESTRO.some(n => t.includes(n))) {
-    return { handoff: 'SERVICIO_INTERNO', personaje_id: 'prmaestro', mensaje: elegir(FRASES_HANDOFF_PRMAESTRO), bolas: [] };
+  // ── Handoff interno → PROFESOR ──────────────────────────────────────
+  if (NOMBRES_PROFESOR .some(n => t.includes(n))) {
+    return { handoff: 'SERVICIO_INTERNO', personaje_id: 'profesor', mensaje: elegir(FRASES_HANDOFF_PROFESOR ), bolas: [] };
   }
 
   // ── Handoff a Cierre ─────────────────────────────────────────────────

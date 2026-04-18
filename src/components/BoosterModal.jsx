@@ -1047,7 +1047,7 @@ const BoosterModal = ({ onClose }) => {
                     </div>
                   </div>
 
-                  {/* ✦ SERVICIOS IA (Isabella y PRMaestro) */}
+                  {/* ✦ SERVICIOS IA (Isabella y PROFESOR) */}
                   <div className="bg-gradient-to-br from-cyan-950/30 to-fuchsia-950/20 backdrop-blur-xl border border-cyan-500/20 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
                     <div className="flex items-center gap-3 mb-5">
                       <span className="text-2xl">🛠️</span>
@@ -1062,7 +1062,7 @@ const BoosterModal = ({ onClose }) => {
                         <div className="grid grid-cols-2 gap-4 mt-2">
                           {[
                             { id: 'ISABELLA',  img: '/emojis/isabella.webp',  nombre: 'Isabella',  desc: 'La Madre' },
-                            { id: 'PRMAESTRO', img: '/emojis/prmaestro.webp', nombre: 'PRMaestro', desc: 'El Filósofo' },
+                            { id: 'PROFESOR', img: '/emojis/prmaestro.webp', nombre: 'profesor', desc: 'El Filósofo' },
                           ].map(personaje => (
                             <button key={personaje.id} onClick={() => setFormData({ ...formData, servicios_id: personaje.id, servicios_personaje: personaje.nombre })}
                               className={`p-3 rounded-2xl border text-center transition-all ${formData.servicios_id === personaje.id ? 'bg-cyan-900/40 border-cyan-500/60 text-cyan-300' : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20'}`}>

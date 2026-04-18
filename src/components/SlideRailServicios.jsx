@@ -57,7 +57,7 @@ export default function SlideRailServicios() {
         style={{
           aspectRatio: "5 / 12",
           maxHeight: "80vh",
-          boxShadow: "0 0 20px rgba(198,182,190,0.4)",  // violeta — color de Servicios
+          boxShadow: "0 0 20px rgba(254,109,184,0.4)",  // pink— color de Servicios
         }}
       />
     </div>

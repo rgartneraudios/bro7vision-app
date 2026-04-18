@@ -44,7 +44,6 @@ import NeuralButton from './components/NeuralButton';
 import DesktopLayout from './components/DesktopLayout';
 import MobileTabletLayout from './components/MobileTabletLayout';
 
-
 function App() {
 
   // ══════════════════════════════════════════════════════
@@ -137,7 +136,7 @@ function App() {
       from_user_id: session.user.id,
       to_user_id:   aviso.user_id,
       from_alias:   perfilOso?.osos_nombre || 'Ciudadano',
-      text:         `Conexión iniciada desde aviso: ${aviso.title}`,
+      text:   `Conexión iniciada desde aviso: ${aviso.title}`,
       aviso_id:     aviso.id,
     }]);
     const autorProfile = realItems.find(i => i.id === aviso.user_id);
@@ -180,7 +179,8 @@ function App() {
     if (agente === 'REALITY') {
   setStep(0);
   setIntent(null);
-  setRealityMode(null); // abre el selector
+  setRealityMode(null); 
+  setScope(null); 
   return;
 }
 
@@ -222,18 +222,22 @@ function App() {
       'GAMES':             'game',
     };
 
-    // ── SECTORES SIN UBICACIÓN ────────────────────────
-    const SIN_UBICACION = ['REINOS', 'ORACULO', 'ORACULO_ORUMAMA', 'ORACULO_SMISTERIO', 'ORACULO_JAGUAR', 'GAMES'];
+// ── SECTORES SIN UBICACIÓN ────────────────────────
+const SIN_UBICACION = ['REINOS', 'ORACULO', 'ORACULO_ORUMAMA', 'ORACULO_SMISTERIO', 'ORACULO_JAGUAR', 'GAMES'];
 
-    if (SIN_UBICACION.includes(agente)) {
-      if (per_solicitado) {
-        setPerfilOso(prev => ({ ...prev, oraculo_personaje: per_solicitado }));
-      }
-      setIntent(intentMap[agente] || 'ai');
-      setOsosModo('retorno');
-      setStep(2);
-      return;
-    }
+if (SIN_UBICACION.includes(agente)) {
+  if (per_solicitado) {
+    setPerfilOso(prev => ({ ...prev, oraculo_personaje: per_solicitado }));
+  }
+  setPerfilSector(null);
+  setIntent(intentMap[agente] || 'ai');
+  setOsosModo('retorno');
+  setStep(2);
+  return;
+}
+
+// ── SECTORES CON UBICACIÓN ────────────────────────
+setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
 
     // ── SECTORES CON UBICACIÓN ────────────────────────
     setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
@@ -424,6 +428,7 @@ function App() {
   // ══════════════════════════════════════════════════════
 
   const chatMobile = useMemo(() => {
+  if (step === 1) return { enviar: handleOsosInput, mensaje: ososMensaje, loading: ososLoading };
     switch (intent) {
       case 'productos':       return { enviar: handleNovaInput,     mensaje: novaMensaje,     loading: novaLoading };
       case 'servicios':       return { enviar: handleIsabellaInput, mensaje: isabellaMensaje, loading: isabellaLoading };
@@ -525,7 +530,7 @@ function App() {
   const layoutProps = {
     step, setStep, intent, setIntent, realityMode, setRealityMode,
     isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
-    balances, setBalances, session,
+    balances, setBalances, session, handleCentralHandoff,
     showRadar, setShowRadar, radarQuery, setRadarQuery,
     realItems, filteredItems, hubVideos,
     selectedForestUser, setSelectedForestUser, savedUserIndex,
@@ -539,7 +544,7 @@ function App() {
     ososHandoffContext, setOsosHandoffContext,
     perfilOso, stripVisible, stripCards, stripLabel,
     setHoloPrismaIndex, findChannelByAlias, checkIfNew,
-    chatMobile, 
+    chatMobile, perfilSector,
     handleOsosInput, ososMensaje,ososLoading, ososModo, setOsosModo,
     ososModo, setOsosModo, handleLogout,
     onAvisoConectar: handleAvisoConectar,

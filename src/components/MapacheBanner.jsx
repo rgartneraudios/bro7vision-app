@@ -22,7 +22,6 @@ const GREETINGS_AMI = [
 export default function MapacheBanner({
   personaje = 'mapache',
   audio_personaje,
-
   realItems = [],
   stripVisible,
   stripCards,

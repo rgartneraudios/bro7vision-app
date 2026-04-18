@@ -1,6 +1,6 @@
 // src/components/IsabellaBanner.jsx
-// Agente: SERVICIOS EXPLORA — Color azul-gris #64748B
-// Personajes: Isabella (elefanta psicóloga) | Prof Robles Maestro (elefante filósofo)
+// Agente: SERVICIOS EXPLORA
+// Personajes: Isabella | Profesor Robles
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useAgentChat } from '../hooks/useAgentChat';
@@ -10,8 +10,8 @@ import BroCardStrip from './BroCardStrip';
 const GREETINGS_ISABELLA = [
   "Hola, soy Isabella. ¿En qué puedo ayudarte hoy? 🐘",
   "Isabella al habla. Cuéntame qué necesitas y lo encontramos juntos.",
-  "¡Buenas! Soy Isabella. Dime qué servicio estás buscando. 🌿",
-  "Hola, soy Isabella 💙 ¿Qué tipo de profesional necesitas?",
+  "¡Buenas! Soy Isabella. Dime qué servicio estás buscando.",
+  "Hola, soy Isabella  ¿Qué tipo de profesional necesitas?",
 ];
 
 const GREETINGS_MAESTRO = [
@@ -21,23 +21,25 @@ const GREETINGS_MAESTRO = [
   "¡Hola! Soy el Profesor Robles. ¿Qué tipo de servicio buscas hoy?",
 ];
 
+const INFO = {
+  isabella: { nombre: 'ISABELLA',     icono: '🐘' },
+  profesor:  { nombre: 'PROF. ROBLES', icono: '🐘' },
+};
+
 export default function IsabellaBanner({
   personaje = 'isabella',
-  servicios_personaje,
   sessionCity,
   sessionCP,
   realItems = [],
   stripVisible,
   stripCards,
   stripLabel,
-
   onEntityFocus,
   onOpenTerminal,
   onSetActiveIndex,
   onInvokeOsos,
   onInvokeMapache,
   setIntent,
-  // ── NUEVO: callback para cambiar personaje activo en App.jsx ──────────
   onPersonajeChange,
 }) {
   const [display, setDisplay]       = useState('');
@@ -45,39 +47,40 @@ export default function IsabellaBanner({
   const [currentMsg, setCurrentMsg] = useState('');
   const charIdx = useRef(0);
 
-  const isMaestro    = personaje === 'prmaestro';
-  const nombreAgente = isMaestro ? 'PROF. ROBLES' : 'ISABELLA';
-  const GREETINGS    = isMaestro ? GREETINGS_MAESTRO : GREETINGS_ISABELLA;
-  const personajeActivo = (servicios_personaje || personaje || 'isabella').toLowerCase();
+  // ── fuente única de verdad — solo prop personaje ──────────────────────────
+  const personajeActivo = (personaje || 'isabella').toLowerCase();
+  const isMaestro       = personajeActivo === 'profesor';
+  const GREETINGS       = isMaestro ? GREETINGS_MAESTRO : GREETINGS_ISABELLA;
+  const { nombre: nombrePersonaje, icono: iconoPersonaje } = INFO[personajeActivo] || INFO.isabella;
   const color           = '#F7C8BE';
-
 
   const { mensaje, loading, enviar } = useAgentChat({
     mode: 'servicios',
-    contextData: { alias: 'viajero', ciudad: sessionCity || '', cp: sessionCP || '', personaje },
+    contextData: {
+      alias:               'viajero',
+      ciudad:              sessionCity || '',
+      cp:                  sessionCP  || '',
+      servicios_personaje: personajeActivo,
+    },
     realItems,
     onEntityFocus,
     onHandoff: ({ agente, bro_id, personaje_id }) => {
-
-      // ── SERVICIO_INTERNO — cambio de personaje dentro del sector ─────
       if (agente === 'SERVICIO_INTERNO' && personaje_id) {
         onPersonajeChange?.({ agente: 'SERVICIO_INTERNO', personaje_id });
         return;
       }
-
-      // ── Externos ─────────────────────────────────────────────────────
       if (agente === 'ISABELLA_CIERRE' && bro_id) {
         const comercio = realItems.find(i => i.bro_ser === bro_id || i.bro_id === bro_id || i.id === bro_id);
-        if (comercio) onOpenTerminal?.(comercio, 'isabellaVentas');
+        if (comercio) onOpenTerminal?.(comercio, 'isabellaCierre');
         return;
       }
-      if (agente === 'OSOS')   { onInvokeOsos?.();    return; }
-      if (agente === 'MAPACHE'){ onInvokeMapache?.(); return; }
-      if (agente === 'NOVA')   { onOpenTerminal?.(null, 'novaExplora'); return; }
+      if (agente === 'OSOS')    { onInvokeOsos?.();    return; }
+      if (agente === 'MAPACHE') { onInvokeMapache?.(); return; }
+      if (agente === 'NOVA')    { onOpenTerminal?.(null, 'novaExplora'); return; }
     },
   });
 
-  // ── Efectos visuales ────────────────────────────────────────────────────
+  // ── Efectos visuales ──────────────────────────────────────────────────────
   useEffect(() => { const t = setInterval(() => setCursor(c => !c), 530); return () => clearInterval(t); }, []);
   useEffect(() => { setCurrentMsg(GREETINGS[Math.floor(Math.random() * GREETINGS.length)]); }, [personaje]);
   useEffect(() => { if (mensaje) setCurrentMsg(mensaje); }, [mensaje]);
@@ -93,21 +96,13 @@ export default function IsabellaBanner({
     }, 28);
     return () => clearInterval(t);
   }, [currentMsg]);
-  
-    // ── Nombre e icono según personaje ──────────────────────────────────────
-    const INFO = {
-  isabella: { nombre: 'ISABELLA', icono: '🐘' },
-  profesor:     { nombre: 'PROFESOR', icono: '🐘' },
-  };
-const { nombre: nombrePersonaje, icono: iconoPersonaje } = INFO[personajeActivo] || INFO.isabella;
-
 
   return (
     <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
       <style>{`
         @keyframes neonPulseServicios {
-          0%, 100% { text-shadow: 0 0 8px #94a3b8, 0 0 22px #475569, 0 0 45px #475569; }
-          50%       { text-shadow: 0 0 4px #475569, 0 0 10px #475569; }
+          0%, 100% { text-shadow: 0 0 8px #470042, 0 0 22px #44024C, 0 0 45px #781F5D; }
+          50%       { text-shadow: 0 0 4px #4F0048, 0 0 10px #350040; }
         }
         @keyframes svDot {
           0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
@@ -116,14 +111,14 @@ const { nombre: nombrePersonaje, icono: iconoPersonaje } = INFO[personajeActivo]
         .sv-wrap {
           background: rgba(0,0,0,0.75);
           backdrop-filter: blur(12px);
-          border: 1px solid rgba(100,116,139,0.35);
+          border: 1px solid rgba(245,40,145,0.35);
           border-radius: 2rem;
           padding: 18px 32px 20px 32px;
           box-shadow: 0 0 24px rgba(100,116,139,0.2), inset 0 0 12px rgba(0,0,0,0.4);
           min-height: 90px;
         }
         .sv-texto {
-          color: #94a3b8;
+          color: #F792CF;
           font-style: italic; font-weight: 900; text-transform: uppercase;
           font-size: clamp(13px, 2.2vw, 18px); line-height: 1.5; min-height: 3em;
           animation: neonPulseServicios 3s ease-in-out infinite;
@@ -153,23 +148,22 @@ const { nombre: nombrePersonaje, icono: iconoPersonaje } = INFO[personajeActivo]
           />
         </div>
       )}
-      
+
       {/* 2. BANNER DE TEXTO */}
       <div className="w-full max-w-2xl mb-3 pointer-events-auto">
         <div className="sv-wrap w-full flex flex-col items-center justify-center text-center">
-        
-         {/* Header — nombre + icono */}
-<div className="flex items-center gap-2 mb-2">
-  <span className="text-lg">{iconoPersonaje}</span>
-  <span style={{ color, fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
-    {nombrePersonaje}
-  </span>
-</div>
 
-        
+          {/* Header — nombre + icono */}
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-lg">{iconoPersonaje}</span>
+            <span style={{ color, fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
+              {nombrePersonaje}
+            </span>
+          </div>
+
           {!currentMsg && !loading && (
             <p className="text-slate-500/60 text-xs uppercase tracking-widest font-bold">
-              ◈ {nombreAgente} · EN LÍNEA
+              ◈ {nombrePersonaje} · EN LÍNEA
             </p>
           )}
           {loading ? (
