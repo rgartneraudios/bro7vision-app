@@ -246,8 +246,7 @@ return;
           supabase,
         });
         setMensaje(resultado.mensaje);
-        if (resultado.handoff) onHandoff?.(resultado.handoff);
-        return;
+        if (resultado.handoff) onHandoff?.(resultado.handoffData);        return;
       }
 
       // ── SERVICIOS ─────────────────────────────────────────────────────────
@@ -260,7 +259,7 @@ return;
           supabase,
         });
         setMensaje(resultado.mensaje);
-        if (resultado.handoff) onHandoff?.(resultado.handoff);
+        if (resultado.handoff) onHandoff?.(resultado.handoffData);
         return;
       }
 
@@ -274,7 +273,7 @@ return;
           supabase,
         });
         setMensaje(resultado.mensaje);
-        if (resultado.handoff) onHandoff?.(resultado.handoff);
+        if (resultado.handoff) onHandoff?.(resultado.handoffData);
         return;
       }
 
@@ -286,7 +285,7 @@ return;
           supabase,
         });
         setMensaje(resultado.mensaje);
-        if (resultado.handoff) onHandoff?.(resultado.handoff);
+        if (resultado.handoff) onHandoff?.(resultado.handoffData);
        return;
       }
 

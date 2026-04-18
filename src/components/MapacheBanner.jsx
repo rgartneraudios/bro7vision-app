@@ -48,32 +48,41 @@ export default function MapacheBanner({
   const color = '#00D0FF'; 
 
   // ── Hook del Bot (Ya no extraemos "bolas") ──────────────────────────────
-  const { mensaje, loading, enviar } = useAgentChat({
-    mode: 'mapache',
-    realItems,
-    contextData: { personaje },
-    onHandoff: ({ accion, objetivo, tipo, agente }) => {
-      if (agente === 'NOVA') { onInvokeNova?.(); return; }
-      if (agente === 'OSOS') { onInvokeOsos?.(); return; }
+ const { mensaje, loading, enviar } = useAgentChat({
+  mode: 'mapache',
+  realItems,
+  contextData: { personaje },
+  onHandoff: ({ agente, codigo }) => {
 
-      if (accion === 'REPRODUCIR' && objetivo) {
-        if (tipo === 'TUNER') {
-          onTuneTuner?.(Number(objetivo));
-        } else {
-          const canal = realItems.find(c =>
-            String(c.bro_aud) === String(objetivo) ||
-            String(c.bro_pod) === String(objetivo) ||
-            String(c.bro_id)  === String(objetivo) ||
-            c.alias?.toLowerCase() === objetivo?.toLowerCase()
-          );
-          if (canal) onTuneIn?.(canal);
-        }
-      } else if (accion === 'STOP') {
-        onStopTuner?.();
-        onTuneIn?.(null);
-      }
+    // ── Externos ──────────────────────────────────────────────
+    if (agente === 'OSOS') { onInvokeOsos?.(); return; }
+
+    // ── Play canal ────────────────────────────────────────────
+    if (agente === 'AUDIO_PLAY' && codigo) {
+      const canal = realItems.find(c =>
+        String(c.bro_aud) === String(codigo) ||
+        String(c.bro_pod) === String(codigo) ||
+        String(c.bro_id)  === String(codigo) ||
+        c.alias?.toLowerCase() === String(codigo).toLowerCase()
+      );
+      if (canal) onTuneIn?.(canal);
+      return;
     }
-  });
+
+    // ── Stop ──────────────────────────────────────────────────
+    if (agente === 'AUDIO_STOP') {
+      onStopTuner?.();
+      onTuneIn?.(null);
+      return;
+    }
+
+    // ── Tuner directo ─────────────────────────────────────────
+    if (agente === 'AUDIO_TUNER' && codigo) {
+      onTuneTuner?.(Number(codigo));
+      return;
+    }
+  }
+});
 
   // ── Efectos Visuales ────────────────────────────────────────────────────
   useEffect(() => { const t = setInterval(() => setCursor(c => !c), 530); return () => clearInterval(t); }, []);

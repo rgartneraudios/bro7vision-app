@@ -102,7 +102,7 @@ export function responder({
   // ── Handoff a Osos ──────────────────────────────────────────────────
   if (t.includes('volver') || t.includes('salir') || t.includes('osos')) {
     return {
-      handoff: 'HANDOFF_OSOS',
+      handoff: 'OSOS',
       mensaje: elegir(FRASES_HANDOFF_OSOS),
       bolas:   [],
     };
@@ -111,7 +111,7 @@ export function responder({
   // ── Handoff a Ventas — entidad con acción directa ───────────────────
   if (entidad?.accion === 'VENTAS') {
     return {
-      handoff:  'NOVA_VENTAS',
+      handoff:  'NOVA_CIERRE',
       bro_id:   entidad.bro_id,
       mensaje:  elegir(FRASES_HANDOFF_VENTAS),
       bolas:    [],

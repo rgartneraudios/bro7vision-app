@@ -96,7 +96,7 @@ export function responder({
   // ── Handoff a Osos ──────────────────────────────────────────────────
   if (t.includes('volver') || t.includes('salir') || t.includes('osos')) {
     return {
-      handoff: 'HANDOFF_OSOS',
+      handoff: 'OSOS',
       mensaje: elegir(FRASES_HANDOFF_OSOS),
       bolas:   [],
     };

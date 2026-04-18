@@ -137,46 +137,68 @@ async function modoOsos({ textoUsuario, oso_id, sectorFinal, ciudadFinal, actoAc
 
 async function modoNova({ textoUsuario, entidad, hayTarjetas, supabase }) {
   const update = await cargarUpdate(supabase, 'nova');
-  return novaResponder({
+  let resultado = novaResponder({
     textoUser:  textoUsuario,
     intencion:  detectarIntencionNova(textoUsuario),
     entidad,
     hayTarjetas,
     update,
   });
-}
 
+  // ✅ Normalizar handoff string → objeto (igual que modoOsos)
+  if (resultado.handoff && typeof resultado.handoff === 'string') {
+    resultado = {
+      ...resultado,
+      handoffData: { agente: resultado.handoff },
+      handoff: true,
+    };
+  }
+
+  return resultado;
+}
 async function modoServicios({ textoUsuario, entidad, hayTarjetas, personaje, supabase }) {
   const id     = (personaje || 'isabella').toLowerCase();
   const update = await cargarUpdate(supabase, id);
   const args   = { textoUser: textoUsuario, intencion: detectarIntencionServicios(textoUsuario), entidad, hayTarjetas, update };
-  if (id === 'prmaestro') return prmaestroResponder(args);
-  return isabellaResponder(args);
+  let resultado = id === 'prmaestro' ? prmaestroResponder(args) : isabellaResponder(args);
+  if (resultado.handoff && typeof resultado.handoff === 'string') {
+    resultado = { ...resultado, handoffData: { agente: resultado.handoff }, handoff: true };
+  }
+  return resultado;
 }
 
 async function modoAudio({ textoUsuario, entidad, hayTarjetas, personaje, supabase }) {
   const id     = (personaje || 'mapache').toLowerCase();
   const update = await cargarUpdate(supabase, id);
-  const args   = { textoUser: textoUsuario, intencion: detectarIntencionAudio(textoUsuario), entidad, hayTarjetas, update};
-  if (id === 'ami') return amiResponder(args);
-  return mapacheResponder(args);
+  const args   = { textoUser: textoUsuario, intencion: detectarIntencionAudio(textoUsuario), entidad, hayTarjetas, update };
+  let resultado = id === 'ami' ? amiResponder(args) : mapacheResponder(args);
+  if (resultado.handoff && typeof resultado.handoff === 'string') {
+  resultado = {
+    ...resultado,
+    handoffData: { agente: resultado.handoff, codigo: resultado.codigo },
+    handoff: true,
+  };
+}  return resultado;
 }
 
 async function modoOraculo({ textoUsuario, personaje, supabase }) {
-  const id       = (personaje || 'orumama').toLowerCase();
-  const update   = await cargarUpdate(supabase, id);
+  const id        = (personaje || 'orumama').toLowerCase();
+  const update    = await cargarUpdate(supabase, id);
   const intencion = detectarIntencionOraculo(textoUsuario);
   const args = {
-    textoUser:         textoUsuario,
-    intencion,
-    faselunar:         getMoonSuffix(),
+    textoUser: textoUsuario, intencion,
+    faselunar: getMoonSuffix(),
     bloqueConocimiento: getKnowledgeBlock(intencion),
     update,
   };
-  
-  if (id === 'jaguar') return jaguarResponder(args);
-  if (id === 'smisterio') return smisterioResponder(args); // Agregamos al Señor Misterio
-  return orumamaResponder(args);
+  let resultado;
+  if (id === 'jaguar')         resultado = jaguarResponder(args);
+  else if (id === 'smisterio') resultado = smisterioResponder(args);
+  else                         resultado = orumamaResponder(args);
+  if (resultado.handoff && typeof resultado.handoff === 'string') {
+    resultado = { ...resultado, handoffData: { agente: resultado.handoff }, handoff: true };
+  }
+  return resultado;
 }
 
 async function modoReinos({ textoUsuario, reinos, reinoDetalle, supabase }) {

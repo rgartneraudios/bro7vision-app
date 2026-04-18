@@ -64,7 +64,7 @@ export function responder({
   const t = textoUser.toLowerCase();
 
   if (t.includes('volver') || t.includes('salir') || t.includes('osos')) {
-    return { handoff: 'HANDOFF_OSOS', mensaje: elegir(FRASES_HANDOFF_OSOS), bolas: [] };
+    return { handoff: 'OSOS', mensaje: elegir(FRASES_HANDOFF_OSOS), bolas: [] };
   }
 
   if (entidad?.accion === 'PLAY') {

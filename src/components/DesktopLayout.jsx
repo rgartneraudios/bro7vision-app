@@ -44,7 +44,7 @@ export default function DesktopLayout(props) {
    iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA, onShowPurchaseModal
   } = props;
 
-  const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'lives']);
+  const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'audios']);
 
   return (
     <>
@@ -66,7 +66,7 @@ export default function DesktopLayout(props) {
                 ? ososModo === 'retorno' ? "https://media.bro7vision.com/ososia_recepcion1.mp4" : "https://media.bro7vision.com/ososia_recepcion1.mp4"
                 : intent === 'ai'              ? "https://media.bro7vision.com/oraculo1.mp4"
                 : intent === 'game'            ? "https://media.bro7vision.com/game_bg.mp4"
-                : intent === 'lives'           ? "https://media.bro7vision.com/brolives1.mp4"
+                : intent === 'audios'           ? "https://media.bro7vision.com/brolives1.mp4"
                 : intent === 'internal_search' ? "https://media.bro7vision.com/reinos.mp4"
                 : getVideoForLocation(scope)
             }
@@ -156,7 +156,7 @@ export default function DesktopLayout(props) {
       )}      
 
       {/* HOLOPRISMA Y BANNERS */}
-      {step === 2 && ['productos', 'servicios', 'lives'].includes(intent) && (
+      {step === 2 && ['productos', 'servicios', 'audios'].includes(intent) && (
         <div className="hidden md:flex fixed left-1/2 top-[24%] -translate-x-1/2 -translate-y-1/2 z-[40] flex-col items-center animate-fadeIn pointer-events-none"><div className="scale-[1.1] origin-bottom-right relative z-20 transition-transform hover:scale-[1.15]"><HoloPrism user={activePrismUser} showNumbers={true} /></div></div>
       )}
       
@@ -164,18 +164,18 @@ export default function DesktopLayout(props) {
       {step === 2 && intent === 'productos' && <SlideRail />}
       {step === 2 && intent === 'servicios' && <SlideRailServicios />}
       {step === 2 && intent === 'avisos'    && <SlideRailAvisos />}
-      {step === 2 && intent === 'lives'     && <SlideRailAudio />}
+      {step === 2 && intent === 'audios'     && <SlideRailAudio />}
 
       {step === 2 && intent === 'productos' && ( 
-        <NovaBanner sessionCity={sessionCity} sessionCP={sessionCP} realItems={realItems} stripVisible={stripVisible} stripCards={stripCards} stripLabel={stripLabel} onOpenTerminal={(c) => abrirTienda(c, 'novaVentas')} onSetActiveIndex={setHoloPrismaIndex} onInvokeOsos={() => setStep(1)} onInvokeMapache={() => setIntent('lives')} onEntityFocus={(u) => setActivePrismUser(u)} setIntent={setIntent} />
+        <NovaBanner sessionCity={sessionCity} sessionCP={sessionCP} realItems={realItems} stripVisible={stripVisible} stripCards={stripCards} stripLabel={stripLabel} onOpenTerminal={(c) => abrirTienda(c, 'novaVentas')} onSetActiveIndex={setHoloPrismaIndex} onInvokeOsos={() => setStep(1)} onInvokeMapache={() => setIntent('audios')} onEntityFocus={(u) => setActivePrismUser(u)} setIntent={setIntent} />
       )}
       {step === 2 && intent === 'servicios' && (
-        <IsabellaBanner personaje={perfilOso?.servicios_personaje || 'isabella'} sessionCity={sessionCity} sessionCP={sessionCP} realItems={realItems} stripVisible={stripVisible} stripCards={stripCards} stripLabel={stripLabel} onOpenTerminal={(c) => abrirTienda(c, 'isabellaVentas')} onSetActiveIndex={setHoloPrismaIndex} onInvokeOsos={() => setStep(1)} onInvokeMapache={() => setIntent('lives')} onEntityFocus={(u) => setActivePrismUser(u)} setIntent={setIntent} />
+        <IsabellaBanner personaje={perfilOso?.servicios_personaje || 'isabella'} sessionCity={sessionCity} sessionCP={sessionCP} realItems={realItems} stripVisible={stripVisible} stripCards={stripCards} stripLabel={stripLabel} onOpenTerminal={(c) => abrirTienda(c, 'isabellaVentas')} onSetActiveIndex={setHoloPrismaIndex} onInvokeOsos={() => setStep(1)} onInvokeMapache={() => setIntent('audios')} onEntityFocus={(u) => setActivePrismUser(u)} setIntent={setIntent} />
       )}
       {step === 2 && intent === 'avisos' && (
         <EvelynBanner personaje={perfilOso?.avisos_personaje || 'evelyn'} sessionCity={sessionCity} sessionCP={sessionCP} genesis={balances.genesis} alias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'} bro_id={perfilOso?.bro_id || ''} realItems={realItems} stripVisible={stripVisible} stripCards={stripCards} stripLabel={stripLabel} onInvokeOsos={() => setStep(1)} onAvisoConectar={props.onAvisoConectar} onAvisoPublicar={props.onAvisoPublicar} />
       )}
-      {step === 2 && intent === 'lives' && (
+      {step === 2 && intent === 'audios' && (
         <MapacheBanner personaje={perfilOso?.audio_personaje || 'mapache'} realItems={realItems} stripVisible={stripVisible} stripCards={stripCards} stripLabel={stripLabel} findChannelByAlias={findChannelByAlias} checkIfNew={checkIfNew} onInvokeOsos={() => setStep(1)} onInvokeNova={() => setIntent('productos')} onOpenProfile={(u) => setProjectingUser(u)} onTuneIn={(u) => { setAudioUser(u); setActivePrismUser(u); }} onTuneTuner={(id) => broTunerRef.current?.playById(id)} onStopTuner={() => broTunerRef.current?.stop()} />
       )}
       {step === 2 && intent === 'ai' && (
