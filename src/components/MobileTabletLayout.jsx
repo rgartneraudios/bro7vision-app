@@ -125,7 +125,7 @@ const MobileTabletLayout = ({
   children,
   realityMode,
   setRealityMode,
-  scope,
+  scope, setScope,
   step, setStep,
   intent, setIntent,
   session,
@@ -319,16 +319,9 @@ if (step === 0 && !realityMode) {
                 
                 onClick={() => {
   setMessages([]);
-  if (['productos', 'servicios', 'avisos', 'audios'].includes(item.id) && !scope) {
-    setIntent(item.id);
-    setStep(1);
-    setOsosModo('entrada');
-  } else {
-    handleNavigation(item.id);
-  }
+  handleNavigation(item.id);
   setIsRightOpen(false);
-}}
-                
+}}                
                 
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all active:scale-95"
                 style={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.4)' }}>
@@ -486,16 +479,10 @@ if (step === 0 && realityMode) {
               <button key={item.id}
                 onClick={() => {
   setMessages([]);
-  if (['productos', 'servicios', 'avisos', 'audios'].includes(item.id) && !scope) {
-    setIntent(item.id);   // ← guarda el destino
-    setStep(1);           // ← pero muestra osos
-    setOsosModo('entrada');
-    setIsRightOpen(false);
-  } else {
-    handleNavigation(item.id);
-    setIsRightOpen(false);
-  }
+  handleNavigation(item.id);
+  setIsRightOpen(false);
 }}
+
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all active:scale-95"
                 style={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.4)' }}>
                 <div className="flex -space-x-2 flex-shrink-0">
@@ -663,7 +650,11 @@ if (step === 0 && realityMode) {
               return (
                 <button
                   key={item.id}
-                  onClick={() => { handleNavigation(item.id); setIsRightOpen(false); }}
+                  onClick={() => {
+  setMessages([]);
+  handleNavigation(item.id);
+  setIsRightOpen(false);
+}}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all active:scale-95"
                   style={{
                     borderColor: isActive ? accent : 'rgba(255,255,255,0.1)',
