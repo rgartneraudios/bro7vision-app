@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback  } from 'react';
 import { supabase } from './supabaseClient';
 import GenesisGate from './components/GenesisGate';
 import WalletWidget from './components/WalletWidget';
@@ -395,22 +395,22 @@ setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
     }
   };
 
-  const handleNavigation = (targetIntent) => {
-    setIntent(targetIntent);
-    setIsLeftOpen(false);
-    setIsRightOpen(false);
-    if (targetIntent === 'gps') {
-      setStep(1);
-      resetOsos();
-      setSessionCP('');
-      setSessionCity('');
-    } else if (['productos', 'servicios', 'avisos', 'audios'].includes(targetIntent) && !scope) {
-      setStep(1);
-      setOsosModo('entrada');
-    } else {
-      setStep(2);
-    }
-  };
+  const handleNavigation = useCallback((targetIntent) => {
+  setIntent(targetIntent);
+  setIsLeftOpen(false);
+  setIsRightOpen(false);
+  if (targetIntent === 'gps') {
+    setStep(1);
+    resetOsos();
+    setSessionCP('');
+    setSessionCity('');
+  } else if (['productos', 'servicios', 'avisos', 'audios'].includes(targetIntent) && !scope) {
+    setStep(1);
+    setOsosModo('entrada');
+  } else {
+    setStep(2);
+  }
+}, [scope]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -476,7 +476,7 @@ setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
       const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
       if (prof) {
         setPerfilOso(prof);
-        setIsAdmin(prof.isAdmin === true);
+        setIsAdmin(prof.is_admin === true);
         setUserCredits({ tokensRestantes: prof.genesis || 0, tokensTotales: 1000000 });
         setBalances({
           genesis: prof.genesis,

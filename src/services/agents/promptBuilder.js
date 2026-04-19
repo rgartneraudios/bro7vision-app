@@ -94,7 +94,7 @@ function detectarKnowledge(mensaje) {
 // ── Función principal ──────────────────────────────────────
 export function buildPrompt({ personajeId, vivencia, userMessage, chatHistory }) {
 
-  const perfil = PERFILES[personajeId]
+  const perfil = PERFILES[personajeId?.toLowerCase()]
   if (!perfil) return null
 
   const knowledge = detectarKnowledge(userMessage)

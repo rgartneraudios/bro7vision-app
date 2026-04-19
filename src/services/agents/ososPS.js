@@ -15,10 +15,19 @@ const SALUDOS = {
 // SECTOR KEYWORDS
 // ─────────────────────────────────────────────────────────────────────
 const SECTOR_KEYWORDS = {
-  AUDIO:            ['audio','audios', 'música', 'musica', 'escuchar', 'canción', 'cancion', 'podcast', 'streaming', 'stream', 'live', 'radio', 'artista', 'banda', 'dj', 'beat', 'playlist', 'song', 'listen'],
-  BROSHOP_PRODUCTO: ['comprar', 'producto', 'tienda', 'shop', 'ropa', 'zapatillas', 'tecnología', 'tecnologia', 'hogar', 'precio', 'stock', 'artículo', 'articulo'],
-  BROSHOP_SERVICIO: ['servicio', 'profesional', 'peluquería', 'peluqueria', 'taller', 'clases', 'fontanero', 'electricista', 'médico', 'medico', 'abogado', 'asesor'],
-  BROSHOP_AVISO:    ['aviso', 'avisos', 'anuncio', 'anuncios', 'tablón', 'tablon', 'segunda mano', 'vendo', 'alquilo', 'busco piso', 'busco trabajo', 'ofrezco', 'demanda', 'oferta personal', 'larry', 'evelyn'],
+  AUDIO:           ['audio', 'audios', 'música', 'musica', 'escuchar', 'canción', 'cancion', 
+  'podcast', 'streaming', 'stream', 'live', 'radio', 'artista', 'banda', 'dj', 
+  'beat', 'playlist', 'song', 'listen',
+  'mapache', 'ami'],
+  BROSHOP_PRODUCTO: ['comprar', 'producto', 'tienda', 'shop', 'ropa', 'zapatillas', 
+  'tecnología', 'productos', 'hogar', 'precio', 'stock', 'artículo', 'articulo',
+  'nova', 'novaexplora', 'broshop'], 
+  BROSHOP_SERVICIO: ['servicio', 'profesional', 'peluquería', 'peluqueria', 'taller', 
+  'clases', 'fontanero', 'electricista', 'médico', 'medico', 'abogado', 'asesor',
+  'isabella', 'profesor'],
+  BROSHOP_AVISO:    ['aviso', 'avisos', 'anuncio', 'anuncios', 'tablón', 'tablon', 
+  'segunda mano', 'vendo', 'alquilo', 'busco piso', 'busco trabajo', 'ofrezco', 
+  'demanda', 'oferta personal', 'larry', 'evelyn'],
   REINOS:           ['reinos', 'reino', 'rumores', 'rumor', 'rey', 'reyes', 'reina', 'reinas', 'príncipe', 'principe', 'princesa', 'duque', 'duquesa', 'marqués', 'marques', 'marquesa', 'lord', 'lords', 'lady', 'ladies'],
   ORACULO:          ['oráculo', 'oraculo', 'orumama', 'jaguar', 'horóscopo', 'horoscopo', 'sideral', 'ofiuco', 'carta astral', 'signo', 'ascendente', 'misterio', 'conspiraciones', 'piramides', 'pirámides', 'egipto', 'señor misterio', 'hierbas', 'hierbas', 'señormisterio', 'brebaje', 'remedio natural', 'planta medicinal', 'curandera', 'espiritual', 'espiritualidad', 'luna', 'fase lunar', 'meditación', 'meditacion', 'energía', 'energia', 'chakra', 'vela', 'velas', 'ritual'],
   GAMES:            ['jugar', 'juego', 'juegos', '3iatlas', 'telecronos', 'games', 'game', 'arcade', 'partida', 'divertirse', 'divertirme', 'carrera', 'scalextric', 'neon', 'neonmemory', 'f1rookie', 'f1pro', 'cosmicportal', 'the7gates', 'therians'],

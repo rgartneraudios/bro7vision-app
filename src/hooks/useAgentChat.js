@@ -1,5 +1,5 @@
 // src/hooks/useAgentChat.js
-// Solo React. Estado + coordinación + Bifurcación API (Admin/Público).
+// Solo React. Estado + coordinacion + Bifurcacion API (Admin/Publico).
 
 import { useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
@@ -15,9 +15,9 @@ const PER_SIN_CIUDAD = ['ORACULO_ORUMAMA', 'ORACULO_SMISTERIO', 'ORACULO_JAGUAR'
 const SECTORES_SIN_UBICACION = ['REINOS', 'ORACULO', 'ORACULO_ORUMAMA', 'ORACULO_SMISTERIO', 'ORACULO_JAGUAR', 'GAMES'];
 
 const FRASES_PEDIR_CIUDAD = [
-  '¿En qué ciudad buscas? Así te conecto bien.',
+  'En que ciudad buscas? Asi te conecto bien.',
   'Dime la ciudad y te paso directamente.',
-  '¿Dónde buscas? Ciudad o país, lo que tengas.',
+  'Donde buscas? Ciudad o pais, lo que tengas.',
 ];
 const fraseCiudad = () => FRASES_PEDIR_CIUDAD[Math.floor(Math.random() * FRASES_PEDIR_CIUDAD.length)];
 
@@ -25,13 +25,45 @@ const FRASES_HANDOFF = {};
 const FRASES_PER_INTERNO = {};
 const FRASES_PER_EXTERNO = {};
 
+// ─── Frases de despedida por oso — sin IA, sin tokens ────────────────────────
+
+const DESPEDIDAS_OSO = {
+  tito: [
+    'Lo tengo en la libreta. Te paso.',
+    'Anoto que te vas. Buen viaje.',
+    'Interesante eleccion. Anotado.',
+    'Yo sigo aqui con mis notas. Suerte.',
+  ],
+  lara: [
+    'Con mucho gusto te paso. Van a cuidarte bien.',
+    'Intuyo que vas a encontrar lo que buscas. Te enlazo ahora.',
+    'Que buena idea. Ya veras que bien.',
+    'Te paso ahora. Cuidate mucho.',
+  ],
+  puffo: [
+    'Ahi te van a resolver. Te paso ya.',
+    'Bien pensado. Suerte.',
+    'Directo al grano, me gusta. Ahi va el enlace.',
+    'Estas en buenas manos. Suerte.',
+  ],
+};
+
+const despedidaOso = (oso_id) => {
+  const id = (oso_id || 'tito').toLowerCase();
+  const frases = DESPEDIDAS_OSO[id] || DESPEDIDAS_OSO.tito;
+  return frases[Math.floor(Math.random() * frases.length)];
+};
+
 // ─── Helper: llamada a Gemini ─────────────────────────────────────────────────
 
-async function llamarGemini({ system, messages, userMessage }) {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+async function llamarGemini({ system, messages, userMessage, iaMode }) {
+  const apiKey = iaMode === 'admin'
+    ? import.meta.env.VITE_GEMINI_ADMIN_KEY
+    : import.meta.env.VITE_GEMINI_PUBLIC_KEY;
 
-  // Gemini no tiene campo "system" separado — lo metemos como primer turno de usuario
+  const modelo = 'gemini-2.5-flash-lite';
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${apiKey}`;
+
   const historialFormateado = [
     { role: 'user', parts: [{ text: system }] },
     { role: 'model', parts: [{ text: 'Entendido. Estoy listo.' }] },
@@ -58,7 +90,7 @@ export const useAgentChat = ({
   mode,
   contextData,
   onHandoff,
-  iaMode = 'off',     // 'off' | 'admin' | 'public'
+  iaMode = 'off',
   isAdmin = false,
   onAvisoConectar,
   onAvisoPublicar,
@@ -66,71 +98,105 @@ export const useAgentChat = ({
   const [mensaje, setMensaje] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Historial para la IA — últimos 6 mensajes
   const [chatHistory, setChatHistory] = useState([]);
 
-  // Memoria de navegación OSOS
-  const [sectorMemoria, setSectorMemoria]   = useState(null);
-  const [ciudadMemoria, setCiudadMemoria]   = useState(null);
-  const [tipoMemoria, setTipoMemoria]       = useState(null);
+  const [sectorMemoria, setSectorMemoria] = useState(null);
+  const [ciudadMemoria, setCiudadMemoria] = useState(null);
+  const [tipoMemoria, setTipoMemoria]     = useState(null);
 
-  // Estado narrativo — 3 actos
-  const [ramaActual, setRamaActual]         = useState(null);
-  const actoRef                             = useRef('acto_1');
+  const [ramaActual, setRamaActual] = useState(null);
+  const actoRef                     = useRef('acto_1');
 
-  // Estado aviso en construcción
   const [avisoEnConstruccion, setAvisoEnConstruccion] = useState(null);
   const avisoConectarRef = useRef(null);
 
-  // ─── Helper: añadir al historial ────────────────────────────────────────────
   const pushHistory = (role, content) => {
     setChatHistory(prev => {
       const nuevo = [...prev, { role, content }];
-      return nuevo.slice(-6); // máximo 6 mensajes
+      return nuevo.slice(-6);
     });
   };
 
-  // ─── Helper: obtener vivencia actual del personaje ───────────────────────────
   const obtenerVivencia = async (personajeId) => {
     if (!personajeId) return '';
     try {
       const { data } = await supabase
         .from('personaje_update')
-        .select('vivencias_actuales')
+        .select('vivencia_actual')
         .eq('personaje_id', personajeId.toLowerCase())
         .maybeSingle();
-      return data?.vivencias_actuales || '';
+      return data?.vivencia_actual || '';
     } catch {
       return '';
     }
   };
 
-  // ─── Helper: resolver personajeId según mode ────────────────────────────────
   const resolverPersonajeId = () => {
-  if (mode === 'osos')        return contextData?.oso_id || 'lara';
-  if (mode === 'novaExplora') return 'nova';
-  if (mode === 'servicios')   return contextData?.servicios_personaje || 'isabella';
-  if (mode === 'mapache')     return contextData?.audio_personaje || 'mapache';
-  if (mode === 'oraculo')     return contextData?.oraculo_personaje || 'orumama';
-  if (mode === 'reinos')      return 'rumores';
-  if (mode === 'avisos')      return contextData?.avisos_personaje || 'evelyn'; // ← añadir
-  return null;
-};
+    if (mode === 'osos')        return (contextData?.oso_id || 'lara').toLowerCase();
+    if (mode === 'novaExplora') return 'nova';
+    if (mode === 'servicios')   return contextData?.servicios_personaje || 'isabella';
+    if (mode === 'mapache')     return contextData?.audio_personaje || 'mapache';
+    if (mode === 'oraculo')     return contextData?.oraculo_personaje || 'orumama';
+    if (mode === 'reinos')      return 'rumores';
+    if (mode === 'avisos')      return contextData?.avisos_personaje || 'evelyn';
+    return null;
+  };
 
   const enviar = async (textoUsuario) => {
     if (!textoUsuario.trim()) return;
     setLoading(true);
 
     try {
-      // ════════════════════════════════════════════════════════════════════
-      // BIFURCACIÓN PRINCIPAL: API vs BOTS JS
-      // ════════════════════════════════════════════════════════════════════
+
+      // ══════════════════════════════════════════════════════════════════
+      // DETECCION TEMPRANA DE HANDOFF — solo mode osos, sin gastar tokens
+      // ══════════════════════════════════════════════════════════════════
+
+      if (mode === 'osos') {
+        const sectorDetectTemprano = detectarSectorPS(textoUsuario);
+        const ciudadDetectTemprana = detectarCiudadPS(textoUsuario);
+        const sectorFinalTemp      = sectorDetectTemprano || sectorMemoria;
+        const ciudadFinalTemp      = ciudadDetectTemprana?.valor || ciudadMemoria;
+
+        if (sectorDetectTemprano) setSectorMemoria(sectorDetectTemprano);
+        if (ciudadDetectTemprana?.valor) {
+          setCiudadMemoria(ciudadDetectTemprana.valor);
+          setTipoMemoria(ciudadDetectTemprana.tipo);
+        }
+
+        if (sectorFinalTemp && !SECTORES_SIN_UBICACION.includes(sectorFinalTemp)) {
+          if (ciudadFinalTemp) {
+            const frase = despedidaOso(contextData?.oso_id);
+            setMensaje(frase);
+            setSectorMemoria(null); setCiudadMemoria(null); setTipoMemoria(null);
+            setTimeout(() => onHandoff?.({ agente: sectorFinalTemp, ciudad: ciudadFinalTemp, intencion: sectorFinalTemp }), 1200);
+            setLoading(false);
+            return;
+          } else {
+            setMensaje(fraseCiudad());
+            setLoading(false);
+            return;
+          }
+        }
+
+        if (sectorFinalTemp && SECTORES_SIN_UBICACION.includes(sectorFinalTemp)) {
+          const frase = despedidaOso(contextData?.oso_id);
+          setMensaje(frase);
+          setSectorMemoria(null);
+          setTimeout(() => onHandoff?.({ agente: sectorFinalTemp, ciudad: null, intencion: sectorFinalTemp }), 1200);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // ══════════════════════════════════════════════════════════════════
+      // BIFURCACION PRINCIPAL: API vs BOTS JS
+      // ══════════════════════════════════════════════════════════════════
 
       const iaActiva = (iaMode === 'admin' && isAdmin) || (iaMode === 'public' && !isAdmin);
-
       const avisoEnProceso = mode === 'avisos' && avisoEnConstruccion?.tipo;
 
-	if (iaActiva && !avisoEnProceso) {
+      if (iaActiva && !avisoEnProceso) {
 
         const personajeId = resolverPersonajeId();
         const vivencia    = await obtenerVivencia(personajeId);
@@ -143,7 +209,6 @@ export const useAgentChat = ({
         });
 
         if (!prompt) {
-          // personaje no encontrado — fallback a bot JS
           setMensaje('...');
           setLoading(false);
           return;
@@ -153,9 +218,9 @@ export const useAgentChat = ({
           system:      prompt.system,
           messages:    prompt.messages,
           userMessage: textoUsuario,
+          iaMode,
         });
 
-        // Detectar handoff declarado por la IA
         if (respuesta.startsWith('HANDOFF:')) {
           const codigoHandoff = respuesta.replace('HANDOFF:', '').trim();
           onHandoff?.({ agente: codigoHandoff, ciudad: ciudadMemoria });
@@ -163,7 +228,6 @@ export const useAgentChat = ({
           return;
         }
 
-        // Guardar en historial y mostrar respuesta
         pushHistory('user', textoUsuario);
         pushHistory('assistant', respuesta);
         setMensaje(respuesta);
@@ -171,11 +235,10 @@ export const useAgentChat = ({
         return;
       }
 
-      // ════════════════════════════════════════════════════════════════════
-      // FALLBACK: BOTS JS (lógica clásica — sin cambios)
-      // ════════════════════════════════════════════════════════════════════
+      // ══════════════════════════════════════════════════════════════════
+      // FALLBACK: BOTS JS
+      // ══════════════════════════════════════════════════════════════════
 
-      // ── OSOS ──────────────────────────────────────────────────────────────
       if (mode === 'osos') {
         const entidad = detectarEntidadPS(textoUsuario);
         if (entidad) {
@@ -198,11 +261,11 @@ export const useAgentChat = ({
           }
         }
 
-        const sectorDetect  = detectarSectorPS(textoUsuario);
-        const ciudadDetect  = detectarCiudadPS(textoUsuario);
-        const sectorFinal   = sectorDetect || sectorMemoria;
-        const ciudadFinal   = ciudadDetect?.valor || ciudadMemoria;
-        const tipoFinal     = ciudadDetect?.tipo  || tipoMemoria;
+        const sectorDetect = detectarSectorPS(textoUsuario);
+        const ciudadDetect = detectarCiudadPS(textoUsuario);
+        const sectorFinal  = sectorDetect || sectorMemoria;
+        const ciudadFinal  = ciudadDetect?.valor || ciudadMemoria;
+        const tipoFinal    = ciudadDetect?.tipo  || tipoMemoria;
 
         if (sectorDetect)        setSectorMemoria(sectorDetect);
         if (ciudadDetect?.valor) { setCiudadMemoria(ciudadDetect.valor); setTipoMemoria(ciudadDetect.tipo); }
@@ -230,14 +293,12 @@ export const useAgentChat = ({
         });
 
         setMensaje(resultado.mensaje);
-if (resultado.siguienteActo) actoRef.current = resultado.siguienteActo;
-if (resultado.rama !== undefined) setRamaActual(resultado.rama);
-// ✅ procesar handoff si existe
-if (resultado.handoff) onHandoff?.(resultado.handoffData);
-return;
+        if (resultado.siguienteActo) actoRef.current = resultado.siguienteActo;
+        if (resultado.rama !== undefined) setRamaActual(resultado.rama);
+        if (resultado.handoff) onHandoff?.(resultado.handoffData);
+        return;
       }
 
-      // ── NOVA ──────────────────────────────────────────────────────────────
       if (mode === 'novaExplora') {
         const resultado = await botOrchestrator({
           mode: 'novaExplora', textoUsuario,
@@ -246,10 +307,10 @@ return;
           supabase,
         });
         setMensaje(resultado.mensaje);
-        if (resultado.handoff) onHandoff?.(resultado.handoffData);        return;
+        if (resultado.handoff) onHandoff?.(resultado.handoffData);
+        return;
       }
 
-      // ── SERVICIOS ─────────────────────────────────────────────────────────
       if (mode === 'servicios') {
         const resultado = await botOrchestrator({
           mode: 'servicios', textoUsuario,
@@ -263,12 +324,11 @@ return;
         return;
       }
 
-      // ── AUDIO ─────────────────────────────────────────────────────────────
       if (mode === 'mapache') {
         const resultado = await botOrchestrator({
           mode: 'mapache', textoUsuario,
-          entidad:        contextData?.entidad,
-          hayTarjetas:    contextData?.hayTarjetas,
+          entidad:         contextData?.entidad,
+          hayTarjetas:     contextData?.hayTarjetas,
           audio_personaje: contextData?.audio_personaje || 'mapache',
           supabase,
         });
@@ -277,7 +337,6 @@ return;
         return;
       }
 
-      // ── ORÁCULO ───────────────────────────────────────────────────────────
       if (mode === 'oraculo') {
         const resultado = await botOrchestrator({
           mode: 'oraculo', textoUsuario,
@@ -286,14 +345,13 @@ return;
         });
         setMensaje(resultado.mensaje);
         if (resultado.handoff) onHandoff?.(resultado.handoffData);
-       return;
+        return;
       }
 
-      // ── REINOS ────────────────────────────────────────────────────────────
       if (mode === 'reinos') {
         const resultado = await botOrchestrator({
           mode: 'reinos', textoUsuario,
-          reinos:      contextData?.reinos,
+          reinos:       contextData?.reinos,
           reinoDetalle: contextData?.reinoDetalle,
           supabase,
         });
@@ -301,7 +359,6 @@ return;
         return;
       }
 
-      // ── AVISOS — nunca va por IA ──────────────────────────────────────────
       if (mode === 'avisos') {
         const resultado = await botOrchestrator({
           mode: 'avisos', textoUsuario,
@@ -316,14 +373,14 @@ return;
         });
         setMensaje(resultado.mensaje);
         if (resultado.avisoEnConstruccion !== undefined) setAvisoEnConstruccion(resultado.avisoEnConstruccion);
-        if (resultado.handoff) onHandoff?.(resultado.handoffData); 
+        if (resultado.handoff) onHandoff?.(resultado.handoffData);
         if (resultado.avisoConectar) { avisoConectarRef.current = resultado.avisoConectar; onAvisoConectar?.(resultado.avisoConectar); }
         return;
       }
 
     } catch (error) {
       console.error('Error en useAgentChat:', error);
-      setMensaje('⚠️ Error en el núcleo neón.');
+      setMensaje('Error en el nucleo neon.');
     } finally {
       setLoading(false);
     }

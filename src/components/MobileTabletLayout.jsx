@@ -195,10 +195,10 @@ const handleSend = () => {
   };
 
   const activeSector = navItems?.find(n => n.id === intent);
-  const sectorLabel = (step === 1 || !intent) 
+  const sectorLabel = step === 1 
   ? 'OSOS' 
   : activeSector?.label || 'OSOS';
-
+  
   const SECTOR_ACCENT = {
     gps:             '#d946ef',
     productos:       '#facc15',
@@ -231,12 +231,13 @@ const SECTOR_AVATARS = {
 };
  
 const getActiveAvatars = () => {
-  if (intent === 'gps') {
+  if (step === 1 || !intent) { // ← añadir step === 1
     const oso = (perfilOso?.oso_id || 'tito').toLowerCase();
     const url = SECTOR_AVATARS.gps[oso] || SECTOR_AVATARS.gps.tito;
     return [url];
   }
-  // Sectores con handoff interno — resolver personaje activo desde perfilSector
+  
+    // Sectores con handoff interno — resolver personaje activo desde perfilSector
   const sectorMap = SECTOR_AVATARS[intent];
   if (!sectorMap) return [];
   const personajeActivo = perfilSector?.personaje_id;
