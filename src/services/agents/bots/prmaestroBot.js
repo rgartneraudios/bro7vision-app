@@ -4,7 +4,7 @@
 
 const FRASES_BIENVENIDA = [
   "Ah, sí, perdona. Estaba pensando en algo. ¿Qué profesional buscas?",
-  "Robles aquí. Dime qué necesitas — tengo la mente en otro sitio pero te escucho.",
+  "Profesor aquí. Dime qué necesitas — tengo la mente en otro sitio pero te escucho.",
   "Sí, dime. Estaba terminando un pensamiento. ¿Qué tipo de servicio buscas?",
   "Profesor Robles. ¿En qué puedo ayudarte? Isabella me ha dicho que hay gente esperando.",
 ];

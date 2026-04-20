@@ -328,26 +328,46 @@ setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
   });
 
   const { mensaje: novaMensaje, loading: novaLoading, enviar: handleNovaInput } = useAgentChat({
-    mode: 'novaExplora',
-    contextData: { entidad: ososHandoffContext?.comercio_especifico, hayTarjetas: stripVisible },
-    onHandoff: handleCentralHandoff,
-    iaMode, isAdmin,
-  });
+  mode: 'novaExplora',
+  contextData: { 
+    entidad:     ososHandoffContext?.comercio_especifico, 
+    hayTarjetas: stripVisible,
+    ciudad:      scope?.ciudad || '',
+    alias:       perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano',
+  },
+  onHandoff: handleCentralHandoff,
+  iaMode, isAdmin,
+});
 
-  const { mensaje: isabellaMensaje, loading: isabellaLoading, enviar: handleIsabellaInput } = useAgentChat({
-    mode: 'servicios',
-    contextData: { servicios_personaje: perfilSector?.personaje_id || 'isabella', entidad: ososHandoffContext?.comercio_especifico, hayTarjetas: stripVisible },
-    onHandoff: handleCentralHandoff,
-    iaMode, isAdmin,
-  });
+// ISABELLA — añadir ciudad y alias
+const { mensaje: isabellaMensaje, loading: isabellaLoading, enviar: handleIsabellaInput } = useAgentChat({
+  mode: 'servicios',
+  contextData: { 
+    servicios_personaje: perfilSector?.personaje_id || 'isabella', 
+    entidad:     ososHandoffContext?.comercio_especifico, 
+    hayTarjetas: stripVisible,
+    ciudad:      scope?.ciudad || '',
+    alias:       perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano',
+  },
+  onHandoff: handleCentralHandoff,
+  iaMode, isAdmin,
+});
 
-  const { mensaje: mapacheMensaje, loading: mapacheLoading, enviar: handleMapacheInput } = useAgentChat({
-    mode: 'mapache',
-    contextData: { audio_personaje: perfilSector?.personaje_id || 'mapache', entidad: ososHandoffContext?.comercio_especifico, hayTarjetas: stripVisible },
-    onHandoff: handleCentralHandoff,
-    iaMode, isAdmin,
-  });
+// MAPACHE — AMI añadir ciudad y alias
+const { mensaje: mapacheMensaje, loading: mapacheLoading, enviar: handleMapacheInput } = useAgentChat({
+  mode: 'mapache',
+  contextData: { 
+    audio_personaje: perfilSector?.personaje_id || 'mapache', 
+    entidad:     ososHandoffContext?.comercio_especifico, 
+    hayTarjetas: stripVisible,
+    ciudad:      scope?.ciudad || '',
+    alias:       perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano',
+  },
+  onHandoff: handleCentralHandoff,
+  iaMode, isAdmin,
+});
 
+   // AVISOS  EVELYN Y LARRY
   const { mensaje: evelynMensaje, loading: evelynLoading, enviar: handleEvelynInput } = useAgentChat({
     mode: 'avisos',
     contextData: {
@@ -363,19 +383,27 @@ setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
     iaMode, isAdmin,
   });
 
-  const { mensaje: oraculoMensaje, loading: oraculoLoading, enviar: handleOraculoInput } = useAgentChat({
-    mode: 'oraculo',
-    contextData: { oraculo_personaje: perfilSector?.personaje_id || perfilOso?.oraculo_personaje || 'orumama' },
-    onHandoff: handleCentralHandoff,
-    iaMode, isAdmin,
-  });
+// ORACULO — añadir ciudad y alias
+const { mensaje: oraculoMensaje, loading: oraculoLoading, enviar: handleOraculoInput } = useAgentChat({
+  mode: 'oraculo',
+  contextData: { 
+    oraculo_personaje: perfilSector?.personaje_id || perfilOso?.oraculo_personaje || 'orumama',
+    ciudad:  scope?.ciudad || '',
+    alias:   perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano',
+  },
+  onHandoff: handleCentralHandoff,
+  iaMode, isAdmin,
+});
 
-  const { mensaje: rumoresMensaje, loading: rumoresLoading, enviar: handleRumoresInput } = useAgentChat({
-    mode: 'reinos',
-    contextData: {},
-    onHandoff: handleCentralHandoff,
-    iaMode, isAdmin,
-  });
+// REINOS — añadir alias (sin ciudad, Reinos no la necesita)
+const { mensaje: rumoresMensaje, loading: rumoresLoading, enviar: handleRumoresInput } = useAgentChat({
+  mode: 'reinos',
+  contextData: { 
+    alias: perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano',
+  },
+  onHandoff: handleCentralHandoff,
+  iaMode, isAdmin,
+});
 
   // ══════════════════════════════════════════════════════
   // 5. FUNCIONES QUE DEPENDEN DE HOOKS
@@ -522,6 +550,20 @@ setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
 ];
 
   const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'audios']);
+  
+// ══════════════════════════════════════════════════════
+// CHAT MOBILE — dinámico según intent
+// ══════════════════════════════════════════════════════
+const chatPorIntent = {
+  productos:       { enviar: handleNovaInput,     mensaje: novaMensaje,     loading: novaLoading },
+  servicios:       { enviar: handleIsabellaInput, mensaje: isabellaMensaje, loading: isabellaLoading },
+  audios:          { enviar: handleMapacheInput,  mensaje: mapacheMensaje,  loading: mapacheLoading },
+  avisos:          { enviar: handleEvelynInput,   mensaje: evelynMensaje,   loading: evelynLoading },
+  ai:              { enviar: handleOraculoInput,  mensaje: oraculoMensaje,  loading: oraculoLoading },
+  internal_search: { enviar: handleRumoresInput,  mensaje: rumoresMensaje,  loading: rumoresLoading },
+};
+
+
 
   // ══════════════════════════════════════════════════════
   // 9. LAYOUTPROPS — siempre al final, antes del return
@@ -553,6 +595,11 @@ setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
     onToggleAdminIA:     handleToggleAdminIA,
     onTogglePublicIA:    handleTogglePublicIA,
     onShowPurchaseModal: handleShowPurchaseModal,
+    novaMensaje,
+  novaLoading, handleNovaInput, isabellaMensaje, isabellaLoading, handleIsabellaInput,
+  mapacheMensaje, mapacheLoading, handleMapacheInput, evelynMensaje, evelynLoading,
+  handleEvelynInput, oraculoMensaje, oraculoLoading, handleOraculoInput, rumoresMensaje,
+  rumoresLoading, handleRumoresInput,
   };
 
   // ══════════════════════════════════════════════════════

@@ -41,6 +41,9 @@ export default function DesktopLayout(props) {
     setSelectedLog, setVlData, ososHandoffContext, setOsosHandoffContext,
     perfilOso, stripVisible, stripCards, stripLabel, setHoloPrismaIndex, findChannelByAlias, checkIfNew,
     ososMensaje, ososLoading, handleOsosInput, ososModo, setOsosModo, handleLogout, selectedCard,
+   novaMensaje, novaLoading, handleNovaInput, isabellaMensaje, isabellaLoading, handleIsabellaInput,
+  mapacheMensaje, mapacheLoading, handleMapacheInput, evelynMensaje, evelynLoading, handleEvelynInput,
+  oraculoMensaje, oraculoLoading, handleOraculoInput, rumoresMensaje, rumoresLoading, handleRumoresInput,
    iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA, onShowPurchaseModal
   } = props;
 
@@ -170,7 +173,13 @@ export default function DesktopLayout(props) {
       
       {/* ── PRODUCTOS ───────────────────────────────────────────────────── */}     
       {step === 2 && intent === 'productos' && ( 
-        <NovaBanner sessionCity={sessionCity} sessionCP={sessionCP} realItems={realItems} stripVisible={stripVisible} stripCards={stripCards} stripLabel={stripLabel} onOpenTerminal={(c) => abrirTienda(c, 'novaVentas')} onSetActiveIndex={setHoloPrismaIndex} onInvokeOsos={() => setStep(1)} onInvokeMapache={() => setIntent('audios')} onEntityFocus={(u) => setActivePrismUser(u)} setIntent={setIntent} />
+        <NovaBanner sessionCity={sessionCity} sessionCP={sessionCP} realItems={realItems} stripVisible={stripVisible} stripCards={stripCards} stripLabel={stripLabel} onOpenTerminal={(c) => abrirTienda(c, 'novaVentas')} onSetActiveIndex={setHoloPrismaIndex} onInvokeOsos={() => setStep(1)} onInvokeMapache={() => setIntent('audios')} onEntityFocus={(u) => setActivePrismUser(u)} setIntent={setIntent} 
+        novaMensaje={novaMensaje}
+  novaLoading={novaLoading}
+  onNovaEnviar={handleNovaInput}
+  iaMode={iaMode}
+  isAdmin={isAdmin}
+         />
       )}
       
       {/* ── SERVICIOS ───────────────────────────────────────────────────── */}

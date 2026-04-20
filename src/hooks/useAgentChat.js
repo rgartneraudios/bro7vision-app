@@ -5,9 +5,17 @@ import { useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { botOrchestrator } from '../services/agents/botOrchestrator';
 import { buildPrompt } from '../services/agents/promptBuilder';
+import { buildNovaExploraPrompt } from '../services/agents/novaExploraPS';
 
 import { detectarSectorPS, detectarCiudadPS, detectarEntidadPS } from '../services/agents/ososPS';
 import { detectarRama } from '../services/agents/bots/ososUtils';
+
+import { detectarSalidaNova,     detectarIntencionNova     } from '../services/agents/bots/novaUtils';
+import { detectarSalidaIsabella, detectarInternoIsabella, detectarIntencionIsabella } from '../services/agents/bots/isabellaUtils';
+import { detectarSalidaMapache,  detectarInternoMapache,  detectarIntencionMapache  } from '../services/agents/bots/mapacheUtils';
+import { detectarSalidaAviso,    detectarInternoAviso                                } from '../services/agents/bots/avisoUtils';
+import { detectarSalidaOraculo,  detectarInternoOraculo,  detectarIntencionOraculo  } from '../services/agents/bots/oraculoUtils';
+import { detectarSalidaReinos,   detectarIntencionReinos                             } from '../services/agents/bots/reinosUtils';
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
@@ -25,7 +33,7 @@ const FRASES_HANDOFF = {};
 const FRASES_PER_INTERNO = {};
 const FRASES_PER_EXTERNO = {};
 
-// ─── Frases de despedida por oso — sin IA, sin tokens ────────────────────────
+// ─── Frases de despedida por oso ─────────────────────────────────────────────
 
 const DESPEDIDAS_OSO = {
   tito: [
@@ -97,7 +105,6 @@ export const useAgentChat = ({
 }) => {
   const [mensaje, setMensaje] = useState(null);
   const [loading, setLoading] = useState(false);
-
   const [chatHistory, setChatHistory] = useState([]);
 
   const [sectorMemoria, setSectorMemoria] = useState(null);
@@ -134,6 +141,7 @@ export const useAgentChat = ({
   const resolverPersonajeId = () => {
     if (mode === 'osos')        return (contextData?.oso_id || 'lara').toLowerCase();
     if (mode === 'novaExplora') return 'nova';
+    if (mode === 'novaCierre')  return 'nova_cierre';
     if (mode === 'servicios')   return contextData?.servicios_personaje || 'isabella';
     if (mode === 'mapache')     return contextData?.audio_personaje || 'mapache';
     if (mode === 'oraculo')     return contextData?.oraculo_personaje || 'orumama';
@@ -142,16 +150,19 @@ export const useAgentChat = ({
     return null;
   };
 
-  const enviar = async (textoUsuario) => {
-    if (!textoUsuario.trim()) return;
-    setLoading(true);
-
+const enviar = async (textoUsuario) => {
+  if (!textoUsuario.trim()) return;
+  setLoading(true);
+  
+  console.log('🔍 useAgentChat:', { mode, iaMode, isAdmin, iaActiva: (iaMode === 'admin' && isAdmin) || (iaMode === 'public' && !isAdmin) });
+  
     try {
 
       // ══════════════════════════════════════════════════════════════════
-      // DETECCION TEMPRANA DE HANDOFF — solo mode osos, sin gastar tokens
+      // DETECCION TEMPRANA — por mode, sin gastar tokens
       // ══════════════════════════════════════════════════════════════════
 
+      // ── OSOS ──────────────────────────────────────────────────────────
       if (mode === 'osos') {
         const sectorDetectTemprano = detectarSectorPS(textoUsuario);
         const ciudadDetectTemprana = detectarCiudadPS(textoUsuario);
@@ -189,6 +200,118 @@ export const useAgentChat = ({
         }
       }
 
+      // ── NOVA EXPLORA ──────────────────────────────────────────────────
+      if (mode === 'novaExplora') {
+        const salida = detectarSalidaNova(textoUsuario);
+        if (salida) {
+          setMensaje(salida.mensaje);
+          setTimeout(() => onHandoff?.({ agente: 'OSOS' }), 1200);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // ── NOVA CIERRE ───────────────────────────────────────────────────
+      if (mode === 'novaCierre') {
+        const salida = detectarSalidaNova(textoUsuario);
+        if (salida) {
+          setMensaje(salida.mensaje);
+          setTimeout(() => onHandoff?.({ agente: 'OSOS' }), 1200);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // ── SERVICIOS (Isabella + Profesor) ───────────────────────────────
+      if (mode === 'servicios') {
+        const salida   = detectarSalidaIsabella(textoUsuario);
+        if (salida) {
+          setMensaje(salida.mensaje);
+          setTimeout(() => onHandoff?.({ agente: 'OSOS' }), 1200);
+          setLoading(false);
+          return;
+        }
+        const personajeActivo = contextData?.servicios_personaje || 'isabella';
+        const interno = detectarInternoIsabella(textoUsuario, personajeActivo);
+        if (interno) {
+          setMensaje(interno.mensaje || '...');
+          onHandoff?.({ agente: 'SERVICIO_INTERNO', personaje_id: interno.personaje_id });
+          setLoading(false);
+          return;
+        }
+      }
+
+      // ── MAPACHE (Mapache + Ami) ────────────────────────────────────────
+      if (mode === 'mapache') {
+        const salida = detectarSalidaMapache(textoUsuario);
+        if (salida) {
+          setMensaje(salida.mensaje);
+          setTimeout(() => onHandoff?.({ agente: 'OSOS' }), 1200);
+          setLoading(false);
+          return;
+        }
+        const personajeActivo = contextData?.audio_personaje || 'mapache';
+        const interno = detectarInternoMapache(textoUsuario, personajeActivo);
+        if (interno) {
+          setMensaje(interno.mensaje || '...');
+          onHandoff?.({ agente: 'AUDIO_INTERNO', personaje_id: interno.personaje_id });
+          setLoading(false);
+          return;
+        }
+      }
+
+      // ── AVISOS (Evelyn + Larry) ────────────────────────────────────────
+      if (mode === 'avisos') {
+        const avisoEnProceso = avisoEnConstruccion?.tipo;
+        if (!avisoEnProceso) {
+          const salida = detectarSalidaAviso(textoUsuario);
+          if (salida) {
+            setMensaje(salida.mensaje);
+            setTimeout(() => onHandoff?.({ agente: 'OSOS' }), 1200);
+            setLoading(false);
+            return;
+          }
+          const personajeActivo = contextData?.avisos_personaje || 'evelyn';
+          const interno = detectarInternoAviso(textoUsuario, personajeActivo);
+          if (interno) {
+            setMensaje(interno.mensaje || '...');
+            onHandoff?.({ agente: 'AVISO_INTERNO', personaje_id: interno.personaje_id });
+            setLoading(false);
+            return;
+          }
+        }
+      }
+
+      // ── ORACULO (Orumama + Jaguar + SMisterio) ────────────────────────
+      if (mode === 'oraculo') {
+        const salida = detectarSalidaOraculo(textoUsuario);
+        if (salida) {
+          setMensaje(salida.mensaje);
+          setTimeout(() => onHandoff?.({ agente: 'OSOS' }), 1200);
+          setLoading(false);
+          return;
+        }
+        const personajeActivo = contextData?.oraculo_personaje || 'orumama';
+        const interno = detectarInternoOraculo(textoUsuario, personajeActivo);
+        if (interno) {
+          setMensaje(interno.mensaje || '...');
+          onHandoff?.({ agente: 'ORACULO_INTERNO', personaje_id: interno.personaje_id });
+          setLoading(false);
+          return;
+        }
+      }
+
+      // ── REINOS ────────────────────────────────────────────────────────
+      if (mode === 'reinos') {
+        const salida = detectarSalidaReinos(textoUsuario);
+        if (salida) {
+          setMensaje(salida.mensaje);
+          setTimeout(() => onHandoff?.({ agente: 'OSOS' }), 1200);
+          setLoading(false);
+          return;
+        }
+      }
+
       // ══════════════════════════════════════════════════════════════════
       // BIFURCACION PRINCIPAL: API vs BOTS JS
       // ══════════════════════════════════════════════════════════════════
@@ -196,44 +319,91 @@ export const useAgentChat = ({
       const iaActiva = (iaMode === 'admin' && isAdmin) || (iaMode === 'public' && !isAdmin);
       const avisoEnProceso = mode === 'avisos' && avisoEnConstruccion?.tipo;
 
-      if (iaActiva && !avisoEnProceso) {
+     if (iaActiva && !avisoEnProceso) {
+  const personajeId = resolverPersonajeId();
 
-        const personajeId = resolverPersonajeId();
-        const vivencia    = await obtenerVivencia(personajeId);
+  // ── Nova tiene su propio prompt builder ──────────────────────────
+  if (mode === 'novaExplora') {
+    const systemNova = buildNovaExploraPrompt({
+      alias:  contextData?.alias,
+      ciudad: contextData?.ciudad,
+      port_system_context: {
+        hay_tarjetas:        contextData?.hayTarjetas,
+        intencion_detectada: detectarIntencionNova(textoUsuario),
+        entidad_detectada:   contextData?.entidad || null,
+      },
+    });
+    const respuesta = await llamarGemini({
+      system:      systemNova,
+      messages:    chatHistory.slice(-4),
+      userMessage: textoUsuario,
+      iaMode,
+    });
+    try {
+  // Extraer solo el bloque JSON aunque haya texto antes o después
+  const match = respuesta.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error('No JSON found');
+  const parsed = JSON.parse(match[0]);
+  if (parsed.handoff && parsed.agente_destino) {
+    onHandoff?.({ agente: parsed.agente_destino, bro_id: parsed.bro_id_target || null });
+    setLoading(false);
+    return;
+  }
+  pushHistory('user', textoUsuario);
+  pushHistory('assistant', parsed.mensaje || '...');
+  setMensaje(parsed.mensaje || '...');
+} catch {
+  // Si falla el parse mostrar respuesta cruda
+  pushHistory('user', textoUsuario);
+  pushHistory('assistant', respuesta);
+  setMensaje(respuesta);
+}
+    setLoading(false);
+    return;
+  }
 
-        const prompt = buildPrompt({
-          personajeId,
-          vivencia,
-          userMessage: textoUsuario,
-          chatHistory,
-        });
+  // ── Resto de personajes → buildPrompt genérico ───────────────────
+  const vivencia = await obtenerVivencia(personajeId);
+  const prompt = buildPrompt({
+    personajeId,
+    vivencia,
+    userMessage: textoUsuario,
+    chatHistory,
+  });
 
-        if (!prompt) {
-          setMensaje('...');
-          setLoading(false);
-          return;
-        }
+  if (!prompt) {
+    setMensaje('...');
+    setLoading(false);
+    return;
+  }
 
-        const respuesta = await llamarGemini({
-          system:      prompt.system,
-          messages:    prompt.messages,
-          userMessage: textoUsuario,
-          iaMode,
-        });
+  const respuesta = await llamarGemini({
+    system:      prompt.system,
+    messages:    prompt.messages,
+    userMessage: textoUsuario,
+    iaMode,
+  });
 
-        if (respuesta.startsWith('HANDOFF:')) {
-          const codigoHandoff = respuesta.replace('HANDOFF:', '').trim();
-          onHandoff?.({ agente: codigoHandoff, ciudad: ciudadMemoria });
-          setLoading(false);
-          return;
-        }
+  if (respuesta.startsWith('HANDOFF:')) {
+    const partes = respuesta.replace('HANDOFF:', '').trim().split(':');
+    const codigoHandoff  = partes[0];
+    const destinoHandoff = partes[1] || null;
+    onHandoff?.({
+      agente: codigoHandoff,
+      ciudad: ciudadMemoria,
+      ...(destinoHandoff && { personaje_id: destinoHandoff }),
+      ...(destinoHandoff && codigoHandoff === 'OSOS_INTERNO' && { oso_id: destinoHandoff }),
+    });
+    setLoading(false);
+    return;
+  }
 
-        pushHistory('user', textoUsuario);
-        pushHistory('assistant', respuesta);
-        setMensaje(respuesta);
-        setLoading(false);
-        return;
-      }
+  pushHistory('user', textoUsuario);
+  pushHistory('assistant', respuesta);
+  setMensaje(respuesta);
+  setLoading(false);
+  return;
+}
 
       // ══════════════════════════════════════════════════════════════════
       // FALLBACK: BOTS JS
@@ -304,6 +474,19 @@ export const useAgentChat = ({
           mode: 'novaExplora', textoUsuario,
           entidad:     contextData?.entidad,
           hayTarjetas: contextData?.hayTarjetas,
+          intencion:   detectarIntencionNova(textoUsuario),
+          supabase,
+        });
+        setMensaje(resultado.mensaje);
+        if (resultado.handoff) onHandoff?.(resultado.handoffData);
+        return;
+      }
+
+      if (mode === 'novaCierre') {
+        const resultado = await botOrchestrator({
+          mode: 'novaCierre', textoUsuario,
+          entidad:     contextData?.entidad,
+          hayTarjetas: contextData?.hayTarjetas,
           supabase,
         });
         setMensaje(resultado.mensaje);
@@ -317,6 +500,7 @@ export const useAgentChat = ({
           entidad:             contextData?.entidad,
           hayTarjetas:         contextData?.hayTarjetas,
           servicios_personaje: contextData?.servicios_personaje || 'isabella',
+          intencion:           detectarIntencionIsabella(textoUsuario),
           supabase,
         });
         setMensaje(resultado.mensaje);
@@ -330,6 +514,7 @@ export const useAgentChat = ({
           entidad:         contextData?.entidad,
           hayTarjetas:     contextData?.hayTarjetas,
           audio_personaje: contextData?.audio_personaje || 'mapache',
+          intencion:       detectarIntencionMapache(textoUsuario),
           supabase,
         });
         setMensaje(resultado.mensaje);
@@ -341,6 +526,7 @@ export const useAgentChat = ({
         const resultado = await botOrchestrator({
           mode: 'oraculo', textoUsuario,
           oraculo_personaje: contextData?.oraculo_personaje || 'orumama',
+          intencion:         detectarIntencionOraculo(textoUsuario),
           supabase,
         });
         setMensaje(resultado.mensaje);
@@ -353,6 +539,7 @@ export const useAgentChat = ({
           mode: 'reinos', textoUsuario,
           reinos:       contextData?.reinos,
           reinoDetalle: contextData?.reinoDetalle,
+          intencion:    detectarIntencionReinos(textoUsuario),
           supabase,
         });
         setMensaje(resultado.mensaje);
