@@ -68,7 +68,7 @@ export default function DesktopLayout(props) {
             src={
               step === 1
                 ? ososModo === 'retorno' ? "https://media.bro7vision.com/ososia_recepcion1.mp4" : "https://media.bro7vision.com/ososia_recepcion1.mp4"
-                : intent === 'ai'              ? "https://media.bro7vision.com/oraculo1.mp4"
+                : intent === 'ai'              ? "https://media.bro7vision.com/oraculo0.mp4"
                 : intent === 'game'            ? "https://media.bro7vision.com/game_bg.mp4"
                 : intent === 'audios'           ? "https://media.bro7vision.com/brolives1.mp4"
                 : intent === 'internal_search' ? "https://media.bro7vision.com/reinos.mp4"
