@@ -54,8 +54,8 @@ const KNOWLEDGE_POR_PERSONAJE = {
   profesor:         ['esdeOsos', 'esdeOraculo', 'esdeRumores', 'esdeAudio'],
   evelyn:           ['esdeOsos', 'esdeOraculo', 'esdeRumores', 'esdeAudio'],
   larry:            ['esdeOsos', 'esdeOraculo', 'esdeRumores', 'esdeAudio'],
-  mapache:          ['audio', 'entretenimiento_juegos', 'esdeOsos', 'esdeOraculo', 'esdeRumores'],
-  ami:              ['audio', 'entretenimiento_juegos', 'esdeOsos', 'esdeOraculo', 'esdeRumores'],
+  mapache:          ['audio', 'brotuner', 'entretenimiento_juegos', 'esdeOsos', 'esdeOraculo', 'esdeRumores'],
+  ami:              ['audio', 'brotuner', 'entretenimiento_juegos', 'esdeOsos', 'esdeOraculo', 'esdeRumores'],
   orumama:          ['albahaca', 'jengibre', 'lavanda', 'manzanilla', 'melisa', 'menta', 'oregano', 'romaza', 'romero', 'ruda', 'salvia', 'tomillo', 'esdeOsos', 'esdeRumores', 'esdeAudio'],
   jaguar:           ['aries', 'tauro', 'geminis', 'cancer', 'leo', 'virgo', 'libra', 'escorpio', 'ofiuco', 'sagitario', 'capricornio', 'acuario', 'piscis', 'esdeOsos', 'esdeRumores', 'esdeAudio'],
   smisterio:        ['antartida', 'bucegi', 'egipto', 'tartaria', 'esdeOsos', 'esdeRumores', 'esdeAudio'],
@@ -103,7 +103,8 @@ const KEYWORD_DETECTORS = {
   egipto:                 m => /egipto|pirámide|faraón|jeroglífico/i.test(m),
   tartaria:               m => /tartaria|imperio.*oculto|arquitectura.*mudéjar/i.test(m),
   registro_fundadores:    m => /fundador|registr|noble|rey|reina|duque|duquesa|lord|lady|príncipe|princesa|marqués|conde|condesa|título/i.test(m),
-  audio:                  m => /canal|tuner|podcast|radio|frecuencia|audio/i.test(m),
+  audio:    m => /podcast|radio|frecuencia|códigos.*audio|audio.*códigos/i.test(m),
+  brotuner: m => /brotuner|canales|canal|tuner|emisora/i.test(m),
   entretenimiento_juegos: m => /juego|minijuego|ganar.*puntos|genesis.*juego/i.test(m),
 }
 

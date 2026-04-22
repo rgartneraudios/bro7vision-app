@@ -1,13 +1,15 @@
-// src/data/knowledge/entretenimiento_juegos.js
-export const entretenimiento_juegos = `
-SISTEMA DE JUEGOS Y RECOMPENSAS (GÉNESIS):
-1. BroStories: 50 pts por ver historia completa.
-2. Neon Memory: 10 pts por etapa.
-3. F1 Rookie/PRO: 1º(50), 2º(40), 3º(30), 4º(20), 5º(10).
-4. Cosmic Portal (Trivia): +10 acierto / -10 fallo (Máx 100).
-5. The 7 Gates: 70 por llegar a bóveda + 70 por salir.
-6. Therians: 100/50 éxito / -10 fracaso.
-7. 3i Atlas: 5k(50), 10k(100), 15k(150), 20k(200).
-8. Telecronos: 20 por gema / -10 por fantasma.
-`;
-export default entretenimiento_juegos;
+// src/data/ami/entretenimiento_juegos.js
+export const entretenimiento_juegos_ami = {
+  
+  keyword: "entretenimiento_juegos",
+  
+  puente: "O sea, los juegos de aquí son literal una pasada. ¿Quieres que te cuente cómo va la movida?",
+ 
+  data: `En plan, en Bro7Vision tienes un montón de juegos con los que ganas Puntos Génesis de verdad. Muero con el Cosmic Portal, la trivia es súper aesthetic y te activa el cerebro. También el Therians, que si aciertas el flujo, más Genesis acumulas, obvio. Tienes Neon Memory, F1 Rookie, The 7 Gates, Therians, Telecronos... cada uno tiene su sistema de puntos. Cero excusas para no jugar. Tambien tienes BroStories, ganas génesis viendo videos. Esta en la puerta lateral derecha abajo y para ver todos los detalles y las normas completas tienes el apartado legal también en la puerta derecha abajo.`,
+  
+  continua: "Literal es una forma súper fun de ir acumulando, y se vienen más juegos en el futuro. En plan, no te lo puedes perder.",
+ 
+ salida: "MC"
+}
+
+export default entretenimiento_juegos_ami;

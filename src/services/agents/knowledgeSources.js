@@ -125,6 +125,8 @@ import { registro_fundadores } from '../../data/rumores/registro_fundadores.js'
 // ── Ami y Mapache ─────────────────────────────────────────────────────────────
 import { audio as audio_ami }                          from '../../data/ami/audio.js'
 import { audio as audio_mapache }                      from '../../data/mapache/audio.js'
+import { brotuner as brotuner_ami}                          from '../../data/ami/brotuner.js'
+import { brotuner as brotuner_mapache}                from '../../data/mapache/brotuner.js'
 import { entretenimiento_juegos as juegos_ami }        from '../../data/ami/entretenimiento_juegos.js'
 import { entretenimiento_juegos as juegos_mapache }    from '../../data/mapache/entretenimiento_juegos.js'
 
@@ -216,19 +218,21 @@ export const KNOWLEDGE_SOURCES = {
   },
 
   mapache: {
-    audio:                  audio_mapache,
-    entretenimiento_juegos: juegos_mapache,
-    esdeOsos:               esdeOsos_mapache,
-    esdeOraculo:            esdeOraculo_mapache,
-    esdeRumores:            esdeRumores_mapache,
+    audio: 					audio_mapache,
+    brotuner: 				brotuner_mapache,
+    entretenimiento_juegos: 	entretenimiento_juegos_mapache,
+    esdeOsos:               			esdeOsos_mapache,
+    esdeOraculo:            		esdeOraculo_mapache,
+    esdeRumores:            		esdeRumores_mapache,
   },
 
   ami: {
-    audio:                  audio_ami,
-    entretenimiento_juegos: juegos_ami,
-    esdeOsos:               esdeOsos_ami,
-    esdeOraculo:            esdeOraculo_ami,
-    esdeRumores:            esdeRumores_ami,
+    audio:                  			audio_ami,
+    brotuner: 				brotuner_ami,
+    entretenimiento_juegos: 	entretenimiento_juegos_ami,
+    esdeOsos:               			esdeOsos_ami,
+    esdeOraculo:            		esdeOraculo_ami,
+    esdeRumores:            		esdeRumores_ami,
   },
 
   orumama: {

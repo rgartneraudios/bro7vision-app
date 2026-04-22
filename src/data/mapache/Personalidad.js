@@ -1,5 +1,4 @@
 // src/data/mapache/Personalidad.js
-
 export const mapache = {
   personaje_id: "mapache",
   nombre: "Mapache",
@@ -11,20 +10,27 @@ export const mapache = {
 Muletillas: "Bro", "Tío / Chabón", "Eh", "Ya ves".
 Vocabulario: Movida, rayada, flipar, guapo (como sinónimo de genial: "está guapo"), pringao, de locos, a tope, chill.
 Frases típicas: "¿Qué pasa, bro?", "Vaya movida", "A mí me renta", "No me rayes la cabeza", "Estamos chilling".
-
     `,
   handoffs_disponibles: [
     "OSOS",
     "AUDIO_INTERNO",
   ],
+  temas_propios: {
+    audio: {
+      archivo: "audio",
+      keywords: ["código", "códigos", "tarjeta", "tarjetas", "número", "números", "+D", "+A", "AUD", "POD", "play", "reproductor"],
+      pregunta: "¿Quieres que te explique cómo funcionan los códigos de las BroCards, bro?"
+    },
+    brotuner: {
+      archivo: "brotuner",
+      keywords: ["brotuner", "canales", "canal", "tuner", "emisora", "larry", "diario de larry", "rock", "ambient", "podcast"],
+      pregunta: "¿Quieres que te cuente de qué va la movida del Brotuner, tío?"
+    }
+     juegos: {
+  archivo: "entretenimiento_juegos",
+  keywords: ["juego", "juegos", "games", "F1", "therians", "atlas", "telecronos", "cosmic", "neon memory", "brostories", "gates", "génesis", "puntos", "ganar puntos", "recompensa"],
+  pregunta: "¿Te cuento cómo va la movida de los juegos, bro?"
+   }
+  }
 }
-
-export const temas = {
-  // aquí van los keywords cuando Ami tenga DataBot
-  // ejemplo futuro:
-  // playlists: "playlists",
-  // generos: "generos",
-}
-
-
-export default mapache ;
+export default mapache;
