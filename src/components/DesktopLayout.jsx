@@ -38,7 +38,7 @@ export default function DesktopLayout(props) {
     broTunerRef, navItems, handleNavigation, handleReportIssue,
     setShowWalletModal, setShowBooster, setShowStory, setShowLegal,
     scope, sessionCP, sessionCity, sessionRef, handleGameWin, handleGoToShop, abrirTienda,
-    setSelectedLog, setVlData, ososHandoffContext, setOsosHandoffContext,
+    setSelectedLog, setVlData, ososHandoffContext, setOsosHandoffContext, avisoEnConstruccion,
     perfilOso, stripVisible, stripCards, stripLabel, setHoloPrismaIndex, findChannelByAlias, checkIfNew,
     ososMensaje, ososLoading, handleOsosInput, ososModo, setOsosModo, handleLogout, selectedCard,
    novaMensaje, novaLoading, handleNovaInput, isabellaMensaje, isabellaLoading, handleIsabellaInput,
@@ -192,6 +192,9 @@ export default function DesktopLayout(props) {
           stripVisible={stripVisible}
           stripCards={stripCards}
           stripLabel={stripLabel}
+          enviar={handleIsabellaInput}
+	mensaje={isabellaMensaje}
+	loading={isabellaLoading}
           onOpenTerminal={(c) => abrirTienda(c, 'isabellaVentas')}
           onSetActiveIndex={setHoloPrismaIndex}
           onInvokeOsos={() => setStep(1)}
@@ -215,6 +218,10 @@ export default function DesktopLayout(props) {
           stripVisible={stripVisible}
           stripCards={stripCards}
           stripLabel={stripLabel}
+          enviar={handleEvelynInput}
+	mensaje={evelynMensaje}
+	loading={evelynLoading}
+	avisoEnConstruccion={avisoEnConstruccion}
           onInvokeOsos={() => setStep(1)}
           onAvisoConectar={props.onAvisoConectar}
           onAvisoPublicar={props.onAvisoPublicar}
@@ -233,6 +240,9 @@ export default function DesktopLayout(props) {
           findChannelByAlias={findChannelByAlias}
           checkIfNew={checkIfNew}
           onInvokeOsos={() => setStep(1)}
+          enviar={handleMapacheInput}
+	mensaje={mapacheMensaje}
+	loading={mapacheLoading}
           onInvokeNova={() => setIntent('productos')}
           onOpenProfile={(u) => setProjectingUser(u)}
           onTuneIn={(u) => { setAudioUser(u); setActivePrismUser(u); }}
@@ -242,16 +252,19 @@ export default function DesktopLayout(props) {
         />
       )}
 
-      {/* ── ORÁCULO ─────────────────────────────────────────────────────── */}
-      {step === 2 && intent === 'ai' && (
-        <OraculoBanner
-          oraculo_personaje={perfilSector?.personaje_id || perfilOso?.oraculo_personaje || 'orumama'}
-          alias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'}
-          realItems={realItems}
-          onInvokeOsos={() => { setStep(1); setOsosModo('entrada'); }}
-          onPersonajeChange={handleCentralHandoff}
-        />
-      )}
+{/* ── ORÁCULO ─────────────────────────────────────────────────────── */}
+{step === 2 && intent === 'ai' && (
+  <OraculoBanner
+    oraculo_personaje={perfilSector?.personaje_id || perfilOso?.oraculo_personaje || 'orumama'}
+    alias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'}
+    realItems={realItems}
+    enviar={handleOraculoInput}
+    mensaje={oraculoMensaje}
+    loading={oraculoLoading}
+    onInvokeOsos={() => { setStep(1); setOsosModo('entrada'); }}
+    onPersonajeChange={handleCentralHandoff}
+  />
+)}
       
       {/* 6. OSOS IA RECEPCION */}   
       {step === 1 && (

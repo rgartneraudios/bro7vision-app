@@ -66,7 +66,7 @@ export default function SlideRail() {
         style={{
           aspectRatio: "5 / 12",
           maxHeight: "80vh",
-          boxShadow: "0 0 20px rgba(0,255,255,0.3)",  // neon cyan sutil
+          boxShadow: "0 0 20px rgba(251,201,0,0.3)",  // neon cyan sutil
         }}
       />
     </div>

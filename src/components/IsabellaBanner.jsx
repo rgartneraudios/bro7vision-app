@@ -1,9 +1,7 @@
 // src/components/IsabellaBanner.jsx
-// Agente: SERVICIOS EXPLORA
-// Personajes: Isabella | Profesor Robles
+// Sin hook interno. Recibe enviar/mensaje/loading desde App.jsx via props.
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useAgentChat } from '../hooks/useAgentChat';
 import AgentChatInput from './AgentChatInput';
 import BroCardStrip from './BroCardStrip';
 
@@ -34,6 +32,11 @@ export default function IsabellaBanner({
   stripVisible,
   stripCards,
   stripLabel,
+  // ── Props del hook desde App.jsx ──────────────────
+  enviar,
+  mensaje,
+  loading,
+  // ── Callbacks ─────────────────────────────────────
   onEntityFocus,
   onOpenTerminal,
   onSetActiveIndex,
@@ -47,40 +50,12 @@ export default function IsabellaBanner({
   const [currentMsg, setCurrentMsg] = useState('');
   const charIdx = useRef(0);
 
-  // ── fuente única de verdad — solo prop personaje ──────────────────────────
   const personajeActivo = (personaje || 'isabella').toLowerCase();
   const isMaestro       = personajeActivo === 'profesor';
   const GREETINGS       = isMaestro ? GREETINGS_MAESTRO : GREETINGS_ISABELLA;
   const { nombre: nombrePersonaje, icono: iconoPersonaje } = INFO[personajeActivo] || INFO.isabella;
-  const color           = '#F7C8BE';
+  const color = '#F7C8BE';
 
-  const { mensaje, loading, enviar } = useAgentChat({
-    mode: 'servicios',
-    contextData: {
-      alias:               'viajero',
-      ciudad:              sessionCity || '',
-      cp:                  sessionCP  || '',
-      servicios_personaje: personajeActivo,
-    },
-    realItems,
-    onEntityFocus,
-    onHandoff: ({ agente, bro_id, personaje_id }) => {
-      if (agente === 'SERVICIO_INTERNO' && personaje_id) {
-        onPersonajeChange?.({ agente: 'SERVICIO_INTERNO', personaje_id });
-        return;
-      }
-      if (agente === 'ISABELLA_CIERRE' && bro_id) {
-        const comercio = realItems.find(i => i.bro_ser === bro_id || i.bro_id === bro_id || i.id === bro_id);
-        if (comercio) onOpenTerminal?.(comercio, 'isabellaCierre');
-        return;
-      }
-      if (agente === 'OSOS')    { onInvokeOsos?.();    return; }
-      if (agente === 'MAPACHE') { onInvokeMapache?.(); return; }
-      if (agente === 'NOVA')    { onOpenTerminal?.(null, 'novaExplora'); return; }
-    },
-  });
-
-  // ── Efectos visuales ──────────────────────────────────────────────────────
   useEffect(() => { const t = setInterval(() => setCursor(c => !c), 530); return () => clearInterval(t); }, []);
   useEffect(() => { setCurrentMsg(GREETINGS[Math.floor(Math.random() * GREETINGS.length)]); }, [personaje]);
   useEffect(() => { if (mensaje) setCurrentMsg(mensaje); }, [mensaje]);
@@ -149,18 +124,15 @@ export default function IsabellaBanner({
         </div>
       )}
 
-      {/* 2. BANNER DE TEXTO */}
+      {/* 2. BANNER */}
       <div className="w-full max-w-2xl mb-3 pointer-events-auto">
         <div className="sv-wrap w-full flex flex-col items-center justify-center text-center">
-
-          {/* Header — nombre + icono */}
           <div className="flex items-center gap-2 mb-2">
             <span className="text-lg">{iconoPersonaje}</span>
             <span style={{ color, fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
               {nombrePersonaje}
             </span>
           </div>
-
           {!currentMsg && !loading && (
             <p className="text-slate-500/60 text-xs uppercase tracking-widest font-bold">
               ◈ {nombrePersonaje} · EN LÍNEA

@@ -10,6 +10,7 @@ import { buildNovaExploraPrompt } from '../services/agents/novaExploraPS';
 
 import { detectarSectorPS, detectarCiudadPS, detectarEntidadPS } from '../services/agents/ososPS';
 import { detectarRama } from '../services/agents/bots/ososUtils';
+import { detectarCodigoMapache } from '../services/agents/mapachePS';
 
 import { detectarSalidaNova,     detectarIntencionNova     } from '../services/agents/bots/novaUtils';
 import { detectarSalidaIsabella, detectarInternoIsabella, detectarIntencionIsabella } from '../services/agents/bots/isabellaUtils';
@@ -107,6 +108,7 @@ export const useAgentChat = ({
   const [mensaje, setMensaje] = useState(null);
   const [loading, setLoading] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
+  const realItems = contextData?.realItems || []
 
   const [sectorMemoria, setSectorMemoria] = useState(null);
   const [ciudadMemoria, setCiudadMemoria] = useState(null);
@@ -265,24 +267,55 @@ const enviar = async (textoUsuario) => {
       }
 
       // ── MAPACHE (Mapache + Ami) ────────────────────────────────────────
-      if (mode === 'mapache') {
-        const salida = detectarSalidaMapache(textoUsuario);
-        if (salida) {
-          setMensaje(salida.mensaje);
-          setTimeout(() => onHandoff?.({ agente: 'OSOS' }), 1200);
-          setLoading(false);
-          return;
-        }
-        const personajeActivo = contextData?.audio_personaje || 'mapache';
-        const interno = detectarInternoMapache(textoUsuario, personajeActivo);
-        if (interno) {
-          setMensaje(interno.mensaje || '...');
-          onHandoff?.({ agente: 'AUDIO_INTERNO', personaje_id: interno.personaje_id });
-          setLoading(false);
-          return;
-        }
-      }
+if (mode === 'mapache') {
+  const salida = detectarSalidaMapache(textoUsuario);
+  if (salida) {
+    setMensaje(salida.mensaje);
+    setTimeout(() => onHandoff?.({ agente: 'OSOS' }), 1200);
+    setLoading(false);
+    return;
+  }
+  const personajeActivo = contextData?.audio_personaje || 'mapache';
+  const interno = detectarInternoMapache(textoUsuario, personajeActivo);
+  if (interno) {
+    setMensaje(interno.mensaje || '...');
+    onHandoff?.({ agente: 'AUDIO_INTERNO', personaje_id: interno.personaje_id });
+    setLoading(false);
+    return;
+  }
+  
+if (/\b(stop|para|detén|frena|detener|frenar)\b/i.test(textoUsuario)) {
+  onHandoff?.({ agente: 'AUDIO_STOP' })
+  setMensaje('Parado. 🎵')
+  setLoading(false)
+  return
+}
 
+  // ── NUEVO: detector de códigos AUD/POD ──────────────────────────
+  const codigoAudio = detectarCodigoMapache(textoUsuario);
+  if (codigoAudio) {
+    if (codigoAudio.accion === 'PLAY') {
+      const canal = (contextData?.realItems || []).find(c =>
+        String(c.bro_aud) === String(codigoAudio.codigo) ||
+        String(c.bro_pod) === String(codigoAudio.codigo)
+      );
+      if (canal) {
+        setMensaje('Dale. 🎵');
+        onHandoff?.({ agente: 'AUDIO_PLAY', codigo: codigoAudio.codigo, canal });
+      } else {
+        setMensaje('No encuentro ese canal. ¿El código es correcto?');
+      }
+      setLoading(false);
+      return;
+    }
+    if (codigoAudio.accion === 'BOLAS') {
+      setMensaje(`¿Qué hacemos con ${codigoAudio.codigo}?`);
+      setLoading(false);
+      return;
+    }
+    // DESCRIBE — deja que la IA lo narre si está activa, o el bot
+  }
+}
       // ── AVISOS (Evelyn + Larry) ────────────────────────────────────────
       if (mode === 'avisos') {
         const avisoEnProceso = avisoEnConstruccion?.tipo;

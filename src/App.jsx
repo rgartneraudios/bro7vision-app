@@ -154,13 +154,29 @@ function App() {
   // 3. HANDLER CENTRAL DE HANDOFF
   // ══════════════════════════════════════════════════════
 
-  const handleCentralHandoff = ({ agente, ciudad, cp, intencion, comercio, modalidad, oso_id, per_solicitado, personaje_id }) => {
+  const handleCentralHandoff = ({ agente, ciudad, cp, intencion, comercio, 
+   modalidad, oso_id, per_solicitado, personaje_id, codigo, canal }) => {
 
     // ── OSOS_INTERNO ──────────────────────────────────
     if (agente === 'OSOS_INTERNO') {
       setPerfilOso(prev => ({ ...prev, oso_id }));
       return;
     }
+    
+     // ── MAPACHE-AMI  STOP──────────────────────────────────
+    if (agente === 'AUDIO_STOP') {
+  setAudioUser(null)
+  return
+}
+    
+  if (agente === 'AUDIO_PLAY') {
+  const itemCanal = canal || realItems.find(c =>
+    String(c.bro_aud) === String(codigo) ||
+    String(c.bro_pod) === String(codigo)
+  );
+  if (itemCanal) { setAudioUser(itemCanal); setActivePrismUser(itemCanal); }
+  return;
+}
 
     // ── INTERNOS DE SECTOR ────────────────────────────
     if (['AUDIO_INTERNO', 'SERVICIO_INTERNO', 'AVISO_INTERNO', 'ORACULO_INTERNO'].includes(agente)) {
@@ -268,11 +284,12 @@ setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
 
         const cards = agente === 'AUDIO'
           ? filtrados.flatMap(p => {
+          console.log('🎵 perfil audio:', p.alias, 'audio_file:', p.audio_file, 'bro_aud:', p.bro_aud)
               if (!p.bro_aud && !p.bro_pod) return [];
               const esPodcast = p.audio_type === 'podcast';
               const codigo    = esPodcast ? p.bro_pod : p.bro_aud;
               if (!codigo) return [];
-              return [{ bro_id: codigo, banner_url: p.banner_url || '', nombre: p.alias || '', categoria: esPodcast ? 'Podcast' : 'Música', ciudad: p.city || '', descripcion: p.audio_description || p.description || '', track_name: p.track_name || '', audio_type: p.audio_type || 'music' }];
+              return [{ bro_id: codigo, banner_url: p.banner_url || '', nombre: p.alias || '', audio_file:  p.audio_file || '', categoria: esPodcast ? 'Podcast' : 'Música', ciudad: p.city || '', descripcion: p.audio_description || p.description || '', track_name: p.track_name || '', audio_type: p.audio_type || 'music' }];
             })
           : agente === 'BROSHOP_SERVICIO'
           ? filtrados.filter(p => p.bro_ser).map(p => ({ bro_id: p.bro_ser, banner_url: p.banner_url || '', nombre: p.alias || '', categoria: p.biz_profession || p.biz_category || '', ciudad: p.city || '', descripcion: p.description || '', ref_price: p.ref_price || '', address: p.address || '' }))
@@ -357,7 +374,8 @@ const { mensaje: isabellaMensaje, loading: isabellaLoading, enviar: handleIsabel
 const { mensaje: mapacheMensaje, loading: mapacheLoading, enviar: handleMapacheInput } = useAgentChat({
   mode: 'mapache',
   contextData: { 
-    audio_personaje: perfilSector?.personaje_id || 'mapache', 
+    audio_personaje: perfilSector?.personaje_id || 'mapache',
+    realItems,  
     entidad:     ososHandoffContext?.comercio_especifico, 
     hayTarjetas: stripVisible,
     ciudad:      scope?.ciudad || '',
@@ -368,9 +386,9 @@ const { mensaje: mapacheMensaje, loading: mapacheLoading, enviar: handleMapacheI
 });
 
    // AVISOS  EVELYN Y LARRY
-  const { mensaje: evelynMensaje, loading: evelynLoading, enviar: handleEvelynInput } = useAgentChat({
-    mode: 'avisos',
-    contextData: {
+  const { mensaje: evelynMensaje, loading: evelynLoading, enviar: handleEvelynInput, avisoEnConstruccion } = useAgentChat({
+  mode: 'avisos',
+      contextData: {
       avisos_personaje: perfilSector?.personaje_id || 'evelyn',
       genesis:          balances.genesis,
       ciudad:           sessionCity,
@@ -514,6 +532,7 @@ const { mensaje: rumoresMensaje, loading: rumoresLoading, enviar: handleRumoresI
           zap_p: prof.zap_p || 0, zap_gen: prof.zap_gen || 0,
         });
       }
+      
       const { data: all } = await supabase.from('profiles').select('*');
       if (all) {
         setRealItems(all.map(u => ({
@@ -595,7 +614,7 @@ const chatPorIntent = {
     onToggleAdminIA:     handleToggleAdminIA,
     onTogglePublicIA:    handleTogglePublicIA,
     onShowPurchaseModal: handleShowPurchaseModal,
-    novaMensaje,
+    novaMensaje, avisoEnConstruccion,
   novaLoading, handleNovaInput, isabellaMensaje, isabellaLoading, handleIsabellaInput,
   mapacheMensaje, mapacheLoading, handleMapacheInput, evelynMensaje, evelynLoading,
   handleEvelynInput, oraculoMensaje, oraculoLoading, handleOraculoInput, rumoresMensaje,

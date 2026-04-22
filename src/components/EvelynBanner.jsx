@@ -1,8 +1,7 @@
 // src/components/EvelynBanner.jsx
-// v4 — Todo incluido (Banner + Input + Carrusel). Sin forwardRef.
+// Sin hook interno. Recibe enviar/mensaje/loading desde App.jsx via props.
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useAgentChat } from '../hooks/useAgentChat';
 import AvisoPreviewCard from './AvisoPreviewCard';
 import AgentChatInput from './AgentChatInput';
 import BroCardStrip from './BroCardStrip';
@@ -33,12 +32,16 @@ export default function EvelynBanner({
   stripVisible,
   stripCards,
   stripLabel,
-
+  // ── Props del hook desde App.jsx ──────────────────
+  enviar,
+  mensaje,
+  loading,
+  avisoEnConstruccion,
+  // ── Callbacks ─────────────────────────────────────
   onInvokeOsos,
   onAvisoConectar,
   onAvisoPublicar,
   setProjectingUser,
-  // ── NUEVO: callback para cambiar personaje activo en App.jsx ──────────
   onPersonajeChange,
 }) {
   const [display, setDisplay]       = useState('');
@@ -46,48 +49,23 @@ export default function EvelynBanner({
   const [currentMsg, setCurrentMsg] = useState('');
   const charIdx = useRef(0);
 
-  const esLarry      = personaje === 'larry';
-  const nombreAgente = esLarry ? 'LARRY' : 'EVELYN';
-  const GREETINGS    = esLarry ? GREETINGS_LARRY : GREETINGS_EVELYN;
-  
-const personajeActivo = (avisos_personaje || personaje || 'evelyn').toLowerCase();
+  const esLarry         = personaje === 'larry';
+  const nombreAgente    = esLarry ? 'LARRY' : 'EVELYN';
+  const GREETINGS       = esLarry ? GREETINGS_LARRY : GREETINGS_EVELYN;
+  const personajeActivo = (avisos_personaje || personaje || 'evelyn').toLowerCase();
   const color           = '#5E76FF';
-
 
   const colorPrimario   = esLarry ? '#0C21C2' : '#161AF9';
   const colorSecundario = esLarry ? '#1E2D94' : '#3552B8';
   const colorTexto      = esLarry ? '#AAB9FE' : '#748BFD';
   const glowColor       = esLarry ? 'rgba(12,14,194,0.5)' : 'rgba(22,25,250,0.5)';
 
-  const { mensaje, loading, enviar, avisoPendiente, avisoEnConstruccion } = useAgentChat({
-    mode: 'avisos',
-    contextData: {
-      alias,
-      bro_id,
-      ciudad: sessionCity || '',
-      cp: sessionCP || '',
-      genesis,
-      avisos_personaje: personaje,
-    },
-    realItems,
-    onHandoff: ({ agente, personaje_id }) => {
+  const INFO = {
+    evelyn: { nombre: 'EVELYN', icono: '🐺' },
+    larry:  { nombre: 'LARRY',  icono: '🐶' },
+  };
+  const { nombre: nombrePersonaje, icono: iconoPersonaje } = INFO[personajeActivo] || INFO.evelyn;
 
-      // ── AVISO_INTERNO — cambio de personaje dentro del sector ────────
-      if (agente === 'AVISO_INTERNO' && personaje_id) {
-        onPersonajeChange?.({ agente: 'AVISO_INTERNO', personaje_id });
-        return;
-      }
-
-      // ── Externos ─────────────────────────────────────────────────────
-      if (agente === 'OSOS') { onInvokeOsos?.(); return; }
-    },
-    onAvisoConectar: (aviso) => onAvisoConectar?.(aviso),
-    onAvisoPublicar: ({ confirmado }) => {
-      if (confirmado) onAvisoPublicar?.({ confirmado: true });
-    },
-  });
-
-  // ── Efectos visuales ────────────────────────────────────────────────────
   useEffect(() => { const t = setInterval(() => setCursor(c => !c), 530); return () => clearInterval(t); }, []);
   useEffect(() => { setCurrentMsg(GREETINGS[Math.floor(Math.random() * GREETINGS.length)]); }, [personaje]);
   useEffect(() => { if (mensaje) setCurrentMsg(mensaje); }, [mensaje]);
@@ -115,13 +93,6 @@ const personajeActivo = (avisos_personaje || personaje || 'evelyn').toLowerCase(
   const campoActual = avisoEnConstruccion
     ? CAMPOS_AVISO.find(c => !avisoEnConstruccion[c]) || 'confirmar'
     : null;
-    
-        // ── Nombre e icono según personaje ──────────────────────────────────────
-    const INFO = {
-  evelyn: { nombre: 'EVELYN', icono: '🐺' },
-  larry:     { nombre: 'LARRY', icono: '🐶' },
-  };
-const { nombre: nombrePersonaje, icono: iconoPersonaje } = INFO[personajeActivo] || INFO.evelyn;
 
   return (
     <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
@@ -183,11 +154,7 @@ const { nombre: nombrePersonaje, icono: iconoPersonaje } = INFO[personajeActivo]
       {/* 2. AVISO PREVIEW */}
       {avisoParaPreview && (
         <div className="w-full max-w-2xl pointer-events-auto mb-3">
-          <AvisoPreviewCard
-            aviso={avisoParaPreview}
-            visible={true}
-            esperandoConfirmar={!!avisoPendiente}
-          />
+          <AvisoPreviewCard aviso={avisoParaPreview} visible={true} />
         </div>
       )}
 
@@ -218,19 +185,16 @@ const { nombre: nombrePersonaje, icono: iconoPersonaje } = INFO[personajeActivo]
           })}
         </div>
       )}
-      
-   
-      {/* 4. BANNER DE TEXTO */}
+
+      {/* 4. BANNER */}
       <div className="w-full max-w-2xl mb-3 pointer-events-auto">
         <div className="av-wrap w-full flex flex-col items-center justify-center text-center">
-        
-           {/* Header — nombre + icono */}
-<div className="flex items-center gap-2 mb-2">
-  <span className="text-lg">{iconoPersonaje}</span>
-  <span style={{ color, fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
-    {nombrePersonaje}
-  </span>
-</div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-lg">{iconoPersonaje}</span>
+            <span style={{ color, fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
+              {nombrePersonaje}
+            </span>
+          </div>
           {!currentMsg && !loading && (
             <p className="text-xs uppercase tracking-widest font-bold" style={{ color: `${colorPrimario}99` }}>
               ◈ {nombreAgente} · AVISOS

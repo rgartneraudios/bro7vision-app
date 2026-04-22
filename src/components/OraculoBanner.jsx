@@ -1,12 +1,8 @@
 // src/components/OraculoBanner.jsx
-// Todo incluido: Banner + Input. Sin forwardRef.
+// Sin hook interno. Recibe enviar/mensaje/loading desde App.jsx via props.
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useAgentChat } from '../hooks/useAgentChat';
 import AgentChatInput from './AgentChatInput';
-
-const MAX_DAILY  = 20;
-const STORAGE_KEY = 'bro7_oraculo_usage';
 
 const GREETINGS = {
   orumama: [
@@ -32,48 +28,38 @@ export default function OraculoBanner({
   personaje = 'orumama',
   oraculo_personaje,
   alias,
-  realItems = [],
-  onInvokeOsos,
-  // ── NUEVO: callback para cambiar personaje activo en App.jsx ──────────
+  // ── Props del hook desde App.jsx ──────────────────
+  enviar,
+  mensaje,
+  loading,
+  // ── Callbacks ────────────────────────────────────
   onPersonajeChange,
+  onInvokeOsos,
 }) {
-  const [display, setDisplay]       = useState('');
-  const [cursor, setCursor]         = useState(true);
+  const [display, setDisplay]   = useState('');
+  const [cursor, setCursor]     = useState(true);
   const [currentMsg, setCurrentMsg] = useState('');
-  const [creditos, setCreditos]     = useState(MAX_DAILY);
   const charIdx = useRef(0);
 
   const personajeActivo = (oraculo_personaje || personaje || 'orumama').toLowerCase();
-  const color           = '#4CFF30';
+  const color = '#4CFF30';
 
-
-  const { mensaje, loading, enviar } = useAgentChat({
-    mode: 'oraculo',
-    contextData: { alias: alias || 'Ciudadano', oraculo_personaje: personajeActivo },
-    realItems,
-    onHandoff: ({ agente, personaje_id }) => {
-
-      // ── ORACULO_INTERNO — cambio de personaje dentro del sector ─────
-      if (agente === 'ORACULO_INTERNO' && personaje_id) {
-        onPersonajeChange?.({ agente: 'ORACULO_INTERNO', personaje_id });
-        return;
-      }
-
-      // ── Externos ────────────────────────────────────────────────────
-      if (agente === 'OSOS') { onInvokeOsos?.(); return; }
-    },
-  });
-
-
-  // ── Efectos visuales ─────────────────────────────────────────────────────
+  // ── Saludo inicial según personaje ───────────────────────────────────────
   useEffect(() => {
     const saludos = GREETINGS[personajeActivo] || GREETINGS['orumama'];
     setCurrentMsg(saludos[Math.floor(Math.random() * saludos.length)]);
   }, [personajeActivo]);
 
+  // ── Actualizar mensaje cuando llega respuesta ────────────────────────────
   useEffect(() => { if (mensaje) setCurrentMsg(mensaje); }, [mensaje]);
-  useEffect(() => { const t = setInterval(() => setCursor(c => !c), 530); return () => clearInterval(t); }, []);
 
+  // ── Cursor parpadeante ───────────────────────────────────────────────────
+  useEffect(() => {
+    const t = setInterval(() => setCursor(c => !c), 530);
+    return () => clearInterval(t);
+  }, []);
+
+  // ── Efecto typewriter ────────────────────────────────────────────────────
   useEffect(() => {
     if (!currentMsg) return;
     charIdx.current = 0;
@@ -88,9 +74,9 @@ export default function OraculoBanner({
 
   // ── Nombre e icono según personaje ──────────────────────────────────────
   const INFO = {
-    orumama:  { nombre: 'ORUMAMA',        icono: '🌿' },
-    jaguar:   { nombre: 'JAGUAR SIDÉREO', icono: '🐯' },
-    smisterio:{ nombre: 'SR. MISTERIO',   icono: '☎️' },
+    orumama:   { nombre: 'ORUMAMA',        icono: '🌿' },
+    jaguar:    { nombre: 'JAGUAR SIDÉREO', icono: '🐯' },
+    smisterio: { nombre: 'SR. MISTERIO',   icono: '☎️' },
   };
   const { nombre: nombrePersonaje, icono: iconoPersonaje } = INFO[personajeActivo] || INFO.orumama;
 
@@ -127,17 +113,17 @@ export default function OraculoBanner({
         }
       `}</style>
 
-      {/* 1. BANNER */}
+      {/* BANNER */}
       <div className="w-full max-w-2xl mb-3 pointer-events-auto">
         <div className="or-wrap w-full">
 
-          {/* Header — nombre + icono */}
-<div className="flex items-center gap-2 mb-2">
-  <span className="text-lg">{iconoPersonaje}</span>
-  <span style={{ color, fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
-    {nombrePersonaje}
-  </span>
-</div>
+          {/* Header */}
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-lg">{iconoPersonaje}</span>
+            <span style={{ color, fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
+              {nombrePersonaje}
+            </span>
+          </div>
 
           {/* Mensaje */}
           <div className="flex flex-col items-center justify-center text-center">
@@ -154,19 +140,14 @@ export default function OraculoBanner({
               </p>
             ) : null}
           </div>
-
-          {creditos <= 0 && (
-            <p style={{ color: '#ff4444', fontSize: 9, textAlign: 'center', marginTop: 8, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em' }}>
-              ⛔ CONSULTAS AGOTADAS — VUELVE MAÑANA
-            </p>
-          )}
         </div>
       </div>
 
-      {/* 2. INPUT */}
+      {/* INPUT */}
       <div className="w-full max-w-2xl pointer-events-auto mb-4">
         <AgentChatInput agent="oraculo" onSend={enviar} isLoading={loading} />
-        </div>
+      </div>
     </div>
   );
 }
+
