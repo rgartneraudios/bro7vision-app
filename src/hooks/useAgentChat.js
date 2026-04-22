@@ -4,7 +4,8 @@
 import { useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { botOrchestrator } from '../services/agents/botOrchestrator';
-import { buildPrompt } from '../services/agents/promptBuilder';
+import { buildPrompt, PERFILES } from '../services/agents/promptBuilder';
+import { KNOWLEDGE_SOURCES } from '../services/agents/knowledgeSources';
 import { buildNovaExploraPrompt } from '../services/agents/novaExploraPS';
 
 import { detectarSectorPS, detectarCiudadPS, detectarEntidadPS } from '../services/agents/ososPS';
@@ -117,6 +118,14 @@ export const useAgentChat = ({
   const [avisoEnConstruccion, setAvisoEnConstruccion] = useState(null);
   const avisoConectarRef = useRef(null);
 
+  // ── Estados del sandwich ──────────────────────────────────────────────────
+  // esperandoConfirmacion: { archivo: 'ia_prepago' } | null
+  const [esperandoConfirmacion, setEsperandoConfirmacion] = useState(null);
+  // botNarrando: true mientras el bot narró y la IA espera para cerrar
+  const [botNarrando, setBotNarrando] = useState(false);
+  // fechaNacimiento: para Jaguar — se guarda cuando el user la escribe
+  const [fechaNacimiento, setFechaNacimiento] = useState(null);
+
   const pushHistory = (role, content) => {
     setChatHistory(prev => {
       const nuevo = [...prev, { role, content }];
@@ -150,12 +159,26 @@ export const useAgentChat = ({
     return null;
   };
 
+  // ── Helper: detectar fecha de nacimiento en texto libre ──────────────────
+  const detectarFecha = (texto) => {
+    // Formatos: DD/MM/YYYY, YYYY-MM-DD, DD-MM-YYYY
+    const regexes = [
+      /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/,
+      /(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/,
+    ]
+    for (const r of regexes) {
+      const m = texto.match(r)
+      if (m) return m[0]
+    }
+    return null
+  }
+
 const enviar = async (textoUsuario) => {
   if (!textoUsuario.trim()) return;
   setLoading(true);
-  
+
   console.log('🔍 useAgentChat:', { mode, iaMode, isAdmin, iaActiva: (iaMode === 'admin' && isAdmin) || (iaMode === 'public' && !isAdmin) });
-  
+
     try {
 
       // ══════════════════════════════════════════════════════════════════
@@ -319,91 +342,164 @@ const enviar = async (textoUsuario) => {
       const iaActiva = (iaMode === 'admin' && isAdmin) || (iaMode === 'public' && !isAdmin);
       const avisoEnProceso = mode === 'avisos' && avisoEnConstruccion?.tipo;
 
-     if (iaActiva && !avisoEnProceso) {
-  const personajeId = resolverPersonajeId();
+      if (iaActiva && !avisoEnProceso) {
+        const personajeId = resolverPersonajeId();
 
-  // ── Nova tiene su propio prompt builder ──────────────────────────
-  if (mode === 'novaExplora') {
-    const systemNova = buildNovaExploraPrompt({
-      alias:  contextData?.alias,
-      ciudad: contextData?.ciudad,
-      port_system_context: {
-        hay_tarjetas:        contextData?.hayTarjetas,
-        intencion_detectada: detectarIntencionNova(textoUsuario),
-        entidad_detectada:   contextData?.entidad || null,
-      },
-    });
-    const respuesta = await llamarGemini({
-      system:      systemNova,
-      messages:    chatHistory.slice(-4),
-      userMessage: textoUsuario,
-      iaMode,
-    });
-    try {
-  // Extraer solo el bloque JSON aunque haya texto antes o después
-  const match = respuesta.match(/\{[\s\S]*\}/);
-  if (!match) throw new Error('No JSON found');
-  const parsed = JSON.parse(match[0]);
-  if (parsed.handoff && parsed.agente_destino) {
-    onHandoff?.({ agente: parsed.agente_destino, bro_id: parsed.bro_id_target || null });
-    setLoading(false);
-    return;
-  }
-  pushHistory('user', textoUsuario);
-  pushHistory('assistant', parsed.mensaje || '...');
-  setMensaje(parsed.mensaje || '...');
-} catch {
-  // Si falla el parse mostrar respuesta cruda
-  pushHistory('user', textoUsuario);
-  pushHistory('assistant', respuesta);
-  setMensaje(respuesta);
-}
-    setLoading(false);
-    return;
-  }
+        // ── Nova tiene su propio prompt builder ────────────────────────
+        if (mode === 'novaExplora') {
+          const systemNova = buildNovaExploraPrompt({
+            alias:  contextData?.alias,
+            ciudad: contextData?.ciudad,
+            port_system_context: {
+              hay_tarjetas:        contextData?.hayTarjetas,
+              intencion_detectada: detectarIntencionNova(textoUsuario),
+              entidad_detectada:   contextData?.entidad || null,
+            },
+          });
+          const respuesta = await llamarGemini({
+            system:      systemNova,
+            messages:    chatHistory.slice(-4),
+            userMessage: textoUsuario,
+            iaMode,
+          });
+          try {
+            const match = respuesta.match(/\{[\s\S]*\}/);
+            if (!match) throw new Error('No JSON found');
+            const parsed = JSON.parse(match[0]);
+            if (parsed.handoff && parsed.agente_destino) {
+              onHandoff?.({ agente: parsed.agente_destino, bro_id: parsed.bro_id_target || null });
+              setLoading(false);
+              return;
+            }
+            pushHistory('user', textoUsuario);
+            pushHistory('assistant', parsed.mensaje || '...');
+            setMensaje(parsed.mensaje || '...');
+          } catch {
+            pushHistory('user', textoUsuario);
+            pushHistory('assistant', respuesta);
+            setMensaje(respuesta);
+          }
+          setLoading(false);
+          return;
+        }
 
-  // ── Resto de personajes → buildPrompt genérico ───────────────────
-  const vivencia = await obtenerVivencia(personajeId);
-  const prompt = buildPrompt({
-    personajeId,
-    vivencia,
-    userMessage: textoUsuario,
-    chatHistory,
-  });
+        // ══════════════════════════════════════════════════════════════
+        // FLUJO SANDWICH — resto de personajes
+        // ══════════════════════════════════════════════════════════════
 
-  if (!prompt) {
-    setMensaje('...');
-    setLoading(false);
-    return;
-  }
+        // ── Jaguar: detectar fecha de nacimiento en el mensaje ─────────
+        if (personajeId === 'jaguar') {
+          const fechaDetectada = detectarFecha(textoUsuario)
+          if (fechaDetectada) setFechaNacimiento(fechaDetectada)
+        }
 
-  const respuesta = await llamarGemini({
-    system:      prompt.system,
-    messages:    prompt.messages,
-    userMessage: textoUsuario,
-    iaMode,
-  });
+        // ── PASO 1: ¿Hay confirmación pendiente del bot? ───────────────
+        if (esperandoConfirmacion) {
+          const confirma = /^(sí|si|vale|claro|cuéntame|cuéntame|adelante|venga|sí por favor|si por favor|ok|okey|va|dale)$/i.test(textoUsuario.trim())
+                        || /\b(sí|si|vale|claro|adelante|venga|cuéntame)\b/i.test(textoUsuario)
 
-  if (respuesta.startsWith('HANDOFF:')) {
-    const partes = respuesta.replace('HANDOFF:', '').trim().split(':');
-    const codigoHandoff  = partes[0];
-    const destinoHandoff = partes[1] || null;
-    onHandoff?.({
-      agente: codigoHandoff,
-      ciudad: ciudadMemoria,
-      ...(destinoHandoff && { personaje_id: destinoHandoff }),
-      ...(destinoHandoff && codigoHandoff === 'OSOS_INTERNO' && { oso_id: destinoHandoff }),
-    });
-    setLoading(false);
-    return;
-  }
+          const cancela  = /^(no|ahora no|paso|déjalo|dejalo|no gracias)$/i.test(textoUsuario.trim())
 
-  pushHistory('user', textoUsuario);
-  pushHistory('assistant', respuesta);
-  setMensaje(respuesta);
-  setLoading(false);
-  return;
-}
+          if (confirma) {
+            const fuentes = KNOWLEDGE_SOURCES[personajeId] || {}
+            const dataBot = fuentes[esperandoConfirmacion.archivo]
+
+            if (dataBot) {
+              const bloque = [dataBot.puente, dataBot.data, dataBot.continua]
+                .filter(Boolean)
+                .join('\n')
+              pushHistory('user', textoUsuario)
+              pushHistory('assistant', bloque)
+              setMensaje(bloque)
+              setEsperandoConfirmacion(null)
+              setBotNarrando(true)
+            } else {
+              setEsperandoConfirmacion(null)
+            }
+            setLoading(false)
+            return
+          }
+
+          if (cancela) {
+            setEsperandoConfirmacion(null)
+            setMensaje('Tranquilo, sin problema. ¿En qué más te puedo ayudar?')
+            setLoading(false)
+            return
+          }
+
+          // Si no confirma ni cancela, borra la espera y sigue normal
+          setEsperandoConfirmacion(null)
+        }
+
+        // ── PASO 2: ¿El bot acaba de narrar? La IA retoma ─────────────
+        // botNarrando=true significa que el último mensaje fue del bot
+        // La IA recibe el continua en el historial y cierra con su voz
+        const esMC = botNarrando
+        if (esMC) setBotNarrando(false)
+        // No hace return — deja que la IA responda normal con el historial
+
+        // ── Construir prompt y llamar a Gemini ────────────────────────
+        const vivencia = await obtenerVivencia(personajeId);
+        const prompt = buildPrompt({
+          personajeId,
+          vivencia,
+          userMessage: esMC ? '[MC] ' + textoUsuario : textoUsuario,
+          chatHistory,
+          fechaNacimiento,
+        });
+
+        if (!prompt) {
+          setMensaje('...');
+          setLoading(false);
+          return;
+        }
+
+        const respuesta = await llamarGemini({
+          system:      prompt.system,
+          messages:    prompt.messages,
+          userMessage: esMC ? '[MC] ' + textoUsuario : textoUsuario,
+          iaMode,
+        });
+
+        // ── PASO 3: ¿La IA emite señal BOT? ──────────────────────────
+        if (respuesta.startsWith('[BOT:')) {
+          const match   = respuesta.match(/\[BOT:(\w+)\]/)
+          const archivo = match?.[1]
+          const perfil  = PERFILES[personajeId]
+          const temaDef = perfil?.temas_propios?.[archivo]
+
+          if (temaDef) {
+            pushHistory('user', textoUsuario)
+            pushHistory('assistant', temaDef.pregunta)
+            setMensaje(temaDef.pregunta)
+            setEsperandoConfirmacion({ archivo })
+            setLoading(false)
+            return
+          }
+        }
+
+        // ── HANDOFF directo de la IA ──────────────────────────────────
+        if (respuesta.startsWith('HANDOFF:')) {
+          const partes = respuesta.replace('HANDOFF:', '').trim().split(':');
+          const codigoHandoff  = partes[0];
+          const destinoHandoff = partes[1] || null;
+          onHandoff?.({
+            agente: codigoHandoff,
+            ciudad: ciudadMemoria,
+            ...(destinoHandoff && { personaje_id: destinoHandoff }),
+            ...(destinoHandoff && codigoHandoff === 'OSOS_INTERNO' && { oso_id: destinoHandoff }),
+          });
+          setLoading(false);
+          return;
+        }
+
+        // ── Respuesta normal ──────────────────────────────────────────
+        pushHistory('user', textoUsuario);
+        pushHistory('assistant', respuesta);
+        setMensaje(respuesta);
+        setLoading(false);
+        return;
+      }
 
       // ══════════════════════════════════════════════════════════════════
       // FALLBACK: BOTS JS
@@ -581,6 +677,9 @@ const enviar = async (textoUsuario) => {
     setTipoMemoria(null);
     setAvisoEnConstruccion(null);
     setRamaActual(null);
+    setEsperandoConfirmacion(null);
+    setBotNarrando(false);
+    setFechaNacimiento(null);
     actoRef.current = 'acto_1';
     avisoConectarRef.current = null;
   };
