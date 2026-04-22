@@ -15,7 +15,7 @@ export const RADIO_CHANNELS_DB = [
    { 
       id: 2, 
       name: 'EL DIARIO DE LARRY-01', 
-      icon: '🔦', 
+      icon: '🐶', 
       color: 'text-red-500', 
       border: 'border-red-600', 
       genre: 'Thriller / Noir',
@@ -33,7 +33,7 @@ export const RADIO_CHANNELS_DB = [
   { 
       id: 4, 
       name: 'EN COMPAÑIA', 
-      icon: '🔦', 
+      icon: '🎷', 
       color: 'text-red-500', 
       border: 'border-pink-600', 
       genre: 'Romantic',
@@ -42,7 +42,7 @@ export const RADIO_CHANNELS_DB = [
   { 
       id: 5, 
       name: 'EN SOLEDAD', 
-      icon: '🔦', 
+      icon: '🏕️', 
       color: 'text-red-500', 
       border: 'border-violet-600', 
       genre: 'Melancholy',
@@ -51,7 +51,7 @@ export const RADIO_CHANNELS_DB = [
    { 
       id: 6, 
       name: 'GUITAR', 
-      icon: '🔦', 
+      icon: '🎸', 
       color: 'text-red-500', 
       border: 'border-yellow-600', 
       genre: 'Guitar Bass Strings',
@@ -60,7 +60,7 @@ export const RADIO_CHANNELS_DB = [
    { 
       id: 7, 
       name: 'ORCHESTRAL-FILM', 
-      icon: '🔦', 
+      icon: '🎻', 
       color: 'text-red-500', 
       border: 'border-orange-600', 
       genre: 'Film Music',
@@ -69,7 +69,7 @@ export const RADIO_CHANNELS_DB = [
    { 
       id: 8, 
       name: 'DIMENSIONS', 
-      icon: '🔦', 
+      icon: '🌌', 
       color: 'text-red-500', 
       border: 'border-blue-600', 
       genre: 'Landscape Music',
@@ -77,7 +77,7 @@ export const RADIO_CHANNELS_DB = [
    { 
       id: 9, 
       name: 'AMBIENT', 
-      icon: '🔦', 
+      icon: '🎧', 
       color: 'text-red-500', 
       border: 'border-white-600', 
       genre: 'Ambient Sounds',
@@ -86,7 +86,7 @@ export const RADIO_CHANNELS_DB = [
    { 
       id: 10, 
       name: 'MELODY', 
-      icon: '🔦', 
+      icon: '🎹', 
       color: 'text-red-500', 
       border: 'border-green-600', 
       genre: 'Romantic',
