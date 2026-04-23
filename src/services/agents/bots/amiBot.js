@@ -3,50 +3,50 @@
 // Sin IA, sin API, sin dependencias externas.
 
 const FRASES_BIENVENIDA = [
-  "Ami aquí 🌅 Acabo de volver del gym. ¿Qué quieres escuchar?",
-  "¡Hola! Soy Ami. Me pillas cargada de energía. ¿Música o podcast?",
-  "Ami al habla. Desayuné bien así que estoy al cien. ¿Qué buscas?",
+  "Ami aquí. Literal acabo de volver del gym. ¿Qué vibes quieres escuchar?",
+  "¡Hola! Soy Ami. Me pillas súper a tope de energía. En plan... ¿música o podcast?",
+  "Ami al habla. Desayuné súper bien, así que estoy al cien. O sea, ¿qué mood buscas?",
   "Soy Ami 🎧 ¿Qué ponemos hoy?",
 ];
 
 const FRASES_EXPLORAR = [
-  "¿Qué estilo te va hoy? Dime y lo buscamos.",
-  "¿Tienes algo en mente o exploramos juntos el catálogo?",
-  "Cuéntame qué quieres escuchar y lo encontramos.",
+  "¿Qué vibe te va hoy? Dime y lo buscamos.",
+  "O sea, ¿tienes algo en mente o probamos con algo súper random?",
+  "Tú cuéntame qué quieres escuchar y lo encontramos, obvio.",
 ];
 
 const FRASES_DESCRIPCION = [
-  "Ese lo tengo en el catálogo. Mira —",
-  "Sí, lo conozco. Aquí va —",
-  "Tengo info de ese. Te cuento —",
+  "Ese literal lo tengo. Mira —",
+   "Sí, obvio lo conozco. Aquí va —",
+  "Tengo toda la info de ese. Te cuento —",
 ];
 
 const FRASES_PLAY = [
-  "Perfecto, lo pongo ahora. 🎵",
-  "Arrancando. Buena elección.",
+"Perfecto, lo pongo ahora. 🎵",
+  "Arrancando. Súper buena elección",
   "Va. A disfrutarlo.",
 ];
 
 const FRASES_HANDOFF_OSOS = [
-  "Te mando con los osos. Yo me preparo el batido 💪",
-  "Los osos te atienden. Hasta luego.",
+  "Te paso con los osos. Yo me hago mi batido 💪",
+"Te dejo con los osos. ¡Bye!",
 ];
 
 // ── Handoff interno → Mapache ──────────────────────────────────────────────
 const FRASES_HANDOFF_MAPACHE = [
   "Mapache está en cabina. Te lo paso 🦝",
-  "¡Mapache! Tienes visita. Ahora te paso con él.",
-  "Mapache tiene lo tuyo. Un momento.",
+"¡Mapache! Tienes visita. Ahora te paso con él.",
+"Mapache tiene lo tuyo. Dame un seg.",
 ];
 
 const FRASES_NO_ENTENDIDO = [
-  "No te he pillado bien. ¿Música, podcast o lives?",
-  "Repítemelo. ¿Qué estás buscando exactamente?",
+  "Ay, cero te he pillado. ¿Música, podcast o lives?",
+"O sea, repítemelo. ¿Qué estás buscando exactamente?",
 ];
 
 const FRASES_SIN_RESULTADOS = [
-  "No encuentro nada con eso ahora mismo. ¿Pruebas con otro nombre?",
-  "No hay nada en el catálogo que encaje. ¿Buscas otra cosa?",
+ "Literal no encuentro nada con eso ahora mismo. ¿Pruebas con otro nombre?",
+"No hay nada en el catálogo con esas vibes. ¿Buscas otra cosa?",
 ];
 
 // Nombres que activan el switch a Mapache

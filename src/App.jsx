@@ -149,6 +149,58 @@ function App() {
     setBalances(prev => ({ ...prev, genesis: newBalance }));
     await supabase.from('profiles').update({ genesis: newBalance }).eq('id', session.user.id);
   };
+  
+  // ══════════════════════════════════════════════════════
+// 2b. CARGA DE STRIP CARDS (extraída para reutilizar)
+// ══════════════════════════════════════════════════════
+
+const cargarStripCards = useCallback(async (agente, ciudad, modalidad = 'LOCAL') => {
+  const roleMap = {
+    'BROSHOP_PRODUCTO': 'shop',
+    'BROSHOP_SERVICIO': 'service',
+    'BROSHOP_AVISO':    'aviso',
+    'AUDIO':            'music',
+  };
+  const esPais      = modalidad === 'ONLINE';
+  const roleBuscado = roleMap[agente];
+  try {
+    let query = supabase
+      .from('profiles')
+      .select('bro_id, bro_ser, bro_avi, bro_aud, bro_pod, banner_url, alias, biz_category, biz_profession, city, address, nearby_ref, ref_price, description, role, audio_type, track_name, audio_description, audio_file')
+      .limit(20);
+    if (!esPais && ciudad) query = query.ilike('city', `%${ciudad}%`);
+    const { data: perfiles, error } = await query;
+    const filtrados = perfiles?.filter(p =>
+      Array.isArray(p.role) ? p.role.includes(roleBuscado) : p.role === roleBuscado
+    ) || [];
+    const cards = agente === 'AUDIO'
+      ? filtrados.flatMap(p => {
+          console.log('🎵 perfil audio:', p.alias, 'audio_file:', p.audio_file, 'bro_aud:', p.bro_aud);
+          if (!p.bro_aud && !p.bro_pod) return [];
+          const esPodcast = p.audio_type === 'podcast';
+          const codigo    = esPodcast ? p.bro_pod : p.bro_aud;
+          if (!codigo) return [];
+          return [{ bro_id: codigo, banner_url: p.banner_url || '', nombre: p.alias || '', audio_file: p.audio_file || '', categoria: esPodcast ? 'Podcast' : 'Música', ciudad: p.city || '', descripcion: p.audio_description || p.description || '', track_name: p.track_name || '', audio_type: p.audio_type || 'music' }];
+        })
+      : agente === 'BROSHOP_SERVICIO'
+      ? filtrados.filter(p => p.bro_ser).map(p => ({ bro_id: p.bro_ser, banner_url: p.banner_url || '', nombre: p.alias || '', categoria: p.biz_profession || p.biz_category || '', ciudad: p.city || '', descripcion: p.description || '', ref_price: p.ref_price || '', address: p.address || '' }))
+      : agente === 'BROSHOP_AVISO'
+      ? filtrados.filter(p => p.bro_avi).map(p => ({ bro_id: p.bro_avi, banner_url: p.banner_url || '', nombre: p.alias || '', categoria: 'Avisos', ciudad: p.city || '', descripcion: p.description || '' }))
+      : filtrados.filter(p => p.bro_id).map(p => ({ bro_id: p.bro_id, banner_url: p.banner_url || '', nombre: p.alias || '', categoria: p.biz_category || p.biz_profession || '', ciudad: p.city || '', descripcion: p.description || p.nearby_ref || '', ref_price: p.ref_price || '', address: p.address || '' }));
+    if (!error && cards.length > 0) {
+      setStripCards(cards);
+      setStripLabel(agente.toLowerCase());
+      setStripVisible(true);
+    } else {
+      setStripCards([]);
+      setStripVisible(false);
+    }
+  } catch (err) {
+    console.error('Error cargando cards:', err);
+    setStripCards([]);
+    setStripVisible(false);
+  }
+}, [supabase]);
 
   // ══════════════════════════════════════════════════════
   // 3. HANDLER CENTRAL DE HANDOFF
@@ -267,51 +319,8 @@ setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
 
     const esPais = modalidad === 'ONLINE';
 
-    (async () => {
-      try {
-        const roleBuscado = roleMap[agente];
-        let query = supabase
-          .from('profiles')
-          .select('bro_id, bro_ser, bro_avi, bro_aud, bro_pod, banner_url, alias, biz_category, biz_profession, city, address, nearby_ref, ref_price, description, role, audio_type, track_name, audio_description, audio_file')
-          .limit(20);
-        if (!esPais && ciudad) query = query.ilike('city', `%${ciudad}%`);
-
-        const { data: perfiles, error } = await query;
-
-        const filtrados = perfiles?.filter(p =>
-          Array.isArray(p.role) ? p.role.includes(roleBuscado) : p.role === roleBuscado
-        ) || [];
-
-        const cards = agente === 'AUDIO'
-          ? filtrados.flatMap(p => {
-          console.log('🎵 perfil audio:', p.alias, 'audio_file:', p.audio_file, 'bro_aud:', p.bro_aud)
-              if (!p.bro_aud && !p.bro_pod) return [];
-              const esPodcast = p.audio_type === 'podcast';
-              const codigo    = esPodcast ? p.bro_pod : p.bro_aud;
-              if (!codigo) return [];
-              return [{ bro_id: codigo, banner_url: p.banner_url || '', nombre: p.alias || '', audio_file:  p.audio_file || '', categoria: esPodcast ? 'Podcast' : 'Música', ciudad: p.city || '', descripcion: p.audio_description || p.description || '', track_name: p.track_name || '', audio_type: p.audio_type || 'music' }];
-            })
-          : agente === 'BROSHOP_SERVICIO'
-          ? filtrados.filter(p => p.bro_ser).map(p => ({ bro_id: p.bro_ser, banner_url: p.banner_url || '', nombre: p.alias || '', categoria: p.biz_profession || p.biz_category || '', ciudad: p.city || '', descripcion: p.description || '', ref_price: p.ref_price || '', address: p.address || '' }))
-          : agente === 'BROSHOP_AVISO'
-          ? filtrados.filter(p => p.bro_avi).map(p => ({ bro_id: p.bro_avi, banner_url: p.banner_url || '', nombre: p.alias || '', categoria: 'Avisos', ciudad: p.city || '', descripcion: p.description || '' }))
-          : filtrados.filter(p => p.bro_id).map(p => ({ bro_id: p.bro_id, banner_url: p.banner_url || '', nombre: p.alias || '', categoria: p.biz_category || p.biz_profession || '', ciudad: p.city || '', descripcion: p.description || p.nearby_ref || '', ref_price: p.ref_price || '', address: p.address || '' }));
-
-        if (!error && cards.length > 0) {
-          setStripCards(cards);
-          setStripLabel(intencion);
-          setStripVisible(true);
-        } else {
-          setStripCards([]);
-          setStripVisible(false);
-        }
-      } catch (err) {
-        console.error('Error cargando cards:', err);
-        setStripCards([]);
-        setStripVisible(false);
-      }
-    })();
-
+    cargarStripCards(agente, ciudad, modalidad);
+    
     setTimeout(() => {
       const ciudadFinal = ciudad || perfilOso?.city || '';
       setScope({ city: String(ciudadFinal), type: 'teleport' });
@@ -450,14 +459,29 @@ const { mensaje: rumoresMensaje, loading: rumoresLoading, enviar: handleRumoresI
     resetOsos();
     setSessionCP('');
     setSessionCity('');
+    setStripCards([]);
+    setStripVisible(false);
   } else if (['productos', 'servicios', 'avisos', 'audios'].includes(targetIntent) && !scope) {
     setStep(1);
     setOsosModo('entrada');
   } else {
     setStep(2);
+    if (scope) {
+      const agenteMap = {
+        productos: 'BROSHOP_PRODUCTO',
+        servicios: 'BROSHOP_SERVICIO',
+        avisos:    'BROSHOP_AVISO',
+        audios:    'AUDIO',
+      };
+      const agente = agenteMap[targetIntent];
+      if (agente) {
+        setStripCards([]);
+        setStripVisible(false);
+        cargarStripCards(agente, scope.city, 'LOCAL');
+      }
+    }
   }
-}, [scope]);
-
+}, [scope, cargarStripCards]);
   const handleLogout = async () => {
     await supabase.auth.signOut();
     localStorage.clear();

@@ -123,12 +123,12 @@ import { tartaria }  from '../../data/smisterio/tartaria.js'
 import { registro_fundadores } from '../../data/rumores/registro_fundadores.js'
 
 // ── Ami y Mapache ─────────────────────────────────────────────────────────────
-import { audio as audio_ami }                          from '../../data/ami/audio.js'
-import { audio as audio_mapache }                      from '../../data/mapache/audio.js'
-import { brotuner as brotuner_ami}                          from '../../data/ami/brotuner.js'
-import { brotuner as brotuner_mapache}                from '../../data/mapache/brotuner.js'
-import { entretenimiento_juegos as juegos_ami }        from '../../data/ami/entretenimiento_juegos.js'
-import { entretenimiento_juegos as juegos_mapache }    from '../../data/mapache/entretenimiento_juegos.js'
+import { audio_ami }                          from '../../data/ami/audio.js'
+import { audio_mapache }                      from '../../data/mapache/audio.js'
+import { brotuner_ami}                          from '../../data/ami/brotuner.js'
+import { brotuner_mapache}                from '../../data/mapache/brotuner.js'
+import { entretenimiento_juegos_ami }        from '../../data/ami/entretenimiento_juegos.js'
+import { entretenimiento_juegos_mapache }    from '../../data/mapache/entretenimiento_juegos.js'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MAPA CENTRAL — fuente única para promptBuilder y useAgentChat

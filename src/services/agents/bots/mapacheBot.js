@@ -3,50 +3,50 @@
 // Sin IA, sin API, sin dependencias externas.
 
 const FRASES_BIENVENIDA = [
-  "Mapache aquí 🦝 Me pillas justo antes de ponerme a bailar. ¿Qué música buscas?",
-  "¡Ey! Mapache en cabina. ¿Qué quieres escuchar hoy?",
-  "Yo soy Mapache. Acabo de ver algo brutal en el móvil — pero primero tú. ¿Qué buscas?",
-  "Mapache al habla 🎧 ¿Música, podcast o quieres ver qué hay?",
+"Mapache aquí 🦝 Me pillas justo antes de ponerme a bailar. ¿Qué música buscas, bro?",
+"¡Ey! Mapache en cabina. ¿Qué te renta escuchar hoy?",
+"Yo soy Mapache. Acabo de ver una movida de locos en el móvil — pero a ver tú. ¿Qué buscas?",
+"Mapache al habla 🎧 ¿Música, podcast o quieres ver qué movida hay?",
 ];
 
 const FRASES_EXPLORAR = [
-  "¿Qué estilo buscas? Dime algo y lo encuentro.",
-  "Cuéntame qué tienes ganas de escuchar.",
-  "¿Tienes artista en mente o exploramos el catálogo?",
+"¿Qué rollo buscas? Dime algo y lo encuentro.",
+"Tú dirás qué te renta escuchar.",
+"¿Tienes a alguien en mente o miramos a ver qué hay?",
 ];
 
 const FRASES_DESCRIPCION = [
-  "Ese canal lo conozco. Mira —",
-  "Sí, lo tengo en el catálogo. Aquí va —",
-  "Lo he escuchado. Te cuento —",
+"Ese canal está guapo. Mira —",
+"Sí, tío, lo tengo en el catálogo. Aquí va —",
+"Ya ves, lo he escuchado. Te cuento —",
 ];
 
 const FRASES_PLAY = [
-  "Dale, lo pongo ahora. 🎵",
-  "Arrancando.",
-  "Va. Dale al play.",
+"De locos, lo pongo ahora. 🎵",
+"Arrancando. A tope.",
+"Va. Dale al play, bro.",
 ];
 
 const FRASES_HANDOFF_OSOS = [
-  "Te mando con los osos. Yo me voy a por una hamburguesa 🍔",
-  "Los osos te atienden. Yo tenía algo pendiente de todos modos.",
+"Te paso con los osos. Yo me voy a pillar una hamburguesa 🍔",
+"Los osos te atienden. Yo tenía una movida que hacer de todos modos.",
 ];
 
 // ── Handoff interno → Ami ──────────────────────────────────────────────────
 const FRASES_HANDOFF_AMI = [
-  "Ami está por aquí. Te la paso 🌅",
-  "Ami, ¡tienes visita! Te paso con ella.",
-  "Ami lo tiene todo controlado. Un segundo 💪",
+"Ami está por aquí. Te la paso 🌅",
+"Ami, ¡tienes visita! Te paso con mi hermana.",
+"La pesada de Ami lo tiene controlado. Dame un seg 💪",
 ];
 
 const FRASES_NO_ENTENDIDO = [
-  "No te he pillado. ¿Música, podcast o lives?",
-  "Repítemelo. Estaba mirando el móvil un segundo.",
+"No te he pillado, bro. ¿Música, podcast o lives?",
+"Repítemelo, tío. Estaba mirando el móvil.",
 ];
 
 const FRASES_SIN_RESULTADOS = [
-  "No encuentro nada con eso. ¿Pruebas con otro nombre?",
-  "No hay nada en el catálogo que encaje. ¿Buscas otra cosa?",
+"No encuentro nada de eso. ¿Pruebas con otra movida?",
+"No hay nada con ese rollo en el catálogo. ¿Buscas otra cosa?",
 ];
 
 // Nombres que activan el switch a Ami

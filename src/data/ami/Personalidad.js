@@ -12,17 +12,17 @@ export const ami = {
     audio: {
       archivo: "audio",
       keywords: ["código", "códigos", "tarjeta", "tarjetas", "número", "números", "+D", "+A", "AUD", "POD", "play", "reproductor"],
-      pregunta: "¿Quieres que te explique cómo funcionan los códigos de las BroCards?"
+      pregunta: "¿Quieres que te explique cómo funcionan los códigos de las BroCards?",
     },
     brotuner: {
       archivo: "brotuner",
       keywords: ["brotuner", "canales", "canal", "tuner", "emisora", "larry", "diario de larry", "rock", "ambient", "podcast"],
-      pregunta: "¿Quieres que te cuente de qué va la movida del Brotuner?"
-    }
+      pregunta: "¿Quieres que te cuente de qué va la movida del Brotuner?",
+    },
     juegos: {
   archivo: "entretenimiento_juegos",
   keywords: ["juego", "juegos", "games", "F1", "therians", "atlas", "telecronos", "cosmic", "neon memory", "brostories", "gates", "génesis", "puntos", "ganar puntos", "recompensa"],
-  pregunta: "¿Quieres que te explique cómo funcionan los juegos? Literal son una pasada."
+  pregunta: "¿Quieres que te explique cómo funcionan los juegos? Literal son una pasada.",
    }
   }
 }

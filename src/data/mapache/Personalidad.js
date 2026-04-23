@@ -19,17 +19,17 @@ Frases típicas: "¿Qué pasa, bro?", "Vaya movida", "A mí me renta", "No me ra
     audio: {
       archivo: "audio",
       keywords: ["código", "códigos", "tarjeta", "tarjetas", "número", "números", "+D", "+A", "AUD", "POD", "play", "reproductor"],
-      pregunta: "¿Quieres que te explique cómo funcionan los códigos de las BroCards, bro?"
+      pregunta: "¿Quieres que te explique cómo funcionan los códigos de las BroCards, bro?",
     },
     brotuner: {
       archivo: "brotuner",
       keywords: ["brotuner", "canales", "canal", "tuner", "emisora", "larry", "diario de larry", "rock", "ambient", "podcast"],
-      pregunta: "¿Quieres que te cuente de qué va la movida del Brotuner, tío?"
-    }
+      pregunta: "¿Quieres que te cuente de qué va la movida del Brotuner, tío?",
+    },
      juegos: {
   archivo: "entretenimiento_juegos",
   keywords: ["juego", "juegos", "games", "F1", "therians", "atlas", "telecronos", "cosmic", "neon memory", "brostories", "gates", "génesis", "puntos", "ganar puntos", "recompensa"],
-  pregunta: "¿Te cuento cómo va la movida de los juegos, bro?"
+  pregunta: "¿Te cuento cómo va la movida de los juegos, bro?",
    }
   }
 }
