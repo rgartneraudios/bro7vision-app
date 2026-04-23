@@ -7,6 +7,7 @@ import { botOrchestrator } from '../services/agents/botOrchestrator';
 import { buildPrompt, PERFILES } from '../services/agents/promptBuilder';
 import { KNOWLEDGE_SOURCES } from '../services/agents/knowledgeSources';
 import { buildNovaExploraPrompt } from '../services/agents/novaExploraPS';
+import { detectarBusquedaProducto, fraseBuscando } from '../services/agents/bots/novaBot';
 
 import { detectarSectorPS, detectarCiudadPS, detectarEntidadPS } from '../services/agents/ososPS';
 import { detectarRama } from '../services/agents/bots/ososUtils';
@@ -599,6 +600,14 @@ if (/\b(stop|para|detén|frena|detener|frenar)\b/i.test(textoUsuario)) {
       }
 
       if (mode === 'novaExplora') {
+        // Detectar búsqueda de producto PRIMERO — sin IA
+        const keyword = detectarBusquedaProducto(textoUsuario);
+        if (keyword) {
+          setMensaje(fraseBuscando());
+          onHandoff?.({ agente: 'BUSCAR_STRIP', keyword, intencion: 'BROSHOP_PRODUCTO' });
+          return;
+        }
+
         const resultado = await botOrchestrator({
           mode: 'novaExplora', textoUsuario,
           entidad:     contextData?.entidad,

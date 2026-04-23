@@ -1,6 +1,4 @@
 // src/components/IsabellaBanner.jsx
-// Sin hook interno. Recibe enviar/mensaje/loading desde App.jsx via props.
-
 import React, { useState, useEffect, useRef } from 'react';
 import AgentChatInput from './AgentChatInput';
 import BroCardStrip from './BroCardStrip';
@@ -26,39 +24,28 @@ const INFO = {
 
 export default function IsabellaBanner({
   personaje = 'isabella',
-  sessionCity,
-  sessionCP,
-  realItems = [],
-  stripVisible,
-  stripCards,
-  stripLabel,
-  // ── Props del hook desde App.jsx ──────────────────
-  enviar,
-  mensaje,
-  loading,
-  // ── Callbacks ─────────────────────────────────────
-  onEntityFocus,
-  onOpenTerminal,
-  onSetActiveIndex,
-  onInvokeOsos,
-  onInvokeMapache,
-  setIntent,
+  sessionCity, sessionCP, realItems = [],
+  stripVisible, stripCards, stripLabel,
+  enviar, mensaje, loading,
+  onEntityFocus, onOpenTerminal, onSetActiveIndex,
+  onInvokeOsos, onInvokeMapache, setIntent,
   onPersonajeChange,
+  onHandoff,   // ← para ISABELLA_CIERRE
 }) {
   const [display, setDisplay]       = useState('');
   const [cursor, setCursor]         = useState(true);
   const [currentMsg, setCurrentMsg] = useState('');
+  const [selectedCard, setSelectedCard] = useState(null);  // ← NUEVO
   const charIdx = useRef(0);
 
   const personajeActivo = (personaje || 'isabella').toLowerCase();
   const isMaestro       = personajeActivo === 'profesor';
   const GREETINGS       = isMaestro ? GREETINGS_MAESTRO : GREETINGS_ISABELLA;
   const { nombre: nombrePersonaje, icono: iconoPersonaje } = INFO[personajeActivo] || INFO.isabella;
-  const color = '#F7C8BE';
 
   useEffect(() => { const t = setInterval(() => setCursor(c => !c), 530); return () => clearInterval(t); }, []);
   useEffect(() => { setCurrentMsg(GREETINGS[Math.floor(Math.random() * GREETINGS.length)]); }, [personaje]);
-  useEffect(() => { if (mensaje) setCurrentMsg(mensaje); }, [mensaje]);
+  useEffect(() => { if (mensaje) { setCurrentMsg(mensaje); setSelectedCard(null); } }, [mensaje]);
 
   useEffect(() => {
     if (!currentMsg) return;
@@ -71,6 +58,29 @@ export default function IsabellaBanner({
     }, 28);
     return () => clearInterval(t);
   }, [currentMsg]);
+
+  // ── Clic en BroCard — toggle ─────────────────────────────────────────────
+  const handleCardClick = (card) => {
+    setSelectedCard(prev =>
+      prev?.bro_id === card.bro_id ? null : card
+    );
+  };
+
+  // ── Enviar desde input → limpia card ────────────────────────────────────
+  const handleEnviar = (texto) => {
+    setSelectedCard(null);
+    enviar(texto);
+  };
+
+  // ── Botón ENTRAR → HandOff ISABELLA_CIERRE ──────────────────────────────
+  const handleEntrar = () => {
+    if (!selectedCard || !onHandoff) return;
+    onHandoff({
+      agente:   'ISABELLA_CIERRE',
+      comercio: selectedCard.bro_id || selectedCard.bro_ser,
+    });
+    setSelectedCard(null);
+  };
 
   return (
     <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
@@ -116,7 +126,7 @@ export default function IsabellaBanner({
         <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
           <BroCardStrip
             cards={stripCards}
-            onSelectCard={(card) => enviar(`${card.bro_id || card.bro_ser}D`)}
+            onSelectCard={handleCardClick}
             accentColor="slate"
             label={stripLabel}
             visible={stripVisible}
@@ -127,32 +137,86 @@ export default function IsabellaBanner({
       {/* 2. BANNER */}
       <div className="w-full max-w-2xl mb-3 pointer-events-auto">
         <div className="sv-wrap w-full flex flex-col items-center justify-center text-center">
+
+          {/* Header personaje — siempre visible */}
           <div className="flex items-center gap-2 mb-2">
             <span className="text-lg">{iconoPersonaje}</span>
-            <span style={{ color, fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
+            <span style={{ color: '#F7C8BE', fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
               {nombrePersonaje}
             </span>
           </div>
-          {!currentMsg && !loading && (
+
+          {/* Sin mensaje ni card */}
+          {!currentMsg && !loading && !selectedCard && (
             <p className="text-slate-500/60 text-xs uppercase tracking-widest font-bold">
               ◈ {nombrePersonaje} · EN LÍNEA
             </p>
           )}
-          {loading ? (
+
+          {/* Procesando */}
+          {loading && !selectedCard && (
             <div className="sv-loading"><span /><span /><span /></div>
-          ) : (
-            currentMsg && (
-              <p className="sv-texto">
-                {display}<span className="sv-cursor" style={{ opacity: cursor ? 1 : 0 }} />
-              </p>
-            )
           )}
+
+          {/* Card seleccionada — descripción con estética Isabella */}
+          {selectedCard && !loading && (
+            <div className="w-full flex flex-col items-center gap-3" style={{ animation: 'stripIn 0.3s ease both' }}>
+              {/* Nombre */}
+              <p className="sv-texto" style={{ minHeight: 'unset', fontSize: 'clamp(13px, 2vw, 16px)' }}>
+                {selectedCard.nombre}
+              </p>
+
+              {(selectedCard.neighborhood || selectedCard.nearby_ref) && (
+  <p className="text-amber-500/80 font-bold uppercase text-xs tracking-[0.25em]"
+     style={{ textShadow: '0 0 8px rgba(251,191,36,0.4)' }}>
+    {selectedCard.neighborhood}{selectedCard.neighborhood && selectedCard.nearby_ref ? ' · ' : ''}{selectedCard.nearby_ref}
+  </p>
+)}
+              {/* Descripción — misma clase sv-texto que los mensajes */}
+              <p className="sv-texto">
+                {selectedCard.descripcion}
+                <span className="sv-cursor" style={{ opacity: cursor ? 1 : 0 }} />
+              </p>
+
+              {/* Botón ENTRAR */}
+              <button
+                onClick={handleEntrar}
+                style={{
+                  marginTop: 4,
+                  padding: '10px 32px',
+                  background: 'rgba(245,40,145,0.15)',
+                  border: '1px solid rgba(245,40,145,0.6)',
+                  borderRadius: '1rem',
+                  color: '#F792CF',
+                  fontWeight: 900,
+                  fontSize: 13,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.15em',
+                  cursor: 'pointer',
+                  boxShadow: '0 0 14px rgba(245,40,145,0.25)',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,40,145,0.35)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'rgba(245,40,145,0.15)'}
+              >
+                ➤ ENTRAR
+              </button>
+            </div>
+          )}
+
+          {/* Mensaje del bot — solo si no hay card */}
+          {!selectedCard && !loading && currentMsg && (
+            <p className="sv-texto">
+              {display}<span className="sv-cursor" style={{ opacity: cursor ? 1 : 0 }} />
+            </p>
+          )}
+
         </div>
       </div>
 
       {/* 3. INPUT */}
       <div className="w-full max-w-2xl pointer-events-auto mb-4">
-        <AgentChatInput agent="isabella" onSend={enviar} isLoading={loading} />
+        <AgentChatInput agent="isabella" onSend={handleEnviar} isLoading={loading} />
       </div>
     </div>
   );

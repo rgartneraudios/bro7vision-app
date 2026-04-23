@@ -2,15 +2,15 @@
 // ═══════════════════════════════════════════════════
 // Orquestador principal de la experiencia de compra.
 // Pantallas:
-//   'novaVentas'     → VentasBanner[nova]
-//   'isabellaVentas' → VentasBanner[isabella]
+//   'novaCierre'     → VentasBanner[nova]
+//   'isabellaCierre' → VentasBanner[isabella]
 //   'carro'          → CarroGeneral
 //
 // Flujo:
-//   novaVentas ──→ carro
-//   isabellaVentas → carro
-//   carro ──← Volver Productos  → novaVentas
-//   carro ──← Volver Servicios  → isabellaVentas
+//   novaCierre ──→ carro
+//   isabellaCierre → carro
+//   carro ──← Volver Productos  → novaCierre
+//   carro ──← Volver Servicios  → isabellaCierre
 // ═══════════════════════════════════════════════════
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -34,7 +34,7 @@ const PaymentModal = ({
   card,
   balances,
   setBalances,
-  ventasMode   = 'novaVentas',   // 'novaVentas' | 'isabellaVentas'
+  ventasMode   = 'novaVentas',   // 'novaCierre' | 'isabellaCierre'
   currentUser  = null,
   onClose,
   onHandoff,
@@ -44,10 +44,10 @@ const PaymentModal = ({
 
   // ── Pantalla activa ───────────────────────────────
   // Arranca en la zona de entrada según ventasMode
-  const [pantalla, setPantalla] = useState(ventasMode); // 'novaVentas'|'isabellaVentas'|'carro'
+  const [pantalla, setPantalla] = useState(ventasMode); // 'novaCierre'|'isabellaCierre'|'carro'
 
   // ── Personaje activo según pantalla ──────────────
-  const personaje = pantalla === 'isabellaVentas'
+  const personaje = pantalla === 'isabellaCierre'
     ? (currentUser?.servicios_personaje || 'isabella')
     : 'nova';
 
@@ -144,7 +144,7 @@ if (profileData?.video_file_219) {
   }, [procesarAccion, onHandoff]);
 
   // ── useAgentChat ──────────────────────────────────
-  const modeChat = pantalla === 'isabellaVentas' ? 'isabellaVentas' : 'novaVentas';
+  const modeChat = pantalla === 'isabellaCierre' ? 'isabellaCierre' : 'novaCierre';
 
   const { mensaje, bolas, loading, enviar } = useAgentChat({
     mode:         modeChat,
@@ -195,7 +195,7 @@ if (profileData?.video_file_219) {
   // ── Render ────────────────────────────────────────
 
   // VentasBanner (Nova o Isabella)
-if (pantalla === 'novaVentas') {
+if (pantalla === 'novaCierre') {
     return (
       <NovaCierre
         comercio     = {comercioPerfil || { nombre_comercio: card?.alias || card?.name }}
@@ -215,7 +215,7 @@ if (pantalla === 'novaVentas') {
   }
 
   // Ruta 2: Servicios (Isabella o PRMaestro)
-  if (pantalla === 'isabellaVentas') {
+  if (pantalla === 'isabellaCierre') {
     return (
       <IsabellaCierre
         personaje    = {personaje} 
@@ -245,8 +245,8 @@ if (pantalla === 'novaVentas') {
         precios          = {precios}
         regalo_precio    = {comercioPerfil?.regalo_precio || 0}
         onConfirmar      = {handleConfirmarPedido}
-        onVolverNova     = {() => setPantalla('novaVentas')}
-        onVolverIsabella = {() => setPantalla('isabellaVentas')}
+        onVolverNova     = {() => setPantalla('novaCierre')}
+        onVolverIsabella = {() => setPantalla('isabellaCierre')}
         usuario_nombre   = {currentUser?.osos_nombre || currentUser?.alias || 'ciudadano'}
         videoUrl         = "/videos/CerrarCarrito.mp4"
       />

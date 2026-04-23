@@ -7,15 +7,15 @@ import AgentChatInput from './AgentChatInput';
 import BroCardStrip from './BroCardStrip';
 
 const GREETINGS_MAPACHE = [
-  "Mapache en cabina. ¿Qué ritmo buscamos hoy? 🎧",
-  "Soy Mapache. Pon Play a lo que necesites.",
-  "Aquí Mapache. Ajustando frecuencias... ¿Qué quieres escuchar?",
+"Mapache en cabina. ¿Qué rollo buscamos hoy? 🎧",
+"Soy Mapache. Dale al play a lo que te rente.",
+"Aquí Mapache. Ajustando la movida... ¿Qué quieres escuchar, bro?",
 ];
 
 const GREETINGS_AMI = [
-  "Ami al micrófono. ¿Qué historia sonora descubrimos hoy? 🎙️",
-  "Soy Ami. El dial está abierto para ti.",
-  "Ami lista. Dime qué buscas en el dial.",
+"Ami al micrófono. ¿Qué vibes descubrimos hoy? 🎙️",
+"Soy Ami. Literal, el dial es todo tuyo.",
+"Ami súper lista. Dime qué buscas en el dial.",
 ];
 
 export default function MapacheBanner({

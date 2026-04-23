@@ -1,37 +1,14 @@
+// src/components/BroCardStrip.jsx  v3
+// ─────────────────────────────────────────────────────────────
+// Imagen a sangre + ALIAS del comercio abajo.
+// bro_id es solo interno — el user ve la imagen y el nombre.
+// ─────────────────────────────────────────────────────────────
 import { useRef, useEffect, useState, useCallback } from "react";
-
-/**
- * BroCardStrip.jsx  v2 — MINIMAL
- * ─────────────────────────────────────────────────────────────
- * Imagen a sangre + BRO-ID grande abajo. Sin nombre, sin ciudad,
- * sin categoría — Nova lo sabe todo, el user solo ve imagen y código.
- *
- * Props:
- *   cards        → array de objetos (ver estructura abajo)
- *   onSelectCard → callback(card) cuando el user elige una
- *   accentColor  → 'gold' (Nova) | 'cyan' (Mapache)
- *   label        → texto encima del strip (ej. "zapatillas · 5 resultados")
- *   visible      → booleano para mostrar/ocultar con animación
- *
- * Estructura de cada card — solo banner_url y bro_id son visibles al user.
- * El resto (nombre, categoria, ciudad, descripcion) es contexto para Nova:
- *   {
- *     bro_id:      "COM-124",
- *     banner_url:  "https://...",
- *     nombre:      "Zapatería Marcos",
- *     categoria:   "Calzado",
- *     ciudad:      "Oviedo",
- *     descripcion: "Tienda familiar desde 1987...",
- *   }
- * ─────────────────────────────────────────────────────────────
- */
 
 const THEMES = {
   gold:  { glow: "rgba(251,191,36,0.5)",  border: "#fbbf24", idColor: "#fbbf24", footerBg: "#000000" },
   cyan:  { glow: "rgba(34,211,238,0.5)",  border: "#22d3ee", idColor: "#22d3ee", footerBg: "#000000" },
-  // Isabella — footer gris slate, letras blancas
   slate: { glow: "rgba(100,116,139,0.5)", border: "#64748b", idColor: "#ffffff", footerBg: "#475569" },
-  // Evelyn — footer azul marino, letras blancas
   blue:  { glow: "rgba(30,58,138,0.5)",   border: "#1e3a8a", idColor: "#ffffff", footerBg: "#1e3a8a" },
 };
 
@@ -52,6 +29,11 @@ function BroCard({ card, theme, onClick, index }) {
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
+
+  // El alias: usa nombre si existe, si no recorta el bro_id (fallback)
+  const displayName = card.nombre
+    ? card.nombre.length > 10 ? card.nombre.slice(0, 10) + '…' : card.nombre
+    : card.bro_id;
 
   return (
     <div
@@ -88,7 +70,7 @@ function BroCard({ card, theme, onClick, index }) {
         {inView && card.banner_url && (
           <img
             src={card.banner_url}
-            alt={card.bro_id}
+            alt={displayName}
             onLoad={() => setLoaded(true)}
             style={{
               width: "100%", height: "100%", objectFit: "cover", display: "block",
@@ -107,20 +89,30 @@ function BroCard({ card, theme, onClick, index }) {
         )}
       </div>
 
-      {/* FOOTER — color por theme + letras blancas para slate/blue */}
-<div style={{
-  height: "44px", background: t.footerBg,
-  display: "flex", alignItems: "center", justifyContent: "center",
-}}>
-  <span style={{
-    fontFamily: "'Orbitron', 'Courier New', monospace",
-    fontWeight: 900, fontSize: "16px", letterSpacing: "0.1em",
-    color: t.idColor,
-  }}>
-    {card.bro_id}
-  </span>
-</div>
-   </div>
+      {/* FOOTER — alias del comercio, no el bro_id */}
+      <div style={{
+        height: "44px", background: t.footerBg,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "0 6px",
+      }}>
+        <span style={{
+          fontFamily: "'Orbitron', 'Courier New', monospace",
+          fontWeight: 700,
+          fontSize: "11px",
+          letterSpacing: "0.05em",
+          color: t.idColor,
+          textAlign: "center",
+          lineHeight: 1.2,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          width: "100%",
+          textAlign: "center",
+        }}>
+          {displayName}
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -195,7 +187,6 @@ export default function BroCardStrip({
       `}</style>
 
       <div style={{ width: "100%", animation: "stripIn 0.35s ease both" }}>
-
         <div style={{ position: "relative" }}>
           {canLeft && (
             <>

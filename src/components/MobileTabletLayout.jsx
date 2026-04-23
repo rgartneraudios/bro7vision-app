@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import CityLocationBanner from './CityLocationBanner';
 import AgentChatInput from './AgentChatInput';
 import NeuralButton from './NeuralButton';
+import BroCardStrip from './BroCardStrip';
 
 // ─── ESTILOS NEÓN ───────────────────────────────────────────────────────────
 const MOBILE_STYLES = `
@@ -16,7 +17,6 @@ const MOBILE_STYLES = `
   }
   .mobile-display-font { font-family: 'Bebas Neue', sans-serif; }
 
-  /* ESTILO ENORME TIPO BANNER */
   .huge-neon-text {
     font-family: 'Courier New', monospace;
     color: #fff;
@@ -66,18 +66,20 @@ const MOBILE_STYLES = `
     from { opacity: 0; transform: translateY(10px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-  .accordion-open { 
-    animation: accordion-open 0.2s ease-out forwards; 
-    /* ¡Eliminamos el overflow: hidden y el max-height! */
+  .accordion-open { animation: accordion-open 0.2s ease-out forwards; }
+
+  @keyframes burbuja-in {
+    from { opacity: 0; transform: translateY(20px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0)    scale(1);    }
   }
-  
+  .burbuja-in { animation: burbuja-in 0.3s cubic-bezier(0.16,1,0.3,1) forwards; }
+
   @keyframes dpad-press {
     0%,100% { transform: scale(1); }
     50%      { transform: scale(0.88); }
   }
   .dpad-press { animation: dpad-press 0.15s ease-in-out; }
 
-  /* Scrollbar neón */
   .bro-scroll::-webkit-scrollbar       { width: 3px; }
   .bro-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.4); }
   .bro-scroll::-webkit-scrollbar-thumb { background: #00ffff; border-radius: 4px; box-shadow: 0 0 6px #00ffff; }
@@ -120,543 +122,129 @@ const MOBILE_STYLES = `
   }
 `;
 
-// ─── COMPONENTE ─────────────────────────────────────────────────────────────
-const MobileTabletLayout = ({
-  children,
-  realityMode,
-  setRealityMode,
-  scope, setScope,
-  step, setStep,
-  intent, setIntent,
-  session,
-  balances,
-  navItems,
-  handleNavigation,
-  chatMobile,
-  ososModo, setOsosModo,
-  perfilOso,
-  perfilSector,
-  setShowBooster,
-  setShowWalletModal,
-  handleLogout,
-  isLeftOpen,  setIsLeftOpen,
-  isRightOpen, setIsRightOpen,
-  iaMode,
-  isAdmin,
-  userCredits,
-  onToggleAdminIA,
-  onTogglePublicIA,
-  onShowPurchaseModal,
-  ...props
-}) => {
+// ─── ACCENT POR SECTOR ──────────────────────────────────────────────────────
+const SECTOR_ACCENT = {
+  gps:             '#d946ef',
+  productos:       '#facc15',
+  servicios:       '#f43f5e',
+  avisos:          '#94a3b8',
+  audios:          '#22d3ee',
+  internal_search: '#fb923c',
+  ai:              '#a3e635',
+  game:            '#ffffff',
+};
 
-  const[footerMode, setFooterMode]   = useState('chat');
-  const [inputText,  setInputText]    = useState('');
-  const [messages,   setMessages]     = useState([]);
-  const[dpadActive, setDpadActive]   = useState(null);
-  const { enviar, mensaje: chatMensaje, loading: chatLoading } = chatMobile || {};
-  const inputRef = useRef(null);
-  
-  const REALITIES = [
-  { id: 'moon',         title: 'MOON PHASE',   desc: 'Fase Luna',         icon: '🌕', color: '#ffffff', group: 'NEUTRAL' },
-  { id: 'solo_earth',   title: 'SOLO EARTH',   desc: 'Sincronía Vital',   icon: '🌍', color: '#34d399', group: 'SOLO' },
-  { id: 'solo_fantasy', title: 'SOLO FANTASY', desc: 'Exploración',       icon: '🏰', color: '#22d3ee', group: 'SOLO' },
-  { id: 'solo_cinema',  title: 'SOLO CINEMA',  desc: 'Viajero del Tiempo',icon: '🏛️', color: '#fbbf24', group: 'SOLO' },
-  { id: 'band_earth',   title: 'BAND EARTH',   desc: 'Nexo Ciudadano',    icon: '🏙️', color: '#60a5fa', group: 'BAND' },
-  { id: 'band_fantasy', title: 'BAND FANTASY', desc: 'Alien Lounge',      icon: '👾', color: '#e879f9', group: 'BAND' },
-  { id: 'band_cinema',  title: 'BAND CINEMA',  desc: 'El Ágora',          icon: '🎭', color: '#fb923c', group: 'BAND' },
-  { id: 'este',         title: 'CANAL ESTE',   desc: 'Horizonte Levante', icon: '📱', color: '#22d3ee', group: 'ESPACIO' },
-  { id: 'oeste',        title: 'CANAL OESTE',  desc: 'Horizonte Poniente',icon: '📱', color: '#e879f9', group: 'ESPACIO' },
+// Tema BroCardStrip según sector
+const STRIP_THEME = {
+  productos: 'gold',
+  servicios: 'slate',
+  avisos:    'blue',
+  audios:    'cyan',
+};
+
+// HandOff de cierre según sector
+const CIERRE_AGENTE = {
+  productos: 'NOVA_CIERRE',
+  servicios: 'ISABELLA_CIERRE',
+  avisos:    'EVELYN_CIERRE',
+  audios:    'AUDIO_PLAY',
+};
+
+const SECTOR_AVATARS = {
+  gps:             { tito: '/emojis/tito.webp', lara: '/emojis/lara.webp', puffo: '/emojis/puffo.webp' },
+  productos:       { nova: '/emojis/nova.webp' },
+  servicios:       { isabella: '/emojis/isabella.webp', profesor: '/emojis/prmaestro.webp' },
+  avisos:          { evelyn: '/emojis/evelyn.webp', larry: '/emojis/larry.webp' },
+  audios:          { mapache: '/emojis/mapache.webp', ami: '/emojis/ami.webp' },
+  internal_search: { rumores: '/emojis/rumores.webp' },
+  ai:              { orumama: '/emojis/orumama.webp', jaguar: '/emojis/jaguar.webp', smisterio: '/emojis/smisterio.webp' },
+  game:            { default: '/emojis/emoji_5.webp' },
+};
+
+const REALITIES = [
+  { id: 'moon',         title: 'MOON PHASE',   desc: 'Fase Luna',          icon: '🌕', color: '#ffffff', group: 'NEUTRAL' },
+  { id: 'solo_earth',   title: 'SOLO EARTH',   desc: 'Sincronía Vital',    icon: '🌍', color: '#34d399', group: 'SOLO' },
+  { id: 'solo_fantasy', title: 'SOLO FANTASY', desc: 'Exploración',        icon: '🏰', color: '#22d3ee', group: 'SOLO' },
+  { id: 'solo_cinema',  title: 'SOLO CINEMA',  desc: 'Viajero del Tiempo', icon: '🏛️', color: '#fbbf24', group: 'SOLO' },
+  { id: 'band_earth',   title: 'BAND EARTH',   desc: 'Nexo Ciudadano',     icon: '🏙️', color: '#60a5fa', group: 'BAND' },
+  { id: 'band_fantasy', title: 'BAND FANTASY', desc: 'Alien Lounge',       icon: '👾', color: '#e879f9', group: 'BAND' },
+  { id: 'band_cinema',  title: 'BAND CINEMA',  desc: 'El Ágora',           icon: '🎭', color: '#fb923c', group: 'BAND' },
+  { id: 'este',         title: 'CANAL ESTE',   desc: 'Horizonte Levante',  icon: '📱', color: '#22d3ee', group: 'ESPACIO' },
+  { id: 'oeste',        title: 'CANAL OESTE',  desc: 'Horizonte Poniente', icon: '📱', color: '#e879f9', group: 'ESPACIO' },
 ];
 
-  const lastBotMsgId = useRef(null);
+// ─── PUERTAS (reutilizadas en los 3 early returns) ──────────────────────────
+function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
+                   accent, balances, navItems, handleNavigation, setMessages,
+                   iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA,
+                   onShowPurchaseModal, handleLogout, intent,
+                   setStep, setRealityMode, setScope }) {
+  const [dpadActive, setDpadActive] = useState(null);
+  const handleDpad = (dir) => { setDpadActive(dir); setTimeout(() => setDpadActive(null), 150); };
 
-useEffect(() => {
-  if (!chatMensaje) return;
-  const msgId = `${chatMensaje}-${Date.now()}`;
-  if (lastBotMsgId.current === chatMensaje) return; // solo bloquea duplicados inmediatos
-  lastBotMsgId.current = chatMensaje;
-  setMessages(prev => [...prev, { from: 'bot', text: chatMensaje, ts: Date.now() }]);
-}, [chatMensaje]);
-
-  // ✅ Fix
-const handleSend = () => {
-  const txt = inputText.trim();
-  if (!txt || chatLoading) return;  // chatLoading viene de la desestructuración de arriba
-  setMessages(prev => [...prev, { from: 'user', text: txt, ts: Date.now() }]);
-  enviar?.(txt);
-  setInputText('');
-};
-
-  const handleDpad = (dir) => {
-    setDpadActive(dir);
-    setTimeout(() => setDpadActive(null), 150);
-    console.log('[DPAD]', dir);
-  };
-
-  const activeSector = navItems?.find(n => n.id === intent);
-  const sectorLabel = step === 1 
-  ? 'OSOS' 
-  : activeSector?.label || 'OSOS';
-  
-  const SECTOR_ACCENT = {
-    gps:             '#d946ef',
-    productos:       '#facc15',
-    servicios:       '#f43f5e',
-    avisos:          '#94a3b8',
-    lives:           '#22d3ee',
-    internal_search: '#fb923c',
-    ai:              '#a3e635',
-    game:            '#ffffff',
-  };
-  const accent = SECTOR_ACCENT[intent] || '#00ffff';
-
-  // Solo mostraremos el último mensaje en pantalla
-  const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
-  
-  // ID PARA LOS EMOJIS
-const SECTOR_AVATARS = {
-  gps: {
-    tito:  '/emojis/tito.webp',
-    lara:  '/emojis/lara.webp',
-    puffo: '/emojis/puffo.webp',
-  },
-  productos:       { nova:      '/emojis/nova.webp' },
-  servicios:       { isabella:  '/emojis/isabella.webp', profesor: '/emojis/prmaestro.webp' },
-  avisos:          { evelyn:    '/emojis/evelyn.webp',   larry:     '/emojis/larry.webp' },
-  audios:          { mapache:   '/emojis/mapache.webp',  ami:       '/emojis/ami.webp' },
-  internal_search: { rumores:   '/emojis/rumores.webp' },
-  ai:              { orumama:   '/emojis/orumama.webp',  jaguar:    '/emojis/jaguar.webp', smisterio: '/emojis/smisterio.webp' },
-  game:            { default:   '/emojis/emoji_5.webp' },
-};
- 
-const getActiveAvatars = () => {
-  if (step === 1 || !intent) { // ← añadir step === 1
-    const oso = (perfilOso?.oso_id || 'tito').toLowerCase();
-    const url = SECTOR_AVATARS.gps[oso] || SECTOR_AVATARS.gps.tito;
-    return [url];
-  }
-  
-    // Sectores con handoff interno — resolver personaje activo desde perfilSector
-  const sectorMap = SECTOR_AVATARS[intent];
-  if (!sectorMap) return [];
-  const personajeActivo = perfilSector?.personaje_id;
-  if (personajeActivo && sectorMap[personajeActivo]) {
-    return [sectorMap[personajeActivo]];
-  }
-  // Fallback — primer avatar del sector (el default)
-  return [Object.values(sectorMap)[0]];
-};
- 
-const activeAvatars = getActiveAvatars();
-
-// ── REALITY TUNER MÓVIL — selector ──────────────────────────────
-if (step === 0 && !realityMode) {
   return (
-    <div className="mobile-root fixed inset-0 overflow-hidden bg-black text-white select-none">
-      <style>{MOBILE_STYLES}</style>
-      <div className="scanline z-[1]" />
-
+    <>
       {/* Gatillos */}
       <button onClick={() => { setIsLeftOpen(!isLeftOpen); setIsRightOpen(false); }}
-        className="fixed top-[70%] -translate-y-1/2 z-[210] h-24 w-8 bg-black/60 backdrop-blur-md border border-white/20 rounded-r-2xl flex items-center justify-center"
-        style={{ left: isLeftOpen ? 'min(72vw, 280px)' : '0' }}>
-        <span className="text-cyan-400 text-xs">{isLeftOpen ? '◀' : '▶'}</span>
-      </button>
-      <button onClick={() => { setIsRightOpen(!isRightOpen); setIsLeftOpen(false); }}
-        className="fixed top-[70%] -translate-y-1/2 z-[210] h-24 w-8 bg-black/60 backdrop-blur-md border border-white/20 rounded-l-2xl flex items-center justify-center"
-        style={{ right: isRightOpen ? 'min(72vw, 280px)' : '0' }}>
-        <span className="text-fuchsia-400 text-xs">{isRightOpen ? '▶' : '◀'}</span>
-      </button>
-
-      {/* Overlay */}
-      {(isLeftOpen || isRightOpen) && (
-        <div className="fixed inset-0 z-[190] bg-black/60 backdrop-blur-md"
-             onClick={() => { setIsLeftOpen(false); setIsRightOpen(false); }} />
-      )}
-
-      {/* Puerta Izquierda */}
-      {isLeftOpen && (
-        <div className="door-open-left fixed top-0 left-0 h-full w-[72vw] max-w-[280px] z-[200] flex flex-col bg-black/95 border-r border-cyan-500/30 neon-border">
-          <div className="p-4 border-b border-white/10 flex flex-col gap-4">
-            <div className="flex flex-col items-center justify-center py-4 px-2 rounded-xl bg-cyan-900/10 border border-cyan-500/40">
-              <span className="text-[12px] text-cyan-200/60 uppercase tracking-widest mb-1">Génesis Wallet</span>
-              <span className="text-cyan-400 font-black text-4xl">{balances?.genesis ?? 0}</span>
-            </div>
-            <NeuralButton isAdmin={isAdmin} iaMode={iaMode}
-              tokensRestantes={userCredits?.tokensRestantes} tokensTotales={userCredits?.tokensTotales}
-              onToggleAdmin={onToggleAdminIA} onTogglePublic={onTogglePublicIA} onShowPurchaseModal={onShowPurchaseModal} />
-          </div>
-          <div className="flex-1 flex flex-col items-center justify-center gap-2 relative">
-            <span className="mobile-display-font text-2xl tracking-widest text-cyan-400/30 absolute top-4">MANDO</span>
-            <button className={`dpad-btn ${dpadActive === 'up' ? 'dpad-press' : ''}`} onTouchStart={() => handleDpad('up')} onClick={() => handleDpad('up')}>▲</button>
-            <div className="flex items-center gap-2">
-              <button className={`dpad-btn ${dpadActive === 'left' ? 'dpad-press' : ''}`} onTouchStart={() => handleDpad('left')} onClick={() => handleDpad('left')}>◄</button>
-              <button className={`dpad-ok ${dpadActive === 'enter' ? 'dpad-press' : ''}`} onTouchStart={() => handleDpad('enter')} onClick={() => handleDpad('enter')}>OK</button>
-              <button className={`dpad-btn ${dpadActive === 'right' ? 'dpad-press' : ''}`} onTouchStart={() => handleDpad('right')} onClick={() => handleDpad('right')}>►</button>
-            </div>
-            <button className={`dpad-btn ${dpadActive === 'down' ? 'dpad-press' : ''}`} onTouchStart={() => handleDpad('down')} onClick={() => handleDpad('down')}>▼</button>
-            <div className="w-16 h-px bg-white/10 my-4" />
-            <div className="flex gap-3">
-              <button className="dpad-btn" onClick={() => handleDpad('prev')}>⏮</button>
-              <button className="dpad-btn" onClick={() => handleDpad('next')}>⏭</button>
-            </div>
-          </div>
-          <div className="p-4 border-t border-white/10">
-            <button onClick={handleLogout} className="w-full text-[12px] text-red-400/40 uppercase tracking-widest text-center hover:text-red-400/80">[ SALIR ]</button>
-          </div>
-        </div>
-      )}
-
-      {/* Puerta Derecha */}
-      {isRightOpen && (
-        <div className="door-open-right fixed top-0 right-0 h-full w-[72vw] max-w-[280px] z-[200] flex flex-col bg-black/95 border-l border-cyan-500/30 neon-border">
-          <div className="flex items-center justify-center px-4 py-4 border-b border-white/10">
-            <span className="mobile-display-font text-2xl tracking-widest text-cyan-400">SECTORES</span>
-          </div>
-          <div className="flex-1 overflow-y-auto bro-scroll py-3 px-3 flex flex-col gap-2">
-            {navItems?.map(item => (
-              <button key={item.id}
-                
-                onClick={() => {
-  setMessages([]);
-  handleNavigation(item.id);
-  setIsRightOpen(false);
-}}                
-                
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all active:scale-95"
-                style={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.4)' }}>
-                <div className="flex -space-x-2 flex-shrink-0">
-                  {item.images?.slice(0, 2).map((img, i) => (
-                    <img key={i} src={img} alt="" className="w-8 h-8 rounded-full border border-black/50 object-cover" />
-                  ))}
-                </div>
-                <span className="mobile-display-font text-xl tracking-widest text-white/70">{item.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Header */}
-      <div className="relative z-10 pt-8 pb-4 text-center">
-        <div className="mobile-display-font text-5xl tracking-widest"
-             style={{ color: '#00ffff', textShadow: '0 0 20px #00ffff' }}>
-          BRO<span style={{ color: '#fff' }}>7</span>VISION
-        </div>
-        <p className="text-[9px] text-white/30 uppercase tracking-[0.4em] mt-2 font-mono">SINTONIZA TU FRECUENCIA</p>
-      </div>
-
-      {/* Grid scrollable */}
-      <div className="relative z-10 overflow-y-auto bro-scroll px-4 pb-8 flex flex-col gap-6" style={{ maxHeight: 'calc(100dvh - 140px)' }}>
-        <div className="flex flex-col gap-3">
-          {REALITIES.filter(r => r.group === 'ESPACIO' || r.group === 'NEUTRAL').map(r => (
-            <button key={r.id} onClick={() => setRealityMode(r.id)}
-              className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border-2 active:scale-95 transition-all"
-              style={{ borderColor: `${r.color}66`, background: `${r.color}11` }}>
-              <span className="text-3xl">{r.icon}</span>
-              <div className="flex-1 text-left">
-                <div className="mobile-display-font text-2xl tracking-widest" style={{ color: r.color }}>{r.title}</div>
-                <div className="text-[10px] text-white/40 uppercase tracking-widest font-mono">{r.desc}</div>
-              </div>
-              <span className="text-[9px] font-black uppercase" style={{ color: `${r.color}88` }}>{r.group}</span>
-            </button>
-          ))}
-        </div>
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-3 opacity-40 px-1">
-            <div className="h-px flex-1 bg-emerald-500" />
-            <span className="text-[9px] text-emerald-500 font-black tracking-widest uppercase">SOLO</span>
-            <div className="h-px flex-1 bg-emerald-500" />
-          </div>
-          {REALITIES.filter(r => r.group === 'SOLO').map(r => (
-            <button key={r.id} onClick={() => setRealityMode(r.id)}
-              className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border active:scale-95 transition-all"
-              style={{ borderColor: `${r.color}44`, background: `${r.color}0d` }}>
-              <span className="text-2xl">{r.icon}</span>
-              <div className="flex-1 text-left">
-                <div className="mobile-display-font text-xl tracking-widest" style={{ color: r.color }}>{r.title}</div>
-                <div className="text-[10px] text-white/40 uppercase tracking-widest font-mono">{r.desc}</div>
-              </div>
-            </button>
-          ))}
-        </div>
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-3 opacity-40 px-1">
-            <div className="h-px flex-1 bg-blue-500" />
-            <span className="text-[9px] text-blue-500 font-black tracking-widest uppercase">BAND</span>
-            <div className="h-px flex-1 bg-blue-500" />
-          </div>
-          {REALITIES.filter(r => r.group === 'BAND').map(r => (
-            <button key={r.id} onClick={() => setRealityMode(r.id)}
-              className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border active:scale-95 transition-all"
-              style={{ borderColor: `${r.color}44`, background: `${r.color}0d` }}>
-              <span className="text-2xl">{r.icon}</span>
-              <div className="flex-1 text-left">
-                <div className="mobile-display-font text-xl tracking-widest" style={{ color: r.color }}>{r.title}</div>
-                <div className="text-[10px] text-white/40 uppercase tracking-widest font-mono">{r.desc}</div>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── REALITY PLAYER MÓVIL — escenario activo ──────────────────────
-if (step === 0 && realityMode) {
-  const escena = REALITIES.find(r => r.id === realityMode);
-  return (
-    <div className="mobile-root fixed inset-0 overflow-hidden bg-black text-white select-none">
-      <style>{MOBILE_STYLES}</style>
-      <div className="scanline z-[1]" />
-
-      {/* Gatillos */}
-      <button onClick={() => { setIsLeftOpen(!isLeftOpen); setIsRightOpen(false); }}
-        className="fixed top-[70%] -translate-y-1/2 z-[210] h-24 w-8 bg-black/60 backdrop-blur-md border border-white/20 rounded-r-2xl flex items-center justify-center"
-        style={{ left: isLeftOpen ? 'min(72vw, 280px)' : '0' }}>
-        <span className="text-cyan-400 text-xs">{isLeftOpen ? '◀' : '▶'}</span>
-      </button>
-      <button onClick={() => { setIsRightOpen(!isRightOpen); setIsLeftOpen(false); }}
-        className="fixed top-[70%] -translate-y-1/2 z-[210] h-24 w-8 bg-black/60 backdrop-blur-md border border-white/20 rounded-l-2xl flex items-center justify-center"
-        style={{ right: isRightOpen ? 'min(72vw, 280px)' : '0' }}>
-        <span className="text-fuchsia-400 text-xs">{isRightOpen ? '▶' : '◀'}</span>
-      </button>
-
-      {/* Overlay */}
-      {(isLeftOpen || isRightOpen) && (
-        <div className="fixed inset-0 z-[190] bg-black/60 backdrop-blur-md"
-             onClick={() => { setIsLeftOpen(false); setIsRightOpen(false); }} />
-      )}
-
-      {/* Puerta Izquierda */}
-      {isLeftOpen && (
-        <div className="door-open-left fixed top-0 left-0 h-full w-[72vw] max-w-[280px] z-[200] flex flex-col bg-black/95 border-r border-cyan-500/30 neon-border">
-          <div className="p-4 border-b border-white/10 flex flex-col gap-4">
-            <div className="flex flex-col items-center justify-center py-4 px-2 rounded-xl bg-cyan-900/10 border border-cyan-500/40">
-              <span className="text-[12px] text-cyan-200/60 uppercase tracking-widest mb-1">Génesis Wallet</span>
-              <span className="text-cyan-400 font-black text-4xl">{balances?.genesis ?? 0}</span>
-            </div>
-            
-            <NeuralButton isAdmin={isAdmin} iaMode={iaMode}
-              tokensRestantes={userCredits?.tokensRestantes} tokensTotales={userCredits?.tokensTotales}
-              onToggleAdmin={onToggleAdminIA} onTogglePublic={onTogglePublicIA} onShowPurchaseModal={onShowPurchaseModal} />
-          </div>
-          <div className="flex-1 flex flex-col items-center justify-center gap-2 relative">
-            <span className="mobile-display-font text-2xl tracking-widest text-cyan-400/30 absolute top-4">MANDO</span>
-            <button className={`dpad-btn ${dpadActive === 'up' ? 'dpad-press' : ''}`} onTouchStart={() => handleDpad('up')} onClick={() => handleDpad('up')}>▲</button>
-            <div className="flex items-center gap-2">
-              <button className={`dpad-btn ${dpadActive === 'left' ? 'dpad-press' : ''}`} onTouchStart={() => handleDpad('left')} onClick={() => handleDpad('left')}>◄</button>
-              <button className={`dpad-ok ${dpadActive === 'enter' ? 'dpad-press' : ''}`} onTouchStart={() => handleDpad('enter')} onClick={() => handleDpad('enter')}>OK</button>
-              <button className={`dpad-btn ${dpadActive === 'right' ? 'dpad-press' : ''}`} onTouchStart={() => handleDpad('right')} onClick={() => handleDpad('right')}>►</button>
-            </div>
-            <button className={`dpad-btn ${dpadActive === 'down' ? 'dpad-press' : ''}`} onTouchStart={() => handleDpad('down')} onClick={() => handleDpad('down')}>▼</button>
-            <div className="w-16 h-px bg-white/10 my-4" />
-            <div className="flex gap-3">
-              <button className="dpad-btn" onClick={() => handleDpad('prev')}>⏮</button>
-              <button className="dpad-btn" onClick={() => handleDpad('next')}>⏭</button>
-            </div>
-          </div>
-          <div className="p-4 border-t border-white/10">
-            <button onClick={handleLogout} className="w-full text-[12px] text-red-400/40 uppercase tracking-widest text-center">[ SALIR ]</button>
-          </div>
-        </div>
-      )}
-
-      {/* Puerta Derecha */}
-      {isRightOpen && (
-        <div className="door-open-right fixed top-0 right-0 h-full w-[72vw] max-w-[280px] z-[200] flex flex-col bg-black/95 border-l border-cyan-500/30 neon-border">
-          <div className="flex items-center justify-center px-4 py-4 border-b border-white/10">
-            <span className="mobile-display-font text-2xl tracking-widest" style={{ color: escena?.color }}>SECTORES</span>
-          </div>
-          <div className="px-4 mt-4">
-          <button onClick={() => { setStep(0); setRealityMode(null); setScope(null); setIsRightOpen(false); }} className="w-full flex justify-between items-center p-3 bg-fuchsia-500/10 border border-fuchsia-400/40 rounded-2xl hover:bg-cyan-500 hover:text-black transition-all group">
-            <span className="text-[10px] font-black uppercase group-hover:text-black">Cambiar Reality</span><span className="text-lg">🌐</span>
-          </button>
-          </div>
-          <div className="flex-1 overflow-y-auto bro-scroll py-3 px-3 flex flex-col gap-2">
-            {navItems?.map(item => (
-              <button key={item.id}
-                onClick={() => {
-  setMessages([]);
-  handleNavigation(item.id);
-  setIsRightOpen(false);
-}}
-
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all active:scale-95"
-                style={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.4)' }}>
-                <div className="flex -space-x-2 flex-shrink-0">
-                  {item.images?.slice(0, 2).map((img, i) => (
-                    <img key={i} src={img} alt="" className="w-8 h-8 rounded-full border border-black/50 object-cover" />
-                  ))}
-                </div>
-                <span className="mobile-display-font text-xl tracking-widest text-white/70">{item.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Player */}
-      <main className="relative z-10 flex flex-col h-full w-full items-center justify-between py-8 px-6">
-        <div className="text-center">
-          <div className="mobile-display-font text-5xl tracking-widest"
-               style={{ color: escena?.color, textShadow: `0 0 20px ${escena?.color}` }}>
-            {escena?.title}
-          </div>
-          <p className="text-[10px] text-white/40 uppercase tracking-widest font-mono mt-1">{escena?.desc}</p>
-        </div>
-        <div className="flex flex-col items-center gap-6">
-          <div className="text-8xl animate-pulse">{escena?.icon}</div>
-          <div className="flex flex-col items-center gap-4">
-            <div className="text-white/20 text-sm uppercase tracking-widest font-mono">AUDIO DEL CANAL</div>
-            <div className="flex gap-4">
-              <button className="dpad-btn">⏮</button>
-              <button className="dpad-btn" style={{
-                background: `${escena?.color}22`, borderColor: `${escena?.color}88`,
-                color: escena?.color, width: 72, height: 72, fontSize: 28
-              }}>▶</button>
-              <button className="dpad-btn">⏭</button>
-            </div>
-          </div>
-        </div>
-        <button onClick={() => setRealityMode(null)}
-          className="px-8 py-3 rounded-2xl border font-black text-sm uppercase tracking-widest active:scale-95"
-          style={{ borderColor: `${escena?.color}66`, color: escena?.color, background: `${escena?.color}11` }}>
-          ← CAMBIAR CANAL
-        </button>
-      </main>
-    </div>
-  );
-}
-
-  return (
-    <div className="mobile-root fixed inset-0 overflow-hidden bg-black text-white select-none">
-      <style>{MOBILE_STYLES}</style>
-
-      {/* ── FONDO WEBP ── */}
-      <div 
-        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat" 
-        style={{ backgroundImage: "url('/images/mobile.webp')" }} 
-      />
-      <div className="absolute inset-0 bg-black/10 z-0 backdrop-blur-[2px]" />
-      <div className="scanline z-[1]" />
-
-      {/* ── GATILLOS PUERTAS (Estilo PC) ── */}
-      <button 
-        onClick={() => { setIsLeftOpen(!isLeftOpen); setIsRightOpen(false); }} 
         className="fixed top-[70%] -translate-y-1/2 z-[210] h-24 w-8 bg-black/60 backdrop-blur-md border border-white/20 rounded-r-2xl flex items-center justify-center transition-all duration-300"
-        style={{ left: isLeftOpen ? 'min(72vw, 280px)' : '0' }}
-      >
+        style={{ left: isLeftOpen ? 'min(72vw, 280px)' : '0' }}>
         <span className="text-cyan-400 text-xs">{isLeftOpen ? '◀' : '▶'}</span>
       </button>
-
-      <button 
-        onClick={() => { setIsRightOpen(!isRightOpen); setIsLeftOpen(false); }} 
+      <button onClick={() => { setIsRightOpen(!isRightOpen); setIsLeftOpen(false); }}
         className="fixed top-[70%] -translate-y-1/2 z-[210] h-24 w-8 bg-black/60 backdrop-blur-md border border-white/20 rounded-l-2xl flex items-center justify-center transition-all duration-300"
-        style={{ right: isRightOpen ? 'min(72vw, 280px)' : '0' }}
-      >
+        style={{ right: isRightOpen ? 'min(72vw, 280px)' : '0' }}>
         <span className="text-fuchsia-400 text-xs">{isRightOpen ? '▶' : '◀'}</span>
       </button>
 
+      {/* Overlay */}
+      {(isLeftOpen || isRightOpen) && (
+        <div className="fixed inset-0 z-[190] bg-black/60 backdrop-blur-md"
+             onClick={() => { setIsLeftOpen(false); setIsRightOpen(false); }} />
+      )}
 
-      {/* ── PUERTA IZQUIERDA (Wallet, Botón Neuronal, Mando) ── */}
+      {/* Puerta Izquierda — Wallet + Neural (sin mando) */}
       {isLeftOpen && (
-        <div className="door-open-left fixed top-0 left-0 h-full w-[72vw] max-w-[280px] z-[200] flex flex-col bg-black/95 border-r border-cyan-500/30 neon-border"
-             style={{ borderColor: `${accent}44` }}>
-          
-          {/* Header Izquierdo: Wallet Más Grande y Neural Button */}
+        <div className="door-open-left fixed top-0 left-0 h-full w-[72vw] max-w-[280px] z-[200] flex flex-col bg-black/95 border-r border-cyan-500/30 neon-border">
           <div className="p-4 border-b border-white/10 flex flex-col gap-4">
-            <div className="flex flex-col items-center justify-center py-4 px-2 rounded-xl bg-cyan-900/10 border border-cyan-500/40 shadow-[0_0_15px_rgba(0,255,255,0.1)]">
+            <div className="flex flex-col items-center justify-center py-4 px-2 rounded-xl bg-cyan-900/10 border border-cyan-500/40">
               <span className="text-[12px] text-cyan-200/60 uppercase tracking-widest mb-1">Génesis Wallet</span>
-              <span className="text-cyan-400 font-black text-4xl drop-shadow-[0_0_8px_rgba(0,255,255,0.6)]">
-                {balances?.genesis ?? 0}
-              </span>
+              <span className="text-cyan-400 font-black text-4xl">{balances?.genesis ?? 0}</span>
             </div>
-            {NeuralButton && (
-              <NeuralButton
- 	 isAdmin={isAdmin}
-  	iaMode={iaMode}
-  	tokensRestantes={userCredits.tokensRestantes}
-  	tokensTotales={userCredits.tokensTotales}
-  	onToggleAdmin={onToggleAdminIA}
-  	onTogglePublic={onTogglePublicIA}
-  	onShowPurchaseModal={onShowPurchaseModal}
-	/>
-            )}
+            <NeuralButton isAdmin={isAdmin} iaMode={iaMode}
+              tokensRestantes={userCredits?.tokensRestantes} tokensTotales={userCredits?.tokensTotales}
+              onToggleAdmin={onToggleAdminIA} onTogglePublic={onTogglePublicIA}
+              onShowPurchaseModal={onShowPurchaseModal} />
           </div>
-
-          {/* Cuerpo Izquierdo: Controles del Mando */}
-          <div className="flex-1 flex flex-col items-center justify-center gap-2 relative">
-            <span className="mobile-display-font text-2xl tracking-widest text-cyan-400/30 absolute top-4">MANDO</span>
-            
-            <button className={`dpad-btn ${dpadActive === 'up' ? 'dpad-press' : ''}`}
-                    onTouchStart={() => handleDpad('up')}
-                    onClick={() => handleDpad('up')}>▲</button>
-            <div className="flex items-center gap-2">
-              <button className={`dpad-btn ${dpadActive === 'left' ? 'dpad-press' : ''}`}
-                      onTouchStart={() => handleDpad('left')}
-                      onClick={() => handleDpad('left')}>◄</button>
-              <button className={`dpad-ok ${dpadActive === 'enter' ? 'dpad-press' : ''}`}
-                      onTouchStart={() => handleDpad('enter')}
-                      onClick={() => handleDpad('enter')}>OK</button>
-              <button className={`dpad-btn ${dpadActive === 'right' ? 'dpad-press' : ''}`}
-                      onTouchStart={() => handleDpad('right')}
-                      onClick={() => handleDpad('right')}>►</button>
-            </div>
-            <button className={`dpad-btn ${dpadActive === 'down' ? 'dpad-press' : ''}`}
-                    onTouchStart={() => handleDpad('down')}
-                    onClick={() => handleDpad('down')}>▼</button>
-            <div className="w-16 h-px bg-white/10 my-4" />
-            <div className="flex gap-3">
-              <button className="dpad-btn" onClick={() => handleDpad('prev')}>⏮</button>
-              <button className="dpad-btn" onClick={() => handleDpad('next')}>⏭</button>
-            </div>
-          </div>
-
-          {/* Footer Izquierdo: Salir */}
+          <div className="flex-1" />
           <div className="p-4 border-t border-white/10">
             <button onClick={handleLogout}
-                    className="w-full text-[12px] text-red-400/40 uppercase tracking-widest text-center hover:text-red-400/80 transition-colors">
+              className="w-full text-[12px] text-red-400/40 uppercase tracking-widest text-center hover:text-red-400/80 transition-colors">
               [ SALIR ]
             </button>
           </div>
         </div>
       )}
 
-      {/* Overlay para cerrar ambas puertas al hacer clic fuera */}
-      {(isLeftOpen || isRightOpen) && (
-        <div className="fixed inset-0 z-[190] bg-black/60 backdrop-blur-md"
-             onClick={() => { setIsLeftOpen(false); setIsRightOpen(false); }} />
-      )}
-
-      {/* ── PUERTA DERECHA (Sólo Sectores) ── */}
+      {/* Puerta Derecha — Sectores */}
       {isRightOpen && (
-        <div className="door-open-right fixed top-0 right-0 h-full w-[72vw] max-w-[280px] z-[200] flex flex-col bg-black/95 border-l border-cyan-500/30 neon-border"
-             style={{ borderColor: `${accent}44` }}>
+        <div className="door-open-right fixed top-0 right-0 h-full w-[72vw] max-w-[280px] z-[200] flex flex-col bg-black/95 border-l border-cyan-500/30 neon-border">
           <div className="flex items-center justify-center px-4 py-4 border-b border-white/10">
-            <span className="mobile-display-font text-2xl tracking-widest" style={{ color: accent }}>
-              SECTORES
-            </span>
+            <span className="mobile-display-font text-2xl tracking-widest" style={{ color: accent }}>SECTORES</span>
           </div>
           <div className="px-4 mt-4">
-          <button onClick={() => { setStep(0); setRealityMode(null); setScope(null); setIsRightOpen(false); }} className="w-full flex justify-between items-center p-3 bg-fuchsia-500/10 border border-fuchsia-400/40 rounded-2xl hover:bg-cyan-500 hover:text-black transition-all group">
-            <span className="text-[10px] font-black uppercase group-hover:text-black">Cambiar Reality</span><span className="text-lg">🌐</span>
-          </button>
+            <button onClick={() => { setStep(0); setRealityMode(null); setScope(null); setIsRightOpen(false); }}
+              className="w-full flex justify-between items-center p-3 bg-fuchsia-500/10 border border-fuchsia-400/40 rounded-2xl transition-all">
+              <span className="text-[10px] font-black uppercase">Cambiar Reality</span>
+              <span className="text-lg">🌐</span>
+            </button>
           </div>
           <div className="flex-1 overflow-y-auto bro-scroll py-3 px-3 flex flex-col gap-2">
             {navItems?.map(item => {
               const isActive = intent === item.id;
               return (
-                <button
-                  key={item.id}
-                  onClick={() => {
-  setMessages([]);
-  handleNavigation(item.id);
-  setIsRightOpen(false);
-}}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all active:scale-95"
+                <button key={item.id}
+                  onClick={() => { setMessages([]); handleNavigation(item.id); setIsRightOpen(false); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all 				active:scale-95"
                   style={{
                     borderColor: isActive ? accent : 'rgba(255,255,255,0.1)',
                     background:  isActive ? `${accent}18` : 'rgba(0,0,0,0.4)',
@@ -664,11 +252,13 @@ if (step === 0 && realityMode) {
                   }}>
                   <div className="flex -space-x-2 flex-shrink-0">
                     {item.images?.slice(0, 2).map((img, i) => (
-                      <img key={i} src={img} alt="" className="w-8 h-8 rounded-full border border-black/50 object-cover" />
-                    ))}
+                      <img key={i} src={img} alt=""
+  		className="w-16 h-16 rounded-full object-cover border-2"
+  		style={{ borderColor: accent, boxShadow: `0 0 12px ${accent}` }} />
+                      ))}
                   </div>
                   <span className="mobile-display-font text-xl tracking-widest"
-                        style={{ color: isActive ? accent : 'rgba(255,255,255,0.7)' }}>
+                    style={{ color: isActive ? accent : 'rgba(255,255,255,0.7)' }}>
                     {item.label}
                   </span>
                 </button>
@@ -677,55 +267,348 @@ if (step === 0 && realityMode) {
           </div>
         </div>
       )}
+    </>
+  );
+}
 
-      {/* ── LAYOUT PRINCIPAL ── */}
+// ─── BURBUJA DESCRIPCIÓN ────────────────────────────────────────────────────
+// Se abre al tocar una BroCard. Muestra descripción grande + CONFIRMAR.
+function BurbujaDescripcion({ card, intent, accent, onHandoff, onClose }) {
+  const handleConfirmar = () => {
+    if (!card || !onHandoff) return;
+    const agente = CIERRE_AGENTE[intent];
+    if (!agente) return;
+    onHandoff({ agente, comercio: card.bro_id || card.bro_ser });
+    onClose();
+  };
+
+  return (
+    <div
+      className="burbuja-in fixed z-[150] left-0 right-0 mx-auto px-3"
+      style={{ bottom: 140, maxWidth: 480 }}
+    >
+      <div style={{
+        background: 'rgba(0,0,0,0.92)',
+        backdropFilter: 'blur(16px)',
+        border: `1px solid ${accent}55`,
+        borderRadius: '1.5rem',
+        padding: '16px 16px 12px',
+        boxShadow: `0 0 32px ${accent}22`,
+      }}>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-3">
+          <span style={{
+            fontFamily: "'Courier New', monospace",
+            fontSize: 10, fontWeight: 900,
+            textTransform: 'uppercase', letterSpacing: '0.2em',
+            color: accent, opacity: 0.7,
+          }}>
+            {card.nombre}
+          </span>
+          <button onClick={onClose} style={{
+            color: 'rgba(255,255,255,0.3)', fontSize: 18,
+            background: 'none', border: 'none', cursor: 'pointer', padding: '0 4px',
+          }}>✕</button>
+        </div>
+
+        {/* Neighborhood */}
+        {(card.neighborhood || card.nearby_ref) && (
+          <p style={{
+            fontFamily: "'Courier New', monospace",
+            fontSize: 11, fontWeight: 700,
+            textTransform: 'uppercase', letterSpacing: '0.2em',
+            color: accent, opacity: 0.6, textAlign: 'center',
+            marginBottom: 8,
+          }}>
+            {card.neighborhood}
+            {card.neighborhood && card.nearby_ref ? ' · ' : ''}
+            {card.nearby_ref}
+          </p>
+        )}
+
+        {/* Descripción — letras grandes igual que el chat */}
+        {card.descripcion && (
+          <p style={{
+            fontFamily: "'Courier New', monospace",
+            fontWeight: 900, fontStyle: 'italic',
+            textTransform: 'uppercase',
+            fontSize: 'clamp(20px, 6vw, 32px)',
+            color: '#fff',
+            textShadow: `0 0 16px ${accent}`,
+            lineHeight: 1.3, textAlign: 'center',
+            marginBottom: 12,
+          }}>
+            {card.descripcion}
+          </p>
+        )}
+
+        {/* Botón CONFIRMAR */}
+        <button
+          onClick={handleConfirmar}
+          style={{
+            width: '100%', padding: '14px 0',
+            background: `${accent}22`,
+            border: `1px solid ${accent}88`,
+            borderRadius: '1rem',
+            color: accent,
+            fontFamily: "'Courier New', monospace",
+            fontWeight: 900, fontSize: 14,
+            textTransform: 'uppercase', letterSpacing: '0.15em',
+            cursor: 'pointer',
+            boxShadow: `0 0 16px ${accent}33`,
+          }}
+        >
+          ➤ CONFIRMAR
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
+// ─── COMPONENTE PRINCIPAL ────────────────────────────────────────────────────
+const MobileTabletLayout = ({
+  children,
+  realityMode, setRealityMode,
+  scope, setScope,
+  step, setStep,
+  intent, setIntent,
+  session, balances,
+  navItems, handleNavigation,
+  chatMobile,
+  ososModo, setOsosModo,
+  perfilOso, perfilSector,
+  setShowBooster, setShowWalletModal,
+  handleLogout,
+  isLeftOpen,  setIsLeftOpen,
+  isRightOpen, setIsRightOpen,
+  iaMode, isAdmin, userCredits,
+  onToggleAdminIA, onTogglePublicIA, onShowPurchaseModal,
+  stripCards, stripVisible, stripLabel,
+  onHandoff,
+  ...props
+}) => {
+  const [footerMode, setFooterMode] = useState('chat');
+  const [inputText,  setInputText]  = useState('');
+  const [messages,   setMessages]   = useState([]);
+  // burbujaOpen: false | card objeto
+  const [burbujaOpen, setBurbujaOpen] = useState(false);
+
+  const { enviar, mensaje: chatMensaje, loading: chatLoading } = chatMobile || {};
+  const inputRef = useRef(null);
+  const lastBotMsgId = useRef(null);
+
+  const accent = SECTOR_ACCENT[intent] || '#00ffff';
+
+  // Nuevas cards → cerrar burbuja anterior
+  useEffect(() => {
+    setBurbujaOpen(false);
+  }, [stripCards]);
+
+  // Mensajes del bot
+  useEffect(() => {
+    if (!chatMensaje) return;
+    if (lastBotMsgId.current === chatMensaje) return;
+    lastBotMsgId.current = chatMensaje;
+    setMessages(prev => [...prev, { from: 'bot', text: chatMensaje, ts: Date.now() }]);
+  }, [chatMensaje]);
+
+  const handleSend = () => {
+    const txt = inputText.trim();
+    if (!txt || chatLoading) return;
+    setMessages(prev => [...prev, { from: 'user', text: txt, ts: Date.now() }]);
+    enviar?.(txt);
+    setInputText('');
+    setBurbujaOpen(false); // escribir cierra la burbuja
+  };
+
+  const activeSector  = navItems?.find(n => n.id === intent);
+  const sectorLabel   = step === 1 ? 'OSOS' : activeSector?.label || 'OSOS';
+  const lastMessage   = messages.length > 0 ? messages[messages.length - 1] : null;
+
+  const getActiveAvatars = () => {
+    if (step === 1 || !intent) {
+      const oso = (perfilOso?.oso_id || 'tito').toLowerCase();
+      return [SECTOR_AVATARS.gps[oso] || SECTOR_AVATARS.gps.tito];
+    }
+    const sectorMap = SECTOR_AVATARS[intent];
+    if (!sectorMap) return [];
+    const personajeActivo = perfilSector?.personaje_id;
+    if (personajeActivo && sectorMap[personajeActivo]) return [sectorMap[personajeActivo]];
+    return [Object.values(sectorMap)[0]];
+  };
+  const activeAvatars = getActiveAvatars();
+
+  const puertasProps = {
+    isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
+    accent, balances, navItems, handleNavigation, setMessages,
+    iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA,
+    onShowPurchaseModal, handleLogout, intent,
+    setStep, setRealityMode, setScope,
+  };
+
+  // ── REALITY TUNER ────────────────────────────────────────────────────────
+  if (step === 0 && !realityMode) {
+    return (
+      <div className="mobile-root fixed inset-0 overflow-hidden bg-black text-white select-none">
+        <style>{MOBILE_STYLES}</style>
+        <div className="scanline z-[1]" />
+        <Puertas {...puertasProps} />
+        <div className="relative z-10 pt-8 pb-4 text-center">
+          <div className="mobile-display-font text-5xl tracking-widest"
+            style={{ color: '#00ffff', textShadow: '0 0 20px #00ffff' }}>
+            BRO<span style={{ color: '#fff' }}>7</span>VISION
+          </div>
+          <p className="text-[9px] text-white/30 uppercase tracking-[0.4em] mt-2 font-mono">SINTONIZA TU FRECUENCIA</p>
+        </div>
+        <div className="relative z-10 overflow-y-auto bro-scroll px-4 pb-8 flex flex-col gap-6" style={{ maxHeight: 'calc(100dvh - 140px)' }}>
+          {['NEUTRAL','SOLO','BAND','ESPACIO'].map(group => {
+            const items = REALITIES.filter(r => r.group === group);
+            if (!items.length) return null;
+            return (
+              <div key={group} className="flex flex-col gap-2">
+                {group !== 'NEUTRAL' && (
+                  <div className="flex items-center gap-3 opacity-40 px-1">
+                    <div className="h-px flex-1 bg-white/30" />
+                    <span className="text-[9px] text-white/60 font-black tracking-widest uppercase">{group}</span>
+                    <div className="h-px flex-1 bg-white/30" />
+                  </div>
+                )}
+                {items.map(r => (
+                  <button key={r.id} onClick={() => setRealityMode(r.id)}
+                    className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border-2 active:scale-95 transition-all"
+                    style={{ borderColor: `${r.color}66`, background: `${r.color}11` }}>
+                    <span className="text-3xl">{r.icon}</span>
+                    <div className="flex-1 text-left">
+                      <div className="mobile-display-font text-2xl tracking-widest" style={{ color: r.color }}>{r.title}</div>
+                      <div className="text-[10px] text-white/40 uppercase tracking-widest font-mono">{r.desc}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // ── REALITY PLAYER ───────────────────────────────────────────────────────
+  if (step === 0 && realityMode) {
+    const escena = REALITIES.find(r => r.id === realityMode);
+    return (
+      <div className="mobile-root fixed inset-0 overflow-hidden bg-black text-white select-none">
+        <style>{MOBILE_STYLES}</style>
+        <div className="scanline z-[1]" />
+        <Puertas {...puertasProps} />
+        <main className="relative z-10 flex flex-col h-full w-full items-center justify-between py-8 px-6">
+          <div className="text-center">
+            <div className="mobile-display-font text-5xl tracking-widest"
+              style={{ color: escena?.color, textShadow: `0 0 20px ${escena?.color}` }}>
+              {escena?.title}
+            </div>
+            <p className="text-[10px] text-white/40 uppercase tracking-widest font-mono mt-1">{escena?.desc}</p>
+          </div>
+          <div className="flex flex-col items-center gap-6">
+            <div className="text-8xl animate-pulse">{escena?.icon}</div>
+            <div className="flex flex-col items-center gap-4">
+              <div className="text-white/20 text-sm uppercase tracking-widest font-mono">AUDIO DEL CANAL</div>
+              <div className="flex gap-4">
+                <button className="dpad-btn">⏮</button>
+                <button className="dpad-btn" style={{
+                  background: `${escena?.color}22`, borderColor: `${escena?.color}88`,
+                  color: escena?.color, width: 72, height: 72, fontSize: 28,
+                }}>▶</button>
+                <button className="dpad-btn">⏭</button>
+              </div>
+            </div>
+          </div>
+          <button onClick={() => setRealityMode(null)}
+            className="px-8 py-3 rounded-2xl border font-black text-sm uppercase tracking-widest active:scale-95"
+            style={{ borderColor: `${escena?.color}66`, color: escena?.color, background: `${escena?.color}11` }}>
+            ← CAMBIAR CANAL
+          </button>
+        </main>
+      </div>
+    );
+  }
+
+  // ── LAYOUT PRINCIPAL (step 1 y 2) ────────────────────────────────────────
+  return (
+    <div className="mobile-root fixed inset-0 overflow-hidden bg-black text-white select-none">
+      <style>{MOBILE_STYLES}</style>
+
+      <div className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/images/mobile.webp')" }} />
+      <div className="absolute inset-0 bg-black/10 z-0 backdrop-blur-[2px]" />
+      <div className="scanline z-[1]" />
+
+      <Puertas {...puertasProps} />
+
+      {/* BURBUJA FLOTANTE — descripción de card seleccionada */}
+      {burbujaOpen && typeof burbujaOpen === 'object' && (
+        <BurbujaDescripcion
+          card={burbujaOpen}
+          intent={intent}
+          accent={accent}
+          onHandoff={onHandoff}
+          onClose={() => setBurbujaOpen(false)}
+        />
+      )}
+
       <main className="relative z-10 flex flex-col h-full w-full">
 
-        {/* Encabezado Limpio (sin los antiguos botones para abrir las puertas ya que usamos los gatillos) */}
-        <header className="flex-shrink-0 flex items-center justify-center px-4 pt-safe pt-6 pb-2">
-          <div className="mobile-display-font text-4xl tracking-widest leading-none text-center"
-               style={{ color: accent, textShadow: `0 0 16px ${accent}` }}>
-            {sectorLabel}
-          </div>
-        </header>
+        {/* Header */}
+        <header className="flex-shrink-0 flex items-center justify-center px-4 pt-safe pt-2 pb-1">
+  <div className="mobile-display-font text-2xl tracking-widest leading-none text-center"
+    style={{ color: accent, textShadow: `0 0 16px ${accent}` }}>
+    {sectorLabel}
+  </div>
+</header>
 
-      {scope?.city && (
-          <div className="flex-shrink-0 w-full mt-8 mb-2 flex items-center justify-center">
-            <CityLocationBanner scope={scope} isMobile={true} />
-          </div>
-        )}
-        
-    {activeAvatars.length > 0 && (
-  <div className="flex-shrink-0 flex items-center justify-center gap-3 py-2">
-    {activeAvatars.map((img, i) => (
-      <img
-        key={i}
-        src={img}
-        alt=""
-        className="w-32 h-32 rounded-full object-cover border-2"
-        style={{ borderColor: accent, boxShadow: `0 0 12px ${accent}` }}
-      />
-    ))}
+        {scope?.city && (
+  <div className="flex-shrink-0 w-full mb-1 flex items-center justify-center">
+    <CityLocationBanner scope={scope} isMobile={true} />
   </div>
 )}
-        
-        {/* ── DISPLAY CENTRAL — CHAT UNICO SIN FONDOS ── */}
-        <section 
-  className="flex-1 min-h-0 overflow-y-auto bro-scroll px-6 py-4 flex flex-col cursor-text"
-  onClick={() => {
-    // Si estaba en MANDO, lo pasa a CHAT automáticamente
-    if (footerMode !== 'chat') setFooterMode('chat');
-    // Le da el foco al input para que salte el teclado nativo
-    setTimeout(() => inputRef.current?.focus(), 50);
-  }}
->
+
+        {/* Avatar + BroCards debajo */}
+        <div className="flex-shrink-0 flex flex-col items-center gap-2 py-2">
+          {activeAvatars.length > 0 && (
+            <div className="flex items-center justify-center gap-3">
+              {activeAvatars.map((img, i) => (
+                <img key={i} src={img} alt=""
+                  className="w-20 h-20 rounded-full object-cover border-2"
+                  style={{ borderColor: accent, boxShadow: `0 0 12px ${accent}` }} />
+              ))}
+            </div>
+          )}
+          {/* BroCards debajo del avatar — solo cuando hay resultados */}
+          {stripVisible && stripCards?.length > 0 && (
+            <div className="w-full px-2 pointer-events-auto">
+              <BroCardStrip
+                cards={stripCards}
+                onSelectCard={(card) => setBurbujaOpen(card)}
+                accentColor={STRIP_THEME[intent] || 'gold'}
+                visible={true}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Chat */}
+        <section
+          className="flex-1 min-h-0 overflow-y-auto bro-scroll px-6 py-4 flex flex-col cursor-text"
+          onClick={() => {
+            if (footerMode !== 'chat') setFooterMode('chat');
+            setTimeout(() => inputRef.current?.focus(), 50);
+          }}
+        >
           <div className="flex-1 flex flex-col items-center justify-center w-full">
-            
-            {/* Si no hay mensajes */}
             {messages.length === 0 && !chatLoading && (
               <div className="flex flex-col items-center text-center gap-6 animate-pulse">
                 <div className="huge-neon-text"
-                     style={{ color: accent, textShadow: `0 0 12px ${accent}, 0 0 24px ${accent}` }}>
+                  style={{ color: accent, textShadow: `0 0 12px ${accent}, 0 0 24px ${accent}` }}>
                   BRO7VISION
                 </div>
                 <p className="text-white/60 text-xl tracking-widest uppercase font-black">
@@ -733,39 +616,27 @@ if (step === 0 && realityMode) {
                 </p>
               </div>
             )}
-
-            {/* Mostrar Solo el último mensaje flotando (sin cajas) */}
             {lastMessage && !chatLoading && (
               <div key={lastMessage.ts} className="msg-in flex flex-col items-center text-center w-full">
-                {lastMessage.from === 'bot' && (
-                  <div className="text-xl uppercase tracking-widest mb-4 font-black"
-                       style={{ color: accent }}>
-                    [ {sectorLabel} ]
-                  </div>
-                )}
-                
-                <p className="huge-neon-text whitespace-pre-wrap break-words w-full"
-                   style={{
-                     color: lastMessage.from === 'bot' ? '#fff' : 'rgba(255,255,255,0.5)',
-                     textShadow: lastMessage.from === 'bot' 
-                        ? `0 0 12px ${accent}, 0 0 24px ${accent}` 
-                        : 'none'
-                   }}>
+                               <p className="huge-neon-text whitespace-pre-wrap break-words w-full"
+                  style={{
+                    color: lastMessage.from === 'bot' ? '#fff' : 'rgba(255,255,255,0.5)',
+                    textShadow: lastMessage.from === 'bot' ? `0 0 12px ${accent}, 0 0 24px ${accent}` : 'none',
+                  }}>
                   {lastMessage.text}
                 </p>
               </div>
             )}
-
-            {/* Animación Sintonizando (Loading) */}
             {chatLoading && (
               <div className="msg-in flex flex-col items-center justify-center w-full gap-6">
-                <div className="text-2xl uppercase tracking-widest font-black" style={{ color: accent, textShadow: `0 0 16px ${accent}` }}>
+                <div className="text-2xl uppercase tracking-widest font-black"
+                  style={{ color: accent, textShadow: `0 0 16px ${accent}` }}>
                   SINTONIZANDO...
                 </div>
                 <div className="flex gap-4 items-center">
                   {[0,1,2].map(i => (
                     <span key={i} className="block w-5 h-5 rounded-full animate-bounce"
-                          style={{ background: accent, animationDelay: `${i * 0.15}s`, boxShadow: `0 0 16px ${accent}` }} />
+                      style={{ background: accent, animationDelay: `${i * 0.15}s`, boxShadow: `0 0 16px ${accent}` }} />
                   ))}
                 </div>
               </div>
@@ -773,10 +644,9 @@ if (step === 0 && realityMode) {
           </div>
         </section>
 
-        {/* ── FOOTER — CAJON ENORME TRANSPARENTE ── */}
+        {/* Footer */}
         <footer className="flex-shrink-0 border-t backdrop-blur-md pb-safe"
-        style={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.6)' }}>
-        
+          style={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.6)' }}>
           <div className="flex border-b" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
             <button onClick={() => setFooterMode('chat')}
               className="flex-1 py-4 text-sm uppercase tracking-widest font-black transition-all"
@@ -798,9 +668,8 @@ if (step === 0 && realityMode) {
 
           {footerMode === 'chat' && (
             <div className="accordion-open px-4 py-4 flex items-center gap-3">
-              {/* Input gigante transparente */}
               <input
-              ref={inputRef} 
+                ref={inputRef}
                 type="text"
                 value={inputText}
                 onChange={e => setInputText(e.target.value)}
@@ -811,17 +680,17 @@ if (step === 0 && realityMode) {
                 style={{
                   fontFamily: "'Courier New', monospace",
                   borderColor: inputText ? accent : 'rgba(255,255,255,0.2)',
-                  textShadow: inputText ? `0 0 8px ${accent}` : 'none'
+                  textShadow:  inputText ? `0 0 8px ${accent}` : 'none',
                 }}
               />
               <button
                 onClick={handleSend}
                 disabled={!inputText.trim() || chatLoading}
-                className="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-black font-black text-2xl transition-all active:scale-90"
+                className="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center font-black text-2xl transition-all active:scale-90"
                 style={{
-                  background:   inputText.trim() && !chatLoading ? accent : 'rgba(255,255,255,0.1)',
-                  boxShadow:    inputText.trim() ? `0 0 16px ${accent}` : 'none',
-                  color:        inputText.trim() ? 'black' : 'rgba(255,255,255,0.3)',
+                  background: inputText.trim() && !chatLoading ? accent : 'rgba(255,255,255,0.1)',
+                  boxShadow:  inputText.trim() ? `0 0 16px ${accent}` : 'none',
+                  color:      inputText.trim() ? 'black' : 'rgba(255,255,255,0.3)',
                 }}>
                 ▶
               </button>
@@ -830,11 +699,11 @@ if (step === 0 && realityMode) {
 
           {footerMode === 'dpad' && (
             <div className="accordion-open px-4 py-4 flex items-center justify-center gap-3">
-              <button className="dpad-btn" style={{ width: 50, height: 50 }} onClick={() => handleDpad('prev')}>⏮</button>
-              <button className="dpad-btn" style={{ width: 50, height: 50 }} onClick={() => handleDpad('left')}>◄</button>
-              <button className="dpad-ok"  style={{ width: 50, height: 50, fontSize: 12 }} onClick={() => handleDpad('enter')}>OK</button>
-              <button className="dpad-btn" style={{ width: 50, height: 50 }} onClick={() => handleDpad('right')}>►</button>
-              <button className="dpad-btn" style={{ width: 50, height: 50 }} onClick={() => handleDpad('next')}>⏭</button>
+              <button className="dpad-btn" style={{ width: 50, height: 50 }} onClick={() => console.log('[DPAD] prev')}>⏮</button>
+              <button className="dpad-btn" style={{ width: 50, height: 50 }} onClick={() => console.log('[DPAD] left')}>◄</button>
+              <button className="dpad-ok"  style={{ width: 50, height: 50, fontSize: 12 }} onClick={() => console.log('[DPAD] ok')}>OK</button>
+              <button className="dpad-btn" style={{ width: 50, height: 50 }} onClick={() => console.log('[DPAD] right')}>►</button>
+              <button className="dpad-btn" style={{ width: 50, height: 50 }} onClick={() => console.log('[DPAD] next')}>⏭</button>
             </div>
           )}
         </footer>

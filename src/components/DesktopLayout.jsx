@@ -173,7 +173,7 @@ export default function DesktopLayout(props) {
       
       {/* ── PRODUCTOS ───────────────────────────────────────────────────── */}     
       {step === 2 && intent === 'productos' && ( 
-        <NovaBanner sessionCity={sessionCity} sessionCP={sessionCP} realItems={realItems} stripVisible={stripVisible} stripCards={stripCards} stripLabel={stripLabel} onOpenTerminal={(c) => abrirTienda(c, 'novaVentas')} onSetActiveIndex={setHoloPrismaIndex} onInvokeOsos={() => setStep(1)} onInvokeMapache={() => setIntent('audios')} onEntityFocus={(u) => setActivePrismUser(u)} setIntent={setIntent} 
+        <NovaBanner sessionCity={sessionCity} sessionCP={sessionCP} realItems={realItems} onHandoff={handleCentralHandoff} stripVisible={stripVisible} stripCards={stripCards} stripLabel={stripLabel} onOpenTerminal={(c) => abrirTienda(c, 'novaCierre')} onSetActiveIndex={setHoloPrismaIndex} onInvokeOsos={() => setStep(1)} onInvokeMapache={() => setIntent('audios')} onEntityFocus={(u) => setActivePrismUser(u)} setIntent={setIntent} 
         novaMensaje={novaMensaje}
   novaLoading={novaLoading}
   onNovaEnviar={handleNovaInput}
@@ -190,12 +190,13 @@ export default function DesktopLayout(props) {
           sessionCP={sessionCP}
           realItems={realItems}
           stripVisible={stripVisible}
+         onHandoff={handleCentralHandoff}
           stripCards={stripCards}
           stripLabel={stripLabel}
           enviar={handleIsabellaInput}
 	mensaje={isabellaMensaje}
 	loading={isabellaLoading}
-          onOpenTerminal={(c) => abrirTienda(c, 'isabellaVentas')}
+          onOpenTerminal={(c) => abrirTienda(c, 'isabellaCierre')}
           onSetActiveIndex={setHoloPrismaIndex}
           onInvokeOsos={() => setStep(1)}
           onInvokeMapache={() => setIntent('audios')}

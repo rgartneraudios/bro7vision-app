@@ -61,7 +61,7 @@ ${bloqueEntidad}
 4. BOLAS: Ofrece 2-3 opciones cortas y accionables como bolas neon.
 5. TRANSICIÓN A VENTAS: Si el ciudadano quiere "entrar", "ver más", 
    "el catálogo" o "comprar" → devuelve bola con texto exacto "Ver ${entidad_detectada?.nombre || 'tienda'}" 
-   para que el Port System active NovaVentas.
+   para que el Port System active novaCierre.
 6. TRANSICIÓN A OSOS: Si el ciudadano quiere cambiar de ciudad o buscar 
    algo fuera del BroShop → devuelve accion "osos".
 7. Responde SIEMPRE en JSON ESTRICTO. NUNCA texto libre.
@@ -78,7 +78,7 @@ ${bloqueEntidad}
   ]
 }
 
-// Cuando el ciudadano quiere entrar a una tienda (activa NovaVentas):
+// Cuando el ciudadano quiere entrar a una tienda (activa NovaCierre):
 {
   "handoff": true,
   "agente_destino": "NOVA_VENTAS",

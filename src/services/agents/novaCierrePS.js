@@ -1,6 +1,6 @@
-// src/services/agents/novaVentasPS.js
+// src/services/agents/novaCierrePS.js
 // ═══════════════════════════════════════════════════
-// NOVA VENTAS — Nodo independiente de NovaExplora
+// NOVA CIERRE — Nodo independiente de NovaExplora
 // Gestiona el carrito conversacionalmente dentro
 // del comercio individual. Devuelve siempre JSON.
 // ═══════════════════════════════════════════════════
@@ -34,7 +34,7 @@ export const calcularPrecio = ({ items, vale, iva_pct = 21 }) => {
 };
 
 // ── Builder del prompt ───────────────────────────────
-export const armarNovaVentas = ({ perfil_usuario, comercio, carrito, vales_usuario, catalogo }) => {
+export const armarnovaCierre = ({ perfil_usuario, comercio, carrito, vales_usuario, catalogo }) => {
 
   const { base, descuento_importe, base_con_descuento, iva_importe, total_final } =
     calcularPrecio({
@@ -197,7 +197,7 @@ export const parsearRespuestaNova = (rawText) => {
       accion:  data.accion || null,
     };
   } catch (err) {
-    console.error('[novaVentasPS] Error parseando respuesta:', err);
+    console.error('[novaCierrePS] Error parseando respuesta:', err);
     // Fallback seguro — Nova responde sin acción
     return {
       mensaje: '¿Me repites eso? Creo que me perdí un momento. 🌟',

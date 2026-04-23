@@ -106,13 +106,13 @@ function App() {
   // 2. FUNCIONES SIMPLES (no dependen de hooks)
   // ══════════════════════════════════════════════════════
 
-  const abrirTienda = (comercio, mode = 'novaVentas') => {
+  const abrirTienda = (comercio, mode = 'novaCierre') => {
     setProjectingUser(null);
     setSelectedCard(comercio);
     setVentasMode(mode);
   };
 
-  const handleGoToShop = (user, mode = 'novaVentas') => {
+  const handleGoToShop = (user, mode = 'novaCierre') => {
     abrirTienda(user, mode);
   };
 
@@ -180,13 +180,42 @@ const cargarStripCards = useCallback(async (agente, ciudad, modalidad = 'LOCAL')
           const esPodcast = p.audio_type === 'podcast';
           const codigo    = esPodcast ? p.bro_pod : p.bro_aud;
           if (!codigo) return [];
-          return [{ bro_id: codigo, banner_url: p.banner_url || '', nombre: p.alias || '', audio_file: p.audio_file || '', categoria: esPodcast ? 'Podcast' : 'Música', ciudad: p.city || '', descripcion: p.audio_description || p.description || '', track_name: p.track_name || '', audio_type: p.audio_type || 'music' }];
+          return [{ 
+          bro_id: codigo, banner_url: p.banner_url || '', 
+          nombre: p.alias || '', audio_file: p.audio_file || '',
+          neighborhood: p.neighborhood || '',
+           nearby_ref: p.nearby_ref || '',
+          categoria: esPodcast ? 'Podcast' : 'Música', ciudad: p.city || '', 
+          descripcion: p.audio_description || p.description || '', 
+          track_name: p.track_name || '', 
+          audio_type: p.audio_type || 'music' }];
         })
       : agente === 'BROSHOP_SERVICIO'
-      ? filtrados.filter(p => p.bro_ser).map(p => ({ bro_id: p.bro_ser, banner_url: p.banner_url || '', nombre: p.alias || '', categoria: p.biz_profession || p.biz_category || '', ciudad: p.city || '', descripcion: p.description || '', ref_price: p.ref_price || '', address: p.address || '' }))
+      ? filtrados.filter(p => p.bro_ser).map(p => ({ 
+      bro_id: p.bro_ser, 
+      banner_url: p.banner_url || '', 
+      nombre: p.alias || '', 
+      neighborhood: p.neighborhood || '',
+      nearby_ref: p.nearby_ref || '',
+      categoria: p.biz_profession || p.biz_category || '', 
+      ciudad: p.city || '', descripcion: p.description || '', 
+      ref_price: p.ref_price || '', 
+      address: p.address || '' 
+      }))
       : agente === 'BROSHOP_AVISO'
       ? filtrados.filter(p => p.bro_avi).map(p => ({ bro_id: p.bro_avi, banner_url: p.banner_url || '', nombre: p.alias || '', categoria: 'Avisos', ciudad: p.city || '', descripcion: p.description || '' }))
-      : filtrados.filter(p => p.bro_id).map(p => ({ bro_id: p.bro_id, banner_url: p.banner_url || '', nombre: p.alias || '', categoria: p.biz_category || p.biz_profession || '', ciudad: p.city || '', descripcion: p.description || p.nearby_ref || '', ref_price: p.ref_price || '', address: p.address || '' }));
+      : filtrados.filter(p => p.bro_id).map(p => ({ 
+      bro_id: p.bro_id, 
+      banner_url: p.banner_url || '', 
+      nombre: p.alias || '', 
+      neighborhood: p.neighborhood || '',
+      nearby_ref: p.nearby_ref || '',
+      categoria: p.biz_category || p.biz_profession || '', 
+      ciudad: p.city || '', 
+      descripcion: p.description || p.nearby_ref || '', 
+      ref_price: p.ref_price || '', address: p.address || '' 
+      }));
+      
     if (!error && cards.length > 0) {
       setStripCards(cards);
       setStripLabel(agente.toLowerCase());
@@ -207,7 +236,7 @@ const cargarStripCards = useCallback(async (agente, ciudad, modalidad = 'LOCAL')
   // ══════════════════════════════════════════════════════
 
   const handleCentralHandoff = ({ agente, ciudad, cp, intencion, comercio, 
-   modalidad, oso_id, per_solicitado, personaje_id, codigo, canal }) => {
+   modalidad, oso_id, per_solicitado, personaje_id, codigo, canal, sector }) => {
 
     // ── OSOS_INTERNO ──────────────────────────────────
     if (agente === 'OSOS_INTERNO') {
@@ -252,14 +281,6 @@ const cargarStripCards = useCallback(async (agente, ciudad, modalidad = 'LOCAL')
   return;
 }
 
-    // ── NOVA_VENTAS ───────────────────────────────────
-    if (agente === 'NOVA_VENTAS') {
-      const bro_id_target  = comercio || intencion;
-      const comercioTarget = realItems.find(i => i.bro_id === bro_id_target || i.bro_ser === bro_id_target);
-      if (comercioTarget) abrirTienda(comercioTarget, 'novaVentas');
-      return;
-    }
-
     // ── NOVA_CIERRE ───────────────────────────────────
     if (agente === 'NOVA_CIERRE') {
       const bro_id_target  = comercio || intencion;
@@ -275,6 +296,13 @@ const cargarStripCards = useCallback(async (agente, ciudad, modalidad = 'LOCAL')
       if (comercioTarget) abrirTienda(comercioTarget, 'isabellaCierre');
       return;
     }
+    
+        // ── BUSCAR_STRIP — búsqueda sin IA desde Nova/Isabella/Evelyn ────────
+if (agente === 'BUSCAR_STRIP') {
+  const ciudadActual = sessionCity || scope?.city || '';
+  cargarStripCards(intencion || 'BROSHOP_PRODUCTO', ciudadActual, 'LOCAL');
+  return;
+}
 
     // ── MAPEO DE INTENTS ──────────────────────────────
     const intentMap = {
@@ -306,9 +334,6 @@ if (SIN_UBICACION.includes(agente)) {
 
 // ── SECTORES CON UBICACIÓN ────────────────────────
 setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
-
-    // ── SECTORES CON UBICACIÓN ────────────────────────
-    setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
 
     const roleMap = {
       'BROSHOP_PRODUCTO': 'shop',
@@ -628,6 +653,7 @@ const chatPorIntent = {
     setSelectedLog, setVlData,
     ososHandoffContext, setOsosHandoffContext,
     perfilOso, stripVisible, stripCards, stripLabel,
+    onHandoff: handleCentralHandoff,
     setHoloPrismaIndex, findChannelByAlias, checkIfNew,
     chatMobile, perfilSector,
     handleOsosInput, ososMensaje,ososLoading, ososModo, setOsosModo,

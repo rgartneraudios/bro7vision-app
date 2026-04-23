@@ -2,13 +2,13 @@
 // ═══════════════════════════════════════════════════
 // Hook maestro del carrito conversacional.
 // Lee/escribe carrito_temp en Supabase.
-// Procesa acciones emitidas por NovaVentas e IsabellaCloses.
+// Procesa acciones emitidas por novaCierre e IsabellaCloses.
 // TTL 15 minutos, renovable mientras el usuario está activo.
 // ═══════════════════════════════════════════════════
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../supabaseClient';
-import { calcularPrecio, REGLAS_VALES } from '../services/agents/novaVentasPS';
+import { calcularPrecio, REGLAS_VALES } from '../services/agents/novaCierrePS';
 
 // ── Constantes ───────────────────────────────────────
 const TTL_MINUTOS = 15;
@@ -119,7 +119,7 @@ export const useCarrito = ({ user_id, comercio_id, iva_pct = 21 }) => {
   };
 
   // ── 4. PROCESADOR DE ACCIONES DE NOVA ───────────────
-  // Recibe la accion del JSON de novaVentasPS y la ejecuta
+  // Recibe la accion del JSON de novaCierrePS y la ejecuta
   const procesarAccion = useCallback(async (accion) => {
     if (!accion) return;
 
