@@ -136,3 +136,19 @@ export function responder({
 
   return { handoff: false, mensaje: elegir(FRASES_NO_ENTENDIDO), bolas: [] };
 }
+
+// Añadir al final de isabellaBot.js
+
+export function detectarBusquedaServicio(mensaje) {
+  const t = mensaje.toLowerCase();
+  return /servicio|profesional|especialista|terapeuta|psicólogo|abogado|médico|consulta|reserva|cita|presupuesto/i.test(t);
+}
+
+export function fraseBuscando(keyword) {
+  const frases = [
+    `Déjame ver qué profesionales tengo para "${keyword}"...`,
+    `Busco en mi agenda a alguien de "${keyword}"...`,
+    `A ver quién tenemos disponible para "${keyword}"...`,
+  ];
+  return frases[Math.floor(Math.random() * frases.length)];
+}

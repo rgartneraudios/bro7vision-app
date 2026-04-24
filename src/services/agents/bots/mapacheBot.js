@@ -115,3 +115,17 @@ export function responder({
 
   return { handoff: false, mensaje: elegir(FRASES_NO_ENTENDIDO), bolas: [] };
 }
+
+export function detectarBusquedaAudio(mensaje) {
+  const t = mensaje.toLowerCase();
+  return /música|musica|podcast|canal|audio|escuchar|reproducir|ponme|play|canción|cancion|tema|artista/i.test(t);
+}
+
+export function fraseBuscandoAudio(keyword) {
+  const frases = [
+    `A ver qué encuentro de "${keyword}" en el catálogo... 🎧`,
+    `Buscando "${keyword}"... dame un seg bro.`,
+    `Voy a ver qué hay de "${keyword}" por aquí... 🦝`,
+  ];
+  return frases[Math.floor(Math.random() * frases.length)];
+}

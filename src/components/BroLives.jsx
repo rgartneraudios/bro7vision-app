@@ -28,6 +28,7 @@ const BroLives = ({ playingCreator, onToggleAudio }) => {
         if (playUrl && audioRef.current) {
             console.log("Intentando reproducir:", playUrl); // Para depurar en consola
             audioRef.current.src = playUrl;
+            audioRef.current.load();
             
             // Promesa de play para evitar errores de navegador
             const playPromise = audioRef.current.play();

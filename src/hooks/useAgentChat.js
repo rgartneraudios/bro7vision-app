@@ -8,6 +8,9 @@ import { buildPrompt, PERFILES } from '../services/agents/promptBuilder';
 import { KNOWLEDGE_SOURCES } from '../services/agents/knowledgeSources';
 import { buildNovaExploraPrompt } from '../services/agents/novaExploraPS';
 import { detectarBusquedaProducto, fraseBuscando } from '../services/agents/bots/novaBot';
+import { detectarBusquedaServicio, fraseBuscando as fraseBuscandoIsabella } from '../services/agents/bots/isabellaBot';
+import { detectarBusquedaAviso, fraseBuscandoAviso } from '../services/agents/bots/evelynBot';
+import { detectarBusquedaAudio, fraseBuscandoAudio } from '../services/agents/bots/mapacheBot';
 
 import { detectarSectorPS, detectarCiudadPS, detectarEntidadPS } from '../services/agents/ososPS';
 import { detectarRama } from '../services/agents/bots/ososUtils';
@@ -248,7 +251,7 @@ const enviar = async (textoUsuario) => {
         }
       }
 
-      // ── SERVICIOS (Isabella + Profesor) ───────────────────────────────
+// ── SERVICIOS (Isabella + Profesor) ───────────────────────────────
       if (mode === 'servicios') {
         const salida   = detectarSalidaIsabella(textoUsuario);
         if (salida) {
@@ -265,8 +268,17 @@ const enviar = async (textoUsuario) => {
           setLoading(false);
           return;
         }
-      }
 
+        // ── BUSCAR_STRIP — búsqueda sin IA ──────────────────────────
+        if (detectarBusquedaServicio(textoUsuario)) {
+          const frase = fraseBuscando(textoUsuario);
+          setMensaje(frase);
+          onHandoff?.({ agente: 'BUSCAR_STRIP', keyword: textoUsuario, intencion: 'BROSHOP_SERVICIO' });
+          setLoading(false);
+          return;
+        }
+      }
+      
       // ── MAPACHE (Mapache + Ami) ────────────────────────────────────────
 if (mode === 'mapache') {
   const salida = detectarSalidaMapache(textoUsuario);
@@ -284,6 +296,12 @@ if (mode === 'mapache') {
     setLoading(false);
     return;
   }
+  if (detectarBusquedaAudio(textoUsuario)) {
+  setMensaje(fraseBuscandoAudio(textoUsuario));
+  onHandoff?.({ agente: 'BUSCAR_STRIP', keyword: textoUsuario, intencion: 'AUDIO' });
+  setLoading(false);
+  return;
+}
   
 if (/\b(stop|para|detén|frena|detener|frenar)\b/i.test(textoUsuario)) {
   onHandoff?.({ agente: 'AUDIO_STOP' })
@@ -336,6 +354,12 @@ if (/\b(stop|para|detén|frena|detener|frenar)\b/i.test(textoUsuario)) {
             setLoading(false);
             return;
           }
+          if (detectarBusquedaAviso(textoUsuario)) {
+  	setMensaje(fraseBuscandoAviso(textoUsuario));
+  	onHandoff?.({ agente: 'BUSCAR_STRIP', keyword: textoUsuario, intencion: 'BROSHOP_AVISO' });
+  	setLoading(false);
+  	return;
+	}
         }
       }
 

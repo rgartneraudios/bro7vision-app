@@ -3,6 +3,8 @@ import CityLocationBanner from './CityLocationBanner';
 import AgentChatInput from './AgentChatInput';
 import NeuralButton from './NeuralButton';
 import BroCardStrip from './BroCardStrip';
+import BroLives from '../components/BroLives';
+import BroTuner from '../components/BroTuner';
 
 // ─── ESTILOS NEÓN ───────────────────────────────────────────────────────────
 const MOBILE_STYLES = `
@@ -144,10 +146,11 @@ const STRIP_THEME = {
 
 // HandOff de cierre según sector
 const CIERRE_AGENTE = {
-  productos: 'NOVA_CIERRE',
-  servicios: 'ISABELLA_CIERRE',
-  avisos:    'EVELYN_CIERRE',
-  audios:    'AUDIO_PLAY',
+  BROSHOP_PRODUCTO: 'NOVA_CIERRE',
+  BROSHOP_SERVICIO: 'ISABELLA_CIERRE',
+  BROSHOP_AVISO:    'EVELYN_CIERRE',
+  AUDIO:            'AUDIO_PLAY',
+  audios:           'AUDIO_PLAY',
 };
 
 const SECTOR_AVATARS = {
@@ -174,7 +177,7 @@ const REALITIES = [
 ];
 
 // ─── PUERTAS (reutilizadas en los 3 early returns) ──────────────────────────
-function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
+function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen, audioUser, onToggleAudio, 			broTunerRef,
                    accent, balances, navItems, handleNavigation, setMessages,
                    iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA,
                    onShowPurchaseModal, handleLogout, intent,
@@ -203,28 +206,39 @@ function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
       )}
 
       {/* Puerta Izquierda — Wallet + Neural (sin mando) */}
-      {isLeftOpen && (
-        <div className="door-open-left fixed top-0 left-0 h-full w-[72vw] max-w-[280px] z-[200] flex flex-col bg-black/95 border-r border-cyan-500/30 neon-border">
-          <div className="p-4 border-b border-white/10 flex flex-col gap-4">
-            <div className="flex flex-col items-center justify-center py-4 px-2 rounded-xl bg-cyan-900/10 border border-cyan-500/40">
-              <span className="text-[12px] text-cyan-200/60 uppercase tracking-widest mb-1">Génesis Wallet</span>
-              <span className="text-cyan-400 font-black text-4xl">{balances?.genesis ?? 0}</span>
-            </div>
-            <NeuralButton isAdmin={isAdmin} iaMode={iaMode}
-              tokensRestantes={userCredits?.tokensRestantes} tokensTotales={userCredits?.tokensTotales}
-              onToggleAdmin={onToggleAdminIA} onTogglePublic={onTogglePublicIA}
-              onShowPurchaseModal={onShowPurchaseModal} />
-          </div>
-          <div className="flex-1" />
-          <div className="p-4 border-t border-white/10">
-            <button onClick={handleLogout}
-              className="w-full text-[12px] text-red-400/40 uppercase tracking-widest text-center hover:text-red-400/80 transition-colors">
-              [ SALIR ]
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Puerta Izquierda — Wallet + Neural (sin mando) */}
+<div 
+  className="fixed top-0 left-0 h-full w-[72vw] max-w-[280px] z-[200] flex flex-col bg-black/95 border-r border-cyan-500/30 neon-border"
+  style={{ display: isLeftOpen ? 'flex' : 'none' }}
+>
+  <div className="p-4 border-b border-white/10 flex flex-col gap-4">
+    <div className="flex flex-col items-center justify-center py-4 px-2 rounded-xl bg-cyan-900/10 border border-cyan-500/40">
+      <span className="text-[12px] text-cyan-200/60 uppercase tracking-widest mb-1">Génesis Wallet</span>
+      <span className="text-cyan-400 font-black text-4xl">{balances?.genesis ?? 0}</span>
+    </div>
+    <NeuralButton isAdmin={isAdmin} iaMode={iaMode}
+      tokensRestantes={userCredits?.tokensRestantes} tokensTotales={userCredits?.tokensTotales}
+      onToggleAdmin={onToggleAdminIA} onTogglePublic={onTogglePublicIA}
+      onShowPurchaseModal={onShowPurchaseModal} />
+  </div>
 
+  <div className="mt-auto flex flex-col w-full pb-4">
+    <div className="w-full px-4 mb-4">
+      <BroLives playingCreator={audioUser} onToggleAudio={onToggleAudio} />
+    </div>
+    <div className="w-full px-4 pt-4 border-t border-white/5">
+      <BroTuner ref={broTunerRef} />
+    </div>
+  </div>
+
+  <div className="flex-1" />
+  <div className="p-4 border-t border-white/10">
+    <button onClick={handleLogout}
+      className="w-full text-[12px] text-red-400/40 uppercase tracking-widest text-center hover:text-red-400/80 transition-colors">
+      [ SALIR ]
+    </button>
+  </div>
+</div>
       {/* Puerta Derecha — Sectores */}
       {isRightOpen && (
         <div className="door-open-right fixed top-0 right-0 h-full w-[72vw] max-w-[280px] z-[200] flex flex-col bg-black/95 border-l border-cyan-500/30 neon-border">
@@ -274,13 +288,18 @@ function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
 // ─── BURBUJA DESCRIPCIÓN ────────────────────────────────────────────────────
 // Se abre al tocar una BroCard. Muestra descripción grande + CONFIRMAR.
 function BurbujaDescripcion({ card, intent, accent, onHandoff, onClose }) {
-  const handleConfirmar = () => {
-    if (!card || !onHandoff) return;
-    const agente = CIERRE_AGENTE[intent];
-    if (!agente) return;
+const handleConfirmar = () => {
+  if (!card || !onHandoff) return;
+  const agente = CIERRE_AGENTE[intent];
+  if (!agente) return;
+  console.log('BurbujaConfirmar card:', card);  // ← añadir
+  if (agente === 'AUDIO_PLAY') {
+    onHandoff({ agente, codigo: card.bro_aud || card.bro_pod || card.bro_id });
+  } else {
     onHandoff({ agente, comercio: card.bro_id || card.bro_ser });
-    onClose();
-  };
+  }
+  onClose();
+};
 
   return (
     <div
@@ -386,6 +405,9 @@ const MobileTabletLayout = ({
   onToggleAdminIA, onTogglePublicIA, onShowPurchaseModal,
   stripCards, stripVisible, stripLabel,
   onHandoff,
+  broTunerRef, 
+  audioUser, 
+  onToggleAudio, 
   ...props
 }) => {
   const [footerMode, setFooterMode] = useState('chat');
@@ -445,6 +467,9 @@ const MobileTabletLayout = ({
     iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA,
     onShowPurchaseModal, handleLogout, intent,
     setStep, setRealityMode, setScope,
+   audioUser,
+    onToggleAudio, 
+    broTunerRef, 
   };
 
   // ── REALITY TUNER ────────────────────────────────────────────────────────
@@ -500,7 +525,11 @@ const MobileTabletLayout = ({
       <div className="mobile-root fixed inset-0 overflow-hidden bg-black text-white select-none">
         <style>{MOBILE_STYLES}</style>
         <div className="scanline z-[1]" />
-        <Puertas {...puertasProps} />
+        <Puertas
+  	audioUser={audioUser}
+  	broTunerRef={broTunerRef}
+  	{...puertasProps}
+	/>
         <main className="relative z-10 flex flex-col h-full w-full items-center justify-between py-8 px-6">
           <div className="text-center">
             <div className="mobile-display-font text-5xl tracking-widest"

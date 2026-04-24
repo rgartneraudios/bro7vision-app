@@ -183,6 +183,8 @@ const cargarStripCards = useCallback(async (agente, ciudad, modalidad = 'LOCAL')
           return [{ 
           bro_id: codigo, banner_url: p.banner_url || '', 
           nombre: p.alias || '', audio_file: p.audio_file || '',
+         bro_aud: p.bro_aud || '',
+  	bro_pod: p.bro_pod || '',
           neighborhood: p.neighborhood || '',
            nearby_ref: p.nearby_ref || '',
           categoria: esPodcast ? 'Podcast' : 'Música', ciudad: p.city || '', 
@@ -250,15 +252,21 @@ const cargarStripCards = useCallback(async (agente, ciudad, modalidad = 'LOCAL')
   return
 }
     
-  if (agente === 'AUDIO_PLAY') {
+if (agente === 'AUDIO_PLAY') {
+  console.log('AUDIO_PLAY codigo:', codigo);
+  console.log('realItems bro_aud:', realItems?.map(c => ({ bro_aud: c.bro_aud, alias: c.alias })));
   const itemCanal = canal || realItems.find(c =>
     String(c.bro_aud) === String(codigo) ||
     String(c.bro_pod) === String(codigo)
   );
-  if (itemCanal) { setAudioUser(itemCanal); setActivePrismUser(itemCanal); }
+  console.log('itemCanal:', itemCanal);
+  if (itemCanal) { 
+  console.log('setIsLeftOpen existe:', typeof setIsLeftOpen);
+    setAudioUser(itemCanal); 
+    setActivePrismUser(itemCanal); 
+  }
   return;
 }
-
     // ── INTERNOS DE SECTOR ────────────────────────────
     if (['AUDIO_INTERNO', 'SERVICIO_INTERNO', 'AVISO_INTERNO', 'ORACULO_INTERNO'].includes(agente)) {
       setPerfilSector(prev => ({ ...prev, personaje_id: personaje_id || per_solicitado }));
@@ -680,6 +688,9 @@ const chatPorIntent = {
 
       {isTouch ? (
         <MobileTabletLayout  realityMode={realityMode}
+        broTunerRef={broTunerRef}
+  audioUser={audioUser}
+  onToggleAudio={() => setAudioUser(prev => prev ? null : audioUser)}
   setRealityMode={setRealityMode} {...layoutProps} />
       ) : (
         <DesktopLayout {...layoutProps} />

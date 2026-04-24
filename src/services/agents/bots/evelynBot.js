@@ -102,3 +102,17 @@ export function responder({ intencion, aviso = null, codigoAvi = null, textoUser
     default:             return { mensaje: elegir(FRASES.inicio) };
   }
 }
+
+export function detectarBusquedaAviso(mensaje) {
+  const t = mensaje.toLowerCase();
+  return /aviso|anuncio|ofrezco|necesito|tablón|tablon|busco|vendo|alquilo|oferta/i.test(t);
+}
+
+export function fraseBuscandoAviso(keyword) {
+  const frases = [
+    `Déjame ver qué hay en el tablón para "${keyword}"...`,
+    `Busco en el tablón algo sobre "${keyword}"...`,
+    `A ver qué avisos tenemos de "${keyword}"...`,
+  ];
+  return frases[Math.floor(Math.random() * frases.length)];
+}

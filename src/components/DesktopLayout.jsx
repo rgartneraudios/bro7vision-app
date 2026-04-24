@@ -240,6 +240,7 @@ export default function DesktopLayout(props) {
           stripLabel={stripLabel}
           findChannelByAlias={findChannelByAlias}
           checkIfNew={checkIfNew}
+         onHandoff={handleCentralHandoff}
           onInvokeOsos={() => setStep(1)}
           enviar={handleMapacheInput}
 	mensaje={mapacheMensaje}
