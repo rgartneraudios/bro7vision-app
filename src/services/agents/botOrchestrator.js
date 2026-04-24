@@ -282,16 +282,18 @@ async function modoAvisos({
     if ((genesis || 0) < 200) return { mensaje: f('sin_genesis'), handoff: false };
     const expireDate = new Date();
     expireDate.setDate(expireDate.getDate() + 7);
+    
     await supabase.from('avisos').insert([{
-      user_id:        user_id     || '',
-      author_alias:   autor_alias || 'Ciudadano',
-      type:           aviso.tipo,
-      title:          aviso.titulo,
-      content:        aviso.contenido,
-      city:           ciudad      || 'global',
-      cost_to_reveal: 200,
-      expires_at:     expireDate.toISOString(),
-    }]);
+  user_id:        user_id     || '',
+  author_alias:   autor_alias || 'Ciudadano',
+  type:           aviso.tipo,
+  title:          aviso.titulo,
+  content:        aviso.contenido,
+  cost_to_reveal: 200,
+  is_active:      true,
+  expires_at:     expireDate.toISOString(),
+}]);
+
     onAvisoPublicar?.({ confirmado: true });
     return { mensaje: f('publicado'), handoff: false, avisoEnConstruccion: null };
   }
@@ -300,11 +302,13 @@ async function modoAvisos({
 
   // Campo: TIPO
   if (!aviso.tipo) {
-    if (t.includes('ofrezco') || t.includes('oferta') || t.includes('ofrec'))
-      return { mensaje: f('titulo'), handoff: false, avisoEnConstruccion: { ...aviso, tipo: 'OFREZCO' } };
-    if (t.includes('necesito') || t.includes('demanda'))
-      return { mensaje: f('titulo'), handoff: false, avisoEnConstruccion: { ...aviso, tipo: 'NECESITO' } };
-    // Solo llega aquí si hay avisoEnConstruccion vacío (arrancó con P)
+if (t.includes('ofrezco') || t.includes('oferta') || t.includes('ofrec')) {
+  return { mensaje: f('titulo'), handoff: false, avisoEnConstruccion: { ...aviso, tipo: 'OFERTA' } };
+}
+if (t.includes('necesito') || t.includes('demanda')) {
+  return { mensaje: f('titulo'), handoff: false, avisoEnConstruccion: { ...aviso, tipo: 'DEMANDA' } };
+}
+      // Solo llega aquí si hay avisoEnConstruccion vacío (arrancó con P)
     // Si no hay nada en construcción, el hook ya interceptó antes
     return { mensaje: f('error_tipo'), handoff: false, avisoEnConstruccion: aviso };
   }

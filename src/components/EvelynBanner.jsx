@@ -1,8 +1,8 @@
 // src/components/EvelynBanner.jsx
-// Sin hook interno. Recibe enviar/mensaje/loading desde App.jsx via props.
+// Estructura idéntica a NovaBanner.
+// Strip → Banner (descripción card o mensaje bot) → Input
 
 import React, { useState, useEffect, useRef } from 'react';
-import AvisoPreviewCard from './AvisoPreviewCard';
 import AgentChatInput from './AgentChatInput';
 import BroCardStrip from './BroCardStrip';
 
@@ -24,36 +24,30 @@ export default function EvelynBanner({
   personaje = 'evelyn',
   avisos_personaje,
   sessionCity,
-  sessionCP,
   genesis = 0,
-  alias = 'Ciudadano',
-  bro_id = '',
   realItems = [],
   stripVisible,
   stripCards,
   stripLabel,
-  // ── Props del hook desde App.jsx ──────────────────
   enviar,
   mensaje,
   loading,
   avisoEnConstruccion,
-  // ── Callbacks ─────────────────────────────────────
-  onInvokeOsos,
   onAvisoConectar,
   onAvisoPublicar,
   setProjectingUser,
-  onPersonajeChange,
+  onHandoff,
 }) {
-  const [display, setDisplay]       = useState('');
-  const [cursor, setCursor]         = useState(true);
-  const [currentMsg, setCurrentMsg] = useState('');
+  const [display, setDisplay]             = useState('');
+  const [cursor, setCursor]               = useState(true);
+  const [currentMsg, setCurrentMsg]       = useState('');
+  const [selectedCard, setSelectedCard]   = useState(null);
+  const [esperandoConexion, setEsperandoConexion] = useState(false);
   const charIdx = useRef(0);
 
-  const esLarry         = personaje === 'larry';
-  const nombreAgente    = esLarry ? 'LARRY' : 'EVELYN';
+  const esLarry         = (avisos_personaje || personaje) === 'larry';
   const GREETINGS       = esLarry ? GREETINGS_LARRY : GREETINGS_EVELYN;
   const personajeActivo = (avisos_personaje || personaje || 'evelyn').toLowerCase();
-  const color           = '#5E76FF';
 
   const colorPrimario   = esLarry ? '#0C21C2' : '#161AF9';
   const colorSecundario = esLarry ? '#1E2D94' : '#3552B8';
@@ -66,10 +60,27 @@ export default function EvelynBanner({
   };
   const { nombre: nombrePersonaje, icono: iconoPersonaje } = INFO[personajeActivo] || INFO.evelyn;
 
-  useEffect(() => { const t = setInterval(() => setCursor(c => !c), 530); return () => clearInterval(t); }, []);
-  useEffect(() => { setCurrentMsg(GREETINGS[Math.floor(Math.random() * GREETINGS.length)]); }, [personaje]);
-  useEffect(() => { if (mensaje) setCurrentMsg(mensaje); }, [mensaje]);
+  // ── Cursor ───────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const t = setInterval(() => setCursor(c => !c), 530);
+    return () => clearInterval(t);
+  }, []);
 
+  // ── Saludo inicial ───────────────────────────────────────────────────────
+  useEffect(() => {
+    setCurrentMsg(GREETINGS[Math.floor(Math.random() * GREETINGS.length)]);
+  }, [personaje]);
+
+  // ── Mensajes del bot → limpia card seleccionada ──────────────────────────
+  useEffect(() => {
+    if (mensaje) {
+      setCurrentMsg(mensaje);
+      setSelectedCard(null);
+      setEsperandoConexion(false);
+    }
+  }, [mensaje]);
+
+  // ── Typewriter ───────────────────────────────────────────────────────────
   useEffect(() => {
     if (!currentMsg) return;
     charIdx.current = 0;
@@ -82,14 +93,56 @@ export default function EvelynBanner({
     return () => clearInterval(t);
   }, [currentMsg]);
 
+  // ── Clic en BroCard ──────────────────────────────────────────────────────
+  const handleCardClick = (card) => {
+    if (selectedCard?.bro_id === card.bro_id) {
+      setSelectedCard(null);
+      setEsperandoConexion(false);
+      return;
+    }
+    setSelectedCard(card);
+    setEsperandoConexion(false);
+  };
+
+  // ── Enviar desde input → limpia card ────────────────────────────────────
+  const handleEnviar = (texto) => {
+    setSelectedCard(null);
+    setEsperandoConexion(false);
+    enviar(texto);
+  };
+
+  // ── Botón CONECTAR ───────────────────────────────────────────────────────
+  const handleConectar = () => {
+    if (!selectedCard) return;
+    if (genesis < 200) {
+      setCurrentMsg('No tienes suficientes génesis. Necesitas 200 para conectar.');
+      setSelectedCard(null);
+      return;
+    }
+    setEsperandoConexion(true);
+  };
+
+  // ── Botón CONFIRMAR ──────────────────────────────────────────────────────
+  const handleConfirmar = () => {
+    if (!selectedCard) return;
+    onAvisoConectar?.({
+      id:      selectedCard.aviso_id || selectedCard.bro_id,
+      user_id: selectedCard.user_id,
+      title:   selectedCard.titulo,
+    });
+    const autorProfile = realItems.find(i => i.id === selectedCard.user_id);
+    if (autorProfile && setProjectingUser) setProjectingUser(autorProfile);
+    setCurrentMsg('Conectado. El autor recibirá tu mensaje. 🐺');
+    setSelectedCard(null);
+    setEsperandoConexion(false);
+  };
+
   const avisoParaPreview = avisoEnConstruccion
     ? { ...avisoEnConstruccion, ciudad: sessionCity || '' }
     : null;
 
-  const CAMPOS_AVISO = ['tipo', 'titulo', 'contenido', 'alcance'];
-  function labelCampo(campo) {
-    return { tipo: 'Tipo', titulo: 'Título', contenido: 'Descripción', alcance: 'Alcance' }[campo] || '';
-  }
+  const CAMPOS_AVISO = ['tipo', 'titulo', 'contenido'];
+  const labelCampo = (c) => ({ tipo: 'Tipo', titulo: 'Título', contenido: 'Descripción' }[c] || '');
   const campoActual = avisoEnConstruccion
     ? CAMPOS_AVISO.find(c => !avisoEnConstruccion[c]) || 'confirmar'
     : null;
@@ -105,25 +158,6 @@ export default function EvelynBanner({
           0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
           40%            { opacity: 1;   transform: scale(1.2); }
         }
-        .av-wrap {
-          background: rgba(0,0,0,0.75);
-          backdrop-filter: blur(12px);
-          border: 1px solid ${colorPrimario}55;
-          border-radius: 2rem;
-          padding: 18px 32px 20px 32px;
-          box-shadow: 0 0 24px ${glowColor}, inset 0 0 12px rgba(0,0,0,0.4);
-          min-height: 90px;
-        }
-        .av-texto {
-          color: ${colorTexto};
-          font-style: italic; font-weight: 900; text-transform: uppercase;
-          font-size: clamp(13px, 2.2vw, 18px); line-height: 1.5; min-height: 3em;
-          animation: neonPulseAvisos 3s ease-in-out infinite;
-        }
-        .av-cursor {
-          display: inline-block; width: 3px; height: 0.8em; margin-left: 3px;
-          vertical-align: middle; background: ${colorPrimario}; box-shadow: 0 0 8px ${colorPrimario};
-        }
         .av-loading { display: inline-flex; gap: 4px; align-items: center; }
         .av-loading span {
           width: 6px; height: 6px; border-radius: 50%; background: ${colorPrimario};
@@ -136,6 +170,12 @@ export default function EvelynBanner({
           to   { opacity: 1; transform: translateX(0); }
         }
         .av-step { animation: stepIn 0.25s ease both; }
+        .av-texto {
+          color: ${colorTexto};
+          font-style: italic; font-weight: 900; text-transform: uppercase;
+          font-size: clamp(13px, 2.2vw, 18px); line-height: 1.5;
+          animation: neonPulseAvisos 3s ease-in-out infinite;
+        }
       `}</style>
 
       {/* 1. CARRUSEL */}
@@ -143,7 +183,7 @@ export default function EvelynBanner({
         <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
           <BroCardStrip
             cards={stripCards}
-            onSelectCard={(card) => enviar(`${card.bro_id}D`)}
+            onSelectCard={handleCardClick}
             accentColor="blue"
             label={stripLabel}
             visible={stripVisible}
@@ -151,14 +191,8 @@ export default function EvelynBanner({
         </div>
       )}
 
-      {/* 2. AVISO PREVIEW */}
-      {avisoParaPreview && (
-        <div className="w-full max-w-2xl pointer-events-auto mb-3">
-          <AvisoPreviewCard aviso={avisoParaPreview} visible={true} />
-        </div>
-      )}
 
-      {/* 3. INDICADOR DE PROGRESO */}
+      {/* 3. INDICADOR DE PROGRESO — solo durante construcción */}
       {avisoEnConstruccion && campoActual && (
         <div className="flex items-center gap-2 w-full max-w-2xl px-2 mb-2">
           {CAMPOS_AVISO.map((campo) => {
@@ -186,35 +220,149 @@ export default function EvelynBanner({
         </div>
       )}
 
-      {/* 4. BANNER */}
+      {/* 4. BANNER — idéntico a NovaBanner en estructura */}
       <div className="w-full max-w-2xl mb-3 pointer-events-auto">
-        <div className="av-wrap w-full flex flex-col items-center justify-center text-center">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-lg">{iconoPersonaje}</span>
-            <span style={{ color, fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
-              {nombrePersonaje}
-            </span>
-          </div>
-          {!currentMsg && !loading && (
-            <p className="text-xs uppercase tracking-widest font-bold" style={{ color: `${colorPrimario}99` }}>
-              ◈ {nombreAgente} · AVISOS
+        <div
+          className="w-full flex flex-col items-center justify-center text-center"
+          style={{
+            background: 'rgba(0,0,0,0.75)',
+            backdropFilter: 'blur(12px)',
+            border: `1px solid ${colorPrimario}55`,
+            borderRadius: '1.5rem',
+            padding: '18px 32px 20px',
+            boxShadow: `0 0 24px ${glowColor}, inset 0 0 12px rgba(0,0,0,0.4)`,
+            minHeight: '90px',
+            transition: 'all 0.3s ease',
+          }}
+        >
+          {/* Sin mensaje ni card */}
+          {!currentMsg && !selectedCard && !loading && (
+            <p style={{ color: `${colorPrimario}99`, fontSize: 10, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
+              ◈ {nombrePersonaje} · AVISOS
             </p>
           )}
-          {loading ? (
+
+          {/* Loading */}
+          {loading && !selectedCard && (
             <div className="av-loading"><span /><span /><span /></div>
-          ) : (
-            currentMsg && (
-              <p className="av-texto">
-                {display}<span className="av-cursor" style={{ opacity: cursor ? 1 : 0 }} />
+          )}
+
+          {/* Card seleccionada — descripción del aviso */}
+          {selectedCard && !loading && (
+            <div className="w-full flex flex-col items-center gap-3">
+              {/* Autor */}
+              <p style={{
+                color: colorTexto, fontWeight: 900, fontStyle: 'italic',
+                textTransform: 'uppercase', fontSize: 'clamp(11px, 1.4vw, 13px)',
+                letterSpacing: '0.2em',
+                textShadow: `0 0 10px ${glowColor}`,
+              }}>
+                {selectedCard.nombre}
               </p>
-            )
+
+              {/* Tipo badge */}
+              <span style={{
+                fontSize: 10, fontWeight: 900, letterSpacing: '0.2em',
+                textTransform: 'uppercase', padding: '3px 14px',
+                border: `1px solid ${colorPrimario}55`,
+                borderRadius: '999px',
+                color: selectedCard.categoria === 'OFERTA' ? '#00FF9C' : '#00C3FF',
+              }}>
+                {selectedCard.categoria}
+              </span>
+
+              {/* Título */}
+              <p style={{
+                color: '#fff', fontWeight: 900, fontStyle: 'italic',
+                textTransform: 'uppercase',
+                fontSize: 'clamp(14px, 2vw, 18px)',
+                lineHeight: 1.3,
+                textShadow: `0 0 16px ${glowColor}`,
+              }}>
+                {selectedCard.titulo}
+              </p>
+
+              {/* Descripción */}
+              <p style={{
+                color: colorTexto, fontWeight: 900, fontStyle: 'italic',
+                textTransform: 'uppercase',
+                fontSize: 'clamp(12px, 1.6vw, 15px)',
+                lineHeight: 1.5,
+                textShadow: `0 0 12px ${glowColor}`,
+              }}>
+                {selectedCard.descripcion}
+                <span style={{ opacity: cursor ? 1 : 0 }}>_</span>
+              </p>
+
+              {/* Botones */}
+              {!esperandoConexion ? (
+                <button
+                  onClick={handleConectar}
+                  style={{
+                    marginTop: 4,
+                    padding: '10px 28px',
+                    background: `${colorPrimario}22`,
+                    border: `1px solid ${colorPrimario}88`,
+                    borderRadius: '1.5rem',
+                    color: colorTexto,
+                    fontWeight: 900, fontSize: 12,
+                    textTransform: 'uppercase', letterSpacing: '0.15em',
+                    cursor: 'pointer',
+                    boxShadow: `0 0 16px ${glowColor}`,
+                  }}
+                >
+                  ◈ CONECTAR · 200 GÉNESIS
+                </button>
+              ) : (
+                <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+                  <button
+                    onClick={handleConfirmar}
+                    style={{
+                      padding: '10px 24px',
+                      background: '#00ff8822',
+                      border: '1px solid #00ff88',
+                      borderRadius: '1.5rem',
+                      color: '#00ff88',
+                      fontWeight: 900, fontSize: 12,
+                      textTransform: 'uppercase', letterSpacing: '0.15em',
+                      cursor: 'pointer',
+                      boxShadow: '0 0 16px #00ff8844',
+                    }}
+                  >
+                    ✓ CONFIRMAR · 200 GÉNESIS
+                  </button>
+                  <button
+                    onClick={() => { setSelectedCard(null); setEsperandoConexion(false); }}
+                    style={{
+                      padding: '10px 18px',
+                      background: 'transparent',
+                      border: `1px solid ${colorPrimario}44`,
+                      borderRadius: '1.5rem',
+                      color: colorTexto,
+                      fontWeight: 900, fontSize: 11,
+                      textTransform: 'uppercase', letterSpacing: '0.1em',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    CANCELAR
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Mensaje del bot — solo si no hay card seleccionada */}
+          {!selectedCard && !loading && currentMsg && (
+            <p className="av-texto">
+              {display}<span style={{ opacity: cursor ? 1 : 0 }}>_</span>
+            </p>
           )}
         </div>
       </div>
 
       {/* 5. INPUT */}
       <div className="w-full max-w-2xl pointer-events-auto mb-4">
-        <AgentChatInput agent="evelyn" onSend={enviar} isLoading={loading} />
+        <AgentChatInput agent="evelyn" onSend={handleEnviar} isLoading={loading} />
       </div>
     </div>
   );

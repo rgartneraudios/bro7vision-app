@@ -38,7 +38,6 @@ import SlideRailServicios from './components/SlideRailServicios';
 import EvelynBanner from './components/EvelynBanner';
 import SlideRailAvisos from './components/SlideRailAvisos';
 import OraculoBanner from './components/OraculoBanner';
-import AvisoPreviewCard from './components/AvisoPreviewCard';
 import CityLocationBanner from './components/CityLocationBanner';
 import NeuralButton from './components/NeuralButton';
 import DesktopLayout from './components/DesktopLayout';
@@ -167,6 +166,7 @@ const cargarStripCards = useCallback(async (agente, ciudad, modalidad = 'LOCAL')
   try {
 
     // ── BROSHOP_AVISO — lee de tabla avisos, no de profiles ─────────────
+    // ── BROSHOP_AVISO — lee de tabla avisos + banner_url del autor ──────────
     if (agente === 'BROSHOP_AVISO') {
       const ahora = new Date().toISOString();
       const { data: avisos, error } = await supabase
@@ -176,33 +176,42 @@ const cargarStripCards = useCallback(async (agente, ciudad, modalidad = 'LOCAL')
         .gt('expires_at', ahora)
         .limit(20);
 
-      console.log('🃏 avisos encontrados:', avisos?.length, error);
+      if (error || !avisos?.length) {
+        setStripCards([]);
+        setStripVisible(false);
+        return;
+      }
 
-      const cards = (avisos || []).map(av => ({
-        bro_id:      av.id,           // usamos el uuid del aviso como identificador
+      // Sacar banner_url de profiles para cada autor
+      const userIds = [...new Set(avisos.map(a => a.user_id).filter(Boolean))];
+      const { data: autores } = await supabase
+        .from('profiles')
+        .select('id, banner_url')
+        .in('id', userIds);
+
+      const bannerMap = {};
+      (autores || []).forEach(p => { bannerMap[p.id] = p.banner_url || ''; });
+
+      const cards = avisos.map(av => ({
+        bro_id:      av.id,
         aviso_id:    av.id,
         user_id:     av.user_id,
         nombre:      av.author_alias || 'Ciudadano',
-        banner_url:  '',              // los avisos no tienen banner, EvelynBanner lo gestiona
-        categoria:   av.type || 'AVISO',
-        titulo:      av.title,
-        descripcion: av.content,
+        banner_url:  bannerMap[av.user_id] || '',
+        categoria:   av.type || 'OFERTA',
+        titulo:      av.title || '',
+        descripcion: av.content || '',
         cost:        av.cost_to_reveal || 200,
         ciudad:      '',
-        es_aviso:    true,            // flag para que EvelynBanner sepa que es aviso
+        es_aviso:    true,
       }));
 
-      if (!error && cards.length > 0) {
-        setStripCards(cards);
-        setStripLabel('broshop_aviso');
-        setStripVisible(true);
-      } else {
-        setStripCards([]);
-        setStripVisible(false);
-      }
+      setStripCards(cards);
+      setStripLabel('broshop_aviso');
+      setStripVisible(true);
       return;
     }
-
+    
     // ── RESTO DE AGENTES — leen de profiles (sin cambios) ───────────────
     let query = supabase
       .from('profiles')

@@ -9,7 +9,7 @@ const THEMES = {
   gold:  { glow: "rgba(251,191,36,0.5)",  border: "#fbbf24", idColor: "#fbbf24", footerBg: "#000000" },
   cyan:  { glow: "rgba(34,211,238,0.5)",  border: "#22d3ee", idColor: "#22d3ee", footerBg: "#000000" },
   slate: { glow: "rgba(100,116,139,0.5)", border: "#64748b", idColor: "#ffffff", footerBg: "#475569" },
-  blue:  { glow: "rgba(30,58,138,0.5)",   border: "#1e3a8a", idColor: "#ffffff", footerBg: "#1e3a8a" },
+  blue:  { glow: "rgba(30,58,138,0.5)",   border: "#1e3a8a", idColor: "#ffffff", footerBg: "#00081C" },
 };
 
 function BroCard({ card, theme, onClick, index }) {

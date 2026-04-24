@@ -222,6 +222,8 @@ export default function DesktopLayout(props) {
           enviar={handleEvelynInput}
 	mensaje={evelynMensaje}
 	loading={evelynLoading}
+	setProjectingUser={props.setProjectingUser}
+  	onHandoff={props.onHandoff} 
 	avisoEnConstruccion={avisoEnConstruccion}
           onInvokeOsos={() => setStep(1)}
           onAvisoConectar={props.onAvisoConectar}

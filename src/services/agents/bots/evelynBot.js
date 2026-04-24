@@ -9,10 +9,10 @@
 
 const FRASES = {
   inicio:       [
-    "Vamos a publicar. ¿Es una oferta o una búsqueda? Escribe Ofrezco o Necesito.",
-    "Dime primero — ¿ofreces algo o lo buscas? Escribe Ofrezco o Necesito.",
-    "Antes de nada necesito saber el tipo. ¿Ofrezco o Necesito?",
-  ],
+  "Vamos a publicar. ¿Es una oferta o una búsqueda? Escribe Oferta o Demanda.",
+  "Dime primero — ¿ofreces algo o lo buscas? Escribe Oferta o Demanda.",
+  "Antes de nada necesito saber el tipo. ¿Oferta o Demanda?",
+],
   titulo:       [
     "Bien. ¿Cómo titulamos el aviso?",
     "Perfecto. Dame el título del aviso.",
@@ -34,9 +34,9 @@ const FRASES = {
     "En el tablón. Que llegue a quien tiene que llegar.",
   ],
   error_tipo:   [
-    "Escribe Ofrezco o Necesito, nada más.",
-    "Solo Ofrezco o Necesito — ¿cuál es?",
-    "No te entiendo. Ofrezco o Necesito.",
+    "Si ofreces algo por OFERTA y si anuncias que necesitas algo pon DEMANDA, nada más.",
+    "Solo Oferta o Demanda — ¿cuál es?",
+    "No te entiendo. Oferta o Demanda?.",
   ],
   cancelado:    [
     "Cancelado. ¿Qué más necesitas?",
