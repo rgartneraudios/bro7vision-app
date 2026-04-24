@@ -21,8 +21,6 @@ import { getMoonSuffix }                  from '../../utils/moonUtils';
 import { responder as smisterioResponder } from './bots/smisterioBot';
 
 // ─── Helper: normalizar handoff ───────────────────────────────────────────────
-// Convierte handoff string → objeto con handoffData completo.
-// extraData permite pasar campos adicionales (personaje_id, codigo, etc.)
 
 function normalizarHandoff(resultado, extraData = {}) {
   if (!resultado.handoff) return resultado;
@@ -33,7 +31,6 @@ function normalizarHandoff(resultado, extraData = {}) {
       handoff: true,
     };
   }
-  // Ya era booleano true — enriquecemos handoffData si falta algo
   return {
     ...resultado,
     handoffData: { ...resultado.handoffData, ...extraData },
@@ -141,7 +138,6 @@ async function modoOsos({ textoUsuario, oso_id, sectorFinal, ciudadFinal, actoAc
   else if (id === 'puffo') resultado = puffoResponder(args);
   else                     resultado = laraResponder(args);
 
-  // OSOS_INTERNO lleva oso_id destino — lo pasa el propio bot en resultado.oso_id
   return normalizarHandoff(resultado, { oso_id: resultado.oso_id });
 }
 
@@ -154,7 +150,6 @@ async function modoNova({ textoUsuario, entidad, hayTarjetas, supabase }) {
     hayTarjetas,
     update,
   });
-  // Nova no tiene interno — normalización estándar
   return normalizarHandoff(resultado);
 }
 
@@ -165,7 +160,6 @@ async function modoServicios({ textoUsuario, entidad, hayTarjetas, personaje, su
 
   const resultado = id === 'prmaestro' ? prmaestroResponder(args) : isabellaResponder(args);
 
-  // SERVICIO_INTERNO lleva personaje_id destino — el bot lo pone en resultado.personaje_id
   return normalizarHandoff(resultado, { personaje_id: resultado.personaje_id });
 }
 
@@ -176,8 +170,6 @@ async function modoAudio({ textoUsuario, entidad, hayTarjetas, personaje, supaba
 
   const resultado = id === 'ami' ? amiResponder(args) : mapacheResponder(args);
 
-  // AUDIO_INTERNO lleva personaje_id destino
-  // AUDIO_PLAY lleva codigo
   return normalizarHandoff(resultado, {
     personaje_id: resultado.personaje_id,
     codigo:       resultado.codigo,
@@ -201,7 +193,6 @@ async function modoOraculo({ textoUsuario, personaje, supabase }) {
   else if (id === 'smisterio') resultado = smisterioResponder(args);
   else                         resultado = orumamaResponder(args);
 
-  // ORACULO_INTERNO lleva personaje_id destino
   return normalizarHandoff(resultado, { personaje_id: resultado.personaje_id });
 }
 
@@ -241,6 +232,13 @@ async function modoAvisos({
   // Cancelar
   if (t.includes('cancelar'))
     return { mensaje: f('cancelado'), handoff: false, avisoEnConstruccion: null };
+
+  // ── P → arrancar flujo de publicación limpio ─────────────────────────
+  // El hook ya filtra "publicar aviso", "nuevo aviso", etc. y los convierte
+  // a 'P' antes de llegar aquí. Solo necesitamos manejar la 'P'.
+  if (t === 'p' && !aviso.tipo) {
+    return { mensaje: f('inicio'), handoff: false, avisoEnConstruccion: {} };
+  }
 
   // Detectar código AVI
   const codigoMatch = textoUsuario.match(/AVI-([A-Z0-9]{4})/i);
@@ -298,12 +296,16 @@ async function modoAvisos({
     return { mensaje: f('publicado'), handoff: false, avisoEnConstruccion: null };
   }
 
+  // ── Flujo de campos (solo si hay aviso en construcción) ──────────────
+
   // Campo: TIPO
   if (!aviso.tipo) {
     if (t.includes('ofrezco') || t.includes('oferta') || t.includes('ofrec'))
       return { mensaje: f('titulo'), handoff: false, avisoEnConstruccion: { ...aviso, tipo: 'OFREZCO' } };
-    if (t.includes('necesito') || t.includes('busco') || t.includes('demanda'))
+    if (t.includes('necesito') || t.includes('demanda'))
       return { mensaje: f('titulo'), handoff: false, avisoEnConstruccion: { ...aviso, tipo: 'NECESITO' } };
+    // Solo llega aquí si hay avisoEnConstruccion vacío (arrancó con P)
+    // Si no hay nada en construcción, el hook ya interceptó antes
     return { mensaje: f('error_tipo'), handoff: false, avisoEnConstruccion: aviso };
   }
 
@@ -332,7 +334,7 @@ export async function botOrchestrator({
   textoUsuario,
   // OSOS
   oso_id, sectorFinal, ciudadFinal, actoActual, ramaActual,
-  // NOVA / SERVICIOS / AUDIO — entidad ya armada por el PS en el hook
+  // NOVA / SERVICIOS / AUDIO
   entidad, hayTarjetas,
   // Personajes activos por sector
   servicios_personaje,

@@ -98,6 +98,34 @@ async function llamarGemini({ system, messages, userMessage, iaMode }) {
   return data?.candidates?.[0]?.content?.parts?.[0]?.text || '...';
 }
 
+// ─── Helper: detectar intención de publicar aviso ────────────────────────────
+// Separa claramente "quiero publicar" de "quiero consultar/buscar"
+
+function esIntencionPublicar(texto) {
+  const t = texto.trim();
+  // Tecla rápida P
+  if (t.toUpperCase() === 'P') return true;
+  // Frases explícitas de publicación
+  if (/\bpublicar\b/i.test(t))     return true;
+  if (/\bcrear aviso\b/i.test(t))  return true;
+  if (/\bnuevo aviso\b/i.test(t))  return true;
+  if (/\bponer aviso\b/i.test(t))  return true;
+  if (/\bañadir aviso\b/i.test(t)) return true;
+  return false;
+}
+
+function esIntencionConsultar(texto) {
+  const t = texto.trim();
+  // Tecla rápida C
+  if (t.toUpperCase() === 'C') return true;
+  // Frases explícitas de consulta
+  if (/\bver avisos\b/i.test(t))      return true;
+  if (/\bconsultar avisos\b/i.test(t)) return true;
+  if (/\bque avisos hay\b/i.test(t))   return true;
+  if (/\bqué avisos hay\b/i.test(t))   return true;
+  return false;
+}
+
 // ─── Hook principal ───────────────────────────────────────────────────────────
 
 export const useAgentChat = ({
@@ -125,11 +153,8 @@ export const useAgentChat = ({
   const avisoConectarRef = useRef(null);
 
   // ── Estados del sandwich ──────────────────────────────────────────────────
-  // esperandoConfirmacion: { archivo: 'ia_prepago' } | null
   const [esperandoConfirmacion, setEsperandoConfirmacion] = useState(null);
-  // botNarrando: true mientras el bot narró y la IA espera para cerrar
   const [botNarrando, setBotNarrando] = useState(false);
-  // fechaNacimiento: para Jaguar — se guarda cuando el user la escribe
   const [fechaNacimiento, setFechaNacimiento] = useState(null);
 
   const pushHistory = (role, content) => {
@@ -165,9 +190,7 @@ export const useAgentChat = ({
     return null;
   };
 
-  // ── Helper: detectar fecha de nacimiento en texto libre ──────────────────
   const detectarFecha = (texto) => {
-    // Formatos: DD/MM/YYYY, YYYY-MM-DD, DD-MM-YYYY
     const regexes = [
       /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/,
       /(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/,
@@ -251,7 +274,7 @@ const enviar = async (textoUsuario) => {
         }
       }
 
-// ── SERVICIOS (Isabella + Profesor) ───────────────────────────────
+      // ── SERVICIOS (Isabella + Profesor) ───────────────────────────────
       if (mode === 'servicios') {
         const salida   = detectarSalidaIsabella(textoUsuario);
         if (salida) {
@@ -268,8 +291,6 @@ const enviar = async (textoUsuario) => {
           setLoading(false);
           return;
         }
-
-        // ── BUSCAR_STRIP — búsqueda sin IA ──────────────────────────
         if (detectarBusquedaServicio(textoUsuario)) {
           const frase = fraseBuscando(textoUsuario);
           setMensaje(frase);
@@ -278,90 +299,123 @@ const enviar = async (textoUsuario) => {
           return;
         }
       }
-      
+
       // ── MAPACHE (Mapache + Ami) ────────────────────────────────────────
-if (mode === 'mapache') {
-  const salida = detectarSalidaMapache(textoUsuario);
+      if (mode === 'mapache') {
+        const salida = detectarSalidaMapache(textoUsuario);
+        if (salida) {
+          setMensaje(salida.mensaje);
+          setTimeout(() => onHandoff?.({ agente: 'OSOS' }), 1200);
+          setLoading(false);
+          return;
+        }
+        const personajeActivo = contextData?.audio_personaje || 'mapache';
+        const interno = detectarInternoMapache(textoUsuario, personajeActivo);
+        if (interno) {
+          setMensaje(interno.mensaje || '...');
+          onHandoff?.({ agente: 'AUDIO_INTERNO', personaje_id: interno.personaje_id });
+          setLoading(false);
+          return;
+        }
+        if (detectarBusquedaAudio(textoUsuario)) {
+          setMensaje(fraseBuscandoAudio(textoUsuario));
+          onHandoff?.({ agente: 'BUSCAR_STRIP', keyword: textoUsuario, intencion: 'AUDIO' });
+          setLoading(false);
+          return;
+        }
+
+        if (/\b(stop|para|detén|frena|detener|frenar)\b/i.test(textoUsuario)) {
+          onHandoff?.({ agente: 'AUDIO_STOP' })
+          setMensaje('Parado. 🎵')
+          setLoading(false)
+          return
+        }
+
+        const codigoAudio = detectarCodigoMapache(textoUsuario);
+        if (codigoAudio) {
+          if (codigoAudio.accion === 'PLAY') {
+            const canal = (contextData?.realItems || []).find(c =>
+              String(c.bro_aud) === String(codigoAudio.codigo) ||
+              String(c.bro_pod) === String(codigoAudio.codigo)
+            );
+            if (canal) {
+              setMensaje('Dale. 🎵');
+              onHandoff?.({ agente: 'AUDIO_PLAY', codigo: codigoAudio.codigo, canal });
+            } else {
+              setMensaje('No encuentro ese canal. ¿El código es correcto?');
+            }
+            setLoading(false);
+            return;
+          }
+          if (codigoAudio.accion === 'BOLAS') {
+            setMensaje(`¿Qué hacemos con ${codigoAudio.codigo}?`);
+            setLoading(false);
+            return;
+          }
+        }
+      }
+
+      // ── AVISOS (Evelyn + Larry) ────────────────────────────────────────
+      if (mode === 'avisos') {
+
+  const salida = detectarSalidaAviso(textoUsuario);
   if (salida) {
     setMensaje(salida.mensaje);
     setTimeout(() => onHandoff?.({ agente: 'OSOS' }), 1200);
     setLoading(false);
     return;
   }
-  const personajeActivo = contextData?.audio_personaje || 'mapache';
-  const interno = detectarInternoMapache(textoUsuario, personajeActivo);
-  if (interno) {
-    setMensaje(interno.mensaje || '...');
-    onHandoff?.({ agente: 'AUDIO_INTERNO', personaje_id: interno.personaje_id });
-    setLoading(false);
-    return;
-  }
-  if (detectarBusquedaAudio(textoUsuario)) {
-  setMensaje(fraseBuscandoAudio(textoUsuario));
-  onHandoff?.({ agente: 'BUSCAR_STRIP', keyword: textoUsuario, intencion: 'AUDIO' });
-  setLoading(false);
-  return;
-}
-  
-if (/\b(stop|para|detén|frena|detener|frenar)\b/i.test(textoUsuario)) {
-  onHandoff?.({ agente: 'AUDIO_STOP' })
-  setMensaje('Parado. 🎵')
-  setLoading(false)
-  return
-}
 
-  // ── NUEVO: detector de códigos AUD/POD ──────────────────────────
-  const codigoAudio = detectarCodigoMapache(textoUsuario);
-  if (codigoAudio) {
-    if (codigoAudio.accion === 'PLAY') {
-      const canal = (contextData?.realItems || []).find(c =>
-        String(c.bro_aud) === String(codigoAudio.codigo) ||
-        String(c.bro_pod) === String(codigoAudio.codigo)
-      );
-      if (canal) {
-        setMensaje('Dale. 🎵');
-        onHandoff?.({ agente: 'AUDIO_PLAY', codigo: codigoAudio.codigo, canal });
-      } else {
-        setMensaje('No encuentro ese canal. ¿El código es correcto?');
-      }
+  // ── Si hay aviso en construcción (aunque esté vacío) → directo al orquestador
+  const avisoEnProceso = avisoEnConstruccion !== null && avisoEnConstruccion !== undefined;
+
+  if (!avisoEnProceso) {
+    const personajeActivo = contextData?.avisos_personaje || 'evelyn';
+    const interno = detectarInternoAviso(textoUsuario, personajeActivo);
+    if (interno) {
+      setMensaje(interno.mensaje || '...');
+      onHandoff?.({ agente: 'AVISO_INTERNO', personaje_id: interno.personaje_id });
       setLoading(false);
       return;
     }
-    if (codigoAudio.accion === 'BOLAS') {
-      setMensaje(`¿Qué hacemos con ${codigoAudio.codigo}?`);
+
+    if (esIntencionPublicar(textoUsuario)) {
+      const resultado = await botOrchestrator({
+        mode: 'avisos',
+        textoUsuario: 'P',
+        avisos_personaje:    contextData?.avisos_personaje || 'evelyn',
+        avisoEnConstruccion: null,
+        genesis:     contextData?.genesis,
+        ciudad:      contextData?.ciudad,
+        user_id:     contextData?.user_id,
+        autor_alias: contextData?.autor_alias,
+        supabase,
+        onAvisoPublicar,
+      });
+      setMensaje(resultado.mensaje);
+      if (resultado.avisoEnConstruccion !== undefined) setAvisoEnConstruccion(resultado.avisoEnConstruccion);
+      if (resultado.handoff) onHandoff?.(resultado.handoffData);
       setLoading(false);
       return;
     }
-    // DESCRIBE — deja que la IA lo narre si está activa, o el bot
+
+    if (esIntencionConsultar(textoUsuario)) {
+      setMensaje('Déjame ver qué hay en el tablón...');
+      onHandoff?.({ agente: 'BUSCAR_STRIP', keyword: textoUsuario, intencion: 'BROSHOP_AVISO' });
+      setLoading(false);
+      return;
+    }
+
+    if (detectarBusquedaAviso(textoUsuario)) {
+      setMensaje(fraseBuscandoAviso(textoUsuario));
+      onHandoff?.({ agente: 'BUSCAR_STRIP', keyword: textoUsuario, intencion: 'BROSHOP_AVISO' });
+      setLoading(false);
+      return;
+    }
   }
+
+  // Si hay aviso en proceso, cae directo al botOrchestrator abajo
 }
-      // ── AVISOS (Evelyn + Larry) ────────────────────────────────────────
-      if (mode === 'avisos') {
-        const avisoEnProceso = avisoEnConstruccion?.tipo;
-        if (!avisoEnProceso) {
-          const salida = detectarSalidaAviso(textoUsuario);
-          if (salida) {
-            setMensaje(salida.mensaje);
-            setTimeout(() => onHandoff?.({ agente: 'OSOS' }), 1200);
-            setLoading(false);
-            return;
-          }
-          const personajeActivo = contextData?.avisos_personaje || 'evelyn';
-          const interno = detectarInternoAviso(textoUsuario, personajeActivo);
-          if (interno) {
-            setMensaje(interno.mensaje || '...');
-            onHandoff?.({ agente: 'AVISO_INTERNO', personaje_id: interno.personaje_id });
-            setLoading(false);
-            return;
-          }
-          if (detectarBusquedaAviso(textoUsuario)) {
-  	setMensaje(fraseBuscandoAviso(textoUsuario));
-  	onHandoff?.({ agente: 'BUSCAR_STRIP', keyword: textoUsuario, intencion: 'BROSHOP_AVISO' });
-  	setLoading(false);
-  	return;
-	}
-        }
-      }
 
       // ── ORACULO (Orumama + Jaguar + SMisterio) ────────────────────────
       if (mode === 'oraculo') {
@@ -403,7 +457,6 @@ if (/\b(stop|para|detén|frena|detener|frenar)\b/i.test(textoUsuario)) {
       if (iaActiva && !avisoEnProceso) {
         const personajeId = resolverPersonajeId();
 
-        // ── Nova tiene su propio prompt builder ────────────────────────
         if (mode === 'novaExplora') {
           const systemNova = buildNovaExploraPrompt({
             alias:  contextData?.alias,
@@ -441,31 +494,23 @@ if (/\b(stop|para|detén|frena|detener|frenar)\b/i.test(textoUsuario)) {
           return;
         }
 
-        // ══════════════════════════════════════════════════════════════
-        // FLUJO SANDWICH — resto de personajes
-        // ══════════════════════════════════════════════════════════════
-
-        // ── Jaguar: detectar fecha de nacimiento en el mensaje ─────────
+        // ── Jaguar: detectar fecha de nacimiento ──────────────────────
         if (personajeId === 'jaguar') {
           const fechaDetectada = detectarFecha(textoUsuario)
           if (fechaDetectada) setFechaNacimiento(fechaDetectada)
         }
 
-        // ── PASO 1: ¿Hay confirmación pendiente del bot? ───────────────
+        // ── PASO 1: ¿Hay confirmación pendiente del bot? ──────────────
         if (esperandoConfirmacion) {
           const confirma = /^(sí|si|vale|claro|cuéntame|cuéntame|adelante|venga|sí por favor|si por favor|ok|okey|va|dale)$/i.test(textoUsuario.trim())
                         || /\b(sí|si|vale|claro|adelante|venga|cuéntame)\b/i.test(textoUsuario)
-
           const cancela  = /^(no|ahora no|paso|déjalo|dejalo|no gracias)$/i.test(textoUsuario.trim())
 
           if (confirma) {
             const fuentes = KNOWLEDGE_SOURCES[personajeId] || {}
             const dataBot = fuentes[esperandoConfirmacion.archivo]
-
             if (dataBot) {
-              const bloque = [dataBot.puente, dataBot.data, dataBot.continua]
-                .filter(Boolean)
-                .join('\n')
+              const bloque = [dataBot.puente, dataBot.data, dataBot.continua].filter(Boolean).join('\n')
               pushHistory('user', textoUsuario)
               pushHistory('assistant', bloque)
               setMensaje(bloque)
@@ -485,18 +530,13 @@ if (/\b(stop|para|detén|frena|detener|frenar)\b/i.test(textoUsuario)) {
             return
           }
 
-          // Si no confirma ni cancela, borra la espera y sigue normal
           setEsperandoConfirmacion(null)
         }
 
-        // ── PASO 2: ¿El bot acaba de narrar? La IA retoma ─────────────
-        // botNarrando=true significa que el último mensaje fue del bot
-        // La IA recibe el continua en el historial y cierra con su voz
+        // ── PASO 2: ¿El bot acaba de narrar? La IA retoma ────────────
         const esMC = botNarrando
         if (esMC) setBotNarrando(false)
-        // No hace return — deja que la IA responda normal con el historial
 
-        // ── Construir prompt y llamar a Gemini ────────────────────────
         const vivencia = await obtenerVivencia(personajeId);
         const prompt = buildPrompt({
           personajeId,
@@ -525,7 +565,6 @@ if (/\b(stop|para|detén|frena|detener|frenar)\b/i.test(textoUsuario)) {
           const archivo = match?.[1]
           const perfil  = PERFILES[personajeId]
           const temaDef = perfil?.temas_propios?.[archivo]
-
           if (temaDef) {
             pushHistory('user', textoUsuario)
             pushHistory('assistant', temaDef.pregunta)
@@ -551,7 +590,6 @@ if (/\b(stop|para|detén|frena|detener|frenar)\b/i.test(textoUsuario)) {
           return;
         }
 
-        // ── Respuesta normal ──────────────────────────────────────────
         pushHistory('user', textoUsuario);
         pushHistory('assistant', respuesta);
         setMensaje(respuesta);
@@ -624,14 +662,12 @@ if (/\b(stop|para|detén|frena|detener|frenar)\b/i.test(textoUsuario)) {
       }
 
       if (mode === 'novaExplora') {
-        // Detectar búsqueda de producto PRIMERO — sin IA
         const keyword = detectarBusquedaProducto(textoUsuario);
         if (keyword) {
           setMensaje(fraseBuscando());
           onHandoff?.({ agente: 'BUSCAR_STRIP', keyword, intencion: 'BROSHOP_PRODUCTO' });
           return;
         }
-
         const resultado = await botOrchestrator({
           mode: 'novaExplora', textoUsuario,
           entidad:     contextData?.entidad,

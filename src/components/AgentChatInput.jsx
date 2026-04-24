@@ -84,7 +84,7 @@ const AGENT_PROFILES = {
   },
   evelyn: {
     theme: 'blue',
-    text: '✦  Hola! Dime qué avisos estás buscando! | Quieres publicar un aviso? '
+    text: '✦  Hola! Quieres publicar un aviso? Escribe P + Enter | Quieres consultar avisos? Escribe C + Enter '
   },
   mapache: {
     theme: 'cyan',
