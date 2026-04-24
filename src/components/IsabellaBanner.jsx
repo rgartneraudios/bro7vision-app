@@ -4,17 +4,17 @@ import AgentChatInput from './AgentChatInput';
 import BroCardStrip from './BroCardStrip';
 
 const GREETINGS_ISABELLA = [
-  "Hola, soy Isabella. ¿En qué puedo ayudarte hoy? 🐘",
-  "Isabella al habla. Cuéntame qué necesitas y lo encontramos juntos.",
-  "¡Buenas! Soy Isabella. Dime qué servicio estás buscando.",
-  "Hola, soy Isabella  ¿Qué tipo de profesional necesitas?",
+  "Hola, soy Isabella 🐘 ¿Cómo puedo acompañarte hoy?",
+  "Isabella al habla, cielo. Cuéntame qué necesitas y lo encontramos juntos.",
+  "¡Hola! Soy Isabella 🐘 Dime qué servicio estás buscando. Todo es parte del proceso.",
+  "Hola, soy Isabella. ¿Qué tipo de profesional necesitas? Aquí estoy para ayudarte.",
 ];
 
-const GREETINGS_MAESTRO = [
-  "Buenas, soy el Profesor Robles. ¿Qué servicio andas buscando? 📚",
-  "Prof. Robles Maestro, a su disposición. ¿En qué le ayudo?",
-  "Robles Maestro aquí. Dime qué necesitas y encontramos al profesional. 🎓",
-  "¡Hola! Soy el Profesor Robles. ¿Qué tipo de servicio buscas hoy?",
+const GREETINGS_PROFESOR = [
+  "Celebro tu presencia. Soy el Profesor Robles. La indagación de un buen profesional es, en esencia, la indagación de uno mismo. ¿Qué anhelas encontrar? 📚",
+  "Sea bienvenido/a. Soy Robles. Paradójicamente, siempre llegamos aquí cuando más lo precisamos. ¿Qué rastreamos hoy?",
+  "Qué grata sorpresa hallarte aquí. Como bien diría cualquier clásico — el primer paso es saber qué se indaga. ¿Qué requerimiento te trae?",
+  "Le saludo con estima. Soy el Profesor Robles 📚 La dialéctica del tablón es, intrínsecamente, fascinante. ¿Qué te conduce hasta aquí?",
 ];
 
 const INFO = {

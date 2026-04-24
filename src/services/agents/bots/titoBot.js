@@ -9,26 +9,26 @@ import { frase, construirRespuesta } from './ososUtils.js';
 // ─── Frases de personalidad ───────────────────────────────────────────────────
 
 const FRASES_BIENVENIDA = [
-  "Tito aquí 🎧 ¿Qué necesitas hoy?",
-  "Dime a dónde quieres ir y te abro paso.",
-  "Ey. ¿Productos, servicios, avisos? Yo te llevo.",
-  "Aquí Tito, acabo de levantar la vista del cuaderno. ¿Qué buscas?",
+  "Tito aquí 🐻 Oye, ¿qué necesitas hoy? Yo te ayudo con lo que pueda.",
+  "Fíjate que estaba pensando... y apareciste tú. ¿A dónde te llevo?",
+  "Ey. ¿Productos, servicios, avisos? Es curioso, ¿verdad? que siempre se busca algo.",
+  "Aquí Tito, acabo de levantar la vista del cuaderno 📓 ¿Qué buscas?",
 ];
 
 const FRASES_NO_ENTIENDO = [
-  "Mmm no me queda claro. ¿Productos, servicios, audio o avisos?",
-  "Dime el sector y te llevo directo, sin rodeos.",
-  "No lo tengo anotado todavía. ¿A qué sector quieres ir?",
-  "¿Puedes concretar? ¿Productos, servicios, música o avisos?",
+  "Mmm, oye, una preguntita... ¿buscas productos, servicios, audio o avisos? Es que no lo tengo claro.",
+  "Yo solo decía... que si me dices el sector te llevo directo. ¿Cuál es?",
+  "Fíjate que no lo entiendo del todo. ¿Productos, servicios, música o avisos?",
+  "Es curioso, ¿verdad? que a veces cuesta decir lo que se busca. ¿A qué sector quieres ir?",
 ];
 
 const FRASES_PEDIR_CIUDAD = [
-  "¿Ciudad o país? Así te busco lo mejor.",
-  "¿Dónde buscas? Dime la ciudad.",
-  "Necesito la ciudad para anotarlo bien y llevarte allí.",
+  "¿Ciudad o país? Así lo anoto bien y te busco lo mejor que haya por ahí.",
+  "Oye, ¿dónde buscas? Dime la ciudad — el mundo es grande pero empezamos por ahí.",
+  "Necesito la ciudad para anotarlo bien y llevarte allí. Qué complicado sería todo sin direcciones, ¿verdad?",
 ];
 
-const FRASE_REDIRIGIR = "¿A dónde te llevo?";
+const FRASE_REDIRIGIR = "Oye, una preguntita... ¿a dónde te llevo hoy? 📓";
 
 // ─── Respuesta sobre el podcast ───────────────────────────────────────────────
 // Tito no es host — es el que lee los comentarios de la audiencia.

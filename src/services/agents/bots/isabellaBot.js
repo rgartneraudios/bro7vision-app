@@ -3,65 +3,64 @@
 // Sin IA, sin API, sin dependencias externas.
 
 const FRASES_BIENVENIDA = [
-  "Hola, soy Isabella. ¿Qué tipo de profesional estás buscando?",
-  "Isabella al habla. Cuéntame qué necesitas y encontramos a alguien que te ayude.",
-  "Hola. Soy Isabella. ¿Buscas un profesional concreto o quieres ver quién hay disponible?",
-  "Hola, aquí Isabella. Acabo de terminar de anotar unos servicios. ¿En qué te puedo ayudar?",
+  "Hola, soy Isabella 🐘 ¿Qué tipo de profesional estás buscando, cielo?",
+  "Isabella al habla. Cuéntame qué necesitas y encontramos juntos a alguien que te acompañe.",
+  "Hola. Soy Isabella. ¿Buscas un profesional concreto o prefieres explorar quién hay disponible?",
+  "Hola, aquí Isabella. Acabo de validar unos servicios nuevos. ¿En qué te puedo ayudar hoy?",
 ];
 
 const FRASES_EXPLORAR = [
-  "Cuéntame un poco más. ¿Qué tipo de ayuda estás buscando?",
-  "¿Tienes en mente alguna profesión o prefieres que te muestre quién hay?",
-  "Dime qué necesitas y buscamos juntos al profesional adecuado.",
+  "Cuéntame un poco más, cariño. ¿Qué tipo de ayuda estás buscando?",
+  "¿Tienes en mente alguna profesión o prefieres que exploremos juntos quién hay?",
+  "Dime qué necesitas y lo procesamos juntos. ¿Qué tipo de profesional buscas?",
 ];
 
 const FRASES_DESCRIPCION = [
-  "Te cuento lo que sé de este profesional.",
-  "Lo tengo anotado aquí. Mira —",
-  "Es alguien que trabaja bien. Te explico —",
+  "Te cuento lo que sé de este profesional. Es importante que te sientas cómodo con la elección.",
+  "Lo tengo anotado aquí, cielo. Mira —",
+  "Es alguien que trabaja muy bien. Te explico para que puedas valorarlo —",
 ];
 
 const FRASES_PRECIO = [
-  "El coste de la consulta lo tengo apuntado. Te digo.",
-  "Déjame ver la tarifa que tenemos registrada.",
-  "Aquí está el precio de la sesión.",
+  "El coste de la sesión lo tengo apuntado. Date permiso para invertir en ti, cielo.",
+  "Déjame ver la tarifa registrada. Entiendo que el precio es parte del proceso.",
+  "Aquí está el precio de la sesión. Claro que lo mereces.",
 ];
 
 const FRASES_UBICACION = [
-  "La dirección la tengo. Ahora te la paso.",
-  "Sé dónde trabaja. Mira —",
+  "La dirección la tengo. A veces el primer paso es saber a dónde ir — ahora te la paso.",
+  "Sé dónde trabaja, cielo. Mira —",
 ];
 
 const FRASES_CONTACTO = [
-  "Te paso los datos de contacto ahora mismo.",
-  "El contacto lo tengo aquí. Un momento.",
+  "Te paso los datos de contacto. Entiendo que dar el paso no siempre es fácil 🧡",
+  "El contacto lo tengo aquí. Un momento — y recuerda, pedir ayuda es un acto de valentía.",
 ];
 
 const FRASES_HANDOFF_CIERRE = [
-  "Te conecto con este profesional ahora mismo.",
-  "Vamos a cerrar esto. Te llevo directamente.",
+  "Te conecto con este profesional ahora mismo. Es parte del proceso, cielo. 🧡",
+  "Vamos a cerrar esto juntos. Te acompaño hasta aquí.",
 ];
 
 const FRASES_HANDOFF_OSOS = [
-  "Te mando con recepción. Cuídate.",
-  "Los osos te atienden. Hasta luego.",
+  "Te mando con recepción. Cuídate mucho, cariño. 🧡",
+  "Los osos te atienden. Que todo fluya. Hasta luego.",
 ];
 
-// ── Handoff interno → PROFESOR ────────────────────────────────────────────
 const FRASES_HANDOFF_PROFESOR = [
-  "El Profesor Robles tiene algo que decirte. Te lo paso.",
-  "Robles, ¡tienes visita! Un momento, te lo paso.",
-  "El Profesor Robles está disponible. Ahora te conecto.",
+  "El Profesor Robles tiene algo importante que compartir contigo. Te lo paso, cielo.",
+  "Robles, ¡tienes visita! Un momento — te conecto con él ahora.",
+  "El Profesor Robles está disponible. Entiendo que estás listo para ese paso. Ahora te conecto.",
 ];
 
 const FRASES_NO_ENTENDIDO = [
-  "No te he entendido del todo. ¿Qué tipo de profesional buscas?",
-  "Cuéntamelo de otra forma. ¿Qué necesitas?",
+  "No te he entendido del todo, cariño. ¿Qué tipo de profesional estás buscando?",
+  "Cuéntamelo de otra forma. ¿Qué necesitas? Aquí estoy, sin prisa.",
 ];
 
 const FRASES_SIN_RESULTADOS = [
-  "Ahora mismo no tenemos ese perfil profesional. ¿Buscas otra especialidad?",
-  "No encuentro a nadie que encaje con eso. ¿Pruebas con otra búsqueda?",
+  "Ahora mismo no tenemos ese perfil. Y está bien — ¿exploramos otra especialidad juntos?",
+  "No encuentro a nadie que encaje con eso todavía. ¿Probamos con otra búsqueda, cielo?",
 ];
 
 // Nombres que activan el switch a PROFESOR 
@@ -136,8 +135,6 @@ export function responder({
 
   return { handoff: false, mensaje: elegir(FRASES_NO_ENTENDIDO), bolas: [] };
 }
-
-// Añadir al final de isabellaBot.js
 
 export function detectarBusquedaServicio(mensaje) {
   const t = mensaje.toLowerCase();

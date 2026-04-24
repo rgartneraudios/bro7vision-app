@@ -7,7 +7,7 @@ import { titoResponder }  from './bots/titoBot';
 import { puffoResponder } from './bots/puffoBot';
 import { responder as novaResponder }      from './bots/novaBot';
 import { responder as isabellaResponder }  from './bots/isabellaBot';
-import { responder as prmaestroResponder } from './bots/prmaestroBot';
+import { responder as profesorResponder } from './bots/profesorBot';
 import { responder as mapacheResponder }   from './bots/mapacheBot';
 import { responder as amiResponder }       from './bots/amiBot';
 import { responder as orumamaResponder }   from './bots/orumamaBot';
@@ -158,7 +158,7 @@ async function modoServicios({ textoUsuario, entidad, hayTarjetas, personaje, su
   const update = await cargarUpdate(supabase, id);
   const args   = { textoUser: textoUsuario, intencion: detectarIntencionServicios(textoUsuario), entidad, hayTarjetas, update };
 
-  const resultado = id === 'prmaestro' ? prmaestroResponder(args) : isabellaResponder(args);
+  const resultado = id === 'profesor' ? profesorResponder(args) : isabellaResponder(args);
 
   return normalizarHandoff(resultado, { personaje_id: resultado.personaje_id });
 }

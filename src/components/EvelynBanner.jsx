@@ -7,17 +7,17 @@ import AgentChatInput from './AgentChatInput';
 import BroCardStrip from './BroCardStrip';
 
 const GREETINGS_EVELYN = [
-  "Hola, soy Evelyn. ¿Qué aviso buscas o quieres publicar? 🐺",
-  "Evelyn al habla. Dime qué necesitas y lo resolvemos rápido.",
-  "¡Buenas! Soy Evelyn 🧡 ¿Buscas algo o tienes algo que ofrecer?",
-  "Evelyn aquí. Sin rodeos — ¿qué aviso te trae por aquí?",
+  "Soy Evelyn 🧡 Básicamente, ¿qué aviso te trae por aquí?",
+  "Evelyn comunica. Qué necesitas y lo resolvemos rápido.",
+  "Soy Evelyn 🧡 A ver — ¿buscas algo o tienes algo que ofrecer?",
+  "Evelyn aquí. En resumen — ¿qué aviso te trae por aquí?",
 ];
 
 const GREETINGS_LARRY = [
-  "Larry al teléfono. ¿Qué movimiento hay hoy en el tablón? ☕",
-  "Buenos días. Soy Larry. He visto de todo en estas calles... ¿qué aviso buscas?",
-  "Larry aquí, con el café en la mano. ¿Qué necesitas del tablón? 🐕",
-  "Soy Larry. La ciudad siempre tiene algo interesante. ¿Qué aviso te trae?",
+  "Larry al aparato. La sesión de Tokyo acaba de cerrar — ¿qué movimiento traes? ☕",
+  "Soy Larry. He visto subir y caer mercados enteros... ¿qué aviso buscas, amigo mío?",
+  "Larry aquí, con el café y las gráficas abiertas. ¿Qué posición traes hoy? 🐕",
+  "Soy Larry. El tablón siempre cotiza. ¿Qué aviso te trae por aquí?",
 ];
 
 export default function EvelynBanner({

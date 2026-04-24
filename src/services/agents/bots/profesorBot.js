@@ -1,69 +1,66 @@
-// src/services/agents/bots/prmaestroBot.js
+// src/services/agents/bots/profesorBot.js
 // BOT JS PURO — Personaje: Profesor Robles (Filósofo, sector Servicios)
 // Sin IA, sin API, sin dependencias externas.
 
 const FRASES_BIENVENIDA = [
-  "Ah, sí, perdona. Estaba pensando en algo. ¿Qué profesional buscas?",
-  "Profesor aquí. Dime qué necesitas — tengo la mente en otro sitio pero te escucho.",
-  "Sí, dime. Estaba terminando un pensamiento. ¿Qué tipo de servicio buscas?",
-  "Profesor Robles. ¿En qué puedo ayudarte? Isabella me ha dicho que hay gente esperando.",
+  "Celebro tu presencia 📚 La indagación de un profesional es, intrínsecamente, un acto de confianza en el otro. ¿Qué tipo de ayuda precisas?",
+  "Saludos cordiales. Soy Robles. Paradójicamente, siempre es más sencillo hallar lo que se anhela cuando sabemos nombrarlo. ¿Qué perfil rastreamos?",
+  "Que el día te sea propicio. La condición humana nos conduce, inexorablemente, a precisar del otro. ¿En qué puedo serte de utilidad?",
+  "Acabo de cerrar un volumen interesante. Ergo — dispongo de su atención. ¿Qué tipo de profesional desea explorar?",
 ];
 
 const FRASES_EXPLORAR = [
-  "¿Qué tipo de profesional estás buscando? Sé específico, eso ayuda.",
-  "Dime qué necesitas. La claridad es el primer paso para encontrar lo que buscas.",
-  "¿Tienes alguna profesión en mente o exploramos juntos?",
+  "Reláteme un poco más. A priori, toda indagación alberga un propósito intrínseco. ¿Qué carencia precisamos subsanar?",
+  "¿Atesora en mente alguna especialidad o prefiere que exploremos juntos? La dicotomía entre saber y no saber es, en esencia, fascinante.",
+  "Enúncieme qué precisa. Como bien diría cualquier clásico — quien no sabe a dónde se dirige, difícilmente llegará.",
 ];
 
 const FRASES_DESCRIPCION = [
-  "Déjame contarte lo que tenemos anotado sobre este profesional.",
-  "Lo conozco. Mira —",
-  "Bien. Este es el perfil —",
+  "Le refiero lo que custodio sobre este profesional. Es decir, lo que el registro nos permite conocer de él.",
+  "Lo tengo anotado aquí. Paradójicamente, los mejores profesionales raramente requieren presentación — pero hela aquí —",
+  "Es alguien que trabaja con rigor. Ergo, merece una lectura pausada. Le diserto brevemente —",
 ];
 
 const FRASES_PRECIO = [
-  "El precio. Un momento, que lo tengo apuntado en algún sitio.",
-  "La tarifa está aquí. Déjame buscarlo.",
-  "Sí, el coste. Aquí lo tengo —",
+  "El coste de la sesión está registrado. El valor intrínseco, claro está, es una cuestión filosófica aparte. Le dispenso el dato —",
+  "Permítame consultar la tarifa. A priori, toda inversión en conocimiento tiene su retorno inexorable.",
+  "Aquí está el precio. Es decir, lo que el paradigma económico le ha asignado a algo que, en esencia, no tiene precio.",
 ];
 
 const FRASES_UBICACION = [
-  "La dirección. Sí, la tengo. Mira —",
-  "¿Dónde está? Aquí lo pone —",
+  "Dispongo de la dirección. El espacio físico es, paradójicamente, donde todo lo intangible cobra forma. Mire —",
+  "Sé dónde ejerce. Ergo, el camino ya está trazado — ahora se lo confiero.",
 ];
 
 const FRASES_CONTACTO = [
-  "El contacto lo tengo anotado. Un momento.",
-  "Sí, los datos de contacto. Aquí —",
+  "Le brindo los datos de contacto. El primer mensaje es siempre el más efímero y, paradójicamente, el más trascendente.",
+  "El contacto lo albergo aquí. Como bien diría cualquier epistológrafo clásico — la primera palabra lo es todo.",
 ];
 
 const FRASES_HANDOFF_CIERRE = [
-  "Te conecto ahora. Que sea una buena elección.",
-  "Vamos. Te llevo directamente con este profesional.",
+  "Le conduzco con este profesional de inmediato. Es decir, el momento de la acción ha llegado inexorablemente. 📚",
+  "Procedamos a cerrar esto. Paradójicamente, los mejores encuentros siempre comienzan así — con un gesto simple.",
 ];
 
 const FRASES_HANDOFF_OSOS = [
-  "De acuerdo. Los osos te atienden. Yo vuelvo a mis notas.",
-  "Te paso con recepción. Hasta luego.",
+  "Le remito a recepción. La dialéctica continúa en otras manos. Sea venturosa su jornada. 📚",
+  "Los osos le atenderán. Ergo, mi parte en este proceso ha alcanzado su fin natural. Un placer.",
 ];
 
-// ── Handoff interno → Isabella ─────────────────────────────────────────────
 const FRASES_HANDOFF_ISABELLA = [
-  "Isabella está por aquí. Te la paso ahora.",
-  "Isabella, ¡tienes visita! Un momento.",
-  "Isabella lo tiene todo más ordenado que yo. Te la paso.",
+  "Isabella alberga, intrínsecamente, más que decirle sobre esto. Se la encomienda con gusto — ella lo narra con una calidez que yo, paradójicamente, envidio.",
+  "Creo que Isabella puede acompañarle mejor en este punto. Es decir, cada cual en su paradigma. Se la conduzco.",
 ];
 
 const FRASES_NO_ENTENDIDO = [
-  "No te he seguido. ¿Qué tipo de profesional estás buscando exactamente?",
-  "Repítemelo. A veces me pierdo cuando estoy pensando en otra cosa.",
+  "No he logrado descifrar su relato del todo. Es decir, las palabras llegaron pero el significado, paradójicamente, se perdió en el camino. ¿Qué profesional indagamos?",
+  "Evóquelo de otra forma. A priori, toda idea puede enunciarse de mil maneras distintas. ¿Qué precisa?",
 ];
 
 const FRASES_SIN_RESULTADOS = [
-  "No tenemos ese perfil en este momento. ¿Buscas otra especialidad?",
-  "Ese profesional no está en el registro. Prueba con otra búsqueda.",
+  "No disponemos de ese perfil en este momento. La ausencia, como bien sabemos, también diserta en voz alta. ¿Exploramos otra especialidad?",
+  "No rastro a nadie que encaje con eso todavía. Ergo — la indagación continúa. ¿Sondeamos otra especialidad?",
 ];
-
 // Nombres que activan el switch a Isabella
 const NOMBRES_ISABELLA = ['isabella', 'la isabella', 'isa'];
 
@@ -136,3 +133,18 @@ export function responder({
 
   return { handoff: false, mensaje: elegir(FRASES_NO_ENTENDIDO), bolas: [] };
 }
+
+export function detectarBusquedaServicio(mensaje) {
+  const t = mensaje.toLowerCase();
+  return /servicio|profesional|especialista|terapeuta|psicólogo|abogado|médico|consulta|reserva|cita|presupuesto/i.test(t);
+}
+
+export function fraseBuscando(keyword) {
+  const frases = [
+    `Déjame ver qué profesionales tengo para "${keyword}"...`,
+    `Busco en mi agenda a alguien de "${keyword}"...`,
+    `A ver quién tenemos disponible para "${keyword}"...`,
+  ];
+  return frases[Math.floor(Math.random() * frases.length)];
+}
+

@@ -10,26 +10,26 @@ import { frase, construirRespuesta } from './ososUtils.js';
 // ─── Frases de personalidad ───────────────────────────────────────────────────
 
 const FRASES_BIENVENIDA = [
-  "Puffo aquí 🐾 ¿A dónde te llevo?",
-  "Dime qué buscas, que hoy estoy con energía.",
-  "¡Hola! ¿Tienes algo en mente o exploramos juntos?",
-  "Aquí Puffo. He visto de todo en esta vida, así que pregunta sin miedo. ¿A dónde vamos?",
+  "Puffo aquí 🐾 Dime, ¿a dónde te llevo hoy?",
+  "¡Okey! Micrófono abierto — ¿qué buscas?",
+  "¡Hola! ¿Tienes algo en mente o abrimos el debate juntos?",
+  "Aquí Puffo. He escuchado de todo en esta vida, así que dime sin rodeos. ¿A dónde vamos?",
 ];
 
 const FRASES_NO_ENTIENDO = [
-  "No te entiendo bien, y mira que tengo experiencia. ¿Qué sector buscas?",
-  "¿Productos, servicios, música o avisos? Tú dime y yo te llevo.",
-  "Con los años aprendes a pedir las cosas claras. ¿A qué sector quieres ir?",
-  "No me llega. ¿Productos, servicios, audio o avisos?",
+  "Ajá... no te sigo del todo. ¿Productos, servicios, música o avisos? Dame el titular.",
+  "Interesante... pero necesito más contexto. ¿A qué sector quieres ir?",
+  "Te corto un segundo ahí. ¿Productos, servicios, audio o avisos? Eso primero.",
+  "Ya, ya... pero el foco, ¿dónde está? ¿Qué sector buscas?",
 ];
 
 const FRASES_PEDIR_CIUDAD = [
-  "¿En qué ciudad estás buscando?",
-  "Necesito la ciudad para llevarte allí.",
-  "¿Dónde buscas? Ciudad o país, lo que tengas.",
+  "Fíjate, necesito un dato clave — ¿en qué ciudad buscas?",
+  "Dime la ciudad. Sin eso no tengo contexto para llevarte allí.",
+  "¿Dónde buscas? Ciudad o país — lo que tengas sobre la mesa.",
 ];
 
-const FRASE_REDIRIGIR = "Cuéntame, ¿a dónde quieres ir hoy?";
+const FRASE_REDIRIGIR = "Dime, ¿a dónde quieres ir hoy? El micrófono sigue abierto. 🎙️";
 
 // ─── Respuesta sobre el podcast ───────────────────────────────────────────────
 // Puffo es host — habla desde la experiencia y el criterio de vida.

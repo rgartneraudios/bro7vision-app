@@ -9,55 +9,63 @@
 
 const FRASES = {
   inicio:       [
-  "Vamos a publicar. ¿Es una oferta o una búsqueda? Escribe Oferta o Demanda.",
-  "Dime primero — ¿ofreces algo o lo buscas? Escribe Oferta o Demanda.",
-  "Antes de nada necesito saber el tipo. ¿Oferta o Demanda?",
-],
+  "Perfecto, vamos a gestionar esto. ¿Lo registro como OFERTA o DEMANDA?",
+  "Necesito ordenar tu aviso en la tabla. ¿OFERTA o DEMANDA?",
+  "A ver — ¿te emito esto como OFERTA o como DEMANDA?",
+  ],
   titulo:       [
-    "Bien. ¿Cómo titulamos el aviso?",
-    "Perfecto. Dame el título del aviso.",
-    "Un buen título lo es todo. ¿Cómo lo llamamos?",
-  ],
+  "Bien. Dame el título — encabezado del expediente.",
+  "¿Cómo lo registramos? Necesito el título del aviso.",
+  "Perfecto. ¿Cómo titulamos este campo?",
+    ],
+    
   contenido:    [
-    "¿Qué quieres que sepan los interesados?",
-    "Describe el aviso. ¿Qué tienen que saber?",
-    "Ahora el detalle. Cuéntame qué ofreces o qué buscas.",
-  ],
+  "Ahora rellena el cuerpo del aviso. ¿Qué tienen que saber los interesados?",
+  "Descríbelo. Básicamente, ¿qué gestiona este aviso?",
+  "Dame el detalle. Cuéntame qué ofreces o qué necesitas tramitar.",
+    ],
+    
   confirmar:    [
-    "Listo. Escribe CONFIRMO para publicar por 200 génesis.",
-    "Todo en orden. CONFIRMO para publicarlo por 200 génesis.",
-    "El aviso está preparado. CONFIRMO — 200 génesis y en el tablón.",
-  ],
+  "En resumen — expediente listo. Escribe CONFIRMO y lo emito por 200 génesis.",
+  "Todo cuadra en la tabla. CONFIRMO para sellarlo por 200 génesis.",
+  "Listo para publicar. CONFIRMO y lo registro en el tablón por 200 génesis.",
+    ],
+    
   publicado:    [
-    "Publicado. Tu aviso ya está en el tablón.",
-    "Hecho. 200 génesis descontados, aviso en el aire.",
-    "En el tablón. Que llegue a quien tiene que llegar.",
-  ],
+  "Sellado y emitido. Tu aviso ya está operativo en el tablón. 🧡",
+  "Registrado. 200 génesis gestionados — aviso en el aire.",
+  "Expediente cerrado. Que llegue a quien tiene que llegar.",
+    ],
+    
   error_tipo:   [
-    "Si ofreces algo por OFERTA y si anuncias que necesitas algo pon DEMANDA, nada más.",
-    "Solo Oferta o Demanda — ¿cuál es?",
-    "No te entiendo. Oferta o Demanda?.",
-  ],
+  "A ver, necesito que me especifiques: ¿OFERTA o DEMANDA? Solo eso.",
+  "Ese campo no lo reconozco. ¿OFERTA o DEMANDA?",
+  "Básicamente no te entiendo. OFERTA o DEMANDA — ¿cuál gestiono?",
+    ],
   cancelado:    [
-    "Cancelado. ¿Qué más necesitas?",
-    "Aviso descartado. ¿En qué te ayudo?",
-    "De acuerdo. ¿Hay algo más que pueda hacer por ti?",
-  ],
+  "Expediente cancelado. ¿En qué más te puedo ayudar?",
+  "Aviso descartado. ¿Qué más necesitas gestionar?",
+  "De acuerdo, lo archivo. ¿Qué más te tramito?",
+    ],
+    
   no_encontrado:[
-    "No encuentro ese aviso. Revisa el código.",
-    "Ese código no aparece en el tablón.",
-    "Nada con ese código. ¿Lo revisas?",
-  ],
+  "Ese código no figura en el registro. ¿Lo revisamos?",
+  "Nada en la tabla con ese código. Compruébalo.",
+  "No encuentro ese expediente. ¿Los datos son correctos?",
+    ],
+    
   conectado:    [
-    "Conectado. Ahora puedes enviarle un mensaje privado.",
-    "Hecho. El autor recibirá tu mensaje en su Booster.",
-    "Conexión establecida. Escríbele cuando quieras.",
-  ],
+  "Conexión emitida. El autor lo recibe en su Booster. 🧡",
+  "Gestión completada. Escríbele cuando quieras.",
+  "Tramitado. A partir de aquí es cosa vuestra.",
+    ],
+    
   sin_genesis:  [
-    "No tienes suficientes génesis para esto.",
-    "Necesitas 200 génesis para continuar.",
-    "Te faltan génesis. 200 es el mínimo.",
-  ],
+  "No te salen los números. Necesitas 200 génesis para emitir esto.",
+  "Básicamente te faltan génesis. El mínimo son 200.",
+  "Sin fondos suficientes. 200 génesis — ese es el protocolo.",
+    ],
+    
   describir:    (av, codigo) =>
     `*${av.title}*\n${av.content}\n\nCiudad: ${av.city || 'global'} · Tipo: ${av.type}\nSi te interesa escribe ${codigo} A para conectar con el autor.`,
   conectar:     (av) =>

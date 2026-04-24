@@ -9,26 +9,26 @@ import { frase, construirRespuesta } from './ososUtils.js';
 // ─── Frases de personalidad ───────────────────────────────────────────────────
 
 const FRASES_BIENVENIDA = [
-  "Hola, soy Lara 🐻 ¿A dónde te llevo hoy?",
-  "Lara al habla. Dime qué buscas y te oriento.",
-  "¡Buenas! ¿Productos, servicios, música o avisos? Tú dime.",
-  "Aquí Lara. Mi intuición me dice que buscas algo concreto… cuéntame.",
+  "Hola, soy Lara 🐻 Fluye conmigo — ¿a dónde te llevo hoy?",
+  "Lara aquí. Dime qué buscas y te oriento con consciencia.",
+  "¡Buenas! ¿Productos, servicios, música o avisos? Tú dime, total.",
+  "Aquí Lara 🌿 Mi energía me dice que buscas algo concreto… cuéntame.",
 ];
 
 const FRASES_NO_ENTIENDO = [
-  "No te pillo del todo, y eso que tengo buen olfato. ¿Buscas productos, servicios, música o avisos?",
-  "Mmm, algo me dice que hay más detrás de eso. ¿A qué sector quieres ir?",
-  "No me llega claro. ¿Productos, servicios, audio o avisos?",
-  "Cuéntame mejor, sin rodeos. ¿A dónde quieres ir?",
+  "No te pillo del todo, y eso que tengo el radar bien calibrado. ¿Buscas productos, servicios, música o avisos?",
+  "Mmm, noto que hay más detrás de eso. ¿A qué sector quieres fluir hoy?",
+  "No me llega claro, consciente. ¿Productos, servicios, audio o avisos?",
+  "Cuéntame mejor, sin tóxicos en el mensaje. ¿A dónde quieres ir?",
 ];
 
 const FRASES_PEDIR_CIUDAD = [
-  "¿En qué ciudad buscas? Así te conecto con lo que hay.",
-  "Dime la ciudad y te llevo directo.",
-  "¿Dónde estás buscando? Ciudad o país, lo que tengas.",
+  "¿En qué ciudad buscas? Así te conecto con lo que hay cerca, de proximidad.",
+  "Dime la ciudad y te llevo directo. Lo local tiene su energía vital.",
+  "¿Dónde estás buscando? Ciudad o país — lo que fluya.",
 ];
 
-const FRASE_REDIRIGIR = "¿Y tú, a dónde quieres ir hoy?";
+const FRASE_REDIRIGIR = "¿Y tú, a dónde quieres fluir hoy? 🌿";
 
 // ─── Respuesta sobre el podcast ───────────────────────────────────────────────
 // Lara es host — habla del tema del episodio con criterio propio.

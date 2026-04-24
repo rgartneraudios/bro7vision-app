@@ -9,56 +9,58 @@
 // Ha visto de todo. Nada le sorprende. Va al grano.
 
 const FRASES = {
-  inicio:       [
-    "Antes de nada — ¿ofreces algo o lo estás buscando? Ofrezco o Necesito.",
-    "Simple. ¿Ofrezco o Necesito? Dímelo y arrancamos.",
-    "Lo primero es lo primero. ¿Ofrezco o Necesito?",
+  inicio: [
+    "Amigo mío, antes de abrir posición necesito saber — ¿OFERTA o DEMANDA?",
+    "Rápido que el mercado no espera. ¿OFERTA o DEMANDA?",
+    "Simple como un balance. ¿OFERTA o DEMANDA?",
   ],
-  titulo:       [
-    "¿Cómo lo titulamos?",
-    "Dame el título. Algo que se lea de un vistazo.",
-    "Título. Corto y claro.",
+  titulo: [
+    "¿Cómo cotiza este aviso? Dame el título.",
+    "El nombre lo es todo en el mercado. ¿Cómo lo titulamos?",
+    "Título. Que se lea de un vistazo en el tablón.",
   ],
-  contenido:    [
-    "Ahora el detalle. ¿Qué tienen que saber los interesados?",
-    "Cuéntame el fondo del aviso.",
-    "¿Qué quieres que sepan? Al grano.",
+  contenido: [
+    "Ahora el prospecto. ¿Qué tienen que saber los interesados?",
+    "Dame el fondo del activo. ¿Qué ofreces o qué buscas?",
+    "Los detalles cierran operaciones, amigo mío. ¿Qué quieres que sepan?",
   ],
-  confirmar:    [
-    "Todo está. CONFIRMO para publicar por 200 génesis.",
-    "Listo para publicar. Escribe CONFIRMO — son 200 génesis.",
-    "En orden. CONFIRMO y en el aire.",
+  confirmar: [
+    "La operación está lista. CONFIRMO para emitirlo por 200 génesis.",
+    "Todo cuadra en cartera. CONFIRMO — 200 génesis y en el tablón.",
+    "Posición abierta y lista. CONFIRMO para ejecutar por 200 génesis.",
   ],
-  publicado:    [
-    "Publicado. Buen movimiento.",
+  publicado: [
+    "Ejecutado. Buen movimiento, amigo mío. 📈",
     "En el tablón. 200 génesis bien invertidos.",
-    "Hecho. Lo que pasa después ya no depende de mí.",
+    "Operación cerrada. Lo que pase después ya cotiza por su cuenta.",
   ],
-  error_tipo:   [
-    "Solo Ofrezco o Necesito.",
-    "Ofrezco o Necesito — elige uno.",
-    "No te he pillado. Ofrezco o Necesito, nada más.",
+  error_tipo: [
+    "Amigo mío, eso no figura en mi cartera. ¿OFERTA o DEMANDA?",
+    "El mercado no entiende eso. OFERTA o DEMANDA — elige.",
+    "Eso no cotiza. OFERTA o DEMANDA, nada más.",
   ],
-  cancelado:    [
-    "Cancelado. ¿Algo más en lo que pueda ayudarte?",
-    "Descartado. ¿Qué más necesitas?",
-    "De acuerdo. Siguiente.",
+  cancelado: [
+    "Operación cancelada. ¿Qué más movemos hoy?",
+    "Posición cerrada. ¿Algo más en cartera?",
+    "De acuerdo. El mercado sigue abierto — ¿qué más necesitas?",
   ],
-  no_encontrado:[
-    "Ese código no está en el tablón. ¿Lo revisas?",
-    "No encuentro ese aviso.",
-    "Nada con ese código. Prueba de nuevo.",
+  no_encontrado: [
+    "Ese código no cotiza en el tablón. ¿Lo revisamos?",
+    "No encuentro ese activo, amigo mío. Comprueba el código.",
+    "Nada con ese registro. El mercado no miente — revísalo.",
   ],
-  conectado:    [
-    "Conectado. Mándale un mensaje.",
-    "Hecho. Tiene tu solicitud en el Booster.",
-    "Conexión hecha. El resto es cosa tuya.",
+  conectado: [
+    "Conexión ejecutada. Mándale un mensaje, amigo mío. 📈",
+    "Hecho. Tiene tu solicitud en el Booster. El resto es negociación.",
+    "Operación completada. A partir de aquí, es cosa vuestra.",
   ],
-  sin_genesis:  [
-    "No tienes génesis suficientes.",
-    "Te faltan génesis para esto.",
-    "200 génesis mínimo. No llegas.",
+  sin_genesis: [
+    "Sin liquidez no hay operación, amigo mío. Necesitas 200 génesis.",
+    "Te faltan fondos. 200 génesis mínimo — así está el mercado.",
+    "La cuenta no llega. 200 génesis para ejecutar esta posición.",
   ],
+};
+
   describir:    (av, codigo) =>
     `*${av.title}*\n${av.content}\n\nCiudad: ${av.city || 'global'} · Tipo: ${av.type}\nEscribe ${codigo} A si quieres contactar al autor.`,
   conectar:     (av) =>
@@ -103,3 +105,18 @@ export function responder({ intencion, aviso = null, codigoAvi = null, textoUser
     default:             return { mensaje: elegir(FRASES.inicio) };
   }
 }
+
+export function detectarBusquedaAviso(mensaje) {
+  const t = mensaje.toLowerCase();
+  return /aviso|anuncio|ofrezco|necesito|tablón|tablon|busco|vendo|alquilo|oferta/i.test(t);
+}
+
+export function fraseBuscandoAviso(keyword) {
+  const frases = [
+    `Déjame ver qué hay en el tablón para "${keyword}"...`,
+    `Busco en el tablón algo sobre "${keyword}"...`,
+    `A ver qué avisos tenemos de "${keyword}"...`,
+  ];
+  return frases[Math.floor(Math.random() * frases.length)];
+}
+
