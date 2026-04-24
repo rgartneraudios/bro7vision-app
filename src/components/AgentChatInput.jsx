@@ -76,19 +76,19 @@ const AGENT_PROFILES = {
   },
   nova: {
     theme: 'gold',
-    text: '✦  CODIGO + D · Descripción | CODIGO + A Entrar | ¿Qué producto buscas hoy?'
+    text: '✦  Hola! Dime el producto que necesitas! | Que buscas? | Pulsa en las BroCards para obtener una descripción y luego si quieres entrar a la tienda pulsa enter'
   },
   isabella: {
     theme: 'pink',
-    text: '✦  CODIGO + D · Descripción del Comercio | CODIGO + A Entrar al Comercio'
+    text: '✦  Hola! Dime el servicio que necesitas! | Que buscas? | Pulsa en las BroCards para obtener una descripción y luego si quieres conectar con el Profesional pulsa enter'
   },
   evelyn: {
     theme: 'blue',
-    text: '✦  ¿Qué aviso buscas o quieres publicar? | CODIGO + D Descripción | CODIGO + A Conectar'
+    text: '✦  Hola! Dime qué avisos estás buscando! | Quieres publicar un aviso? '
   },
   mapache: {
     theme: 'cyan',
-    text: '✦  CODIGO + D · Info | CODIGO + A Play | PON STOP | PON PAUSA | DALE PLAY'
+    text: '✦  Hola! Dime si buscas músicas o Podcast! | Pulsa en las BroCards para la descripción y play si quieres escuchar | El Stop/Pause está en la puerta lateral izquierda, en el Brolives junto a Brotuner! '
   },
   oraculo: {
     theme: 'green',
