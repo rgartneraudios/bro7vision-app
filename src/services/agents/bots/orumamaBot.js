@@ -3,44 +3,40 @@
 // Sin IA, sin API, sin dependencias externas.
 
 const FRASES_BIENVENIDA = [
-  "Orumama aquí 🕯️ Estaba preparando un brebaje. ¿Qué te trae por el Oráculo?",
-  "Las velas están encendidas. Soy Orumama. ¿Qué quieres consultar?",
-  "Hola. Me pillas removiendo la olla. ¿Qué necesitas saber?",
-  "Orumama al habla 🌿 ¿Vienes por el horóscopo, la luna o algo de hierbas?",
+  "Orumama aquí 🕯️ Estaba removiendo un brebaje. ¿Qué mal o consulta te trae al Oráculo, hija mía?",
+  "Las velas están encendidas, los ancestros escuchan. Soy Orumama. ¿Qué quieres consultar?",
+  "Hola. Me pillas con la olla al fuego. ¿Qué necesitas saber?", // ✅ sin cambios
+  "Orumama al habla 🌿 ¿Vienes por el horóscopo, la luna o algo de hierbas y raíces?",
 ];
 
-const FRASES_HOROSCOPO = [
-  "Las estrellas tienen algo que decirte. Dame tu fecha de nacimiento.",
-  "El cielo sidéreo habla claro. ¿Cuándo naciste?",
-  "Voy a consultar tu signo. Dame tu fecha de nacimiento y te digo lo que veo.",
+const FRASES_HANDOFF_JAGUAR = [
+  "Eso lo saben mejor los astros de Jaguar. Yo vuelvo a mis raíces 🌿",
+  "El horóscopo es territorio de Jaguar, hijos míos. Te paso con él.",
+  "Jaguar escucha más allá de las estrellas. Te lo paso 🐆", "Jaguar, tienes visita. Un momento.",
 ];
 
-const FRASES_LUNA = [
-  "La luna no miente. Déjame ver en qué fase estamos 🌙",
-  "La fase lunar lo dice todo. Un momento.",
-  "La luna siempre tiene algo que contar. Ahora mismo está así —",
+const FRASES_HANDOFF_SMISTERIO = [
+"El Señor Misterio está en otro plano ☎️ Te lo paso.", "Señor Misterio, hay alguien aquí para ti.",
+  "Hay misterios que van más allá de mis brebajes. S.Misterio te espera.",
+  "Eso pertenece a otra oscuridad, hijos míos. Te mando con quien sabe de esos caminos.",
 ];
 
 const FRASES_HIERBAS = [
-  "Conozco bien las hierbas. ¿Qué necesitas — protección, salud, calma?",
-  "Tengo la olla llena de cosas buenas. ¿Para qué las necesitas?",
-  "Las plantas curan si sabes usarlas. Dime qué buscas.",
+  "Conozco bien las raíces y sus dones. ¿Qué necesitas — protección, salud, calma?",
+  "La olla lleva hierbas de tres lunas. ¿Para qué males las necesitas, hija mía?",
+  "Las plantas curan si sabes escucharlas. Dime qué buscas.",
 ];
 
 const FRASES_EXPLORAR = [
-  "¿Qué quieres consultar — el horóscopo, la luna o algo de hierbas y remedios?",
-  "El Oráculo está abierto. ¿Qué te preocupa o qué quieres saber?",
-  "Dime qué buscas y vemos qué dice el Oráculo.",
+  "¿Qué quieres consultar — el horóscopo, la luna o algo de hierbas y remedios?", // ✅ sin cambios
+  "El Oráculo está abierto. ¿Qué te preocupa, hijo mío? ¿Qué quieres que los ancestros revelen?",
+  "Dime qué buscas y veremos qué dice el Oráculo.", // ✅ sin cambios
 ];
 
 const FRASES_HANDOFF_OSOS = [
-  "Los osos te esperan. Yo vuelvo a mis velas 🕯️",
-  "Te mando con recepción. Que las hierbas te acompañen.",
+  "Los osos te esperan. Yo vuelvo a mis velas 🕯️", // ✅ sin cambios
+  "Te mando con quienes saben de eso. Que las hierbas te acompañen, hija mía.",
 ];
-
-// ── Handoffs internos ──────────────────────────────────────────────────────
-const FRASES_HANDOFF_JAGUAR   = ["Jaguar escucha más allá de las estrellas. Te lo paso 🐆", "Jaguar, tienes visita. Un momento."];
-const FRASES_HANDOFF_SMISTERIO = ["El Señor Misterio está en otro plano ☎️ Te lo paso.", "Señor Misterio, hay alguien aquí para ti."];
 
 const NOMBRES_JAGUAR    = ['jaguar', 'el jaguar'];
 const NOMBRES_SMISTERIO = ['misterio', 'señor misterio', 'smisterio', 'el señor misterio'];

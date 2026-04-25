@@ -3,16 +3,16 @@
 // Sin IA, sin API, sin dependencias externas.
 
 const FRASES_BIENVENIDA = [
-  "Saludos. Soy el Señor Misterio ☎️ Llegas en un momento clave. Las verdades del pasado nos observan.",
-  "La luz reside en lo oculto. Te habla el Señor Misterio. ¿Qué enigma buscas desvelar hoy?",
-  "☎️ Mensaje entrante... Soy el Señor Misterio. Me he aislado del mundo para buscar respuestas. ¿Tú qué buscas?",
-  "Bienvenido a las sombras que iluminan. ¿Hablamos de Egipto, la Atlántida, o algo más profundo?",
+  "...Señor Misterio. ☎️ ¿Qué buscas?",
+  "Las sombras te trajeron aquí. Habla.",
+  "☎️ Mensaje entrante... Soy el Señor Misterio. ¿Qué enigma te pesa?",
+  "Bienvenido. ¿Egipto, la Atlántida... o algo más oculto?",
 ];
 
 const FRASES_MISTERIO = [
-  "☎️ Atención. Los secretos de la Atlántida y Lemuria aún resuenan si sabes escuchar. Te contaré algo...",
-  "El Antiguo Egipto y la Época Barroca comparten más secretos de los que imaginas. Observa esto.",
-  "Las conspiraciones del pasado son la ciencia ficción de hoy. ☎️ Escucha con atención.",
+  "☎️ Quizás... la Atlántida y Lemuria aún resuenan. ¿Sabes escuchar?",
+  "Egipto y el Barroco comparten secretos. Depende de si quieres verlos.",
+  "Las conspiraciones del pasado... ☎️ Escucha con atención.",
 ];
 
 const FRASES_YOGUR = [
@@ -21,9 +21,21 @@ const FRASES_YOGUR = [
 ];
 
 const FRASES_EXPLORAR = [
-  "¿Sobre qué misterio ancestral deseas indagar hoy? ☎️",
-  "El Oráculo guarda secretos de civilizaciones perdidas. Pregunta sin miedo, la oscuridad aquí no es terror, es conocimiento.",
-  "Dime qué pieza del rompecabezas buscas y miraremos hacia el pasado.",
+  "¿Qué misterio te trajo aquí? ☎️",
+  "Pregunta. Aunque quizás... no quieras saber la respuesta.",
+  "¿Qué pieza del rompecabezas buscas?",
+];
+
+const FRASES_HANDOFF_JAGUAR = [
+  "Los astros son territorio de Jaguar. Quizás él tenga respuestas... o más preguntas.",
+  "☎️ Intentas vibrar en otra frecuencia. Te paso con Jaguar.",
+  "Jaguar acecha en las estrellas. Te lo paso 🐆", "Jaguar, hay alguien que quiere hablar contigo.",
+];
+
+const FRASES_HANDOFF_ORUMAMA = [
+  "Entiendo que tengas miedo. Te paso con Orumama, ella cura esos males.",
+  "Las raíces saben más que las sombras en esto. Ve con Orumama.",
+  "Orumama conoce los remedios y el fuego sagrado. Te la paso 🕯️",
 ];
 
 const FRASES_HANDOFF_OSOS = [
@@ -31,9 +43,6 @@ const FRASES_HANDOFF_OSOS = [
   "Mi yogur de higos me espera y tu camino sigue en recepción. Adiós.",
 ];
 
-// ── Handoffs internos ──────────────────────────────────────────────────────
-const FRASES_HANDOFF_ORUMAMA = ["Orumama conoce los remedios y el fuego sagrado. Te la paso 🕯️", "Orumama, tienes visita del plano exterior."];
-const FRASES_HANDOFF_JAGUAR  = ["Jaguar acecha en las estrellas. Te lo paso 🐆", "Jaguar, hay alguien que quiere hablar contigo."];
 
 const NOMBRES_ORUMAMA = ['orumama', 'la orumama'];
 const NOMBRES_JAGUAR  = ['jaguar', 'el jaguar'];

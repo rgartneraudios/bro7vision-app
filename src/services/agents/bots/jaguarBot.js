@@ -3,44 +3,42 @@
 // Sin IA, sin API, sin dependencias externas.
 
 const FRASES_BIENVENIDA = [
-  "...Jaguar. Dime qué buscas. 🐆",
-  "Estoy aquí. Habla.",
-  "Jaguar al habla. ¿Qué quieres consultar?",
-  "Me has encontrado. ¿Qué necesitas saber?",
+  "...Jaguar. El cosmos te ha traído aquí. ¿Qué buscas, hermano? 🐯",
+  "Estoy aquí. El universo me lo anunció. Habla.",
+  "Jaguar al habla. ¿Qué frecuencia te trae al Oráculo?",
+  "Me has encontrado. Siento que no es casualidad. ¿Qué necesitas saber?",
 ];
 
 const FRASES_HOROSCOPO = [
-  "El cielo sidéreo no engaña. Dame tu fecha de nacimiento.",
-  "Las estrellas lo saben todo. ¿Cuándo naciste?",
-  "Voy a leer tu signo. Fecha de nacimiento.",
+  "El cielo sidéreo no engaña, hermanos. Dame tu fecha de nacimiento.",
+  "Las constelaciones lo saben todo. ¿Cuándo llegaste a esta dimensión?",
+  "Voy a leer tu aura astral. Fecha de nacimiento.",
 ];
 
 const FRASES_LUNA = [
-  "La luna lo dice sin palabras. Un momento 🌙",
-  "La fase lunar habla por sí sola. Mira —",
-  "La luna no tiene secretos. Ahora mismo está así —",
+  "La luna vibra sin palabras. Un momento 🌙",
+  "La fase lunar alinea las almas. Mira —",
+  "La luna no oculta su frecuencia. Ahora mismo está así —",
 ];
 
-const FRASES_HIERBAS = [
-  "Conozco las plantas. No para lo que las conocía antes — ahora curan. ¿Qué necesitas?",
-  "Las hierbas tienen poder. ¿Para qué las buscas — calma, protección, salud?",
-  "Sé lo que hacen las plantas. Dime qué buscas.",
+const FRASES_HANDOFF_ORUMAMA = [
+  "Orumama conoce los secretos de la tierra, hermanos. Yo leo los astros — ella escucha las raíces. Te paso con ella 🌿",
+  "Eso vibra en otra frecuencia. Orumama te espera.",
+  "Las hierbas no son mi portal. Ve con Orumama, ella sabe.",
+  "Orumama tiene las hierbas y el fuego. Te la paso 🕯️",
 ];
 
-const FRASES_EXPLORAR = [
-  "¿Qué quieres consultar — el horóscopo, la luna o las hierbas?",
-  "El Oráculo está abierto. Dime qué te trae aquí.",
-  "Habla. ¿Qué quieres saber?",
+const FRASES_HANDOFF_SMISTERIO = [
+  "El cosmos me lo ha revelado — eso que buscas pertenece a S.Misterio. Su dimensión es otra.",
+  "Siento que... eso está más allá de los astros. S.Misterio te guiará, hermano.",
+  "Hay frecuencias que ni el universo me deja tocar. Ve con S.Misterio.",
 ];
 
 const FRASES_HANDOFF_OSOS = [
-  "Los osos te atienden. Yo me quedo aquí.",
-  "Ve con recepción. 🐆",
+  "Los osos operan en otra dimensión, hermano. Te paso con ellos.",
+  "Eso no es cósmico — es terrenal. Ve con recepción. 🐯",
 ];
 
-// ── Handoffs internos ──────────────────────────────────────────────────────
-const FRASES_HANDOFF_ORUMAMA  = ["Orumama tiene las hierbas y el fuego. Te la paso 🕯️", "Orumama, tienes visita."];
-const FRASES_HANDOFF_SMISTERIO = ["El Señor Misterio descifra lo que yo no cazo. Te lo paso ☎️", "Señor Misterio, hay alguien aquí."];
 
 const NOMBRES_ORUMAMA   = ['orumama', 'la orumama'];
 const NOMBRES_SMISTERIO = ['misterio', 'señor misterio', 'smisterio', 'el señor misterio'];

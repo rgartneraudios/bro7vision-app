@@ -14,6 +14,7 @@ const FRASES = {
     "Rápido que el mercado no espera. ¿OFERTA o DEMANDA?",
     "Simple como un balance. ¿OFERTA o DEMANDA?",
   ],
+  
   titulo: [
     "¿Cómo cotiza este aviso? Dame el título.",
     "El nombre lo es todo en el mercado. ¿Cómo lo titulamos?",
@@ -24,11 +25,13 @@ const FRASES = {
     "Dame el fondo del activo. ¿Qué ofreces o qué buscas?",
     "Los detalles cierran operaciones, amigo mío. ¿Qué quieres que sepan?",
   ],
+  
   confirmar: [
     "La operación está lista. CONFIRMO para emitirlo por 200 génesis.",
     "Todo cuadra en cartera. CONFIRMO — 200 génesis y en el tablón.",
     "Posición abierta y lista. CONFIRMO para ejecutar por 200 génesis.",
   ],
+  
   publicado: [
     "Ejecutado. Buen movimiento, amigo mío. 📈",
     "En el tablón. 200 génesis bien invertidos.",
@@ -59,7 +62,6 @@ const FRASES = {
     "Te faltan fondos. 200 génesis mínimo — así está el mercado.",
     "La cuenta no llega. 200 génesis para ejecutar esta posición.",
   ],
-};
 
   describir:    (av, codigo) =>
     `*${av.title}*\n${av.content}\n\nCiudad: ${av.city || 'global'} · Tipo: ${av.type}\nEscribe ${codigo} A si quieres contactar al autor.`,
