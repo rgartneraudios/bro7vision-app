@@ -12,6 +12,8 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1011.0",
     "@aws-sdk/s3-request-presigner": "^3.1011.0",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
     "@google/generative-ai": "^0.24.1",
     "@mlc-ai/web-llm": "^0.2.82",
     "@supabase/supabase-js": "^2.90.1",

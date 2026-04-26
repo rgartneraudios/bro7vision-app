@@ -5,6 +5,7 @@ import { supabase } from '../supabaseClient';
 import { marcarActividad } from '../hooks/useActividad';
 import { CoordenadosBlock } from '../components/CoordenadosBlock';
 import { MarketTab } from '../components/MarketTab';
+import SignalUploader from './SignalUploader';
 
 const ENERGY_COLORS = [
   { id: 'cyan',    hex: 'bg-cyan-400 shadow-[0_0_10px_#00D0FF]',    name: 'CYAN'     },
@@ -447,209 +448,117 @@ const BoosterModal = ({ onClose }) => {
     if (error) { alert("❌ Error: " + error.message); return; }
     if (data) { setAssets([...assets, data[0]]); setNewService({ title: '', desc: '', price: 0, url: '' }); }
   };
+  
+  // ── MediaSlot para imágenes (solo en tab Identidad) ──
+const MediaSlot = ({ title, fieldName, type, description }) => {
+  const isOccupied = !!formData[fieldName];
+  const [acordeonAbierto, setAcordeonAbierto] = useState(false);
+  const [archivoSeleccionado, setArchivoSeleccionado] = useState(null);
+  const [errorMeta, setErrorMeta] = useState('');
+  const fileInputRef = React.useRef(null);
 
-  // ── R2 ──
-  const deleteFromR2 = async (fileUrl) => {
-  if (!fileUrl) return;
-  try {
-    const res = await fetch('/api/delete-r2', { // Ruta relativa, igual que upload
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fileUrl }),
-    });
-    const data = await res.json();
-    if (!data.success) console.error("Error al borrar en R2:", data.error);
-  } catch (err) {
-    console.error("Error al llamar a delete-r2:", err);
-  }
-};
-
-  const handleDeleteMedia = async (fieldName) => {
-    const confirm1 = window.confirm("⚠️ ALERTA DE SISTEMA\n¿Quieres desintegrar este archivo para liberar el espacio?");
-    if (!confirm1) return;
-    const confirm2 = window.prompt("MEDIDA DE SEGURIDAD:\nEscribe la palabra en mayúsculas: BORRAR");
-    if (confirm2 === "BORRAR") {
-      await deleteFromR2(formData[fieldName]);
-      setFormData(prev => ({ ...prev, [fieldName]: '' }));
-      alert("✅ Archivo desintegrado. Recuerda pulsar 'ACTUALIZAR NÚCLEO'.");
-    } else {
-      alert("❌ Protocolo cancelado. Código de seguridad incorrecto.");
-    }
-  };
-
-  const VERTICAL_SLOTS = ['video_file', 'video_file_2', 'video_file_3'];
-  const SLOT_MAP = {
-    video_file: 'v1', video_file_2: 'v2', video_file_3: 'v3',
-    video_file_219: 'horizontal', audio_file: 'audio',
-  };
-
-  const handleUploadUniversal = async (e, fieldName, metadatos) => {
+  const handleFileSelected = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const isVideo = file.type.includes('video');
-    const maxSize = isVideo ? 1500 * 1024 * 1024 : 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-      alert(`¡Archivo muy pesado! Máximo ${isVideo ? '1500MB' : '10MB'} permitido.`);
-      return;
-    }
+    setArchivoSeleccionado(file);
+    setAcordeonAbierto(true);
+    setErrorMeta('');
+  };
+
+  const handleConfirmarSubida = async () => {
+    if (!archivoSeleccionado) return;
     setLoading(true);
     try {
-      const safeFileName = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
+      const safeFileName = `${Date.now()}-${archivoSeleccionado.name.replace(/\s+/g, '_')}`;
       const res = await fetch('/api/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileName: safeFileName, fileType: file.type }),
+        body: JSON.stringify({ fileName: safeFileName, fileType: archivoSeleccionado.type }),
       });
       const { uploadUrl } = await res.json();
-      if (!uploadUrl) throw new Error("La API no devolvió el ticket de subida.");
-      await fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
+      if (!uploadUrl) throw new Error('Sin ticket de subida.');
+      await fetch(uploadUrl, { method: 'PUT', body: archivoSeleccionado, headers: { 'Content-Type': archivoSeleccionado.type } });
       const publicUrl = `https://media.bro7vision.com/${safeFileName}`;
-      const slot = SLOT_MAP[fieldName];
-      if (VERTICAL_SLOTS.includes(fieldName)) {
-        const slot1 = formData.video_file   || null;
-        const slot2 = formData.video_file_2 || null;
-        const slot3 = formData.video_file_3 || null;
-        await deleteFromR2(slot3);
-        setFormData(prev => ({ ...prev, video_file: publicUrl, video_file_2: slot1, video_file_3: slot2 }));
-      } else if (fieldName === 'video_file_219' || fieldName === 'audio_file') {
-        await deleteFromR2(formData[fieldName]);
-        setFormData(prev => ({ ...prev, [fieldName]: publicUrl }));
-      } else {
-        setFormData(prev => ({ ...prev, [fieldName]: publicUrl }));
-      }
-      if (slot) {
-        const { error: upsertError } = await supabase.from('creator_media').upsert({
-          user_id: formData.id, slot, url: publicUrl,
-          titulo: metadatos.titulo, descripcion: metadatos.descripcion, tipo: metadatos.tipo,
-        }, { onConflict: 'user_id,slot' });
-        if (upsertError) console.error('[creator_media upsert]', upsertError);
-      }
-      alert("🚀 ¡Archivo inyectado en el NÚCLEO R2!");
+      setFormData(prev => ({ ...prev, [fieldName]: publicUrl }));
+      alert('🚀 ¡Imagen inyectada en el NÚCLEO R2!');
     } catch (err) {
-      console.error(err);
-      alert("❌ Error de hiper-salto: " + err.message);
+      alert('❌ Error: ' + err.message);
     } finally {
       setLoading(false);
+      setAcordeonAbierto(false);
+      setArchivoSeleccionado(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
-  // ── COMPONENTE MediaSlot ──
-  const MediaSlot = ({ title, fieldName, type, description }) => {
-    const isOccupied = !!formData[fieldName];
-    const [acordeonAbierto, setAcordeonAbierto]     = useState(false);
-    const [archivoSeleccionado, setArchivoSeleccionado] = useState(null);
-    const [metadatos, setMetadatos] = useState({ titulo: '', descripcion: '', tipo: 'original' });
-    const [errorMeta, setErrorMeta] = useState('');
-    const fileInputRef = React.useRef(null);
+  const handleCancelar = () => {
+    setAcordeonAbierto(false);
+    setArchivoSeleccionado(null);
+    setErrorMeta('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
-    const handleFileSelected = (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      setArchivoSeleccionado(file);
-      setAcordeonAbierto(true);
-      setErrorMeta('');
-    };
+  const handleDeleteMedia = async () => {
+    const confirm1 = window.confirm('⚠️ ¿Desintegrar este archivo?');
+    if (!confirm1) return;
+    const confirm2 = window.prompt('Escribe BORRAR para confirmar:');
+    if (confirm2 !== 'BORRAR') { alert('❌ Cancelado.'); return; }
+    try {
+      await fetch('/api/delete-r2', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileUrl: formData[fieldName] }),
+      });
+    } catch (err) { console.error(err); }
+    setFormData(prev => ({ ...prev, [fieldName]: '' }));
+    alert("✅ Archivo desintegrado. Recuerda pulsar 'ACTUALIZAR NÚCLEO'.");
+  };
 
-    const handleConfirmarSubida = async () => {
-      if (!metadatos.titulo.trim())      { setErrorMeta('El título es obligatorio.');      return; }
-      if (!metadatos.descripcion.trim()) { setErrorMeta('La descripción es obligatoria.'); return; }
-      setErrorMeta('');
-      const fakeEvent = { target: { files: [archivoSeleccionado] } };
-      await handleUploadUniversal(fakeEvent, fieldName, metadatos);
-      const esVideo = ['video_file', 'video_file_2', 'video_file_3', 'video_file_219'].includes(fieldName);
-      if (esVideo) await marcarActividad('video');
-      setAcordeonAbierto(false);
-      setArchivoSeleccionado(null);
-      setMetadatos({ titulo: '', descripcion: '', tipo: 'original' });
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    };
-
-    const handleCancelar = () => {
-      setAcordeonAbierto(false);
-      setArchivoSeleccionado(null);
-      setMetadatos({ titulo: '', descripcion: '', tipo: 'original' });
-      setErrorMeta('');
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    };
-
-    const TIPO_LABELS = {
-      original:   { label: 'Contenido Original', color: 'text-emerald-400 border-emerald-500/40 bg-emerald-500/10' },
-      ia:         { label: 'Hecho con IA',        color: 'text-violet-400  border-violet-500/40  bg-violet-500/10'  },
-      publicidad: { label: 'Publicidad',           color: 'text-amber-400  border-amber-500/40   bg-amber-500/10'   },
-    };
-
-    return (
-      <div className="bg-black/40 rounded-2xl border border-white/5 overflow-hidden group transition-all duration-300">
-        <div className="p-4">
-          <label className="text-[10px] font-bold text-gray-300 uppercase tracking-widest block mb-1">{title}</label>
-          <p className="text-[9px] text-gray-500 mb-3">{description}</p>
-          {isOccupied && !acordeonAbierto ? (
-            <div className="bg-cyan-900/20 p-3 rounded-xl border border-cyan-500/30 flex justify-between items-center">
-              <span className="text-[10px] text-cyan-400 font-bold">✓ Ocupado</span>
-              <button onClick={() => handleDeleteMedia(fieldName)}
-                className="bg-red-500/10 text-red-400 border border-red-500/50 hover:bg-red-500 hover:text-white text-[10px] font-bold px-4 py-2 rounded-lg transition-all">
-                REEMPLAZAR
-              </button>
-            </div>
-          ) : !acordeonAbierto ? (
-            <div className="relative">
-              <input ref={fileInputRef} type="file" accept={type} onChange={handleFileSelected}
-                className="w-full text-[10px] text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border file:border-cyan-500/40 file:bg-cyan-500/10 file:text-cyan-400 file:text-[10px] file:font-bold file:cursor-pointer hover:file:bg-cyan-500/20 transition-all cursor-pointer" />
-              <div className="absolute top-1/2 right-4 -translate-y-1/2 pointer-events-none">
-                <span className="text-xs text-gray-500 font-bold border border-gray-600 px-2 py-1 rounded">HUECO LIBRE</span>
-              </div>
-            </div>
-          ) : null}
-        </div>
-        {acordeonAbierto && (
-          <div className="border-t border-fuchsia-500/20 bg-black/60 p-4 space-y-4 animate-fadeIn">
-            <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg">
-              <span className="text-[9px] text-gray-500 uppercase tracking-widest">Archivo:</span>
-              <span className="text-[10px] text-cyan-300 truncate">{archivoSeleccionado?.name}</span>
-            </div>
-            <div>
-              <label className="text-[9px] font-bold text-fuchsia-400 uppercase tracking-widest block mb-1">Título <span className="text-red-400">*</span></label>
-              <input type="text" maxLength={60} placeholder="Ej: Mi aventura en el bosque neon"
-                value={metadatos.titulo} onChange={e => setMetadatos(prev => ({ ...prev, titulo: e.target.value }))}
-                className="w-full bg-white/5 border border-white/10 focus:border-fuchsia-500/50 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 outline-none transition-all" />
-              <p className="text-[9px] text-gray-600 mt-1 text-right">{metadatos.titulo.length}/60</p>
-            </div>
-            <div>
-              <label className="text-[9px] font-bold text-fuchsia-400 uppercase tracking-widest block mb-1">Descripción <span className="text-red-400">*</span></label>
-              <textarea maxLength={200} rows={3} placeholder="Cuéntale al mundo de qué va este contenido..."
-                value={metadatos.descripcion} onChange={e => setMetadatos(prev => ({ ...prev, descripcion: e.target.value }))}
-                className="w-full bg-white/5 border border-white/10 focus:border-fuchsia-500/50 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 outline-none transition-all resize-none" />
-              <p className="text-[9px] text-gray-600 mt-1 text-right">{metadatos.descripcion.length}/200</p>
-            </div>
-            <div>
-              <label className="text-[9px] font-bold text-fuchsia-400 uppercase tracking-widest block mb-2">Tipo de contenido <span className="text-red-400">*</span></label>
-              <div className="flex gap-2 flex-wrap">
-                {Object.entries(TIPO_LABELS).map(([valor, { label, color }]) => (
-                  <button key={valor} onClick={() => setMetadatos(prev => ({ ...prev, tipo: valor }))}
-                    className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all ${metadatos.tipo === valor ? color + ' scale-105' : 'text-gray-500 border-gray-700 bg-white/5 hover:border-gray-500'}`}>
-                    {metadatos.tipo === valor ? '✓ ' : ''}{label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {errorMeta && (
-              <p className="text-[10px] text-red-400 bg-red-500/10 border border-red-500/30 px-3 py-2 rounded-lg">⚠️ {errorMeta}</p>
-            )}
-            <div className="flex gap-3 pt-2">
-              <button onClick={handleCancelar}
-                className="flex-1 text-[10px] font-bold text-gray-400 border border-gray-700 hover:border-gray-500 py-2 rounded-lg transition-all">
-                CANCELAR
-              </button>
-              <button onClick={handleConfirmarSubida} disabled={loading}
-                className="flex-2 flex-grow text-[10px] font-bold bg-fuchsia-600/80 hover:bg-fuchsia-500 disabled:opacity-40 disabled:cursor-not-allowed text-white py-2 px-6 rounded-lg border border-fuchsia-500/50 transition-all">
-                {loading ? '⏳ INYECTANDO...' : '🚀 CONFIRMAR SUBIDA'}
-              </button>
+  return (
+    <div className="bg-black/40 rounded-2xl border border-white/5 overflow-hidden transition-all duration-300">
+      <div className="p-4">
+        <label className="text-[10px] font-bold text-gray-300 uppercase tracking-widest block mb-1">{title}</label>
+        <p className="text-[9px] text-gray-500 mb-3">{description}</p>
+        {isOccupied && !acordeonAbierto ? (
+          <div className="bg-cyan-900/20 p-3 rounded-xl border border-cyan-500/30 flex justify-between items-center">
+            <span className="text-[10px] text-cyan-400 font-bold">✓ Ocupado</span>
+            <button onClick={handleDeleteMedia}
+              className="bg-red-500/10 text-red-400 border border-red-500/50 hover:bg-red-500 hover:text-white text-[10px] font-bold px-4 py-2 rounded-lg transition-all">
+              REEMPLAZAR
+            </button>
+          </div>
+        ) : !acordeonAbierto ? (
+          <div className="relative">
+            <input ref={fileInputRef} type="file" accept={type} onChange={handleFileSelected}
+              className="w-full text-[10px] text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border file:border-cyan-500/40 file:bg-cyan-500/10 file:text-cyan-400 file:text-[10px] file:font-bold file:cursor-pointer hover:file:bg-cyan-500/20 transition-all cursor-pointer" />
+            <div className="absolute top-1/2 right-4 -translate-y-1/2 pointer-events-none">
+              <span className="text-xs text-gray-500 font-bold border border-gray-600 px-2 py-1 rounded">HUECO LIBRE</span>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
-    );
-  };
+      {acordeonAbierto && (
+        <div className="border-t border-fuchsia-500/20 bg-black/60 p-4 space-y-3 animate-fadeIn">
+          <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg">
+            <span className="text-[9px] text-gray-500 uppercase tracking-widest">Archivo:</span>
+            <span className="text-[10px] text-cyan-300 truncate">{archivoSeleccionado?.name}</span>
+          </div>
+          {errorMeta && <p className="text-[10px] text-red-400">{errorMeta}</p>}
+          <div className="flex gap-3">
+            <button onClick={handleCancelar} disabled={loading}
+              className="flex-1 text-[10px] font-bold text-gray-400 border border-gray-700 hover:border-gray-500 py-2 rounded-lg transition-all disabled:opacity-40">
+              CANCELAR
+            </button>
+            <button onClick={handleConfirmarSubida} disabled={loading}
+              className="flex-[2] text-[10px] font-bold bg-fuchsia-600/80 hover:bg-fuchsia-500 disabled:opacity-40 text-white py-2 px-6 rounded-lg border border-fuchsia-500/50 transition-all">
+              {loading ? '🚀 Subiendo...' : '🚀 SUBIR IMAGEN'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
   // ══════════════════════════════════════════════════════
   // RENDER
@@ -1208,85 +1117,14 @@ const BoosterModal = ({ onClose }) => {
             )}
             
             {/* ══ 📡 SEÑAL ══ */}
-            {tab === 'audio' && (
-              <div className="space-y-6 max-w-4xl mx-auto animate-fadeIn">
-                <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-2xl flex gap-4 items-start">
-                  <div className="text-2xl mt-1">⚖️</div>
-                  <div>
-                    <h4 className="text-sm font-bold text-red-300 uppercase tracking-widest mb-1">Ley de Medios Bro7Vision</h4>
-                    <p className="text-xs text-red-200">Usa música propia o Licencia <span className="font-bold underline">CC 4.0</span>. Cupo máximo: <span className="text-white font-bold">1 Audio, 3 Videos Verticales y 1 Horizontal</span>.</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className={`${CardStyle} space-y-4`}>
-                    <h3 className="text-sm font-bold text-fuchsia-400 mb-4 border-b border-fuchsia-500/20 pb-2">📱 SEÑAL MÓVIL (9:16)</h3>
-                    <MediaSlot title="Video Reality / Casa 1" fieldName="video_file"   type="video/*" description="Video principal vertical." />
-                    <MediaSlot title="Video Casa 2"           fieldName="video_file_2" type="video/*" description="Video secundario vertical." />
-                    <MediaSlot title="Video Casa 3"           fieldName="video_file_3" type="video/*" description="Video terciario vertical." />
-                    <div className="mt-6 pt-6 border-t border-white/10">
-                      <MediaSlot title="📡 SEÑAL AUDIO LIVE" fieldName="audio_file" type="audio/*" description="Audio (MP3) para LiveGrid." />
-                      
-                      <div className="mt-4 space-y-4">
-
-  {/* TIPO DE AUDIO */}
-  <div>
-    <label className={LabelStyle}>TIPO DE AUDIO</label>
-    <div className="grid grid-cols-2 gap-2 mt-2">
-      {[
-        { id: 'music',   label: '🎵 Música',  desc: 'Canción, EP, álbum' },
-        { id: 'podcast', label: '🎙️ Podcast', desc: 'Programa, episodio'  },
-      ].map((t) => (
-        <button
-          key={t.id}
-          onClick={() => setFormData({ ...formData, audio_type: t.id })}
-          className={`p-3 rounded-xl border text-left transition-all
-            ${formData.audio_type === t.id
-              ? 'bg-fuchsia-900/40 border-fuchsia-500/60 text-fuchsia-300'
-              : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20 hover:text-gray-300'}`}
-        >
-          <p className="text-xs font-bold mb-1">{t.label}</p>
-          <p className="text-[9px] opacity-70 leading-tight">{t.desc}</p>
-        </button>
-      ))}
-    </div>
-  </div>
-
-  {/* TÍTULO DE LA PISTA */}
-  <div>
-    <label className={LabelStyle}>TÍTULO DE LA PISTA</label>
-    <input
-      type="text"
-      value={formData.track_name || ''}
-      onChange={e => setFormData({ ...formData, track_name: e.target.value })}
-      placeholder="Ej: Gorilas en el Asfalto"
-      className={`${InputStyle} border-fuchsia-500/30`}
-    />
-  </div>
-
-  {/* DESCRIPCIÓN DEL AUDIO */}
-  <div>
-    <label className={LabelStyle}>DESCRIPCIÓN DEL AUDIO</label>
-    <textarea
-      value={formData.audio_description || ''}
-      onChange={e => setFormData({ ...formData, audio_description: e.target.value })}
-      placeholder="Ej: Pop de los 80s con guitarra y sintetizadores. Grabado en Madrid."
-      rows={3}
-      className={`${InputStyle} border-fuchsia-500/30 resize-none`}
-    />
-    <p className="text-[9px] text-gray-600 mt-1">Mapache usa esta descripción para presentar tu audio.</p>
-  </div>
-
-</div>
-                    </div>
-                  </div>
-                  <div className={`${CardStyle} h-fit`}>
-                    <h3 className="text-sm font-bold text-cyan-400 mb-4 border-b border-cyan-500/20 pb-2">🎬 FORMATO (21:9) TELEFONO CASA | PRODUCTOS | SERVICIOS</h3>
-                    <MediaSlot title="Video Piso 219" fieldName="video_file_219" type="video/*" description="Formato horizontal panorámico para Catálogos." />
-                  </div>
-                </div>
-              </div>
-            )}
-
+{tab === 'audio' && (
+  <SignalUploader
+    formData={formData}
+    setFormData={setFormData}
+    loading={loading}
+    setLoading={setLoading}
+  />
+)}
             {/* ══ ☝️ TELÉFONO CASA ══ */}
             {tab === 'Telefono Casa' && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fadeIn">
