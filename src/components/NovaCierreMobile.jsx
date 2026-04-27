@@ -56,11 +56,26 @@ const NovaCierreMobile = ({
         display:'flex', flexDirection:'column',
         background:'#000', fontFamily:"'Chakra Petch',sans-serif",
       }}>
-        {/* Fondo mobile.webp */}
-        <div style={{ position:'absolute', inset:0, zIndex:0,
-          backgroundImage:"url('/images/mobile.webp')", backgroundSize:'cover', backgroundPosition:'center' }} />
-        <div style={{ position:'absolute', inset:0, zIndex:0, background:'rgba(0,0,0,0.15)' }} />
+{/* Video de fondo */}
+<video 
+  style={{
+    position: 'absolute',
+    inset: 0,
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    zIndex: 0
+  }}
+  autoPlay
+  loop
+  muted
+  playsInline
+>
+  <source src="https://media.bro7vision.com/NovaVentas_v.mp4" type="video/mp4" />
+</video>
 
+{/* Overlay oscuro */}
+<div style={{ position:'absolute', inset:0, zIndex:1, background:'rgba(0,0,0,0.15)' }} />
         {/* HEADER */}
         <div className="nm-in" style={{ position:'relative', zIndex:2, flexShrink:0,
           display:'flex', alignItems:'center', justifyContent:'space-between',
@@ -117,19 +132,23 @@ const NovaCierreMobile = ({
           </div>
         )}
 
-        {/* CHAT */}
-        <div style={{ position:'relative', zIndex:2, flex:1, minHeight:0,
-          display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
-          padding:'0 24px' }}>
-          {loading ? (
-            <div style={{ display:'flex', gap:8 }}>
-              {[0,1,2].map(i => <div key={i} className="nm-dot" style={{ animationDelay:`${i*0.2}s` }} />)}
-            </div>
-          ) : mensaje ? (
-            <p className="nm-msg">{mensaje}</p>
-          ) : (
-            <p className="nm-msg" style={{ opacity:0.45 }}>¿Qué te llevo hoy? Dime qué buscas.</p>
-          )}
+      {/* CHAT */}
+<div style={{ position:'relative', zIndex:2, flex:1, minHeight:0,
+  display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+  padding:'0 24px' }}>
+  {loading ? (
+    <div style={{ display:'flex', gap:8 }}>
+      {[0,1,2].map(i => <div key={i} className="nm-dot" style={{ animationDelay:`${i*0.2}s` }} />)}
+    </div>
+  ) : mensaje ? (
+    <p className="nm-msg" style={{ color:'#ffffff', fontWeight:'600', textShadow:'0 2px 8px rgba(0,0,0,0.3)' }}>
+      {mensaje}
+    </p>
+  ) : (
+    <p className="nm-msg" style={{ color:'#ffffff', fontWeight:'600', textShadow:'0 2px 8px rgba(0,0,0,0.3)', opacity:0.85 }}>
+      ¿Qué te llevo hoy? Dime qué buscas.
+    </p>
+  )}
 
           {/* Carrito mini */}
           {total_items > 0 && (

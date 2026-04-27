@@ -45,7 +45,7 @@ const cfg = {
   accent:     '#fbbf24', 
   accentGlow: 'rgba(251,191,36,0.38)',
   accentSoft: 'rgba(251,191,36,0.22)',
-  video:      'https://media.bro7vision.com/NovaVentas.mp4',
+  video:      'https://media.bro7vision.com/NovaVentas1.mp4',
   nombre:     'Nova',
   rol:        'Asistente de compra',
   symbol:     '✦',

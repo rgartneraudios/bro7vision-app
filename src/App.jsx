@@ -621,7 +621,7 @@ const { mensaje: rumoresMensaje, loading: rumoresLoading, enviar: handleRumoresI
   const hubVideos = useMemo(() => {
     const masterVideos   = MASTER_DB.filter(m => m.video_file).map(m => ({ ...m, id: m.id, alias: m.name || m.alias, source: 'master' }));
     const supabaseVideos = realItems.filter(i => i.video_file).map(i => ({ ...i, alias: i.alias, id: i.id, source: 'supabase' }));
-    return [{ alias: 'BRO MASTER', video_file: 'https://media.bro7vision.com/Mapache-habla.mp4', id: 'bro_master' }, ...masterVideos, ...supabaseVideos];
+    return [{ alias: 'BRO MASTER', video_file: 'https://media.bro7vision.com/Mapache-habla1.mp4', id: 'bro_master' }, ...masterVideos, ...supabaseVideos];
   }, [realItems]);
 
   // ══════════════════════════════════════════════════════
