@@ -161,6 +161,7 @@ const SECTOR_ACCENT = {
   game:            '#ffffff',
 };
 
+// Tema BroCardStrip según sector
 const STRIP_THEME = {
   productos: 'gold',
   servicios: 'slate',
@@ -168,12 +169,12 @@ const STRIP_THEME = {
   audios:    'cyan',
 };
 
+// HandOff de cierre según sector — claves = intent
 const CIERRE_AGENTE = {
-  BROSHOP_PRODUCTO: 'NOVA_CIERRE',
-  BROSHOP_SERVICIO: 'ISABELLA_CIERRE',
-  BROSHOP_AVISO:    'EVELYN_CIERRE',
-  AUDIO:            'AUDIO_PLAY',
-  audios:           'AUDIO_PLAY',
+  productos: 'NOVA_CIERRE',
+  servicios: 'ISABELLA_CIERRE',
+  avisos:    'EVELYN_CIERRE',
+  audios:    'AUDIO_PLAY',
 };
 
 const SECTOR_AVATARS = {
@@ -199,7 +200,7 @@ const REALITIES = [
   { id: 'oeste',        title: 'CANAL OESTE',  desc: 'Horizonte Poniente', icon: '📱', color: '#e879f9', group: 'ESPACIO' },
 ];
 
-// ─── HELPER: URL video vertical según reality y turno ───────────────────────
+// ─── VIDEO REALITY — solo para el Reality Player ─────────────────────────────
 const getTimeSuffix = () => {
   const h = new Date().getHours();
   if (h >= 5  && h < 11) return '1';
@@ -220,12 +221,12 @@ const getMobileVideoUrl = (realityId) => {
     case 'band_cinema':  return `${base}/band_cinema_${t}_v.mp4`;
     case 'este':         return `${base}/este_bg_${t}_v.mp4`;
     case 'oeste':        return `${base}/oeste_bg_${t}_v.mp4`;
-    case 'moon': return `${base}/moon_bg_${getMoonSuffix()}_v.mp4`;
+    case 'moon':         return `${base}/moon_bg_${getMoonSuffix()}_v.mp4`;
     default:             return null;
   }
 };
 
-// ─── WIDGET RELOJ + TEMPERATURA ─────────────────────────────────────────────
+// ─── WIDGET RELOJ + TEMPERATURA ──────────────────────────────────────────────
 const LockClockWidget = ({ accent }) => {
   const [time, setTime] = useState('');
   const [date, setDate] = useState('');
@@ -264,12 +265,10 @@ const LockClockWidget = ({ accent }) => {
 
   return (
     <div className="flex items-center justify-between w-full px-2 select-none">
-      {/* IZQUIERDA — hora + fecha */}
       <div className="flex flex-col items-start">
         <span className="lock-clock" style={{ fontSize: 'clamp(38px, 12vw, 62px)' }}>{time}</span>
         <span className="lock-date">{date}</span>
       </div>
-      {/* DERECHA — temperatura + ciudad */}
       {temp !== null && (
         <div className="flex flex-col items-end">
           <span className="lock-temp" style={{ fontSize: 'clamp(28px, 9vw, 44px)' }}>{temp}°</span>
@@ -279,9 +278,11 @@ const LockClockWidget = ({ accent }) => {
     </div>
   );
 };
-// ─── PUERTAS ─────────────────────────────────────────────────────────────────
-function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen, audioUser, onToggleAudio,
-                   broTunerRef, accent, balances, navItems, handleNavigation, setMessages,
+
+// ─── PUERTAS (reutilizadas en los 3 early returns) ──────────────────────────
+function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
+                   audioUser, onToggleAudio, broTunerRef,
+                   accent, balances, navItems, handleNavigation, setMessages,
                    iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA,
                    onShowPurchaseModal, handleLogout, intent,
                    setStep, setRealityMode, setScope }) {
@@ -294,7 +295,7 @@ function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen, audio
         style={{ left: isLeftOpen ? 'min(72vw, 280px)' : '0' }}>
         <span className="text-cyan-400 text-xs">{isLeftOpen ? '◀' : '▶'}</span>
       </button>
-      <button onClick={() => { setStep(0); setRealityMode(null); setScope?.(null); setIsRightOpen(false); }}
+      <button onClick={() => { setIsRightOpen(!isRightOpen); setIsLeftOpen(false); }}
         className="fixed top-[70%] -translate-y-1/2 z-[210] h-24 w-8 bg-black/60 backdrop-blur-md border border-white/20 rounded-l-2xl flex items-center justify-center transition-all duration-300"
         style={{ right: isRightOpen ? 'min(72vw, 280px)' : '0' }}>
         <span className="text-fuchsia-400 text-xs">{isRightOpen ? '▶' : '◀'}</span>
@@ -306,7 +307,7 @@ function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen, audio
              onClick={() => { setIsLeftOpen(false); setIsRightOpen(false); }} />
       )}
 
-      {/* Puerta Izquierda */}
+      {/* Puerta Izquierda — siempre montada en DOM para que BroLives no pierda el audio */}
       <div
         className="fixed top-0 left-0 h-full w-[72vw] max-w-[280px] z-[200] flex flex-col bg-black/95 border-r border-cyan-500/30 neon-border"
         style={{ display: isLeftOpen ? 'flex' : 'none' }}
@@ -321,11 +322,9 @@ function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen, audio
             onToggleAdmin={onToggleAdminIA} onTogglePublic={onTogglePublicIA}
             onShowPurchaseModal={onShowPurchaseModal} />
         </div>
-        <div className="mt-auto flex flex-col w-full pb-4">
-          <div className="w-full px-4 mb-4">
-            <BroLives playingCreator={audioUser} onToggleAudio={onToggleAudio} />
-          </div>
-          <div className="w-full px-4 pt-4 border-t border-white/5">
+        <div className="flex flex-col w-full px-4 mt-4 gap-4">
+          <BroLives playingCreator={audioUser} onToggleAudio={onToggleAudio} />
+          <div className="pt-4 border-t border-white/5">
             <BroTuner ref={broTunerRef} />
           </div>
         </div>
@@ -338,14 +337,14 @@ function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen, audio
         </div>
       </div>
 
-      {/* Puerta Derecha */}
+      {/* Puerta Derecha — Sectores */}
       {isRightOpen && (
         <div className="door-open-right fixed top-0 right-0 h-full w-[72vw] max-w-[280px] z-[200] flex flex-col bg-black/95 border-l border-cyan-500/30 neon-border">
           <div className="flex items-center justify-center px-4 py-4 border-b border-white/10">
             <span className="mobile-display-font text-2xl tracking-widest" style={{ color: accent }}>SECTORES</span>
           </div>
           <div className="px-4 mt-4">
-            <button onClick={() => { setStep(0); setRealityMode(null); setScope(null); setIsRightOpen(false); }}
+            <button onClick={() => { setStep(0); setRealityMode(null); setScope?.(null); setIsRightOpen(false); }}
               className="w-full flex justify-between items-center p-3 bg-fuchsia-500/10 border border-fuchsia-400/40 rounded-2xl transition-all">
               <span className="text-[10px] font-black uppercase">Cambiar Reality</span>
               <span className="text-lg">🌐</span>
@@ -384,12 +383,13 @@ function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen, audio
   );
 }
 
-// ─── BURBUJA DESCRIPCIÓN ─────────────────────────────────────────────────────
+// ─── BURBUJA DESCRIPCIÓN ────────────────────────────────────────────────────
 function BurbujaDescripcion({ card, intent, accent, onHandoff, onClose }) {
   const handleConfirmar = () => {
     if (!card || !onHandoff) return;
     const agente = CIERRE_AGENTE[intent];
     if (!agente) return;
+    // Audio usa codigo, el resto usa comercio
     if (agente === 'AUDIO_PLAY') {
       onHandoff({ agente, codigo: card.bro_aud || card.bro_pod || card.bro_id });
     } else {
@@ -460,9 +460,8 @@ const MobileTabletLayout = ({
   const [burbujaOpen, setBurbujaOpen] = useState(false);
 
   const { enviar, mensaje: chatMensaje, loading: chatLoading } = chatMobile || {};
-  const inputRef      = useRef(null);
-  const lastBotMsgId  = useRef(null);
-  const bgVideoRef    = useRef(null);
+  const inputRef     = useRef(null);
+  const lastBotMsgId = useRef(null);
 
   const accent = SECTOR_ACCENT[intent] || '#00ffff';
 
@@ -485,6 +484,7 @@ const MobileTabletLayout = ({
   };
 
   const activeSector = navItems?.find(n => n.id === intent);
+  const sectorLabel  = step === 1 ? 'OSOS' : activeSector?.label || 'OSOS';
   const lastMessage  = messages.length > 0 ? messages[messages.length - 1] : null;
 
   const getActiveAvatars = () => {
@@ -502,15 +502,12 @@ const MobileTabletLayout = ({
 
   const puertasProps = {
     isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
+    audioUser, onToggleAudio, broTunerRef,
     accent, balances, navItems, handleNavigation, setMessages,
     iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA,
     onShowPurchaseModal, handleLogout, intent,
     setStep, setRealityMode, setScope,
-    audioUser, onToggleAudio, broTunerRef,
   };
-
-  // URL del video vertical según el reality activo
-  const mobileVideoUrl = realityMode ? getMobileVideoUrl(realityMode) : null;
 
   // ── REALITY TUNER ─────────────────────────────────────────────────────────
   if (step === 0 && !realityMode) {
@@ -560,104 +557,62 @@ const MobileTabletLayout = ({
 
   // ── REALITY PLAYER ────────────────────────────────────────────────────────
   if (step === 0 && realityMode) {
-    const escena = REALITIES.find(r => r.id === realityMode);
+    const escena   = REALITIES.find(r => r.id === realityMode);
     const videoUrl = getMobileVideoUrl(realityMode);
 
     return (
       <div className="mobile-root fixed inset-0 overflow-hidden bg-black text-white select-none">
         <style>{MOBILE_STYLES}</style>
 
-        {/* Video de fondo vertical */}
+        {/* Video de fondo vertical — solo en Reality Player */}
         {videoUrl && (
-          <video
-            key={videoUrl}
-            autoPlay loop muted playsInline
+          <video key={videoUrl} autoPlay loop muted playsInline
             className="absolute inset-0 w-full h-full object-cover z-0"
-            style={{ opacity: 0.75 }}
-          >
+            style={{ opacity: 0.75 }}>
             <source src={videoUrl} type="video/mp4" />
           </video>
         )}
-        {/* Overlay sutil para legibilidad */}
         <div className="absolute inset-0 z-[1]"
           style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0.6) 100%)' }} />
-
         <div className="scanline z-[2]" />
         <Puertas {...puertasProps} />
 
         <main className="relative z-10 flex flex-col h-full w-full">
+          {/* Header — Reloj */}
+          <header className="flex-shrink-0 px-4 pt-safe pt-4 pb-2">
+            <LockClockWidget accent={escena?.color} />
+          </header>
 
-  {/* Header — Reloj */}
-  <header className="flex-shrink-0 px-4 pt-safe pt-4 pb-2">
-    <LockClockWidget accent={escena?.color} />
-  </header>
+          {/* Centro vacío — video protagonista */}
+          <div className="flex-1" />
 
-  {/* Centro — vacío, el video de fondo es el protagonista */}
-  <div className="flex-1" />
-
-  {/* Footer — controles audio + cambiar canal */}
-  <footer className="flex-shrink-0 pb-safe pb-10 px-6 flex flex-col items-center gap-5"
-    style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)' }}>
-    
-    {/* Etiqueta */}
-    <div className="text-white/30 text-[10px] uppercase tracking-[0.3em] font-mono">
-      AUDIO DEL CANAL
-    </div>
-
-    {/* Controles */}
-    <div className="flex gap-5 items-center">
-      <button className="dpad-btn">⏮</button>
-      <button className="dpad-btn" style={{
-        background: `${escena?.color}22`,
-        borderColor: `${escena?.color}88`,
-        color: escena?.color,
-        width: 72, height: 72,
-        fontSize: 28,
-        borderRadius: '50%',
-      }}>▶</button>
-      <button className="dpad-btn">⏭</button>
-    </div>
-
-    {/* Cambiar canal */}
-    <button onClick={() => setRealityMode(null)}
-      className="px-8 py-3 rounded-2xl border font-black text-sm uppercase tracking-widest active:scale-95 transition-all"
-      style={{
-        borderColor: `${escena?.color}66`,
-        color: escena?.color,
-        background: 'rgba(0,0,0,0.5)',
-        backdropFilter: 'blur(8px)',
-      }}>
-      ← CAMBIAR CANAL
-    </button>
-  </footer>
-</main>
-
+          {/* Footer — controles audio */}
+          <footer className="flex-shrink-0 pb-safe pb-10 px-6 flex flex-col items-center gap-4"
+            style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)' }}>
+            <div className="text-white/30 text-[10px] uppercase tracking-[0.3em] font-mono">AUDIO DEL CANAL</div>
+            <div className="flex gap-5 items-center">
+              <button className="dpad-btn">⏮</button>
+              <button className="dpad-btn" style={{
+                background: `${escena?.color}22`, borderColor: `${escena?.color}88`,
+                color: escena?.color, width: 72, height: 72, fontSize: 28, borderRadius: '50%',
+              }}>▶</button>
+              <button className="dpad-btn">⏭</button>
+            </div>
+          </footer>
+        </main>
       </div>
     );
   }
 
-  // ── LAYOUT PRINCIPAL (step 1 y 2) ─────────────────────────────────────────
+  // ── LAYOUT PRINCIPAL (step 1 y 2) — siempre mobile.webp, sin video ────────
   return (
     <div className="mobile-root fixed inset-0 overflow-hidden bg-black text-white select-none">
       <style>{MOBILE_STYLES}</style>
 
-      {/* Video de fondo — si hay reality activo, sino imagen estática */}
-      {mobileVideoUrl ? (
-        <video
-          key={mobileVideoUrl}
-          ref={bgVideoRef}
-          autoPlay loop muted playsInline
-          className="absolute inset-0 w-full h-full object-cover z-0"
-          style={{ opacity: 0.4 }}
-        >
-          <source src={mobileVideoUrl} type="video/mp4" />
-        </video>
-      ) : (
-        <div className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('/images/mobile.webp')" }} />
-      )}
-
-      <div className="absolute inset-0 bg-black/20 z-0 backdrop-blur-[1px]" />
+      {/* Fondo fijo — siempre mobile.webp en sectores */}
+      <div className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/images/mobile.webp')" }} />
+      <div className="absolute inset-0 bg-black/10 z-0 backdrop-blur-[2px]" />
       <div className="scanline z-[1]" />
 
       <Puertas {...puertasProps} />
@@ -693,6 +648,7 @@ const MobileTabletLayout = ({
               ))}
             </div>
           )}
+          {/* BroCards — solo cuando hay resultados de búsqueda */}
           {stripVisible && stripCards?.length > 0 && (
             <div className="w-full px-2 pointer-events-auto">
               <BroCardStrip

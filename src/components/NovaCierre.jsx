@@ -143,7 +143,7 @@ const NovaCierre = ({ comercio = {}, mensaje = null, carrito = [], precios = {},
         
         {/* VIDEO FONDO AMBIENTAL */}
         <div style={{position:'absolute', inset:0, zIndex:0, pointerEvents:'none'}}>
-          <video autoPlay loop muted playsInline src={cfg.video} style={{width:'100%', height:'100%', objectFit:'cover', opacity:0.82}} />
+          <video autoPlay loop muted playsInline src={cfg.video} style={{width:'100%', height:'100%', objectFit:'cover' }} />
           <div style={{ position:'absolute', bottom:0, left:0, right:0, height:'65%', background:'linear-gradient(0deg,rgba(4,4,10,0.97) 0%,rgba(4,4,10,0.5) 60%,transparent 100%)' }}/>
           <div style={{ position:'absolute', top:0, left:0, right:0, height:'20%', background:'linear-gradient(180deg,rgba(4,4,10,0.65) 0%,transparent 100%)' }}/>
         </div>

@@ -1,27 +1,16 @@
 // src/components/PaymentModal.jsx
-// ═══════════════════════════════════════════════════
-// Orquestador principal de la experiencia de compra.
-// Pantallas:
-//   'novaCierre'     → VentasBanner[nova]
-//   'isabellaCierre' → VentasBanner[isabella]
-//   'carro'          → CarroGeneral
-//
-// Flujo:
-//   novaCierre ──→ carro
-//   isabellaCierre → carro
-//   carro ──← Volver Productos  → novaCierre
-//   carro ──← Volver Servicios  → isabellaCierre
-// ═══════════════════════════════════════════════════
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import NovaCierre from './NovaCierre';
+import NovaCierreMobile from './NovaCierreMobile';
 import IsabellaCierre from './IsabellaCierre';
+import IsabellaCierreMobile from './IsabellaCierreMobile';
 import CarroGeneral from './CarroGeneral';
 import { useCarrito } from '../hooks/useCarrito';
 import { useAgentChat } from '../hooks/useAgentChat';
 
-// ── Helper precio ─────────────────────────────────────
+const isMobile = () => window.innerWidth < 768;
+
 const parsePrice = (input) => {
   if (input === null || input === undefined) return 0;
   if (typeof input === 'number') return input;
@@ -29,12 +18,11 @@ const parsePrice = (input) => {
   return isNaN(parseFloat(s)) ? 0 : parseFloat(s);
 };
 
-// ── PaymentModal ──────────────────────────────────────
 const PaymentModal = ({
   card,
   balances,
   setBalances,
-  ventasMode   = 'novaVentas',   // 'novaCierre' | 'isabellaCierre'
+  ventasMode   = 'novaCierre',
   currentUser  = null,
   onClose,
   onHandoff,
@@ -42,16 +30,13 @@ const PaymentModal = ({
 }) => {
   if (!card) return null;
 
-  // ── Pantalla activa ───────────────────────────────
-  // Arranca en la zona de entrada según ventasMode
-  const [pantalla, setPantalla] = useState(ventasMode); // 'novaCierre'|'isabellaCierre'|'carro'
+  const [pantalla, setPantalla] = useState(ventasMode);
+  const mobile = isMobile();
 
-  // ── Personaje activo según pantalla ──────────────
   const personaje = pantalla === 'isabellaCierre'
     ? (currentUser?.servicios_personaje || 'isabella')
     : 'nova';
 
-  // ── Datos del comercio ────────────────────────────
   const [comercioPerfil, setComercioPerfil] = useState(null);
   const [catalogoItems,  setCatalogoItems]  = useState([]);
   const [cargando,       setCargando]       = useState(true);
@@ -62,23 +47,23 @@ const PaymentModal = ({
       setCargando(true);
       try {
         const { data: perfil } = await supabase
-  .from('comercio_perfil')
-  .select('*')
-  .eq('bro_id', card.id)
-  .maybeSingle();
+          .from('comercio_perfil')
+          .select('*')
+          .eq('bro_id', card.id)
+          .maybeSingle();
 
-if (perfil) setComercioPerfil(perfil);
+        if (perfil) setComercioPerfil(perfil);
 
-// 👇 Añadir esto
-const { data: profileData } = await supabase
-  .from('profiles')
-  .select('video_file_219')
-  .eq('id', card.id)
-  .maybeSingle();
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('video_file_219')
+          .eq('id', card.id)
+          .maybeSingle();
 
-if (profileData?.video_file_219) {
-  setComercioPerfil(prev => ({ ...(prev || {}), video_file_219: profileData.video_file_219 }));
-}
+        if (profileData?.video_file_219) {
+          setComercioPerfil(prev => ({ ...(prev || {}), video_file_219: profileData.video_file_219 }));
+        }
+
         const { data: assets } = await supabase
           .from('assets')
           .select('id, title, price_fiat, asset_type, description, sizes, colors')
@@ -104,22 +89,15 @@ if (profileData?.video_file_219) {
     cargar();
   }, [card?.id]);
 
-  // ── useCarrito ────────────────────────────────────
   const {
-    items,
-    vale_activo,
-    delivery,
-    precios,
-    procesarAccion,
-    vaciarCarrito,
-    buildPedidoSnapshot,
+    items, vale_activo, delivery, precios,
+    procesarAccion, vaciarCarrito, buildPedidoSnapshot,
   } = useCarrito({
     user_id:     currentUser?.id,
     comercio_id: card?.id,
     iva_pct:     comercioPerfil?.iva_pct || 21,
   });
 
-  // ── Vales del usuario ─────────────────────────────
   const valesUsuario = useMemo(() => ({
     nova:       balances?.vales?.nova       || 0,
     crescens:   balances?.vales?.crescens   || 0,
@@ -127,7 +105,6 @@ if (profileData?.video_file_219) {
     decrescens: balances?.vales?.decrescens || 0,
   }), [balances]);
 
-  // ── Contexto para useAgentChat ────────────────────
   const agentContext = useMemo(() => ({
     comercio:  comercioPerfil || {},
     carrito:   items,
@@ -136,38 +113,30 @@ if (profileData?.video_file_219) {
     personaje,
   }), [comercioPerfil, items, valesUsuario, catalogoItems, personaje]);
 
-  // ── Callback: acción de la IA → useCarrito ────────
   const handleAccionIA = useCallback(async (accion) => {
     await procesarAccion(accion);
     if (accion?.tipo === 'IR_A_PAGAR')       setPantalla('carro');
     if (accion?.tipo === 'HANDOFF_FINANZAS') onHandoff?.({ agente: 'BROSHOP_AVISO' });
   }, [procesarAccion, onHandoff]);
 
-  // ── useAgentChat ──────────────────────────────────
   const modeChat = pantalla === 'isabellaCierre' ? 'isabellaCierre' : 'novaCierre';
 
   const { mensaje, bolas, loading, enviar } = useAgentChat({
     mode:         modeChat,
     contextData:  agentContext,
     onHandoff: (data) => {
-      if (data.agente === 'CARRO_GENERAL')  setPantalla('carro');
-      if (data.agente === 'BROSHOP_AVISO')  onHandoff?.({ agente: 'BROSHOP_AVISO' });
+      if (data.agente === 'CARRO_GENERAL') setPantalla('carro');
+      if (data.agente === 'BROSHOP_AVISO') onHandoff?.({ agente: 'BROSHOP_AVISO' });
     },
     onAccionNova: handleAccionIA,
   });
 
-  // ── Confirmar pedido → Stripe ─────────────────────
   const handleConfirmarPedido = useCallback(async () => {
     if (!currentUser?.id) return;
     const snapshot = buildPedidoSnapshot();
-
     try {
       const { data: pedido, error } = await supabase
-        .from('pedidos')
-        .insert(snapshot)
-        .select()
-        .single();
-
+        .from('pedidos').insert(snapshot).select().single();
       if (error) throw error;
 
       if (vale_activo) {
@@ -177,13 +146,9 @@ if (profileData?.video_file_219) {
         });
         setBalances(prev => ({
           ...prev,
-          vales: {
-            ...prev.vales,
-            [vale_activo]: Math.max((prev.vales?.[vale_activo] || 1) - 1, 0),
-          },
+          vales: { ...prev.vales, [vale_activo]: Math.max((prev.vales?.[vale_activo] || 1) - 1, 0) },
         }));
       }
-
       await vaciarCarrito();
       onConfirmPayment?.('stripe', snapshot.total_final, card, pedido.id);
       onClose?.();
@@ -192,50 +157,36 @@ if (profileData?.video_file_219) {
     }
   }, [buildPedidoSnapshot, vale_activo, currentUser, vaciarCarrito, onConfirmPayment, card, onClose, setBalances]);
 
-  // ── Render ────────────────────────────────────────
+  // Props comunes para ambas variantes (PC y móvil)
+  const propsNova = {
+    comercio:     comercioPerfil || { nombre_comercio: card?.alias || card?.name },
+    mensaje, bolas: bolas || [], carrito: items, precios,
+    vale_activo, delivery, valesUsuario, loading,
+    onSend:     enviar,
+    onIrAPagar: () => setPantalla('carro'),
+    onClose,
+  };
 
-  // VentasBanner (Nova o Isabella)
-if (pantalla === 'novaCierre') {
-    return (
-      <NovaCierre
-        comercio     = {comercioPerfil || { nombre_comercio: card?.alias || card?.name }}
-        mensaje      = {mensaje}
-        bolas        = {bolas || []}
-        carrito      = {items}
-        precios      = {precios}
-        vale_activo  = {vale_activo}
-        delivery     = {delivery}
-        valesUsuario = {valesUsuario}
-        loading      = {loading}
-        onSend       = {enviar}
-        onIrAPagar   = {() => setPantalla('carro')}
-        onClose      = {onClose}  // 👈 Esto hace que funcione el botón Cerrar
-      />
-    );
+  const propsIsabella = {
+    ...propsNova,
+    personaje,
+  };
+
+  // ── NOVA CIERRE ───────────────────────────────────────────────────────────
+  if (pantalla === 'novaCierre') {
+    return mobile
+      ? <NovaCierreMobile {...propsNova} />
+      : <NovaCierre {...propsNova} />;
   }
 
-  // Ruta 2: Servicios (Isabella o PRMaestro)
+  // ── ISABELLA CIERRE ───────────────────────────────────────────────────────
   if (pantalla === 'isabellaCierre') {
-    return (
-      <IsabellaCierre
-        personaje    = {personaje} 
-        comercio     = {comercioPerfil || { nombre_comercio: card?.alias || card?.name }}
-        mensaje      = {mensaje}
-        bolas        = {bolas || []}
-        carrito      = {items}
-        precios      = {precios}
-        vale_activo  = {vale_activo}
-        delivery     = {delivery}
-        valesUsuario = {valesUsuario} // 👈 Esto enciende los vales de Isabella
-        loading      = {loading}
-        onSend       = {enviar}
-        onIrAPagar   = {() => setPantalla('carro')}
-        onClose      = {onClose}      // 👈 Esto hace que funcione el botón Cerrar
-      />
-    );
+    return mobile
+      ? <IsabellaCierreMobile {...propsIsabella} />
+      : <IsabellaCierre {...propsIsabella} />;
   }
 
-  // Ruta 3: Carro General
+  // ── CARRO GENERAL — mismo componente, detecta móvil internamente ──────────
   if (pantalla === 'carro') {
     return (
       <CarroGeneral
