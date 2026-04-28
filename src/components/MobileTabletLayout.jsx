@@ -433,6 +433,7 @@ function BurbujaDescripcion({ card, intent, accent, onHandoff, onClose }) {
 const MobileTabletLayout = ({
   children,
   realityMode, setRealityMode,
+  hubAudios={hubAudios},
   scope, setScope,
   step, setStep,
   intent, setIntent,
@@ -458,6 +459,9 @@ const MobileTabletLayout = ({
   const [inputText,  setInputText]  = useState('');
   const [messages,   setMessages]   = useState([]);
   const [burbujaOpen, setBurbujaOpen] = useState(false);
+  
+  const audioRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const { enviar, mensaje: chatMensaje, loading: chatLoading } = chatMobile || {};
   const inputRef     = useRef(null);
@@ -556,10 +560,30 @@ const MobileTabletLayout = ({
   }
 
   // ── REALITY PLAYER ────────────────────────────────────────────────────────
-  if (step === 0 && realityMode) {
-    const escena   = REALITIES.find(r => r.id === realityMode);
-    const videoUrl = getMobileVideoUrl(realityMode);
+if (step === 0 && realityMode) {
+  const escena   = REALITIES.find(r => r.id === realityMode);
+  const videoUrl = getMobileVideoUrl(realityMode);
+  
+  // SOLO ESTOS DOS — no los hooks, ya existen arriba
+  const audioActual = hubAudios?.find(a => a.id === realityMode);
+  const audioUrl = audioActual?.audio_video;
+  
+  console.log('=== REALITY AUDIO DEBUG ===');
+console.log('realityMode:', realityMode);
+console.log('hubAudios:', hubAudios);
+console.log('audioActual:', audioActual);
+console.log('audioUrl:', audioUrl);
 
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play();
+      setIsPlaying(true);
+    }
+  };       
     return (
       <div className="mobile-root fixed inset-0 overflow-hidden bg-black text-white select-none">
         <style>{MOBILE_STYLES}</style>
@@ -587,18 +611,43 @@ const MobileTabletLayout = ({
           <div className="flex-1" />
 
           {/* Footer — controles audio */}
-          <footer className="flex-shrink-0 pb-safe pb-10 px-6 flex flex-col items-center gap-4"
-            style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)' }}>
-            <div className="text-white/30 text-[10px] uppercase tracking-[0.3em] font-mono">AUDIO DEL CANAL</div>
-            <div className="flex gap-5 items-center">
-              <button className="dpad-btn">⏮</button>
-              <button className="dpad-btn" style={{
-                background: `${escena?.color}22`, borderColor: `${escena?.color}88`,
-                color: escena?.color, width: 72, height: 72, fontSize: 28, borderRadius: '50%',
-              }}>▶</button>
-              <button className="dpad-btn">⏭</button>
-            </div>
-          </footer>
+          {/* Footer — controles audio */}
+<footer className="flex-shrink-0 pb-safe pb-10 px-6 flex flex-col items-center gap-4"
+  style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)' }}>
+  <div className="text-white/30 text-[10px] uppercase tracking-[0.3em] font-mono">AUDIO DEL CANAL</div>
+  <div className="flex gap-5 items-center">
+    <button className="dpad-btn">⏮</button>
+    <button 
+      className="dpad-btn" 
+      onClick={togglePlay}
+      style={{
+        background: `${escena?.color}22`, 
+        borderColor: `${escena?.color}88`,
+        color: escena?.color, 
+        width: 72, 
+        height: 72, 
+        fontSize: 28, 
+        borderRadius: '50%',
+      }}>
+      {isPlaying ? '⏸' : '▶'}
+    </button>
+    <button className="dpad-btn">⏭</button>
+  </div>
+  
+  {/* ← AÑADE ESTO: señales de debug */}
+  <div className="text-center mt-4">
+    {audioUrl ? (
+      <div className="text-cyan-400 text-xs uppercase tracking-widest">
+        ✓ Audio cargado
+        {isPlaying && <div className="text-green-400 mt-1">▌▌ Reproduciendo</div>}
+      </div>
+    ) : (
+      <div className="text-red-400 text-xs uppercase tracking-widest">
+        ✗ Sin audio
+      </div>
+    )}
+  </div>
+</footer>
         </main>
       </div>
     );

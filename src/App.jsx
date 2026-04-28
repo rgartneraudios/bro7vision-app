@@ -623,7 +623,20 @@ const { mensaje: rumoresMensaje, loading: rumoresLoading, enviar: handleRumoresI
     const supabaseVideos = realItems.filter(i => i.video_file).map(i => ({ ...i, alias: i.alias, id: i.id, source: 'supabase' }));
     return [{ alias: 'BRO MASTER', video_file: 'https://media.bro7vision.com/Mapache-habla2.mp4', id: 'bro_master' }, ...masterVideos, ...supabaseVideos];
   }, [realItems]);
-
+  
+const hubAudios = useMemo(() => {
+  const masterAudios   = MASTER_DB.filter(m => m.audio_video).map(m => ({ ...m, id: m.id, alias: m.name || m.alias, source: 'master' }));
+  const supabaseAudios = realItems.filter(i => i.audio_video).map(i => ({ ...i, alias: i.alias, id: i.id, source: 'supabase' }));
+  return [
+    { 
+      alias: 'BRO MASTER', 
+      audio_video: 'https://media.bro7vision.com/Mapache-habla2.mp3', 
+      id: 'bro_master'  // ← AÑADE ESTO
+    }, 
+    ...masterAudios, 
+    ...supabaseAudios
+  ];
+}, [realItems]);
   // ══════════════════════════════════════════════════════
   // 7. USEEFFECTS
   // ══════════════════════════════════════════════════════
@@ -749,18 +762,21 @@ const chatPorIntent = {
   // 10. RETURN
   // ══════════════════════════════════════════════════════
 
-  return (
-    <div className="relative w-full h-screen bg-black text-white overflow-hidden font-sans">
-
-      {isTouch ? (
-        <MobileTabletLayout  realityMode={realityMode}
+return (
+  <div className="relative w-full h-screen bg-black text-white overflow-hidden font-sans">
+    {isTouch ? (
+      <MobileTabletLayout  
+        realityMode={realityMode}
         broTunerRef={broTunerRef}
-  audioUser={audioUser}
-  onToggleAudio={() => setAudioUser(prev => prev ? null : audioUser)}
-  setRealityMode={setRealityMode} {...layoutProps} />
-      ) : (
-        <DesktopLayout {...layoutProps} />
-      )}
+        audioUser={audioUser}
+        onToggleAudio={() => setAudioUser(prev => prev ? null : audioUser)}
+        setRealityMode={setRealityMode}
+        hubAudios={hubAudios}  // ← Solo aquí en Mobile
+        {...layoutProps} 
+      />
+    ) : (
+      <DesktopLayout {...layoutProps} />
+    )}
 
       {/* MODALES GLOBALES */}
       {showLegal && (
