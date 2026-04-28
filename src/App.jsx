@@ -627,6 +627,7 @@ const { mensaje: rumoresMensaje, loading: rumoresLoading, enviar: handleRumoresI
 const hubAudios = useMemo(() => {
   const masterAudios   = MASTER_DB.filter(m => m.audio_video).map(m => ({ ...m, id: m.id, alias: m.name || m.alias, source: 'master' }));
   const supabaseAudios = realItems.filter(i => i.audio_video).map(i => ({ ...i, alias: i.alias, id: i.id, source: 'supabase' }));
+  
   return [
     { 
       alias: 'BRO MASTER', 

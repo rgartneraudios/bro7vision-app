@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import CityLocationBanner from './CityLocationBanner';
 import AgentChatInput from './AgentChatInput';
 import NeuralButton from './NeuralButton';
@@ -222,6 +222,23 @@ const getMobileVideoUrl = (realityId) => {
     case 'este':         return `${base}/este_bg_${t}_v.mp4`;
     case 'oeste':        return `${base}/oeste_bg_${t}_v.mp4`;
     case 'moon':         return `${base}/moon_bg_${getMoonSuffix()}_v.mp4`;
+    default:             return null;
+  }
+};
+
+const getMobileAudioUrl = (realityId) => {
+  const t = getTimeSuffix();
+  const base = 'https://media.bro7vision.com';
+  switch (realityId) {
+    case 'solo_earth':   return `${base}/solo_earth_${t}.mp3`;
+    case 'solo_fantasy': return `${base}/solo_fantasy_${t}.mp3`;
+    case 'solo_cinema':  return `${base}/solo_cinema_${t}.mp3`;
+    case 'band_earth':   return `${base}/band_earth_${t}.mp3`;
+    case 'band_fantasy': return `${base}/band_fantasy_${t}.mp3`;
+    case 'band_cinema':  return `${base}/band_cinema_${t}.mp3`;
+    case 'este':         return `${base}/este_bg_${t}.mp3`;
+    case 'oeste':        return `${base}/oeste_bg_${t}.mp3`;
+    case 'moon':         return `${base}/moon_bg_${getMoonSuffix()}.mp3`;
     default:             return null;
   }
 };
@@ -462,12 +479,24 @@ const MobileTabletLayout = ({
   
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [audioIndex, setAudioIndex] = useState(0);
 
   const { enviar, mensaje: chatMensaje, loading: chatLoading } = chatMobile || {};
   const inputRef     = useRef(null);
   const lastBotMsgId = useRef(null);
+  
+  const audioList = hubAudios?.filter(a => a.audio_video) || [];
+const audioUrl  = audioList[audioIndex]?.audio_video;
+
+// ← Y EL USEEFFECT JUSTO DEBAJO
+useEffect(() => {
+  if (!audioRef.current) return;
+  audioRef.current.load();
+  if (isPlaying) audioRef.current.play();
+}, [audioUrl]);
 
   const accent = SECTOR_ACCENT[intent] || '#00ffff';
+  
 
   useEffect(() => { setBurbujaOpen(false); }, [stripCards]);
 
@@ -564,15 +593,15 @@ if (step === 0 && realityMode) {
   const escena   = REALITIES.find(r => r.id === realityMode);
   const videoUrl = getMobileVideoUrl(realityMode);
   
-  // SOLO ESTOS DOS — no los hooks, ya existen arriba
-  const audioActual = hubAudios?.find(a => a.id === realityMode);
-  const audioUrl = audioActual?.audio_video;
-  
-  console.log('=== REALITY AUDIO DEBUG ===');
-console.log('realityMode:', realityMode);
-console.log('hubAudios:', hubAudios);
-console.log('audioActual:', audioActual);
-console.log('audioUrl:', audioUrl);
+
+const prevAudio = () => {
+  setAudioIndex(i => (i - 1 + audioList.length) % audioList.length);
+  setIsPlaying(true);
+};
+const nextAudio = () => {
+  setAudioIndex(i => (i + 1) % audioList.length);
+  setIsPlaying(true);
+};
 
   const togglePlay = () => {
     if (!audioRef.current) return;
@@ -596,6 +625,18 @@ console.log('audioUrl:', audioUrl);
             <source src={videoUrl} type="video/mp4" />
           </video>
         )}
+        
+        {/* AUDIO */}
+{audioUrl && (
+  <audio
+  ref={audioRef}
+  src={audioUrl}
+  loop
+  autoPlay
+  preload="auto"
+  onEnded={() => setIsPlaying(false)}
+/>
+)}
         <div className="absolute inset-0 z-[1]"
           style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0.6) 100%)' }} />
         <div className="scanline z-[2]" />
@@ -616,7 +657,7 @@ console.log('audioUrl:', audioUrl);
   style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)' }}>
   <div className="text-white/30 text-[10px] uppercase tracking-[0.3em] font-mono">AUDIO DEL CANAL</div>
   <div className="flex gap-5 items-center">
-    <button className="dpad-btn">⏮</button>
+    <button className="dpad-btn" onClick={prevAudio}>⏮</button>
     <button 
       className="dpad-btn" 
       onClick={togglePlay}
@@ -631,7 +672,7 @@ console.log('audioUrl:', audioUrl);
       }}>
       {isPlaying ? '⏸' : '▶'}
     </button>
-    <button className="dpad-btn">⏭</button>
+    <button className="dpad-btn" onClick={nextAudio}>⏭</button>
   </div>
   
   {/* ← AÑADE ESTO: señales de debug */}
