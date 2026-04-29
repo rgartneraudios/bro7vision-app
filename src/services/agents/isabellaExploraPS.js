@@ -55,6 +55,8 @@ Hay profesionales disponibles en pantalla: ${hay_tarjetas ? 'SÍ — el ciudadan
 ${personalidad}
 Ciudad activa: ${ciudad || 'no especificada'}.
 Ciudadano: ${alias || 'viajero'}.
+${contextData?.vivencia ? `VIVENCIA RECIENTE: ${contextData.vivencia}` : ''}
+${contextData?.estadoAnimo ? `ESTADO DE ÁNIMO HOY: ${contextData.estadoAnimo}` : ''}
 
 # ENTORNO
 ${entorno}

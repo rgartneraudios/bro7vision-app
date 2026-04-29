@@ -68,34 +68,21 @@ const despedidaOso = (oso_id) => {
   return frases[Math.floor(Math.random() * frases.length)];
 };
 
-// ─── Helper: llamada a Gemini ─────────────────────────────────────────────────
+// ─── Helper: llamada a Mistral ─────────────────────────────────────────────────
 
-async function llamarGemini({ system, messages, userMessage, iaMode }) {
-  const apiKey = iaMode === 'admin'
-    ? import.meta.env.VITE_GEMINI_ADMIN_KEY
-    : import.meta.env.VITE_GEMINI_PUBLIC_KEY;
-
-  const modelo = 'gemini-2.5-flash-lite';
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent?key=${apiKey}`;
-
-  const historialFormateado = [
-    { role: 'user', parts: [{ text: system }] },
-    { role: 'model', parts: [{ text: 'Entendido. Estoy listo.' }] },
-    ...messages.map(m => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }],
-    })),
-    { role: 'user', parts: [{ text: userMessage }] },
-  ];
-
-  const res = await fetch(url, {
+async function llamarMistral({ system, messages, userMessage, iaMode }) {
+  const res = await fetch('https://brovision-ai.bro7vision.workers.dev', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents: historialFormateado }),
+    body: JSON.stringify({ system, messages, userMessage, iaMode }),
   });
 
   const data = await res.json();
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text || '...';
+
+  const uso = data?.uso;
+  if (uso) console.log(`Mistral tokens — prompt: ${uso.prompt_tokens} | output: ${uso.completion_tokens} | total: ${uso.total_tokens}`);
+
+  return data?.texto || '...';
 }
 
 // ─── Helper: detectar intención de publicar aviso ────────────────────────────
@@ -164,19 +151,23 @@ export const useAgentChat = ({
     });
   };
 
-  const obtenerVivencia = async (personajeId) => {
-    if (!personajeId) return '';
-    try {
-      const { data } = await supabase
-        .from('personaje_update')
-        .select('vivencia_actual')
-        .eq('personaje_id', personajeId.toLowerCase())
-        .maybeSingle();
-      return data?.vivencia_actual || '';
-    } catch {
-      return '';
-    }
-  };
+const obtenerVivencia = async (personajeId) => {
+  if (!personajeId) return {};
+  try {
+    const { data } = await supabase
+      .from('personaje_update')
+      .select('vivencia_actual, estado_animo, promo_activa')
+      .eq('personaje_id', personajeId.toLowerCase())
+      .maybeSingle();
+    return {
+      vivencia:     data?.vivencia_actual || '',
+      estadoAnimo:  data?.estado_animo    || '',
+      promoActiva:  data?.promo_activa    || '',
+    };
+  } catch {
+    return {};
+  }
+};
 
   const resolverPersonajeId = () => {
     if (mode === 'osos')        return (contextData?.oso_id || 'lara').toLowerCase();
@@ -457,17 +448,21 @@ const enviar = async (textoUsuario) => {
       if (iaActiva && !avisoEnProceso) {
         const personajeId = resolverPersonajeId();
 
-        if (mode === 'novaExplora') {
-          const systemNova = buildNovaExploraPrompt({
-            alias:  contextData?.alias,
-            ciudad: contextData?.ciudad,
-            port_system_context: {
-              hay_tarjetas:        contextData?.hayTarjetas,
-              intencion_detectada: detectarIntencionNova(textoUsuario),
-              entidad_detectada:   contextData?.entidad || null,
-            },
-          });
-          const respuesta = await llamarGemini({
+      if (mode === 'novaExplora') {
+  const { vivencia: vivenciaNova, estadoAnimo: animoNova } = await obtenerVivencia('nova');
+  const systemNova = buildNovaExploraPrompt({
+    alias:  contextData?.alias,
+    ciudad: contextData?.ciudad,
+    vivencia: vivenciaNova,
+    estadoAnimo: animoNova,
+    port_system_context: {
+      hay_tarjetas:        contextData?.hayTarjetas,
+      intencion_detectada: detectarIntencionNova(textoUsuario),
+      entidad_detectada:   contextData?.entidad || null,
+    },
+  });
+  
+            const respuesta = await llamarMistral({
             system:      systemNova,
             messages:    chatHistory.slice(-4),
             userMessage: textoUsuario,
@@ -537,11 +532,13 @@ const enviar = async (textoUsuario) => {
         const esMC = botNarrando
         if (esMC) setBotNarrando(false)
 
-        const vivencia = await obtenerVivencia(personajeId);
-        const prompt = buildPrompt({
-          personajeId,
-          vivencia,
-          userMessage: esMC ? '[MC] ' + textoUsuario : textoUsuario,
+        const { vivencia, estadoAnimo, promoActiva } = await obtenerVivencia(personajeId);
+	const prompt = buildPrompt({
+  	personajeId,
+  	vivencia,
+  	estadoAnimo,
+  	promoActiva,
+            userMessage: esMC ? '[MC] ' + textoUsuario : textoUsuario,
           chatHistory,
           fechaNacimiento,
         });
@@ -552,7 +549,7 @@ const enviar = async (textoUsuario) => {
           return;
         }
 
-        const respuesta = await llamarGemini({
+        const respuesta = await llamarMistral({
           system:      prompt.system,
           messages:    prompt.messages,
           userMessage: esMC ? '[MC] ' + textoUsuario : textoUsuario,

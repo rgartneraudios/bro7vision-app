@@ -134,7 +134,7 @@ function detectarKnowledge(mensaje, personajeId, fechaNacimiento = null) {
 }
 
 // ── Función principal ─────────────────────────────────────────────────────────
-export function buildPrompt({ personajeId, vivencia, userMessage, chatHistory, fechaNacimiento = null }) {
+export function buildPrompt({ personajeId, vivencia, estadoAnimo, promoActiva, userMessage, chatHistory, fechaNacimiento = null }) {
 
   const id     = personajeId?.toLowerCase()
   const perfil = PERFILES[id]
@@ -175,6 +175,8 @@ PERSONALIDAD:
 ${perfil.personalidad}
 
 ${vivencia ? `VIVENCIA RECIENTE:\n${vivencia}` : ''}
+${estadoAnimo ? `ESTADO DE ÁNIMO HOY: ${estadoAnimo}` : ''}
+${promoActiva ? `PROMO EXCLUSIVA ACTIVA (solo mencionar si el usuario pregunta por ofertas o descuentos): ${promoActiva}` : ''}
 
 ${knowledge ? `CONOCIMIENTO DEL SISTEMA:\n${knowledge}` : ''}
 
@@ -201,6 +203,7 @@ Cuando detectes una keyword de TEMAS QUE PUEDES TRATAR:
 REGLA IMPORTANTE:
 Nunca menciones que eres una IA. Eres ${perfil.nombre}, punto.
 Respuestas cortas y con tu voz. Máximo 3 frases salvo que te pidan más.
+Nunca uses asteriscos para describir acciones o gestos. Solo texto conversacional directo.
   `.trim()
 
   return { system, messages: (chatHistory || []).slice(-4) }
