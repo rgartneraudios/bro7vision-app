@@ -221,7 +221,7 @@ const getMobileVideoUrl = (realityId) => {
     case 'band_cinema':  return `${base}/band_cinema_${t}_v.mp4`;
     case 'este':         return `${base}/este_bg_${t}_v.mp4`;
     case 'oeste':        return `${base}/oeste_bg_${t}_v.mp4`;
-    case 'moon':         return `${base}/moon_bg_${getMoonSuffix()}_v.mp4`;
+    case 'moon': { const PHASES = { '1':'nueva','2':'creciente','3':'llena','4':'menguante' }; return `${base}/moon_${PHASES[getMoonSuffix()]}_${t}_v.mp4`; }
     default:             return null;
   }
 };

@@ -178,7 +178,6 @@ const ChannelMoon = ({ videoUsers, balances, setBalances, session, realityMode, 
   
   const videoRefPC  = useRef(null);
   const videoRefMob = useRef(null);
-  const bgVideoRef  = useRef(null);
   const hlsRefPC    = useRef(null);
   const hlsRefMob   = useRef(null);
   const touchStart  = useRef(0);
@@ -275,7 +274,15 @@ const ChannelMoon = ({ videoUsers, balances, setBalances, session, realityMode, 
   }; 
 
 
-const BG_VIDEO = `https://media.bro7vision.com/moon_bg_${getMoonSuffix()}.mp4`;
+const getTimeSuffix = () => {
+  const h = new Date().getHours();
+  if(h >= 5  && h < 11) return '1';
+  if(h >= 11 && h < 17) return '2';
+  if(h >= 17 && h < 23) return '3';
+  return '4';
+};
+const MOON_PHASES  = { '1': 'nueva', '2': 'creciente', '3': 'llena', '4': 'menguante' };
+const BG_NUEVA_PC  = `https://media.bro7vision.com/moon_${MOON_PHASES[getMoonSuffix()]}_${getTimeSuffix()}.mp4`;
 
   const cleanUrl=(url)=>{
     if(!url)return'';
@@ -522,8 +529,8 @@ useEffect(() => {
       <style>{MOON_STYLES}</style>
 
       {/* FONDO */}
-      <video ref={bgVideoRef} src={BG_VIDEO} autoPlay loop muted playsInline
-       className="absolute inset-0 w-full h-full object-cover z-[1]"/>
+      <video src={BG_NUEVA_PC} autoPlay loop muted playsInline
+        className="absolute inset-0 w-full h-full object-cover z-[1]"/>
        
     {/* 2. ECOS FLOTANTES — MÁXIMO 3, OSCUROS, CON EMOJI */}
 <div className="absolute inset-0 z-[10] pointer-events-none">
