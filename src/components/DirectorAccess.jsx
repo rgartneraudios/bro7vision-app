@@ -49,7 +49,7 @@ const DirectorAccess = ({ onBack }) => {
   return (
     <div className="fixed inset-0 z-[1000] bg-black/90 flex items-center justify-center p-4 font-mono">
       {/* Fondo Matrix Sutil */}
-      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+      <div className="absolute inset-0 bg-[url('/assets/noise.svg')] opacity-20"></div>
       
       <div className="relative z-10 w-full max-w-lg border border-emerald-500/30 bg-black/80 backdrop-blur-md p-8 rounded-xl shadow-[0_0_50px_rgba(16,185,129,0.2)]">
         

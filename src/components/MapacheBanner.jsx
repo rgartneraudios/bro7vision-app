@@ -83,23 +83,24 @@ export default function MapacheBanner({
   }, [currentMsg]);
 
   // ── Clic en BroCard ──────────────────────────────────────────────────────
-const handleCardClick = (card) => {
-  setSelectedCard(prev =>
-    prev?.bro_id === card.bro_aud ? null : card
-  );
-};
-  // ── Enviar desde input → limpia card ────────────────────────────────────
-  const handleEnviar = (texto) => {
-    setSelectedCard(null);
-    enviar(texto);
+  const handleCardClick = (card) => {
+    setSelectedCard(prev => prev?.bro_id === card.bro_id ? null : card);
   };
 
-  // ── Botón ENTRAR → AUDIO_PLAY ────────────────────────────────────────────
+  // ── Enviar desde input → pasa card activa antes de limpiarla ─────────────
+  const handleEnviar = (texto) => {
+    const cardAEnviar = selectedCard;
+    setSelectedCard(null);
+    enviar(texto, cardAEnviar ? { card_activa: cardAEnviar } : {});
+  };
+
+  // ── Botón PLAY → AUDIO_PLAY directo ──────────────────────────────────────
   const handleEntrar = () => {
     if (!selectedCard || !onHandoff) return;
     onHandoff({
       agente: 'AUDIO_PLAY',
       codigo: selectedCard.bro_aud || selectedCard.bro_pod || selectedCard.bro_id,
+      canal:  selectedCard,
     });
     setSelectedCard(null);
   };

@@ -1,18 +1,103 @@
-// src/data/MarketTab.js
+// src/components/MarketTab.jsx
 
-export const MarketTab = ({
-  // Servicios (tabla 'assets' existente)
-  serviceItems, newService, setNewService, handleAddService, handleDeleteItem,
-  // Catálogo escalable (tabla 'catalog_items')
-  catalogItems, catalogTotal, catalogPage, setCatalogPage,
-  catalogSearch, setCatalogSearch, catalogLoading,
-  handleDeleteCatalogItem, handleCSVUpload,
-  CATALOG_PAGE_SIZE,
-  // Mapache & Catálogo URL
-  formData, setFormData, InputStyle, LabelStyle, CardStyle,
-}) => {
+import { useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
 
-  const totalPages = Math.ceil(catalogTotal / CATALOG_PAGE_SIZE);
+const CATALOG_PAGE_SIZE = 20;
+
+const InputStyle = "w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all";
+const CardStyle  = "bg-blue-950/10 backdrop-blur-xl border border-white/10 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]";
+
+export const MarketTab = ({ formData, setFormData }) => {
+
+  // ── Estado catálogo ──
+  const [catalogItems, setCatalogItems]     = useState([]);
+  const [catalogTotal, setCatalogTotal]     = useState(0);
+  const [catalogPage, setCatalogPage]       = useState(0);
+  const [catalogSearch, setCatalogSearch]   = useState('');
+  const [catalogLoading, setCatalogLoading] = useState(false);
+
+  // ── Estado servicios (assets) ──
+  const [assets, setAssets]     = useState([]);
+  const [newService, setNewService] = useState({ title: '', desc: '', price: 0, url: '' });
+
+  const serviceItems = assets.filter(a => a.asset_type === 'service');
+  const totalPages   = Math.ceil(catalogTotal / CATALOG_PAGE_SIZE);
+
+  // ── Cargar assets al montar ──
+  useEffect(() => {
+    const fetchAssets = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from('assets').select('*').eq('owner_id', user.id);
+      if (data) setAssets(data);
+    };
+    fetchAssets();
+  }, []);
+
+  // ── Cargar catálogo al montar y cuando cambia página/búsqueda ──
+  useEffect(() => {
+    const fetchCatalog = async () => {
+      setCatalogLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      let query = supabase
+        .from('catalog_items')
+        .select('*', { count: 'exact' })
+        .eq('owner_id', user.id)
+        .order('created_at', { ascending: false })
+        .range(catalogPage * CATALOG_PAGE_SIZE, (catalogPage + 1) * CATALOG_PAGE_SIZE - 1);
+      if (catalogSearch.trim()) query = query.ilike('title', `%${catalogSearch.trim()}%`);
+      const { data, count, error } = await query;
+      if (!error) { setCatalogItems(data || []); setCatalogTotal(count || 0); }
+      setCatalogLoading(false);
+    };
+    fetchCatalog();
+  }, [catalogPage, catalogSearch]);
+
+  // ── Handlers catálogo ──
+  const handleDeleteCatalogItem = async (itemId) => {
+    if (!window.confirm('¿Eliminar este artículo del catálogo?')) return;
+    const { error } = await supabase.from('catalog_items').delete().eq('id', itemId);
+    if (!error) setCatalogItems(prev => prev.filter(i => i.id !== itemId));
+  };
+
+  const handleCSVUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const text = await file.text();
+    const lines = text.split('\n').slice(1).filter(Boolean);
+    const { data: { user } } = await supabase.auth.getUser();
+    const rows = lines.map(line => {
+      const [title, description, price_fiat, url, category] = line.split(',').map(s => s.trim().replace(/^"|"$/g, ''));
+      return { owner_id: user.id, title, description, price_fiat: parseFloat(price_fiat) || 0, url, category };
+    });
+    for (let i = 0; i < rows.length; i += 100) {
+      await supabase.from('catalog_items').insert(rows.slice(i, i + 100));
+    }
+    alert(`✅ ${rows.length} artículos importados al catálogo.`);
+    setCatalogPage(0);
+    setCatalogSearch('');
+  };
+
+  // ── Handlers servicios ──
+  const handleDeleteItem = async (itemId) => {
+    if (!window.confirm('¿Desintegrar este ítem del sistema?')) return;
+    const { error } = await supabase.from('assets').delete().eq('id', itemId);
+    if (error) alert('Error: ' + error.message);
+    else setAssets(prev => prev.filter(a => a.id !== itemId));
+  };
+
+  const handleAddService = async () => {
+    if (!newService.title) { alert('¡Falta el título!'); return; }
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data, error } = await supabase.from('assets').insert([{
+      owner_id: user.id, title: newService.title, description: newService.desc,
+      price_fiat: newService.price, url: newService.url, asset_type: 'service',
+    }]).select();
+    if (error) { alert('❌ Error: ' + error.message); return; }
+    if (data) { setAssets(prev => [...prev, data[0]]); setNewService({ title: '', desc: '', price: 0, url: '' }); }
+  };
 
   return (
     <div className="space-y-6 animate-fadeIn max-w-5xl mx-auto">
@@ -28,15 +113,12 @@ export const MarketTab = ({
               {catalogTotal.toLocaleString()} artículos · Tabla <span className="text-yellow-600 font-mono">catalog_items</span>
             </p>
           </div>
-
-          {/* Importar CSV */}
           <label className="cursor-pointer bg-yellow-500/10 border border-yellow-500/40 text-yellow-300 text-[10px] font-bold uppercase px-4 py-2 rounded-xl hover:bg-yellow-500/20 transition-all">
             ⬆ IMPORTAR CSV
             <input type="file" accept=".csv" onChange={handleCSVUpload} className="hidden" />
           </label>
         </div>
 
-        {/* Formato CSV esperado */}
         <div className="bg-black/30 border border-white/5 rounded-xl px-4 py-3 mb-4 flex items-start gap-3">
           <span className="text-yellow-600 text-sm mt-0.5">ℹ</span>
           <div>
@@ -46,7 +128,6 @@ export const MarketTab = ({
           </div>
         </div>
 
-        {/* Buscador */}
         <div className="relative mb-4">
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">🔍</span>
           <input
@@ -58,7 +139,6 @@ export const MarketTab = ({
           />
         </div>
 
-        {/* Listado */}
         <div className="space-y-2 min-h-[200px]">
           {catalogLoading ? (
             <div className="flex items-center justify-center h-32 text-gray-600 text-xs">
@@ -98,7 +178,6 @@ export const MarketTab = ({
           )}
         </div>
 
-        {/* Paginación */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
             <button
@@ -144,7 +223,6 @@ export const MarketTab = ({
           + AÑADIR SERVICIO
         </button>
 
-        {/* Lista de servicios activos */}
         {serviceItems.length > 0 && (
           <div className="mt-4 space-y-2 border-t border-white/5 pt-4">
             {serviceItems.map(s => (
@@ -179,7 +257,6 @@ export const MarketTab = ({
           className={`${InputStyle} border-fuchsia-500/30 focus:border-fuchsia-400 h-28 bg-black/40`}
         />
 
-        {/* Holo-Catálogo */}
         <div className="mt-4 pt-4 border-t border-fuchsia-500/10">
           <label className="text-[10px] font-bold text-blue-300 uppercase tracking-widest block mb-2">
             📸 Holo-Catálogo (Google Slides / URL)

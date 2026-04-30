@@ -14,7 +14,6 @@ import { detectarBusquedaAudio, fraseBuscandoAudio } from '../services/agents/bo
 
 import { detectarSectorPS, detectarCiudadPS, detectarEntidadPS } from '../services/agents/ososPS';
 import { detectarRama } from '../services/agents/bots/ososUtils';
-import { detectarCodigoMapache } from '../services/agents/mapachePS';
 
 import { detectarSalidaNova,     detectarIntencionNova     } from '../services/agents/bots/novaUtils';
 import { detectarSalidaIsabella, detectarInternoIsabella, detectarIntencionIsabella } from '../services/agents/bots/isabellaUtils';
@@ -193,7 +192,7 @@ const obtenerVivencia = async (personajeId) => {
     return null
   }
 
-const enviar = async (textoUsuario) => {
+const enviar = async (textoUsuario, extraContext = {}) => {
   if (!textoUsuario.trim()) return;
   setLoading(true);
 
@@ -316,32 +315,25 @@ const enviar = async (textoUsuario) => {
         }
 
         if (/\b(stop|para|detén|frena|detener|frenar)\b/i.test(textoUsuario)) {
-          onHandoff?.({ agente: 'AUDIO_STOP' })
-          setMensaje('Parado. 🎵')
-          setLoading(false)
-          return
+          onHandoff?.({ agente: 'AUDIO_STOP' });
+          setMensaje('Parado. 🎵');
+          setLoading(false);
+          return;
         }
 
-        const codigoAudio = detectarCodigoMapache(textoUsuario);
-        if (codigoAudio) {
-          if (codigoAudio.accion === 'PLAY') {
-            const canal = (contextData?.realItems || []).find(c =>
-              String(c.bro_aud) === String(codigoAudio.codigo) ||
-              String(c.bro_pod) === String(codigoAudio.codigo)
-            );
-            if (canal) {
+        // BroCard activa + Enter/confirmación → play directo sin gastar tokens
+        const cardActiva = extraContext?.card_activa ?? contextData?.card_activa;
+        if (cardActiva) {
+          const tLower = textoUsuario.trim().toLowerCase();
+          const esConfirmacion = tLower === '' || /^(play|pon|ponlo|dale|si|sí|ok|yes|poner|reproduce)$/.test(tLower);
+          if (esConfirmacion) {
+            const codigo = cardActiva.bro_aud || cardActiva.bro_pod;
+            if (codigo) {
               setMensaje('Dale. 🎵');
-              onHandoff?.({ agente: 'AUDIO_PLAY', codigo: codigoAudio.codigo, canal });
-            } else {
-              setMensaje('No encuentro ese canal. ¿El código es correcto?');
+              onHandoff?.({ agente: 'AUDIO_PLAY', codigo, canal: cardActiva });
+              setLoading(false);
+              return;
             }
-            setLoading(false);
-            return;
-          }
-          if (codigoAudio.accion === 'BOLAS') {
-            setMensaje(`¿Qué hacemos con ${codigoAudio.codigo}?`);
-            setLoading(false);
-            return;
           }
         }
       }
