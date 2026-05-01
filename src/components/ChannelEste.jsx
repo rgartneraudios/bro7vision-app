@@ -3,6 +3,8 @@ import { supabase } from '../supabaseClient';
 import { TV_NODES } from '../data/TvDatabase';
 import Hls from 'hls.js';
 import { marcarActividad } from '../hooks/useActividad';
+import { getMoonSuffix } from '../utils/moonUtils';
+import { getVideoCandidates, resolveVideoFromCandidates, getTurno } from '../data/citycodes';
 
 
 
@@ -171,13 +173,21 @@ const ChannelEste = ({ videoUsers, balances, setBalances, session, realityMode, 
   const [isOrbitando, setIsOrbitando] = useState(false);
   const [selectedEmoji, setSelectedEmoji] = useState(1);
   const [isAccordionOpen, setIsAccordionOpen] = useState(false); // Para abrir/cerrar el historial
+  const [bgVideoUrl, setBgVideoUrl] = useState('');
 
-  
+
   useEffect(() => {
   if (savedUserIndex) setCurrentIndex(savedUserIndex);
 }, []);
-  
- 
+
+  useEffect(() => {
+    let active = true;
+    resolveVideoFromCandidates(getVideoCandidates(3, getMoonSuffix(), getTurno(), 0, null))
+      .then(url => { if (active) setBgVideoUrl(url); });
+    return () => { active = false; };
+  }, []);
+
+
   const videoRefPC  = useRef(null);
   const videoRefMob = useRef(null);
   const bgVideoRef  = useRef(null);
@@ -276,14 +286,6 @@ const ChannelEste = ({ videoUsers, balances, setBalances, session, realityMode, 
     }
   }; 
 
-  const getTimeSuffix = () => {
-  const h = new Date().getHours();
-  if(h >= 5  && h < 11) return '1';
-  if(h >= 11 && h < 17) return '2';
-  if(h >= 17 && h < 23) return '3';
-  return '4';
-};
-const BG_VIDEO = `https://media.bro7vision.com/este_bg_${getTimeSuffix()}.mp4`;
 
   const cleanUrl=(url)=>{
     if(!url)return'';
@@ -530,7 +532,7 @@ useEffect(() => {
       <style>{ESTE_STYLES}</style>
 
       {/* FONDO */}
-      <video ref={bgVideoRef} src={BG_VIDEO} autoPlay loop muted playsInline
+      <video ref={bgVideoRef} src={bgVideoUrl} autoPlay loop muted playsInline
        className="absolute inset-0 w-full h-full object-cover z-[1]"/>
        
     {/* 2. ECOS FLOTANTES — MÁXIMO 3, OSCUROS, CON EMOJI */}

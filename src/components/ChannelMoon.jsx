@@ -4,6 +4,7 @@ import { TV_NODES } from '../data/TvDatabase';
 import Hls from 'hls.js';
 import { getMoonSuffix } from '../utils/moonUtils';
 import { marcarActividad } from '../hooks/useActividad';
+import { getVideoCandidates, resolveVideoFromCandidates, getTurno } from '../data/citycodes';
 
 
 // ¡CORREGIDO! Ya no se corta el borde (border-right: none eliminado)
@@ -169,13 +170,21 @@ const ChannelMoon = ({ videoUsers, balances, setBalances, session, realityMode, 
   const [isOrbitando, setIsOrbitando] = useState(false);
   const [selectedEmoji, setSelectedEmoji] = useState(1);
   const [isAccordionOpen, setIsAccordionOpen] = useState(false); // Para abrir/cerrar el historial
+  const [bgVideoUrl, setBgVideoUrl] = useState('');
 
-  
+
   useEffect(() => {
   if (savedUserIndex) setCurrentIndex(savedUserIndex);
 }, []);
-  
-  
+
+  useEffect(() => {
+    let active = true;
+    resolveVideoFromCandidates(getVideoCandidates(2, getMoonSuffix(), getTurno(), 0, null))
+      .then(url => { if (active) setBgVideoUrl(url); });
+    return () => { active = false; };
+  }, []);
+
+
   const videoRefPC  = useRef(null);
   const videoRefMob = useRef(null);
   const hlsRefPC    = useRef(null);
@@ -274,15 +283,6 @@ const ChannelMoon = ({ videoUsers, balances, setBalances, session, realityMode, 
   }; 
 
 
-const getTimeSuffix = () => {
-  const h = new Date().getHours();
-  if(h >= 5  && h < 11) return '1';
-  if(h >= 11 && h < 17) return '2';
-  if(h >= 17 && h < 23) return '3';
-  return '4';
-};
-const MOON_PHASES  = { '1': 'nueva', '2': 'creciente', '3': 'llena', '4': 'menguante' };
-const BG_NUEVA_PC  = `https://media.bro7vision.com/moon_${MOON_PHASES[getMoonSuffix()]}_${getTimeSuffix()}.mp4`;
 
   const cleanUrl=(url)=>{
     if(!url)return'';
@@ -529,7 +529,7 @@ useEffect(() => {
       <style>{MOON_STYLES}</style>
 
       {/* FONDO */}
-      <video src={BG_NUEVA_PC} autoPlay loop muted playsInline
+      <video src={bgVideoUrl} autoPlay loop muted playsInline
         className="absolute inset-0 w-full h-full object-cover z-[1]"/>
        
     {/* 2. ECOS FLOTANTES — MÁXIMO 3, OSCUROS, CON EMOJI */}

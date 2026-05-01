@@ -6,6 +6,8 @@ import { supabase } from '../supabaseClient';
 import { TV_NODES } from '../data/TvDatabase';
 import Hls from 'hls.js';
 import { marcarActividad } from '../hooks/useActividad';
+import { getMoonSuffix } from '../utils/moonUtils';
+import { getVideoCandidates, resolveVideoFromCandidates, getTurno } from '../data/citycodes';
 
 
 
@@ -156,12 +158,24 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
   const [ecoVariant, setEcoVariant] = useState('pay');
   const [selectedEmoji, setSelectedEmoji] = useState(1);
   const [isAccordionOpen, setIsAccordionOpen] = useState(false); // Para abrir/cerrar el historial
-  
+  const [bgVideoUrl, setBgVideoUrl] = useState('');
+
+
   useEffect(() => {
   if (savedUserIndex) setCurrentIndex(savedUserIndex);
 }, []);
-  
-  
+
+  useEffect(() => {
+    const BIOFOREST_CANAL = { solo_earth:4, solo_fantasy:5, solo_cinema:6, band_earth:7, band_fantasy:8, band_cinema:9 };
+    const canal = BIOFOREST_CANAL[realityMode];
+    if (!canal) return;
+    let active = true;
+    resolveVideoFromCandidates(getVideoCandidates(canal, getMoonSuffix(), getTurno(), 0, null))
+      .then(url => { if (active) setBgVideoUrl(url); });
+    return () => { active = false; };
+  }, [realityMode]);
+
+
   const videoRef = useRef(null);
   const bgVideoRef = useRef(null);
   const hlsRef = useRef(null);
@@ -269,25 +283,15 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
     }
   }; 
   
-  const getTimeSuffix = () => { 
-  const h = new Date().getHours(); 
-  if(h >= 5  && h < 11) return '1';  // 05-11
-  if(h >= 11 && h < 17) return '2';  // 11-17
-  if(h >= 17 && h < 23) return '3';  // 17-23
-  return '4';                         // 23-05
-};
-
   const config = useMemo(() => {
-    const t=getTimeSuffix();
-    const v = (n) => `https://media.bro7vision.com/${n}_${t}.mp4`;
     switch(realityMode){
-      case 'solo_earth':   return {video:v('solo_earth'),  colors:['text-emerald-600','text-cyan-300'],  reactionColor:'emerald',labelClass:'text-emerald-600',labelText:'SOLO EARTH',  navColor:'text-emerald-500'};
-      case 'band_earth':   return {video:v('band_earth'),  colors:['text-blue-400','text-indigo-300'],   reactionColor:'blue',   labelClass:'text-blue-400',   labelText:'BAND EARTH',  navColor:'text-blue-400'   };
-      case 'solo_fantasy': return {video:v('solo_fantasy'),colors:['text-cyan-400','text-fuchsia-400'],  reactionColor:'cyan',   labelClass:'text-cyan-400',   labelText:'SOLO FANTASY',navColor:'text-cyan-400'   };
-      case 'band_fantasy': return {video:v('band_fantasy'),colors:['text-fuchsia-500','text-purple-300'],reactionColor:'fuchsia',labelClass:'text-fuchsia-400', labelText:'BAND FANTASY',navColor:'text-fuchsia-500'};
-      case 'solo_cinema':  return {video:v('solo_cinema'), colors:['text-amber-500','text-orange-300'],  reactionColor:'amber',  labelClass:'text-amber-500',  labelText:'SOLO CINEMA', navColor:'text-amber-600'  };
-      case 'band_cinema':  return {video:v('band_cinema'), colors:['text-orange-400','text-yellow-200'], reactionColor:'orange', labelClass:'text-orange-400', labelText:'BAND CINEMA', navColor:'text-orange-500' };
-      default:             return {video:'https://media.bro7vision.com/eclipse_mode.mp4',colors:['text-cyan-400','text-white'],       reactionColor:'cyan',  labelClass:'text-cyan-400',  labelText:'GENESIS NODE',navColor:'text-cyan-400'  };
+      case 'solo_earth':   return {colors:['text-emerald-600','text-cyan-300'],  reactionColor:'emerald',labelClass:'text-emerald-600',labelText:'SOLO EARTH',  navColor:'text-emerald-500'};
+      case 'band_earth':   return {colors:['text-blue-400','text-indigo-300'],   reactionColor:'blue',   labelClass:'text-blue-400',   labelText:'BAND EARTH',  navColor:'text-blue-400'   };
+      case 'solo_fantasy': return {colors:['text-cyan-400','text-fuchsia-400'],  reactionColor:'cyan',   labelClass:'text-cyan-400',   labelText:'SOLO FANTASY',navColor:'text-cyan-400'   };
+      case 'band_fantasy': return {colors:['text-fuchsia-500','text-purple-300'],reactionColor:'fuchsia',labelClass:'text-fuchsia-400', labelText:'BAND FANTASY',navColor:'text-fuchsia-500'};
+      case 'solo_cinema':  return {colors:['text-amber-500','text-orange-300'],  reactionColor:'amber',  labelClass:'text-amber-500',  labelText:'SOLO CINEMA', navColor:'text-amber-600'  };
+      case 'band_cinema':  return {colors:['text-orange-400','text-yellow-200'], reactionColor:'orange', labelClass:'text-orange-400', labelText:'BAND CINEMA', navColor:'text-orange-500' };
+      default:             return {colors:['text-cyan-400','text-white'],         reactionColor:'cyan',   labelClass:'text-cyan-400',  labelText:'GENESIS NODE',navColor:'text-cyan-400'  };
     }
   },[realityMode]);
 
@@ -585,19 +589,20 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
       <style>{FOREST_STYLES}</style>
 
       {/* 1. FONDO  */}
-      {config.video && (
+      {bgVideoUrl && (
         <div className="absolute inset-0 z-[1] transition-transform duration-300 ease-out will-change-transform" >
-          <video 
-          ref={bgVideoRef} 
-            src={config.video} 
-            autoPlay 
-            loop 
-            muted 
-            playsInline 
+          <video
+          key={bgVideoUrl}
+          ref={bgVideoRef}
+            src={bgVideoUrl}
+            autoPlay
+            loop
+            muted
+            playsInline
             className="w-full h-full object-cover"
           />
         </div>
-      )}  
+      )}
 
    {/* 2. ECOS FLOTANTES — MÁXIMO 3, OSCUROS, CON EMOJI */}
 <div className="absolute inset-0 z-[10] pointer-events-none">

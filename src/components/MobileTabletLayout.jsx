@@ -6,6 +6,7 @@ import BroCardStrip from './BroCardStrip';
 import BroLives from '../components/BroLives';
 import BroTuner from '../components/BroTuner';
 import { getMoonSuffix } from '../utils/moonUtils';
+import { getVideoCandidates, resolveVideoFromCandidates, getTurno } from '../data/citycodes';
 
 // ─── ESTILOS NEÓN ───────────────────────────────────────────────────────────
 const MOBILE_STYLES = `
@@ -209,22 +210,6 @@ const getTimeSuffix = () => {
   return '4';
 };
 
-const getMobileVideoUrl = (realityId) => {
-  const t = getTimeSuffix();
-  const base = 'https://media.bro7vision.com';
-  switch (realityId) {
-    case 'solo_earth':   return `${base}/solo_earth_${t}_v.mp4`;
-    case 'solo_fantasy': return `${base}/solo_fantasy_${t}_v.mp4`;
-    case 'solo_cinema':  return `${base}/solo_cinema_${t}_v.mp4`;
-    case 'band_earth':   return `${base}/band_earth_${t}_v.mp4`;
-    case 'band_fantasy': return `${base}/band_fantasy_${t}_v.mp4`;
-    case 'band_cinema':  return `${base}/band_cinema_${t}_v.mp4`;
-    case 'este':         return `${base}/este_bg_${t}_v.mp4`;
-    case 'oeste':        return `${base}/oeste_bg_${t}_v.mp4`;
-    case 'moon': { const PHASES = { '1':'nueva','2':'creciente','3':'llena','4':'menguante' }; return `${base}/moon_${PHASES[getMoonSuffix()]}_${t}_v.mp4`; }
-    default:             return null;
-  }
-};
 
 const getMobileAudioUrl = (realityId) => {
   const t = getTimeSuffix();
@@ -476,7 +461,8 @@ const MobileTabletLayout = ({
   const [inputText,  setInputText]  = useState('');
   const [messages,   setMessages]   = useState([]);
   const [burbujaOpen, setBurbujaOpen] = useState(false);
-  
+  const [bgVideoUrl, setBgVideoUrl] = useState('');
+
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioIndex, setAudioIndex] = useState(0);
@@ -497,6 +483,16 @@ useEffect(() => {
 
   const accent = SECTOR_ACCENT[intent] || '#00ffff';
   
+
+  useEffect(() => {
+    const MOBILE_CANAL = { solo_earth:4, solo_fantasy:5, solo_cinema:6, band_earth:7, band_fantasy:8, band_cinema:9, este:3, oeste:1, moon:2 };
+    const canal = realityMode ? MOBILE_CANAL[realityMode] : null;
+    if (!canal) { setBgVideoUrl(''); return; }
+    let active = true;
+    resolveVideoFromCandidates(getVideoCandidates(canal, getMoonSuffix(), getTurno(), 1, null))
+      .then(url => { if (active) setBgVideoUrl(url); });
+    return () => { active = false; };
+  }, [realityMode]);
 
   useEffect(() => { setBurbujaOpen(false); }, [stripCards]);
 
@@ -590,8 +586,7 @@ useEffect(() => {
 
   // ── REALITY PLAYER ────────────────────────────────────────────────────────
 if (step === 0 && realityMode) {
-  const escena   = REALITIES.find(r => r.id === realityMode);
-  const videoUrl = getMobileVideoUrl(realityMode);
+  const escena = REALITIES.find(r => r.id === realityMode);
   
 
 const prevAudio = () => {
@@ -618,11 +613,11 @@ const nextAudio = () => {
         <style>{MOBILE_STYLES}</style>
 
         {/* Video de fondo vertical — solo en Reality Player */}
-        {videoUrl && (
-          <video key={videoUrl} autoPlay loop muted playsInline
+        {bgVideoUrl && (
+          <video key={bgVideoUrl} autoPlay loop muted playsInline
             className="absolute inset-0 w-full h-full object-cover z-0"
             style={{ opacity: 0.75 }}>
-            <source src={videoUrl} type="video/mp4" />
+            <source src={bgVideoUrl} type="video/mp4" />
           </video>
         )}
         
