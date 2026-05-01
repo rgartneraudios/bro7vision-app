@@ -42,6 +42,7 @@ import CityLocationBanner from './components/CityLocationBanner';
 import NeuralButton from './components/NeuralButton';
 import DesktopLayout from './components/DesktopLayout';
 import MobileTabletLayout from './components/MobileTabletLayout';
+import BackStage from './components/backstage/BackStage';
 
 import { useSessionManager }  from './hooks/useSessionManager';
 import { useNavigationState } from './hooks/useNavigationState';
@@ -485,6 +486,11 @@ function App() {
 
   if (!session && !isGuest) {
     return <GenesisGate onGuestAccess={() => { setIsGuest(true); setStep(0); setRealityMode(null); setBalances({ genesis: 500, nova: 20 }); }} />;
+  }
+
+  // Productores (advertiser) → BackStage exclusivo
+  if (session?.user?.user_metadata?.role === 'advertiser') {
+    return <BackStage session={session} onLogout={handleLogout} />;
   }
 
   const navItems = [

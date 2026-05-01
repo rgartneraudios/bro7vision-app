@@ -23,18 +23,16 @@ const BusinessAccess = ({ onBack }) => {
       });
       if (authError) throw authError;
 
-      // 2. Crear Perfil en la tabla advertiser_profiles
+      // 2. Crear Perfil en b_advertiser_profiles
       if (authData.user) {
         const { error: profileError } = await supabase
-          .from('advertiser_profiles')
-          .insert([
-            {
-              id: authData.user.id,
-              razon_social: razonSocial,
-              sector: sector,
-              // stripe_customer_id se generará más tarde en el backend
-            }
-          ]);
+          .from('b_advertiser_profiles')
+          .insert([{
+            id:           authData.user.id,
+            razon_social: razonSocial,
+            sector:       sector,
+            estado:       'EN_CASTING',
+          }]);
         if (profileError) throw profileError;
       }
 

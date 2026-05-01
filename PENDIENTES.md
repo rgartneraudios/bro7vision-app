@@ -1,4 +1,4 @@
-# PENDIENTES BROVISION — Actualizado 2026-04-30
+# PENDIENTES BROVISION — Actualizado 2026-05-01
 
 ## Quién es el usuario
 El usuario prefiere que lo llamen **Signor Roberto** o **Maravilla**.
@@ -62,9 +62,50 @@ DesktopLayout y MobileTabletLayout no requirieron cambios (reciben los mismos pr
 
 ---
 
+## Lo que se hizo en sesión 2026-05-01
+
+### 6. BackStage — Módulo Productor MARKETPLACE — COMPLETADO ✅
+
+Creados 4 archivos en `src/components/backstage/`:
+
+| Archivo | Qué hace |
+|---|---|
+| `BackStage.jsx` | Contenedor principal: topbar Productor, 3 tabs, guard EN_CASTING/SUSPENDIDO/CONTRATADO |
+| `MarketplaceTab.jsx` | Grid de 72 slots, fetcha `bs_escenarios` + `bs_butacas` + `bs_tarifas` en paralelo |
+| `EscenarioCard.jsx` | Card con video thumb R2 (hover-to-play), badges LIBRE/OCUPADO por cobertura |
+| `ReservaPanel.jsx` | Panel lateral: selector cobertura, dropdown cityList, Moon Turno MT1-4, guión, insert `bs_butacas` → EN_CASTING |
+
+**Lógica de slots (72 cards):**
+- Moon (canal 2): 4 fases × 2 dispositivos = 8 cards
+- Resto (canales 1,3-9): 8 canales × 4 turnos × 2 dispositivos = 64 cards
+
+**Routing en App.jsx:**
+```jsx
+if (session?.user?.user_metadata?.role === 'advertiser') {
+  return <BackStage session={session} onLogout={handleLogout} />;
+}
+```
+
+**Fix BusinessAccess.jsx:**
+- Tabla corregida: `advertiser_profiles` → `b_advertiser_profiles`
+- Añadido `estado: 'EN_CASTING'` al insert de registro
+
+---
+
 ## Pendiente para la próxima sesión
 
-### PRIORIDAD 1 — Supabase Realtime
+### PRIORIDAD 1 — BackStage: completar Productor
+
+- **MIS CAMPAÑAS** — lista de `bs_butacas` propias con estado del flujo (cartel, función, ciudad, guión, estado badge)
+- **COMUNIDAD** — tablón editorial BRO7VISION + avisos de Compra Conjunta + modal PUBLICAR AVISO
+- Verificar **RLS Supabase**: `bs_butacas` SELECT debe exponer `cobertura/estado/canal` sin revelar `productor_id` ajeno
+
+### PRIORIDAD 2 — BackStage: perfil Director/Montador
+Cuando se haga `SOY DIRECTOR` → BackStage con rol `creator`:
+- Tab **REFERENCIA** (grid de piezas aprobadas como benchmark)
+- Tab **MIS RODAJES** (butacas EN_CASTING para postularse + rodajes asignados)
+
+### PRIORIDAD 4 — Supabase Realtime
 Con App limpio, crear `useRealtimeSync.js`:
 ```js
 // Balances del usuario actual
@@ -79,10 +120,10 @@ supabase.channel('avisos-live')
 ```
 El hook puede vivir en `useSessionManager` o ser independiente.
 
-### PRIORIDAD 2 — Personalidades de otros agentes (menor urgencia)
+### PRIORIDAD 5 — Personalidades de otros agentes (menor urgencia)
 Los archivos `data/nova/Personalidad.js`, `data/isabella/Personalidad.js`, `data/larry/Personalidad.js` y `data/profesor/Personalidad.js` todavía mencionan el sistema CODIGO D/A. Revisar si aplica actualizarlos.
 
-### PRIORIDAD 3 — `pages/Agente.jsx` solitario
+### PRIORIDAD 6 — `pages/Agente.jsx` solitario
 Único archivo en `pages/`. O se adopta la convención pages/routes de forma consistente o se mueve a `components/`.
 
 ---
@@ -96,3 +137,7 @@ Los archivos `data/nova/Personalidad.js`, `data/isabella/Personalidad.js`, `data
 - **`handleCentralHandoff`** es el orquestador central — vive en App.jsx por diseño, no mover
 - **`handleNavigation`** debe declararse DESPUÉS de los `useAgentChat` calls — necesita `resetOsos`
 - **`realItems`** se carga en App.jsx con `[session, step]` — recarga en cada navegación intencional
+
+## BackStage & Reality — Ver CONTEXT.md
+Para cualquier tarea relacionada con Reality, nomenclatura de videos,
+citycodes.js o BackStage, consultar CONTEXT.md en la raíz del proyecto.
