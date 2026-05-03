@@ -107,6 +107,7 @@ function App() {
   const [selectedForestUser, setSelectedForestUser] = useState(null);
   const [selectedCard, setSelectedCard]         = useState(null);
   const [isTouch, setIsTouch]                   = useState(false);
+  const [showStudio, setShowStudio]             = useState(false);
   const [isTeleporting, setIsTeleporting]       = useState(false);
   const [teleportCoords, setTeleportCoords]     = useState({ city: '' });
   const [projectingUser, setProjectingUser]     = useState(null);
@@ -319,7 +320,7 @@ function App() {
   // HOOKS useAgentChat — 7 agentes
   // ══════════════════════════════════════════════════════
 
-  const { mensaje: ososMensaje, loading: ososLoading, enviar: handleOsosInput, reset: resetOsos } = useAgentChat({
+  const { mensaje: ososMensaje, loading: ososLoading, enviar: handleOsosInput, reset: resetOsos, esPatrocinado: ososEsPatrocinado } = useAgentChat({
     mode: 'osos', realItems,
     contextData: {
       oso_id:         perfilOso?.oso_id         || 'TITO',
@@ -334,7 +335,7 @@ function App() {
     onHandoff: handleCentralHandoff, iaMode, isAdmin,
   });
 
-  const { mensaje: novaMensaje, loading: novaLoading, enviar: handleNovaInput } = useAgentChat({
+  const { mensaje: novaMensaje, loading: novaLoading, enviar: handleNovaInput, esPatrocinado: novaEsPatrocinado } = useAgentChat({
     mode: 'novaExplora',
     contextData: {
       entidad:     ososHandoffContext?.comercio_especifico,
@@ -345,7 +346,7 @@ function App() {
     onHandoff: handleCentralHandoff, iaMode, isAdmin,
   });
 
-  const { mensaje: isabellaMensaje, loading: isabellaLoading, enviar: handleIsabellaInput } = useAgentChat({
+  const { mensaje: isabellaMensaje, loading: isabellaLoading, enviar: handleIsabellaInput, esPatrocinado: isabellaEsPatrocinado } = useAgentChat({
     mode: 'servicios',
     contextData: {
       servicios_personaje: perfilSector?.personaje_id || 'isabella',
@@ -357,7 +358,7 @@ function App() {
     onHandoff: handleCentralHandoff, iaMode, isAdmin,
   });
 
-  const { mensaje: mapacheMensaje, loading: mapacheLoading, enviar: handleMapacheInput } = useAgentChat({
+  const { mensaje: mapacheMensaje, loading: mapacheLoading, enviar: handleMapacheInput, esPatrocinado: mapacheEsPatrocinado } = useAgentChat({
     mode: 'mapache',
     contextData: {
       audio_personaje: perfilSector?.personaje_id || 'mapache',
@@ -370,7 +371,7 @@ function App() {
     onHandoff: handleCentralHandoff, iaMode, isAdmin,
   });
 
-  const { mensaje: evelynMensaje, loading: evelynLoading, enviar: handleEvelynInput, avisoEnConstruccion } = useAgentChat({
+  const { mensaje: evelynMensaje, loading: evelynLoading, enviar: handleEvelynInput, avisoEnConstruccion, esPatrocinado: evelynEsPatrocinado } = useAgentChat({
     mode: 'avisos',
     contextData: {
       avisos_personaje: perfilSector?.personaje_id || 'evelyn',
@@ -385,7 +386,7 @@ function App() {
     iaMode, isAdmin,
   });
 
-  const { mensaje: oraculoMensaje, loading: oraculoLoading, enviar: handleOraculoInput } = useAgentChat({
+  const { mensaje: oraculoMensaje, loading: oraculoLoading, enviar: handleOraculoInput, esPatrocinado: oraculoEsPatrocinado } = useAgentChat({
     mode: 'oraculo',
     contextData: {
       oraculo_personaje: perfilSector?.personaje_id || perfilOso?.oraculo_personaje || 'orumama',
@@ -484,13 +485,16 @@ function App() {
 
   const { findChannelByAlias, checkIfNew } = useAudioData({ realItems });
 
-  if (!session && !isGuest) {
-    return <GenesisGate onGuestAccess={() => { setIsGuest(true); setStep(0); setRealityMode(null); setBalances({ genesis: 500, nova: 20 }); }} />;
+  if (!session && !isGuest && !showStudio) {
+    return <GenesisGate
+      onGuestAccess={() => { setIsGuest(true); setStep(0); setRealityMode(null); setBalances({ genesis: 500, nova: 20 }); }}
+      onStudioAccess={() => setShowStudio(true)}
+    />;
   }
 
-  // Productores (advertiser) → BackStage exclusivo
-  if (session?.user?.user_metadata?.role === 'advertiser') {
-    return <BackStage session={session} onLogout={handleLogout} />;
+  // Productores (advertiser) o acceso studio directo → BackStage exclusivo
+  if (showStudio || session?.user?.user_metadata?.role === 'advertiser') {
+    return <BackStage session={session} onLogout={showStudio ? () => setShowStudio(false) : handleLogout} />;
   }
 
   const navItems = [
@@ -551,6 +555,8 @@ function App() {
     mapacheMensaje, mapacheLoading, handleMapacheInput, evelynMensaje, evelynLoading,
     handleEvelynInput, oraculoMensaje, oraculoLoading, handleOraculoInput, rumoresMensaje,
     rumoresLoading, handleRumoresInput,
+    novaEsPatrocinado, isabellaEsPatrocinado, mapacheEsPatrocinado,
+    evelynEsPatrocinado, oraculoEsPatrocinado, ososEsPatrocinado,
   };
 
   // ══════════════════════════════════════════════════════

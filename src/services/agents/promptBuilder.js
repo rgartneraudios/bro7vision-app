@@ -134,7 +134,7 @@ function detectarKnowledge(mensaje, personajeId, fechaNacimiento = null) {
 }
 
 // ── Función principal ─────────────────────────────────────────────────────────
-export function buildPrompt({ personajeId, vivencia, estadoAnimo, promoActiva, userMessage, chatHistory, fechaNacimiento = null }) {
+export function buildPrompt({ personajeId, vivencia, estadoAnimo, promoGeo, specialData, userMessage, chatHistory, fechaNacimiento = null }) {
 
   const id     = personajeId?.toLowerCase()
   const perfil = PERFILES[id]
@@ -176,7 +176,13 @@ ${perfil.personalidad}
 
 ${vivencia ? `VIVENCIA RECIENTE:\n${vivencia}` : ''}
 ${estadoAnimo ? `ESTADO DE ÁNIMO HOY: ${estadoAnimo}` : ''}
-${promoActiva ? `PROMO EXCLUSIVA ACTIVA (solo mencionar si el usuario pregunta por ofertas o descuentos): ${promoActiva}` : ''}
+${promoGeo ? `CONTENIDO PATROCINADO (intégralo de forma natural si viene al caso, no lo menciones forzadamente): ${promoGeo}` : ''}
+${specialData ? `ESPECIAL ACTIVO — STOCK DISPONIBLE: ${specialData.stock}
+Ofrece al usuario de forma natural: "${specialData.texto}"
+Si el usuario muestra interés, pídele un número de 3 cifras como código de reserva personal.
+Cuando el usuario confirme su número, añade EXACTAMENTE este tag al final de tu respuesta:
+[CANJE_CONFIRMADO:${specialData.codigo}:NNN]
+Sustituye NNN por el número de 3 cifras que el usuario proporcionó. No añadas nada más después del tag.` : ''}
 
 ${knowledge ? `CONOCIMIENTO DEL SISTEMA:\n${knowledge}` : ''}
 

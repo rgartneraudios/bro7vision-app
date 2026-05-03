@@ -22,6 +22,17 @@ import { detectarSalidaAviso,    detectarInternoAviso                           
 import { detectarSalidaOraculo,  detectarInternoOraculo,  detectarIntencionOraculo  } from '../services/agents/bots/oraculoUtils';
 import { detectarSalidaReinos,   detectarIntencionReinos                             } from '../services/agents/bots/reinosUtils';
 
+// ─── Geo promo selector ───────────────────────────────────────────────────────
+function seleccionarPromoGeo(data, userCity) {
+  if (userCity && data.promo_ciudad)     return data.promo_ciudad;
+  if (data.promo_regional)              return data.promo_regional;
+  if (data.promo_gran_regional)         return data.promo_gran_regional;
+  if (data.promo_metropolis)            return data.promo_metropolis;
+  if (data.promo_nacional)              return data.promo_nacional;
+  if (data.promo_mundial)               return data.promo_mundial;
+  return null;
+}
+
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
 const PER_SIN_CIUDAD = ['ORACULO_ORUMAMA', 'ORACULO_SMISTERIO', 'ORACULO_JAGUAR', 'REINOS'];
@@ -142,6 +153,7 @@ export const useAgentChat = ({
   const [esperandoConfirmacion, setEsperandoConfirmacion] = useState(null);
   const [botNarrando, setBotNarrando] = useState(false);
   const [fechaNacimiento, setFechaNacimiento] = useState(null);
+  const [esPatrocinado, setEsPatrocinado] = useState(false);
 
   const pushHistory = (role, content) => {
     setChatHistory(prev => {
@@ -150,23 +162,73 @@ export const useAgentChat = ({
     });
   };
 
-const obtenerVivencia = async (personajeId) => {
+const obtenerVivencia = async (personajeId, userCity = '') => {
   if (!personajeId) return {};
   try {
     const { data } = await supabase
       .from('personaje_update')
-      .select('vivencia_actual, estado_animo, promo_activa')
+      .select(`vivencia_actual, estado_animo,
+               promo_ciudad, promo_regional, promo_gran_regional,
+               promo_metropolis, promo_nacional, promo_mundial,
+               special_activo, special_stock, special_texto,
+               special_codigo, special_productor_email`)
       .eq('personaje_id', personajeId.toLowerCase())
       .maybeSingle();
+    if (!data) return {};
+    const promoGeo = seleccionarPromoGeo(data, userCity);
+    const specialData = (data.special_activo && (data.special_stock ?? 0) > 0)
+      ? {
+          texto:           data.special_texto,
+          codigo:          data.special_codigo,
+          stock:           data.special_stock,
+          productor_email: data.special_productor_email,
+        }
+      : null;
     return {
-      vivencia:     data?.vivencia_actual || '',
-      estadoAnimo:  data?.estado_animo    || '',
-      promoActiva:  data?.promo_activa    || '',
+      vivencia:      data.vivencia_actual || '',
+      estadoAnimo:   data.estado_animo    || '',
+      promoGeo:      promoGeo || '',
+      esPatrocinado: !!promoGeo,
+      specialData:   specialData,
     };
   } catch {
     return {};
   }
 };
+
+  const procesarCanje = async (codigo, codigoUsuario, personajeIdLocal, specialDataLocal) => {
+    const userId = contextData?.user_id || null;
+    try {
+      await supabase.from('b_special_canjes').insert([{
+        personaje_id:   personajeIdLocal,
+        special_codigo: codigo,
+        user_id:        userId,
+        codigo_usuario: codigoUsuario,
+        estado:         'RESERVADO',
+      }]);
+      const nuevoStock = (specialDataLocal?.stock ?? 1) - 1;
+      await supabase
+        .from('personaje_update')
+        .update({ special_stock: nuevoStock, ...(nuevoStock <= 0 ? { special_activo: false } : {}) })
+        .eq('personaje_id', personajeIdLocal.toLowerCase());
+      if (specialDataLocal?.productor_email) {
+        fetch('https://brovision-ai.bro7vision.workers.dev', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action:         'email_canje',
+            to:             specialDataLocal.productor_email,
+            personaje_id:   personajeIdLocal,
+            special_codigo: codigo,
+            codigo_usuario: codigoUsuario,
+            user_id:        userId,
+          }),
+        }).catch(() => {});
+      }
+    } catch (err) {
+      console.error('Error procesando canje:', err);
+    }
+  };
 
   const resolverPersonajeId = () => {
     if (mode === 'osos')        return (contextData?.oso_id || 'lara').toLowerCase();
@@ -441,7 +503,7 @@ const enviar = async (textoUsuario, extraContext = {}) => {
         const personajeId = resolverPersonajeId();
 
       if (mode === 'novaExplora') {
-  const { vivencia: vivenciaNova, estadoAnimo: animoNova } = await obtenerVivencia('nova');
+  const { vivencia: vivenciaNova, estadoAnimo: animoNova } = await obtenerVivencia('nova', contextData?.ciudad);
   const systemNova = buildNovaExploraPrompt({
     alias:  contextData?.alias,
     ciudad: contextData?.ciudad,
@@ -524,13 +586,16 @@ const enviar = async (textoUsuario, extraContext = {}) => {
         const esMC = botNarrando
         if (esMC) setBotNarrando(false)
 
-        const { vivencia, estadoAnimo, promoActiva } = await obtenerVivencia(personajeId);
-	const prompt = buildPrompt({
-  	personajeId,
-  	vivencia,
-  	estadoAnimo,
-  	promoActiva,
-            userMessage: esMC ? '[MC] ' + textoUsuario : textoUsuario,
+        const { vivencia, estadoAnimo, promoGeo, esPatrocinado: esPromo, specialData } = await obtenerVivencia(personajeId, contextData?.ciudad);
+        setEsPatrocinado(esPromo || false);
+
+        const prompt = buildPrompt({
+          personajeId,
+          vivencia,
+          estadoAnimo,
+          promoGeo,
+          specialData,
+          userMessage: esMC ? '[MC] ' + textoUsuario : textoUsuario,
           chatHistory,
           fechaNacimiento,
         });
@@ -548,9 +613,17 @@ const enviar = async (textoUsuario, extraContext = {}) => {
           iaMode,
         });
 
+        // ── Detectar y procesar CANJE_CONFIRMADO ─────────────────────
+        const canjeMatch = respuesta.match(/\[CANJE_CONFIRMADO:([^:]+):(\d{3})\]/);
+        let respuestaFinal = respuesta;
+        if (canjeMatch) {
+          respuestaFinal = respuesta.replace(canjeMatch[0], '').trim();
+          procesarCanje(canjeMatch[1], canjeMatch[2], personajeId, specialData).catch(console.error);
+        }
+
         // ── PASO 3: ¿La IA emite señal BOT? ──────────────────────────
-        if (respuesta.startsWith('[BOT:')) {
-          const match   = respuesta.match(/\[BOT:(\w+)\]/)
+        if (respuestaFinal.startsWith('[BOT:')) {
+          const match   = respuestaFinal.match(/\[BOT:(\w+)\]/)
           const archivo = match?.[1]
           const perfil  = PERFILES[personajeId]
           const temaDef = perfil?.temas_propios?.[archivo]
@@ -565,8 +638,8 @@ const enviar = async (textoUsuario, extraContext = {}) => {
         }
 
         // ── HANDOFF directo de la IA ──────────────────────────────────
-        if (respuesta.startsWith('HANDOFF:')) {
-          const partes = respuesta.replace('HANDOFF:', '').trim().split(':');
+        if (respuestaFinal.startsWith('HANDOFF:')) {
+          const partes = respuestaFinal.replace('HANDOFF:', '').trim().split(':');
           const codigoHandoff  = partes[0];
           const destinoHandoff = partes[1] || null;
           onHandoff?.({
@@ -580,8 +653,8 @@ const enviar = async (textoUsuario, extraContext = {}) => {
         }
 
         pushHistory('user', textoUsuario);
-        pushHistory('assistant', respuesta);
-        setMensaje(respuesta);
+        pushHistory('assistant', respuestaFinal);
+        setMensaje(respuestaFinal);
         setLoading(false);
         return;
       }
@@ -771,9 +844,10 @@ const enviar = async (textoUsuario, extraContext = {}) => {
     setEsperandoConfirmacion(null);
     setBotNarrando(false);
     setFechaNacimiento(null);
+    setEsPatrocinado(false);
     actoRef.current = 'acto_1';
     avisoConectarRef.current = null;
   };
 
-  return { mensaje, loading, enviar, reset, avisoEnConstruccion };
+  return { mensaje, loading, enviar, reset, avisoEnConstruccion, esPatrocinado };
 };

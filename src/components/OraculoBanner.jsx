@@ -32,6 +32,7 @@ export default function OraculoBanner({
   enviar,
   mensaje,
   loading,
+  esPatrocinado = false,
   // ── Callbacks ────────────────────────────────────
   onPersonajeChange,
   onInvokeOsos,
@@ -123,6 +124,11 @@ export default function OraculoBanner({
             <span style={{ color, fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
               {nombrePersonaje}
             </span>
+            {esPatrocinado && (
+              <span style={{ fontSize: 8, fontWeight: 900, letterSpacing: '0.2em', color: '#000', background: '#FACC15', borderRadius: 3, padding: '1px 5px', textTransform: 'uppercase' }}>
+                PATROCINADO
+              </span>
+            )}
           </div>
 
           {/* Mensaje */}

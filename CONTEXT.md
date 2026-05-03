@@ -1,5 +1,5 @@
 # CONTEXT.md — BRO7VISION SYSTEM BIBLE
-# Actualizado: 2026-05-02
+# Actualizado: 2026-05-03
 # Consultar este archivo antes de tocar Reality, citycodes.js o BackStage.
 
 ---
@@ -33,6 +33,7 @@ Business, Directores de Escena y Montadores.
 Estilo funcional Discord/Notion — estética de estudio cinematográfico.
 El Montador/Director nunca ve datos del Productor y viceversa.
 BRO7VISION es siempre el intermediario editorial entre ambos.
+**Solo disponible en PC. En móvil/tablet muestra pantalla de bloqueo.**
 
 ---
 
@@ -50,6 +51,10 @@ ESTUDIO            → BRO7VISION, coordina y aprueba todo
 El Estudio (BRO7VISION) es siempre el intermediario.
 Límite de revisiones: 2 rondas máximo en pack básico.
 
+**Nota naming:** En el código, `b_creator_profiles` agrupa Directores y Montadores.
+El término "creador" en código se refiere siempre a Director/Montador del BackStage,
+NO a creadores de contenido TikTok-style del Mundo del Espectador.
+
 ---
 
 ## ACCESO BIFURCADO — LOGIN
@@ -63,14 +68,36 @@ Bifurcaciones profesionales (parte inferior del login):
   SOY ANUNCIANTE → modal BROVISION BUSINESS
                    Campos: razón social, sector, email corporativo, password
                    Estado inicial: EN_CASTING hasta aprobación BRO7VISION
+                   Tabla: b_advertiser_profiles
+                   user_metadata.role = 'advertiser'
 
   SOY DIRECTOR   → modal DIRECTOR STUDIO
                    Campos: nombre artístico, email, password, muestra de visión
                    Botón: SOLICITAR CLAQUETA
                    Estado inicial: EN_CASTING hasta aprobación manual BRO7VISION
-                   Registro usa Supabase Auth directamente
+                   Tabla: b_creator_profiles
+                   user_metadata.role = 'director'
                    No puede entrar al BackStage hasta estado CONTRATADO
+
+  ▶ STUDIO       → botón discreto solo visible si VITE_SHOW_STUDIO=true (solo local)
+                   Acceso admin directo al BackStage para RGartner
+                   En producción/Cloudflare esta variable no existe → botón invisible
 ```
+
+**Flujo de registro correcto:**
+1. `supabase.auth.signUp()` con user_metadata.role
+2. Insert en tabla de perfil usando `authData.user` (no `authData.session` — es null hasta confirmar email)
+3. RLS: INSERT WITH CHECK (true) en perfiles — sesión no activa hasta confirmar email
+
+**Email confirmación:** Configurado con Brevo SMTP
+```
+Host:     smtp-relay.brevo.com
+Puerto:   587
+Usuario:  a9fb5a001@smtp-brevo.com
+Sender:   noreply@bro7vision.com
+```
+Durante desarrollo los emails pueden llegar a spam (dominio nuevo sin reputación).
+Para producción añadir DKIM/SPF en Namecheap.
 
 ---
 
@@ -104,6 +131,12 @@ Bifurcaciones profesionales (parte inferior del login):
 4 = Luna Menguante
 ```
 
+**ChannelMoon — nota crítica:**
+Moon emite SIEMPRE el mismo video base por fase lunar.
+El campo `funcion` en bs_escenarios actúa como MoonTurno (MT1–MT4),
+NO como turno horario. Son 4 slots publicitarios sobre el mismo video.
+Al cambiar la fase lunar → nuevo video base → nuevos 4 slots disponibles.
+
 ---
 
 ## NOMENCLATURA DE ARCHIVOS — SISTEMA DEFINITIVO
@@ -122,8 +155,11 @@ Bifurcaciones profesionales (parte inferior del login):
 ### Códigos
 ```
 000 = Base limpio (sin contrato)
-300 = Cobertura Nacional (GIRA_NACIONAL)
-404 = Cobertura Internacional (GIRA_MUNDIAL)
+300 = GIRA_NACIONAL
+404 = GIRA_MUNDIAL
+305 = GIRA_REGIONAL (5 ciudades mini)
+309 = GIRA_GRAN_REGIONAL (9 ciudades mini)
+307 = METROPOLIS (7 mega ciudades)
 001–158 = Ciudad específica (ver citycodes.js)
 ```
 
@@ -163,6 +199,9 @@ TOTAL                                                  = 72 vídeos
 1_120_001.mp4  ChannelOeste, Fase1(Nova), Turno2, PC, Madrid
 1_120_300.mp4  ChannelOeste, Fase1(Nova), Turno2, PC, GIRA_NACIONAL
 1_120_404.mp4  ChannelOeste, Fase1(Nova), Turno2, PC, GIRA_MUNDIAL
+1_120_305.mp4  ChannelOeste, Fase1(Nova), Turno2, PC, GIRA_REGIONAL
+1_120_307.mp4  ChannelOeste, Fase1(Nova), Turno2, PC, METROPOLIS
+1_120_309.mp4  ChannelOeste, Fase1(Nova), Turno2, PC, GIRA_GRAN_REGIONAL
 ```
 
 **ChannelMoon** — contrato por Fase + MoonTurno (MT1–MT4):
@@ -179,9 +218,12 @@ TOTAL                                                  = 72 vídeos
 
 ```
 1. ¿Existe [CANAL]_[FASE][TURNO][DISP]_404.mp4? → emite GIRA_MUNDIAL. Bloquea todo.
-2. ¿Existe [CANAL]_[FASE][TURNO][DISP]_300.mp4? → emite GIRA_NACIONAL. Bloquea locales.
-3. ¿Existe [CANAL]_[FASE][TURNO][DISP]_[ciudad].mp4? → emite SALA_CIUDAD.
-4. Ninguno → emite base:
+2. ¿Existe [CANAL]_[FASE][TURNO][DISP]_307.mp4? → emite METROPOLIS.
+3. ¿Existe [CANAL]_[FASE][TURNO][DISP]_309.mp4? → emite GIRA_GRAN_REGIONAL.
+4. ¿Existe [CANAL]_[FASE][TURNO][DISP]_305.mp4? → emite GIRA_REGIONAL.
+5. ¿Existe [CANAL]_[FASE][TURNO][DISP]_300.mp4? → emite GIRA_NACIONAL.
+6. ¿Existe [CANAL]_[FASE][TURNO][DISP]_[ciudad].mp4? → emite SALA_CIUDAD.
+7. Ninguno → emite base:
      Resto: [CANAL]_0[TURNO][DISP]_000.mp4
      Moon:  [CANAL]_[FASE]0[DISP]_000.mp4
 ```
@@ -197,51 +239,53 @@ Un solo video cargado en cada momento. Sin capas. Sin RAM extra.
 **Ubicación:** `src/data/citycodes.js`
 **Importar siempre para cualquier lógica de nombres de video.**
 
+### Cambios 2026-05-03
+- `cityToCode` ahora usa objetos `{ code, tipo }` en lugar de strings planos
+- `tipo: "mega"` = población > 500.000 hab (Madrid, Barcelona, Valencia, Sevilla, Zaragoza, Málaga)
+- `tipo: "mini"` = resto de ciudades
+- Murcia (~460k) queda como mini
+- Nuevas constantes: COBERTURA_GIRA_REGIONAL (305), COBERTURA_GIRA_GRAN_REGIONAL (309), COBERTURA_METROPOLIS (307)
+- Nueva tabla COBERTURAS con precio, tipo_ciudad y max_ciudades
+- Nuevos helpers: getMegaCities(), getMiniCities(), getCitiesForCobertura(cobertura), getTipoForCity(cityKey)
+
 ### Exportaciones principales
 
 ```js
 import {
-  CHANNELS,                // { 1: "ChannelOeste", 2: "ChannelMoon", ... }
-  FASES,                   // { 0: "Sin Fase", 1: "Luna Nueva", ... }
-  TURNOS,                  // { 0: "Sin Turno", 1: "05:00-11:00", ... }
+  CHANNELS,
+  FASES,
+  TURNOS,
   CODIGO_BASE,             // "000"
   COBERTURA_NACIONAL,      // "300"
   COBERTURA_INTERNACIONAL, // "404"
-  cityToCode,              // { "madrid": "001", "barcelona": "024", ... }
-  codeToCity,              // { "001": "Madrid", "024": "Barcelona", ... }
-  isMoonChannel,           // (canal) => canal === 2
+  COBERTURA_GIRA_REGIONAL,      // "305"
+  COBERTURA_GIRA_GRAN_REGIONAL, // "309"
+  COBERTURA_METROPOLIS,         // "307"
+  COBERTURAS,              // tabla completa con precios y restricciones
+  cityToCode,              // { "madrid": { code: "001", tipo: "mega" }, ... }
+  codeToCity,              // { "001": "Madrid", ... }
+  isMoonChannel,
   getCodeForCity,          // (cityKey) => "001" | null
-  getCityForCode,          // (code) => "Madrid" | null
-  buildVideoName,          // (canal, fase, turno, dispositivo, codigo) => "1_020_000.mp4"
-  getVideoCandidates,      // (canal, fase, turno, dispositivo, cityKey) => string[]
-  cityList,                // array ordenado alfabéticamente para dropdowns
+  getTipoForCity,          // (cityKey) => "mega" | "mini" | null
+  getCityForCode,
+  getMegaCities,           // () => ciudades >500k
+  getMiniCities,           // () => ciudades <500k
+  getCitiesForCobertura,   // (cobertura) => lista filtrada para selector
+  buildVideoName,
+  getVideoCandidates,
+  cityList,
+  getTurno,
+  resolveVideoFromCandidates,
 } from './data/citycodes.js'
 ```
 
-### buildVideoName — uso correcto
-
+### getCitiesForCobertura — uso en selector del Marketplace
 ```js
-// Vídeos BASE
-buildVideoName(1, 0, 2, 0, "000")  // → "1_020_000.mp4"  ChannelOeste T2 PC base
-buildVideoName(2, 1, 0, 0, "000")  // → "2_100_000.mp4"  Moon Nova PC base
-buildVideoName(2, 3, 0, 1, "000")  // → "2_301_000.mp4"  Moon Plena Móvil base
-
-// CONTRATOS resto de canales
-buildVideoName(1, 1, 2, 0, "001")  // → "1_120_001.mp4"  Madrid
-buildVideoName(1, 1, 2, 0, "300")  // → "1_120_300.mp4"  GIRA_NACIONAL
-buildVideoName(1, 1, 2, 0, "404")  // → "1_120_404.mp4"  GIRA_MUNDIAL
-
-// CONTRATOS ChannelMoon (MoonTurnos MT1–MT4)
-buildVideoName(2, 1, 1, 0, "001")  // → "2_110_001.mp4"  MT1 Madrid
-buildVideoName(2, 2, 3, 0, "300")  // → "2_230_300.mp4"  MT3 GIRA_NACIONAL
-```
-
-### getVideoCandidates — uso en el reproductor
-
-```js
-const candidates = getVideoCandidates(canal, faseActual, turnoActual, dispositivo, cityKey);
-// Devuelve [GIRA_MUNDIAL, GIRA_NACIONAL, local, base] en orden de prioridad
-// La app hace HEAD request a R2 por cada uno y carga el primero que existe
+// Filtra automáticamente según cobertura elegida por el Productor
+// SALA_CIUDAD / GIRA_REGIONAL / GIRA_GRAN_REGIONAL → solo minis
+// SALA_GRAN_CIUDAD / METROPOLIS → solo megas
+// GIRA_NACIONAL / GIRA_MUNDIAL → sin selector de ciudad
+const ciudades = getCitiesForCobertura('GIRA_REGIONAL') // → array de minis
 ```
 
 ---
@@ -255,11 +299,6 @@ const candidates = getVideoCandidates(canal, faseActual, turnoActual, dispositiv
 ```
 https://media.bro7vision.com/thumbs/1_010_000.mp4  ChannelOeste T1 PC
 https://media.bro7vision.com/thumbs/2_100_000.mp4  Moon Nova PC
-```
-
-**Construcción de URL:**
-```js
-const cartelUrl = `https://media.bro7vision.com/thumbs/${buildVideoName(canal, fase, turno, dispositivo, "000")}`;
 ```
 
 **Comportamiento en BackStage — hover to play:**
@@ -293,22 +332,6 @@ bucket/
     [72 carteles MP4 de 1 segundo]
 ```
 
-**CORS configurado:**
-```json
-[{
-  "AllowedOrigins": [
-    "http://localhost:5173",
-    "https://bro7vision-app.pages.dev",
-    "https://bro7vision.com",
-    "https://www.bro7vision.com"
-  ],
-  "AllowedMethods": ["GET", "HEAD"],
-  "AllowedHeaders": ["*"],
-  "ExposeHeaders": ["Content-Length", "Content-Range"],
-  "MaxAgeSeconds": 3600
-}]
-```
-
 ---
 
 ## NAMING CINEMATOGRÁFICO — REFERENCIA COMPLETA
@@ -330,12 +353,13 @@ BRO7VISION            → Estudio
 
 **Coberturas:**
 ```
-SALA_CIUDAD         → local, 20€
-SALA_GRAN_CIUDAD    → mega ciudad, 60€
-GIRA_REGIONAL       → zonal, 120€
-GIRA_GRAN_REGIONAL  → mega zonal, 200€
-GIRA_NACIONAL       → nacional, 500€  → código archivo: 300
-GIRA_MUNDIAL        → internacional, 800€ → código archivo: 404
+SALA_CIUDAD          → 1 ciudad mini,    20€  → código archivo: 001-158
+SALA_GRAN_CIUDAD     → 1 mega ciudad,    60€  → código archivo: 001-158
+GIRA_REGIONAL        → 5 ciudades mini,  80€  → código archivo: 305
+GIRA_GRAN_REGIONAL   → 9 ciudades mini, 160€  → código archivo: 309
+METROPOLIS           → 7 mega ciudades, 350€  → código archivo: 307
+GIRA_NACIONAL        → nacional,        500€  → código archivo: 300
+GIRA_MUNDIAL         → internacional,   800€  → código archivo: 404
 ```
 
 **Estados del flujo:**
@@ -375,14 +399,21 @@ b_advertiser_profiles   → Productores (Brostories + BackStage)
   + estado text         → 'EN_CASTING'|'CONTRATADO'|'SUSPENDIDO'
 ```
 
-### Tablas BackStage — creadas 2026-05-02
+**RLS INSERT:** WITH CHECK (true) en ambas tablas — el insert ocurre
+con authData.user antes de que la sesión esté activa (email sin confirmar).
+
+**BackStage lee el rol desde:** `session.user.user_metadata.role`
+- 'director' → consulta b_creator_profiles
+- 'advertiser' → consulta b_advertiser_profiles
+
+### Tablas BackStage
 
 **bs_tarifas**
 ```
 id            uuid PK
 cobertura     text UNIQUE  → 'SALA_CIUDAD'|'SALA_GRAN_CIUDAD'|'GIRA_REGIONAL'|
-                             'GIRA_GRAN_REGIONAL'|'GIRA_NACIONAL'|'GIRA_MUNDIAL'
-precio        numeric      → 20|60|120|200|500|800
+                             'GIRA_GRAN_REGIONAL'|'METROPOLIS'|'GIRA_NACIONAL'|'GIRA_MUNDIAL'
+precio        numeric      → 20|60|80|160|350|500|800
 pct_estudio   numeric      → 65 (BRO7VISION %)
 pct_montador  numeric      → 35 (Montador %)
 activo        boolean
@@ -397,6 +428,7 @@ nombre_display text         → 'ChannelOeste', 'Solo Earth', 'Channel Moon'
 es_moon        boolean      → true solo canal 2
 fase_lunar     smallint     → 1–4 | null si no es Moon
 funcion        smallint     → 1–4 | null si es Moon base
+                              ⚠ Para Moon: funcion = MoonTurno (MT1–MT4), NO turno horario
 activo         boolean
 created_at     timestamptz
 ```
@@ -422,6 +454,7 @@ funcion        smallint     → 1–4 (MoonTurno si es Moon)
 dispositivo    smallint     → 0=PC | 1=Móvil
 cobertura      text         → 'SALA_CIUDAD'|...|'GIRA_MUNDIAL'
 ciudad_codigo  text         → '001'–'158' | null si GIRA_NACIONAL o GIRA_MUNDIAL
+ciudades_array jsonb        → array de códigos para coberturas multi-ciudad
 productor_id   uuid FK → b_advertiser_profiles
 montador_id    uuid FK → b_creator_profiles | null hasta asignación
 guion          text         → brief del Productor
@@ -446,46 +479,99 @@ created_at timestamptz
 updated_at timestamptz → trigger automático
 ```
 
+**bs_estudio_blog** ← contenido editorial del Estudio Marketing
+```
+id           uuid PK DEFAULT gen_random_uuid()
+titulo       text NOT NULL
+categoria    text         → 'ESTRATEGIA'|'TIMING'|'COBERTURA'|'FORMATO'|'AUDIENCIA'|'ROI'
+cuerpo_texto text
+imagen_url   text         → URL imagen (R2 o externa)
+destacado    boolean DEFAULT false → card grande featured en el blog
+activo       boolean DEFAULT true
+created_at   timestamptz DEFAULT now()
+
+RLS: SELECT WHERE activo = true (lectura pública para todos los roles)
+INSERT: solo desde Supabase Table Editor por RGartner (sin policy de INSERT)
+```
+
 ---
 
 ## BACKSTAGE — ESTRUCTURA REACT
 
-### Perfil PRODUCTOR — 3 pestañas
+### Acceso por rol
+```
+BackStage.jsx lee session.user.user_metadata.role:
+  'director'   → consulta b_creator_profiles → vista Director/Montador
+  'advertiser' → consulta b_advertiser_profiles → vista Productor
+```
 
-**MIS CAMPAÑAS:**
-- Lista de butacas contratadas con estado visible
-- Por cada butaca: cartel escenario, función, ciudad/cobertura, guión, estado
-- Placeholder para métricas futuras
+### Marketplace — vista según rol
 
-**MARKETPLACE:**
-- Grid de cards con cartel MP4 (hover-to-play)
-- Cada card: nombre escenario, función o fase, badges LIBRE/OCUPADO por ciudad
-- Butacas con pocas ciudades → efecto titilante en badges LIBRE
-- Al pulsar ciudad LIBRE → panel lateral:
-  - Nombre del Productor
-  - Guión (texto con contador de caracteres)
-  - Selector cobertura: GIRA_MUNDIAL / GIRA_NACIONAL / SALA_CIUDAD [dropdown cityList]
-  - Precio calculado automáticamente desde bs_tarifas
-  - Botón: RESERVAR BUTACA
-- Ciudad pasa a OCUPADO → butaca creada en bs_butacas con estado EN_CASTING
+**Vista DIRECTOR/MONTADOR:**
+- Header fijo: "CONTRATACIÓN PARA LA PRÓXIMA FASE LUNAR"
+- Grid 4 columnas scrolleable, agrupado por canal
+- Por canal: cartel MP4 hover-to-play + fila PC (T1-T4) + fila Móvil (T1-T4)
+- Cada slot muestra estado:
+  - 🟢 LIBRE → nadie lo ha contratado
+  - 🔴 GLOBAL → GIRA_MUNDIAL activo, en producción
+  - 🔴 NACIONAL → GIRA_NACIONAL activo, en producción
+  - 🟡 LOCAL → contrato de ciudad activo, Montador puede practicar
+- Botón ESTUDIO MARKETING visible para todos los roles
 
-**COMUNIDAD:**
-- Tablón editorial BRO7VISION (cards título + imagen + texto)
-- Sección Avisos de Compra Conjunta
-- Botón PUBLICAR AVISO → modal: producto, cantidad, descripción
-- Crea aviso en tabla avisos con categoría 'COMPRA_CONJUNTA'
+**Vista PRODUCTOR/BUSINESS:**
+- Mismo header y grid
+- Cada slot muestra badges con precios y selector de cobertura
+- Al pulsar slot LIBRE → panel lateral con selector cobertura + ciudades + precio + RESERVAR BUTACA
+- getCitiesForCobertura() filtra automáticamente megas/minis según cobertura elegida
 
-### Perfil DIRECTOR/MONTADOR — 2 pestañas
+### Estudio Marketing
+- Accesible para Directores, Montadores y Productores
+- **GALERÍA:** feed vertical scrolleable, piezas a ~720px centrado
+  - Sección HORIZONTAL: iframes 16:9, flechas navegación
+  - Sección VERTICAL: iframes 9:16 (~320px ancho, formato teléfono), flechas navegación
+  - Videos reales subidos por RGartner con ejemplos de marcas simuladas
+- **BLOG:** conectado a bs_estudio_blog
+  - Estilo tabloide/periódico sensacionalista
+  - Card destacada (destacado=true): título enorme, Playfair Display
+  - Grid 2 columnas para el resto
+  - Modal artículo completo con ← VOLVER AL BLOG
+  - RGartner añade artículos desde Supabase Table Editor
 
-**REFERENCIA:**
-- Grid de piezas aprobadas como benchmark de calidad
-- Cada card: cartel + tipo espacio + cobertura + descripción
+### Pantalla EN_CASTING
+- Se muestra cuando estado ≠ 'CONTRATADO'
+- Estética cinematográfica Star Wars con texto grande
+- Para aprobar manualmente: UPDATE b_creator_profiles SET estado='CONTRATADO' WHERE id='auth_uid'
 
-**MIS RODAJES:**
-- Lista de rodajes asignados con estado del flujo
-- POSTULACIONES ABIERTAS: butacas en estado EN_CASTING
-- Por cada postulación: cartel, función, guión del Productor, precio, botón POSTULARME
-- Una vez asignado → Montador sube Pieza Final para aprobación
+---
+
+## REPARTOS ECONÓMICOS
+
+```
+Halos Pay (ciudadanos → creadores TikTok-style):   60% Creador / 40% BRO7VISION
+Directores BroStories video/audio:                 70% Director / 30% BRO7VISION
+Montadores videos Reality (bs_butacas):            35% Montador / 65% BRO7VISION
+Packs Publicitarios completos:                     Pendiente de definir
+```
+
+---
+
+## PRECIOS POR COBERTURA
+
+```
+Cobertura            Precio    Estudio 65%   Montador 35%   Ciudades
+────────────────────────────────────────────────────────────────────
+SALA_CIUDAD           20€         13€            7€          1 mini
+SALA_GRAN_CIUDAD      60€         39€           21€          1 mega
+GIRA_REGIONAL         80€         52€           28€          5 mini
+GIRA_GRAN_REGIONAL   160€        104€           56€          9 mini
+METROPOLIS           350€        227€          123€          7 mega
+GIRA_NACIONAL        500€        325€          175€          nacional
+GIRA_MUNDIAL         800€        520€          280€          internacional
+```
+
+GIRA_NACIONAL / GIRA_MUNDIAL: 1 escenario × 1 función exclusivo.
+No bloquea otros escenarios ni funciones.
+Precios estimativos para Fase 1. A validar con audiencia real.
 
 ---
 
@@ -512,25 +598,6 @@ DÍA +7 (lunes)   → Termina la fase. Piezas Finales se borran de R2.
 
 ---
 
-## PRECIOS POR COBERTURA
-
-```
-Cobertura            Precio/butaca   Estudio 65%   Montador 35%
-──────────────────────────────────────────────────────────────
-SALA_CIUDAD              20€            13€            7€
-SALA_GRAN_CIUDAD         60€            39€           21€
-GIRA_REGIONAL           120€            78€           42€
-GIRA_GRAN_REGIONAL      200€           130€           70€
-GIRA_NACIONAL           500€           325€          175€
-GIRA_MUNDIAL            800€           520€          280€
-```
-
-GIRA_NACIONAL / GIRA_MUNDIAL: 1 escenario × 1 función exclusivo.
-No bloquea otros escenarios ni funciones.
-Precios estimativos para Fase 1. A validar con audiencia real.
-
----
-
 ## VIDEOMAP — SISTEMA SEPARADO
 
 Videos de ciudad/zona para inmersión geográfica del usuario en sectores.
@@ -549,3 +616,6 @@ Sistema completamente independiente de Reality y citycodes.js.
 - El campo `id` en perfiles enlaza con `auth.uid()` — no existe columna `user_id`
 - Videos base en R2 nunca se borran. Solo se borran las Piezas Finales al terminar cada fase.
 - RLS activo en todas las tablas bs_*
+- BackStage solo disponible en PC. Bloqueado en móvil/tablet.
+- VITE_SHOW_STUDIO=true solo en .env.local — nunca en producción
+- Email SMTP: Brevo con dominio bro7vision.com verificado en Namecheap

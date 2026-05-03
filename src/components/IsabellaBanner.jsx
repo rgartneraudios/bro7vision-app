@@ -27,6 +27,7 @@ export default function IsabellaBanner({
   sessionCity, sessionCP, realItems = [],
   stripVisible, stripCards, stripLabel,
   enviar, mensaje, loading,
+  esPatrocinado = false,
   onEntityFocus, onOpenTerminal, onSetActiveIndex,
   onInvokeOsos, onInvokeMapache, setIntent,
   onPersonajeChange,
@@ -144,6 +145,11 @@ export default function IsabellaBanner({
             <span style={{ color: '#F7C8BE', fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
               {nombrePersonaje}
             </span>
+            {esPatrocinado && (
+              <span style={{ fontSize: 8, fontWeight: 900, letterSpacing: '0.2em', color: '#000', background: '#FACC15', borderRadius: 3, padding: '1px 5px', textTransform: 'uppercase' }}>
+                PATROCINADO
+              </span>
+            )}
           </div>
 
           {/* Sin mensaje ni card */}

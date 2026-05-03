@@ -32,6 +32,7 @@ export default function EvelynBanner({
   enviar,
   mensaje,
   loading,
+  esPatrocinado = false,
   avisoEnConstruccion,
   onAvisoConectar,
   onAvisoPublicar,
@@ -237,9 +238,16 @@ export default function EvelynBanner({
         >
           {/* Sin mensaje ni card */}
           {!currentMsg && !selectedCard && !loading && (
-            <p style={{ color: `${colorPrimario}99`, fontSize: 10, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
-              ◈ {nombrePersonaje} · AVISOS
-            </p>
+            <div className="flex items-center gap-2">
+              <p style={{ color: `${colorPrimario}99`, fontSize: 10, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
+                ◈ {nombrePersonaje} · AVISOS
+              </p>
+              {esPatrocinado && (
+                <span style={{ fontSize: 8, fontWeight: 900, letterSpacing: '0.2em', color: '#000', background: '#FACC15', borderRadius: 3, padding: '1px 5px', textTransform: 'uppercase' }}>
+                  PATROCINADO
+                </span>
+              )}
+            </div>
           )}
 
           {/* Loading */}

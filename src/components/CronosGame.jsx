@@ -36,18 +36,18 @@ const CronosGame = ({ onWin, onClose }) => {
   const assets = useRef({
     playerImg: new Image(), 
     enemyImgs: [],          
-    gemas: Array.from({ length: 9 }, (_, i) => { const img = new Image(); img.src = `/images/gema${i+1}.png`; return img; }),
-    positivos: Array.from({ length: 9 }, (_, i) => { const img = new Image(); img.src = `/images/Positivo${i+1}.png`; return img; }),
-    negativos: Array.from({ length: 9 }, (_, i) => { const img = new Image(); img.src = `/images/Negativo${i+1}.png`; return img; }),
+    gemas: Array.from({ length: 9 }, (_, i) => { const img = new Image(); img.src = `/assets/gema${i+1}.png`; return img; }),
+    positivos: Array.from({ length: 9 }, (_, i) => { const img = new Image(); img.src = `/assets/Positivo${i+1}.png`; return img; }),
+    negativos: Array.from({ length: 9 }, (_, i) => { const img = new Image(); img.src = `/assets/Negativo${i+1}.png`; return img; }),
     audios: {}
   });
 
   // Carga de imágenes
   useEffect(() => {
-    assets.current.playerImg.src = '/images/Player.png';
+    assets.current.playerImg.src = '/assets/Player.png';
     for(let i=1; i<=4; i++) {
         const img = new Image();
-        img.src = `/images/Enemigo${i}.png`;
+        img.src = `/assets/Enemigo${i}.png`;
         assets.current.enemyImgs.push(img);
     }
   }, []);

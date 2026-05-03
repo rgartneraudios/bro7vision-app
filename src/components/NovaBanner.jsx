@@ -16,6 +16,7 @@ export default function NovaBanner({
   onEntityFocus, onOpenTerminal, onSetActiveIndex,
   onInvokeOsos, onInvokeMapache, setIntent,
   novaMensaje, novaLoading, onNovaEnviar,
+  esPatrocinado = false,
   onHandoff,        // ← necesario para NOVA_CIERRE
 }) {
   const [display, setDisplay]       = useState('');
@@ -105,9 +106,16 @@ export default function NovaBanner({
 
           {/* Sin mensaje ni card */}
           {!currentMsg && !selectedCard && (
-            <p className="text-amber-700/60 text-xs font-bold uppercase tracking-widest">
-              ◈ NOVA · EN LÍNEA
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-amber-700/60 text-xs font-bold uppercase tracking-widest">
+                ◈ NOVA · EN LÍNEA
+              </p>
+              {esPatrocinado && (
+                <span style={{ fontSize: 8, fontWeight: 900, letterSpacing: '0.2em', color: '#000', background: '#FACC15', borderRadius: 3, padding: '1px 5px', textTransform: 'uppercase' }}>
+                  PATROCINADO
+                </span>
+              )}
+            </div>
           )}
 
           {/* Procesando */}

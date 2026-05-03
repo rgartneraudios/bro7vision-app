@@ -1,23 +1,77 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../supabaseClient';
 import MarketplaceTab from './MarketplaceTab';
+import MencionesTab from './MencionesTab';
+import SlideRailTab from './SlideRailTab';
+import GamesTab from './GamesTab';
+import AudioTab from './AudioTab';
+import EstudioMarketingTab from './EstudioMarketing';
+import BlogTab from './BlogTab';
+
+const SYNE = "'Syne', sans-serif";
+
+const PlaceholderTab = ({ icono, titulo, texto }) => (
+  <div className="flex flex-col items-center justify-center h-64 text-center px-6 gap-3">
+    <div className="text-3xl">{icono}</div>
+    <p className="text-white text-sm font-bold uppercase tracking-widest">{titulo}</p>
+    <p className="text-gray-600 text-xs max-w-xs leading-relaxed">{texto}</p>
+    <span className="text-[9px] text-gray-700 border border-white/5 px-3 py-1 rounded uppercase tracking-widest mt-1">
+      FASE 0 · PRÓXIMAMENTE
+    </span>
+  </div>
+);
 
 const BackStage = ({ session, onLogout }) => {
-  const [profile, setProfile]   = useState(null);
-  const [loading, setLoading]   = useState(true);
-  const [activeTab, setActiveTab] = useState('marketplace');
+  const [profile, setProfile]     = useState(null);
+  const [loading, setLoading]     = useState(true);
+  const [activeTab, setActiveTab] = useState('fondos');
+  const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024);
 
   useEffect(() => {
-    supabase
-      .from('b_advertiser_profiles')
+    const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const fetchProfile = useCallback(async () => {
+    if (!session) { setLoading(false); return; }
+    const role  = session.user.user_metadata?.role;
+    const table = role === 'director' ? 'b_creator_profiles' : 'b_advertiser_profiles';
+    const { data } = await supabase
+      .from(table)
       .select('*')
       .eq('id', session.user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        setProfile(data);
-        setLoading(false);
-      });
+      .maybeSingle();
+    setProfile(data);
+    setLoading(false);
   }, [session]);
+
+  useEffect(() => { fetchProfile(); }, [fetchProfile]);
+
+  // Re-fetch cada 10 s mientras el perfil sigue EN_CASTING
+  useEffect(() => {
+    if (profile?.estado !== 'EN_CASTING') return;
+    const id = setInterval(fetchProfile, 10000);
+    return () => clearInterval(id);
+  }, [profile?.estado, fetchProfile]);
+
+  if (!isDesktop) {
+    return (
+      <div className="fixed inset-0 bg-zinc-950 flex flex-col items-center justify-center font-mono text-white p-8">
+        <div className="text-center max-w-xs">
+          <div className="text-5xl mb-6">🖥️</div>
+          <h2 className="text-xl font-bold text-white mb-3 tracking-tight">BACKSTAGE SOLO EN PC</h2>
+          <p className="text-gray-500 text-sm leading-relaxed mb-8">
+            El panel de producción requiere pantalla de escritorio.<br />
+            Accede desde un ordenador para gestionar tus espacios.
+          </p>
+          <button onClick={onLogout} className="text-[9px] text-gray-600 hover:text-white uppercase tracking-widest transition-colors">
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -27,34 +81,173 @@ const BackStage = ({ session, onLogout }) => {
     );
   }
 
-  // Pantalla de espera: perfil no existe o pendiente de aprobación
+  // ── Pantalla de espera: EN CASTING ──────────────────────────────────────
   if (!profile || profile.estado === 'EN_CASTING') {
     return (
-      <div className="fixed inset-0 bg-zinc-950 flex flex-col items-center justify-center font-mono text-white p-8">
-        <div className="text-center max-w-sm">
-          <div className="text-4xl mb-5">🎬</div>
-          <h2 className="text-base font-bold text-white mb-2 tracking-tight">SOLICITUD EN REVISIÓN</h2>
-          <p className="text-gray-500 text-xs leading-relaxed mb-6">
-            El Estudio está evaluando tu cuenta. Una vez aprobada tendrás acceso completo al BackStage y podrás contratar tus primeras butacas.
+      <div className="fixed inset-0 overflow-hidden flex flex-col items-center" style={{ background: '#000' }}>
+
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap');
+
+          @keyframes sw-crawl {
+            from { transform: rotateX(28deg) translateY(85vh); }
+            to   { transform: rotateX(28deg) translateY(-380%); }
+          }
+          @keyframes bio-pulse {
+            0%,100% { text-shadow: 0 0 14px #00ffc8, 0 0 40px #00ffc870, 0 0 80px #00ffc840; }
+            50%      { text-shadow: 0 0 24px #00ffc8, 0 0 65px #00ffc8a0, 0 0 130px #00ffc860; }
+          }
+          @keyframes dot-blink {
+            0%,100% { opacity: 1; } 50% { opacity: 0.3; }
+          }
+        `}</style>
+
+        {/* Campo de estrellas */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          backgroundImage: `
+            radial-gradient(1px 1px at 8%  12%, rgba(255,255,255,.55) 0%, transparent 100%),
+            radial-gradient(1px 1px at 22% 7%,  rgba(255,255,255,.35) 0%, transparent 100%),
+            radial-gradient(1px 1px at 38% 28%, rgba(255,255,255,.45) 0%, transparent 100%),
+            radial-gradient(1px 1px at 53% 5%,  rgba(255,255,255,.30) 0%, transparent 100%),
+            radial-gradient(1px 1px at 68% 18%, rgba(255,255,255,.50) 0%, transparent 100%),
+            radial-gradient(1px 1px at 80% 42%, rgba(255,255,255,.40) 0%, transparent 100%),
+            radial-gradient(1px 1px at 92% 9%,  rgba(255,255,255,.30) 0%, transparent 100%),
+            radial-gradient(1px 1px at 5%  58%, rgba(255,255,255,.35) 0%, transparent 100%),
+            radial-gradient(1px 1px at 30% 72%, rgba(255,255,255,.40) 0%, transparent 100%),
+            radial-gradient(1px 1px at 60% 60%, rgba(255,255,255,.45) 0%, transparent 100%),
+            radial-gradient(1px 1px at 75% 80%, rgba(255,255,255,.30) 0%, transparent 100%),
+            radial-gradient(1px 1px at 90% 68%, rgba(255,255,255,.50) 0%, transparent 100%),
+            radial-gradient(1px 1px at 14% 88%, rgba(0,255,200,.25)   0%, transparent 100%),
+            radial-gradient(1px 1px at 47% 93%, rgba(0,255,200,.20)   0%, transparent 100%),
+            radial-gradient(1px 1px at 83% 55%, rgba(0,255,200,.18)   0%, transparent 100%)
+          `,
+          backgroundColor: '#000',
+        }} />
+
+        {/* Logo BRO7VISION */}
+        <div className="relative z-10 mt-12 text-center select-none">
+          <h1 style={{
+            fontFamily: "'Orbitron', monospace",
+            fontSize: 'clamp(1.6rem, 5vw, 3rem)',
+            fontWeight: 900,
+            color: '#00ffc8',
+            letterSpacing: '0.45em',
+            animation: 'bio-pulse 3s ease-in-out infinite',
+          }}>
+            BRO7VISION
+          </h1>
+          <p style={{
+            fontFamily: "'Orbitron', monospace",
+            fontSize: '0.5rem',
+            color: 'rgba(0,255,200,0.4)',
+            letterSpacing: '0.7em',
+            marginTop: '0.5rem',
+          }}>
+            BACKSTAGE STUDIO
           </p>
-          <div className="inline-flex items-center gap-2 text-[9px] text-amber-400 border border-amber-900/40 bg-amber-950/20 px-4 py-2 rounded">
-            <span className="animate-pulse">●</span>
-            ESTADO: EN CASTING
+        </div>
+
+        {/* Contenedor perspectiva — crawl */}
+        <div
+          className="relative z-10 flex-1 w-full"
+          style={{
+            perspective: '380px',
+            perspectiveOrigin: '50% 0%',
+            overflow: 'hidden',
+            maskImage: 'linear-gradient(to bottom, transparent 0%, black 18%, black 78%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 18%, black 78%, transparent 100%)',
+          }}
+        >
+          <div style={{
+            width: '72%',
+            maxWidth: '480px',
+            margin: '0 auto',
+            textAlign: 'center',
+            animation: 'sw-crawl 30s linear infinite',
+            transform: 'rotateX(28deg) translateY(85vh)',
+            paddingBottom: '5rem',
+          }}>
+
+            <p style={{
+              fontFamily: "'Orbitron', monospace",
+              fontSize: 'clamp(1.5rem, 4.5vw, 2.4rem)',
+              fontWeight: 900,
+              color: '#00ffc8',
+              textShadow: '0 0 12px #00ffc8, 0 0 35px rgba(0,255,200,.55)',
+              lineHeight: 1.35,
+              letterSpacing: '0.08em',
+              marginBottom: '2rem',
+            }}>
+              SOLICITUD<br />EN REVISIÓN
+            </p>
+
+            <p style={{
+              fontSize: 'clamp(0.9rem, 2.8vw, 1.2rem)',
+              color: '#80fff0',
+              lineHeight: 2,
+              textShadow: '0 0 8px rgba(0,255,200,.35)',
+              marginBottom: '1.6rem',
+            }}>
+              El Estudio está evaluando<br />tu expediente de candidatura.
+            </p>
+
+            <p style={{
+              fontSize: 'clamp(0.8rem, 2.2vw, 1.05rem)',
+              color: '#4dccb8',
+              lineHeight: 2.1,
+              textShadow: '0 0 6px rgba(0,255,200,.25)',
+              marginBottom: '2.2rem',
+            }}>
+              Una vez aprobada tu candidatura,<br />
+              tendrás acceso completo al BackStage<br />
+              y podrás contratar tus primeras butacas.
+            </p>
+
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.6rem',
+              padding: '0.55rem 1.6rem',
+              border: '1px solid rgba(0,255,200,.3)',
+              color: '#00ffc8',
+              fontSize: '0.72rem',
+              letterSpacing: '0.28em',
+              textShadow: '0 0 8px #00ffc8',
+              fontFamily: "'Orbitron', monospace",
+              fontWeight: 700,
+            }}>
+              <span style={{ animation: 'dot-blink 1.4s ease-in-out infinite' }}>●</span>
+              ESTADO: EN CASTING
+            </div>
           </div>
-          <div className="mt-8 border-t border-white/5 pt-6">
-            <button
-              onClick={onLogout}
-              className="text-[9px] text-gray-600 hover:text-white uppercase tracking-widest transition-colors"
-            >
-              Cerrar sesión
-            </button>
-          </div>
+        </div>
+
+        {/* Cerrar sesión */}
+        <div className="relative z-10 pb-8">
+          <button
+            onClick={onLogout}
+            style={{
+              fontFamily: "'Orbitron', monospace",
+              fontSize: '0.6rem',
+              color: 'rgba(0,255,200,.3)',
+              letterSpacing: '0.35em',
+              textTransform: 'uppercase',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'color 0.3s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.color = '#00ffc8'}
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(0,255,200,.3)'}
+          >
+            Cerrar sesión
+          </button>
         </div>
       </div>
     );
   }
 
-  // Perfil suspendido
+  // ── Perfil suspendido ────────────────────────────────────────────────────
   if (profile.estado === 'SUSPENDIDO') {
     return (
       <div className="fixed inset-0 bg-zinc-950 flex flex-col items-center justify-center font-mono text-white p-8">
@@ -72,32 +265,64 @@ const BackStage = ({ session, onLogout }) => {
     );
   }
 
-  const tabs = [
-    { id: 'campanas',    label: 'MIS CAMPAÑAS',  soon: true  },
-    { id: 'marketplace', label: 'MARKETPLACE',   soon: false },
-    { id: 'comunidad',   label: 'COMUNIDAD',     soon: true  },
+  // ── BackStage principal ──────────────────────────────────────────────────
+  const rolUsuario  = session?.user?.user_metadata?.role;
+  const isProductor = rolUsuario === 'advertiser';
+
+  const TABS_PRODUCTOR = [
+    { id: 'campanas',   label: 'MIS CAMPAÑAS',         soon: true  },
+    { id: 'menciones',  label: 'MENCIONES PERSONAJES',  soon: false },
+    { id: 'fondos',     label: 'FONDOS REALITY',        soon: false },
+    { id: 'slide_rail', label: 'SLIDE RAIL',            soon: false },
+    { id: 'games',      label: 'GAMES',                 soon: false },
+    { id: 'audio',      label: 'AUDIO',                 soon: false },
+    { id: 'comunidad',  label: 'COMUNIDAD',             soon: true  },
+    { id: 'estudio',    label: 'ESTUDIO MARKETING',     soon: false },
+    { id: 'blog',       label: 'BLOG',                  soon: false },
   ];
+
+  const TABS_DIRECTOR = [
+    { id: 'campanas',   label: 'MIS CAMPAÑAS',      soon: true  },
+    { id: 'fondos',     label: 'FONDOS REALITY',    soon: false },
+    { id: 'slide_rail', label: 'SLIDE RAIL',        soon: false },
+    { id: 'comunidad',  label: 'COMUNIDAD',         soon: true  },
+    { id: 'estudio',    label: 'ESTUDIO MARKETING', soon: false },
+    { id: 'blog',       label: 'BLOG',              soon: false },
+  ];
+
+  const tabs = isProductor ? TABS_PRODUCTOR : TABS_DIRECTOR;
 
   return (
     <div className="fixed inset-0 bg-zinc-950 flex flex-col font-mono text-white overflow-hidden">
 
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&display=swap');`}</style>
+
       {/* Topbar */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-white/5 bg-black/40 shrink-0">
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-bold tracking-tight">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-black/40 shrink-0">
+        <div className="flex items-center gap-4">
+          <span style={{ fontFamily: SYNE }} className="text-2xl font-black tracking-tight">
             BRO7VISION <span className="text-purple-400">BACKSTAGE</span>
           </span>
-          <span className="hidden sm:inline text-[8px] text-gray-600 uppercase tracking-[0.2em] border border-white/5 px-2 py-0.5 rounded">
-            PRODUCTOR
-          </span>
+          {session?.user?.user_metadata?.role === 'director' ? (
+            <span className="hidden sm:inline text-base font-black uppercase tracking-[0.2em] px-3 py-1 rounded border"
+              style={{ color: '#00ff88', borderColor: 'rgba(0,255,136,0.3)', textShadow: '0 0 8px rgba(0,255,136,0.5)' }}>
+              DIRECTOR
+            </span>
+          ) : (
+            <span className="hidden sm:inline text-base font-black uppercase tracking-[0.2em] px-3 py-1 rounded border"
+              style={{ color: '#ff00ff', borderColor: 'rgba(255,0,255,0.3)', textShadow: '0 0 8px rgba(255,0,255,0.5)' }}>
+              PRODUCTOR
+            </span>
+          )}
         </div>
-        <div className="flex items-center gap-4">
-          <span className="hidden sm:block text-[10px] text-gray-400 truncate max-w-[200px]">
-            {profile.razon_social || session.user.email}
+        <div className="flex items-center gap-5">
+          <span className="hidden sm:block text-sm text-gray-300 font-semibold truncate max-w-[240px]" style={{ fontFamily: SYNE }}>
+            {profile.razon_social || profile.alias || session?.user?.email}
           </span>
           <button
             onClick={onLogout}
-            className="text-[9px] text-gray-500 hover:text-white border border-white/8 hover:border-white/25 px-2.5 py-1 rounded transition-all uppercase tracking-wider"
+            className="text-sm font-semibold text-gray-400 hover:text-white border border-white/10 hover:border-white/30 px-4 py-2 rounded transition-all uppercase tracking-wider"
+            style={{ fontFamily: SYNE }}
           >
             Salir
           </button>
@@ -110,7 +335,8 @@ const BackStage = ({ session, onLogout }) => {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`relative px-6 py-3 text-[10px] font-bold uppercase tracking-widest transition-all ${
+            style={{ fontFamily: SYNE }}
+            className={`relative px-4 py-4 text-sm font-bold uppercase tracking-widest transition-all ${
               activeTab === tab.id
                 ? 'text-white border-b-2 border-purple-500'
                 : 'text-gray-600 hover:text-gray-400'
@@ -118,7 +344,7 @@ const BackStage = ({ session, onLogout }) => {
           >
             {tab.label}
             {tab.soon && activeTab !== tab.id && (
-              <span className="ml-1.5 text-[7px] text-gray-700 normal-case font-normal">pronto</span>
+              <span className="ml-1.5 text-[8px] text-gray-700 normal-case font-normal">pronto</span>
             )}
           </button>
         ))}
@@ -126,21 +352,43 @@ const BackStage = ({ session, onLogout }) => {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden">
-        {activeTab === 'marketplace' && (
+
+        {activeTab === 'fondos' && (
           <MarketplaceTab session={session} profile={profile} />
         )}
+
         {activeTab === 'campanas' && (
-          <div className="flex flex-col items-center justify-center h-64 text-center px-6">
-            <div className="text-2xl mb-3">📋</div>
-            <p className="text-gray-600 text-xs">MIS CAMPAÑAS — Disponible próximamente</p>
-          </div>
+          <PlaceholderTab icono="📋" titulo="MIS CAMPAÑAS" texto="Gestiona tus campañas activas y su rendimiento." />
         )}
+
+        {activeTab === 'menciones' && (
+          <MencionesTab />
+        )}
+
+        {activeTab === 'slide_rail' && (
+          <SlideRailTab role={rolUsuario} />
+        )}
+
+        {activeTab === 'games' && (
+          <GamesTab />
+        )}
+
+        {activeTab === 'audio' && (
+          <AudioTab />
+        )}
+
         {activeTab === 'comunidad' && (
-          <div className="flex flex-col items-center justify-center h-64 text-center px-6">
-            <div className="text-2xl mb-3">📢</div>
-            <p className="text-gray-600 text-xs">COMUNIDAD — Disponible próximamente</p>
-          </div>
+          <PlaceholderTab icono="📢" titulo="COMUNIDAD" texto="Espacio de colaboración y noticias del ecosistema Bro7Vision." />
         )}
+
+        {activeTab === 'estudio' && (
+          <EstudioMarketingTab />
+        )}
+
+        {activeTab === 'blog' && (
+          <BlogTab />
+        )}
+
       </div>
     </div>
   );

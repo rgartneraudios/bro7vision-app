@@ -31,6 +31,7 @@ export default function MapacheBanner({
   enviar,
   mensaje,
   loading,
+  esPatrocinado = false,
   // ── Callbacks ─────────────────────────────────────
   onHandoff,          // ← necesario para AUDIO_PLAY
   onInvokeOsos,
@@ -168,6 +169,11 @@ export default function MapacheBanner({
               <span style={{ color, fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
                 {nombrePersonaje}
               </span>
+              {esPatrocinado && (
+                <span style={{ fontSize: 8, fontWeight: 900, letterSpacing: '0.2em', color: '#000', background: '#FACC15', borderRadius: 3, padding: '1px 5px', textTransform: 'uppercase' }}>
+                  PATROCINADO
+                </span>
+              )}
             </div>
           )}
 

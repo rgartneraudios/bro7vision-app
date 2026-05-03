@@ -15,7 +15,7 @@ const INFO = {
   puffo: { nombre: 'PUFFO', icono: '🐻' },
 };
 
-export default function OsosBanner({ mensaje, oso_id }) {
+export default function OsosBanner({ mensaje, oso_id, esPatrocinado = false }) {
   const [display, setDisplay]       = useState('');
   const [cursor, setCursor]         = useState(true);
   const [currentMsg, setCurrentMsg] = useState('');
@@ -92,6 +92,11 @@ export default function OsosBanner({ mensaje, oso_id }) {
             <span style={{ color, fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
               {nombrePersonaje}
             </span>
+            {esPatrocinado && (
+              <span style={{ fontSize: 8, fontWeight: 900, letterSpacing: '0.2em', color: '#000', background: '#FACC15', borderRadius: 3, padding: '1px 5px', textTransform: 'uppercase' }}>
+                PATROCINADO
+              </span>
+            )}
           </div>
 
           {!currentMsg && (

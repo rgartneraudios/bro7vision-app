@@ -15,30 +15,36 @@ const DirectorAccess = ({ onBack }) => {
     setMessage(null);
 
     try {
-      // 1. Crear Usuario en Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { role: 'director' } }, // Rol especial
+        options: {
+          data: {
+            role:          'director',
+            alias:         alias,
+            portfolio_url: portfolio,
+          },
+        },
       });
       if (authError) throw authError;
 
-      // 2. Crear Perfil en la tabla creator_profiles
       if (authData.user) {
         const { error: profileError } = await supabase
-          .from('creator_profiles')
-          .insert([
-            {
-              id: authData.user.id,
-              alias: alias,
-              portfolio_url: portfolio,
-              nivel: 'estandar'
-            }
-          ]);
+          .from('b_creator_profiles')
+          .insert([{
+            id:            authData.user.id,
+            alias:         alias,
+            portfolio_url: portfolio,
+            nivel:         'estandar',
+          }]);
         if (profileError) throw profileError;
       }
 
-      setMessage("🎬 ¡Corte! Estás dentro. Revisa tu email para confirmar.");
+      setMessage(
+        authData.session
+          ? '🎬 ¡Corte! Estás dentro.'
+          : '📧 Revisa tu email y confirma la cuenta para activar tu perfil de Director.'
+      );
     } catch (error) {
       setMessage(`❌ Error de casting: ${error.message}`);
     } finally {

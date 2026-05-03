@@ -11,32 +11,45 @@ const BusinessAccess = ({ onBack }) => {
 
   const handleBusinessRegister = async (e) => {
     e.preventDefault();
+    if (!sector) { setMessage('❌ Selecciona un sector comercial.'); return; }
     setLoading(true);
     setMessage(null);
 
     try {
-      // 1. Crear Usuario en Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { role: 'advertiser' } },
+        options: {
+          data: {
+            role:         'advertiser',
+            razon_social: razonSocial,
+            sector:       sector,
+          },
+        },
       });
       if (authError) throw authError;
 
-      // 2. Crear Perfil en b_advertiser_profiles
-      if (authData.user) {
-        const { error: profileError } = await supabase
-          .from('b_advertiser_profiles')
-          .insert([{
-            id:           authData.user.id,
-            razon_social: razonSocial,
-            sector:       sector,
-            estado:       'EN_CASTING',
-          }]);
-        if (profileError) throw profileError;
-      }
+     if (authData.user) {
+  const { error: profileError } = await supabase
+    .from('b_advertiser_profiles')
+    .upsert([{
+      id:           authData.user.id,
+      razon_social: razonSocial,
+      sector:       sector,
+      estado:       'EN_CASTING',
+    }], { onConflict: 'id' });
+  
+  // No lanzamos error si falla — el trigger o confirmación lo creará
+  if (profileError) {
+    console.warn('Perfil diferido:', profileError.message);
+  }
+}
 
-      setMessage("💼 Cuenta corporativa creada. Bienvenido al ecosistema.");
+      setMessage(
+        authData.session
+          ? '💼 Cuenta corporativa creada. Bienvenido al ecosistema.'
+          : '📧 Revisa tu email y confirma la cuenta. Tu perfil quedará activo al verificar.'
+      );
     } catch (error) {
       setMessage(`❌ Error de registro: ${error.message}`);
     } finally {

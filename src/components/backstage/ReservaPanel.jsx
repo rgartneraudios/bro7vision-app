@@ -110,12 +110,14 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
       {/* Panel */}
       <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-[420px] bg-zinc-950 border-l border-white/10 flex flex-col shadow-2xl font-mono">
 
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=Inter:wght@400;500;600;700&display=swap');`}</style>
+
         {/* Header */}
         <div className="flex items-start justify-between px-6 py-4 border-b border-white/5 bg-black/30 shrink-0">
           <div>
-            <h3 className="text-sm font-bold text-white tracking-tight">RESERVAR BUTACA</h3>
-            <p className="text-[10px] text-gray-500 mt-1">{slotLabel}</p>
-            <p className="text-[9px] text-gray-600">
+            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800 }} className="text-base font-black text-white tracking-tight">RESERVAR BUTACA</h3>
+            <p style={{ fontFamily: "'Inter', sans-serif" }} className="text-sm text-gray-400 mt-1">{slotLabel}</p>
+            <p style={{ fontFamily: "'Inter', sans-serif" }} className="text-xs text-gray-600">
               {slot.dispositivo === 0 ? 'PC' : 'Móvil'} · Escenario #{slot.canal}
             </p>
           </div>
@@ -129,8 +131,8 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
 
           {/* Productor */}
           <div>
-            <label className="block text-[9px] text-gray-400 uppercase tracking-widest mb-1.5 font-bold">Productor</label>
-            <div className="text-xs text-white/80 bg-white/5 border border-white/8 rounded px-3 py-2.5">
+            <label style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }} className="block text-xs text-gray-400 uppercase tracking-widest mb-1.5">Productor</label>
+            <div style={{ fontFamily: "'Inter', sans-serif" }} className="text-sm text-white/80 bg-white/5 border border-white/8 rounded px-3 py-2.5">
               {profile?.razon_social || session.user.email}
             </div>
           </div>
@@ -168,17 +170,18 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
 
           {/* Cobertura */}
           <div>
-            <label className="block text-[9px] text-gray-400 uppercase tracking-widest mb-1.5 font-bold">Cobertura</label>
+            <label style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }} className="block text-xs text-gray-400 uppercase tracking-widest mb-1.5">Cobertura</label>
             <div className="space-y-1.5">
               {COBERTURAS.map(c => {
                 const tarifaPrecio = tarifas.find(t => t.cobertura === c.id)?.precio ?? c.precio;
                 return (
                   <label
                     key={c.id}
-                    className={`flex items-center justify-between px-3 py-2 rounded border cursor-pointer transition-all ${
+                    style={{ fontFamily: "'Inter', sans-serif" }}
+                    className={`flex items-center justify-between px-4 py-2.5 rounded border cursor-pointer transition-all ${
                       cobertura === c.id
                         ? 'border-purple-500/60 bg-purple-950/30 text-white'
-                        : 'border-white/5 text-gray-500 hover:border-white/15 hover:text-gray-300'
+                        : 'border-white/5 text-gray-400 hover:border-white/15 hover:text-gray-200'
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -190,9 +193,9 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
                         onChange={() => { setCobertura(c.id); setCiudad(''); }}
                         className="accent-purple-500"
                       />
-                      <span className="text-[11px] font-medium">{c.label}</span>
+                      <span className="text-sm font-medium">{c.label}</span>
                     </div>
-                    <span className="text-[10px] font-bold text-purple-400">{tarifaPrecio}€</span>
+                    <span className="text-sm font-bold text-purple-400">{tarifaPrecio}€</span>
                   </label>
                 );
               })}
@@ -202,11 +205,12 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
           {/* Ciudad */}
           {needsCiudad && (
             <div>
-              <label className="block text-[9px] text-gray-400 uppercase tracking-widest mb-1.5 font-bold">Ciudad</label>
+              <label style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }} className="block text-xs text-gray-400 uppercase tracking-widest mb-1.5">Ciudad</label>
               <select
                 value={ciudad}
                 onChange={e => setCiudad(e.target.value)}
-                className="w-full bg-zinc-900 border border-white/10 text-white text-xs px-3 py-2.5 rounded focus:border-purple-500 focus:outline-none transition-colors"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+                className="w-full bg-zinc-900 border border-white/10 text-white text-sm px-3 py-2.5 rounded focus:border-purple-500 focus:outline-none transition-colors"
               >
                 <option value="">Selecciona ciudad...</option>
                 {cityList.map(c => (
@@ -218,7 +222,7 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
 
           {/* Guión */}
           <div>
-            <label className="block text-[9px] text-gray-400 uppercase tracking-widest mb-1.5 font-bold">
+            <label style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }} className="block text-xs text-gray-400 uppercase tracking-widest mb-1.5">
               Guión del Anuncio
               <span className="ml-1 text-gray-600 normal-case font-normal">(brief para el Montador)</span>
             </label>
@@ -228,19 +232,20 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
               maxLength={500}
               rows={4}
               placeholder="Describe tu anuncio: producto, tono, mensaje clave, referencias visuales, lo que el Montador debe saber..."
-              className="w-full bg-zinc-900 border border-white/10 text-white text-xs px-3 py-2.5 rounded focus:border-purple-500 focus:outline-none transition-colors resize-none placeholder-gray-600"
+              style={{ fontFamily: "'Inter', sans-serif" }}
+              className="w-full bg-zinc-900 border border-white/10 text-white text-sm px-3 py-2.5 rounded focus:border-purple-500 focus:outline-none transition-colors resize-none placeholder-gray-600"
             />
-            <div className="text-right text-[9px] text-gray-600 mt-1">{guion.length}/500</div>
+            <div style={{ fontFamily: "'Inter', sans-serif" }} className="text-right text-xs text-gray-600 mt-1">{guion.length}/500</div>
           </div>
 
           {error && (
-            <div className="text-[10px] text-red-400 bg-red-950/30 border border-red-900/40 rounded px-3 py-2">
+            <div style={{ fontFamily: "'Inter', sans-serif" }} className="text-sm text-red-400 bg-red-950/30 border border-red-900/40 rounded px-3 py-2">
               {error}
             </div>
           )}
 
           {success && (
-            <div className="text-[10px] text-emerald-400 bg-emerald-950/30 border border-emerald-900/40 rounded px-3 py-2">
+            <div style={{ fontFamily: "'Inter', sans-serif" }} className="text-sm text-emerald-400 bg-emerald-950/30 border border-emerald-900/40 rounded px-3 py-2">
               ✓ Butaca reservada con estado EN_CASTING. El Estudio asignará un Montador.
             </div>
           )}
@@ -249,17 +254,18 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
         {/* Footer */}
         <div className="px-6 py-4 border-t border-white/5 bg-black/20 shrink-0">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[10px] text-gray-400 uppercase tracking-widest">Precio</span>
-            <span className="text-2xl font-bold text-white">{precio}€</span>
+            <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500 }} className="text-sm text-gray-400 uppercase tracking-widest">Precio</span>
+            <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700 }} className="text-3xl text-white">{precio}€</span>
           </div>
           <button
             onClick={handleReservar}
             disabled={loading || success}
-            className="w-full py-3.5 bg-purple-600 hover:bg-purple-500 active:bg-purple-700 text-white text-[11px] font-bold uppercase tracking-widest rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_24px_rgba(168,85,247,0.25)]"
+            style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700 }}
+            className="w-full py-3.5 bg-purple-600 hover:bg-purple-500 active:bg-purple-700 text-white text-sm font-bold uppercase tracking-widest rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_24px_rgba(168,85,247,0.25)]"
           >
             {loading ? 'PROCESANDO...' : success ? 'RESERVADO ✓' : 'RESERVAR BUTACA'}
           </button>
-          <p className="text-[9px] text-gray-600 text-center mt-2 leading-relaxed">
+          <p style={{ fontFamily: "'Inter', sans-serif" }} className="text-xs text-gray-600 text-center mt-2 leading-relaxed">
             Estado inicial: EN_CASTING · El Estudio asigna Montador disponible
           </p>
         </div>

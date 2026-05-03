@@ -44,6 +44,8 @@ export default function DesktopLayout(props) {
    novaMensaje, novaLoading, handleNovaInput, isabellaMensaje, isabellaLoading, handleIsabellaInput,
   mapacheMensaje, mapacheLoading, handleMapacheInput, evelynMensaje, evelynLoading, handleEvelynInput,
   oraculoMensaje, oraculoLoading, handleOraculoInput, rumoresMensaje, rumoresLoading, handleRumoresInput,
+  novaEsPatrocinado, isabellaEsPatrocinado, mapacheEsPatrocinado,
+  evelynEsPatrocinado, oraculoEsPatrocinado, ososEsPatrocinado,
    iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA, onShowPurchaseModal
   } = props;
 
@@ -173,12 +175,13 @@ export default function DesktopLayout(props) {
       
       {/* ── PRODUCTOS ───────────────────────────────────────────────────── */}     
       {step === 2 && intent === 'productos' && ( 
-        <NovaBanner sessionCity={sessionCity} sessionCP={sessionCP} realItems={realItems} onHandoff={handleCentralHandoff} stripVisible={stripVisible} stripCards={stripCards} stripLabel={stripLabel} onOpenTerminal={(c) => abrirTienda(c, 'novaCierre')} onSetActiveIndex={setHoloPrismaIndex} onInvokeOsos={() => setStep(1)} onInvokeMapache={() => setIntent('audios')} onEntityFocus={(u) => setActivePrismUser(u)} setIntent={setIntent} 
+        <NovaBanner sessionCity={sessionCity} sessionCP={sessionCP} realItems={realItems} onHandoff={handleCentralHandoff} stripVisible={stripVisible} stripCards={stripCards} stripLabel={stripLabel} onOpenTerminal={(c) => abrirTienda(c, 'novaCierre')} onSetActiveIndex={setHoloPrismaIndex} onInvokeOsos={() => setStep(1)} onInvokeMapache={() => setIntent('audios')} onEntityFocus={(u) => setActivePrismUser(u)} setIntent={setIntent}
         novaMensaje={novaMensaje}
   novaLoading={novaLoading}
   onNovaEnviar={handleNovaInput}
   iaMode={iaMode}
   isAdmin={isAdmin}
+  esPatrocinado={novaEsPatrocinado}
          />
       )}
       
@@ -196,6 +199,7 @@ export default function DesktopLayout(props) {
           enviar={handleIsabellaInput}
 	mensaje={isabellaMensaje}
 	loading={isabellaLoading}
+          esPatrocinado={isabellaEsPatrocinado}
           onOpenTerminal={(c) => abrirTienda(c, 'isabellaCierre')}
           onSetActiveIndex={setHoloPrismaIndex}
           onInvokeOsos={() => setStep(1)}
@@ -222,6 +226,7 @@ export default function DesktopLayout(props) {
           enviar={handleEvelynInput}
 	mensaje={evelynMensaje}
 	loading={evelynLoading}
+          esPatrocinado={evelynEsPatrocinado}
 	setProjectingUser={props.setProjectingUser}
   	onHandoff={props.onHandoff} 
 	avisoEnConstruccion={avisoEnConstruccion}
@@ -247,6 +252,7 @@ export default function DesktopLayout(props) {
           enviar={handleMapacheInput}
 	mensaje={mapacheMensaje}
 	loading={mapacheLoading}
+          esPatrocinado={mapacheEsPatrocinado}
           onInvokeNova={() => setIntent('productos')}
           onOpenProfile={(u) => setProjectingUser(u)}
           onTuneIn={(u) => { setAudioUser(u); setActivePrismUser(u); }}
@@ -265,6 +271,7 @@ export default function DesktopLayout(props) {
     enviar={handleOraculoInput}
     mensaje={oraculoMensaje}
     loading={oraculoLoading}
+    esPatrocinado={oraculoEsPatrocinado}
     onInvokeOsos={() => { setStep(1); setOsosModo('entrada'); }}
     onPersonajeChange={handleCentralHandoff}
   />
@@ -273,7 +280,7 @@ export default function DesktopLayout(props) {
       {/* 6. OSOS IA RECEPCION */}   
       {step === 1 && (
         <div className="relative z-[50] h-full flex flex-col items-center justify-end pb-0 px-4"
-     style={{ pointerEvents: 'auto' }}>          <div className="w-full max-w-2xl mb-3"><OsosBanner mensaje={ososMensaje} oso_id={perfilOso?.oso_id} /></div>
+     style={{ pointerEvents: 'auto' }}>          <div className="w-full max-w-2xl mb-3"><OsosBanner mensaje={ososMensaje} oso_id={perfilOso?.oso_id} esPatrocinado={ososEsPatrocinado} /></div>
           <AgentChatInput onSend={(t) => handleOsosInput(t)} isLoading={ososLoading} agent="osos" style={{ pointerEvents: 'auto' }} />       
            </div>
       )}
