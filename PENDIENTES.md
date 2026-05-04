@@ -1,4 +1,4 @@
-# PENDIENTES BROVISION — Actualizado 2026-05-01
+# PENDIENTES BROVISION — Actualizado 2026-05-04
 
 ## Quién es el usuario
 El usuario prefiere que lo llamen **Signor Roberto** o **Maravilla**.
@@ -96,14 +96,15 @@ if (session?.user?.user_metadata?.role === 'advertiser') {
 
 ### PRIORIDAD 1 — BackStage: completar Productor
 
-- **MIS CAMPAÑAS** — lista de `bs_butacas` propias con estado del flujo (cartel, función, ciudad, guión, estado badge)
+- **MIS CAMPAÑAS** — lista de `bs_butacas` propias con estado del flujo (canal, función, ciudad, guión, estado badge: EN_CASTING / EN_RODAJE / EN_DEBATE / LISTO_PARA_ESTRENO / EN_CARTELERA). Es la pestaña más importante para el Productor.
 - **COMUNIDAD** — tablón editorial BRO7VISION + avisos de Compra Conjunta + modal PUBLICAR AVISO
-- Verificar **RLS Supabase**: `bs_butacas` SELECT debe exponer `cobertura/estado/canal` sin revelar `productor_id` ajeno
+- **RLS Supabase** — `bs_butacas` SELECT debe exponer solo `cobertura/estado/canal` sin revelar `productor_id` ajeno. Actualmente cualquier productor puede leer los datos de otro.
 
 ### PRIORIDAD 2 — BackStage: perfil Director/Montador
 Cuando se haga `SOY DIRECTOR` → BackStage con rol `creator`:
 - Tab **REFERENCIA** (grid de piezas aprobadas como benchmark)
 - Tab **MIS RODAJES** (butacas EN_CASTING para postularse + rodajes asignados)
+- La pestaña **FONDOS REALITY** del Director actualmente muestra el mismo `MarketplaceTab` que el Productor (con panel de reserva). Decidir si queda como consulta solo-lectura o con flujo distinto.
 
 ### PRIORIDAD 4 — Supabase Realtime
 Con App limpio, crear `useRealtimeSync.js`:

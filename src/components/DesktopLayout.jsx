@@ -46,7 +46,7 @@ export default function DesktopLayout(props) {
   oraculoMensaje, oraculoLoading, handleOraculoInput, rumoresMensaje, rumoresLoading, handleRumoresInput,
   novaEsPatrocinado, isabellaEsPatrocinado, mapacheEsPatrocinado,
   evelynEsPatrocinado, oraculoEsPatrocinado, ososEsPatrocinado,
-   iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA, onShowPurchaseModal
+   iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA
   } = props;
 
   const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'audios']);
@@ -96,7 +96,7 @@ export default function DesktopLayout(props) {
   tokensTotales={userCredits?.tokensTotales || 1000000} // <-- Añadido ?. y un total por defecto
   onToggleAdmin={onToggleAdminIA}
   onTogglePublic={onTogglePublicIA}
-  onShowPurchaseModal={onShowPurchaseModal}
+  setShowWalletModal={setShowWalletModal}
 	/>
           
         </div>                  

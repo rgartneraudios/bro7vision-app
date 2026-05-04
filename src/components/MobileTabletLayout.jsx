@@ -286,7 +286,7 @@ function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
                    audioUser, onToggleAudio, broTunerRef,
                    accent, balances, navItems, handleNavigation, setMessages,
                    iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA,
-                   onShowPurchaseModal, handleLogout, intent,
+                   setShowWalletModal, handleLogout, intent,
                    setStep, setRealityMode, setScope }) {
 
   return (
@@ -322,7 +322,7 @@ function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
           <NeuralButton isAdmin={isAdmin} iaMode={iaMode}
             tokensRestantes={userCredits?.tokensRestantes} tokensTotales={userCredits?.tokensTotales}
             onToggleAdmin={onToggleAdminIA} onTogglePublic={onTogglePublicIA}
-            onShowPurchaseModal={onShowPurchaseModal} />
+            setShowWalletModal={setShowWalletModal} />
         </div>
         <div className="flex flex-col w-full px-4 mt-4 gap-4">
           <BroLives playingCreator={audioUser} onToggleAudio={onToggleAudio} />
@@ -449,7 +449,7 @@ const MobileTabletLayout = ({
   isLeftOpen,  setIsLeftOpen,
   isRightOpen, setIsRightOpen,
   iaMode, isAdmin, userCredits,
-  onToggleAdminIA, onTogglePublicIA, onShowPurchaseModal,
+  onToggleAdminIA, onTogglePublicIA,
   stripCards, stripVisible, stripLabel,
   onHandoff,
   broTunerRef,
@@ -534,7 +534,7 @@ useEffect(() => {
     audioUser, onToggleAudio, broTunerRef,
     accent, balances, navItems, handleNavigation, setMessages,
     iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA,
-    onShowPurchaseModal, handleLogout, intent,
+    setShowWalletModal, handleLogout, intent,
     setStep, setRealityMode, setScope,
   };
 

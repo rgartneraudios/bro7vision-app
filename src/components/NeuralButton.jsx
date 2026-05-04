@@ -5,25 +5,16 @@ export default function NeuralButton({
   tokensTotales = 1,
   onToggleAdmin,
   onTogglePublic,
-  onShowPurchaseModal,
+  setShowWalletModal,
 }) {
 
   // --- Lógica de Interacción ---
   const handleTap = () => {
-    // 1. SI ES ADMIN: Solo togglea el modo admin, nunca abre el modal
-    if (isAdmin) {
+    if (import.meta.env.VITE_SHOW_STUDIO === 'true') {
       onToggleAdmin();
       return;
     }
-
-    // 2. SI ES USUARIO COMÚN:
-    if (iaMode === 'public') {
-      onTogglePublic(); // Apaga si está encendido
-    } else if (tokensRestantes > 0) {
-      onTogglePublic(); // Enciende si tiene tokens
-    } else {
-      onShowPurchaseModal(); // Solo aquí abre el modal
-    }
+    setShowWalletModal(true);
   };
 
   // --- Estilos ---

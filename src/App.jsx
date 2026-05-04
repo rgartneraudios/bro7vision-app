@@ -549,7 +549,6 @@ function App() {
     iaMode, isAdmin, userCredits,
     onToggleAdminIA:     handleToggleAdminIA,
     onTogglePublicIA:    handleTogglePublicIA,
-    onShowPurchaseModal: handleShowPurchaseModal,
     novaMensaje, avisoEnConstruccion,
     novaLoading, handleNovaInput, isabellaMensaje, isabellaLoading, handleIsabellaInput,
     mapacheMensaje, mapacheLoading, handleMapacheInput, evelynMensaje, evelynLoading,
