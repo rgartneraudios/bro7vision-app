@@ -161,7 +161,7 @@ export default function AgentChatInput({
         value={text}
         onChange={e => setText(e.target.value)}
         onKeyDown={handleKeyDown}
-        className={`agent-textarea w-full bg-black/70 backdrop-blur-xl border ${c.border} ${c.borderFocus} p-5 rounded-2xl outline-none font-mono text-base text-white ${c.placeholder} transition-colors resize-none leading-relaxed`}
+        className={`agent-textarea w-full bg-transparent backdrop-blur-sm border ${c.border} ${c.borderFocus} p-5 rounded-2xl outline-none font-mono text-base text-white ${c.placeholder} transition-colors resize-none leading-relaxed`}
       />
 
       <div className="flex justify-between items-center px-1">

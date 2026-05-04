@@ -7,6 +7,7 @@ import GamesTab from './GamesTab';
 import AudioTab from './AudioTab';
 import EstudioMarketingTab from './EstudioMarketing';
 import BlogTab from './BlogTab';
+import MisCampanasTab from './MisCampanasTab';
 
 const SYNE = "'Exo 2', sans-serif";
 
@@ -363,7 +364,7 @@ const BackStage = ({ session, onLogout }) => {
         )}
 
         {activeTab === 'campanas' && (
-          <PlaceholderTab icono="📋" titulo="MIS CAMPAÑAS" texto="Gestiona tus campañas activas y su rendimiento." />
+          <MisCampanasTab isProductor={isProductor} />
         )}
 
         {activeTab === 'menciones' && (
