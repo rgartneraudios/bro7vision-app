@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 
-const SYNE         = "'Syne', sans-serif";
+const SYNE         = "'Exo 2', sans-serif";
 const INTER        = "'Inter', sans-serif";
 const SPACE_GROTESK = "'Space Grotesk', sans-serif";
 
-const CAT_BORDER = (cat) => ({
-  ESTRATEGIA: '#a855f7',
-  TIMING:     '#f59e0b',
-  COBERTURA:  '#10b981',
-  FORMATO:    '#00ffff',
-  AUDIENCIA:  '#ff00ff',
-  ROI:        '#f97316',
-}[cat] || '#00ffff');
+/* Bordes metálicos cálidos — oro y plata */
+const METALLIC_BORDER = (cat) => ({
+  ESTRATEGIA: '#d4af37',
+  TIMING:     '#c0c0c0',
+  COBERTURA:  '#b8860b',
+  FORMATO:    '#e8d5a3',
+  AUDIENCIA:  '#cfb53b',
+  ROI:        '#a8a8a8',
+}[cat] || '#c0c0c0');
 
 const CAT_COLOR = (cat) => ({
   ESTRATEGIA: 'bg-purple-700',
@@ -38,11 +39,8 @@ const BlogTab = () => {
       .then(({ data }) => { setArticulos(data || []); setLoading(false); });
   }, []);
 
-  const featured = articulos.find(a => a.destacado) || articulos[0] || null;
-  const rest      = articulos.filter(a => a.id !== featured?.id);
-
   return (
-    <div className="max-w-[900px] mx-auto px-6 py-8">
+    <div className="w-full px-6 py-8">
 
       {/* Header */}
       <div className="mb-8">
@@ -75,82 +73,46 @@ const BlogTab = () => {
       )}
 
       {!loading && articulos.length > 0 && (
-        <>
-          {/* Card destacada */}
-          {featured && (
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-5">
+          {articulos.map(art => (
             <div
-              className="rounded-xl overflow-hidden mb-6 border"
-              style={{ background: '#0a0510', borderColor: CAT_BORDER(featured.categoria) }}
+              key={art.id}
+              className="flex flex-col rounded-xl overflow-hidden border backdrop-blur-sm"
+              style={{
+                background: 'rgba(10,5,16,0.55)',
+                borderColor: METALLIC_BORDER(art.categoria),
+                boxShadow: `0 0 12px ${METALLIC_BORDER(art.categoria)}22`,
+              }}
             >
-              {featured.imagen_url && (
+              {art.imagen_url && (
                 <img
-                  src={featured.imagen_url}
-                  alt={featured.titulo}
-                  className="w-full max-h-80 object-cover"
+                  src={art.imagen_url}
+                  alt={art.titulo}
+                  className="w-full h-40 object-cover opacity-85"
                 />
               )}
-              <div className="p-6 sm:p-8">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className={`text-[9px] font-black text-white uppercase tracking-widest px-3 py-1 rounded ${CAT_COLOR(featured.categoria)}`}>
-                    {featured.categoria || 'ESPECIAL'}
+              <div className="flex flex-col flex-1 p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className={`text-[8px] font-black text-white uppercase tracking-widest px-2 py-0.5 rounded ${CAT_COLOR(art.categoria)}`}>
+                    {art.categoria || 'ESPECIAL'}
                   </span>
-                  <span style={{ fontFamily: INTER, fontWeight: 300 }} className="text-xs text-gray-400 uppercase tracking-wider">
-                    {fmtDate(featured.created_at)}
+                  <span style={{ fontFamily: INTER, fontWeight: 300 }} className="text-[9px] text-gray-500">
+                    {fmtDate(art.created_at)}
                   </span>
                 </div>
-                <h2
-                  style={{ fontFamily: SPACE_GROTESK, fontWeight: 700, letterSpacing: '-0.02em' }}
-                  className="text-4xl sm:text-5xl text-white leading-[1.05] mb-5"
+                <h3
+                  style={{ fontFamily: SPACE_GROTESK, fontWeight: 700 }}
+                  className="text-xl text-white leading-tight mb-3"
                 >
-                  {featured.titulo}
-                </h2>
-                <p style={{ fontFamily: INTER, fontWeight: 400 }} className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
-                  {featured.cuerpo_texto}
+                  {art.titulo}
+                </h3>
+                <p style={{ fontFamily: INTER, fontWeight: 400 }} className="text-sm text-gray-200 leading-relaxed whitespace-pre-wrap flex-1">
+                  {art.cuerpo_texto}
                 </p>
               </div>
             </div>
-          )}
-
-          {/* Grid 2 columnas */}
-          {rest.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {rest.map(art => (
-                <div
-                  key={art.id}
-                  className="rounded-xl overflow-hidden border"
-                  style={{ background: '#0a0510', borderColor: CAT_BORDER(art.categoria) }}
-                >
-                  {art.imagen_url && (
-                    <img
-                      src={art.imagen_url}
-                      alt={art.titulo}
-                      className="w-full h-36 object-cover opacity-80"
-                    />
-                  )}
-                  <div className="p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`text-[8px] font-black text-white uppercase tracking-widest px-2 py-0.5 rounded ${CAT_COLOR(art.categoria)}`}>
-                        {art.categoria || 'ESPECIAL'}
-                      </span>
-                      <span style={{ fontFamily: INTER, fontWeight: 300 }} className="text-[9px] text-gray-500">
-                        {fmtDate(art.created_at)}
-                      </span>
-                    </div>
-                    <h3
-                      style={{ fontFamily: SPACE_GROTESK, fontWeight: 700 }}
-                      className="text-xl text-white leading-tight mb-3"
-                    >
-                      {art.titulo}
-                    </h3>
-                    <p style={{ fontFamily: INTER, fontWeight: 400 }} className="text-xs text-gray-300 leading-relaxed whitespace-pre-wrap">
-                      {art.cuerpo_texto}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </>
+          ))}
+        </div>
       )}
 
     </div>

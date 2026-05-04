@@ -110,12 +110,12 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
       {/* Panel */}
       <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-[420px] bg-zinc-950 border-l border-white/10 flex flex-col shadow-2xl font-mono">
 
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=Inter:wght@400;500;600;700&display=swap');`}</style>
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');`}</style>
 
         {/* Header */}
         <div className="flex items-start justify-between px-6 py-4 border-b border-white/5 bg-black/30 shrink-0">
           <div>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800 }} className="text-base font-black text-white tracking-tight">RESERVAR BUTACA</h3>
+            <h3 style={{ fontFamily: "'Exo 2', sans-serif", fontWeight: 800 }} className="text-base font-black text-white tracking-tight">RESERVAR BUTACA</h3>
             <p style={{ fontFamily: "'Inter', sans-serif" }} className="text-sm text-gray-400 mt-1">{slotLabel}</p>
             <p style={{ fontFamily: "'Inter', sans-serif" }} className="text-xs text-gray-600">
               {slot.dispositivo === 0 ? 'PC' : 'Móvil'} · Escenario #{slot.canal}
@@ -260,7 +260,7 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
           <button
             onClick={handleReservar}
             disabled={loading || success}
-            style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700 }}
+            style={{ fontFamily: "'Exo 2', sans-serif", fontWeight: 700 }}
             className="w-full py-3.5 bg-purple-600 hover:bg-purple-500 active:bg-purple-700 text-white text-sm font-bold uppercase tracking-widest rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_24px_rgba(168,85,247,0.25)]"
           >
             {loading ? 'PROCESANDO...' : success ? 'RESERVADO ✓' : 'RESERVAR BUTACA'}

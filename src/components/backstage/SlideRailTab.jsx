@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { getCitiesForCobertura } from '../../data/citycodes';
 
-const SYNE  = "'Syne', sans-serif";
+const SYNE  = "'Exo 2', sans-serif";
 const INTER = "'Inter', sans-serif";
 
 const SECTORES = [
@@ -64,7 +64,7 @@ const Panel = ({ sector, role, onClose }) => {
       <div className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" onClick={onClose} />
       <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-[440px] bg-zinc-950 border-l border-white/10 flex flex-col shadow-2xl overflow-hidden">
 
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=Inter:wght@400;500;600;700&display=swap');`}</style>
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');`}</style>
 
         {/* Header */}
         <div className="flex items-center gap-4 px-6 py-4 border-b border-white/5 bg-black/30 shrink-0">
@@ -265,7 +265,7 @@ const SlideRailTab = ({ role }) => {
 
   return (
     <div className="p-6 flex flex-col items-center">
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=Inter:wght@400;500;600;700&display=swap');`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');`}</style>
 
       {/* Header centrado */}
       <div className="mb-8 text-center w-full max-w-3xl">

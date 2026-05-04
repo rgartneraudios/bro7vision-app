@@ -8,7 +8,7 @@ import AudioTab from './AudioTab';
 import EstudioMarketingTab from './EstudioMarketing';
 import BlogTab from './BlogTab';
 
-const SYNE = "'Syne', sans-serif";
+const SYNE = "'Exo 2', sans-serif";
 
 const PlaceholderTab = ({ icono, titulo, texto }) => (
   <div className="flex flex-col items-center justify-center h-64 text-center px-6 gap-3">
@@ -293,9 +293,14 @@ const BackStage = ({ session, onLogout }) => {
   const tabs = isProductor ? TABS_PRODUCTOR : TABS_DIRECTOR;
 
   return (
-    <div className="fixed inset-0 bg-zinc-950 flex flex-col font-mono text-white overflow-hidden">
+    <div
+      className="fixed inset-0 flex flex-col font-mono text-white overflow-hidden"
+      style={{
+        background: `linear-gradient(rgba(0,0,0,0.78), rgba(0,0,0,0.78)), url('/images/${isProductor ? 'productor' : 'director'}.webp') center/cover no-repeat`,
+      }}
+    >
 
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&display=swap');`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&display=swap');`}</style>
 
       {/* Topbar */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-black/40 shrink-0">

@@ -18,7 +18,7 @@ const GALLERY_V = [
   },
 ];
 
-const SYNE  = "'Syne', sans-serif";
+const SYNE  = "'Exo 2', sans-serif";
 const INTER = "'Inter', sans-serif";
 
 const EstudioMarketingTab = () => {
@@ -28,7 +28,7 @@ const EstudioMarketingTab = () => {
   return (
     <div className="max-w-[760px] mx-auto px-6 py-8 space-y-14">
 
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=Inter:wght@400;500;600;700&display=swap');`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');`}</style>
 
       {/* Header */}
       <div>

@@ -22,7 +22,7 @@ const slotLabel  = (slot) => slot.canal === 2 ? FASES[slot.fase]  : TURNOS[slot.
 const slotNum    = (slot) => slot.canal === 2 ? slot.fase          : slot.turno;
 const isMoonChan = (canal) => canal === 2;
 
-const SYNE = "'Syne', sans-serif";
+const SYNE = "'Exo 2', sans-serif";
 
 const COLOR_DIRECTOR = '#00ff88';
 const COLOR_PRODUCTOR = '#ff00ff';
@@ -98,7 +98,7 @@ const MarketplaceTab = ({ session, profile }) => {
   return (
     <div className="relative min-h-full">
 
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&display=swap');`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&display=swap');`}</style>
 
       {/* Header sticky */}
       <div className="sticky top-0 z-10 bg-zinc-950/95 backdrop-blur-sm border-b border-white/5 px-6 py-4">
