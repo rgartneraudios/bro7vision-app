@@ -113,7 +113,7 @@ const EscenarioCard = ({ slot, butacas, onSelectSlot, role }) => {
           </div>
 
           {/* Esferas semáforo — sin resplandor */}
-          <div className="flex flex-col items-center gap-[3px] shrink-0">
+          <div className="flex flex-row items-center gap-[3px] shrink-0">
             <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#16a34a' }} />
             {slot.turno >= 3 && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ca8a04' }} />}
             {slot.turno === 4 && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#dc2626' }} />}

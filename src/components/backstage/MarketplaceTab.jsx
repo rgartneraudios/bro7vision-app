@@ -106,8 +106,8 @@ const MarketplaceTab = ({ session, profile }) => {
 
       {/* Header sticky */}
       <div className="sticky top-0 z-10 bg-zinc-950/95 backdrop-blur-sm border-b border-white/5 px-6 py-4">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="text-center">
             <h2 style={{ fontFamily: SYNE }} className="text-xl font-black tracking-tight text-white">
               CONTRATACIÓN PARA LA PRÓXIMA FASE LUNAR
             </h2>
