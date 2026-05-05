@@ -7,21 +7,21 @@ const RealityTuner = ({ onSelect }) => {
 
   const REALITIES = [
     // EL ESTADO BASE / NEUTRAL
-    { id: 'moon', title: 'MOON PHASE', desc: 'Sincronicidad con la Fase Luna', icon: '🌑🌒🌓🌔🌕🌖🌗🌘', color: 'border-white-500/50', text: 'text-white-500', glow: 'shadow-white-500/20', group: 'NEUTRAL' },
+    { id: 'moon', title: 'MOON PHASE', desc: 'Sincronicidad con la Fase Luna', icon: '🌑🌓🌔🌗', color: 'border-cyan-900/20', text: 'text-cyan-300', glow: 'shadow-gray-400/30', group: 'NEUTRAL' },
     
     // GRUPO SOLO
-    { id: 'solo_earth',   title: 'SOLO EARTH',   desc: 'Sincronía Vital',      icon: '🌍', color: 'border-emerald-500/50', text: 'text-emerald-400', glow: 'shadow-emerald-500/20', group: 'SOLO' },
-    { id: 'solo_fantasy', title: 'SOLO FANTASY', desc: 'Exploración Estelar',  icon: '🏰', color: 'border-cyan-500/50',    text: 'text-cyan-400',    glow: 'shadow-cyan-500/20',    group: 'SOLO' },
-    { id: 'solo_cinema',  title: 'SOLO CINEMA',  desc: 'Viajero del Tiempo',   icon: '🏛️', color: 'border-amber-500/50',   text: 'text-amber-400',   glow: 'shadow-amber-500/20',   group: 'SOLO' },
+    { id: 'solo_earth',   title: 'SOLO EARTH',   desc: 'Sincronía Vital',      icon: '🌍', color: 'border-cyan-900/20', text: 'text-cyan-300', glow: 'shadow-blue-700/30', group: 'SOLO' },
+    { id: 'solo_fantasy', title: 'SOLO FANTASY', desc: 'Exploración Estelar',  icon: '🏰', color: 'border-cyan-900/20',    text: 'text-cyan-300',    glow: 'shadow-violet-700/30',    group: 'SOLO' },
+    { id: 'solo_cinema',  title: 'SOLO CINEMA',  desc: 'Viajero del Tiempo',   icon: '🏛️', color: 'border-cyan-900/20',   text: 'text-cyan-300',   glow: 'shadow-orange-700/30',   group: 'SOLO' },
     
     // GRUPO BAND
-    { id: 'band_earth',   title: 'BAND EARTH',   desc: 'Nexo Ciudadano',  icon: '🏙️', color: 'border-blue-500/50',    text: 'text-blue-400',    glow: 'shadow-blue-500/20',    group: 'BAND' },
-    { id: 'band_fantasy', title: 'BAND FANTASY', desc: 'Alien Lounge',    icon: '👾', color: 'border-fuchsia-500/50', text: 'text-fuchsia-400', glow: 'shadow-fuchsia-500/20', group: 'BAND' },
-    { id: 'band_cinema',  title: 'BAND CINEMA',  desc: 'El Ágora',        icon: '🎭', color: 'border-orange-500/50',  text: 'text-orange-400',  glow: 'shadow-orange-500/20',  group: 'BAND' },
+    { id: 'band_earth',   title: 'BAND EARTH',   desc: 'Nexo Ciudadano',  icon: '🏙️', color: 'border-cyan-900/20',    text: 'text-cyan-300',    glow: 'shadow-green-300/30',    group: 'BAND' },
+    { id: 'band_fantasy', title: 'BAND FANTASY', desc: 'Alien Lounge',    icon: '👾', color: 'border-cyan-900/20', text: 'text-cyan-300', glow: 'shadow-pink-700/30', group: 'BAND' },
+    { id: 'band_cinema',  title: 'BAND CINEMA',  desc: 'El Ágora',        icon: '🎭', color: 'border-cyan-900/20',  text: 'text-cyan-300',  glow: 'shadow-yellow-500/30',  group: 'BAND' },
 
     // GRUPO ESPACIO — nuevos canales ESTE y OESTE
-    { id: 'este',  title: 'CANAL ESTE',  desc: 'Horizonte Levante',   icon: '📱', color: 'border-cyan-400/50',    text: 'text-cyan-300',    glow: 'shadow-cyan-400/20',    group: 'ESPACIO' },
-    { id: 'oeste', title: 'CANAL OESTE', desc: 'Horizonte Poniente',  icon: '📱', color: 'border-fuchsia-400/50', text: 'text-fuchsia-300', glow: 'shadow-fuchsia-400/20', group: 'ESPACIO' },
+    { id: 'este',  title: 'CANAL ESTE',  desc: 'Horizonte Levante',   icon: '📱', color: 'border-cyan-900/20',    text: 'text-cyan-300',    glow: 'shadow-cyan-700/30',    group: 'ESPACIO' },
+    { id: 'oeste', title: 'CANAL OESTE', desc: 'Horizonte Poniente',  icon: '📱', color: 'border-cyan-900/20', text: 'text-cyan-300', glow: 'shadow-fuchsia-700/30', group: 'ESPACIO' },
   ];
 
   const renderCard = (mode) => (
