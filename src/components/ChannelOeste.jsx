@@ -187,10 +187,16 @@ const ChannelOeste = ({ videoUsers, balances, setBalances, session, realityMode,
   const touchStart  = useRef(0);
   const touchEnd    = useRef(0);
 
-  const displayUsers = useMemo(()=>{
-    const combined=[...(videoUsers?.length>0?videoUsers:[]),...TV_NODES];
+  const displayUsers = useMemo(() => {
+    const turnoActual = getTurno();
+    const elegibles = (videoUsers?.length > 0 ? videoUsers : []).filter(c => {
+      if (c.semaforo === 'AMARILLO') return turnoActual >= 3;
+      if (c.semaforo === 'ROJO')     return turnoActual === 4;
+      return true;
+    });
+    const combined = [...elegibles, ...TV_NODES];
     return combined.length===0?[{id:'loading_01',alias:'SINTONIZANDO...',video_file:''}]:combined;
-  },[videoUsers]);
+  }, [videoUsers]);
 
   // 1. Definimos el usuario que vemos en pantalla
   const currentUser = useMemo(() => displayUsers[currentIndex % displayUsers.length], [displayUsers,currentIndex]);

@@ -70,6 +70,7 @@ const RealityTuner = ({ onSelect }) => {
             BRO<span className="text-cyan-400">7</span>VISION
         </h2>
         <p className="text-[10px] text-gray-500 uppercase tracking-[0.4em] mt-3 font-bold opacity-60">SINTONIZA TU FRECUENCIA DE REALIDAD</p>
+
       </div>
 
       <div className="w-full max-w-6xl space-y-10">

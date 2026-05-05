@@ -183,20 +183,18 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
   const touchEnd = useRef(0);
 
   const displayUsers = useMemo(() => {
-    // 1. Tomamos los usuarios que vienen de App.jsx (Aquí ya vendrán Lap_Steel, Bro Master, etc. desde MASTER_DB)
-    const safeUsers = videoUsers?.length > 0 ? videoUsers : [];
-    
-    // 2. Los juntamos con los nodos de TV (Si también quieres pasar los TV_NODES al MASTER_DB en el futuro, ¡sería aún mejor!)
-    const combined = [...safeUsers, ...TV_NODES];
-
-    // 3. 🛡️ ESCUDO ANTI-ERRORES: Si por algún motivo la base de datos tarda en cargar y el array está vacío, 
-    // ponemos un "fantasma" para que el carrusel (currentIndex % length) no dé error matemático (0 dividido entre 0).
+    const turnoActual = getTurno();
+    const elegibles = (videoUsers?.length > 0 ? videoUsers : []).filter(c => {
+      if (c.semaforo === 'AMARILLO') return turnoActual >= 3;
+      if (c.semaforo === 'ROJO')     return turnoActual === 4;
+      return true;
+    });
+    const combined = [...elegibles, ...TV_NODES];
     if (combined.length === 0) {
       return [{ id: 'loading_01', alias: 'SINTONIZANDO...', video_file: '' }];
     }
-
     return combined;
-  }, [videoUsers]); // Ya no dependemos de nada interno, solo de lo que nos pasen.
+  }, [videoUsers]);
   
   // 1. Definimos el usuario que vemos en pantalla
   const currentUser = useMemo(() => displayUsers[currentIndex % displayUsers.length], [displayUsers,currentIndex]);

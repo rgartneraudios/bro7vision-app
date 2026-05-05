@@ -20,7 +20,7 @@ const EscenarioCard = ({ slot, butacas, onSelectSlot, role }) => {
   const slotButacas = butacas.filter(b => {
     if (!ACTIVE_STATES.includes(b.estado)) return false;
     if (slot.canal === 2)
-      return b.canal === 2 && b.fase_lunar === slot.fase && b.dispositivo === slot.dispositivo;
+      return b.canal === 2 && b.fase_lunar === slot.fase && b.funcion === slot.turno && b.dispositivo === slot.dispositivo;
     return b.canal === slot.canal && b.funcion === slot.turno && b.dispositivo === slot.dispositivo;
   });
 
@@ -74,6 +74,7 @@ const EscenarioCard = ({ slot, butacas, onSelectSlot, role }) => {
         >
           {isPC ? 'PC' : 'MT'}
         </span>
+
       </div>
 
       {/* Vista Montador */}
@@ -94,8 +95,8 @@ const EscenarioCard = ({ slot, butacas, onSelectSlot, role }) => {
 
       {/* Vista Productor */}
       {isAdvertiser && (
-        <div className="px-2 py-2">
-          <div className="flex flex-wrap gap-1">
+        <div className="px-2 py-2 flex items-center gap-2">
+          <div className="flex flex-wrap gap-1 flex-1">
             <BadgeProducer
               label="MUNDIAL"  ocupado={ocupadoMundial}  pulsar={false}
               onClick={() => onSelectSlot({ slot, coberturaInicial: 'GIRA_MUNDIAL' })}
@@ -109,6 +110,13 @@ const EscenarioCard = ({ slot, butacas, onSelectSlot, role }) => {
               ocupado={ciudadesLibres === 0} pulsar={pocosCiudades}
               onClick={() => onSelectSlot({ slot, coberturaInicial: 'SALA_CIUDAD' })}
             />
+          </div>
+
+          {/* Esferas semáforo — sin resplandor */}
+          <div className="flex flex-col items-center gap-[3px] shrink-0">
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#16a34a' }} />
+            {slot.turno >= 3 && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ca8a04' }} />}
+            {slot.turno === 4 && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#dc2626' }} />}
           </div>
         </div>
       )}

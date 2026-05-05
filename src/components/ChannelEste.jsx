@@ -197,7 +197,13 @@ const ChannelEste = ({ videoUsers, balances, setBalances, session, realityMode, 
   const touchEnd    = useRef(0);
 
   const displayUsers = useMemo(() => {
-    const combined = [...(videoUsers?.length>0?videoUsers:[]), ...TV_NODES];
+    const turnoActual = getTurno();
+    const elegibles = (videoUsers?.length > 0 ? videoUsers : []).filter(c => {
+      if (c.semaforo === 'AMARILLO') return turnoActual >= 3;
+      if (c.semaforo === 'ROJO')     return turnoActual === 4;
+      return true;
+    });
+    const combined = [...elegibles, ...TV_NODES];
     return combined.length===0?[{id:'loading_01',alias:'SINTONIZANDO...',video_file:''}]:combined;
   }, [videoUsers]);
 

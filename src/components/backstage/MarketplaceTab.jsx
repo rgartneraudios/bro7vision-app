@@ -4,11 +4,16 @@ import { CHANNELS, FASES, TURNOS } from '../../data/citycodes';
 import EscenarioCard from './EscenarioCard';
 import ReservaPanel from './ReservaPanel';
 
+// Canal Moon (2): Fase 0 = solo Luna Nueva (fase 1) con T1–T4.
+// Cuando se active Luna Creciente se añade fase 2 con sus 4 turnos, etc.
+const MOON_FASES_ACTIVAS = [1]; // ampliar aquí cuando abra nueva fase
+
 const SLOTS = (() => {
   const slots = [];
-  for (let fase = 1; fase <= 4; fase++)
-    for (let disp = 0; disp <= 1; disp++)
-      slots.push({ canal: 2, fase, turno: 0, dispositivo: disp });
+  for (const fase of MOON_FASES_ACTIVAS)
+    for (let turno = 1; turno <= 4; turno++)
+      for (let disp = 0; disp <= 1; disp++)
+        slots.push({ canal: 2, fase, turno, dispositivo: disp });
   for (const canal of [1, 3, 4, 5, 6, 7, 8, 9])
     for (let turno = 1; turno <= 4; turno++)
       for (let disp = 0; disp <= 1; disp++)
@@ -18,9 +23,8 @@ const SLOTS = (() => {
 
 const CANAL_LIST = [...new Set(SLOTS.map(s => s.canal))].sort((a, b) => a - b);
 
-const slotLabel  = (slot) => slot.canal === 2 ? FASES[slot.fase]  : TURNOS[slot.turno];
-const slotNum    = (slot) => slot.canal === 2 ? slot.fase          : slot.turno;
-const isMoonChan = (canal) => canal === 2;
+const slotLabel = (slot) => TURNOS[slot.turno];
+const slotNum   = (slot) => slot.turno;
 
 const SYNE = "'Exo 2', sans-serif";
 
@@ -34,7 +38,7 @@ const ColHeaders = ({ slots, prefix, hexColor }) => (
       {slots.map((slot, i) => (
         <div key={i} className="text-center">
           <div style={{ fontFamily: SYNE, color: hexColor, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', lineHeight: 1.3 }} className="truncate">
-            {prefix} · {isMoonChan(slot.canal) ? 'F' : 'T'}{slotNum(slot)} &nbsp; {slotLabel(slot)}
+            {prefix} · T{slotNum(slot)} &nbsp; {slotLabel(slot)}
           </div>
         </div>
       ))}
@@ -74,7 +78,7 @@ const MarketplaceTab = ({ session, profile }) => {
 
   const getEscenarioId = (slot) => {
     if (slot.canal === 2)
-      return escenarios.find(e => e.canal === 2 && e.fase_lunar === slot.fase)?.id ?? null;
+      return escenarios.find(e => e.canal === 2 && e.fase_lunar === slot.fase && e.funcion === slot.turno)?.id ?? null;
     return escenarios.find(e => e.canal === slot.canal && e.funcion === slot.turno)?.id ?? null;
   };
 
@@ -108,6 +112,9 @@ const MarketplaceTab = ({ session, profile }) => {
               CONTRATACIÓN PARA LA PRÓXIMA FASE LUNAR
             </h2>
             <p style={{ fontFamily: SYNE, fontWeight: 700, color: '#facc15' }} className="text-xl mt-1">72 slots · 9 canales · 2 dispositivos</p>
+            <p style={{ fontFamily: SYNE }} className="text-sm text-white mt-2 max-w-xl leading-relaxed">
+              El sistema Semáforo es una escala de contexto de emisión. Todo lo que está en BRO7VISION es apto para todos, aunque hay creadores cuyo estilo encaja mejor en ciertos momentos del día. Igual que un monólogo de humor adulto en la tele — no es inapropiado, simplemente tiene su franja horaria óptima.
+            </p>
           </div>
           <div className="flex items-center gap-3">
             {totalOcupadas > 0 && (
@@ -119,6 +126,25 @@ const MarketplaceTab = ({ session, profile }) => {
               FASE 0 · SIMULACIÓN
             </span>
           </div>
+        </div>
+      </div>
+
+      {/* Leyenda semáforo — centrada */}
+      <div className="flex justify-center px-6 pt-6 pb-2">
+        <div className="inline-flex flex-col gap-2 bg-white/5 border border-white/10 rounded-2xl px-8 py-4 backdrop-blur-sm">
+          {[
+            { emoji: '🟢', label: 'VERDE',    turnos: 'T1-T2-T3-T4', horario: '00:00 – 24:00', desc: 'Family Friendly universal',    color: '#4ade80' },
+            { emoji: '🟡', label: 'AMARILLO', turnos: 'T3-T4',        horario: '17:00 – 05:00', desc: 'Family Friendly con matices',  color: '#facc15' },
+            { emoji: '🔴', label: 'ROJO',     turnos: 'T4',           horario: '23:00 – 05:00', desc: 'Family Friendly adulto',       color: '#f87171' },
+          ].map(s => (
+            <div key={s.label} className="flex items-center gap-4">
+              <span className="text-lg">{s.emoji}</span>
+              <span style={{ fontFamily: SYNE, color: s.color, minWidth: 70 }} className="text-xs font-black uppercase tracking-widest">{s.label}</span>
+              <span style={{ fontFamily: SYNE }} className="text-[10px] text-gray-400 font-mono w-20">{s.turnos}</span>
+              <span style={{ fontFamily: SYNE }} className="text-[10px] text-gray-500 font-mono w-28">{s.horario}</span>
+              <span style={{ fontFamily: SYNE }} className="text-[10px] text-gray-400">{s.desc}</span>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -152,6 +178,11 @@ const MarketplaceTab = ({ session, profile }) => {
                   <span style={{ fontFamily: SYNE, color: rolColor }} className="text-xl font-black tracking-wide">
                     {CHANNELS[canal]}
                   </span>
+                  {canal === 2 && (
+                    <span style={{ fontFamily: SYNE, color: rolColor, opacity: 0.55 }} className="text-sm font-bold uppercase tracking-widest">
+                      {FASES[MOON_FASES_ACTIVAS[0]]}
+                    </span>
+                  )}
                   <div className="flex-1 h-px" style={{ background: `${rolColor}20` }} />
                 </div>
 
