@@ -166,7 +166,7 @@ export default function DesktopLayout(props) {
         <div className="hidden md:flex fixed left-1/2 top-[24%] -translate-x-1/2 -translate-y-1/2 z-[40] flex-col items-center animate-fadeIn pointer-events-none"><div className="scale-[1.1] origin-bottom-right relative z-20 transition-transform hover:scale-[1.15]"><HoloPrism user={activePrismUser} showNumbers={true} /></div></div>
       )}
       
-      {step === 2 && INTENTS_CON_UBICACION.has(intent) && <CityLocationBanner scope={scope} />}
+      {step === 2 && INTENTS_CON_UBICACION.has(intent) && !selectedCard && <CityLocationBanner scope={scope} />}
       {step === 2 && intent === 'productos' && <SlideRail />}
       {step === 2 && intent === 'servicios' && <SlideRailServicios />}
       {step === 2 && intent === 'avisos'    && <SlideRailAvisos />}

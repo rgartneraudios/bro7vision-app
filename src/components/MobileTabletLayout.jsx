@@ -455,6 +455,7 @@ const MobileTabletLayout = ({
   broTunerRef,
   audioUser,
   onToggleAudio,
+  selectedCard,
   ...props
 }) => {
   const [footerMode, setFooterMode] = useState('chat');
@@ -716,7 +717,7 @@ const nextAudio = () => {
           <LockClockWidget accent={accent} />
         </header>
 
-        {scope?.city && (
+        {scope?.city && !selectedCard && (
           <div className="flex-shrink-0 w-full mb-1 flex items-center justify-center">
             <CityLocationBanner scope={scope} isMobile={true} />
           </div>

@@ -158,63 +158,64 @@ const NovaCierre = ({ comercio = {}, mensaje = null, carrito = [], precios = {},
           <button className="vb-close-btn" onClick={onClose} style={{ background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.1)', color:'rgba(255,255,255,0.5)', fontFamily:'Rajdhani,sans-serif', fontWeight:700, fontSize:12, padding:'6px 14px', borderRadius:7, textTransform:'uppercase' }}>✕ CERRAR</button>
         </div>
 
-        {/* CUERPO CENTRAL: VISOR 21:9 + VALES */}
+        {/* CUERPO CENTRAL: VISOR 16:9 + VALES */}
         <div style={{ position:'relative', zIndex:2, flex:1, minHeight:0, display:'flex', alignItems:'stretch', padding:'10px 16px 6px', gap:20 }}>
   <div style={{ flex:1, minWidth:0, display:'flex', alignItems:'center', justifyContent:'center', paddingLeft: '180px' }}>
     
-    {video_catalogo ? (
-      <div style={{
-        position: 'relative', width: '100%', maxWidth: '1100px', aspectRatio: '21/9',
-        borderRadius: '1.25rem', background: '#000', overflow: 'hidden',
-        border: '2px solid var(--accent)',
-        boxShadow: '0 0 18px var(--accent-glow), 0 0 36px var(--accent-soft), inset 0 0 16px var(--accent-soft)'
-      }}>
-                      <video
-                  ref={videoRef} src={getCleanUrl(video_catalogo)}
-                  autoPlay loop playsInline muted={isMuted}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onTimeUpdate={() => { if (videoRef.current?.duration) setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100); }}
-                />
+{video_catalogo ? (
+  <div style={{
+    position: 'relative', width: '100%', maxWidth: '960px', aspectRatio: '16/9',
+    borderRadius: '1.25rem', background: '#000', overflow: 'hidden',
+    border: '2px solid var(--accent)',
+    boxShadow: '0 0 18px var(--accent-glow), 0 0 36px var(--accent-soft), inset 0 0 16px var(--accent-soft)'
+  }}>
+    <video
+      ref={videoRef} src={getCleanUrl(video_catalogo)}
+      autoPlay loop playsInline muted={isMuted}
+      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+      onTimeUpdate={() => { if (videoRef.current?.duration) setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100); }}
+    />
 
-                {/* MUTE */}
-                <button onClick={() => setIsMuted(!isMuted)} style={{
-                  position: 'absolute', top: '12px', right: '12px', zIndex: 50,
-                  width: '28px', height: '28px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
-                  borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', color: '#fff',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', cursor: 'pointer'
-                }}>
-                  {isMuted ? '🔇' : '🔊'}
-                </button>
+    {/* MUTE */}
+    <button onClick={() => setIsMuted(!isMuted)} style={{
+      position: 'absolute', top: '12px', right: '12px', zIndex: 50,
+      width: '28px', height: '28px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
+      borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', color: '#fff',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', cursor: 'pointer'
+    }}>
+      {isMuted ? '🔇' : '🔊'}
+    </button>
 
-                {/* CONTROLES */}
-                <div style={{ position: 'absolute', bottom: '16px', left: 0, width: '100%', zIndex: 50, padding: '0 16px' }}>
-                  <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '99px', cursor: 'pointer', marginBottom: '8px' }} onClick={handleSeek}>
-                    <div style={{ height: '100%', background: 'var(--accent)', borderRadius: '99px', boxShadow: '0 0 8px var(--accent-glow)', transition: 'width 0.1s linear', width: `${progress}%` }} />
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    <button onClick={togglePlayPause} style={{
-                      background: 'rgba(0,0,0,0.5)', border: '1px solid var(--accent-soft)', backdropFilter: 'blur(8px)',
-                      width: '32px', height: '32px', borderRadius: '50%', color: '#fff',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px'
-                    }}>
-                      {isPaused ? '▶' : '⏸'}
-                    </button>
-                  </div>
-                </div>
+    {/* CONTROLES */}
+    <div style={{ position: 'absolute', bottom: '16px', left: 0, width: '100%', zIndex: 50, padding: '0 16px' }}>
+      <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '99px', cursor: 'pointer', marginBottom: '8px' }} onClick={handleSeek}>
+        <div style={{ height: '100%', background: 'var(--accent)', borderRadius: '99px', boxShadow: '0 0 8px var(--accent-glow)', transition: 'width 0.1s linear', width: `${progress}%` }} />
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <button onClick={togglePlayPause} style={{
+          background: 'rgba(0,0,0,0.5)', border: '1px solid var(--accent-soft)', backdropFilter: 'blur(8px)',
+          width: '32px', height: '32px', borderRadius: '50%', color: '#fff',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px'
+        }}>
+          {isPaused ? '▶' : '⏸'}
+        </button>
+      </div>
+    </div>
 
-                {/* ESQUINAS */}
-                <div style={{ position: 'absolute', top: 0, left: 0, width: '24px', height: '24px', borderTop: '2px solid var(--accent)', borderLeft: '2px solid var(--accent)', borderTopLeftRadius: '1.25rem', zIndex: 50, pointerEvents: 'none' }} />
-                <div style={{ position: 'absolute', top: 0, right: 0, width: '24px', height: '24px', borderTop: '2px solid var(--accent)', borderRight: '2px solid var(--accent)', borderTopRightRadius: '1.25rem', zIndex: 50, pointerEvents: 'none' }} />
-                <div style={{ position: 'absolute', bottom: 0, left: 0, width: '24px', height: '24px', borderBottom: '2px solid var(--accent)', borderLeft: '2px solid var(--accent)', borderBottomLeftRadius: '1.25rem', zIndex: 50, pointerEvents: 'none' }} />
-                <div style={{ position: 'absolute', bottom: 0, right: 0, width: '24px', height: '24px', borderBottom: '2px solid var(--accent)', borderRight: '2px solid var(--accent)', borderBottomRightRadius: '1.25rem', zIndex: 50, pointerEvents: 'none' }} />
-              </div>
-            ) : (
-              <div style={{ width:'100%', maxWidth:'960px', aspectRatio:'21/9', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:12, background:'rgba(0,0,0,0.42)', borderRadius:'1.25rem', border:`2px dashed ${cfg.accentSoft}` }}>
-                <span style={{fontSize:36}}>🎥</span>
-                <span style={{ fontFamily:'Chakra Petch,sans-serif', fontSize:13, color:cfg.accent, fontWeight:600, textTransform:'uppercase', letterSpacing:'0.1em' }}>Sin video de catálogo</span>
-                <span style={{ fontFamily:'Rajdhani,sans-serif', fontSize:11, color:'rgba(255,255,255,0.3)' }}>El comercio puede subir su video 21:9 en el Booster</span>
-              </div>
-            )}
+    {/* ESQUINAS */}
+    <div style={{ position: 'absolute', top: 0, left: 0, width: '24px', height: '24px', borderTop: '2px solid var(--accent)', borderLeft: '2px solid var(--accent)', borderTopLeftRadius: '1.25rem', zIndex: 50, pointerEvents: 'none' }} />
+    <div style={{ position: 'absolute', top: 0, right: 0, width: '24px', height: '24px', borderTop: '2px solid var(--accent)', borderRight: '2px solid var(--accent)', borderTopRightRadius: '1.25rem', zIndex: 50, pointerEvents: 'none' }} />
+    <div style={{ position: 'absolute', bottom: 0, left: 0, width: '24px', height: '24px', borderBottom: '2px solid var(--accent)', borderLeft: '2px solid var(--accent)', borderBottomLeftRadius: '1.25rem', zIndex: 50, pointerEvents: 'none' }} />
+    <div style={{ position: 'absolute', bottom: 0, right: 0, width: '24px', height: '24px', borderBottom: '2px solid var(--accent)', borderRight: '2px solid var(--accent)', borderBottomRightRadius: '1.25rem', zIndex: 50, pointerEvents: 'none' }} />
+  </div>
+) : (
+  <div style={{ width:'100%', maxWidth:'960px', aspectRatio:'16/9', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:12, background:'rgba(0,0,0,0.42)', borderRadius:'1.25rem', border:`2px dashed ${cfg.accentSoft}` }}>
+    <span style={{fontSize:36}}>🎥</span>
+    <span style={{ fontFamily:'Chakra Petch,sans-serif', fontSize:13, color:cfg.accent, fontWeight:600, textTransform:'uppercase', letterSpacing:'0.1em' }}>Sin video de catálogo</span>
+    <span style={{ fontFamily:'Rajdhani,sans-serif', fontSize:11, color:'rgba(255,255,255,0.3)' }}>El comercio puede subir su video 16:9 en el Booster</span>
+  </div>
+)}
+
           </div>
 
           {/* COLUMNA DERECHA (VALES) */}
