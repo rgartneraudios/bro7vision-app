@@ -114,8 +114,8 @@ import { acuario }     from '../../data/jaguar/acuario.js'
 import { piscis }      from '../../data/jaguar/piscis.js'
 
 // ── Smisterio — misterios ─────────────────────────────────────────────────────
-import { antartida } from '../../data/smisterio/Antartida.js'
-import { bucegi }    from '../../data/smisterio/Bucegi.js'
+import { antartida } from '../../data/smisterio/antartida.js'
+import { bucegi }    from '../../data/smisterio/bucegi.js'
 import { egipto }    from '../../data/smisterio/egipto.js'
 import { tartaria }  from '../../data/smisterio/tartaria.js'
 

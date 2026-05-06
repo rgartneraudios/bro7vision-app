@@ -107,7 +107,6 @@ function BroCard({ card, theme, onClick, index }) {
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
           width: "100%",
-          textAlign: "center",
         }}>
           {displayName}
         </span>
