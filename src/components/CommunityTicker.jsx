@@ -67,12 +67,12 @@ const CommunityTicker = ({ onUserClick }) => {
                                 <img src={msg.banner_url} className="w-full h-full object-cover" alt="" />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-xl font-black bg-black text-white">
-                                    {msg.alias[0].toUpperCase()}
+                                    {msg.alias?.[0]?.toUpperCase() ?? "?"}
                                 </div>
                             )}
                     </div>
                     <p className="text-xs font-black tracking-tighter" style={{ color: activeColor }}>
-                        @{msg.alias.toUpperCase()}
+                        @{msg.alias?.toUpperCase() ?? ""}
                     </p>
                 </div>
             </div>
