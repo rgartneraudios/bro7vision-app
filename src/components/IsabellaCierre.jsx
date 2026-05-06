@@ -135,7 +135,7 @@ const IsabellaCierre = ({ personaje = 'isabella', comercio = {}, mensaje = null,
     else { videoRef.current.pause(); setIsPaused(true); }
   };
 
-  const video_catalogo = comercio?.video_file_219 || comercio?.video_file;
+  const video_catalogo = comercio?.video_file_169 || comercio?.video_file;
 
   return (
     <>

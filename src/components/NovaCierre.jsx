@@ -132,7 +132,7 @@ const NovaCierre = ({ comercio = {}, mensaje = null, carrito = [], precios = {},
     else { videoRef.current.pause(); setIsPaused(true); }
   };
 
-  const video_catalogo = comercio?.video_file_219 || comercio?.video_file;
+  const video_catalogo = comercio?.video_file_169 || comercio?.video_file;
   console.log("DATOS DEL COMERCIO EN NOVA:", comercio);
   return (
     <>

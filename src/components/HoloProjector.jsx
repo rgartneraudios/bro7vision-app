@@ -1,7 +1,7 @@
 // src/components/HoloProjector.jsx
 import React, { useRef, useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import HoloProjector219 from './HoloProjector219';
+import HoloProjector169 from './HoloProjector169';
 
 const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose, handleGoToShop, onOpenLog }) => {
   const [activeTab, setActiveTab] = useState(null);
@@ -10,7 +10,7 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
   const [isPaused, setIsPaused] = useState(false);
   const [activeReaction, setActiveReaction] = useState(null);
   const [question, setQuestion] = useState("");
-  const [show219, setShow219] = useState(false);
+  const [show169, setShow169] = useState(false);
   const [videoIndex, setVideoIndex] = useState(0);
   const [mediaData, setMediaData] = useState({});         // ← NUEVO
   const [acordeonAbierto, setAcordeonAbierto] = useState(false); // ← NUEVO
@@ -129,11 +129,11 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
     else { videoRef.current.pause(); setIsPaused(true); }
   };
 
-  if (show219) {
+  if (show169) {
     return (
-      <HoloProjector219
+      <HoloProjector169
         user={user} balances={balances} setBalances={setBalances}
-        session={session} onClose={() => setShow219(false)}
+        session={session} onClose={() => setShow169(false)}
         onOpenLog={onOpenLog} handleGoToShop={handleGoToShop}
       />
     );
@@ -271,9 +271,9 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
                 <span className="text-[7px] font-black uppercase text-white/60">Halo</span>
               </button>
 
-              <button onClick={() => setShow219(true)} className="flex-1 flex flex-col items-center gap-1 text-cyan-400">
+              <button onClick={() => setShow169(true)} className="flex-1 flex flex-col items-center gap-1 text-cyan-400">
                 <span className="text-xl">📺</span>
-                <span className="text-[7px] font-black uppercase">Piso 219</span>
+                <span className="text-[7px] font-black uppercase">Piso 169</span>
               </button>
 
               <button

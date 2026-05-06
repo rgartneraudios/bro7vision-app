@@ -15,9 +15,9 @@ const RealityTuner = ({ onSelect }) => {
     { id: 'solo_cinema',  title: 'SOLO CINEMA',  desc: 'Viajero del Tiempo',   icon: '🏛️', color: 'border-cyan-900/20',   text: 'text-cyan-300',   glow: 'shadow-orange-700/30',   group: 'SOLO' },
     
     // GRUPO BAND
-    { id: 'band_earth',   title: 'BAND EARTH',   desc: 'Nexo Ciudadano',  icon: '🏙️', color: 'border-cyan-900/20',    text: 'text-cyan-300',    glow: 'shadow-green-300/30',    group: 'BAND' },
+    { id: 'oeste169',     title: 'CH OESTE 169',   desc: 'Nexo Ciudadano',  icon: '🏙️', color: 'border-cyan-900/20',    text: 'text-cyan-300',    glow: 'shadow-green-300/30',    group: 'BAND' },
     { id: 'band_fantasy', title: 'BAND FANTASY', desc: 'Alien Lounge',    icon: '👾', color: 'border-cyan-900/20', text: 'text-cyan-300', glow: 'shadow-pink-700/30', group: 'BAND' },
-    { id: 'band_cinema',  title: 'BAND CINEMA',  desc: 'El Ágora',        icon: '🎭', color: 'border-cyan-900/20',  text: 'text-cyan-300',  glow: 'shadow-yellow-500/30',  group: 'BAND' },
+    { id: 'este169',      title: 'CH ESTE 169',  desc: 'El Ágora',        icon: '🎭', color: 'border-cyan-900/20',  text: 'text-cyan-300',  glow: 'shadow-yellow-500/30',  group: 'BAND' },
 
     // GRUPO ESPACIO — nuevos canales ESTE y OESTE
     { id: 'este',  title: 'CANAL ESTE',  desc: 'Horizonte Levante',   icon: '📱', color: 'border-cyan-900/20',    text: 'text-cyan-300',    glow: 'shadow-cyan-700/30',    group: 'ESPACIO' },

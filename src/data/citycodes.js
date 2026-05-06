@@ -60,9 +60,9 @@ export const CHANNELS = {
   4: "Solo Earth",
   5: "Solo Fantasy",
   6: "Solo Cinema",
-  7: "Band Earth",
+  7: "ChannelOeste169",
   8: "Band Fantasy",
-  9: "Band Cinema",
+  9: "ChannelEste169",
 };
 
 // ── Fases lunares ───────────────────────────────────────────────

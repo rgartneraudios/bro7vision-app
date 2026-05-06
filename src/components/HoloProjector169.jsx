@@ -1,8 +1,8 @@
-// src/components/HoloProjector219.jsx
+// src/components/HoloProjector169.jsx
 import React, { useRef, useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
-const HoloProjector219 = ({ user, balances, setBalances, session, onClose, onOpenLog, handleGoToShop }) => {
+const HoloProjector169 = ({ user, balances, setBalances, session, onClose, onOpenLog, handleGoToShop }) => {
   const [activeTab, setActiveTab] = useState(null);
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -26,7 +26,7 @@ const HoloProjector219 = ({ user, balances, setBalances, session, onClose, onOpe
         .eq('user_id', user.id)
         .eq('slot', 'horizontal')
         .single();
-      if (error) { console.error('[creator_media 219]', error); return; }
+      if (error) { console.error('[creator_media 169]', error); return; }
       setMediaData(data);
     };
     if (user?.id) fetchMedia();
@@ -142,23 +142,25 @@ const HoloProjector219 = ({ user, balances, setBalances, session, onClose, onOpe
         <span className="text-white font-black text-[10px]">{balances.genesis}</span>
       </div>
 
-      {/* VISOR 21:9 */}
-      <div
-        className="absolute z-[50] animate-cyan-pulse"
-        style={{
-          top: '2vh', right: '2vw',
-          width: 'min(68vw, 900px)',
-          aspectRatio: '21/9',
-          borderRadius: '1.25rem',
-          border: '2px solid #00E1FF',
-          boxShadow: '0 0 18px #00E1FF66,0 0 36px #00E1FF33,inset 0 0 16px #00E1FF11',
-          overflow: 'hidden',
-          background: '#000',
-        }}>
-
+      {/* VISOR 16:9 */}
+<div
+  className="absolute z-[50] animate-cyan-pulse"
+  style={{
+    top: '50%',
+    transform: 'translateY(-65%)',
+    right: '2vw',
+    width: 'min(62vw, 860px)',
+    aspectRatio: '16/9',
+    borderRadius: '1.25rem',
+    border: '2px solid #00E1FF',
+    boxShadow: '0 0 18px #00E1FF66,0 0 36px #00E1FF33,inset 0 0 16px #00E1FF11',
+    overflow: 'hidden',
+    background: '#000',
+  }}>
+  
         <video
           ref={videoRef}
-          src={getCleanUrl(user.video_file_219 || user.video_file)}
+          src={getCleanUrl(user.video_file_169 || user.video_file)}
           autoPlay loop playsInline muted={isMuted}
           className="absolute inset-0 w-full h-full object-cover animate-fadeIn"
           onTimeUpdate={() => {
@@ -207,10 +209,10 @@ const HoloProjector219 = ({ user, balances, setBalances, session, onClose, onOpe
       {activeTab && (
         <div className="absolute z-[60] animate-fadeIn"
           style={{
-            top: 'calc(2vh + min(68vw, 900px) * 9/21 + 1rem)',
-            right: '2vw',
-            width: 'min(68vw, 900px)',
-            maxHeight: '35vh',
+ 	 top: 'calc(50% + min(62vw, 860px) * 9/16 / 2 + 1rem)',
+  	right: '2vw',
+  	width: 'min(62vw, 860px)',
+           maxHeight: '35vh',
             background: 'rgba(0,0,0,0.85)',
             backdropFilter: 'blur(24px)',
             borderRadius: '1rem',
@@ -359,4 +361,4 @@ const HoloProjector219 = ({ user, balances, setBalances, session, onClose, onOpe
   );
 };
 
-export default HoloProjector219;
+export default HoloProjector169;

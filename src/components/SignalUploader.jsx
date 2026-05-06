@@ -1,7 +1,7 @@
 // src/components/SignalUploader.jsx
 // Tab "📡 Señal" extraído de BoosterModal.
 // Slots verticales: campos siempre visibles (estilo YouTube/TikTok).
-// Slots audio y 219: sin cambios.
+// Slots audio y 169: sin cambios.
 // Nuevos campos: categoria_declarada, descripcion_declarada (creator_media).
 
 import React, { useState } from 'react';
@@ -9,12 +9,12 @@ import { supabase } from '../supabaseClient';
 import { marcarActividad } from '../hooks/useActividad';
 import { useFFmpeg } from '../hooks/useFFmpeg';
 
-const VERTICAL_SLOTS = ['video_file', 'video_file_2', 'video_file_3'];
+const VERTICAL_SLOTS = ['video_file', 'video_file_2'];
 const SLOT_MAP = {
   video_file:     'v1',
   video_file_2:   'v2',
-  video_file_3:   'v3',
-  video_file_219: 'horizontal',
+  video_file_169: 'horizontal',
+  video_file_169b: 'horizontal',
   audio_file:     'audio',
 };
 
@@ -139,9 +139,8 @@ const VideoSlotVertical = ({ title, fieldName, slotNumber, formData, setFormData
       if (VERTICAL_SLOTS.includes(fieldName)) {
         const slot1 = formData.video_file   || null;
         const slot2 = formData.video_file_2 || null;
-        const slot3 = formData.video_file_3 || null;
-        await deleteFromR2(slot3);
-        setFormData(prev => ({ ...prev, video_file: publicUrl, video_file_2: slot1, video_file_3: slot2 }));
+                await deleteFromR2(slot3);
+        setFormData(prev => ({ ...prev, video_file: publicUrl, video_file_2: slot1 }));
       }
 
       // Upsert en creator_media con los campos nuevos
@@ -417,11 +416,11 @@ const VideoSlotVertical = ({ title, fieldName, slotNumber, formData, setFormData
 
 
 // ════════════════════════════════════════════════
-// COMPONENTE MediaSlot — para 219 y audio (sin cambios)
+// COMPONENTE MediaSlot — para 169 y audio (sin cambios)
 // ════════════════════════════════════════════════
 const MediaSlot = ({ title, fieldName, type, description, formData, setFormData, loading, setLoading, procesarVideo, progreso, fase, procesando }) => {
   const isOccupied = !!formData[fieldName];
-  const esVideo    = fieldName === 'video_file_219';
+  const esVideo    = fieldName === 'video_file_169';
 
   const [acordeonAbierto,     setAcordeonAbierto]     = useState(false);
   const [archivoSeleccionado, setArchivoSeleccionado] = useState(null);
@@ -756,7 +755,6 @@ const SignalUploader = ({ formData, setFormData, loading, setLoading }) => {
           {/* Slots verticales — nuevo componente con campos siempre visibles */}
           <VideoSlotVertical title="Video Reality / Casa 1" fieldName="video_file"   slotNumber={1} {...sharedProps} />
           <VideoSlotVertical title="Video Casa 2"           fieldName="video_file_2" slotNumber={2} {...sharedProps} />
-          <VideoSlotVertical title="Video Casa 3"           fieldName="video_file_3" slotNumber={3} {...sharedProps} />
 
           {/* ── Audio Live — sin cambios ── */}
           <div className="mt-6 pt-6 border-t border-white/10 space-y-4">
@@ -813,11 +811,11 @@ const SignalUploader = ({ formData, setFormData, loading, setLoading }) => {
         {/* ── Columna derecha: video horizontal — sin cambios ── */}
         <div className={`${CardStyle} h-fit`}>
           <h3 className="text-sm font-bold text-cyan-400 mb-4 border-b border-cyan-500/20 pb-2">
-            🎬 FORMATO (21:9) TELEFONO CASA | PRODUCTOS | SERVICIOS
+            🎬 FORMATO (16:9) TELEFONO CASA | PRODUCTOS | SERVICIOS
           </h3>
           <MediaSlot
-            title="Video Piso 219"
-            fieldName="video_file_219"
+            title="Video Piso 169"
+            fieldName="video_file_169"
             type="video/*"
             description="Formato horizontal panorámico para Catálogos."
             {...sharedProps}

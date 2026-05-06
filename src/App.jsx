@@ -14,9 +14,12 @@ import BroLogViewer from './components/BroLogViewer';
 import BoosterModal from './components/BoosterModal';
 import LegalTerminal from './components/LegalTerminal';
 import HoloProjector from './components/HoloProjector';
+import HoloProjector169 from './components/HoloProjector169';
 import BioForest from './components/BioForest';
 import ChannelEste from './components/ChannelEste';
+import ChannelEste169 from './components/ChannelEste169';
 import ChannelOeste from './components/ChannelOeste';
+import ChannelOeste169 from './components/ChannelOeste169';
 import Reinos from './components/Reinos';
 import RealityTuner from './components/RealityTuner';
 import HoloPrism from './components/HoloPrism';
@@ -111,7 +114,7 @@ function App() {
   const [isTeleporting, setIsTeleporting]       = useState(false);
   const [teleportCoords, setTeleportCoords]     = useState({ city: '' });
   const [projectingUser, setProjectingUser]     = useState(null);
-  const [is219Mode, setIs219Mode]               = useState(false);
+  const [is169Mode, setIs169Mode]               = useState(false);
   const [selectedLog, setSelectedLog]           = useState(null);
   const [audioUser, setAudioUser]               = useState(null);
   const [activePrismUser, setActivePrismUser]   = useState(null);
@@ -618,7 +621,7 @@ function App() {
         </div>
       )}
 
-      {projectingUser && !is219Mode && (
+      {projectingUser && !is169Mode && (
         <HoloProjector
           videoUrl={projectingUser.video_file || projectingUser.videoUrl}
           user={projectingUser}
@@ -626,10 +629,21 @@ function App() {
           balances={balances} setBalances={setBalances}
           session={session}
           onOpenLog={setSelectedLog}
-          onClose={() => { setProjectingUser(null); setIs219Mode(false); }}
-          onGoTo219={() => setIs219Mode(true)}
+          onClose={() => { setProjectingUser(null); setIs169Mode(false); }}
+          onGoTo169={() => setIs169Mode(true)}
         />
       )}
+      
+      {projectingUser && is169Mode && (
+  <HoloProjector169
+    user={projectingUser}
+    handleGoToShop={handleGoToShop}
+    balances={balances} setBalances={setBalances}
+    session={session}
+    onOpenLog={setSelectedLog}
+    onClose={() => { setProjectingUser(null); setIs169Mode(false); }}
+  />
+)}
 
       {selectedCard && (
         <PaymentModal
