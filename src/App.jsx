@@ -44,7 +44,7 @@ import OraculoBanner from './components/OraculoBanner';
 import CityLocationBanner from './components/CityLocationBanner';
 import NeuralButton from './components/NeuralButton';
 import DesktopLayout from './components/DesktopLayout';
-import MobileTabletLayout from './components/MobileTabletLayout';
+import MobileLayout from './components/MobileLayout';
 import BackStage from './components/backstage/BackStage';
 
 import { useSessionManager }  from './hooks/useSessionManager';
@@ -109,7 +109,7 @@ function App() {
   const [realItems, setRealItems]               = useState([]);
   const [selectedForestUser, setSelectedForestUser] = useState(null);
   const [selectedCard, setSelectedCard]         = useState(null);
-  const [isTouch, setIsTouch]                   = useState(false);
+  const [isMobile, setIsMobile]                 = useState(() => window.innerWidth < 768);
   const [showStudio, setShowStudio]             = useState(false);
   const [isTeleporting, setIsTeleporting]       = useState(false);
   const [teleportCoords, setTeleportCoords]     = useState({ city: '' });
@@ -133,7 +133,9 @@ function App() {
   // ══════════════════════════════════════════════════════
 
   useEffect(() => {
-    setIsTouch(window.matchMedia('(pointer: coarse)').matches);
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
   useEffect(() => {
@@ -572,8 +574,8 @@ function App() {
 
   return (
     <div className="relative w-full h-screen bg-black text-white overflow-hidden font-sans">
-      {isTouch ? (
-        <MobileTabletLayout
+      {isMobile ? (
+        <MobileLayout
           realityMode={realityMode}
           broTunerRef={broTunerRef}
           audioUser={audioUser}

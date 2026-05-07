@@ -434,7 +434,7 @@ function BurbujaDescripcion({ card, intent, accent, onHandoff, onClose }) {
 }
 
 // ─── COMPONENTE PRINCIPAL ────────────────────────────────────────────────────
-const MobileTabletLayout = ({
+const MobileLayout = ({
   children,
   realityMode, setRealityMode,
   hubAudios={hubAudios},
@@ -867,4 +867,4 @@ const nextAudio = () => {
   );
 };
 
-export default MobileTabletLayout;
+export default MobileLayout;
