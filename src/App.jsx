@@ -110,6 +110,7 @@ function App() {
   const [selectedForestUser, setSelectedForestUser] = useState(null);
   const [selectedCard, setSelectedCard]         = useState(null);
   const [isMobile, setIsMobile]                 = useState(() => window.innerWidth < 768);
+  const [isFullscreen, setIsFullscreen]         = useState(false);
   const [showStudio, setShowStudio]             = useState(false);
   const [isTeleporting, setIsTeleporting]       = useState(false);
   const [teleportCoords, setTeleportCoords]     = useState({ city: '' });
@@ -137,6 +138,23 @@ function App() {
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.();
+    } else {
+      document.exitFullscreen?.();
+    }
+  };
+
+  const isPWA = window.matchMedia('(display-mode: fullscreen)').matches ||
+                window.matchMedia('(display-mode: standalone)').matches;
 
   useEffect(() => {
     if (!session) return;
@@ -685,6 +703,19 @@ function App() {
       )}
 
       {selectedLog && <BroLogViewer log={selectedLog} onClose={() => setSelectedLog(null)} />}
+
+      {/* Botón fullscreen — solo visible en browser normal (no PWA, no fullscreen activo) */}
+      {!isPWA && !isFullscreen && (
+        <button
+          onClick={toggleFullscreen}
+          className="fixed bottom-5 right-5 z-[999] w-9 h-9 rounded-full bg-black/50 border border-white/20 flex items-center justify-center text-white/40 hover:text-white hover:border-white/60 transition-all backdrop-blur-md"
+          title="Pantalla completa"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      )}
     </div>
   );
 }
