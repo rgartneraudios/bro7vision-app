@@ -154,7 +154,7 @@ function loadVideo(videoEl, url, isMuted, hlsRef) {
   }
 }
 
-const ChannelEste169 = ({ videoUsers, balances, setBalances, session, realityMode, onOpenProfile, selectedForestUser, savedUserIndex }) => {
+const ChannelEste169 = ({ videoUsers, balances, setBalances, session, realityMode, onOpenProfile, selectedForestUser, savedUserIndex, setShow169 }) => {
   const [currentIndex,  setCurrentIndex]  = useState(0);
   const [isMuted,       setIsMuted]       = useState(false);
   const [progress,      setProgress]      = useState(0);
@@ -759,7 +759,7 @@ useEffect(() => {
                 <div className="orbita-cabeza"></div>
               </div>
             )}
-            <p className="relative z-10 text-[10px] md:text-[12px] font-black tracking-[0.4em] uppercase text-cyan-400 drop-shadow-lg text-center">
+            <p className="relative z-10 text-[10px] md:text-[12px] font-black tracking-[0.4em] uppercase text-yellow-200 drop-shadow-lg text-center">
               CANAL ESTE 169 <span className="text-white/40 mx-2">//</span> {currentUser?.alias||'ANÓNIMO'}
             </p>
           </div>
@@ -769,8 +769,8 @@ useEffect(() => {
           </button>
           <button
   		onClick={() => { if(currentUser) onOpenProfile({ ...currentUser, _savedIndex: currentIndex, _mode169: true }); }}
-  		className="px-5 py-3 md:py-4 bg-black text-white border-2 border-[#bf00ff] rounded-xl text-[9px] md:text-[11px] font-black 		uppercase shadow-[0_0_15px_rgba(191,0,255,0.6),inset_0_0_8px_rgba(191,0,255,0.4)] hover:scale-105 transition-all animate-		pulse">
-  		<span className="drop-shadow-[0_0_8px_rgba(191,0,255,0.9)]">☝️ TELEFONO CASA</span>
+  		className="px-5 py-3 md:py-4 bg-black text-white border-2 border-[#F8FF75] rounded-xl text-[9px] md:text-[11px] font-black 		uppercase shadow-[0_0_15px_rgba(234,255,103,0.6),inset_0_0_8px_rgba(234,255,103,0.4)] hover:scale-105 transition-all animate-		pulse">
+  		<span className="drop-shadow-[0_0_8px_rgba(234,255,103,0.9)]">☝️ TELEFONO CASA</span>
 	</button>
           <button onClick={()=>setShowEchoInput(true)} className="px-6 py-3 md:py-4 bg-black/90 border border-white/20 text-white rounded-xl text-[9px] md:text-[11px] font-black uppercase hover:bg-white/10 transition-colors">
             💬 ECO

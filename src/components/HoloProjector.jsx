@@ -135,6 +135,7 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
         user={user} balances={balances} setBalances={setBalances}
         session={session} onClose={() => setShow169(false)}
         onOpenLog={onOpenLog} handleGoToShop={handleGoToShop}
+        onGoTo916={() => setShow169(false)}
       />
     );
   }
@@ -186,7 +187,7 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
       </button>
 
       {/* VISOR VERTICAL */}
-      <div className="relative z-20 flex items-center justify-center">
+      <div className="relative z-20 flex items-center justify-center" style={{ marginBottom: '4rem' }}>
         <div className="relative h-[88vh] aspect-[9/16] rounded-[3.5rem] border-[3px] border-[#FFFDD0]/30 shadow-[0_0_40px_rgba(255,253,208,0.15)] flex flex-col overflow-hidden bg-black">
 
           <video
@@ -227,7 +228,7 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
           </div>
 
           {/* CONTROLES */}
-          <div className="absolute bottom-24 left-0 w-full z-50 px-5 pointer-events-auto">
+          <div className="absolute bottom-4 left-0 w-full z-50 px-5 pointer-events-auto">
             <div className="w-full h-1 bg-white/20 rounded-full cursor-pointer mb-3 group" onClick={handleSeek}>
               <div className="h-full bg-[#FFFDD0]/80 rounded-full shadow-[0_0_6px_white] transition-all duration-100 group-hover:h-[4px]"
                 style={{ width: `${progress}%` }} />
@@ -239,121 +240,142 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
               </button>
             </div>
           </div>
-
-          {/* ── TERMINAL GLASS ─────────────────────────────────────── */}
-          <div className={`absolute bottom-0 left-0 w-full bg-black/85 backdrop-blur-3xl border-t border-white/10 transition-all duration-700 z-40 ${activeTab ? 'h-[65%]' : 'h-24'}`}>
-
-            {/* BOTONES DEL FOOTER */}
-            <div className="flex h-24 items-center px-1">
-              <button
-                onClick={() => setActiveTab(activeTab === 'log' ? null : 'log')}
-                className={`flex-1 flex flex-col items-center gap-1 transition-all ${activeTab === 'log' ? 'text-white' : 'text-white/30'}`}>
-                <span className="text-xl">💬</span>
-                <span className="text-[7px] font-black uppercase">Preguntar</span>
-              </button>
-
-              <button
-                onClick={() => onOpenLog({
-                  id: user.id,
-                  title: user.editorial_title || "Sin Título",
-                  author: user.alias || "Anónimo",
-                  content: user.editorial_content || "..."
-                })}
-                className="flex-1 flex flex-col items-center gap-1 text-fuchsia-400">
-                <span className="text-xl">🖋️</span>
-                <span className="text-[7px] font-black uppercase">Editorial</span>
-              </button>
-
-              <button onClick={handleSendHalo} className="flex-1 flex flex-col items-center gap-1 relative">
-                <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center text-xl hover:border-fuchsia-400 hover:shadow-[0_0_14px_rgba(232,121,249,0.5)] transition-all active:scale-90">
-                  ⚪
-                </div>
-                <span className="text-[7px] font-black uppercase text-white/60">Halo</span>
-              </button>
-
-              <button onClick={() => setShow169(true)} className="flex-1 flex flex-col items-center gap-1 text-cyan-400">
-                <span className="text-xl">📺</span>
-                <span className="text-[7px] font-black uppercase">Piso 169</span>
-              </button>
-
-              <button
-                onClick={() => { if (typeof handleGoToShop === 'function') handleGoToShop(user); }}
-                className="flex-1 flex flex-col items-center gap-1 text-yellow-500">
-                <span className="text-xl">🦝</span>
-                <span className="text-[7px] font-black uppercase">Tienda</span>
-              </button>
-            </div>
-
-            {/* CONTENIDO TAB PREGUNTAR */}
-            <div className="px-6 pb-6 h-[calc(100%-6rem)] overflow-y-auto">
-              {activeTab === 'log' && (
-                <div className="animate-fadeIn space-y-4">
-                  <div className="bg-white/5 p-3 rounded-xl border border-white/5">
-                    <p className="text-gray-300 text-[11px] leading-relaxed italic">"{user.blog_text || "El creador está en directo..."}"</p>
-                  </div>
-                  <div className="bg-black/40 p-4 rounded-2xl border border-white/10">
-                    <p className="text-[9px] text-gray-500 font-black mb-2 uppercase">Enviar Pregunta Privada</p>
-                    <div className="flex gap-2">
-                      <input type="text" value={question} onChange={e => setQuestion(e.target.value)}
-                        placeholder="¿Tienes alguna duda?"
-                        className="flex-1 bg-transparent border-b border-white/10 text-xs text-white outline-none" />
-                      <button onClick={handleSendQuestion} className="text-fuchsia-400 text-[9px] font-black uppercase">Preguntar</button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
         </div>
       </div>
 
-      {/* ── FOOTER DEL ESCENARIO ────────────────────────────────── */}
-      <div className="absolute bottom-0 left-0 w-full z-[150] pointer-events-none">
-        <div className="flex items-end justify-between px-5 pb-3 gap-4">
+      {/* ── PANEL TAB ACTIVO (log) ── */}
+      {activeTab === 'log' && (
+        <div className="absolute bottom-[5.5rem] left-1/2 -translate-x-1/2 z-[150] w-[min(90vw,480px)] animate-fadeIn pointer-events-auto"
+          style={{
+            background: 'rgba(0,0,0,0.88)',
+            backdropFilter: 'blur(24px)',
+            borderRadius: '1rem',
+            border: '1px solid rgba(255,255,255,0.08)',
+            padding: '1.25rem',
+          }}>
+          <div className="space-y-4">
+            <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+              <p className="text-gray-300 text-[11px] leading-relaxed italic">"{user.blog_text || "El creador está en directo..."}"</p>
+            </div>
+            <div className="bg-black/40 p-4 rounded-2xl border border-white/10">
+              <p className="text-[9px] text-gray-500 font-black mb-2 uppercase">Enviar Pregunta Privada</p>
+              <div className="flex gap-2">
+                <input type="text" value={question} onChange={e => setQuestion(e.target.value)}
+                  placeholder="¿Tienes alguna duda?"
+                  className="flex-1 bg-transparent border-b border-white/10 text-xs text-white outline-none" />
+                <button onClick={handleSendQuestion} className="text-fuchsia-400 text-[9px] font-black uppercase">Preguntar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
-          {/* IZQUIERDA: acordeón */}
-          {currentMedia && (
-            <div className="pointer-events-auto flex flex-col items-start max-w-[60%]">
-
-              {/* Panel expandido — fondo muy transparente, se ve el vídeo */}
-              {acordeonAbierto && (
-                <div className="mb-2 w-full px-5 py-4 bg-black/30 backdrop-blur-sm border border-white/10 rounded-2xl animate-slideUp overflow-y-auto max-h-56">
-                  <p style={{ fontFamily: 'Georgia, serif' }}
-                    className="text-white text-lg font-bold leading-snug mb-2">
-                    {currentMedia.titulo}
-                  </p>
-                  <p className="text-white/50 text-sm leading-relaxed whitespace-pre-wrap">
-                    {currentMedia.descripcion}
-                  </p>
-                </div>
+      {/* ── ACORDEÓN FLOTANTE — izquierda, abre hacia arriba ──────── */}
+      {currentMedia && (
+        <div className="absolute bottom-[5.5rem] left-4 z-[110] pointer-events-auto flex flex-col items-start w-80">
+          {acordeonAbierto && (
+            <div className="mb-2 w-full px-6 py-6 bg-slate-950/50 backdrop-blur-md border border-slate-700/30 rounded-2xl animate-slideUp overflow-y-auto max-h-[65vh]">
+              <p style={{ fontFamily: 'Georgia, serif' }}
+                className="text-white text-2xl font-bold leading-snug mb-3">
+                {currentMedia.titulo}
+              </p>
+              {currentMedia.categoria_declarada && (
+                <p style={{ fontFamily: 'Georgia, serif' }}
+                  className="text-green-300/80 text-sm uppercase tracking-widest mb-3">
+                  {currentMedia.categoria_declarada}
+                </p>
               )}
-
-              {/* Botón base: siempre dice TÍTULO Y DESCRIPCIÓN */}
-              <button
-                onClick={() => setAcordeonAbierto(prev => !prev)}
-                className="flex items-center gap-2 px-4 py-2 bg-black/50 backdrop-blur-md border border-white/20 rounded-xl hover:bg-white/10 transition-all"
-              >
-                <span className="text-white/80 text-xs font-black uppercase tracking-widest">
-                  Título y Descripción
-                </span>
-                <span className={`text-white/50 text-xs transition-transform duration-300 ${acordeonAbierto ? 'rotate-180' : ''}`}>▼</span>
-              </button>
+              {currentMedia.descripcion_declarada && (
+                <p style={{ fontFamily: 'Georgia, serif' }}
+                  className="text-white/70 text-base italic mb-3 leading-relaxed">
+                  {currentMedia.descripcion_declarada}
+                </p>
+              )}
+              <p style={{ fontFamily: 'Georgia, serif' }}
+                className="text-white/60 text-sm leading-relaxed whitespace-pre-wrap">
+                {currentMedia.descripcion}
+              </p>
             </div>
           )}
+          <button
+            onClick={() => setAcordeonAbierto(prev => !prev)}
+            className="flex items-center gap-3 px-4 py-3 bg-black/60 backdrop-blur-md border border-white/20 rounded-xl hover:bg-white/10 transition-all w-full">
+            <span className="text-white/80 text-xs font-black uppercase tracking-widest flex-1 text-left">Título y Descripción</span>
+            <span className={`text-white/50 text-sm transition-transform duration-300 ${acordeonAbierto ? 'rotate-180' : ''}`}>▼</span>
+          </button>
+        </div>
+      )}
 
-          {/* DERECHA: badges */}
-          <div className="pointer-events-none flex flex-col items-end gap-2 pb-1">
-            {currentTipo === 'publicidad' && (
-              <span className="bg-amber-500 text-black text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
-                📢 Publicidad
-              </span>
-            )}
-            {currentTipo === 'ia' && (
-              <span className="bg-violet-600 text-white text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
-                🤖 Video hecho con IA
-              </span>
-            )}
-          </div>
+      {/* ── BADGE FLOTANTE — derecha, encima del footer ─────────── */}
+      {currentMedia && (
+        <div className="absolute bottom-[5.5rem] right-4 z-[110] pointer-events-none flex flex-col items-end gap-2">
+          {currentTipo === 'original' && (
+            <span className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
+              ✦ Original
+            </span>
+          )}
+          {currentTipo === 'publicidad' && (
+            <span className="bg-amber-500 text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
+              📢 Publicidad
+            </span>
+          )}
+          {currentTipo === 'ia' && (
+            <span className="bg-violet-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
+              🤖 Hecho con IA
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* ── FOOTER UNIFICADO ─────────────────────────────────────── */}
+      <div className="absolute bottom-0 left-0 w-full z-[100] bg-black/80 backdrop-blur-2xl border-t border-white/10">
+
+        {/* BOTONES */}
+        <div className="flex h-20 items-center px-2">
+          <button
+            onClick={() => setActiveTab(activeTab === 'log' ? null : 'log')}
+            className={`flex-1 flex flex-col items-center gap-1 transition-all ${activeTab === 'log' ? 'text-white' : 'text-white/30'}`}>
+            <span className="text-xl">💬</span>
+            <span className="text-[10px] font-black uppercase">Bitácora</span>
+          </button>
+
+          <button
+            onClick={() => onOpenLog({
+              id: user.id,
+              title: user.editorial_title || "Sin Título",
+              author: user.alias || "Anónimo",
+              content: user.editorial_content || "..."
+            })}
+            className="flex-1 flex flex-col items-center gap-1 text-fuchsia-400">
+            <span className="text-xl">🖋️</span>
+            <span className="text-[10px] font-black uppercase">Editorial</span>
+          </button>
+
+          <button onClick={handleSendHalo} className="flex-1 flex flex-col items-center gap-1 relative">
+            <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center text-xl hover:border-fuchsia-400 hover:shadow-[0_0_14px_rgba(232,121,249,0.5)] transition-all active:scale-90">
+              ⚪
+            </div>
+            <span className="text-[10px] font-black uppercase text-white/60">Halo</span>
+          </button>
+
+          <button
+            onClick={() => { if (typeof handleGoToShop === 'function') handleGoToShop(user); }}
+            className="flex-1 flex flex-col items-center gap-1 text-yellow-500">
+            <img src="/emojis/nova.webp" alt="Nova" className="w-7 h-7 object-contain" />
+            <span className="text-[10px] font-black uppercase">Productos</span>
+          </button>
+
+          <button
+            onClick={() => { if (typeof handleGoToShop === 'function') handleGoToShop(user, 'isabellaCierre'); }}
+            className="flex-1 flex flex-col items-center gap-1 text-fuchsia-400">
+            <img src="/emojis/isabella.webp" alt="Isabella" className="w-7 h-7 object-contain" />
+            <span className="text-[10px] font-black uppercase">Servicios</span>
+          </button>
+
+          <button onClick={() => setShow169(true)} className="flex-1 flex flex-col items-center gap-1 text-cyan-400">
+            <span className="text-xl">📺</span>
+            <span className="text-[10px] font-black uppercase">Piso 169</span>
+          </button>
         </div>
       </div>
 
@@ -370,4 +392,3 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
 };
 
 export default HoloProjector;
-

@@ -173,7 +173,7 @@ const MarketplaceTab = ({ session, profile }) => {
                 {/* Título canal */}
                 <div className="flex items-center gap-3 mb-4">
                   <span style={{ fontFamily: SYNE, color: rolColor, textShadow: `0 0 12px ${rolColor}55` }} className="text-2xl font-black tracking-widest">
-                    CH{canal}
+                    CANAL{canal}
                   </span>
                   <span style={{ fontFamily: SYNE, color: rolColor }} className="text-xl font-black tracking-wide">
                     {CHANNELS[canal]}
@@ -201,13 +201,13 @@ const MarketplaceTab = ({ session, profile }) => {
                   </div>
                 </div>
 
-                {/* Cabeceras columnas MT */}
-                <ColHeaders slots={mobSlots} prefix="MT" hexColor={rolColor} />
+                {/* Cabeceras columnas MOVIL */}
+                <ColHeaders slots={mobSlots} prefix="MOVIL " hexColor={rolColor} />
 
-                {/* Fila MT */}
+                {/* Fila MOVIL */}
                 <div className="flex items-start gap-2">
                   <span style={{ fontFamily: SYNE, color: rolColor, fontSize: 9, fontWeight: 600, letterSpacing: '0.15em' }} className="uppercase w-8 pt-2 shrink-0">
-                    MT
+                    MOVIL 
                   </span>
                   <div className="grid grid-cols-4 gap-3 flex-1">
                     {mobSlots.map((slot, i) => (

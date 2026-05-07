@@ -153,7 +153,7 @@ function loadVideo(videoEl, url, isMuted, hlsRef) {
   }
 }
 
-const ChannelMoon = ({ videoUsers, balances, setBalances, session, realityMode, onOpenProfile, selectedForestUser, savedUserIndex }) => {
+const ChannelMoon = ({ videoUsers, balances, setBalances, session, realityMode, onOpenProfile, selectedForestUser, savedUserIndex, setShow169 }) => {
   const [currentIndex,  setCurrentIndex]  = useState(0);
   const [isMuted,       setIsMuted]       = useState(false);
   const [progress,      setProgress]      = useState(0);
@@ -751,8 +751,8 @@ useEffect(() => {
                 <div className="orbita-cabeza"></div>
               </div>
             )}
-            <p className="relative z-10 text-[10px] md:text-[12px] font-black tracking-[0.4em] uppercase text-cyan-400 drop-shadow-lg text-center">
-              CANAL MOON <span className="text-white/40 mx-2">//</span> {currentUser?.alias||'ANÓNIMO'}
+            <p className="relative z-10 text-[10px] md:text-[12px] font-black tracking-[0.4em] uppercase text-gray-300 drop-shadow-lg text-center">
+              CANAL LUNA  <span className="text-white/40 mx-2">//</span> {currentUser?.alias||'ANÓNIMO'}
             </p>
           </div>
 

@@ -14,7 +14,7 @@ const SLOT_MAP = {
   video_file:     'v1',
   video_file_2:   'v2',
   video_file_169: 'horizontal',
-  video_file_169b: 'horizontal',
+  video_file_169b: 'horizontal2',
   audio_file:     'audio',
 };
 
@@ -420,7 +420,7 @@ const VideoSlotVertical = ({ title, fieldName, slotNumber, formData, setFormData
 // ════════════════════════════════════════════════
 const MediaSlot = ({ title, fieldName, type, description, formData, setFormData, loading, setLoading, procesarVideo, progreso, fase, procesando }) => {
   const isOccupied = !!formData[fieldName];
-  const esVideo    = fieldName === 'video_file_169';
+  const esVideo    = fieldName === 'video_file_169' || fieldName === 'video_file_169b';
 
   const [acordeonAbierto,     setAcordeonAbierto]     = useState(false);
   const [archivoSeleccionado, setArchivoSeleccionado] = useState(null);
@@ -808,16 +808,23 @@ const SignalUploader = ({ formData, setFormData, loading, setLoading }) => {
           </div>
         </div>
 
-        {/* ── Columna derecha: video horizontal — sin cambios ── */}
-        <div className={`${CardStyle} h-fit`}>
+        {/* ── Columna derecha: videos horizontales 16:9 ── */}
+        <div className={`${CardStyle} h-fit space-y-4`}>
           <h3 className="text-sm font-bold text-cyan-400 mb-4 border-b border-cyan-500/20 pb-2">
             🎬 FORMATO (16:9) TELEFONO CASA | PRODUCTOS | SERVICIOS
           </h3>
           <MediaSlot
-            title="Video Piso 169"
+            title="Video Horizontal A"
             fieldName="video_file_169"
             type="video/*"
             description="Formato horizontal panorámico para Catálogos."
+            {...sharedProps}
+          />
+          <MediaSlot
+            title="Video Horizontal B"
+            fieldName="video_file_169b"
+            type="video/*"
+            description="Segundo slot horizontal para Productos o Servicios."
             {...sharedProps}
           />
         </div>

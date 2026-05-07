@@ -2,14 +2,14 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
-const HoloProjector169 = ({ user, balances, setBalances, session, onClose, onOpenLog, handleGoToShop }) => {
+const HoloProjector169 = ({ user, balances, setBalances, session, onClose, onOpenLog, handleGoToShop, onGoTo916 }) => {
   const [activeTab, setActiveTab] = useState(null);
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [activeReaction, setActiveReaction] = useState(null);
   const [question, setQuestion] = useState("");
-  const [mediaData, setMediaData] = useState(null);
+  const [allMedia, setAllMedia] = useState({});
   const [acordeonAbierto, setAcordeonAbierto] = useState(false);
   const [slotIndex, setSlotIndex] = useState(0);
 
@@ -20,22 +20,25 @@ const HoloProjector169 = ({ user, balances, setBalances, session, onClose, onOpe
 
   const slots = [user.video_file_169, user.video_file_169b].filter(Boolean);
 
-  // ── NUEVO: fetch slot horizontal de creator_media ──────────────
+  // Fetch all creator_media rows for the viewed creator (user.id, not session)
   useEffect(() => {
     const fetchMedia = async () => {
       const { data, error } = await supabase
         .from('creator_media')
-        .select('slot, url, titulo, descripcion, tipo')
-        .eq('user_id', user.id)
-        .eq('slot', 'horizontal')
-        .single();
+        .select('slot, url, titulo, descripcion, tipo, categoria_declarada, descripcion_declarada')
+        .eq('user_id', user.id);
       if (error) { console.error('[creator_media 169]', error); return; }
-      setMediaData(data);
+      const mapped = {};
+      (data || []).forEach(item => { mapped[item.slot] = item; });
+      setAllMedia(mapped);
     };
     if (user?.id) fetchMedia();
   }, [user.id]);
 
-  const currentTipo = mediaData?.tipo || 'original';
+  // Map slot index to the creator_media slot name
+  const SLOT_NAMES = ['horizontal', 'horizontal2'];
+  const currentMedia = allMedia[SLOT_NAMES[slotIndex]] || null;
+  const currentTipo  = currentMedia?.tipo || 'original';
 
   const getCleanUrl = (url) => {
     if (!url) return "";
@@ -165,12 +168,12 @@ const HoloProjector169 = ({ user, balances, setBalances, session, onClose, onOpe
         {slots.length > 1 && (
           <>
             <button
-              onClick={() => setSlotIndex(p => p > 0 ? p - 1 : slots.length - 1)}
+              onClick={() => { setSlotIndex(p => p > 0 ? p - 1 : slots.length - 1); setAcordeonAbierto(false); }}
               className="absolute left-3 top-1/2 -translate-y-1/2 z-[60] w-8 h-8 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/20 hover:bg-white/20 transition-all text-sm">
               ‹
             </button>
             <button
-              onClick={() => setSlotIndex(p => p < slots.length - 1 ? p + 1 : 0)}
+              onClick={() => { setSlotIndex(p => p < slots.length - 1 ? p + 1 : 0); setAcordeonAbierto(false); }}
               className="absolute right-3 top-1/2 -translate-y-1/2 z-[60] w-8 h-8 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/20 hover:bg-white/20 transition-all text-sm">
               ›
             </button>
@@ -260,56 +263,65 @@ const HoloProjector169 = ({ user, balances, setBalances, session, onClose, onOpe
         </div>
       )}
 
+      {/* ── ACORDEÓN FLOTANTE — izquierda, abre hacia arriba ──────── */}
+      {currentMedia && (
+        <div className="absolute bottom-[5.5rem] left-4 z-[110] pointer-events-auto flex flex-col items-start w-80">
+          {acordeonAbierto && (
+            <div className="mb-2 w-full px-6 py-6 bg-slate-950/50 backdrop-blur-md border border-slate-700/30 rounded-2xl animate-slideUp overflow-y-auto max-h-[65vh]">
+              <p style={{ fontFamily: 'Georgia, serif' }}
+                className="text-white text-2xl font-bold leading-snug mb-3">
+                {currentMedia.titulo}
+              </p>
+              {currentMedia.categoria_declarada && (
+                <p style={{ fontFamily: 'Georgia, serif' }}
+                  className="text-slate-300/80 text-sm uppercase tracking-widest mb-3">
+                  {currentMedia.categoria_declarada}
+                </p>
+              )}
+              {currentMedia.descripcion_declarada && (
+                <p style={{ fontFamily: 'Georgia, serif' }}
+                  className="text-white/70 text-base italic mb-3 leading-relaxed">
+                  {currentMedia.descripcion_declarada}
+                </p>
+              )}
+              <p style={{ fontFamily: 'Georgia, serif' }}
+                className="text-white/60 text-sm leading-relaxed whitespace-pre-wrap">
+                {currentMedia.descripcion}
+              </p>
+            </div>
+          )}
+          <button
+            onClick={() => setAcordeonAbierto(prev => !prev)}
+            className="flex items-center gap-3 px-4 py-3 bg-black/60 backdrop-blur-md border border-white/20 rounded-xl hover:bg-white/10 transition-all w-full">
+            <span className="text-white/80 text-xs font-black uppercase tracking-widest flex-1 text-left">Título y Descripción</span>
+            <span className={`text-white/50 text-sm transition-transform duration-300 ${acordeonAbierto ? 'rotate-180' : ''}`}>▼</span>
+          </button>
+        </div>
+      )}
+
+      {/* ── BADGE FLOTANTE — derecha, encima del footer ─────────── */}
+      {currentMedia && (
+        <div className="absolute bottom-[5.5rem] right-4 z-[110] pointer-events-none flex flex-col items-end gap-2">
+          {currentTipo === 'original' && (
+            <span className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
+              ✦ Original
+            </span>
+          )}
+          {currentTipo === 'publicidad' && (
+            <span className="bg-amber-500 text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
+              📢 Publicidad
+            </span>
+          )}
+          {currentTipo === 'ia' && (
+            <span className="bg-violet-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
+              🤖 Hecho con IA
+            </span>
+          )}
+        </div>
+      )}
+
       {/* ── FOOTER ─────────────────────────────────────────────────── */}
       <div className="absolute bottom-0 left-0 w-full z-[100] bg-black/80 backdrop-blur-2xl border-t border-white/10">
-
-        {/* ── FRANJA INFO: acordeón izq + badges der ─────────────── */}
-        {mediaData && (
-          <div className="flex items-end justify-between px-5 pt-3 pb-2 gap-4 border-b border-white/5">
-
-            {/* IZQUIERDA: acordeón */}
-            <div className="flex flex-col items-start max-w-[60%]">
-
-              {/* Panel expandido — fondo muy transparente */}
-              {acordeonAbierto && (
-                <div className="mb-2 w-full px-5 py-4 bg-black/30 backdrop-blur-sm border border-white/10 rounded-2xl animate-slideUp overflow-y-auto max-h-40">
-                  <p style={{ fontFamily: 'Georgia, serif' }}
-                    className="text-white text-lg font-bold leading-snug mb-2">
-                    {mediaData.titulo}
-                  </p>
-                  <p className="text-white/50 text-sm leading-relaxed whitespace-pre-wrap">
-                    {mediaData.descripcion}
-                  </p>
-                </div>
-              )}
-
-              {/* Botón base */}
-              <button
-                onClick={() => setAcordeonAbierto(prev => !prev)}
-                className="flex items-center gap-2 px-4 py-2 bg-black/50 backdrop-blur-md border border-white/20 rounded-xl hover:bg-white/10 transition-all"
-              >
-                <span className="text-white/80 text-xs font-black uppercase tracking-widest">
-                  Título y Descripción
-                </span>
-                <span className={`text-white/50 text-xs transition-transform duration-300 ${acordeonAbierto ? 'rotate-180' : ''}`}>▼</span>
-              </button>
-            </div>
-
-            {/* DERECHA: badges */}
-            <div className="flex flex-col items-end gap-2 pb-0.5">
-              {currentTipo === 'publicidad' && (
-                <span className="bg-amber-500 text-black text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
-                  📢 Publicidad
-                </span>
-              )}
-              {currentTipo === 'ia' && (
-                <span className="bg-violet-600 text-white text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">
-                  🤖 Video hecho con IA
-                </span>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* BOTONES */}
         <div className="flex h-20 items-center px-2">
@@ -342,9 +354,25 @@ const HoloProjector169 = ({ user, balances, setBalances, session, onClose, onOpe
           <button
             onClick={() => { if (typeof handleGoToShop === 'function') handleGoToShop(user); }}
             className="flex-1 flex flex-col items-center gap-1 text-yellow-500">
-            <span className="text-xl">🦝</span>
-            <span className="text-[10px] font-black uppercase">Tienda</span>
+            <img src="/emojis/nova.webp" alt="Nova" className="w-7 h-7 object-contain" />
+            <span className="text-[10px] font-black uppercase">Productos</span>
           </button>
+
+          <button
+            onClick={() => { if (typeof handleGoToShop === 'function') handleGoToShop(user, 'isabellaCierre'); }}
+            className="flex-1 flex flex-col items-center gap-1 text-fuchsia-400">
+            <img src="/emojis/isabella.webp" alt="Isabella" className="w-7 h-7 object-contain" />
+            <span className="text-[10px] font-black uppercase">Servicios</span>
+          </button>
+
+          {onGoTo916 && (
+            <button
+              onClick={onGoTo916}
+              className="flex-1 flex flex-col items-center gap-1 text-white/50 hover:text-white transition-colors">
+              <span className="text-xl">📱</span>
+              <span className="text-[10px] font-black uppercase">Piso 916</span>
+            </button>
+          )}
         </div>
       </div>
 

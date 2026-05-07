@@ -539,7 +539,7 @@ function App() {
     realItems, filteredItems, hubVideos, hubVideos169,
     selectedForestUser, setSelectedForestUser, savedUserIndex,
     audioUser, setAudioUser, activePrismUser, setActivePrismUser,
-    projectingUser, setProjectingUser, selectedCard,
+    projectingUser, setProjectingUser, is169Mode, setIs169Mode, selectedCard,
     broTunerRef, navItems, handleNavigation, handleReportIssue,
     setShowWalletModal, setShowBooster, setShowStory, setShowLegal,
     scope, sessionCP, sessionCity, sessionRef,
@@ -647,6 +647,7 @@ function App() {
     session={session}
     onOpenLog={setSelectedLog}
     onClose={() => { setProjectingUser(null); setIs169Mode(false); }}
+    onGoTo916={() => setIs169Mode(false)}
   />
 )}
 
