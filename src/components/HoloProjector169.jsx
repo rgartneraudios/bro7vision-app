@@ -9,13 +9,16 @@ const HoloProjector169 = ({ user, balances, setBalances, session, onClose, onOpe
   const [isPaused, setIsPaused] = useState(false);
   const [activeReaction, setActiveReaction] = useState(null);
   const [question, setQuestion] = useState("");
-  const [mediaData, setMediaData] = useState(null);        // ← NUEVO: slot horizontal
-  const [acordeonAbierto, setAcordeonAbierto] = useState(false); // ← NUEVO
+  const [mediaData, setMediaData] = useState(null);
+  const [acordeonAbierto, setAcordeonAbierto] = useState(false);
+  const [slotIndex, setSlotIndex] = useState(0);
 
   const videoRef = useRef(null);
 
   const bgKey = user.intimo_bg && user.intimo_bg !== "" ? user.intimo_bg : 'salon';
   const backgroundVideo = `https://media.bro7vision.com/intimo_${bgKey}.mp4`;
+
+  const slots = [user.video_file_169, user.video_file_169b].filter(Boolean);
 
   // ── NUEVO: fetch slot horizontal de creator_media ──────────────
   useEffect(() => {
@@ -157,10 +160,26 @@ const HoloProjector169 = ({ user, balances, setBalances, session, onClose, onOpe
     overflow: 'hidden',
     background: '#000',
   }}>
-  
+
+        {/* FLECHAS DE SLOT (solo si hay más de un slot) */}
+        {slots.length > 1 && (
+          <>
+            <button
+              onClick={() => setSlotIndex(p => p > 0 ? p - 1 : slots.length - 1)}
+              className="absolute left-3 top-1/2 -translate-y-1/2 z-[60] w-8 h-8 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/20 hover:bg-white/20 transition-all text-sm">
+              ‹
+            </button>
+            <button
+              onClick={() => setSlotIndex(p => p < slots.length - 1 ? p + 1 : 0)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 z-[60] w-8 h-8 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/20 hover:bg-white/20 transition-all text-sm">
+              ›
+            </button>
+          </>
+        )}
+
         <video
           ref={videoRef}
-          src={getCleanUrl(user.video_file_169 || user.video_file)}
+          src={getCleanUrl(slots[slotIndex] || user.video_file_169 || user.video_file)}
           autoPlay loop playsInline muted={isMuted}
           className="absolute inset-0 w-full h-full object-cover animate-fadeIn"
           onTimeUpdate={() => {

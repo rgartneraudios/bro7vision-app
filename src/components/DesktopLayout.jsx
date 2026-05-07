@@ -6,6 +6,8 @@ import ChannelEste from './ChannelEste';
 import ChannelEste169 from './ChannelEste169';
 import ChannelOeste from './ChannelOeste';
 import ChannelOeste169 from './ChannelOeste169';
+import SoloO169 from './SoloO169';
+import SoloE169 from './SoloE169';
 import ChannelMoon from './ChannelMoon';
 import BioForest from './BioForest';
 import WalletWidget from './WalletWidget';
@@ -35,9 +37,7 @@ export default function DesktopLayout(props) {
     step, setStep, intent, setIntent, realityMode, setRealityMode,
     isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen, perfilSector, handleCentralHandoff,
     balances, setBalances, session, showRadar, setShowRadar, radarQuery, setRadarQuery,
-    realItems, filteredItems, hubVideos, selectedForestUser, setSelectedForestUser, savedUserIndex,
-    audioUser, setAudioUser, activePrismUser, setActivePrismUser, projectingUser, setProjectingUser,
-    broTunerRef, navItems, handleNavigation, handleReportIssue,
+    realItems, filteredItems, hubVideos, hubVideos169, selectedForestUser, setSelectedForestUser,    	savedUserIndex, audioUser, setAudioUser, activePrismUser, setActivePrismUser, projectingUser, 	setProjectingUser, broTunerRef, navItems, handleNavigation, handleReportIssue,
     setShowWalletModal, setShowBooster, setShowStory, setShowLegal,
     scope, sessionCP, sessionCity, sessionRef, handleGameWin, handleGoToShop, abrirTienda,
     setSelectedLog, setVlData, ososHandoffContext, setOsosHandoffContext, avisoEnConstruccion,
@@ -62,8 +62,10 @@ export default function DesktopLayout(props) {
           !realityMode ? <RealityTuner onSelect={setRealityMode} /> :
           realityMode === 'este'  ? <ChannelEste  videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => setProjectingUser(u)} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
           realityMode === 'oeste' ? <ChannelOeste videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => setProjectingUser(u)} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
-          realityMode === 'este169'  ? <ChannelEste169  videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => { setProjectingUser(u); if (u._mode169) setIs169Mode(true); }} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
-realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => { setProjectingUser(u); if (u._mode169) setIs169Mode(true); }} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
+          realityMode === 'este169'  ? <ChannelEste169  videoUsers={hubVideos169} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => { setProjectingUser(u); if (u._mode169) setIs169Mode(true); }} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
+realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => { setProjectingUser(u); if (u._mode169) setIs169Mode(true); }} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
+          realityMode === 'solo_o169' ? <SoloO169 videoUsers={hubVideos169} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => { setProjectingUser(u); if (u._mode169) setIs169Mode(true); }} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
+          realityMode === 'solo_e169' ? <SoloE169 videoUsers={hubVideos169} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => { setProjectingUser(u); if (u._mode169) setIs169Mode(true); }} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
           realityMode === 'moon'  ? <ChannelMoon  videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => setProjectingUser(u)} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
           <BioForest videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => setProjectingUser(u)} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} />
         )}

@@ -122,7 +122,7 @@ const MOBILE_SLOTS = [{x:5,y:75}, {x:50,y:75}];
 // HYPER ZAP — zonas derecha, para no pisarse
 const HYPER_PC_SLOTS = [
   {x:72,y:15},{x:75,y:40},{x:70,y:65},
-  {x:78,y:28},{x:73,y:55},{x:76,y:80},
+  {x:78,y:28},{x:73,y:55},{x:76,y:40},
 ];
 const HYPER_MOBILE_SLOTS = [{x:20,y:2}];
 
@@ -645,7 +645,7 @@ useEffect(()=>{
 
         {/* VISOR OESTE169 */}
         <div className="relative bg-black overflow-hidden w-[62vw] max-w-[920px] aspect-video"
-  style={{ borderRadius: '1.5rem', border: '2px solid rgba(217,70,239,0.4)', boxShadow: '0 0 20px rgba(217,70,239,0.5), 0 0 60px rgba(217,70,239,0.2)' }}>
+  style={{ borderRadius: '1.5rem', border: '2px solid rgba(122,255,131,0.4)', boxShadow: '0 0 20px rgba(122,255,131,0.5), 0 0 60px rgba(122,255,131,0.2)' }}>
   
           {isTvMode && (
             <div className="absolute inset-0 z-0 opacity-30 blur-[60px] scale-150 pointer-events-none bg-gradient-to-t from-blue-900 via-purple-900 to-pink-900" />

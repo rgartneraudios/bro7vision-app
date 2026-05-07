@@ -218,12 +218,14 @@ const getMobileAudioUrl = (realityId) => {
     case 'solo_earth':   return `${base}/solo_earth_${t}.mp3`;
     case 'solo_fantasy': return `${base}/solo_fantasy_${t}.mp3`;
     case 'solo_cinema':  return `${base}/solo_cinema_${t}.mp3`;
-    case 'band_earth':   return `${base}/band_earth_${t}.mp3`;
     case 'band_fantasy': return `${base}/band_fantasy_${t}.mp3`;
-    case 'band_cinema':  return `${base}/band_cinema_${t}.mp3`;
     case 'este':         return `${base}/este_bg_${t}.mp3`;
     case 'oeste':        return `${base}/oeste_bg_${t}.mp3`;
     case 'moon':         return `${base}/moon_bg_${getMoonSuffix()}.mp3`;
+    case 'este169':  return `${base}/este_bg_${t}.mp3`;
+    case 'oeste169': return `${base}/oeste_bg_${t}.mp3`;
+    case 'solo_o169': return `${base}/solo_earth_${t}.mp3`;
+    case 'solo_e169': return `${base}/solo_cinema_${t}.mp3`;
     default:             return null;
   }
 };

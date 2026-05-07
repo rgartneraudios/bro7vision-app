@@ -164,7 +164,7 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
 }, []);
 
   useEffect(() => {
-    const BIOFOREST_CANAL = { solo_earth:4, solo_fantasy:5, solo_cinema:6, band_fantasy:8};
+    const BIOFOREST_CANAL = { solo_fantasy:5, band_fantasy:8};
     const canal = BIOFOREST_CANAL[realityMode];
     if (!canal) return;
     let active = true;
@@ -281,10 +281,8 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
   
   const config = useMemo(() => {
     switch(realityMode){
-      case 'solo_earth':   return {colors:['text-emerald-600','text-cyan-300'],  reactionColor:'emerald',labelClass:'text-emerald-600',labelText:'SOLO EARTH',  navColor:'text-emerald-500'};
       case 'solo_fantasy': return {colors:['text-cyan-400','text-fuchsia-400'],  reactionColor:'cyan',   labelClass:'text-cyan-400',   labelText:'SOLO FANTASY',navColor:'text-cyan-400'   };
       case 'band_fantasy': return {colors:['text-fuchsia-500','text-purple-300'],reactionColor:'fuchsia',labelClass:'text-fuchsia-400', labelText:'BAND FANTASY',navColor:'text-fuchsia-500'};
-      case 'solo_cinema':  return {colors:['text-amber-500','text-orange-300'],  reactionColor:'amber',  labelClass:'text-amber-500',  labelText:'SOLO CINEMA', navColor:'text-amber-600'  };
       default:             return {colors:['text-cyan-400','text-white'],         reactionColor:'cyan',   labelClass:'text-cyan-400',  labelText:'GENESIS NODE',navColor:'text-cyan-400'  };
     }
   },[realityMode]);

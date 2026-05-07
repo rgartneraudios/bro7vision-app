@@ -119,13 +119,13 @@ const MOON_STYLES = `
     .bro-scrollbar::-webkit-scrollbar-thumb:hover { background: #d946ef; }
 `;
 
-const PC_SLOTS     = [{x:10,y:6}, {x:4,y:18},{x:6,y:65},{x:30,y:58},{x:55,y:65},{x:55,y:32}];
+const PC_SLOTS     = [{x:10,y:6}, {x:4,y:18},{x:6,y:65},{x:30,y:58},{x:75,y:65},{x:75,y:32}];
 const MOBILE_SLOTS = [{x:5,y:75}, {x:50,y:75}];
 
 // HYPER ZAP — zonas derecha, para no pisarse
 const HYPER_PC_SLOTS = [
-  {x:25,y:20},{x:22,y:40},{x:40,y:5},
-  {x:55,y:58},{x:3,y:75},{x:6,y:70},
+  {x:75,y:60},{x:6,y:35},{x:70,y:5},
+  {x:80,y:15},{x:3,y:75},{x:6,y:60},
 ];
 const HYPER_MOBILE_SLOTS = [{x:20,y:2}];
 
@@ -302,16 +302,15 @@ const ChannelMoon = ({ videoUsers, balances, setBalances, session, realityMode, 
 
   useEffect(() => {
     if(!currentUser) return;
+    const url169 = cleanUrl(currentUser.video_file_169 || currentUser.video_file || '');
     const url = cleanUrl(currentUser.video_file || '');
     const isMobile = window.innerWidth < 768;
 
-    // Al video de PC le pasamos 'true' (silenciado) si estamos en móvil.
-    loadVideo(videoRefPC.current, url, isMobile ? true : isMuted, hlsRefPC);
-    
-    // Al video de Móvil le pasamos 'true' (silenciado) si estamos en PC.
+    // PC usa video_file_169 (visor horizontal), móvil usa video_file (visor vertical)
+    loadVideo(videoRefPC.current, url169, isMobile ? true : isMuted, hlsRefPC);
     loadVideo(videoRefMob.current, url, !isMobile ? true : isMuted, hlsRefMob);
 
-    setVisualEchos([]);setFloatingEcos([]); // solo resetea Eco Text, los HyperZap sobreviven
+    setVisualEchos([]);setFloatingEcos([]);
     }, [currentUser]);
     
      // NAVEGACIÓN TECLADO / D-PAD SMART TV ← nuevo
@@ -637,67 +636,16 @@ useEffect(() => {
   })}
 </div>
 
-                  {/* ══════════════════════════════════════════════
-          MUTE + ORBIT — FUERA del div con handlers touch
-          Apilados en el lateral izquierdo del visor,
-          encima de los orbes.
-          ══════════════════════════════════════════════ */}
-      <div className="absolute top-0 right-12 h-full z-[200] hidden md:flex items-center pointer-events-none">
-        <div className="relative w-[420px] h-full">
-          <button
-            onClick={(e) => { e.stopPropagation(); setIsMuted(p => !p); }}
-            className="absolute pointer-events-auto bg-black/60 backdrop-blur-md p-3 rounded-full text-lg border border-white/20 hover:bg-white/20 transition-all"
-            style={{ left: '-54px', bottom: '160px' }}>
-            {isMuted ? '🔇' : '🔊'}
-          </button>
-          <button
-            onClick={handleOrbitar}
-            className={`absolute pointer-events-auto p-3 rounded-full border transition-all ${
-              isOrbitando
-                ? 'bg-cyan-500/20 border-cyan-400 shadow-[0_0_10px_cyan]'
-                : 'bg-black/60 backdrop-blur-md border-white/20 hover:bg-white/20'
-            }`}
-            style={{ left: '-54px', bottom: '100px' }}>
-            {isOrbitando ? '☄️' : '🛸'}
-          </button>
-        </div>
-      </div>
-
-      {/* ══════════════════════════════════════════════
-          PC — VISOR (handler touch solo aquí, sin Mute ni Orbit)
-          ══════════════════════════════════════════════ */}
+      {/* PC — VISOR MOON (HORIZONTAL 16:9 CENTRADO) */}
       <div
-        className="absolute top-0 right-12 h-full z-[30] hidden md:flex items-center justify-end"
+        className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 z-[30] hidden md:flex items-center justify-center"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}>
 
-        {/* ORBE ANTERIOR */}
-        <div
-          className="absolute z-[110] cursor-pointer group animate-orb-float"
-          style={{ right: '520px', bottom: '30px' }}
-          onClick={() => setCurrentIndex(p => p > 0 ? p - 1 : displayUsers.length - 1)}>
-          <div className="w-14 h-14 rounded-full flex items-center justify-center relative animate-orb-glow transition-transform group-hover:scale-110 text-white">
-            <div className="absolute inset-0 bg-white opacity-10 blur-xl rounded-full" />
-            <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-cw" />
-            <span className="text-2xl font-black text-white relative z-10">←</span>
-          </div>
-        </div>
+        <div className="relative bg-black overflow-hidden w-[62vw] max-w-[920px] aspect-video"
+          style={{ borderRadius: '1.5rem', border: '2px solid rgba(227,227,227,0.4)', boxShadow: '0 0 20px rgba(227,227,227,0.5), 0 0 60px rgba(227,227,227,0.2)' }}>
 
-        {/* ORBE SIGUIENTE */}
-        <div
-          className="absolute z-[110] cursor-pointer group animate-orb-float"
-          style={{ right: '440px', bottom: '30px', animationDelay: '1.5s' }}
-          onClick={() => setCurrentIndex(p => p + 1)}>
-          <div className="w-14 h-14 rounded-full flex items-center justify-center relative animate-orb-glow transition-transform group-hover:scale-110 text-white">
-            <div className="absolute inset-0 bg-white opacity-10 blur-xl rounded-full" />
-            <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-ccw" />
-            <span className="text-2xl font-black text-white relative z-10">→</span>
-          </div>
-        </div>
-
-        {/* VISOR MOON DERECHA */}
-        <div className="relative bg-black moon-visor overflow-hidden w-[420px] h-[94vh]">
           {isTvMode && (
             <div className="absolute inset-0 z-0 opacity-30 blur-[60px] scale-150 pointer-events-none bg-gradient-to-t from-blue-900 via-purple-900 to-pink-900" />
           )}
@@ -716,7 +664,6 @@ useEffect(() => {
             }
           />
 
-          {/* CONTROLES — barra progreso + play/pause */}
           {!isTvMode && (
             <div className="absolute bottom-0 left-0 w-full z-[150] px-4 pb-4 bg-gradient-to-t from-black/70 to-transparent pointer-events-auto">
               <div
@@ -750,7 +697,7 @@ useEffect(() => {
           )}
         </div>
       </div>
-   
+
      {/* 3. VÓRTICE GEMAS */}
       {activeReaction&&(
         <div className="fixed bottom-4 right-[15%] z-[100] pointer-events-none animate-vortex">
@@ -790,40 +737,72 @@ useEffect(() => {
         </div>
       )}
 
-     {/* ══ FOOTER PC (A LA IZQUIERDA - TODO EN UNA FILA) ══ */}
-      <div className="absolute bottom-0 left-0 w-full flex px-6 py-6 md:px-10 md:py-8 z-[150] pointer-events-none bg-gradient-to-t from-black/90 via-black/50 to-transparent">
-        
-        {/* CONTENEDOR FLEX HORIZONTAL */}
-        <div className="flex flex-row items-center gap-4 pointer-events-auto">
-          
+     {/* ══ FOOTER PC ══ */}
+      <div className="absolute bottom-0 left-0 w-full flex items-center justify-between px-6 py-6 md:px-10 md:py-8 z-[150] pointer-events-none bg-gradient-to-t from-black/90 via-black/50 to-transparent">
+
+        {/* GRUPO IZQUIERDA — nombre + acciones */}
+        <div className="flex flex-row items-center gap-3 pointer-events-auto">
+
+          {/* NOMBRE */}
+          <div className="relative bg-black/40 backdrop-blur-md px-6 py-3 md:py-4 rounded-xl border border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.5)] flex items-center justify-center">
+            {isOrbitando && (
+              <div className="orbita-cometa-container z-0">
+                <div className="orbita-trazo"></div>
+                <div className="orbita-cabeza"></div>
+              </div>
+            )}
+            <p className="relative z-10 text-[10px] md:text-[12px] font-black tracking-[0.4em] uppercase text-cyan-400 drop-shadow-lg text-center">
+              CANAL MOON <span className="text-white/40 mx-2">//</span> {currentUser?.alias||'ANÓNIMO'}
+            </p>
+          </div>
+
           <button onClick={()=>handleAction('reaction')} className="px-5 py-3 md:py-4 bg-white text-black border border-white rounded-xl text-[9px] md:text-[11px] font-black uppercase shadow-[0_0_15px_rgba(255,255,255,0.4)] hover:scale-105 transition-transform">
             ✨ HALO
           </button>
-         <button 
-  		onClick={() => { if(currentUser) onOpenProfile({ ...currentUser, _savedIndex: currentIndex }); }} 
-  		className="px-5 py-3 md:py-4 bg-black text-white border-2 border-[#bf00ff] rounded-xl text-[9px] md:text-[11px] font-black 		uppercase shadow-[0_0_15px_rgba(191,0,255,0.6),inset_0_0_8px_rgba(191,0,255,0.4)] hover:scale-105 transition-all animate-		pulse">
- 		 <span className="drop-shadow-[0_0_8px_rgba(191,0,255,0.9)]">☝️ TELEFONO CASA</span>
-	</button>          
-	<button onClick={()=>setShowEchoInput(true)} className="px-6 py-3 md:py-4 bg-black/90 border border-white/20 text-white rounded-xl text-[9px] md:text-[11px] font-black uppercase hover:bg-white/10 transition-colors">
+          <button
+            onClick={() => { if(currentUser) onOpenProfile({ ...currentUser, _savedIndex: currentIndex, _mode169: true }); }}
+            className="px-5 py-3 md:py-4 bg-black text-white border-2 border-[#D9D9D9] rounded-xl text-[9px] md:text-[11px] font-black uppercase shadow-[0_0_15px_rgba(227,227,227,0.6),inset_0_0_8px_rgba(227,227,227,0.4)] hover:scale-105 transition-all animate-pulse">
+            <span className="drop-shadow-[0_0_8px_rgba(227,227,227,0.9)]">☝️ TELEFONO CASA</span>
+          </button>
+          <button onClick={()=>setShowEchoInput(true)} className="px-6 py-3 md:py-4 bg-black/90 border border-white/20 text-white rounded-xl text-[9px] md:text-[11px] font-black uppercase hover:bg-white/10 transition-colors">
             💬 ECO
           </button>
+        </div>
 
-          {/* NOMBRE AL LADO DE LOS BOTONES */}
-<div className="relative pointer-events-auto bg-black/40 backdrop-blur-md px-6 py-3 md:py-4 rounded-xl border border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.5)] ml-2 flex items-center justify-center">
-  
-  {/* LA ÓRBITA DEL COMETA */}
-  {isOrbitando && (
-      <div className="orbita-cometa-container z-0">
-          <div className="orbita-trazo"></div>
-          <div className="orbita-cabeza"></div>
-      </div>
-  )}
+        {/* GRUPO DERECHA — controles de navegación */}
+        <div className="flex flex-row items-center gap-3 pointer-events-auto">
 
-  <p className="relative z-10 text-[10px] md:text-[12px] font-black tracking-[0.4em] uppercase text-cyan-400 drop-shadow-lg text-center">
-    CANAL MOON <span className="text-white/40 mx-2">//</span> {currentUser?.alias||'ANÓNIMO'}
-  </p>
-</div>
+          {/* PREV */}
+          <div className="cursor-pointer group animate-orb-float"
+            onClick={() => setCurrentIndex(p => p > 0 ? p - 1 : displayUsers.length - 1)}>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center relative animate-orb-glow transition-transform group-hover:scale-110 text-white">
+              <div className="absolute inset-0 bg-white opacity-10 blur-xl rounded-full" />
+              <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-cw" />
+              <span className="text-xl font-black text-white relative z-10">←</span>
+            </div>
+          </div>
 
+          {/* NEXT */}
+          <div className="cursor-pointer group animate-orb-float" style={{ animationDelay: '1.5s' }}
+            onClick={() => setCurrentIndex(p => p + 1)}>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center relative animate-orb-glow transition-transform group-hover:scale-110 text-white">
+              <div className="absolute inset-0 bg-white opacity-10 blur-xl rounded-full" />
+              <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-ccw" />
+              <span className="text-xl font-black text-white relative z-10">→</span>
+            </div>
+          </div>
+
+          {/* MUTE */}
+          <button onClick={(e) => { e.stopPropagation(); setIsMuted(p => !p); }}
+            className="bg-black/60 backdrop-blur-md p-3 rounded-full text-lg border border-white/20 hover:bg-white/20 transition-all">
+            {isMuted ? '🔇' : '🔊'}
+          </button>
+
+          {/* ORBIT */}
+          <button onClick={handleOrbitar}
+            className={`p-3 rounded-full border transition-all ${isOrbitando ? 'bg-cyan-500/20 border-cyan-400 shadow-[0_0_10px_cyan]' : 'bg-black/60 backdrop-blur-md border-white/20 hover:bg-white/20'}`}>
+            {isOrbitando ? '☄️' : '🛸'}
+          </button>
         </div>
       </div>
       {/* ══ MÓVIL (TALL VISOR) ══ */}
