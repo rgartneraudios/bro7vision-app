@@ -188,7 +188,7 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
 
       {/* VISOR VERTICAL */}
       <div className="relative z-20 flex items-center justify-center" style={{ marginBottom: '4rem' }}>
-        <div className="relative h-[88vh] aspect-[9/16] rounded-[3.5rem] border-[3px] border-[#FFFDD0]/30 shadow-[0_0_40px_rgba(255,253,208,0.15)] flex flex-col overflow-hidden bg-black">
+        <div className="relative h-[80vh] aspect-[9/16] rounded-[3.5rem] border-[3px] border-[#FFFDD0]/30 shadow-[0_0_40px_rgba(255,253,208,0.15)] flex flex-col overflow-hidden bg-black">
 
           <video
             ref={videoRef}
