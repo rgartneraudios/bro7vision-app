@@ -51,7 +51,7 @@ const RealityTuner = ({ onSelect }) => {
   </button>
 );
  return (
-    <div className="absolute inset-0 z-[100] bg-black flex flex-col items-center justify-center animate-fadeIn overflow-hidden">
+    <div className="absolute inset-0 z-[100] bg-black flex flex-col items-center justify-center animate-fadeIn overflow-y-auto">
         
         {/* FONDO: VIDEO DEEP SPACE TRASLADADO AQUÍ */}
         <video 

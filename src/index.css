@@ -204,6 +204,16 @@ img {
   animation: shimmer 3s infinite;
 }
 
+/* =========================================
+   TABLET SCALE — pantallas cortas (Tab S8 landscape, etc.)
+   Zoom 0.8 → viewport efectivo ~1000px alto en lugar de 800px
+   ========================================= */
+@media (min-width: 768px) and (max-height: 900px) {
+  html {
+    zoom: 0.8;
+  }
+}
+
 /* Paneles laterales tipo "Drawer" */
 .side-panel {
   @apply fixed top-0 h-full w-64 bg-black/40 backdrop-blur-md border-white/10 transition-all duration-500 z-[60];
