@@ -141,7 +141,7 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
   }
 
   return (
-    <div className="fixed inset-0 z-[99999] bg-black overflow-hidden flex items-center justify-center font-mono">
+    <div className="fixed inset-0 z-[99999] bg-black overflow-hidden flex items-center justify-center font-mono" style={{ paddingBottom: '5rem' }}>
       <style>{energyStyles}</style>
 
       {/* VIDEO DE FONDO */}
@@ -187,8 +187,8 @@ const HoloProjector = ({ videoUrl, user, balances, setBalances, session, onClose
       </button>
 
       {/* VISOR VERTICAL */}
-      <div className="relative z-20 flex items-center justify-center" style={{ marginBottom: '4rem' }}>
-        <div className="relative h-[72vh] aspect-[9/16] rounded-[3.5rem] border-[3px] border-[#FFFDD0]/30 shadow-[0_0_40px_rgba(255,253,208,0.15)] flex flex-col overflow-hidden bg-black">
+      <div className="relative z-20 flex items-center justify-center">
+        <div className="relative h-[88vh] aspect-[9/16] rounded-[3.5rem] border-[3px] border-[#FFFDD0]/30 shadow-[0_0_40px_rgba(255,253,208,0.15)] flex flex-col overflow-hidden bg-black">
 
           <video
             ref={videoRef}
