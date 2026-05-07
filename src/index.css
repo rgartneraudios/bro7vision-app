@@ -205,12 +205,20 @@ img {
 }
 
 /* =========================================
-   TABLET SCALE — pantallas cortas (Tab S8 landscape, etc.)
-   Zoom 0.8 → viewport efectivo ~1000px alto en lugar de 800px
+   TABLET SCALE — pantallas cortas en navegador normal (Tab S8 landscape, etc.)
+   Zoom 0.95 solo cuando NO está en fullscreen/PWA
+   En fullscreen el chrome del browser ya desapareció → zoom innecesario
    ========================================= */
 @media (min-width: 768px) and (max-height: 900px) {
   html {
     zoom: 0.95;
+  }
+}
+
+/* Anular zoom en fullscreen / PWA — ya no hay chrome que comer espacio */
+@media (display-mode: fullscreen), (display-mode: standalone) {
+  html {
+    zoom: 1;
   }
 }
 
