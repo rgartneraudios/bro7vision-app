@@ -748,7 +748,7 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
           transform: 'translate(-50%, -50%)',
         }}>
                 {/* Ancho igual al visor para que los botones se alineen a sus lados */}
-        <div className="relative w-[62vw] md:w-[400px]" style={{height:0}}>
+        <div className="relative w-[62vw] md:w-[470px]" style={{height:0}}>
           {/* MUTE — izquierda del visor */}
           <button
             onClick={(e) => { e.stopPropagation(); setIsMuted(p => !p); }}
@@ -812,7 +812,7 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
 
         {/* VISOR */}
         <div
-          className="relative w-[62vw] aspect-[9/19] md:w-[400px] md:h-[82vh] md:max-h-[950px] md:aspect-auto flex items-center justify-center overflow-visible"
+          className="relative w-[62vw] aspect-[9/16] md:w-auto md:h-[82vh] md:max-h-[950px] md:aspect-[9/16] flex items-center justify-center overflow-visible"
           style={{ transformStyle: 'preserve-3d' }}>
           <div
             className="relative w-full h-full z-[10]"

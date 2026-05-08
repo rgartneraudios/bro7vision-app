@@ -820,7 +820,7 @@ useEffect(()=>{
           <span>⚠️</span> REGLAS DE ECOS Y ZAPS <span>⚠️</span>
         </h3>
         <p className="mb-3 text-white/95 text-sm md:text-base leading-relaxed">
-          <span className="text-cyan-400 font-bold drop-shadow-[0_0_5px_rgba(34,211,238,0.6)]">Eco</span> y <span className="text-fuchsia-400 font-bold drop-shadow-[0_0_5px_rgba(232,121,249,0.6)]">Zap</span> son herramientas de interacción y promoción <b className="text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">interna</b> de tu Canal.
+          <span className="text-cyan-400 font-bold drop-shadow-[0_0_5px_rgba(34,211,238,0.6)]">Eco</span> y <span className="text-green-300 font-bold drop-shadow-[0_0_5px_rgba(178,254,151,0.6)]">Zap</span> son herramientas de interacción y promoción <b className="text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.8)]">interna</b> de tu Canal.
           <br/>
           <b className="text-yellow-300">Respeto Mutuo:</b> NO se toleran insultos ni actitudes irrespetuosas.
           <br/>
@@ -844,8 +844,8 @@ useEffect(()=>{
           onClick={() => setEchoType('text')}
           className={`flex-1 py-2 md:py-3 rounded-xl text-base md:text-xl font-black border tracking-widest transition-all duration-300 flex items-center justify-center gap-2
           ${echoType === 'text'
-            ? 'bg-fuchsia-500 text-black border-fuchsia-300 shadow-[0_0_20px_rgba(217,70,239,0.7)] scale-[1.02] z-10'
-            : 'bg-black/40 text-fuchsia-400/60 border-fuchsia-500/30 hover:border-fuchsia-400/80 hover:text-fuchsia-300 hover:shadow-[0_0_10px_rgba(217,70,239,0.3)]'
+            ? 'bg-green-300 text-black border-green-300 shadow-[0_0_20px_rgba(178,254,151,0.7)] scale-[1.02] z-10'
+            : 'bg-black/40 text-green-300/60 border-green-300/30 hover:border-green-300/80 hover:text-green-300 hover:shadow-[0_0_10px_rgba(178,254,151,0.3)]'
           }`}
         >
           <span className="text-xl md:text-2xl">💬</span> ECO

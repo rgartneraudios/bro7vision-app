@@ -190,13 +190,13 @@ const SECTOR_AVATARS = {
 };
 
 const REALITIES = [
-  { id: 'moon',         title: 'MOON PHASE',   desc: 'Fase Luna',          icon: '🌕', color: '#ffffff', group: 'NEUTRAL' },
-  { id: 'solo_earth',   title: 'SOLO EARTH',   desc: 'Sincronía Vital',    icon: '🌍', color: '#34d399', group: 'SOLO' },
-  { id: 'solo_fantasy', title: 'SOLO FANTASY', desc: 'Exploración',        icon: '🏰', color: '#22d3ee', group: 'SOLO' },
+  { id: 'moon',         title: 'CANAL LUNA',   desc: 'Fase Luna',          icon: '🌕', color: '#ffffff', group: 'NEUTRAL' },
+  { id: 'solo_earth',   title: 'SOLO TERRA',   desc: 'Sincronía Vital',    icon: '🌍', color: '#34d399', group: 'SOLO' },
+  { id: 'solo_fantasy', title: 'SOLO FANTASÍA', desc: 'Exploración',        icon: '🏰', color: '#22d3ee', group: 'SOLO' },
   { id: 'solo_cinema',  title: 'SOLO CINEMA',  desc: 'Viajero del Tiempo', icon: '🏛️', color: '#fbbf24', group: 'SOLO' },
-  { id: 'band_earth',   title: 'BAND EARTH',   desc: 'Nexo Ciudadano',     icon: '🏙️', color: '#60a5fa', group: 'BAND' },
-  { id: 'band_fantasy', title: 'BAND FANTASY', desc: 'Alien Lounge',       icon: '👾', color: '#e879f9', group: 'BAND' },
-  { id: 'band_cinema',  title: 'BAND CINEMA',  desc: 'El Ágora',           icon: '🎭', color: '#fb923c', group: 'BAND' },
+  { id: 'band_earth',   title: 'BANDA TERRA',   desc: 'Nexo Ciudadano',     icon: '🏙️', color: '#60a5fa', group: 'BAND' },
+  { id: 'band_fantasy', title: 'BANDA FANTASÍA', desc: 'Alien Lounge',       icon: '👾', color: '#e879f9', group: 'BAND' },
+  { id: 'band_cinema',  title: 'BANDA CINEMA',  desc: 'El Ágora',           icon: '🎭', color: '#fb923c', group: 'BAND' },
   { id: 'este',         title: 'CANAL ESTE',   desc: 'Horizonte Levante',  icon: '📱', color: '#22d3ee', group: 'ESPACIO' },
   { id: 'oeste',        title: 'CANAL OESTE',  desc: 'Horizonte Poniente', icon: '📱', color: '#e879f9', group: 'ESPACIO' },
 ];
