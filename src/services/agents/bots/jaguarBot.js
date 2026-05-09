@@ -39,6 +39,19 @@ const FRASES_HANDOFF_OSOS = [
   "Eso no es cósmico — es terrenal. Ve con recepción. 🐯",
 ];
 
+const FRASES_HIERBAS = [
+  "Las plantas son territorio de Orumama, hermano. Ella conoce esa frecuencia.",
+  "Las raíces y hierbas vibran en otra dimensión. Orumama te espera 🌿",
+  "El mundo vegetal no es mi portal. Busca a Orumama.",
+];
+
+const FRASES_EXPLORAR = [
+  "El cosmos tiene muchas puertas, hermano. ¿Buscas tu signo zodiacal, la fase lunar, o algo más profundo?",
+  "Estoy aquí. ¿Quieres saber de tu signo? ¿De la luna? Habla.",
+  "Las estrellas escuchan todo. Cuéntame qué necesitas saber. 🐯",
+  "No siento la frecuencia todavía. ¿Qué buscas exactamente, hermano?",
+];
+
 
 const NOMBRES_ORUMAMA   = ['orumama', 'la orumama'];
 const NOMBRES_SMISTERIO = ['misterio', 'señor misterio', 'smisterio', 'el señor misterio'];

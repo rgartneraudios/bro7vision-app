@@ -115,7 +115,7 @@ ${getDirectorioTexto()}
 export const getKnowledgeBlock = (intencion) => {
   const map = {
     sistema:     SK.sistema,
-    luna:        SK.luna + SK.sistema,
+    luna:        SK.luna,
     horoscopo:   SK.horoscopo + SK.luna,
     hierbas:     SK.hierbas,
     reinos:      SK.reinos,
@@ -123,5 +123,5 @@ export const getKnowledgeBlock = (intencion) => {
     osos:        buildOsosBlock(),
     exploracion: SK.sistema,
   };
-  return (map[intencion] || SK.sistema).trim();
+  return map[intencion] ? map[intencion].trim() : null;
 };
