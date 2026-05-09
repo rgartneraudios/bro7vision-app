@@ -40,7 +40,7 @@ const AGENT_COLORS = {
     btn:         'bg-pink-500/30 hover:bg-pink-400/50 border-pink-400/60 hover:border-pink-300 text-pink-200',
   },
   green: {
-    rgb:         '16,185,129',
+    rgb:         '128,255,97',
     border:      'border-emerald-400/50',
     borderFocus: 'focus:border-emerald-300',
     placeholder: 'placeholder-emerald-300/70',
@@ -92,7 +92,7 @@ const AGENT_PROFILES = {
   },
   oraculo: {
     theme: 'green',
-    text: '✦  Consulta al oráculo...'
+    text: '✦ Los personajes te cuentan historias de ficción y entretenimiento, Con Orumama antes de proceder consulta a un médico, El Señor Misterio es Ficción entretenimiento, Jaguar es experimental y Ficción entretenimiento '
   }
 };
 
@@ -151,6 +151,23 @@ export default function AgentChatInput({
         .agent-textarea:focus {
           animation: none;
           box-shadow: 0 0 36px rgba(${c.rgb},0.6), 0 0 0 1.5px rgba(${c.rgb},0.9);
+        }
+        .agent-textarea {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(${c.rgb},0.4) transparent;
+        }
+        .agent-textarea::-webkit-scrollbar {
+          width: 4px;
+        }
+        .agent-textarea::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .agent-textarea::-webkit-scrollbar-thumb {
+          background: rgba(${c.rgb},0.35);
+          border-radius: 99px;
+        }
+        .agent-textarea::-webkit-scrollbar-thumb:hover {
+          background: rgba(${c.rgb},0.65);
         }
       `}</style>
 
