@@ -19,7 +19,6 @@ import { detectarSalidaNova,     detectarIntencionNova     } from '../services/a
 import { detectarSalidaIsabella, detectarInternoIsabella, detectarIntencionIsabella } from '../services/agents/bots/isabellaUtils';
 import { detectarSalidaMapache,  detectarInternoMapache,  detectarIntencionMapache  } from '../services/agents/bots/mapacheUtils';
 import { detectarSalidaAviso,    detectarInternoAviso                                } from '../services/agents/bots/avisoUtils';
-import { detectarSalidaOraculo,  detectarInternoOraculo,  detectarIntencionOraculo  } from '../services/agents/bots/oraculoUtils';
 import { detectarSalidaReinos,   detectarIntencionReinos                             } from '../services/agents/bots/reinosUtils';
 
 // ─── Geo promo selector ───────────────────────────────────────────────────────
@@ -462,25 +461,6 @@ const enviar = async (textoUsuario, extraContext = {}) => {
   // Si hay aviso en proceso, cae directo al botOrchestrator abajo
 }
 
-      // ── ORACULO (Orumama + Jaguar + SMisterio) ────────────────────────
-      if (mode === 'oraculo') {
-        const salida = detectarSalidaOraculo(textoUsuario);
-        if (salida) {
-          setMensaje(salida.mensaje);
-          setTimeout(() => onHandoff?.({ agente: 'OSOS' }), 1200);
-          setLoading(false);
-          return;
-        }
-        const personajeActivo = contextData?.oraculo_personaje || 'orumama';
-        const interno = detectarInternoOraculo(textoUsuario, personajeActivo);
-        if (interno) {
-          setMensaje(interno.mensaje || '...');
-          onHandoff?.({ agente: 'ORACULO_INTERNO', personaje_id: interno.personaje_id });
-          setLoading(false);
-          return;
-        }
-      }
-
       // ── REINOS ────────────────────────────────────────────────────────
       if (mode === 'reinos') {
         const salida = detectarSalidaReinos(textoUsuario);
@@ -558,8 +538,11 @@ const enviar = async (textoUsuario, extraContext = {}) => {
           if (confirma) {
             const fuentes = KNOWLEDGE_SOURCES[personajeId] || {}
             const dataBot = fuentes[esperandoConfirmacion.archivo]
+
             if (dataBot) {
-              const bloque = [dataBot.puente, dataBot.data, dataBot.continua].filter(Boolean).join('\n')
+              const bloque = iaActiva
+  	? [dataBot.puente, dataBot.data, dataBot.continua].filter(Boolean).join('\n')
+  	: [dataBot.puente, dataBot.bot,  dataBot.continua].filter(Boolean).join('\n')
               pushHistory('user', textoUsuario)
               pushHistory('assistant', bloque)
               setMensaje(bloque)
@@ -775,18 +758,6 @@ const enviar = async (textoUsuario, extraContext = {}) => {
           hayTarjetas:     contextData?.hayTarjetas,
           audio_personaje: contextData?.audio_personaje || 'mapache',
           intencion:       detectarIntencionMapache(textoUsuario),
-          supabase,
-        });
-        setMensaje(resultado.mensaje);
-        if (resultado.handoff) onHandoff?.(resultado.handoffData);
-        return;
-      }
-
-      if (mode === 'oraculo') {
-        const resultado = await botOrchestrator({
-          mode: 'oraculo', textoUsuario,
-          oraculo_personaje: contextData?.oraculo_personaje || 'orumama',
-          intencion:         detectarIntencionOraculo(textoUsuario),
           supabase,
         });
         setMensaje(resultado.mensaje);

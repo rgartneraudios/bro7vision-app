@@ -40,7 +40,6 @@ import IsabellaBanner from './components/IsabellaBanner';
 import SlideRailServicios from './components/SlideRailServicios';
 import EvelynBanner from './components/EvelynBanner';
 import SlideRailAvisos from './components/SlideRailAvisos';
-import OraculoBanner from './components/OraculoBanner';
 import CityLocationBanner from './components/CityLocationBanner';
 import NeuralButton from './components/NeuralButton';
 import DesktopLayout from './components/DesktopLayout';
@@ -319,14 +318,16 @@ function App() {
     };
 
     const SIN_UBICACION = ['REINOS', 'ORACULO', 'ORACULO_ORUMAMA', 'ORACULO_SMISTERIO', 'ORACULO_JAGUAR', 'GAMES'];
-    if (SIN_UBICACION.includes(agente)) {
-      if (per_solicitado) setPerfilOso(prev => ({ ...prev, oraculo_personaje: per_solicitado }));
-      setPerfilSector(null);
-      setIntent(intentMap[agente] || 'ai');
-      setOsosModo('retorno');
-      setStep(2);
-      return;
-    }
+if (SIN_UBICACION.includes(agente)) {
+  if (per_solicitado) {
+    setPerfilOso(prev => ({ ...prev, oraculo_personaje: per_solicitado }));
+  }
+  setPerfilSector(null);
+  setIntent(intentMap[agente] || 'ai');
+  setOsosModo('retorno');
+  setStep(2);
+  return;
+}
 
     setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
     const ciudadFinal = ciudad || perfilOso?.city || '';
@@ -409,15 +410,17 @@ function App() {
     iaMode, isAdmin,
   });
 
-  const { mensaje: oraculoMensaje, loading: oraculoLoading, enviar: handleOraculoInput, esPatrocinado: oraculoEsPatrocinado } = useAgentChat({
-    mode: 'oraculo',
-    contextData: {
-      oraculo_personaje: perfilSector?.personaje_id || perfilOso?.oraculo_personaje || 'orumama',
-      ciudad:  scope?.ciudad || '',
-      alias:   perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano',
-    },
-    onHandoff: handleCentralHandoff, iaMode, isAdmin,
-  });
+const oraculoContextData = useMemo(() => ({
+  oraculo_personaje: perfilSector?.personaje_id || perfilOso?.oraculo_personaje || 'orumama',
+  ciudad:  scope?.ciudad || '',
+  alias:   perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano',
+}), [perfilSector?.personaje_id, perfilOso?.oraculo_personaje, perfilOso?.osos_nombre, scope?.ciudad]);
+
+const { mensaje: oraculoMensaje, loading: oraculoLoading, enviar: handleOraculoInput, esPatrocinado: oraculoEsPatrocinado } = useAgentChat({
+  mode: 'oraculo',
+  contextData: oraculoContextData,
+  onHandoff: handleCentralHandoff, iaMode, isAdmin,
+});
 
   const { mensaje: rumoresMensaje, loading: rumoresLoading, enviar: handleRumoresInput } = useAgentChat({
     mode: 'reinos',

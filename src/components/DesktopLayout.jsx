@@ -1,6 +1,6 @@
 // src/components/DesktopLayout.jsx
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import RealityTuner from './RealityTuner';
 import ChannelEste from './ChannelEste';
 import ChannelEste169 from './ChannelEste169';
@@ -26,7 +26,9 @@ import NovaBanner from './NovaBanner';
 import IsabellaBanner from './IsabellaBanner';
 import EvelynBanner from './EvelynBanner';
 import MapacheBanner from './MapacheBanner';
-import OraculoBanner from './OraculoBanner';
+import SmisterioBanner from './personajes/SmisterioBanner';
+import JaguarBanner    from './personajes/JaguarBanner';
+import OrumamaBanner   from './personajes/OrumamaBanner';
 import OsosBanner from './OsosBanner';
 import AgentChatInput from './AgentChatInput';
 import { getVideoForLocation } from '../data/VideoMap';
@@ -47,9 +49,22 @@ export default function DesktopLayout(props) {
   mapacheMensaje, mapacheLoading, handleMapacheInput, evelynMensaje, evelynLoading, handleEvelynInput,
   oraculoMensaje, oraculoLoading, handleOraculoInput, rumoresMensaje, rumoresLoading, handleRumoresInput,
   novaEsPatrocinado, isabellaEsPatrocinado, mapacheEsPatrocinado,
-  evelynEsPatrocinado, oraculoEsPatrocinado, ososEsPatrocinado,
+  evelynEsPatrocinado, oraculoEsPatrocinado, ososEsPatrocinado, oraculoPersonaje,
    iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA
   } = props;
+
+const [personajeOraculo, setPersonajeOraculo] = useState('orumama');
+const [oraculoEsHandoff, setOraculoEsHandoff] = useState(false);
+
+useEffect(() => {
+  const personaje = perfilSector?.personaje_id || perfilOso?.oraculo_personaje;
+  if (personaje) setPersonajeOraculo(personaje.toLowerCase());
+}, [perfilOso?.oraculo_personaje, perfilSector?.personaje_id]);
+
+const handleHandoffPersonaje = (id) => {
+  setOraculoEsHandoff(true);
+  setPersonajeOraculo(id);
+};
 
   const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'audios']);
 
@@ -269,17 +284,34 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
       )}
 
 {/* ── ORÁCULO ─────────────────────────────────────────────────────── */}
-{step === 2 && intent === 'ai' && (
-  <OraculoBanner
-    oraculo_personaje={perfilSector?.personaje_id || perfilOso?.oraculo_personaje || 'orumama'}
+{step === 2 && intent === 'ai' && personajeOraculo === 'smisterio' && (
+  <SmisterioBanner
     alias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'}
-    realItems={realItems}
-    enviar={handleOraculoInput}
-    mensaje={oraculoMensaje}
-    loading={oraculoLoading}
-    esPatrocinado={oraculoEsPatrocinado}
-    onInvokeOsos={() => { setStep(1); setOsosModo('entrada'); }}
-    onPersonajeChange={handleCentralHandoff}
+    origenLlegada={oraculoEsHandoff ? 'handoff' : 'inicial'}
+    onHandoffPersonaje={handleHandoffPersonaje}
+    onInvokeOsos={() => { setOraculoEsHandoff(false); setStep(1); setOsosModo('entrada'); }}
+    iaMode={iaMode}
+    isAdmin={isAdmin}
+  />
+)}
+{step === 2 && intent === 'ai' && personajeOraculo === 'jaguar' && (
+  <JaguarBanner
+    alias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'}
+    origenLlegada={oraculoEsHandoff ? 'handoff' : 'inicial'}
+    onHandoffPersonaje={handleHandoffPersonaje}
+    onInvokeOsos={() => { setOraculoEsHandoff(false); setStep(1); setOsosModo('entrada'); }}
+    iaMode={iaMode}
+    isAdmin={isAdmin}
+  />
+)}
+{step === 2 && intent === 'ai' && personajeOraculo === 'orumama' && (
+  <OrumamaBanner
+    alias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'}
+    origenLlegada={oraculoEsHandoff ? 'handoff' : 'inicial'}
+    onHandoffPersonaje={handleHandoffPersonaje}
+    onInvokeOsos={() => { setOraculoEsHandoff(false); setStep(1); setOsosModo('entrada'); }}
+    iaMode={iaMode}
+    isAdmin={isAdmin}
   />
 )}
       

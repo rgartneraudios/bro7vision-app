@@ -17,14 +17,28 @@ Frases típicas: "Eso depende de quién pregunte", "Las apariencias engañan", "
     "OSOS",
     "ORACULO_INTERNO",
   ],
+  temas_propios: {
+  antartidabot: {
+    keywords: ['antártida', 'antartida', 'polo sur', 'highjump', 'base secreta'],
+    pregunta: '☎️ ¿Deseas conocer lo que descubrí en la Antártida?',
+  },
+    antartida1: {
+      keywords: ['antártida', 'antartida', 'polo sur', 'highjump', 'base secreta', 'hielo', 'operación highjump'],
+      pregunta: '☎️ ¿Deseas conocer lo que descubrí en la Antártida?',
+    },
+    bucegi1: {
+      keywords: ['bucegi', 'rumanía', 'rumania', 'esfinge rumania', 'montaña secreta'],
+      pregunta: '☎️ ¿Quieres que te cuente los misterios de Bucegi?',
+    },
+    egipto1: {
+      keywords: ['egipto', 'pirámide', 'piramide', 'faraón', 'faraon', 'jeroglífico', 'esfinge'],
+      pregunta: '☎️ ¿Deseas que te revele los secretos del Antiguo Egipto?',
+    },
+    tartaria1: {
+      keywords: ['tartaria', 'imperio perdido', 'barroco', 'mud flood', 'reseteo'],
+      pregunta: '☎️ ¿Deseas conocer lo que descubrí sobre Tartaria?',
+    },
+  },
 }
 
-export const temas = {
-  // aquí van los keywords cuando Ami tenga DataBot
-  // ejemplo futuro:
-  // playlists: "playlists",
-  // generos: "generos",
-}
-
-
-export default smisterio ;
+export default smisterio;

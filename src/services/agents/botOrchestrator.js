@@ -10,15 +10,10 @@ import { responder as isabellaResponder }  from './bots/isabellaBot';
 import { responder as profesorResponder } from './bots/profesorBot';
 import { responder as mapacheResponder }   from './bots/mapacheBot';
 import { responder as amiResponder }       from './bots/amiBot';
-import { responder as orumamaResponder }   from './bots/orumamaBot';
-import { responder as jaguarResponder }    from './bots/jaguarBot';
 import { responder as rumoresResponder }   from './bots/rumoresBot';
 import { responder as evelynResponder }    from './bots/evelynBot';
 import { responder as larryResponder }     from './bots/larryBot';
 import { generarCodigoAvi }               from './evelynExploraPS';
-import { getKnowledgeBlock }              from '../../data/SystemKnowledge';
-import { getMoonSuffix }                  from '../../utils/moonUtils';
-import { responder as smisterioResponder } from './bots/smisterioBot';
 
 // ─── Helper: normalizar handoff ───────────────────────────────────────────────
 
@@ -109,15 +104,6 @@ function detectarIntencionAudio(texto) {
   return 'explorar';
 }
 
-function detectarIntencionOraculo(texto) {
-  const t = texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  if (t.includes('horoscopo') || t.includes('signo') || t.includes('astral') || t.includes('sidereo')) return 'horoscopo';
-  if (t.includes('luna') || t.includes('fase') || t.includes('lunar')) return 'luna';
-  if (t.includes('hierba') || t.includes('planta') || t.includes('remedio') || t.includes('brebaje') || t.includes('natural')) return 'hierbas';
-  if (t.includes('misterio') || t.includes('secreto') || t.includes('egipto') || t.includes('atlantida') || t.includes('lemuria') || t.includes('historia')) return 'misterio';
-  return 'explorar';
-}
-
 function detectarIntencionReinos(texto) {
   const t = texto.toLowerCase();
   if (t.includes('lista') || t.includes('todos') || t.includes('qué hay') || t.includes('que hay')) return 'listar';
@@ -176,25 +162,6 @@ async function modoAudio({ textoUsuario, entidad, hayTarjetas, personaje, supaba
   });
 }
 
-async function modoOraculo({ textoUsuario, personaje, supabase }) {
-  const id        = (personaje || 'orumama').toLowerCase();
-  const update    = await cargarUpdate(supabase, id);
-  const intencion = detectarIntencionOraculo(textoUsuario);
-  const args = {
-    textoUser:          textoUsuario,
-    intencion,
-    faselunar:          getMoonSuffix(),
-    bloqueConocimiento: getKnowledgeBlock(intencion),
-    update,
-  };
-
-  let resultado;
-  if (id === 'jaguar')         resultado = jaguarResponder(args);
-  else if (id === 'smisterio') resultado = smisterioResponder(args);
-  else                         resultado = orumamaResponder(args);
-
-  return normalizarHandoff(resultado, { personaje_id: resultado.personaje_id });
-}
 
 async function modoReinos({ textoUsuario, reinos, reinoDetalle, supabase }) {
   const update = await cargarUpdate(supabase, 'rumores');
@@ -343,7 +310,6 @@ export async function botOrchestrator({
   // Personajes activos por sector
   servicios_personaje,
   audio_personaje,
-  oraculo_personaje,
   avisos_personaje,
   // REINOS
   reinos, reinoDetalle,
@@ -359,7 +325,6 @@ export async function botOrchestrator({
     case 'novaExplora': return modoNova({ textoUsuario, entidad, hayTarjetas, supabase });
     case 'servicios':   return modoServicios({ textoUsuario, entidad, hayTarjetas, personaje: servicios_personaje, supabase });
     case 'mapache':     return modoAudio({ textoUsuario, entidad, hayTarjetas, personaje: audio_personaje, supabase });
-    case 'oraculo':     return modoOraculo({ textoUsuario, personaje: oraculo_personaje, supabase });
     case 'reinos':      return modoReinos({ textoUsuario, reinos, reinoDetalle, supabase });
     case 'avisos':      return modoAvisos({ textoUsuario, personaje: avisos_personaje, avisoEnConstruccion, genesis, ciudad, user_id, autor_alias, supabase, onAvisoPublicar });
     default:            return { mensaje: '...', handoff: false };

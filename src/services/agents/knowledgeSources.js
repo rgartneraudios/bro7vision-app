@@ -114,10 +114,30 @@ import { acuario }     from '../../data/jaguar/acuario.js'
 import { piscis }      from '../../data/jaguar/piscis.js'
 
 // ── Smisterio — misterios ─────────────────────────────────────────────────────
-import { antartida } from '../../data/smisterio/antartida.js'
-import { bucegi }    from '../../data/smisterio/bucegi.js'
-import { egipto }    from '../../data/smisterio/egipto.js'
-import { tartaria }  from '../../data/smisterio/tartaria.js'
+import { antartida1 } from '../../data/smisterio/antartida/Antartida1.js'
+import { antartida2 } from '../../data/smisterio/antartida/Antartida2.js'
+import { antartida3 } from '../../data/smisterio/antartida/Antartida3.js'
+import { antartida4 } from '../../data/smisterio/antartida/Antartida4.js'
+import { antartida5 } from '../../data/smisterio/antartida/Antartida5.js'
+import { antartidabot } from '../../data/smisterio/antartida/AntartidaBot.js'
+
+import { bucegi1 } from '../../data/smisterio/bucegi/Bucegi1.js'
+import { bucegi2 } from '../../data/smisterio/bucegi/Bucegi2.js'
+import { bucegi3 } from '../../data/smisterio/bucegi/Bucegi3.js'
+import { bucegi4 } from '../../data/smisterio/bucegi/Bucegi4.js'
+import { bucegi5 } from '../../data/smisterio/bucegi/Bucegi5.js'
+
+import { egipto1 } from '../../data/smisterio/egipto/Egipto1.js'
+import { egipto2 } from '../../data/smisterio/egipto/Egipto2.js'
+import { egipto3 } from '../../data/smisterio/egipto/Egipto3.js'
+import { egipto4 } from '../../data/smisterio/egipto/Egipto4.js'
+import { egipto5 } from '../../data/smisterio/egipto/Egipto5.js'
+
+import { tartaria1 } from '../../data/smisterio/tartaria/Tartaria1.js'
+import { tartaria2 } from '../../data/smisterio/tartaria/Tartaria2.js'
+import { tartaria3 } from '../../data/smisterio/tartaria/Tartaria3.js'
+import { tartaria4 } from '../../data/smisterio/tartaria/Tartaria4.js'
+import { tartaria5 } from '../../data/smisterio/tartaria/Tartaria5.js'
 
 // ── Rumores ───────────────────────────────────────────────────────────────────
 import { registro_fundadores } from '../../data/rumores/registro_fundadores.js'
@@ -252,7 +272,10 @@ export const KNOWLEDGE_SOURCES = {
   },
 
   smisterio: {
-    antartida, bucegi, egipto, tartaria,
+    antartida1, antartida2, antartida3, antartida4, antartida5, antartidabot,
+    bucegi1, bucegi2, bucegi3, bucegi4, bucegi5,
+    egipto1, egipto2, egipto3, egipto4, egipto5,
+    tartaria1, tartaria2, tartaria3, tartaria4, tartaria5,
     esdeOsos:    esdeOsos_smisterio,
     esdeRumores: esdeRumores_smisterio,
     esdeAudio:   esdeAudio_smisterio,
