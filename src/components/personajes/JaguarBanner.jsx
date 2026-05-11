@@ -54,19 +54,19 @@ const FRASES_CONFIRMO = {
 };
 
 const ACORDEON_DATA = {
-  aries:       { texto: buildTextoSigno(aries),       video: 'https://media.bro7vision.com/jaries.mp4'       },
-  tauro:       { texto: buildTextoSigno(tauro),       video: 'https://media.bro7vision.com/jtauro.mp4'       },
-  geminis:     { texto: buildTextoSigno(geminis),     video: 'https://media.bro7vision.com/jgeminis.mp4'     },
-  cancer:      { texto: buildTextoSigno(cancer),      video: 'https://media.bro7vision.com/jcancer.mp4'      },
-  leo:         { texto: buildTextoSigno(leo),         video: 'https://media.bro7vision.com/jleo.mp4'         },
-  virgo:       { texto: buildTextoSigno(virgo),       video: 'https://media.bro7vision.com/jvirgo.mp4'       },
-  libra:       { texto: buildTextoSigno(libra),       video: 'https://media.bro7vision.com/jlibra.mp4'       },
-  escorpio:    { texto: buildTextoSigno(escorpio),    video: 'https://media.bro7vision.com/jescorpio.mp4'    },
-  ofiuco:      { texto: buildTextoSigno(ofiuco),      video: 'https://media.bro7vision.com/jofiuco.mp4'      },
-  sagitario:   { texto: buildTextoSigno(sagitario),   video: 'https://media.bro7vision.com/jsagitario.mp4'   },
-  capricornio: { texto: buildTextoSigno(capricornio), video: 'https://media.bro7vision.com/jcapricornio.mp4' },
-  acuario:     { texto: buildTextoSigno(acuario),     video: 'https://media.bro7vision.com/jacuario.mp4'     },
-  piscis:      { texto: buildTextoSigno(piscis),      video: 'https://media.bro7vision.com/jpiscis.mp4'      },
+  aries:       { texto: buildTextoSigno(aries),       video: 'https://media.bro7vision.com/jaguarSignos.mp4'       },
+  tauro:       { texto: buildTextoSigno(tauro),       video: 'https://media.bro7vision.com/jaguarSignos.mp4'       },
+  geminis:     { texto: buildTextoSigno(geminis),     video: 'https://media.bro7vision.com/jaguarSignos.mp4'     },
+  cancer:      { texto: buildTextoSigno(cancer),      video: 'https://media.bro7vision.com/jaguarSignos.mp4'      },
+  leo:         { texto: buildTextoSigno(leo),         video: 'https://media.bro7vision.com/jaguarSignos.mp4'         },
+  virgo:       { texto: buildTextoSigno(virgo),       video: 'https://media.bro7vision.com/jaguarSignos.mp4'       },
+  libra:       { texto: buildTextoSigno(libra),       video: 'https://media.bro7vision.com/jaguarSignos.mp4'       },
+  escorpio:    { texto: buildTextoSigno(escorpio),    video: 'https://media.bro7vision.com/jaguarSignos.mp4'    },
+  ofiuco:      { texto: buildTextoSigno(ofiuco),      video: 'https://media.bro7vision.com/jaguarSignos.mp4'      },
+  sagitario:   { texto: buildTextoSigno(sagitario),   video: 'https://media.bro7vision.com/jaguarSignos.mp4'   },
+  capricornio: { texto: buildTextoSigno(capricornio), video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  acuario:     { texto: buildTextoSigno(acuario),     video: 'https://media.bro7vision.com/jaguarSignos.mp4'     },
+  piscis:      { texto: buildTextoSigno(piscis),      video: 'https://media.bro7vision.com/jaguarSignos.mp4'      },
 };
 
 const FRASES_EXPLORAR = [
@@ -95,7 +95,7 @@ const FRASES_HANDOFF_ORUMAMA = [
   "Orumama tiene las raíces y el fuego. Te la paso 🕯️",
 ];
 
-const VIDEO_DEFAULT = 'https://media.bro7vision.com/jaries.mp4';
+const VIDEO_DEFAULT = 'https://media.bro7vision.com/jaguarDefaults.mp4';
 const BORDER_COLOR  = 'rgba(255,100,200,0.40)';
 const ICONO         = '🐯';
 const NOMBRE        = 'JAGUAR SIDÉREO';
@@ -255,16 +255,18 @@ export default function JaguarBanner({
       return;
     }
 
-    if (KEYWORDS_SMISTERIO.some(k => t.includes(k))) {
-      setCurrentMsg(elegir(FRASES_HANDOFF_SMISTERIO));
-      setTimeout(() => onHandoffPersonaje?.('smisterio'), 1200);
-      return;
-    }
+    if (!iaActiva) {
+      if (KEYWORDS_SMISTERIO.some(k => t.includes(k))) {
+        setCurrentMsg(elegir(FRASES_HANDOFF_SMISTERIO));
+        setTimeout(() => onHandoffPersonaje?.('smisterio'), 2500);
+        return;
+      }
 
-    if (KEYWORDS_ORUMAMA.some(k => t.includes(k)) || KEYWORDS_HIERBAS.some(k => t.includes(k))) {
-      setCurrentMsg(elegir(FRASES_HANDOFF_ORUMAMA));
-      setTimeout(() => onHandoffPersonaje?.('orumama'), 1200);
-      return;
+      if (KEYWORDS_ORUMAMA.some(k => t.includes(k)) || KEYWORDS_HIERBAS.some(k => t.includes(k))) {
+        setCurrentMsg(elegir(FRASES_HANDOFF_ORUMAMA));
+        setTimeout(() => onHandoffPersonaje?.('orumama'), 2500);
+        return;
+      }
     }
 
     // 2. CONFIRMO + tema en espera

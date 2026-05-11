@@ -90,7 +90,7 @@ const FRASES_HANDOFF_ORUMAMA = [
   "Las raíces saben más que las sombras en esto. Ve con Orumama.",
 ];
 
-const VIDEO_DEFAULT  = 'https://media.bro7vision.com/smisterioDefault.mp4';
+const VIDEO_DEFAULT  = 'https://media.bro7vision.com/smisterioDefaults.mp4';
 const BORDER_COLOR   = 'rgba(76,255,48,0.40)';
 const ICONO          = '☎️';
 const NOMBRE         = 'SR. MISTERIO';

@@ -91,8 +91,8 @@ const AGENT_PROFILES = {
     text: '✦  Hola! Dime si buscas músicas o Podcast! | Pulsa en las BroCards para la descripción y play si quieres escuchar | El Stop/Pause está en la puerta lateral izquierda, en el Brolives junto a Brotuner! '
   },
   oraculo: {
-    theme: 'green',
-    text: '✦ Los personajes te cuentan historias de ficción y entretenimiento, Con Orumama antes de proceder consulta a un médico, El Señor Misterio es Ficción entretenimiento, Jaguar es experimental y Ficción entretenimiento '
+    theme: 'amber',
+    text: '✦ Los personajes te cuentan historias de ficción y entretenimiento, Con Orumama antes de proceder consulta a un profesional, el Señor Misterio es Ficción entretenimiento, Jaguar es experimental y Ficción entretenimiento '
   }
 };
 
@@ -178,7 +178,7 @@ export default function AgentChatInput({
         value={text}
         onChange={e => setText(e.target.value)}
         onKeyDown={handleKeyDown}
-        className={`agent-textarea w-full bg-transparent backdrop-blur-sm border ${c.border} ${c.borderFocus} p-5 rounded-2xl outline-none font-mono text-base text-white ${c.placeholder} transition-colors resize-none leading-relaxed`}
+        className={`agent-textarea w-full bg-black/70 backdrop-blur-sm border ${c.border} ${c.borderFocus} p-5 rounded-2xl outline-none font-mono text-base text-white ${c.placeholder} transition-colors resize-none leading-relaxed`}
       />
 
       <div className="flex justify-between items-center px-1">

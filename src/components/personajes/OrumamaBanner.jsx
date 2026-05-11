@@ -57,7 +57,7 @@ const BOTS_HIERBAS = {
 const ACORDEON_DATA = Object.fromEntries(
   Object.entries(BOTS_HIERBAS).map(([key, texto]) => [
     key,
-    { texto, video: key === 'guisos' ? 'https://media.bro7vision.com/oruguisos.mp4' : 'https://media.bro7vision.com/oruhierbas.mp4' },
+    { texto, video: key === 'guisos' ? 'https://media.bro7vision.com/orumamaDefaults.mp4' : 'https://media.bro7vision.com/orumamaDefaults.mp4' },
   ])
 );
 
@@ -82,7 +82,7 @@ const FRASES_HANDOFF_SMISTERIO = [
   "Hay misterios que van más allá de mis brebajes. S.Misterio te espera.",
 ];
 
-const VIDEO_DEFAULT = 'https://media.bro7vision.com/oruhierbas.mp4';
+const VIDEO_DEFAULT = 'https://media.bro7vision.com/orumamaDefaults.mp4';
 const BORDER_COLOR  = 'rgba(200,255,100,0.40)';
 const ICONO         = '🌿';
 const NOMBRE        = 'ORUMAMA';
@@ -237,16 +237,18 @@ export default function OrumamaBanner({
       return;
     }
 
-    if (KEYWORDS_JAGUAR.some(k => t.includes(k))) {
-      setCurrentMsg(elegir(FRASES_HANDOFF_JAGUAR));
-      setTimeout(() => onHandoffPersonaje?.('jaguar'), 1200);
-      return;
-    }
+    if (!iaActiva) {
+      if (KEYWORDS_JAGUAR.some(k => t.includes(k))) {
+        setCurrentMsg(elegir(FRASES_HANDOFF_JAGUAR));
+        setTimeout(() => onHandoffPersonaje?.('jaguar'), 2500);
+        return;
+      }
 
-    if (KEYWORDS_SMISTERIO.some(k => t.includes(k))) {
-      setCurrentMsg(elegir(FRASES_HANDOFF_SMISTERIO));
-      setTimeout(() => onHandoffPersonaje?.('smisterio'), 1200);
-      return;
+      if (KEYWORDS_SMISTERIO.some(k => t.includes(k))) {
+        setCurrentMsg(elegir(FRASES_HANDOFF_SMISTERIO));
+        setTimeout(() => onHandoffPersonaje?.('smisterio'), 2500);
+        return;
+      }
     }
 
     // 2. CONFIRMO + tema en espera

@@ -17,8 +17,6 @@ import evelynProfile         from '../../data/evelyn/Personalidad.js'
 import larryProfile          from '../../data/larry/Personalidad.js'
 import mapacheProfile        from '../../data/mapache/Personalidad.js'
 import amiProfile            from '../../data/ami/Personalidad.js'
-import orumamaProfile        from '../../data/orumama/Personalidad.js'
-import jaguarProfile         from '../../data/jaguar/Personalidad.js'
 import rumoresProfile        from '../../data/rumores/Personalidad.js'
 
 // ── Mapa de perfiles ──────────────────────────────────────────────────────────
@@ -35,8 +33,6 @@ export const PERFILES = {
   larry:            larryProfile,
   mapache:          mapacheProfile,
   ami:              amiProfile,
-  orumama:          orumamaProfile,
-  jaguar:           jaguarProfile,
   rumores:          rumoresProfile,
 }
 
