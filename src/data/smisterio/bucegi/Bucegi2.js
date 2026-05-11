@@ -2,7 +2,7 @@
 
 export const bucegi2 = {
   data: `
-[Rumbo a Bucegi]
+TITULO : Rumbo a Bucegi
 Antes de llegar al pueblo, llevé al caballo a pastorear hierba fresca en agradecimiento por sus servicios, y aproveché la vista del paisaje para meditar sobre lo sucedido en esas tierras tan misteriosas.
 
 Las conclusiones fueron muy esclarecedoras. Pude sentir en el aire los gritos 

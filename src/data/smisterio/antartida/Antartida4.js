@@ -2,7 +2,7 @@
 
 export const antartida4 = {
   data: `
-[Las civilizaciones congeladas]
+TITULO: Las civilizaciones congeladas
 Si el universo es plano — y hay quienes tienen pruebas 
 de que lo es — entonces más allá de los hielos antárticos 
 hay espacio. Espacio real. Continentes que no aparecen 

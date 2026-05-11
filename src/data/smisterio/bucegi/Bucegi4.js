@@ -2,7 +2,7 @@
 
 export const bucegi4 = {
   data: `
-[La teoría Stargate]
+TÍTULO: La teoría Stargate
 Lamentablemente se me hizo imposible entrar. En el pueblo había rumores sobre mi 
 presencia y tuve que calmar las aguas y distanciarme. Aunque ya sabiendo cuál es 
 la entrada tengo bastante camino recorrido.

@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import AgentChatInput from '../AgentChatInput';
-import { useAgentChat } from '../../hooks/useAgentChat';
+import { usePersonajeChat }     from '../../hooks/usePersonajeChat';
+import { promptOrumama }        from '../../services/agents/prompts/promptOrumama';
+import { interpretarIntencion } from '../../services/agents/SystemBus';
 
 // ─── CONSTANTES ──────────────────────────────────────────────────────────────
 
@@ -138,19 +140,38 @@ export default function OrumamaBanner({
   const [acordeonDisplay, setAcordeonDisplay] = useState('');
   const [acordeonTitulo, setAcordeonTitulo]   = useState('');
   const [temaEnEspera, setTemaEnEspera]       = useState(null);
+  const [historiasContadas, setHistoriasContadas] = useState({});
 
   const charIdx     = useRef(0);
   const acordeonRef = useRef(null);
   const fadeTimer   = useRef(null);
   const origenRef   = useRef(origenLlegada);
 
-  const { mensaje: iaMensaje, loading, enviar: enviarIA, esPatrocinado } = useAgentChat({
-    mode:        'oraculo',
-    contextData: { oraculo_personaje: 'orumama', alias },
-    onHandoff:   (data) => {
-      if (data.agente === 'OSOS')            onInvokeOsos?.();
-      if (data.agente === 'ORACULO_INTERNO') onHandoffPersonaje?.(data.personaje_id);
-    },
+  // ── Canal 0 ─────────────────────────────────────────────────────────
+  const handleSistema = (intencion) => {
+    interpretarIntencion(intencion, {
+      onHandoff: (destino) => {
+        if (['jaguar', 'smisterio'].includes(destino)) {
+          onHandoffPersonaje?.(destino);
+        } else {
+          onInvokeOsos?.();
+        }
+      },
+      onBotContent: (tema, yaContadas) => {
+        const data = ACORDEON_DATA[tema];
+        if (data) {
+          lanzarAcordeon(data.texto, tema);
+          cambiarVideo(data.video);
+          setHistoriasContadas(prev => ({ ...prev, [tema]: (prev[tema] || 0) + 1 }));
+        }
+      },
+      historiasContadas,
+    });
+  };
+
+  const { mensaje: iaMensaje, loading, enviar: enviarIA, iaActiva } = usePersonajeChat({
+    promptFn:  promptOrumama,
+    onSistema: handleSistema,
     iaMode,
     isAdmin,
   });
@@ -209,6 +230,7 @@ export default function OrumamaBanner({
     if (!texto.trim()) return;
     const t = norm(texto);
 
+    // 1. Keywords de salida/handoff
     if (KEYWORDS_SALIDA.some(k => t.includes(k))) {
       setCurrentMsg(elegir(FRASES_HANDOFF_OSOS));
       setTimeout(() => onInvokeOsos?.(), 1200);
@@ -227,6 +249,7 @@ export default function OrumamaBanner({
       return;
     }
 
+    // 2. CONFIRMO + tema en espera
     if (t.includes('confirmo') && temaEnEspera) {
       const data = ACORDEON_DATA[temaEnEspera];
       if (data) {
@@ -238,6 +261,7 @@ export default function OrumamaBanner({
       return;
     }
 
+    // 3. Detectar tema → pedir CONFIRMO
     const tema = detectarTema(texto);
     if (tema) {
       setTemaEnEspera(tema);
@@ -245,12 +269,13 @@ export default function OrumamaBanner({
       return;
     }
 
-    const iaActiva = (iaMode === 'admin' && isAdmin) || (iaMode === 'public' && !isAdmin);
+    // 4. Modo IA activo → usePersonajeChat
     if (iaActiva) {
       enviarIA(texto);
       return;
     }
 
+    // 5. Fallback bot
     setCurrentMsg(elegir(FRASES_EXPLORAR));
   };
 
@@ -364,11 +389,6 @@ export default function OrumamaBanner({
               <span style={{ color: slateColor, fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
                 {NOMBRE}
               </span>
-              {esPatrocinado && (
-                <span style={{ fontSize: 8, fontWeight: 900, letterSpacing: '0.2em', color: '#000', background: '#FACC15', borderRadius: 3, padding: '1px 5px', textTransform: 'uppercase' }}>
-                  PATROCINADO
-                </span>
-              )}
             </div>
             <div className="flex flex-col items-center justify-center text-center">
               {!currentMsg && (

@@ -2,7 +2,7 @@
 
 export const antartida2 = {
   data: `
-[El Lago Vostok]
+TÍTULO : El Lago Vostok
 A casi cuatro kilómetros de profundidad bajo el hielo antártico 
 hay un lago. Agua líquida. Oscuridad total. Aislado del mundo 
 exterior durante quince millones de años.

@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import AgentChatInput from '../AgentChatInput';
-import { useAgentChat } from '../../hooks/useAgentChat';
+import { usePersonajeChat }     from '../../hooks/usePersonajeChat';
+import { promptJaguar }         from '../../services/agents/prompts/promptJaguar';
+import { interpretarIntencion } from '../../services/agents/SystemBus';
 import { calcularSignoSideral } from '../../data/jaguar/calcularSigno';
 import { aries }       from '../../data/jaguar/aries';
 import { tauro }       from '../../data/jaguar/tauro';
@@ -107,8 +109,8 @@ const elegir = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const KEYWORDS_TEMAS = {
   aries:       ['aries'],
   tauro:       ['tauro'],
-  geminis:     ['geminis', 'geminis'],
-  cancer:      ['cancer', 'cancer'],
+  geminis:     ['geminis', 'géminis'],
+  cancer:      ['cancer', 'cáncer'],
   leo:         ['leo'],
   virgo:       ['virgo'],
   libra:       ['libra'],
@@ -156,19 +158,38 @@ export default function JaguarBanner({
   const [acordeonDisplay, setAcordeonDisplay] = useState('');
   const [acordeonTitulo, setAcordeonTitulo]   = useState('');
   const [temaEnEspera, setTemaEnEspera]       = useState(null);
+  const [historiasContadas, setHistoriasContadas] = useState({});
 
   const charIdx     = useRef(0);
   const acordeonRef = useRef(null);
   const fadeTimer   = useRef(null);
   const origenRef   = useRef(origenLlegada);
 
-  const { mensaje: iaMensaje, loading, enviar: enviarIA, esPatrocinado } = useAgentChat({
-    mode:        'oraculo',
-    contextData: { oraculo_personaje: 'jaguar', alias },
-    onHandoff:   (data) => {
-      if (data.agente === 'OSOS')            onInvokeOsos?.();
-      if (data.agente === 'ORACULO_INTERNO') onHandoffPersonaje?.(data.personaje_id);
-    },
+  // ── Canal 0 ─────────────────────────────────────────────────────────
+  const handleSistema = (intencion) => {
+    interpretarIntencion(intencion, {
+      onHandoff: (destino) => {
+        if (['smisterio', 'orumama'].includes(destino)) {
+          onHandoffPersonaje?.(destino);
+        } else {
+          onInvokeOsos?.();
+        }
+      },
+      onBotContent: (tema, yaContadas) => {
+        const data = ACORDEON_DATA[tema];
+        if (data) {
+          lanzarAcordeon(data.texto, tema);
+          cambiarVideo(data.video);
+          setHistoriasContadas(prev => ({ ...prev, [tema]: (prev[tema] || 0) + 1 }));
+        }
+      },
+      historiasContadas,
+    });
+  };
+
+  const { mensaje: iaMensaje, loading, enviar: enviarIA, iaActiva } = usePersonajeChat({
+    promptFn:  promptJaguar,
+    onSistema: handleSistema,
     iaMode,
     isAdmin,
   });
@@ -227,6 +248,7 @@ export default function JaguarBanner({
     if (!texto.trim()) return;
     const t = norm(texto);
 
+    // 1. Keywords de salida/handoff
     if (KEYWORDS_SALIDA.some(k => t.includes(k))) {
       setCurrentMsg(elegir(FRASES_HANDOFF_OSOS));
       setTimeout(() => onInvokeOsos?.(), 1200);
@@ -245,6 +267,7 @@ export default function JaguarBanner({
       return;
     }
 
+    // 2. CONFIRMO + tema en espera
     if (t.includes('confirmo') && temaEnEspera) {
       const data = ACORDEON_DATA[temaEnEspera];
       if (data) {
@@ -256,6 +279,7 @@ export default function JaguarBanner({
       return;
     }
 
+    // 3. Fecha de nacimiento → calcular signo sideral
     const fecha = detectarFecha(texto);
     if (fecha) {
       const signo = calcularSignoSideral(fecha);
@@ -266,6 +290,7 @@ export default function JaguarBanner({
       }
     }
 
+    // 4. Keyword de signo → pedir CONFIRMO
     const tema = detectarTema(texto);
     if (tema) {
       setTemaEnEspera(tema);
@@ -273,12 +298,13 @@ export default function JaguarBanner({
       return;
     }
 
-    const iaActiva = (iaMode === 'admin' && isAdmin) || (iaMode === 'public' && !isAdmin);
+    // 5. Modo IA activo → usePersonajeChat
     if (iaActiva) {
       enviarIA(texto);
       return;
     }
 
+    // 6. Fallback bot
     setCurrentMsg(elegir(FRASES_EXPLORAR));
   };
 
@@ -392,11 +418,6 @@ export default function JaguarBanner({
               <span style={{ color: slateColor, fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
                 {NOMBRE}
               </span>
-              {esPatrocinado && (
-                <span style={{ fontSize: 8, fontWeight: 900, letterSpacing: '0.2em', color: '#000', background: '#FACC15', borderRadius: 3, padding: '1px 5px', textTransform: 'uppercase' }}>
-                  PATROCINADO
-                </span>
-              )}
             </div>
             <div className="flex flex-col items-center justify-center text-center">
               {!currentMsg && (

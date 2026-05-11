@@ -2,7 +2,7 @@
 
 export const egipto2 = {
   data: `
-[La noche en la pirámide]
+TÍTULO: La noche en la pirámide
 Esperé escondido hasta que el último turista abandonara la Gran Pirámide. 
 Los guardias cierran al atardecer. Pero hay grietas. Espacios que pasan desapercibidos.
 

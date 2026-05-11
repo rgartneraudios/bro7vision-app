@@ -46,7 +46,7 @@ const AGENT_COLORS = {
     placeholder: 'placeholder-emerald-300/70',
     counter:     'text-emerald-700/60',
     pulse:       'text-emerald-400',
-    btn:         'bg-emerald-500/30 hover:bg-emerald-400/50 border-emerald-400/60 hover:border-emerald-300 text-emerald-200',
+    btn:         'bg-emerald-500/50 hover:bg-emerald-400/50 border-emerald-400/60 hover:border-emerald-300 text-emerald-200',
   },
   amber: { // Funciona como Naranja/Orange
     rgb:         '245,158,11',

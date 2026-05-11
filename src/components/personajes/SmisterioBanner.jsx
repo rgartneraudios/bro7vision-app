@@ -2,11 +2,36 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import AgentChatInput from '../AgentChatInput';
-import { useAgentChat } from '../../hooks/useAgentChat';
+import { usePersonajeChat }     from '../../hooks/usePersonajeChat';
+import { promptSmisterio }      from '../../services/agents/prompts/promptSmisterio';
+import { interpretarIntencion } from '../../services/agents/SystemBus';
+
+// Bot path — texto .bot para el acordeón tras CONFIRMO
 import { antartidabot } from '../../data/smisterio/antartida/AntartidaBot';
 import { bucegi1 }      from '../../data/smisterio/bucegi/Bucegi1';
 import { egipto1 }      from '../../data/smisterio/egipto/Egipto1';
 import { tartaria1 }    from '../../data/smisterio/tartaria/Tartaria1';
+
+// IA path — 4 episodios por tema, campos .titulo y .texto
+import { laOperacionHighjump }         from '../../data/smisterio/antartida/LaOperacionHighjump';
+import { elLagoVostok }                from '../../data/smisterio/antartida/ElLagoVostok';
+import { elPlanoSinFin }               from '../../data/smisterio/antartida/ElPlanoSinFin';
+import { lasCivilizacionesCongeladas } from '../../data/smisterio/antartida/LasCivilizacionesCongeladas';
+
+import { elBosqueDeDracula } from '../../data/smisterio/bucegi/ElBosqueDeDracula';
+import { rumboBucegi }       from '../../data/smisterio/bucegi/RumboBucegi';
+import { elPasadizoSecreto } from '../../data/smisterio/bucegi/ElPasadizoSecreto';
+import { laTeoriaStargate }  from '../../data/smisterio/bucegi/LaTeoriaStargate';
+
+import { elTeDeLMercader }        from '../../data/smisterio/egipto/ElTeDeLMercader';
+import { lanocheEnLaPiramide }    from '../../data/smisterio/egipto/LanocheEnLaPiramide';
+import { losSecretosDelDesierto } from '../../data/smisterio/egipto/LosSecretosDelDesierto';
+import { memphisYElMisissipi }    from '../../data/smisterio/egipto/MemphisYElMisissipi';
+
+import { elImperioPerdido }      from '../../data/smisterio/tartaria/ElImperioPerdido';
+import { lasCatedralosHundidas } from '../../data/smisterio/tartaria/LasCatedralosHundidas';
+import { artePerdido }           from '../../data/smisterio/tartaria/ArtePerdido';
+import { elTransiberiano }       from '../../data/smisterio/tartaria/ElTransiberiano';
 
 // ─── CONSTANTES ──────────────────────────────────────────────────────────────
 
@@ -28,11 +53,20 @@ const FRASES_CONFIRMO = {
   tartaria:  "☎️ Tartaria. El imperio que borraron de la historia. Escribe CONFIRMO para conocerlo.",
 };
 
+// Bot path — campo .bot
 const ACORDEON_DATA = {
-  antartida: { texto: antartidabot.bot, video: 'https://media.bro7vision.com/smantartida.mp4' },
+  antartida: { texto: antartidabot.bot, video: 'https://media.bro7vision.com/smantartidas.mp4' },
   egipto:    { texto: egipto1.bot,      video: 'https://media.bro7vision.com/smegipto.mp4'   },
   bucegi:    { texto: bucegi1.bot,      video: 'https://media.bro7vision.com/smbucegi.mp4'   },
   tartaria:  { texto: tartaria1.bot,    video: 'https://media.bro7vision.com/smtartaria.mp4' },
+};
+
+// IA path — 4 episodios secuenciales por tema, campos .titulo y .texto
+const ACORDEON_DATA_IA = {
+  antartida: [laOperacionHighjump, elLagoVostok, elPlanoSinFin, lasCivilizacionesCongeladas],
+  bucegi:    [elBosqueDeDracula, rumboBucegi, elPasadizoSecreto, laTeoriaStargate],
+  egipto:    [elTeDeLMercader, lanocheEnLaPiramide, losSecretosDelDesierto, memphisYElMisissipi],
+  tartaria:  [elImperioPerdido, lasCatedralosHundidas, artePerdido, elTransiberiano],
 };
 
 const FRASES_EXPLORAR = [
@@ -56,7 +90,7 @@ const FRASES_HANDOFF_ORUMAMA = [
   "Las raíces saben más que las sombras en esto. Ve con Orumama.",
 ];
 
-const VIDEO_DEFAULT  = 'https://media.bro7vision.com/smantartida.mp4';
+const VIDEO_DEFAULT  = 'https://media.bro7vision.com/smisterioDefault.mp4';
 const BORDER_COLOR   = 'rgba(76,255,48,0.40)';
 const ICONO          = '☎️';
 const NOMBRE         = 'SR. MISTERIO';
@@ -105,18 +139,42 @@ export default function SmisterioBanner({
   const [acordeonTitulo, setAcordeonTitulo]   = useState('');
   const [temaEnEspera, setTemaEnEspera]       = useState(null);
 
+  const historiasContadasRef = useRef({});
+
   const charIdx     = useRef(0);
   const acordeonRef = useRef(null);
   const fadeTimer   = useRef(null);
   const origenRef   = useRef(origenLlegada);
 
-  const { mensaje: iaMensaje, loading, enviar: enviarIA, esPatrocinado } = useAgentChat({
-    mode:        'oraculo',
-    contextData: { oraculo_personaje: 'smisterio', alias },
-    onHandoff:   (data) => {
-      if (data.agente === 'OSOS')            onInvokeOsos?.();
-      if (data.agente === 'ORACULO_INTERNO') onHandoffPersonaje?.(data.personaje_id);
-    },
+  // ── Canal 0 — interpreta lo que la IA reporta al sistema ────────────
+  const handleSistema = (intencion) => {
+    interpretarIntencion(intencion, {
+      onHandoff: (destino) => {
+        if (['jaguar', 'orumama'].includes(destino)) {
+          onHandoffPersonaje?.(destino);
+        } else {
+          onInvokeOsos?.();
+        }
+      },
+      onBotContent: (tema) => {
+        const yaContadas = historiasContadasRef.current[tema] || 0;
+        const historias  = ACORDEON_DATA_IA[tema];
+        if (historias) {
+          const indice = Math.min(yaContadas, historias.length - 1);
+          lanzarAcordeon(historias[indice].texto, historias[indice].titulo);
+          cambiarVideo(ACORDEON_DATA[tema].video);
+          historiasContadasRef.current = {
+            ...historiasContadasRef.current,
+            [tema]: yaContadas + 1,
+          };
+        }
+      },
+    });
+  };
+
+  const { mensaje: iaMensaje, loading, enviar: enviarIA, iaActiva } = usePersonajeChat({
+    promptFn:  promptSmisterio,
+    onSistema: handleSistema,
     iaMode,
     isAdmin,
   });
@@ -175,24 +233,29 @@ export default function SmisterioBanner({
     if (!texto.trim()) return;
     const t = norm(texto);
 
+    // 1. Salida → Osos (siempre, IA o bot)
     if (KEYWORDS_SALIDA.some(k => t.includes(k))) {
       setCurrentMsg(elegir(FRASES_HANDOFF_OSOS));
-      setTimeout(() => onInvokeOsos?.(), 1200);
+      setTimeout(() => onInvokeOsos?.(), 2500);
       return;
     }
 
-    if (KEYWORDS_JAGUAR.some(k => t.includes(k))) {
-      setCurrentMsg(elegir(FRASES_HANDOFF_JAGUAR));
-      setTimeout(() => onHandoffPersonaje?.('jaguar'), 1200);
-      return;
+    // 2 y 3. Handoff interno — solo en modo bot
+    // En modo IA lo gestiona la IA via Canal 0 con delay en SystemBus
+    if (!iaActiva) {
+      if (KEYWORDS_JAGUAR.some(k => t.includes(k))) {
+        setCurrentMsg(elegir(FRASES_HANDOFF_JAGUAR));
+        setTimeout(() => onHandoffPersonaje?.('jaguar'), 2500);
+        return;
+      }
+      if (KEYWORDS_ORUMAMA.some(k => t.includes(k))) {
+        setCurrentMsg(elegir(FRASES_HANDOFF_ORUMAMA));
+        setTimeout(() => onHandoffPersonaje?.('orumama'), 2500);
+        return;
+      }
     }
 
-    if (KEYWORDS_ORUMAMA.some(k => t.includes(k))) {
-      setCurrentMsg(elegir(FRASES_HANDOFF_ORUMAMA));
-      setTimeout(() => onHandoffPersonaje?.('orumama'), 1200);
-      return;
-    }
-
+    // 2. CONFIRMO + tema en espera — bot lanza acordeón con .bot
     if (t.includes('confirmo') && temaEnEspera) {
       const data = ACORDEON_DATA[temaEnEspera];
       if (data) {
@@ -204,19 +267,23 @@ export default function SmisterioBanner({
       return;
     }
 
-    const tema = detectarTema(texto);
-    if (tema) {
-      setTemaEnEspera(tema);
-      setCurrentMsg(FRASES_CONFIRMO[tema]);
-      return;
+    // 3. Detectar tema → pedir CONFIRMO (solo bot, no cuando IA activa)
+    if (!iaActiva) {
+      const tema = detectarTema(texto);
+      if (tema) {
+        setTemaEnEspera(tema);
+        setCurrentMsg(FRASES_CONFIRMO[tema]);
+        return;
+      }
     }
 
-    const iaActiva = (iaMode === 'admin' && isAdmin) || (iaMode === 'public' && !isAdmin);
+    // 4. Modo IA activo → usePersonajeChat
     if (iaActiva) {
       enviarIA(texto);
       return;
     }
 
+    // 5. Fallback bot
     setCurrentMsg(elegir(FRASES_EXPLORAR));
   };
 
@@ -333,11 +400,6 @@ export default function SmisterioBanner({
               <span style={{ color: slateColor, fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
                 {NOMBRE}
               </span>
-              {esPatrocinado && (
-                <span style={{ fontSize: 8, fontWeight: 900, letterSpacing: '0.2em', color: '#000', background: '#FACC15', borderRadius: 3, padding: '1px 5px', textTransform: 'uppercase' }}>
-                  PATROCINADO
-                </span>
-              )}
             </div>
             <div className="flex flex-col items-center justify-center text-center">
               {!currentMsg && (

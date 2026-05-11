@@ -2,7 +2,7 @@
 
 export const bucegi3 = {
   data: `
-[El pasadizo secreto]
+TÍTULO : El pasadizo secreto
 Las montañas Bucegi en Rumania esconden algunos de los mayores secretos guardados 
 del continente. Llenas de misterios y con varias teorías sobre lo que sucedió allí.
 

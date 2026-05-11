@@ -2,7 +2,7 @@
 
 export const tartaria2= {
   data: `
-[Las catedrales hundidas]
+TÍTULO : Las catedrales hundidas
 En una tarde de verano me posé en los alrededores de una de las catedrales más 
 emblemáticas de Europa. Durante el día, para preservar mi anonimato y privacidad, 
 transité con un paraguas de sol acorde a la situación, discreto, para no llamar la 

@@ -1,0 +1,33 @@
+// src/data/smisterio/antartida/LasCivilizacionesCongeladas.js
+
+export const lasCivilizacionesCongeladas = {
+  titulo: "Las Civilizaciones Congeladas",
+  tema:   "antartida",
+  texto: `
+Las Civilizaciones Congeladas
+
+Si el universo es plano — y hay quienes tienen pruebas
+de que lo es — entonces más allá de los hielos antárticos
+hay espacio. Espacio real. Continentes que no aparecen
+en ningún mapa porque nadie ha llegado a cartografiarlos.
+O porque alguien decidió que no deberían aparecer.
+
+Dicen que ahí están congeladas las antiguas civilizaciones.
+La Atlántida. Lemuria. Los continentes de los dinosaurios.
+No desaparecieron. Se congelaron.
+Esperando un ciclo que aún no comprendemos del todo.
+
+Hoy hablan de cambio climático. De zonas que se descongelan
+mientras otras se congelan. De patrones que no encajan
+con los modelos conocidos.
+
+¿Y si lo que se está descongelando no es solo hielo?
+¿Y si los ciclos que no conocemos están empezando ahora?
+
+Yo tengo una teoría.
+
+Has conocido todo lo que sé sobre Antártida por ahora.
+También tengo historias de Bucegi, Egipto y Tartaria.
+  `.trim()
+}
+export default lasCivilizacionesCongeladas;

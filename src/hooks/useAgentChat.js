@@ -235,7 +235,7 @@ const obtenerVivencia = async (personajeId, userCity = '') => {
     if (mode === 'novaCierre')  return 'nova_cierre';
     if (mode === 'servicios')   return contextData?.servicios_personaje || 'isabella';
     if (mode === 'mapache')     return contextData?.audio_personaje || 'mapache';
-    if (mode === 'oraculo')     return contextData?.oraculo_personaje || 'orumama';
+    if (mode === 'oraculo')     return null;
     if (mode === 'reinos')      return 'rumores';
     if (mode === 'avisos')      return contextData?.avisos_personaje || 'evelyn';
     return null;
@@ -481,6 +481,12 @@ const enviar = async (textoUsuario, extraContext = {}) => {
 
       if (iaActiva && !avisoEnProceso) {
         const personajeId = resolverPersonajeId();
+
+	  // Oráculo migrado — usePersonajeChat lo gestiona
+  if (mode === 'oraculo') {
+    setLoading(false);
+    return;
+  }
 
       if (mode === 'novaExplora') {
   const { vivencia: vivenciaNova, estadoAnimo: animoNova } = await obtenerVivencia('nova', contextData?.ciudad);

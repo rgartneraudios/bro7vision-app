@@ -2,7 +2,7 @@
 
 export const tartaria4= {
   data: `
-[El Transiberiano]
+TÍTULO : El Transiberiano
 Para incorporarme de lleno a la investigación decidí tomar el tren Transiberiano. 
 Me han atendido con suma discreción a mi pedido.
 

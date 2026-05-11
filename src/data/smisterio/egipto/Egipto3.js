@@ -2,7 +2,7 @@
 
 export const egipto3 = {
   data: `
-[Los secretos del desierto]
+TÍTULO : Los secretos del desierto
 Un contacto local me llevó en camello hasta un suburbio alejado de Egipto. 
 Sin carreteras. Sin marcas en el mapa turístico.
 

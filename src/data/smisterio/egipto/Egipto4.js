@@ -2,7 +2,7 @@
 
 export const egipto4 = {
   data: `
-[Memphis y el Misissipi]
+TÍTULO : Memphis y el Misissipi
 Se dice que en realidad el antiguo Egipto estuvo situado en USA. 
 Por eso hay una ciudad Memphis en Estados Unidos al igual que en Egipto. 
 Por eso hay curiosamente una pirámide construida en Memphis.

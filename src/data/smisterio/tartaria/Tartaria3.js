@@ -2,7 +2,7 @@
 
 export const tartaria3= {
   data: `
-[Arte perdido]
+TÍTULO : Arte perdido
 Si bien el imperio Tártaro o Tartaria era una zona cercana a Siberia, estos son 
 datos históricos reales. Hay mapas antiguos que muestran su existencia.
 

@@ -2,7 +2,7 @@
 
 export const antartida3 = {
   data: `
-[El plano sin fin]
+TITULO : El plano sin fin
 Hay quienes dicen que la Antártida no es el fin del mundo.
 Que es el borde.
 
