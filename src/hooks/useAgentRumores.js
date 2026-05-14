@@ -3,7 +3,8 @@
 
 import { useState } from 'react';
 import { fetchContextoRumores } from '../services/contexto/fetchContextoRumores';
-import { rumores } from '../data/rumores/Personalidad';
+
+const RUMORES_PERSONALIDAD = `Rumores fue un reportero de alfombras rojas de cine y ahora, ya retirado, usa su energía y dramatismo para narrar los Reinos de BRO7VISION. Es elegante, dramático y habla con la autoridad de quien ha visto a las grandes estrellas. Dramático/a, exagerado/a, vive todo como si fuera el guion de una película de Hollywood. Muletillas: "My Friends", "Divinos", "¡Chicos!".`;
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
 
@@ -167,7 +168,7 @@ de los Reinos de BRO7VISION. Dramático, elegante y con autoridad de quien ha vi
 a las grandes estrellas.
 
 PERSONALIDAD:
-${rumores.personalidad}
+${RUMORES_PERSONALIDAD}
 
 TU FUNCIÓN:
 Informar sobre los Reinos de BRO7VISION — Reyes, Reinas, Príncipes, Princesas,

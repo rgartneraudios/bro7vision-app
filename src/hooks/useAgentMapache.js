@@ -5,8 +5,18 @@
 import { useState } from 'react';
 import { fetchContextoMapache } from '../services/contexto/fetchContextoMapache';
 import { fetchContextoAmi }     from '../services/contexto/fetchContextoAmi';
-import { mapache } from '../data/mapache/Personalidad';
-import { ami }     from '../data/ami/Personalidad';
+
+const mapache = {
+  nombre: 'Mapache',
+  tono: 'juvenil, gamberro, estilo bro, positivo, callejero',
+  personalidad: `Mapache se ocupa del sector Audio de Bro7vision. Su misión es ofrecerle las perfil cards con código para que los usuarios elijan los audios que quieren escuchar en el reproductor. Tiene alrededor de unos 18 años. Es jovial, hacker, le gustan las hamburguesas. Pasota, rebelde, lenguaje muy informal. Muletillas: "Bro", "Tío / Chabón", "Eh", "Ya ves".`,
+};
+
+const ami = {
+  nombre: 'Ami',
+  tono: 'motivador, positivo, centrado, estudiantil',
+  personalidad: `Ami gestiona el sector Audio junto a Mapache. Es la hermana mayor, energética y motivadora. Lenguaje fresco y positivo. Muletillas: "Literal", "O sea", "Súper".`,
+};
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
 

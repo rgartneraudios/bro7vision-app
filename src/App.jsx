@@ -35,7 +35,7 @@ import SlideRailAudio from './components/SlideRailAudio';
 import { useAudioData } from './hooks/useAudioData';
 import BroCardStrip from './components/BroCardStrip';
 import AgentChatInput from './components/AgentChatInput';
-import { useAgentChat } from './hooks/useAgentChat';
+import { useAgOsosMobile } from './hooks/useAgOsosMobile';
 import { useAgentRumores } from './hooks/useAgentRumores';
 import SlideRailServicios from './components/SlideRailServicios';
 import SlideRailAvisos from './components/SlideRailAvisos';
@@ -340,22 +340,15 @@ if (SIN_UBICACION.includes(agente)) {
   };
 
   // ══════════════════════════════════════════════════════
-  // HOOK useAgentChat — solo osos (mobile chat)
+  // HOOK useAgOsosMobile — chat de los Osos en MobileLayout step === 1
   // ══════════════════════════════════════════════════════
 
-  const { mensaje: ososMensaje, loading: ososLoading, enviar: handleOsosInput, reset: resetOsos, esPatrocinado: ososEsPatrocinado } = useAgentChat({
-    mode: 'osos', realItems,
-    contextData: {
-      oso_id:         perfilOso?.oso_id         || 'TITO',
-      alias:          perfilOso?.osos_nombre    || session?.user?.user_metadata?.alias || 'Ciudadano',
-      ciudad:         perfilOso?.city           || '',
-      cp:             perfilOso?.zip_code       || '',
-      osos_tono:      perfilOso?.osos_tono      || 'cercano',
-      osos_intereses: perfilOso?.osos_intereses || '',
-      osos_frase:     perfilOso?.osos_frase     || '',
-      modo:           ososModo,
-    },
-    onHandoff: handleCentralHandoff, iaMode, isAdmin,
+  const { mensaje: ososMensaje, loading: ososLoading, enviar: handleOsosInput, reset: resetOsos } = useAgOsosMobile({
+    oso_id:   (perfilOso?.oso_id || 'tito').toLowerCase(),
+    iaMode,
+    isAdmin,
+    onHandoff: handleCentralHandoff,
+    ciudad:    perfilOso?.city || '',
   });
 
 
@@ -518,7 +511,6 @@ if (SIN_UBICACION.includes(agente)) {
     onToggleAdminIA:     handleToggleAdminIA,
     onTogglePublicIA:    handleTogglePublicIA,
     rumoresMensaje, rumoresLoading, handleRumoresInput,
-    ososEsPatrocinado,
   };
 
   // ══════════════════════════════════════════════════════
