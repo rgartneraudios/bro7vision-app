@@ -25,7 +25,7 @@ import SlideRailAudio from './SlideRailAudio';
 import NovaBanner  from './personajes/NovaBanner';
 import NovaCierre  from './personajes/NovaCierre';
 import IsabellaBanner from './personajes/IsabellaBanner';
-import EvelynBanner from './EvelynBanner';
+import EvelynBanner from './personajes/EvelynBanner';
 import MapacheBanner from './personajes/MapacheBanner';
 import SmisterioBanner from "./personajes/SmisterioBanner";
 import JaguarBanner    from "./personajes/JaguarBanner";
@@ -44,13 +44,12 @@ export default function DesktopLayout(props) {
     realItems, filteredItems, hubVideos, hubVideos169, selectedForestUser, setSelectedForestUser,    	savedUserIndex, audioUser, setAudioUser, activePrismUser, setActivePrismUser, projectingUser, 	setProjectingUser, is169Mode, setIs169Mode, broTunerRef, navItems, handleNavigation, handleReportIssue,
     setShowWalletModal, setShowBooster, setShowStory, setShowLegal,
     scope, sessionCP, sessionCity, sessionRef, handleGameWin, handleGoToShop, abrirTienda,
-    setSelectedLog, setVlData, ososHandoffContext, setOsosHandoffContext, avisoEnConstruccion,
+    setSelectedLog, setVlData, ososHandoffContext, setOsosHandoffContext,
     perfilOso, stripVisible, stripCards, stripLabel, setHoloPrismaIndex, findChannelByAlias, checkIfNew,
     ososMensaje, ososLoading, handleOsosInput, ososModo, setOsosModo, handleLogout, selectedCard,
-  evelynMensaje, evelynLoading, handleEvelynInput,
   oraculoMensaje, oraculoLoading, handleOraculoInput, rumoresMensaje, rumoresLoading, handleRumoresInput,
   novaEsPatrocinado,
-  evelynEsPatrocinado, oraculoEsPatrocinado, ososEsPatrocinado, oraculoPersonaje,
+  oraculoEsPatrocinado, ososEsPatrocinado, oraculoPersonaje,
    iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA
   } = props;
 
@@ -243,25 +242,19 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
         <EvelynBanner
           personaje={perfilSector?.personaje_id || 'evelyn'}
           sessionCity={sessionCity}
-          sessionCP={sessionCP}
           genesis={balances.genesis}
-          alias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'}
-          bro_id={perfilOso?.bro_id || ''}
+          userId={session?.user?.id}
+          autorAlias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'}
           realItems={realItems}
           stripVisible={stripVisible}
           stripCards={stripCards}
           stripLabel={stripLabel}
-          enviar={handleEvelynInput}
-	mensaje={evelynMensaje}
-	loading={evelynLoading}
-          esPatrocinado={evelynEsPatrocinado}
-	setProjectingUser={props.setProjectingUser}
-  	onHandoff={props.onHandoff} 
-	avisoEnConstruccion={avisoEnConstruccion}
-          onInvokeOsos={() => setStep(1)}
+          onHandoff={handleCentralHandoff}
           onAvisoConectar={props.onAvisoConectar}
           onAvisoPublicar={props.onAvisoPublicar}
-          onPersonajeChange={handleCentralHandoff}
+          setProjectingUser={setProjectingUser}
+          iaMode={iaMode}
+          isAdmin={isAdmin}
         />
       )}
 

@@ -37,7 +37,6 @@ import BroCardStrip from './components/BroCardStrip';
 import AgentChatInput from './components/AgentChatInput';
 import { useAgentChat } from './hooks/useAgentChat';
 import SlideRailServicios from './components/SlideRailServicios';
-import EvelynBanner from './components/EvelynBanner';
 import SlideRailAvisos from './components/SlideRailAvisos';
 import CityLocationBanner from './components/CityLocationBanner';
 import NeuralButton from './components/NeuralButton';
@@ -358,20 +357,6 @@ if (SIN_UBICACION.includes(agente)) {
     onHandoff: handleCentralHandoff, iaMode, isAdmin,
   });
 
-  const { mensaje: evelynMensaje, loading: evelynLoading, enviar: handleEvelynInput, avisoEnConstruccion, esPatrocinado: evelynEsPatrocinado } = useAgentChat({
-    mode: 'avisos',
-    contextData: {
-      avisos_personaje: perfilSector?.personaje_id || 'evelyn',
-      genesis:          balances.genesis,
-      ciudad:           sessionCity,
-      user_id:          session?.user?.id,
-      autor_alias:      perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano',
-    },
-    onHandoff:       handleCentralHandoff,
-    onAvisoConectar: handleAvisoConectar,
-    onAvisoPublicar: handleAvisoPublicar,
-    iaMode, isAdmin,
-  });
 
 const oraculoContextData = useMemo(() => ({
   oraculo_personaje: perfilSector?.personaje_id || perfilOso?.oraculo_personaje || 'orumama',
@@ -439,13 +424,13 @@ const { mensaje: oraculoMensaje, loading: oraculoLoading, enviar: handleOraculoI
     switch (intent) {
       case 'productos':       return { enviar: () => {},            mensaje: null,            loading: false };
       case 'servicios':       return { enviar: () => {},            mensaje: null,            loading: false };
-      case 'avisos':          return { enviar: handleEvelynInput,   mensaje: evelynMensaje,   loading: evelynLoading };
+      case 'avisos':          return { enviar: () => {},            mensaje: null,            loading: false };
       case 'audios':          return { enviar: () => {},            mensaje: null,            loading: false };
       case 'ai':              return { enviar: handleOraculoInput,  mensaje: oraculoMensaje,  loading: oraculoLoading };
       case 'internal_search': return { enviar: handleRumoresInput,  mensaje: rumoresMensaje,  loading: rumoresLoading };
       default:                return { enviar: handleOsosInput,     mensaje: ososMensaje,     loading: ososLoading };
     }
-  }, [intent, step, evelynMensaje, oraculoMensaje, rumoresMensaje, ososMensaje]);
+  }, [intent, step, oraculoMensaje, rumoresMensaje, ososMensaje]);
 
   const filteredItems = useMemo(() => {
     const supabaseItems = realItems.map(u => ({ ...u, id: u.id, name: u.product_title || u.alias, img: u.card_banner_url || u.banner_url || '/default.png', price: u.price || 0, type: u.video_file ? ['shop', 'live'] : ['shop'], source: 'supabase' }));
@@ -508,7 +493,7 @@ const { mensaje: oraculoMensaje, loading: oraculoLoading, enviar: handleOraculoI
     productos:       { enviar: () => {},            mensaje: null,            loading: false },
     servicios:       { enviar: () => {},            mensaje: null,            loading: false },
     audios:          { enviar: () => {},            mensaje: null,            loading: false },
-    avisos:          { enviar: handleEvelynInput,   mensaje: evelynMensaje,   loading: evelynLoading },
+    avisos:          { enviar: () => {},            mensaje: null,            loading: false },
     ai:              { enviar: handleOraculoInput,  mensaje: oraculoMensaje,  loading: oraculoLoading },
     internal_search: { enviar: handleRumoresInput,  mensaje: rumoresMensaje,  loading: rumoresLoading },
   };
@@ -543,11 +528,9 @@ const { mensaje: oraculoMensaje, loading: oraculoLoading, enviar: handleOraculoI
     iaMode, isAdmin, userCredits,
     onToggleAdminIA:     handleToggleAdminIA,
     onTogglePublicIA:    handleTogglePublicIA,
-    avisoEnConstruccion,
-    evelynMensaje, evelynLoading,
-    handleEvelynInput, oraculoMensaje, oraculoLoading, handleOraculoInput, rumoresMensaje,
+    oraculoMensaje, oraculoLoading, handleOraculoInput, rumoresMensaje,
     rumoresLoading, handleRumoresInput,
-    evelynEsPatrocinado, oraculoEsPatrocinado, ososEsPatrocinado,
+    oraculoEsPatrocinado, ososEsPatrocinado,
   };
 
   // ══════════════════════════════════════════════════════
