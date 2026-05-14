@@ -11,7 +11,7 @@ Que es el borde.
 
 Que si uno se interna más allá de los hielos conocidos
 no encuentra océano ni vacío. Encuentra un plano que continúa.
-Sin horizonte. Sin límite visible.
+Sin horizonte. Sin límite visible.☎️
 
 Algunos exploradores que volvieron — los pocos que volvieron —
 hablaron de ver más soles a lo lejos. No uno. Varios.
@@ -24,7 +24,7 @@ probado. O quizás si uno se atreve a hacer ese viaje descubre
 que no hay otros soles. Que hay oscuridad. Una oscuridad absoluta
 con temperaturas que no figuran en ningún manual de supervivencia.
 
-Depende de qué encuentres primero.
+Depende de qué encuentres primero.☎️
 
 Si quieres más de Antártida escribe ANTÁRTIDA.
 También tengo historias de Bucegi, Egipto y Tartaria.

@@ -12,6 +12,6 @@ Son los mediadores del universo, los que tejen puentes donde otros construyen mu
 Su frecuencia es refinada, social, siempre buscando el punto medio perfecto.
 El reto de Libra sideral es tomar decisiones sin que el miedo a romper el equilibrio los paralice.
   `,
-  consejo: "La balanza que nunca se inclina, hermano, no está en equilibrio. Está muerta.",
+  consejo: "La balanza que nunca se inclina, hermano, no está en equilibrio. Está muerta.\n\n...Si están en modo IA hermanos, escriban el nombre de un signo y la palabra Mito, así conoces más frecuencias 🐯",
 };
 export default libra;

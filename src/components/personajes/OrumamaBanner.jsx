@@ -2,22 +2,37 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import AgentChatInput from '../AgentChatInput';
-import { usePersonajeChat }     from '../../hooks/usePersonajeChat';
-import { promptOrumama }        from '../../services/agents/prompts/promptOrumama';
-import { interpretarIntencion } from '../../services/agents/SystemBus';
+import { useOrumamaChat } from '../../hooks/useOrumamaChat';
+import { albahaca }   from '../../data/orumama/albahaca';
+import { jengibre }   from '../../data/orumama/jengibre';
+import { lavanda }    from '../../data/orumama/lavanda';
+import { manzanilla } from '../../data/orumama/manzanilla';
+import { melisa }     from '../../data/orumama/melisa';
+import { menta }      from '../../data/orumama/menta';
+import { oregano }    from '../../data/orumama/oregano';
+import { romaza }     from '../../data/orumama/romaza';
+import { romero }     from '../../data/orumama/romero';
+import { ruda }       from '../../data/orumama/ruda';
+import { salvia }     from '../../data/orumama/salvia';
+import { tomillo }    from '../../data/orumama/tomillo';
+import { hierbas }    from '../../data/orumama/hierbas';
+import { guisos }     from '../../data/orumama/guisos';
+import { recetario1 } from '../../data/orumama/recetario/recetario1';
+import { recetario2 } from '../../data/orumama/recetario/recetario2';
 
 // ─── CONSTANTES ──────────────────────────────────────────────────────────────
 
 const FRASES_BIENVENIDA = [
-  "Aquí Orumama 🕯️ Estaba removiendo un brebaje. ¿Qué mal o consulta te trae al Oráculo, hija mía?",
-  "Las velas están encendidas, los ancestros escuchan. Soy Orumama. ¿Qué quieres consultar?",
-  "Pasa, pasa. Me pillaste con la olla al fuego. ¿Qué necesitas saber?",
-  "Orumama al habla 🌿 ¿Vienes por hierbas, remedios, o algo que te pesa?",
+  "Hola hijos míos! Pon la palabra Guisos o Hierbas y te contaré alguno de mis secretos 🕯️",
+  "Aquí Orumama 🕯️ Estaba removiendo un brebaje. escribe Guisos o Hierbas y te contaré secretos. a ver, déjame verte!",
+  "Las velas están encendidas, los ancestros escuchan. Soy Orumama. ¿Qué quieres consultar? escribe Guisos o Hierbas y te contaré secretos",
+  "Pasa, pasa. Me pillaste con la olla al fuego. ¿Qué necesitas saber? escribe Guisos o Hierbas y te contaré secretos",
+  "Orumama al habla 🌿 ¿Vienes por hierbas, remedios, o algo que te pesa?, escribe Guisos o Hierbas y te contaré secretos",
 ];
 
 const FRASES_LLEGADA = [
-  "Orumama aquí. ¿Qué te trae, hija mía? 🕯️",
-  "...Orumama al habla. Cuéntame. 🌿",
+  "Hola hijos míos!, pon la palabra Guisos o Hierbas y te contaré alguno de mis secretos. 🕯️",
+  "...Orumama al habla. Cuéntame. pon la palabra Guisos o Hierbas y te contaré alguno de mis secretos.🌿",
 ];
 
 const FRASES_CONFIRMO = {
@@ -37,29 +52,24 @@ const FRASES_CONFIRMO = {
   guisos:     "Mis guisos son un misterio de ingredientes. Escribe CONFIRMO y te revelo la olla 🕯️",
 };
 
-const BOTS_HIERBAS = {
-  manzanilla: "🌼 Manzanilla — Mi infusión madre.\nTres cucharadas de flores secas por litro. Dejarla reposar tapada diez minutos. No la hiervas, que pierdes todo lo bueno.\nPara la digestión, para calmar el estómago revuelto, para dormir sin que la cabeza te dé vueltas. Té de manzanilla por la noche y el cuerpo te lo agradece por años.\nAviso de abuela: el conocimiento de la abuela no sustituye al médico. Siempre consultar con un facultativo 🌿",
-  lavanda:    "💜 Lavanda — La hierba de los nervios rotos.\nPara el insomnio, la ansiedad, el corazón acelerado sin motivo. Almohada de lavanda seca o infusión suave antes de dormir.\nUnas gotitas de aceite esencial en la muñeca si la noche se pone larga. La naturaleza nunca apaga la luz de golpe — la va bajando poco a poco.\nAviso de abuela: el conocimiento de la abuela no sustituye al médico. Siempre consultar con un facultativo 🌿",
-  jengibre:   "🌱 Jengibre — Calor y defensa.\nRaíz fresca en rodajas, hervida diez minutos con limón y miel. Para resfriados, náuseas, frío de huesos y digestión pesada.\nLos marineros lo masticaban para no marearse. Yo lo añado a los guisos cuando el invierno aprieta.\nAviso de abuela: el conocimiento de la abuela no sustituye al médico. Siempre consultar con un facultativo 🌿",
-  romero:     "🌿 Romero — Memoria y circulación.\nNo lo infusiones mucho — basta con una ramita en agua caliente dos minutos. Para la cabeza cargada, para activar la sangre, para los días grises en que el cerebro no arranca.\nTambién frotado en las sienes en aceite. Lo tengo plantado en el alféizar porque la vista de él ya es un remedio.\nAviso de abuela: el conocimiento de la abuela no sustituye al médico. Siempre consultar con un facultativo 🌿",
-  menta:      "🍃 Menta — Energía y claridad.\nInfusión fría en verano, caliente en invierno. Para la congestión, el cansancio, los dolores de cabeza que vienen del frío.\nUnas hojas frescas en agua y limón — eso es todo. La naturaleza no necesita complicaciones.\nAviso de abuela: el conocimiento de la abuela no sustituye al médico. Siempre consultar con un facultativo 🌿",
-  oregano:    "🌿 Orégano — El guardián antibacteriano.\nInfusión de orégano seco para la tos persistente y el pecho cargado. También en vapores — tazón con agua muy caliente, orégano, cabeza tapada con toalla, respirar profundo.\nEn la cocina es remedio y condimento al mismo tiempo. Mis guisos siempre llevan orégano.\nAviso de abuela: el conocimiento de la abuela no sustituye al médico. Siempre consultar con un facultativo 🌿",
-  tomillo:    "🌱 Tomillo — Protector de bronquios y defensas.\nInfusión de tomillo con miel para la tos seca. Lo usaban los monjes medievales — algo sabían.\nTambién en gargarismos para la garganta. Y en el baño caliente si el cuerpo pide ayuda con el frío.\nAviso de abuela: el conocimiento de la abuela no sustituye al médico. Siempre consultar con un facultativo 🌿",
-  albahaca:   "🌿 Albahaca — Estrés y digestión.\nInfusión suave para calmar el estómago nervioso. Para los días en que el estómago recibe todo el peso de la mente.\nFresca en ensaladas, como remedio y como alimento. La naturaleza no separa las dos cosas.\nAviso de abuela: el conocimiento de la abuela no sustituye al médico. Siempre consultar con un facultativo 🌿",
-  melisa:     "🌸 Melisa — Para el corazón acelerado.\nLa hierba de los nervios y las palpitaciones sin causa. Infusión suave, nunca concentrada. Para los días de angustia, para las noches que no terminan.\nLos antiguos la llamaban hierba de la alegría. Yo la llamo hierba de la calma.\nAviso de abuela: el conocimiento de la abuela no sustituye al médico. Siempre consultar con un facultativo 🌿",
-  salvia:     "🌿 Salvia — La hierba de la garganta.\nInfusión para gargarismos, también bebida templada. Para la voz ronca, la garganta irritada, la sudoración excesiva.\nTiene fuerza, esta hierba. No la des a embarazadas. El conocimiento de la abuela siempre viene con su aviso.\nAviso de abuela: el conocimiento de la abuela no sustituye al médico. Siempre consultar con un facultativo 🌿",
-  ruda:       "🌱 Ruda — Dolores y energía. Solo uso externo.\nFrotada en aceite para dolores musculares y articulaciones que piden calor. Nunca ingerida — este es el aviso que más repito.\nEn muchas culturas es hierba de protección. Yo la respeto y la uso con cuidado.\nAviso de abuela: el conocimiento de la abuela no sustituye al médico. Siempre consultar con un facultativo 🌿",
-  romaza:     "🌿 Romaza — Hígado y depuración.\nInfusión de hojas secas. Para limpiar el hígado en primavera y otoño, para la piel que pide depuración desde adentro.\nLa naturaleza tiene su ritmo de limpieza. La romaza ayuda a escucharlo.\nAviso de abuela: el conocimiento de la abuela no sustituye al médico. Siempre consultar con un facultativo 🌿",
-  hierbas:    "RECETARIO DE ORUMAMA (Bienestar Natural) 🌿\n\n- Manzanilla: Digestión y calma.\n- Lavanda: Ansiedad e insomnio.\n- Jengibre: Resfriados y náuseas.\n- Romero: Memoria y circulación.\n- Menta: Energía y congestión.\n- Orégano: Antibacteriano y tos.\n- Tomillo: Bronquios y defensas.\n- Albahaca: Estrés y digestión.\n- Melisa: Nervios y palpitaciones.\n- Salvia: Garganta y sudoración.\n- Ruda: Dolores y energía (Uso externo).\n- Romaza: Hígado y depuración.\n\nEscribe el nombre de cualquier hierba para saber más.\n\nAviso: El conocimiento de la abuela no sustituye al médico. Siempre consultar con un facultativo.",
-  guisos:     "Mis guisos son un misterio de ingredientes, hija mía 🕯️\n\nLo que puedo revelar: todo buen guiso empieza con paciencia y fuego lento. Las hierbas no se añaden al azar — cada una tiene su momento.\n\nEl romero va al principio, con el aceite. El tomillo a mitad de cocción. La albahaca, fresca, al final.\n\nUna pizca de lo que no se puede nombrar — eso es el secreto de toda abuela digna.\n\nSi el Señor Misterio pregunta por mis guisos... le digo lo mismo. Algunos misterios no se revelan.",
+const ACORDEON_DATA = {
+  albahaca:    { texto: albahaca.data,    video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  jengibre:    { texto: jengibre.data,    video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  lavanda:     { texto: lavanda.data,     video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  manzanilla:  { texto: manzanilla.data,  video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  melisa:      { texto: melisa.data,      video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  menta:       { texto: menta.data,       video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  oregano:     { texto: oregano.data,     video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  romaza:      { texto: romaza.data,      video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  romero:      { texto: romero.data,      video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  ruda:        { texto: ruda.data,        video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  salvia:      { texto: salvia.data,      video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  tomillo:     { texto: tomillo.data,     video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  hierbas:     { texto: hierbas.data,     video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  guisos:      { texto: guisos.data,      video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  recetario_1: { texto: recetario1.data,  video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  recetario_2: { texto: recetario2.data,  video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
 };
-
-const ACORDEON_DATA = Object.fromEntries(
-  Object.entries(BOTS_HIERBAS).map(([key, texto]) => [
-    key,
-    { texto, video: key === 'guisos' ? 'https://media.bro7vision.com/orumamaDefaults.mp4' : 'https://media.bro7vision.com/orumamaDefaults.mp4' },
-  ])
-);
 
 const FRASES_EXPLORAR = [
   "¿Qué quieres consultar — el horóscopo, la luna o algo de hierbas y remedios?",
@@ -106,8 +116,9 @@ const KEYWORDS_TEMAS = {
   salvia:     ['salvia'],
   ruda:       ['ruda'],
   romaza:     ['romaza'],
-  hierbas:    ['hierba', 'hierbas', 'planta', 'plantas', 'remedio', 'remedios', 'recetario', 'natural'],
+  hierbas:    ['hierba', 'hierbas', 'planta', 'plantas', 'remedio', 'remedios', 'natural'],
   guisos:     ['guiso', 'guisos', 'cocina', 'receta', 'recetas', 'olla'],
+  recetario:  ['recetario'],
 };
 const KEYWORDS_SALIDA    = ['salir', 'volver', 'osos', 'inicio', 'recepción', 'recepcion'];
 const KEYWORDS_JAGUAR    = ['jaguar', 'el jaguar', 'horoscopo', 'horóscopo', 'signo', 'zodiac', 'astro', 'luna', 'lunar'];
@@ -139,41 +150,28 @@ export default function OrumamaBanner({
   const [mostrarAcordeon, setMostrarAcordeon] = useState(false);
   const [acordeonDisplay, setAcordeonDisplay] = useState('');
   const [acordeonTitulo, setAcordeonTitulo]   = useState('');
-  const [temaEnEspera, setTemaEnEspera]       = useState(null);
-  const [historiasContadas, setHistoriasContadas] = useState({});
-
   const charIdx     = useRef(0);
   const acordeonRef = useRef(null);
   const fadeTimer   = useRef(null);
   const origenRef   = useRef(origenLlegada);
 
-  // ── Canal 0 ─────────────────────────────────────────────────────────
-  const handleSistema = (intencion) => {
-    interpretarIntencion(intencion, {
-      onHandoff: (destino) => {
-        if (['jaguar', 'smisterio'].includes(destino)) {
-          onHandoffPersonaje?.(destino);
-        } else {
-          onInvokeOsos?.();
-        }
-      },
-      onBotContent: (tema, yaContadas) => {
-        const data = ACORDEON_DATA[tema];
-        if (data) {
-          lanzarAcordeon(data.texto, tema);
-          cambiarVideo(data.video);
-          setHistoriasContadas(prev => ({ ...prev, [tema]: (prev[tema] || 0) + 1 }));
-        }
-      },
-      historiasContadas,
-    });
-  };
-
-  const { mensaje: iaMensaje, loading, enviar: enviarIA, iaActiva } = usePersonajeChat({
-    promptFn:  promptOrumama,
-    onSistema: handleSistema,
+  const { mensaje: iaMensaje, loading, enviar: enviarHook, iaActiva } = useOrumamaChat({
     iaMode,
     isAdmin,
+    onBotContent: (tema) => {
+      const data = ACORDEON_DATA[tema];
+      if (data) {
+        lanzarAcordeon(data.texto, tema);
+        cambiarVideo(data.video);
+      }
+    },
+    onHandoff: (destino) => {
+      if (['jaguar', 'smisterio'].includes(destino)) {
+        onHandoffPersonaje?.(destino);
+      } else {
+        onInvokeOsos?.();
+      }
+    },
   });
 
   useEffect(() => { if (iaMensaje) setCurrentMsg(iaMensaje); }, [iaMensaje]);
@@ -228,57 +226,16 @@ export default function OrumamaBanner({
 
   const handleUserInput = (texto) => {
     if (!texto.trim()) return;
-    const t = norm(texto);
-
-    // 1. Keywords de salida/handoff
-    if (KEYWORDS_SALIDA.some(k => t.includes(k))) {
-      setCurrentMsg(elegir(FRASES_HANDOFF_OSOS));
-      setTimeout(() => onInvokeOsos?.(), 1200);
-      return;
-    }
-
-    if (!iaActiva) {
-      if (KEYWORDS_JAGUAR.some(k => t.includes(k))) {
-        setCurrentMsg(elegir(FRASES_HANDOFF_JAGUAR));
-        setTimeout(() => onHandoffPersonaje?.('jaguar'), 2500);
-        return;
-      }
-
-      if (KEYWORDS_SMISTERIO.some(k => t.includes(k))) {
-        setCurrentMsg(elegir(FRASES_HANDOFF_SMISTERIO));
-        setTimeout(() => onHandoffPersonaje?.('smisterio'), 2500);
-        return;
-      }
-    }
-
-    // 2. CONFIRMO + tema en espera
-    if (t.includes('confirmo') && temaEnEspera) {
-      const data = ACORDEON_DATA[temaEnEspera];
-      if (data) {
-        cambiarVideo(data.video);
-        lanzarAcordeon(data.texto, temaEnEspera);
-        setCurrentMsg('... Aquí al costado lo tienes todo. Lee con calma, hija mía 🕯️');
-        setTemaEnEspera(null);
-      }
-      return;
-    }
-
-    // 3. Detectar tema → pedir CONFIRMO
-    const tema = detectarTema(texto);
-    if (tema) {
-      setTemaEnEspera(tema);
-      setCurrentMsg(FRASES_CONFIRMO[tema]);
-      return;
-    }
-
-    // 4. Modo IA activo → usePersonajeChat
-    if (iaActiva) {
-      enviarIA(texto);
-      return;
-    }
-
-    // 5. Fallback bot
-    setCurrentMsg(elegir(FRASES_EXPLORAR));
+    enviarHook(texto, {
+      FRASES_CONFIRMO,
+      FRASES_HANDOFF: {
+        jaguar:    FRASES_HANDOFF_JAGUAR,
+        smisterio: FRASES_HANDOFF_SMISTERIO,
+        osos:      FRASES_HANDOFF_OSOS,
+      },
+      setCurrentMsg,
+      elegir,
+    });
   };
 
   return (
@@ -288,8 +245,8 @@ export default function OrumamaBanner({
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
         @keyframes neonPulseOraculo {
-          0%, 100% { text-shadow: 0 0 8px ${slateColor}, 0 0 22px ${slateColor}, 0 0 45px ${slateColor}88; }
-          50%       { text-shadow: 0 0 4px ${slateColor}, 0 0 10px ${slateColor}; }
+          0%, 100% { text-shadow: none; }
+          50%       { text-shadow: none; }
         }
         @keyframes cascadaAcordeon {
           from { transform: translateY(-100%); opacity: 0; }

@@ -9,7 +9,7 @@ La Noche en la Pirámide
 Esperé escondido hasta que el último turista abandonara la Gran Pirámide.
 Los guardias cierran al atardecer. Pero hay grietas. Espacios que pasan desapercibidos.
 
-Me quedé dentro.
+Me quedé dentro.☎️
 
 La oscuridad era casi tangible. Solo la luz de las estrellas entraba
 por las pequeñas aberturas en la cámara del faraón. Decidí dormir
@@ -23,7 +23,7 @@ Para un propósito que la historia oficial ha ocultado.
 
 Esa noche medité. Observé cómo la luz lunar atravesaba
 esos huecos perfectamente alineados. No eran ventanas.
-Eran conductos de precisión astronómica.
+Eran conductos de precisión astronómica.☎️
 
 Antes del amanecer, trepé por uno de ellos. Ascendí hasta la cúspide.
 
@@ -34,7 +34,7 @@ según patrones que no son casualidad.
 Luego bajé. Desaparecí entre los turistas que comenzaban a llegar.
 
 La pirámide no es una tumba. Es un observatorio. Un transmisor.
-Una máquina cuya función hemos olvidado.
+Una máquina cuya función hemos olvidado.☎️
 
 Si quieres más de Egipto escribe EGIPTO.
 También tengo historias de Antártida, Bucegi y Tartaria.

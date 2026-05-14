@@ -12,6 +12,6 @@ Son visionarios que ven la humanidad como un todo, no como individuos separados.
 Su frecuencia es eléctrica, impredecible, siempre un paso por delante de su tiempo.
 El reto de Acuario sideral es no desconectarse tanto del presente que olvide a las personas que tiene al lado.
   `,
-  consejo: "El que vierte agua para todos, hermano, no puede olvidar que él también necesita beber.",
+  consejo: "El que vierte agua para todos, hermano, no puede olvidar que él también necesita beber.\n\n...Si están en modo IA hermanos, escriban el nombre de un signo y la palabra Mito, así conoces más frecuencias 🐯",
 };
 export default acuario;

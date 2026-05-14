@@ -12,6 +12,6 @@ Son los sanadores, los que organizan el caos y encuentran el patrón oculto en t
 Su frecuencia es meticulosa, servicial, profundamente inteligente.
 El reto de Virgo sideral es aceptar que el universo es imperfecto por diseño, no por error.
   `,
-  consejo: "Hermano, quien busca la grieta en cada piedra nunca disfruta del camino que lo sostiene.",
+  consejo: "Hermano, quien busca la grieta en cada piedra nunca disfruta del camino que lo sostiene.\n\n...Si están en modo IA hermanos, escriban el nombre de un signo y la palabra Mito, así conoces más frecuencias 🐯",
 };
 export default virgo;

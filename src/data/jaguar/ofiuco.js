@@ -13,6 +13,6 @@ Su frecuencia es intensa y paradójica — destruyen para sanar, caen para levan
 Tienen un magnetismo especial que atrae tanto la luz como la sombra.
 El reto de Ofiuco sideral es no perderse en el laberinto de su propia profundidad.
   `,
-  consejo: "La serpiente que se enrosca en el bastón, hermano, no es veneno. Es medicina. Aprende a distinguirlas.",
+  consejo: "La serpiente que se enrosca en el bastón, hermano, no es veneno. Es medicina. Aprende a distinguirlas.\n\n...Si están en modo IA hermanos, escriban el nombre de un signo y la palabra Mito, así conoces más frecuencias 🐯",
 };
 export default ofiuco;

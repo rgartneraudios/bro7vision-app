@@ -39,7 +39,10 @@ export function usePersonajeChat({ promptFn, onSistema, iaMode, isAdmin }) {
       const respuestaCompleta = data?.texto || '...';
       console.log('Respuesta completa Mistral:', respuestaCompleta);
       // ── Separar mensaje usuario de reporte Canal 0 ──────────────────
-      const lineaSistema = respuestaCompleta.split('\n').find(l => l.startsWith('SISTEMA:'));
+      // Buscar SISTEMA: aunque haya texto antes o formato raro
+	const lineaSistema = respuestaCompleta
+  	.split('\n')
+  	.find(l => l.trim().startsWith('SISTEMA:'));
       console.log('Línea SISTEMA detectada:', lineaSistema);
       const mensajeUser  = respuestaCompleta.replace(lineaSistema || '', '').trim();
       const intencion    = lineaSistema ? lineaSistema.replace('SISTEMA:', '').trim() : 'CONTINUA';

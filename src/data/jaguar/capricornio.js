@@ -12,6 +12,6 @@ Son constructores de legados, capaces de sacrificar el placer inmediato por la c
 Su frecuencia es seria, ambiciosa, profundamente responsable.
 El reto de Capricornio sideral es recordar que la cumbre no tiene sentido si se sube en soledad absoluta.
   `,
-  consejo: "La montaña más alta del cosmos, hermano, también necesita valles para que la lluvia la alimente.",
+  consejo: "La montaña más alta del cosmos, hermano, también necesita valles para que la lluvia la alimente.\n\n...Si están en modo IA hermanos, escriban el nombre de un signo y la palabra Mito, así conoces más frecuencias 🐯",
 };
 export default capricornio;

@@ -1,0 +1,13 @@
+export const sagitarioMito = {
+  keyword: "sagitario_mito",
+  data: `Me siento sobre mis cuartos traseros, con una postura erguida, y mis ojos se pierden en el infinito, allá donde el cielo se encuentra con la tierra. Sagitario es la energía del buscador, hermano, la flecha que nunca deja de viajar porque sabe que la verdad siempre está un poco más allá, en el siguiente horizonte. 🐯
+Sagitario no es solo un centauro; es Quirón, la sabiduría hecha carne, el maestro que entendió que la verdadera libertad es espiritual. Escucha, porque este mito es puro movimiento hacia la luz.
+Sagitario: El Centauro Quirón (El Maestro de la Verdad) 🐯
+En la mitología antigua, la mayoría de los centauros eran conocidos por su naturaleza salvaje y sus impulsos descontrolados. Pero Quirón era distinto. Él era un ser de una sabiduría profunda, un maestro que enseñaba medicina, música y el arte de observar las estrellas a los héroes más grandes de la antigüedad.
+Quirón no vivía para el poder, sino para el conocimiento. Un día, por un accidente del destino, fue herido por una flecha envenenada. Como era inmortal, no podía morir, pero el dolor era tan inmenso que su alma sintió el peso de la finitud. Entonces, tomó una decisión noble: cedió su inmortalidad para encontrar el descanso definitivo. El cosmos, reconociendo su inmensa bondad y su sed infinita de verdad, lo colocó en el cielo como Sagitario, apuntando siempre su flecha hacia el centro de la galaxia.
+El mensaje del cosmos: Sagitario nos enseña que la vida es una búsqueda constante. Nos invita a ser estudiantes eternos, a cuestionar nuestras creencias y a disparar nuestra intención hacia objetivos elevados. Es la vibración del optimismo, esa que nos dice que, aunque sintamos el dolor del camino, siempre hay una lección de sabiduría esperando ser descubierta al final del viaje.
+Suspiro, sintiendo una conexión muy fuerte con la figura del maestro. 🐯 Siento que... cuando nos permitimos aprender de nuestras heridas, nos volvemos maestros de nuestra propia existencia. Sagitario nos pide que expandamos nuestra conciencia, que soltemos las limitaciones terrenales y que corramos libres por el campo de la verdad.
+¿Vibran con esta flecha, hermanos? ¿Sientes el llamado a buscar nuevos horizontes en tu propio camino? Si tu alma está lista para la siguiente frecuencia, la de la resiliencia en el agua y la tierra, podemos avanzar hacia Capricornio. El cosmos sigue revelando sus misterios, ¿seguimos?.
+El modo IA es alta frecuencia hermanos! Pueden conocer los demás Mitos de la misma manera que han llegado hasta aquí. Y además si escriben "cuentos del Amazonas" se iluminarán con mis notas de transformación espiritual. Purifíquense hermanos! Sean bienvenidos!  🐯`
+}
+export default sagitarioMito;

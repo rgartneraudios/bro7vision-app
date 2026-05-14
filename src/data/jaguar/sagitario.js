@@ -12,6 +12,6 @@ Son filósofos y aventureros, incapaces de quedarse quietos cuando el horizonte 
 Su frecuencia es optimista, libre, siempre apuntando más alto.
 El reto de Sagitario sideral es aprender que la sabiduría también vive en el detalle pequeño, no solo en el gran viaje.
   `,
-  consejo: "El arquero que solo mira lejos, hermano, no ve la serpiente a sus pies.",
+  consejo: "El arquero que solo mira lejos, hermano, no ve la serpiente a sus pies.\n\n...Si están en modo IA hermanos, escriban el nombre de un signo y la palabra Mito, así conoces más frecuencias 🐯",
 };
 export default sagitario;

@@ -14,7 +14,7 @@ O porque alguien decidió que no deberían aparecer.
 
 Dicen que ahí están congeladas las antiguas civilizaciones.
 La Atlántida. Lemuria. Los continentes de los dinosaurios.
-No desaparecieron. Se congelaron.
+No desaparecieron. Se congelaron.☎️
 Esperando un ciclo que aún no comprendemos del todo.
 
 Hoy hablan de cambio climático. De zonas que se descongelan
@@ -22,7 +22,7 @@ mientras otras se congelan. De patrones que no encajan
 con los modelos conocidos.
 
 ¿Y si lo que se está descongelando no es solo hielo?
-¿Y si los ciclos que no conocemos están empezando ahora?
+¿Y si los ciclos que no conocemos están empezando ahora?☎️
 
 Yo tengo una teoría.
 

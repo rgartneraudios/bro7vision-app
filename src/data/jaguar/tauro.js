@@ -12,6 +12,6 @@ Son pacientes como el árbol que espera la lluvia sin desesperarse.
 Su vibración es densa, estable, difícil de mover... pero cuando se mueven, nada los detiene.
 El reto de Tauro sideral es soltar el apego a lo material cuando el cosmos pide cambio.
   `,
-  consejo: "La raíz más fuerte no es la que no se dobla, hermano. Es la que sabe cuándo ceder ante el viento.",
+  consejo: "La raíz más fuerte no es la que no se dobla, hermano. Es la que sabe cuándo ceder ante el viento.\n\n...Si están en modo IA hermanos, escriban el nombre de un signo y la palabra Mito, así conoces más frecuencias 🐯",
 };
 export default tauro;

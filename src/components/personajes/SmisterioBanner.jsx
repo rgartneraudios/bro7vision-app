@@ -2,15 +2,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import AgentChatInput from '../AgentChatInput';
-import { usePersonajeChat }     from '../../hooks/usePersonajeChat';
-import { promptSmisterio }      from '../../services/agents/prompts/promptSmisterio';
-import { interpretarIntencion } from '../../services/agents/SystemBus';
+import { useSmisterioChat } from '../../hooks/useSmisterioChat';
 
 // Bot path — texto .bot para el acordeón tras CONFIRMO
 import { antartidabot } from '../../data/smisterio/antartida/AntartidaBot';
-import { bucegi1 }      from '../../data/smisterio/bucegi/Bucegi1';
-import { egipto1 }      from '../../data/smisterio/egipto/Egipto1';
-import { tartaria1 }    from '../../data/smisterio/tartaria/Tartaria1';
+import { bucegibot }    from '../../data/smisterio/bucegi/BucegiBot';
+import { egiptobot }    from '../../data/smisterio/egipto/EgiptoBot';
+import { tartariabot }  from '../../data/smisterio/tartaria/TartariaBot';
 
 // IA path — 4 episodios por tema, campos .titulo y .texto
 import { laOperacionHighjump }         from '../../data/smisterio/antartida/LaOperacionHighjump';
@@ -53,12 +51,11 @@ const FRASES_CONFIRMO = {
   tartaria:  "☎️ Tartaria. El imperio que borraron de la historia. Escribe CONFIRMO para conocerlo.",
 };
 
-// Bot path — campo .bot
 const ACORDEON_DATA = {
   antartida: { texto: antartidabot.bot, video: 'https://media.bro7vision.com/smantartidas.mp4' },
-  egipto:    { texto: egipto1.bot,      video: 'https://media.bro7vision.com/smegipto.mp4'   },
-  bucegi:    { texto: bucegi1.bot,      video: 'https://media.bro7vision.com/smbucegi.mp4'   },
-  tartaria:  { texto: tartaria1.bot,    video: 'https://media.bro7vision.com/smtartaria.mp4' },
+  egipto:    { texto: egiptobot.bot,    video: 'https://media.bro7vision.com/smegipto.mp4'     },
+  bucegi:    { texto: bucegibot.bot,    video: 'https://media.bro7vision.com/smbucegi.mp4'     },
+  tartaria:  { texto: tartariabot.bot,  video: 'https://media.bro7vision.com/smtartaria.mp4'   },
 };
 
 // IA path — 4 episodios secuenciales por tema, campos .titulo y .texto
@@ -137,46 +134,36 @@ export default function SmisterioBanner({
   const [mostrarAcordeon, setMostrarAcordeon] = useState(false);
   const [acordeonDisplay, setAcordeonDisplay] = useState('');
   const [acordeonTitulo, setAcordeonTitulo]   = useState('');
-  const [temaEnEspera, setTemaEnEspera]       = useState(null);
-
-  const historiasContadasRef = useRef({});
-
   const charIdx     = useRef(0);
   const acordeonRef = useRef(null);
   const fadeTimer   = useRef(null);
   const origenRef   = useRef(origenLlegada);
 
-  // ── Canal 0 — interpreta lo que la IA reporta al sistema ────────────
-  const handleSistema = (intencion) => {
-    interpretarIntencion(intencion, {
-      onHandoff: (destino) => {
-        if (['jaguar', 'orumama'].includes(destino)) {
-          onHandoffPersonaje?.(destino);
-        } else {
-          onInvokeOsos?.();
-        }
-      },
-      onBotContent: (tema) => {
-        const yaContadas = historiasContadasRef.current[tema] || 0;
-        const historias  = ACORDEON_DATA_IA[tema];
-        if (historias) {
-          const indice = Math.min(yaContadas, historias.length - 1);
-          lanzarAcordeon(historias[indice].texto, historias[indice].titulo);
-          cambiarVideo(ACORDEON_DATA[tema].video);
-          historiasContadasRef.current = {
-            ...historiasContadasRef.current,
-            [tema]: yaContadas + 1,
-          };
-        }
-      },
-    });
-  };
-
-  const { mensaje: iaMensaje, loading, enviar: enviarIA, iaActiva } = usePersonajeChat({
-    promptFn:  promptSmisterio,
-    onSistema: handleSistema,
+  const { mensaje: iaMensaje, loading, enviar: enviarHook, iaActiva } = useSmisterioChat({
     iaMode,
     isAdmin,
+    onBotContent: (tema) => {
+      const data = ACORDEON_DATA[tema];
+      if (data) {
+        lanzarAcordeon(data.texto, tema);
+        cambiarVideo(data.video);
+      }
+    },
+    onBotContentIA: (tema, yaContadas) => {
+      const historias = ACORDEON_DATA_IA[tema];
+      if (historias) {
+        const indice = Math.min(yaContadas, historias.length - 1);
+        lanzarAcordeon(historias[indice].texto, historias[indice].titulo);
+        cambiarVideo(ACORDEON_DATA[tema].video);
+      }
+    },
+    onHandoff: (destino) => {
+      if (['jaguar', 'orumama'].includes(destino)) {
+        onHandoffPersonaje?.(destino);
+      } else {
+        onInvokeOsos?.();
+      }
+    },
   });
 
   useEffect(() => { if (iaMensaje) setCurrentMsg(iaMensaje); }, [iaMensaje]);
@@ -231,60 +218,16 @@ export default function SmisterioBanner({
 
   const handleUserInput = (texto) => {
     if (!texto.trim()) return;
-    const t = norm(texto);
-
-    // 1. Salida → Osos (siempre, IA o bot)
-    if (KEYWORDS_SALIDA.some(k => t.includes(k))) {
-      setCurrentMsg(elegir(FRASES_HANDOFF_OSOS));
-      setTimeout(() => onInvokeOsos?.(), 2500);
-      return;
-    }
-
-    // 2 y 3. Handoff interno — solo en modo bot
-    // En modo IA lo gestiona la IA via Canal 0 con delay en SystemBus
-    if (!iaActiva) {
-      if (KEYWORDS_JAGUAR.some(k => t.includes(k))) {
-        setCurrentMsg(elegir(FRASES_HANDOFF_JAGUAR));
-        setTimeout(() => onHandoffPersonaje?.('jaguar'), 2500);
-        return;
-      }
-      if (KEYWORDS_ORUMAMA.some(k => t.includes(k))) {
-        setCurrentMsg(elegir(FRASES_HANDOFF_ORUMAMA));
-        setTimeout(() => onHandoffPersonaje?.('orumama'), 2500);
-        return;
-      }
-    }
-
-    // 2. CONFIRMO + tema en espera — bot lanza acordeón con .bot
-    if (t.includes('confirmo') && temaEnEspera) {
-      const data = ACORDEON_DATA[temaEnEspera];
-      if (data) {
-        cambiarVideo(data.video);
-        lanzarAcordeon(data.texto, temaEnEspera);
-        setCurrentMsg('... Aquí al costado te revelo lo que sé. Léelo con calma. ☎️');
-        setTemaEnEspera(null);
-      }
-      return;
-    }
-
-    // 3. Detectar tema → pedir CONFIRMO (solo bot, no cuando IA activa)
-    if (!iaActiva) {
-      const tema = detectarTema(texto);
-      if (tema) {
-        setTemaEnEspera(tema);
-        setCurrentMsg(FRASES_CONFIRMO[tema]);
-        return;
-      }
-    }
-
-    // 4. Modo IA activo → usePersonajeChat
-    if (iaActiva) {
-      enviarIA(texto);
-      return;
-    }
-
-    // 5. Fallback bot
-    setCurrentMsg(elegir(FRASES_EXPLORAR));
+    enviarHook(texto, {
+      FRASES_CONFIRMO,
+      FRASES_HANDOFF: {
+        jaguar:    FRASES_HANDOFF_JAGUAR,
+        orumama:   FRASES_HANDOFF_ORUMAMA,
+        osos:      FRASES_HANDOFF_OSOS,
+      },
+      setCurrentMsg,
+      elegir,
+    });
   };
 
   return (
@@ -294,8 +237,8 @@ export default function SmisterioBanner({
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
         @keyframes neonPulseOraculo {
-          0%, 100% { text-shadow: 0 0 8px ${slateColor}, 0 0 22px ${slateColor}, 0 0 45px ${slateColor}88; }
-          50%       { text-shadow: 0 0 4px ${slateColor}, 0 0 10px ${slateColor}; }
+          0%, 100% { text-shadow: none; }
+          50%       { text-shadow: none; }
         }
         @keyframes cascadaAcordeon {
           from { transform: translateY(-100%); opacity: 0; }

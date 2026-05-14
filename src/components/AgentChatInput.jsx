@@ -91,7 +91,7 @@ const AGENT_PROFILES = {
     text: '✦  Hola! Dime si buscas músicas o Podcast! | Pulsa en las BroCards para la descripción y play si quieres escuchar | El Stop/Pause está en la puerta lateral izquierda, en el Brolives junto a Brotuner! '
   },
   oraculo: {
-    theme: 'amber',
+    theme: 'violet',
     text: '✦ Los personajes te cuentan historias de ficción y entretenimiento, Con Orumama antes de proceder consulta a un profesional, el Señor Misterio es Ficción entretenimiento, Jaguar es experimental y Ficción entretenimiento '
   }
 };

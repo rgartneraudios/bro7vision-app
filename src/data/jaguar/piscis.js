@@ -12,6 +12,6 @@ Son empáticos hasta el dolor, capaces de sentir el sufrimiento ajeno como propi
 Su frecuencia es fluida, compasiva, artística, profundamente conectada al todo.
 El reto de Piscis sideral es no disolverse tanto en los demás que pierda sus propios contornos.
   `,
-  consejo: "El pez que nada en todas las aguas, hermano, debe saber cuál es su océano.",
+  consejo: "El pez que nada en todas las aguas, hermano, debe saber cuál es su océano.\n\n...Si están en modo IA hermanos, escriban el nombre de un signo y la palabra Mito, así conoces más frecuencias 🐯",
 };
 export default piscis;

@@ -16,7 +16,7 @@ de higos, que la encargo a hacer a gente especializada.
 
 En cierto momento me pude percatar de la elevación del terreno donde estaba situada
 esa catedral. Y lo vi. Es muy posible que esa Catedral tenga, al igual que otras,
-subsuelos y pasadizos subterráneos.
+subsuelos y pasadizos subterráneos.☎️
 
 Para ser más claro: es muy posible que esa Catedral y otras estén hundidas unos 50
 metros hacia abajo. Y cobraría sentido que lo que llamamos puerta en realidad sea
@@ -27,7 +27,7 @@ gigantes y seres de otras dimensiones corporales. No lo descarto. La teoría de
 gigantes es tentadora.
 
 Solo que presenciar ese dato de elevación de terreno me dio motivos para investigar
-más.
+más.☎️
 
 Si quieres más de Tartaria escribe TARTARIA.
 También tengo historias de Antártida, Bucegi y Egipto.

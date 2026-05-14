@@ -7,7 +7,7 @@ export const artePerdido = {
 Arte Perdido
 
 Si bien el imperio Tártaro o Tartaria era una zona cercana a Siberia, estos son
-datos históricos reales. Hay mapas antiguos que muestran su existencia.
+datos históricos reales. Hay mapas antiguos que muestran su existencia.☎️
 
 Cuando se refiere a la teoría de esa civilización antigua que supuestamente era muy
 avanzada, y que a través de algún reseteo natural o provocado por alguien,
@@ -24,7 +24,7 @@ propiedades intelectuales falsas. En cuadros, pinturas, escultura, música, etc.
 conveniente para algunos, para tapar lo importante para gran parte de la humanidad.
 
 Y esto no ha sucedido solamente en Occidente. Al parecer es un tema de ciclos que
-se repiten. Algo que no conocemos y que no hemos podido presenciar.
+se repiten. Algo que no conocemos y que no hemos podido presenciar.☎️
 
 Si quieres más de Tartaria escribe TARTARIA.
 También tengo historias de Antártida, Bucegi y Egipto.

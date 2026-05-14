@@ -2,9 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import AgentChatInput from '../AgentChatInput';
-import { usePersonajeChat }     from '../../hooks/usePersonajeChat';
-import { promptJaguar }         from '../../services/agents/prompts/promptJaguar';
-import { interpretarIntencion } from '../../services/agents/SystemBus';
+import { useJaguarChat } from '../../hooks/useJaguarChat';
 import { calcularSignoSideral } from '../../data/jaguar/calcularSigno';
 import { aries }       from '../../data/jaguar/aries';
 import { tauro }       from '../../data/jaguar/tauro';
@@ -19,6 +17,21 @@ import { sagitario }   from '../../data/jaguar/sagitario';
 import { capricornio } from '../../data/jaguar/capricornio';
 import { acuario }     from '../../data/jaguar/acuario';
 import { piscis }      from '../../data/jaguar/piscis';
+import { ariesMito }       from '../../data/jaguar/ariesMito';
+import { tauroMito }       from '../../data/jaguar/tauroMito';
+import { geminisMito }     from '../../data/jaguar/geminisMito';
+import { cancerMito }      from '../../data/jaguar/cancerMito';
+import { leoMito }         from '../../data/jaguar/leoMito';
+import { virgoMito }       from '../../data/jaguar/virgoMito';
+import { libraMito }       from '../../data/jaguar/libraMito';
+import { escorpioMito }    from '../../data/jaguar/escorpioMito';
+import { ofiucoMito }      from '../../data/jaguar/ofiucoMito';
+import { sagitarioMito }   from '../../data/jaguar/sagitarioMito';
+import { capricornioMito } from '../../data/jaguar/capricornioMito';
+import { acuarioMito }     from '../../data/jaguar/acuarioMito';
+import { piscisMito }      from '../../data/jaguar/piscisMito';
+import { amazonas1 }       from '../../data/jaguar/amazonas/amazonas1';
+import { amazonas2 }       from '../../data/jaguar/amazonas/amazonas2';
 
 // ─── CONSTANTES ──────────────────────────────────────────────────────────────
 
@@ -67,6 +80,21 @@ const ACORDEON_DATA = {
   capricornio: { texto: buildTextoSigno(capricornio), video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
   acuario:     { texto: buildTextoSigno(acuario),     video: 'https://media.bro7vision.com/jaguarSignos.mp4'     },
   piscis:      { texto: buildTextoSigno(piscis),      video: 'https://media.bro7vision.com/jaguarSignos.mp4'      },
+  aries_mito:       { texto: ariesMito.data,       video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  tauro_mito:       { texto: tauroMito.data,        video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  geminis_mito:     { texto: geminisMito.data,      video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  cancer_mito:      { texto: cancerMito.data,       video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  leo_mito:         { texto: leoMito.data,          video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  virgo_mito:       { texto: virgoMito.data,        video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  libra_mito:       { texto: libraMito.data,        video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  escorpio_mito:    { texto: escorpioMito.data,     video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  ofiuco_mito:      { texto: ofiucoMito.data,       video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  sagitario_mito:   { texto: sagitarioMito.data,    video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  capricornio_mito: { texto: capricornioMito.data,  video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  acuario_mito:     { texto: acuarioMito.data,      video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  piscis_mito:      { texto: piscisMito.data,       video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  amazonas_1:       { texto: amazonas1.data,        video: 'https://media.bro7vision.com/jaguarDefaults.mp4' },
+  amazonas_2:       { texto: amazonas2.data,        video: 'https://media.bro7vision.com/jaguarDefaults.mp4' },
 };
 
 const FRASES_EXPLORAR = [
@@ -107,6 +135,22 @@ const norm   = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const elegir = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 const KEYWORDS_TEMAS = {
+  // mitos y amazonas PRIMERO: 'aries mito' contiene 'aries' como substring
+  aries_mito:       ['aries mito'],
+  tauro_mito:       ['tauro mito'],
+  geminis_mito:     ['geminis mito', 'géminis mito'],
+  cancer_mito:      ['cancer mito', 'cáncer mito'],
+  leo_mito:         ['leo mito'],
+  virgo_mito:       ['virgo mito'],
+  libra_mito:       ['libra mito'],
+  escorpio_mito:    ['escorpio mito'],
+  ofiuco_mito:      ['ofiuco mito'],
+  sagitario_mito:   ['sagitario mito'],
+  capricornio_mito: ['capricornio mito'],
+  acuario_mito:     ['acuario mito'],
+  piscis_mito:      ['piscis mito'],
+  amazonas:         ['cuentos del amazonas', 'amazonas'],
+  // signos
   aries:       ['aries'],
   tauro:       ['tauro'],
   geminis:     ['geminis', 'géminis'],
@@ -157,41 +201,28 @@ export default function JaguarBanner({
   const [mostrarAcordeon, setMostrarAcordeon] = useState(false);
   const [acordeonDisplay, setAcordeonDisplay] = useState('');
   const [acordeonTitulo, setAcordeonTitulo]   = useState('');
-  const [temaEnEspera, setTemaEnEspera]       = useState(null);
-  const [historiasContadas, setHistoriasContadas] = useState({});
-
   const charIdx     = useRef(0);
   const acordeonRef = useRef(null);
   const fadeTimer   = useRef(null);
   const origenRef   = useRef(origenLlegada);
 
-  // ── Canal 0 ─────────────────────────────────────────────────────────
-  const handleSistema = (intencion) => {
-    interpretarIntencion(intencion, {
-      onHandoff: (destino) => {
-        if (['smisterio', 'orumama'].includes(destino)) {
-          onHandoffPersonaje?.(destino);
-        } else {
-          onInvokeOsos?.();
-        }
-      },
-      onBotContent: (tema, yaContadas) => {
-        const data = ACORDEON_DATA[tema];
-        if (data) {
-          lanzarAcordeon(data.texto, tema);
-          cambiarVideo(data.video);
-          setHistoriasContadas(prev => ({ ...prev, [tema]: (prev[tema] || 0) + 1 }));
-        }
-      },
-      historiasContadas,
-    });
-  };
-
-  const { mensaje: iaMensaje, loading, enviar: enviarIA, iaActiva } = usePersonajeChat({
-    promptFn:  promptJaguar,
-    onSistema: handleSistema,
+  const { mensaje: iaMensaje, loading, enviar: enviarHook, iaActiva } = useJaguarChat({
     iaMode,
     isAdmin,
+    onBotContent: (tema) => {
+      const data = ACORDEON_DATA[tema];
+      if (data) {
+        lanzarAcordeon(data.texto, tema);
+        cambiarVideo(data.video);
+      }
+    },
+    onHandoff: (destino) => {
+      if (['smisterio', 'orumama'].includes(destino)) {
+        onHandoffPersonaje?.(destino);
+      } else {
+        onInvokeOsos?.();
+      }
+    },
   });
 
   useEffect(() => { if (iaMensaje) setCurrentMsg(iaMensaje); }, [iaMensaje]);
@@ -246,68 +277,17 @@ export default function JaguarBanner({
 
   const handleUserInput = (texto) => {
     if (!texto.trim()) return;
-    const t = norm(texto);
-
-    // 1. Keywords de salida/handoff
-    if (KEYWORDS_SALIDA.some(k => t.includes(k))) {
-      setCurrentMsg(elegir(FRASES_HANDOFF_OSOS));
-      setTimeout(() => onInvokeOsos?.(), 1200);
-      return;
-    }
-
-    if (!iaActiva) {
-      if (KEYWORDS_SMISTERIO.some(k => t.includes(k))) {
-        setCurrentMsg(elegir(FRASES_HANDOFF_SMISTERIO));
-        setTimeout(() => onHandoffPersonaje?.('smisterio'), 2500);
-        return;
-      }
-
-      if (KEYWORDS_ORUMAMA.some(k => t.includes(k)) || KEYWORDS_HIERBAS.some(k => t.includes(k))) {
-        setCurrentMsg(elegir(FRASES_HANDOFF_ORUMAMA));
-        setTimeout(() => onHandoffPersonaje?.('orumama'), 2500);
-        return;
-      }
-    }
-
-    // 2. CONFIRMO + tema en espera
-    if (t.includes('confirmo') && temaEnEspera) {
-      const data = ACORDEON_DATA[temaEnEspera];
-      if (data) {
-        cambiarVideo(data.video);
-        lanzarAcordeon(data.texto, temaEnEspera);
-        setCurrentMsg('... La frecuencia está al costado. Léela con calma. 🐯');
-        setTemaEnEspera(null);
-      }
-      return;
-    }
-
-    // 3. Fecha de nacimiento → calcular signo sideral
-    const fecha = detectarFecha(texto);
-    if (fecha) {
-      const signo = calcularSignoSideral(fecha);
-      if (signo && signo !== 'desconocido' && FRASES_CONFIRMO[signo]) {
-        setTemaEnEspera(signo);
-        setCurrentMsg(elegir(FRASES_FECHA)(signo));
-        return;
-      }
-    }
-
-    // 4. Keyword de signo → pedir CONFIRMO
-    const tema = detectarTema(texto);
-    if (tema) {
-      setTemaEnEspera(tema);
-      setCurrentMsg(FRASES_CONFIRMO[tema]);
-      return;
-    }
-
-    // 5. Modo IA activo → usePersonajeChat
-    if (iaActiva) {
-      enviarIA(texto);
-      return;
-    }
-
-    // 6. Fallback bot
-    setCurrentMsg(elegir(FRASES_EXPLORAR));
+    enviarHook(texto, {
+      calcularSignoSideral,
+      FRASES_CONFIRMO,
+      FRASES_HANDOFF: {
+        smisterio: FRASES_HANDOFF_SMISTERIO,
+        orumama:   FRASES_HANDOFF_ORUMAMA,
+        osos:      FRASES_HANDOFF_OSOS,
+      },
+      setCurrentMsg,
+      elegir,
+    });
   };
 
   return (
@@ -317,8 +297,8 @@ export default function JaguarBanner({
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
         @keyframes neonPulseOraculo {
-          0%, 100% { text-shadow: 0 0 8px ${slateColor}, 0 0 22px ${slateColor}, 0 0 45px ${slateColor}88; }
-          50%       { text-shadow: 0 0 4px ${slateColor}, 0 0 10px ${slateColor}; }
+          0%, 100% { text-shadow: none; }
+          50%       { text-shadow: none; }
         }
         @keyframes cascadaAcordeon {
           from { transform: translateY(-100%); opacity: 0; }

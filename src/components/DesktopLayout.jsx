@@ -26,11 +26,12 @@ import NovaBanner from './NovaBanner';
 import IsabellaBanner from './IsabellaBanner';
 import EvelynBanner from './EvelynBanner';
 import MapacheBanner from './MapacheBanner';
-import SmisterioBanner from './personajes/SmisterioBanner';
-import JaguarBanner    from './personajes/JaguarBanner';
-import OrumamaBanner   from './personajes/OrumamaBanner';
-import OsosBanner from './OsosBanner';
-import AgentChatInput from './AgentChatInput';
+import SmisterioBanner from "./personajes/SmisterioBanner";
+import JaguarBanner    from "./personajes/JaguarBanner";
+import OrumamaBanner   from "./personajes/OrumamaBanner";
+import TitoBanner  from "./personajes/TitoBanner";
+import LaraBanner  from "./personajes/LaraBanner";
+import PuffoBanner from "./personajes/PuffoBanner";
 import { getVideoForLocation } from '../data/VideoMap';
 
 export default function DesktopLayout(props) {
@@ -315,13 +316,17 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
   />
 )}
       
-      {/* 6. OSOS IA RECEPCION */}   
-      {step === 1 && (
-        <div className="relative z-[50] h-full flex flex-col items-center justify-end pb-0 px-4"
-     style={{ pointerEvents: 'auto' }}>          <div className="w-full max-w-2xl mb-3"><OsosBanner mensaje={ososMensaje} oso_id={perfilOso?.oso_id} esPatrocinado={ososEsPatrocinado} /></div>
-          <AgentChatInput onSend={(t) => handleOsosInput(t)} isLoading={ososLoading} agent="osos" style={{ pointerEvents: 'auto' }} />       
-           </div>
-      )}
+      {/* 6. OSOS IA RECEPCION */}
+{step === 1 && (
+  <>
+    {(perfilOso?.oso_id || 'lara').toLowerCase() === 'tito' &&
+      <TitoBanner onHandoff={handleCentralHandoff} iaMode={iaMode} isAdmin={isAdmin} ciudad={sessionCity} />}
+    {(perfilOso?.oso_id || 'lara').toLowerCase() === 'lara' &&
+      <LaraBanner onHandoff={handleCentralHandoff} iaMode={iaMode} isAdmin={isAdmin} ciudad={sessionCity} />}
+    {(perfilOso?.oso_id || 'lara').toLowerCase() === 'puffo' &&
+      <PuffoBanner onHandoff={handleCentralHandoff} iaMode={iaMode} isAdmin={isAdmin} ciudad={sessionCity} />}
+  	</>
+	)}
     </>
   );
 }

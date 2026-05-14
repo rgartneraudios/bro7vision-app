@@ -23,6 +23,20 @@ const HISTORIA_KEYWORDS = {
   egipto:      ['egipto'],
   bucegi:      ['bucegi'],
   tartaria:    ['tartaria'],
+  // Jaguar — mitos (antes que signos: 'aries mito' contiene 'aries' como substring)
+  aries_mito:       ['aries mito'],
+  tauro_mito:       ['tauro mito'],
+  geminis_mito:     ['geminis mito', 'géminis mito'],
+  cancer_mito:      ['cancer mito', 'cáncer mito'],
+  leo_mito:         ['leo mito'],
+  virgo_mito:       ['virgo mito'],
+  libra_mito:       ['libra mito'],
+  escorpio_mito:    ['escorpio mito'],
+  ofiuco_mito:      ['ofiuco mito'],
+  sagitario_mito:   ['sagitario mito'],
+  capricornio_mito: ['capricornio mito'],
+  acuario_mito:     ['acuario mito'],
+  piscis_mito:      ['piscis mito'],
   // Jaguar — signos
   aries:       ['aries'],
   tauro:       ['tauro'],
@@ -37,6 +51,8 @@ const HISTORIA_KEYWORDS = {
   capricornio: ['capricornio'],
   acuario:     ['acuario'],
   piscis:      ['piscis'],
+  // Jaguar — Cuentos del Amazonas (handleSistema gestiona la saga)
+  amazonas:    ['cuentos del amazonas', 'amazonas'],
   // Orumama — hierbas
   albahaca:   ['albahaca'],
   jengibre:   ['jengibre'],
@@ -50,8 +66,10 @@ const HISTORIA_KEYWORDS = {
   salvia:     ['salvia'],
   tomillo:    ['tomillo'],
   romaza:     ['romaza'],
-  hierbas:    ['hierba', 'hierbas', 'recetario', 'planta', 'plantas', 'remedio', 'remedios'],
+  hierbas:    ['hierba', 'hierbas', 'planta', 'plantas', 'remedio', 'remedios'],
   guisos:     ['guiso', 'guisos', 'olla', 'cocina', 'receta', 'recetas'],
+  // Orumama — Saga Recetario (handleSistema gestiona la saga)
+  recetario:  ['recetario'],
 };
 
 const norm = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');

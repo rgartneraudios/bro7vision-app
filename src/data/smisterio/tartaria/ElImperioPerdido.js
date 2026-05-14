@@ -7,7 +7,7 @@ export const elImperioPerdido = {
 El Imperio Perdido
 
 Tartaria es una de las teorías más fascinantes que he conocido. Todo lo que la
-rodea es un misterio y sigue sumando día a día nuevas pistas.
+rodea es un misterio y sigue sumando día a día nuevas pistas.☎️ 
 
 Se dice que fue un imperio antiguo, muy reciente. Hay teorías de que existió hasta
 el año 1.000 DC, otras sobre los años 1.400, y otras sobre 1750 DC aproximadamente.
@@ -25,7 +25,7 @@ intuición que me hizo decorar todas las paredes de mi habitación en estilo bar
 Fui a un mercadillo a comprar antigüedades para absorber la esencia del pasado.
 
 Había señales. Alguien ha decidido ventilar esta teoría por algún motivo, ya que
-permaneció escondida durante mucho tiempo.
+permaneció escondida durante mucho tiempo.☎️
 
 Si quieres más de Tartaria escribe TARTARIA.
 También tengo historias de Antártida, Bucegi y Egipto.

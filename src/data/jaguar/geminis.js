@@ -12,6 +12,6 @@ Son el puente entre mundos, entre ideas, entre personas.
 Su frecuencia cambia como el viento — brillantes en todo, profundos en poco.
 El reto de Géminis sideral es anclar esa energía dispersa y comprometerse con algo más grande que el momento.
   `,
-  consejo: "Hermano, la mariposa que no para nunca llega a conocer la flor de verdad.",
+  consejo: "Hermano, la mariposa que no para nunca llega a conocer la flor de verdad.\n\n...Si están en modo IA hermanos, escriban el nombre de un signo y la palabra Mito, así conoces más frecuencias 🐯",
 };
 export default geminis;

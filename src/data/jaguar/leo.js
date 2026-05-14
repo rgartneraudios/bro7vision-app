@@ -12,6 +12,6 @@ El Sol los empuja a crear, a brillar, a dejar huella en el universo.
 Su frecuencia es generosa y cálida, pero necesita ser vista y reconocida para florecer.
 El reto de Leo sideral es aprender que el verdadero brillo no necesita aplausos para existir.
   `,
-  consejo: "El Sol no pide permiso para salir cada mañana, hermano. Pero tampoco necesita que lo aplaudan.",
+  consejo: "El Sol no pide permiso para salir cada mañana, hermano. Pero tampoco necesita que lo aplaudan.\n\n...Si están en modo IA hermanos, escriban el nombre de un signo y la palabra Mito, así conoces más frecuencias 🐯",
 };
 export default leo;

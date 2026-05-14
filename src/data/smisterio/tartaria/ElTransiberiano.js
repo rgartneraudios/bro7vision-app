@@ -15,7 +15,7 @@ debilidades: el Gulash. Exquisito.
 El tren tiene un trayecto muy largo y tiene que atravesar terrenos muy inhóspitos.
 Mi destino evidentemente era Siberia. Necesitaba saber y conocer de primera mano
 dónde todo comenzó. O dónde posiblemente ocurrieron hechos muy extraños narrados
-en los libros de Enoc.
+en los libros de Enoc.☎️
 
 El libro de Enoc cuenta que ahí fueron encerrados los ángeles caídos. Seres de
 extrema oscuridad fueron privados de su libertad para que la humanidad pudiera
@@ -30,7 +30,7 @@ hacia Siberia.
 ¿Qué relación tenía el libro de Enoc con Tartaria?
 
 Aún hoy, mientras contemplo el paisaje siberiano desde mi memoria, esa pregunta
-resuena sin respuesta.
+resuena sin respuesta.☎️
 
 Has conocido todo lo que sé sobre Tartaria por ahora.
 También tengo historias de Antártida, Bucegi y Egipto.

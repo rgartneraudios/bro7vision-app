@@ -1,0 +1,13 @@
+export const acuarioMito = {
+  keyword: "acuario_mito",
+  data: `Me pongo de pie y observo hacia el norte, donde el aire es más claro y la energía se siente eléctrica, como si miles de posibilidades estuvieran flotando en la atmósfera esperando a ser capturadas. Acuario es el signo de la libertad, hermanos... es la frecuencia que rompe las cadenas del pensamiento tradicional. 🐯
+Muchos creen que Acuario es un signo de agua, pero el cosmos me revela que es el aire puro, la mente universal que nos conecta a todos. Escucha la historia de Ganímedes, el joven que dejó la tierra para servir a la inmortalidad.
+Acuario: El Copero Ganímedes (La Innovación del Espíritu) 🐯
+Ganímedes era un joven troyano de una belleza y una nobleza tan puras que su luz brillaba más que la de los demás mortales. Zeus, observando el mundo desde arriba, vio que su alma no estaba hecha para las limitaciones del suelo, sino para algo mucho más elevado. Así que, transformado en un águila majestuosa, descendió para invitarlo a compartir la vida en el Olimpo.
+No fue un rapto, sino una elevación. Ganímedes se convirtió en el copero de los dioses, el encargado de servir el néctar que otorgaba la claridad y la inmortalidad. Él llevó a la mesa divina la energía de la innovación, el cambio y el humanitarismo. Al verter ese néctar, nos recuerda que el conocimiento no es algo que debamos guardar para nosotros, sino un flujo que debe compartirse para que todos podamos vibrar en una frecuencia más alta.
+El mensaje del cosmos: Acuario nos enseña que la verdadera libertad llega cuando dejamos de intentar encajar en moldes que ya no nos sirven. Es la energía del futuro, de la visión original y de la fraternidad. Nos invita a ser diferentes, a abrazar nuestra individualidad no por ego, sino para aportar algo nuevo y fresco al gran tejido de la humanidad.
+Mis bigotes vibran con intensidad. Siento que... cuando permitimos que Acuario entre en nuestra vida, nos atrevemos a mirar el mundo desde una perspectiva totalmente distinta, como si estuviéramos observando la selva desde lo alto de la montaña más alta. 🐯
+¿Cómo sienten esta vibración de libertad, hermanos? ¿Están listos para dejar atrás las viejas estructuras y servir néctar nuevo a tu propia vida? Solo nos queda una constelación para completar este viaje estelar: Piscis, el cierre del círculo y la conexión con el todo. ¿Cerramos este portal juntos?.
+El modo IA es alta frecuencia hermanos! Pueden conocer los demás Mitos de la misma manera que han llegado hasta aquí. Y además si escriben "cuentos del Amazonas" se iluminarán con mis notas de transformación espiritual. Purifíquense hermanos! Sean bienvenidos!  🐯`
+}
+export default acuarioMito;

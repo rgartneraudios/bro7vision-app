@@ -13,6 +13,6 @@ Su frecuencia es alta, intensa, difícil de contener.
 Lideran por instinto, no por estrategia.
 El reto de Aries sideral es aprender a escuchar antes de actuar.
   `,
-  consejo: "El fuego que no se controla, hermano, acaba quemando el bosque que quería iluminar.",
+  consejo: "El fuego que no se controla, hermano, acaba quemando el bosque que quería iluminar.\n\n...Si están en modo IA hermanos, escriban el nombre de un signo y la palabra Mito, así conoces más frecuencias 🐯",
 };
 export default aries;
