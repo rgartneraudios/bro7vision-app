@@ -26,7 +26,7 @@ import NovaBanner  from './personajes/NovaBanner';
 import NovaCierre  from './personajes/NovaCierre';
 import IsabellaBanner from './personajes/IsabellaBanner';
 import EvelynBanner from './EvelynBanner';
-import MapacheBanner from './MapacheBanner';
+import MapacheBanner from './personajes/MapacheBanner';
 import SmisterioBanner from "./personajes/SmisterioBanner";
 import JaguarBanner    from "./personajes/JaguarBanner";
 import OrumamaBanner   from "./personajes/OrumamaBanner";
@@ -47,9 +47,9 @@ export default function DesktopLayout(props) {
     setSelectedLog, setVlData, ososHandoffContext, setOsosHandoffContext, avisoEnConstruccion,
     perfilOso, stripVisible, stripCards, stripLabel, setHoloPrismaIndex, findChannelByAlias, checkIfNew,
     ososMensaje, ososLoading, handleOsosInput, ososModo, setOsosModo, handleLogout, selectedCard,
-  mapacheMensaje, mapacheLoading, handleMapacheInput, evelynMensaje, evelynLoading, handleEvelynInput,
+  evelynMensaje, evelynLoading, handleEvelynInput,
   oraculoMensaje, oraculoLoading, handleOraculoInput, rumoresMensaje, rumoresLoading, handleRumoresInput,
-  novaEsPatrocinado, mapacheEsPatrocinado,
+  novaEsPatrocinado,
   evelynEsPatrocinado, oraculoEsPatrocinado, ososEsPatrocinado, oraculoPersonaje,
    iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA
   } = props;
@@ -275,18 +275,18 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
           stripLabel={stripLabel}
           findChannelByAlias={findChannelByAlias}
           checkIfNew={checkIfNew}
-         onHandoff={handleCentralHandoff}
+          onHandoff={handleCentralHandoff}
           onInvokeOsos={() => setStep(1)}
-          enviar={handleMapacheInput}
-	mensaje={mapacheMensaje}
-	loading={mapacheLoading}
-          esPatrocinado={mapacheEsPatrocinado}
           onInvokeNova={() => setIntent('productos')}
           onOpenProfile={(u) => setProjectingUser(u)}
           onTuneIn={(u) => { setAudioUser(u); setActivePrismUser(u); }}
           onTuneTuner={(id) => broTunerRef.current?.playById(id)}
           onStopTuner={() => broTunerRef.current?.stop()}
-          onPersonajeChange={handleCentralHandoff}
+          iaMode={iaMode}
+          isAdmin={isAdmin}
+          ciudad={sessionCity}
+          entidad={ososHandoffContext?.comercio_especifico}
+          hayTarjetas={stripVisible}
         />
       )}
 

@@ -31,7 +31,6 @@ import LaraBanner  from "./components/personajes/LaraBanner";
 import PuffoBanner from "./components/personajes/PuffoBanner";
 import SlideRail from './components/SlideRail';
 import { AudioProvider } from './context/AudioContext';
-import MapacheBanner from './components/MapacheBanner';
 import SlideRailAudio from './components/SlideRailAudio';
 import { useAudioData } from './hooks/useAudioData';
 import BroCardStrip from './components/BroCardStrip';
@@ -359,19 +358,6 @@ if (SIN_UBICACION.includes(agente)) {
     onHandoff: handleCentralHandoff, iaMode, isAdmin,
   });
 
-  const { mensaje: mapacheMensaje, loading: mapacheLoading, enviar: handleMapacheInput, esPatrocinado: mapacheEsPatrocinado } = useAgentChat({
-    mode: 'mapache',
-    contextData: {
-      audio_personaje: perfilSector?.personaje_id || 'mapache',
-      realItems,
-      entidad:     ososHandoffContext?.comercio_especifico,
-      hayTarjetas: stripVisible,
-      ciudad:      scope?.ciudad || '',
-      alias:       perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano',
-    },
-    onHandoff: handleCentralHandoff, iaMode, isAdmin,
-  });
-
   const { mensaje: evelynMensaje, loading: evelynLoading, enviar: handleEvelynInput, avisoEnConstruccion, esPatrocinado: evelynEsPatrocinado } = useAgentChat({
     mode: 'avisos',
     contextData: {
@@ -454,12 +440,12 @@ const { mensaje: oraculoMensaje, loading: oraculoLoading, enviar: handleOraculoI
       case 'productos':       return { enviar: () => {},            mensaje: null,            loading: false };
       case 'servicios':       return { enviar: () => {},            mensaje: null,            loading: false };
       case 'avisos':          return { enviar: handleEvelynInput,   mensaje: evelynMensaje,   loading: evelynLoading };
-      case 'audios':          return { enviar: handleMapacheInput,  mensaje: mapacheMensaje,  loading: mapacheLoading };
+      case 'audios':          return { enviar: () => {},            mensaje: null,            loading: false };
       case 'ai':              return { enviar: handleOraculoInput,  mensaje: oraculoMensaje,  loading: oraculoLoading };
       case 'internal_search': return { enviar: handleRumoresInput,  mensaje: rumoresMensaje,  loading: rumoresLoading };
       default:                return { enviar: handleOsosInput,     mensaje: ososMensaje,     loading: ososLoading };
     }
-  }, [intent, step, evelynMensaje, mapacheMensaje, oraculoMensaje, rumoresMensaje, ososMensaje]);
+  }, [intent, step, evelynMensaje, oraculoMensaje, rumoresMensaje, ososMensaje]);
 
   const filteredItems = useMemo(() => {
     const supabaseItems = realItems.map(u => ({ ...u, id: u.id, name: u.product_title || u.alias, img: u.card_banner_url || u.banner_url || '/default.png', price: u.price || 0, type: u.video_file ? ['shop', 'live'] : ['shop'], source: 'supabase' }));
@@ -521,7 +507,7 @@ const { mensaje: oraculoMensaje, loading: oraculoLoading, enviar: handleOraculoI
   const chatPorIntent = {
     productos:       { enviar: () => {},            mensaje: null,            loading: false },
     servicios:       { enviar: () => {},            mensaje: null,            loading: false },
-    audios:          { enviar: handleMapacheInput,  mensaje: mapacheMensaje,  loading: mapacheLoading },
+    audios:          { enviar: () => {},            mensaje: null,            loading: false },
     avisos:          { enviar: handleEvelynInput,   mensaje: evelynMensaje,   loading: evelynLoading },
     ai:              { enviar: handleOraculoInput,  mensaje: oraculoMensaje,  loading: oraculoLoading },
     internal_search: { enviar: handleRumoresInput,  mensaje: rumoresMensaje,  loading: rumoresLoading },
@@ -558,10 +544,9 @@ const { mensaje: oraculoMensaje, loading: oraculoLoading, enviar: handleOraculoI
     onToggleAdminIA:     handleToggleAdminIA,
     onTogglePublicIA:    handleTogglePublicIA,
     avisoEnConstruccion,
-    mapacheMensaje, mapacheLoading, handleMapacheInput, evelynMensaje, evelynLoading,
+    evelynMensaje, evelynLoading,
     handleEvelynInput, oraculoMensaje, oraculoLoading, handleOraculoInput, rumoresMensaje,
     rumoresLoading, handleRumoresInput,
-    mapacheEsPatrocinado,
     evelynEsPatrocinado, oraculoEsPatrocinado, ososEsPatrocinado,
   };
 
