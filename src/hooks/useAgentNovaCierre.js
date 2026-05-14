@@ -6,7 +6,38 @@
 import { useState } from 'react';
 import { armarnovaCierre, parsearRespuestaNova } from '../services/agents/novaCierrePS';
 import { fetchContextoNova }                     from '../services/contexto/fetchContextoNova';
-import { detectarSalidaNova }                    from '../services/agents/bots/novaUtils';
+
+// ── novaUtils inlined (salida) ────────────────────────────────────────────────
+
+const norm = (str) =>
+  str.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+const KEYWORDS_SALIDA_NOVA = [
+  'salir', 'volver', 'inicio', 'recepción', 'recepcion', 'osos', 'portero',
+  'servicio', 'servicios', 'isabella', 'profesor', 'prmaestro',
+  'aviso', 'avisos', 'anuncio', 'anuncios', 'evelyn', 'larry',
+  'audio', 'música', 'musica', 'podcast', 'mapache', 'ami',
+  'oráculo', 'oraculo', 'orumama', 'jaguar', 'misterio',
+  'reinos', 'reino', 'rumores',
+  'juego', 'juegos', 'games',
+];
+
+const FRASES_SALIDA_NOVA = [
+  'Espera, que te paso con los Osos. 📷',
+  'Un momento, te llevo a recepción.',
+  'Los Osos te atienden ahora. Vuelvo al almacén.',
+  'Te paso con los Osos. Suerte por ahí.',
+];
+
+const detectarSalidaNova = (texto) => {
+  const t = norm(texto);
+  const quiereSalir = KEYWORDS_SALIDA_NOVA.some(kw => t.includes(norm(kw)));
+  if (!quiereSalir) return null;
+  return {
+    salida:  true,
+    mensaje: FRASES_SALIDA_NOVA[Math.floor(Math.random() * FRASES_SALIDA_NOVA.length)],
+  };
+};
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
 

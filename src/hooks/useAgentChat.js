@@ -1,24 +1,14 @@
 // src/hooks/useAgentChat.js
 // Solo React. Estado + coordinacion + Bifurcacion API (Admin/Publico).
+// Modos activos: osos, oraculo. Todos los demás tienen hooks propios.
 
 import { useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { botOrchestrator } from '../services/agents/botOrchestrator';
 import { buildPrompt, PERFILES } from '../services/agents/promptBuilder';
 import { KNOWLEDGE_SOURCES } from '../services/agents/knowledgeSources';
-import { buildNovaExploraPrompt } from '../services/agents/novaExploraPS';
-import { detectarBusquedaProducto, fraseBuscando } from '../services/agents/bots/novaBot';
-import { detectarBusquedaServicio, fraseBuscando as fraseBuscandoIsabella } from '../services/agents/bots/isabellaBot';
-import { detectarBusquedaAviso, fraseBuscandoAviso } from '../services/agents/bots/evelynBot';
-import { detectarBusquedaAudio, fraseBuscandoAudio } from '../services/agents/bots/mapacheBot';
 
 import { detectarSectorPS, detectarCiudadPS, detectarEntidadPS } from '../services/agents/ososPS';
-
-import { detectarSalidaNova,     detectarIntencionNova     } from '../services/agents/bots/novaUtils';
-import { detectarSalidaIsabella, detectarInternoIsabella, detectarIntencionIsabella } from '../services/agents/bots/isabellaUtils';
-import { detectarSalidaMapache,  detectarInternoMapache,  detectarIntencionMapache  } from '../services/agents/bots/mapacheUtils';
-import { detectarSalidaAviso,    detectarInternoAviso                                } from '../services/agents/bots/avisoUtils';
-import { detectarSalidaReinos,   detectarIntencionReinos                             } from '../services/agents/bots/reinosUtils';
 
 // ─── Geo promo selector ───────────────────────────────────────────────────────
 function seleccionarPromoGeo(data, userCity) {
@@ -93,34 +83,6 @@ async function llamarMistral({ system, messages, userMessage, iaMode }) {
   return data?.texto || '...';
 }
 
-// ─── Helper: detectar intención de publicar aviso ────────────────────────────
-// Separa claramente "quiero publicar" de "quiero consultar/buscar"
-
-function esIntencionPublicar(texto) {
-  const t = texto.trim();
-  // Tecla rápida P
-  if (t.toUpperCase() === 'P') return true;
-  // Frases explícitas de publicación
-  if (/\bpublicar\b/i.test(t))     return true;
-  if (/\bcrear aviso\b/i.test(t))  return true;
-  if (/\bnuevo aviso\b/i.test(t))  return true;
-  if (/\bponer aviso\b/i.test(t))  return true;
-  if (/\bañadir aviso\b/i.test(t)) return true;
-  return false;
-}
-
-function esIntencionConsultar(texto) {
-  const t = texto.trim();
-  // Tecla rápida C
-  if (t.toUpperCase() === 'C') return true;
-  // Frases explícitas de consulta
-  if (/\bver avisos\b/i.test(t))      return true;
-  if (/\bconsultar avisos\b/i.test(t)) return true;
-  if (/\bque avisos hay\b/i.test(t))   return true;
-  if (/\bqué avisos hay\b/i.test(t))   return true;
-  return false;
-}
-
 // ─── Hook principal ───────────────────────────────────────────────────────────
 
 export const useAgentChat = ({
@@ -135,7 +97,6 @@ export const useAgentChat = ({
   const [mensaje, setMensaje] = useState(null);
   const [loading, setLoading] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
-  const realItems = contextData?.realItems || []
 
   const [sectorMemoria, setSectorMemoria] = useState(null);
   const [ciudadMemoria, setCiudadMemoria] = useState(null);
@@ -143,9 +104,6 @@ export const useAgentChat = ({
 
   const [ramaActual, setRamaActual] = useState(null);
   const actoRef                     = useRef('acto_1');
-
-  const [avisoEnConstruccion, setAvisoEnConstruccion] = useState(null);
-  const avisoConectarRef = useRef(null);
 
   // ── Estados del sandwich ──────────────────────────────────────────────────
   const [esperandoConfirmacion, setEsperandoConfirmacion] = useState(null);
@@ -229,14 +187,8 @@ const obtenerVivencia = async (personajeId, userCity = '') => {
   };
 
   const resolverPersonajeId = () => {
-    if (mode === 'osos')        return (contextData?.oso_id || 'lara').toLowerCase();
-    if (mode === 'novaExplora') return 'nova';
-    if (mode === 'novaCierre')  return 'nova_cierre';
-    if (mode === 'servicios')   return contextData?.servicios_personaje || 'isabella';
-    if (mode === 'mapache')     return contextData?.audio_personaje || 'mapache';
-    if (mode === 'oraculo')     return null;
-    if (mode === 'reinos')      return 'rumores';
-    if (mode === 'avisos')      return contextData?.avisos_personaje || 'evelyn';
+    if (mode === 'osos')   return (contextData?.oso_id || 'lara').toLowerCase();
+    if (mode === 'oraculo') return null;
     return null;
   };
 
@@ -302,228 +254,17 @@ const enviar = async (textoUsuario, extraContext = {}) => {
         }
       }
 
-      // ── NOVA EXPLORA ──────────────────────────────────────────────────
-      if (mode === 'novaExplora') {
-        const salida = detectarSalidaNova(textoUsuario);
-        if (salida) {
-          setMensaje(salida.mensaje);
-          setTimeout(() => onHandoff?.({ agente: 'OSOS' }), 1200);
-          setLoading(false);
-          return;
-        }
-      }
-
-      // ── NOVA CIERRE ───────────────────────────────────────────────────
-      if (mode === 'novaCierre') {
-        const salida = detectarSalidaNova(textoUsuario);
-        if (salida) {
-          setMensaje(salida.mensaje);
-          setTimeout(() => onHandoff?.({ agente: 'OSOS' }), 1200);
-          setLoading(false);
-          return;
-        }
-      }
-
-      // ── SERVICIOS (Isabella + Profesor) ───────────────────────────────
-      if (mode === 'servicios') {
-        const salida   = detectarSalidaIsabella(textoUsuario);
-        if (salida) {
-          setMensaje(salida.mensaje);
-          setTimeout(() => onHandoff?.({ agente: 'OSOS' }), 1200);
-          setLoading(false);
-          return;
-        }
-        const personajeActivo = contextData?.servicios_personaje || 'isabella';
-        const interno = detectarInternoIsabella(textoUsuario, personajeActivo);
-        if (interno) {
-          setMensaje(interno.mensaje || '...');
-          onHandoff?.({ agente: 'SERVICIO_INTERNO', personaje_id: interno.personaje_id });
-          setLoading(false);
-          return;
-        }
-        if (detectarBusquedaServicio(textoUsuario)) {
-          const frase = fraseBuscando(textoUsuario);
-          setMensaje(frase);
-          onHandoff?.({ agente: 'BUSCAR_STRIP', keyword: textoUsuario, intencion: 'BROSHOP_SERVICIO' });
-          setLoading(false);
-          return;
-        }
-      }
-
-      // ── MAPACHE (Mapache + Ami) ────────────────────────────────────────
-      if (mode === 'mapache') {
-        const salida = detectarSalidaMapache(textoUsuario);
-        if (salida) {
-          setMensaje(salida.mensaje);
-          setTimeout(() => onHandoff?.({ agente: 'OSOS' }), 1200);
-          setLoading(false);
-          return;
-        }
-        const personajeActivo = contextData?.audio_personaje || 'mapache';
-        const interno = detectarInternoMapache(textoUsuario, personajeActivo);
-        if (interno) {
-          setMensaje(interno.mensaje || '...');
-          onHandoff?.({ agente: 'AUDIO_INTERNO', personaje_id: interno.personaje_id });
-          setLoading(false);
-          return;
-        }
-        if (detectarBusquedaAudio(textoUsuario)) {
-          setMensaje(fraseBuscandoAudio(textoUsuario));
-          onHandoff?.({ agente: 'BUSCAR_STRIP', keyword: textoUsuario, intencion: 'AUDIO' });
-          setLoading(false);
-          return;
-        }
-
-        if (/\b(stop|para|detén|frena|detener|frenar)\b/i.test(textoUsuario)) {
-          onHandoff?.({ agente: 'AUDIO_STOP' });
-          setMensaje('Parado. 🎵');
-          setLoading(false);
-          return;
-        }
-
-        // BroCard activa + Enter/confirmación → play directo sin gastar tokens
-        const cardActiva = extraContext?.card_activa ?? contextData?.card_activa;
-        if (cardActiva) {
-          const tLower = textoUsuario.trim().toLowerCase();
-          const esConfirmacion = tLower === '' || /^(play|pon|ponlo|dale|si|sí|ok|yes|poner|reproduce)$/.test(tLower);
-          if (esConfirmacion) {
-            const codigo = cardActiva.bro_aud || cardActiva.bro_pod;
-            if (codigo) {
-              setMensaje('Dale. 🎵');
-              onHandoff?.({ agente: 'AUDIO_PLAY', codigo, canal: cardActiva });
-              setLoading(false);
-              return;
-            }
-          }
-        }
-      }
-
-      // ── AVISOS (Evelyn + Larry) ────────────────────────────────────────
-      if (mode === 'avisos') {
-
-  const salida = detectarSalidaAviso(textoUsuario);
-  if (salida) {
-    setMensaje(salida.mensaje);
-    setTimeout(() => onHandoff?.({ agente: 'OSOS' }), 1200);
-    setLoading(false);
-    return;
-  }
-
-  // ── Si hay aviso en construcción (aunque esté vacío) → directo al orquestador
-  const avisoEnProceso = avisoEnConstruccion !== null && avisoEnConstruccion !== undefined;
-
-  if (!avisoEnProceso) {
-    const personajeActivo = contextData?.avisos_personaje || 'evelyn';
-    const interno = detectarInternoAviso(textoUsuario, personajeActivo);
-    if (interno) {
-      setMensaje(interno.mensaje || '...');
-      onHandoff?.({ agente: 'AVISO_INTERNO', personaje_id: interno.personaje_id });
-      setLoading(false);
-      return;
-    }
-
-    if (esIntencionPublicar(textoUsuario)) {
-      const resultado = await botOrchestrator({
-        mode: 'avisos',
-        textoUsuario: 'P',
-        avisos_personaje:    contextData?.avisos_personaje || 'evelyn',
-        avisoEnConstruccion: null,
-        genesis:     contextData?.genesis,
-        ciudad:      contextData?.ciudad,
-        user_id:     contextData?.user_id,
-        autor_alias: contextData?.autor_alias,
-        supabase,
-        onAvisoPublicar,
-      });
-      setMensaje(resultado.mensaje);
-      if (resultado.avisoEnConstruccion !== undefined) setAvisoEnConstruccion(resultado.avisoEnConstruccion);
-      if (resultado.handoff) onHandoff?.(resultado.handoffData);
-      setLoading(false);
-      return;
-    }
-
-    if (esIntencionConsultar(textoUsuario)) {
-      setMensaje('Déjame ver qué hay en el tablón...');
-      onHandoff?.({ agente: 'BUSCAR_STRIP', keyword: textoUsuario, intencion: 'BROSHOP_AVISO' });
-      setLoading(false);
-      return;
-    }
-
-    if (detectarBusquedaAviso(textoUsuario)) {
-      setMensaje(fraseBuscandoAviso(textoUsuario));
-      onHandoff?.({ agente: 'BUSCAR_STRIP', keyword: textoUsuario, intencion: 'BROSHOP_AVISO' });
-      setLoading(false);
-      return;
-    }
-  }
-
-  // Si hay aviso en proceso, cae directo al botOrchestrator abajo
-}
-
-      // ── REINOS ────────────────────────────────────────────────────────
-      if (mode === 'reinos') {
-        const salida = detectarSalidaReinos(textoUsuario);
-        if (salida) {
-          setMensaje(salida.mensaje);
-          setTimeout(() => onHandoff?.({ agente: 'OSOS' }), 1200);
-          setLoading(false);
-          return;
-        }
-      }
-
       // ══════════════════════════════════════════════════════════════════
       // BIFURCACION PRINCIPAL: API vs BOTS JS
       // ══════════════════════════════════════════════════════════════════
 
       const iaActiva = (iaMode === 'admin' && isAdmin) || (iaMode === 'public' && !isAdmin);
-      const avisoEnProceso = mode === 'avisos' && avisoEnConstruccion?.tipo;
 
-      if (iaActiva && !avisoEnProceso) {
+      if (iaActiva) {
         const personajeId = resolverPersonajeId();
 
-	  // Oráculo migrado — usePersonajeChat lo gestiona
-  if (mode === 'oraculo') {
-    setLoading(false);
-    return;
-  }
-
-      if (mode === 'novaExplora') {
-  const { vivencia: vivenciaNova, estadoAnimo: animoNova } = await obtenerVivencia('nova', contextData?.ciudad);
-  const systemNova = buildNovaExploraPrompt({
-    alias:  contextData?.alias,
-    ciudad: contextData?.ciudad,
-    vivencia: vivenciaNova,
-    estadoAnimo: animoNova,
-    port_system_context: {
-      hay_tarjetas:        contextData?.hayTarjetas,
-      intencion_detectada: detectarIntencionNova(textoUsuario),
-      entidad_detectada:   contextData?.entidad || null,
-    },
-  });
-  
-            const respuesta = await llamarMistral({
-            system:      systemNova,
-            messages:    chatHistory.slice(-4),
-            userMessage: textoUsuario,
-            iaMode,
-          });
-          try {
-            const match = respuesta.match(/\{[\s\S]*\}/);
-            if (!match) throw new Error('No JSON found');
-            const parsed = JSON.parse(match[0]);
-            if (parsed.handoff && parsed.agente_destino) {
-              onHandoff?.({ agente: parsed.agente_destino, bro_id: parsed.bro_id_target || null });
-              setLoading(false);
-              return;
-            }
-            pushHistory('user', textoUsuario);
-            pushHistory('assistant', parsed.mensaje || '...');
-            setMensaje(parsed.mensaje || '...');
-          } catch {
-            pushHistory('user', textoUsuario);
-            pushHistory('assistant', respuesta);
-            setMensaje(respuesta);
-          }
+        // Oráculo migrado — usePersonajeChat lo gestiona
+        if (mode === 'oraculo') {
           setLoading(false);
           return;
         }
@@ -546,8 +287,8 @@ const enviar = async (textoUsuario, extraContext = {}) => {
 
             if (dataBot) {
               const bloque = iaActiva
-  	? [dataBot.puente, dataBot.data, dataBot.continua].filter(Boolean).join('\n')
-  	: [dataBot.puente, dataBot.bot,  dataBot.continua].filter(Boolean).join('\n')
+                ? [dataBot.puente, dataBot.data, dataBot.continua].filter(Boolean).join('\n')
+                : [dataBot.puente, dataBot.bot,  dataBot.continua].filter(Boolean).join('\n')
               pushHistory('user', textoUsuario)
               pushHistory('assistant', bloque)
               setMensaje(bloque)
@@ -708,96 +449,6 @@ const enviar = async (textoUsuario, extraContext = {}) => {
         return;
       }
 
-      if (mode === 'novaExplora') {
-        const keyword = detectarBusquedaProducto(textoUsuario);
-        if (keyword) {
-          setMensaje(fraseBuscando());
-          onHandoff?.({ agente: 'BUSCAR_STRIP', keyword, intencion: 'BROSHOP_PRODUCTO' });
-          return;
-        }
-        const resultado = await botOrchestrator({
-          mode: 'novaExplora', textoUsuario,
-          entidad:     contextData?.entidad,
-          hayTarjetas: contextData?.hayTarjetas,
-          intencion:   detectarIntencionNova(textoUsuario),
-          supabase,
-        });
-        setMensaje(resultado.mensaje);
-        if (resultado.handoff) onHandoff?.(resultado.handoffData);
-        return;
-      }
-
-      if (mode === 'novaCierre') {
-        const resultado = await botOrchestrator({
-          mode: 'novaCierre', textoUsuario,
-          entidad:     contextData?.entidad,
-          hayTarjetas: contextData?.hayTarjetas,
-          supabase,
-        });
-        setMensaje(resultado.mensaje);
-        if (resultado.handoff) onHandoff?.(resultado.handoffData);
-        return;
-      }
-
-      if (mode === 'servicios') {
-        const resultado = await botOrchestrator({
-          mode: 'servicios', textoUsuario,
-          entidad:             contextData?.entidad,
-          hayTarjetas:         contextData?.hayTarjetas,
-          servicios_personaje: contextData?.servicios_personaje || 'isabella',
-          intencion:           detectarIntencionIsabella(textoUsuario),
-          supabase,
-        });
-        setMensaje(resultado.mensaje);
-        if (resultado.handoff) onHandoff?.(resultado.handoffData);
-        return;
-      }
-
-      if (mode === 'mapache') {
-        const resultado = await botOrchestrator({
-          mode: 'mapache', textoUsuario,
-          entidad:         contextData?.entidad,
-          hayTarjetas:     contextData?.hayTarjetas,
-          audio_personaje: contextData?.audio_personaje || 'mapache',
-          intencion:       detectarIntencionMapache(textoUsuario),
-          supabase,
-        });
-        setMensaje(resultado.mensaje);
-        if (resultado.handoff) onHandoff?.(resultado.handoffData);
-        return;
-      }
-
-      if (mode === 'reinos') {
-        const resultado = await botOrchestrator({
-          mode: 'reinos', textoUsuario,
-          reinos:       contextData?.reinos,
-          reinoDetalle: contextData?.reinoDetalle,
-          intencion:    detectarIntencionReinos(textoUsuario),
-          supabase,
-        });
-        setMensaje(resultado.mensaje);
-        return;
-      }
-
-      if (mode === 'avisos') {
-        const resultado = await botOrchestrator({
-          mode: 'avisos', textoUsuario,
-          avisos_personaje:    contextData?.avisos_personaje || 'evelyn',
-          avisoEnConstruccion,
-          genesis:     contextData?.genesis,
-          ciudad:      contextData?.ciudad,
-          user_id:     contextData?.user_id,
-          autor_alias: contextData?.autor_alias,
-          supabase,
-          onAvisoPublicar,
-        });
-        setMensaje(resultado.mensaje);
-        if (resultado.avisoEnConstruccion !== undefined) setAvisoEnConstruccion(resultado.avisoEnConstruccion);
-        if (resultado.handoff) onHandoff?.(resultado.handoffData);
-        if (resultado.avisoConectar) { avisoConectarRef.current = resultado.avisoConectar; onAvisoConectar?.(resultado.avisoConectar); }
-        return;
-      }
-
     } catch (error) {
       console.error('Error en useAgentChat:', error);
       setMensaje('Error en el nucleo neon.');
@@ -812,15 +463,13 @@ const enviar = async (textoUsuario, extraContext = {}) => {
     setSectorMemoria(null);
     setCiudadMemoria(null);
     setTipoMemoria(null);
-    setAvisoEnConstruccion(null);
     setRamaActual(null);
     setEsperandoConfirmacion(null);
     setBotNarrando(false);
     setFechaNacimiento(null);
     setEsPatrocinado(false);
     actoRef.current = 'acto_1';
-    avisoConectarRef.current = null;
   };
 
-  return { mensaje, loading, enviar, reset, avisoEnConstruccion, esPatrocinado };
+  return { mensaje, loading, enviar, reset, esPatrocinado };
 };

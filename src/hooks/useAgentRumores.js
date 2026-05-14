@@ -3,11 +3,160 @@
 
 import { useState } from 'react';
 import { fetchContextoRumores } from '../services/contexto/fetchContextoRumores';
-import { detectarSalidaReinos, detectarIntencionReinos } from '../services/agents/bots/reinosUtils';
-import { responder as rumoresBot } from '../services/agents/bots/rumoresBot';
 import { rumores } from '../data/rumores/Personalidad';
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
+
+// ── reinosUtils inlined ───────────────────────────────────────────────────────
+
+const norm = (str) =>
+  str.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+const KEYWORDS_SALIDA_REINOS = [
+  'salir', 'volver', 'inicio', 'recepción', 'recepcion', 'osos', 'portero',
+  'producto', 'productos', 'tienda', 'shop', 'nova', 'broshop',
+  'servicio', 'servicios', 'isabella', 'profesor', 'prmaestro',
+  'aviso', 'avisos', 'anuncio', 'anuncios', 'evelyn', 'larry',
+  'audio', 'música', 'musica', 'podcast', 'mapache', 'ami',
+  'oráculo', 'oraculo', 'orumama', 'jaguar', 'misterio',
+  'juego', 'juegos', 'games',
+];
+
+const INTENT_KEYWORDS_REINOS = {
+  listar:    ['lista', 'todos', 'ver todo', 'que hay', 'qué hay', 'directorio'],
+  novedades: ['novedad', 'nuevo', 'última', 'ultima', 'reciente', 'update'],
+  detalle:   ['que es', 'qué es', 'cuentame', 'cuéntame', 'info', 'dime'],
+};
+
+const FRASES_SALIDA_REINOS = [
+  'Espera, que te paso con los Osos. 🎬',
+  'Un momento, te llevo a recepción.',
+  'Los Osos te atienden ahora. Yo vuelvo a mis notas.',
+  'Te paso con los Osos. Los Reinos siguen aquí.',
+];
+
+const detectarSalidaReinos = (texto) => {
+  const t = norm(texto);
+  const quiereSalir = KEYWORDS_SALIDA_REINOS.some(kw => t.includes(norm(kw)));
+  if (!quiereSalir) return null;
+  return {
+    salida:  true,
+    mensaje: FRASES_SALIDA_REINOS[Math.floor(Math.random() * FRASES_SALIDA_REINOS.length)],
+  };
+};
+
+const detectarIntencionReinos = (texto) => {
+  const t = norm(texto);
+  for (const [intent, keywords] of Object.entries(INTENT_KEYWORDS_REINOS)) {
+    if (keywords.some(kw => t.includes(norm(kw)))) return intent;
+  }
+  return 'explorar';
+};
+
+// ── rumoresBot inlined ────────────────────────────────────────────────────────
+
+const FRASES_BIENVENIDA = [
+  "Rumores aquí 🎬 Llevo años cubriendo alfombras rojas y ahora cubro los Reinos. ¡Divinos todos! ¿Qué quieres saber?",
+  "Soy Rumores. Jubilado del cine, pero al servicio de los Reinos de BroVision. ¡Todo glamour! ¿Qué te interesa?",
+  "¡Buenas! Rumores al habla. Acabo de terminar una tarta de queso. ¿Qué Reino quieres conocer? ¡Chisss, que los hay muy top!",
+  "Rumores aquí. He visto escándalos en las alfombras rojas que no creería — y en los Reinos también. ¿Qué buscas?",
+];
+
+const FRASES_LISTAR = [
+  "Aquí está el listado de los Reinos de BroVision. ¡Un bombazo! Mira bien —",
+  "Los Reinos registrados, en exclusiva divina. Toma nota —",
+  "El directorio de Reinos, con todo el glamour. Aquí van —",
+];
+
+const FRASES_DETALLE = [
+  "Ese Reino lo conozco bien. ¡Es un cuadro! Te cuento —",
+  "Buena elección, muy top. Aquí va la info —",
+  "Lo tengo en mis notas. ¡Chisss! Mira —",
+];
+
+const FRASES_NOVEDADES = [
+  "Últimas noticias de los Reinos — ¡bombazo total! Esto es lo más reciente.",
+  "Las novedades en primicia, con todo el glamour que merecen —",
+  "Acabo de actualizar el registro. ¡Escándalo de exclusiva! Esto es lo nuevo —",
+];
+
+const FRASES_EXPLORAR = [
+  "¿Buscas un Reino concreto o quieres ver el listado completo? ¡Divinos todos!",
+  "Dime qué Reino te interesa o te muestro el directorio. ¡Muy top!",
+  "¿Tienes algún Reino en mente o exploramos? ¡Chisss, que hay sorpresas!",
+];
+
+const FRASES_HANDOFF_OSOS = [
+  "Te mando con recepción. ¡Glamour, divinos! Yo me voy a por unos caneloni 🍝",
+  "Los osos te atienden. Yo tengo pendiente una tarta de queso. ¡Top!",
+];
+
+const FRASES_NO_ENTENDIDO = [
+  "No te he pillado. ¿Buscas un Reino concreto o el listado? ¡Chisss!",
+  "Repítemelo. ¿Qué Reino o qué información buscas, divino/a?",
+];
+
+const FRASES_SIN_RESULTADOS = [
+  "No encuentro ese Reino. ¡Qué escándalo! ¿Pruebas con otro nombre?",
+  "No está en el directorio. ¿Buscas otro, top?",
+];
+
+function elegir(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function detectarIntencionRumores(texto) {
+  const t = texto.toLowerCase();
+  if (t.includes('lista') || t.includes('todos') || t.includes('ver todo') || t.includes('qué hay') || t.includes('que hay')) return 'listar';
+  if (t.includes('novedad') || t.includes('nuevo') || t.includes('última') || t.includes('ultima') || t.includes('reciente')) return 'novedades';
+  if (t.includes('qué es') || t.includes('que es') || t.includes('cuéntame') || t.includes('info') || t.includes('dime')) return 'detalle';
+  return 'explorar';
+}
+
+function rumoresBot({ textoUser = '', intencion = null, reinos = [], reinoDetalle = null, update = null }) {
+  const intent = intencion || detectarIntencionRumores(textoUser);
+  const t = textoUser.toLowerCase();
+
+  if (t.includes('volver') || t.includes('salir') || t.includes('osos')) {
+    return { handoff: 'OSOS', mensaje: elegir(FRASES_HANDOFF_OSOS), bolas: [] };
+  }
+
+  const esSaludo = ['hola', 'hey', 'buenas', 'ey', 'hi', 'buenos'].some(s => t.startsWith(s));
+  if (esSaludo) {
+    if (update?.historia) return { handoff: false, mensaje: update.historia + ' ¿Qué Reino te interesa?', bolas: [] };
+    return { handoff: false, mensaje: elegir(FRASES_BIENVENIDA), bolas: [] };
+  }
+
+  switch (intent) {
+    case 'listar':
+      if (reinos.length > 0) {
+        const lista = reinos.map(r => r.nombre || r.title).join(', ');
+        return { handoff: false, mensaje: `${elegir(FRASES_LISTAR)} ${lista}.`, bolas: [] };
+      }
+      return { handoff: false, mensaje: elegir(FRASES_SIN_RESULTADOS), bolas: [] };
+
+    case 'novedades':
+      if (update?.historia) {
+        return { handoff: false, mensaje: `${elegir(FRASES_NOVEDADES)} ${update.historia}`, bolas: [] };
+      }
+      return { handoff: false, mensaje: elegir(FRASES_NOVEDADES) + ' Nada nuevo por ahora.', bolas: [] };
+
+    case 'detalle':
+      if (reinoDetalle) {
+        return {
+          handoff: false,
+          mensaje: `${elegir(FRASES_DETALLE)} ${reinoDetalle.nombre || reinoDetalle.title} — ${reinoDetalle.description || 'sin descripción disponible'}.`,
+          bolas: [],
+        };
+      }
+      return { handoff: false, mensaje: elegir(FRASES_SIN_RESULTADOS), bolas: [] };
+
+    default:
+      return { handoff: false, mensaje: elegir(FRASES_EXPLORAR), bolas: [] };
+  }
+}
+
+// ── Prompt ────────────────────────────────────────────────────────────────────
 
 function buildPromptRumores(contexto) {
   const { vivencia, estadoAnimo, promoGeo, special } = contexto || {};
@@ -40,6 +189,8 @@ REGLAS:
 4. Cuando el user quiera salir responde ÚNICAMENTE: HANDOFF:OSOS
   `.trim();
 }
+
+// ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useAgentRumores({
   iaMode       = 'off',
