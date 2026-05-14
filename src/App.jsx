@@ -36,6 +36,7 @@ import { useAudioData } from './hooks/useAudioData';
 import BroCardStrip from './components/BroCardStrip';
 import AgentChatInput from './components/AgentChatInput';
 import { useAgentChat } from './hooks/useAgentChat';
+import { useAgentRumores } from './hooks/useAgentRumores';
 import SlideRailServicios from './components/SlideRailServicios';
 import SlideRailAvisos from './components/SlideRailAvisos';
 import CityLocationBanner from './components/CityLocationBanner';
@@ -370,12 +371,12 @@ const { mensaje: oraculoMensaje, loading: oraculoLoading, enviar: handleOraculoI
   onHandoff: handleCentralHandoff, iaMode, isAdmin,
 });
 
-  const { mensaje: rumoresMensaje, loading: rumoresLoading, enviar: handleRumoresInput } = useAgentChat({
-    mode: 'reinos',
-    contextData: {
-      alias: perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano',
-    },
-    onHandoff: handleCentralHandoff, iaMode, isAdmin,
+  const { mensaje: rumoresMensaje, loading: rumoresLoading,
+          enviar: handleRumoresInput, reset: resetRumores } = useAgentRumores({
+    iaMode,
+    isAdmin,
+    onHandoff: handleCentralHandoff,
+    ciudad:    sessionCity,
   });
 
   // ══════════════════════════════════════════════════════
