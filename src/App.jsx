@@ -340,7 +340,7 @@ if (SIN_UBICACION.includes(agente)) {
   };
 
   // ══════════════════════════════════════════════════════
-  // HOOKS useAgentChat — 7 agentes
+  // HOOK useAgentChat — solo osos (mobile chat)
   // ══════════════════════════════════════════════════════
 
   const { mensaje: ososMensaje, loading: ososLoading, enviar: handleOsosInput, reset: resetOsos, esPatrocinado: ososEsPatrocinado } = useAgentChat({
@@ -358,18 +358,6 @@ if (SIN_UBICACION.includes(agente)) {
     onHandoff: handleCentralHandoff, iaMode, isAdmin,
   });
 
-
-const oraculoContextData = useMemo(() => ({
-  oraculo_personaje: perfilSector?.personaje_id || perfilOso?.oraculo_personaje || 'orumama',
-  ciudad:  scope?.ciudad || '',
-  alias:   perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano',
-}), [perfilSector?.personaje_id, perfilOso?.oraculo_personaje, perfilOso?.osos_nombre, scope?.ciudad]);
-
-const { mensaje: oraculoMensaje, loading: oraculoLoading, enviar: handleOraculoInput, esPatrocinado: oraculoEsPatrocinado } = useAgentChat({
-  mode: 'oraculo',
-  contextData: oraculoContextData,
-  onHandoff: handleCentralHandoff, iaMode, isAdmin,
-});
 
   const { mensaje: rumoresMensaje, loading: rumoresLoading,
           enviar: handleRumoresInput, reset: resetRumores } = useAgentRumores({
@@ -427,11 +415,11 @@ const { mensaje: oraculoMensaje, loading: oraculoLoading, enviar: handleOraculoI
       case 'servicios':       return { enviar: () => {},            mensaje: null,            loading: false };
       case 'avisos':          return { enviar: () => {},            mensaje: null,            loading: false };
       case 'audios':          return { enviar: () => {},            mensaje: null,            loading: false };
-      case 'ai':              return { enviar: handleOraculoInput,  mensaje: oraculoMensaje,  loading: oraculoLoading };
+      case 'ai':              return { enviar: () => {},           mensaje: null,            loading: false };
       case 'internal_search': return { enviar: handleRumoresInput,  mensaje: rumoresMensaje,  loading: rumoresLoading };
       default:                return { enviar: handleOsosInput,     mensaje: ososMensaje,     loading: ososLoading };
     }
-  }, [intent, step, oraculoMensaje, rumoresMensaje, ososMensaje]);
+  }, [intent, step, rumoresMensaje, ososMensaje]);
 
   const filteredItems = useMemo(() => {
     const supabaseItems = realItems.map(u => ({ ...u, id: u.id, name: u.product_title || u.alias, img: u.card_banner_url || u.banner_url || '/default.png', price: u.price || 0, type: u.video_file ? ['shop', 'live'] : ['shop'], source: 'supabase' }));
@@ -495,7 +483,7 @@ const { mensaje: oraculoMensaje, loading: oraculoLoading, enviar: handleOraculoI
     servicios:       { enviar: () => {},            mensaje: null,            loading: false },
     audios:          { enviar: () => {},            mensaje: null,            loading: false },
     avisos:          { enviar: () => {},            mensaje: null,            loading: false },
-    ai:              { enviar: handleOraculoInput,  mensaje: oraculoMensaje,  loading: oraculoLoading },
+    ai:              { enviar: () => {},            mensaje: null,            loading: false },
     internal_search: { enviar: handleRumoresInput,  mensaje: rumoresMensaje,  loading: rumoresLoading },
   };
 
@@ -529,9 +517,8 @@ const { mensaje: oraculoMensaje, loading: oraculoLoading, enviar: handleOraculoI
     iaMode, isAdmin, userCredits,
     onToggleAdminIA:     handleToggleAdminIA,
     onTogglePublicIA:    handleTogglePublicIA,
-    oraculoMensaje, oraculoLoading, handleOraculoInput, rumoresMensaje,
-    rumoresLoading, handleRumoresInput,
-    oraculoEsPatrocinado, ososEsPatrocinado,
+    rumoresMensaje, rumoresLoading, handleRumoresInput,
+    ososEsPatrocinado,
   };
 
   // ══════════════════════════════════════════════════════

@@ -6,8 +6,9 @@ import NovaCierreMobile from './personajes/NovaCierreMobile';
 import IsabellaCierre from './personajes/IsabellaCierre';
 import IsabellaCierreMobile from './personajes/IsabellaCierreMobile';
 import CarroGeneral from './CarroGeneral';
-import { useCarrito } from '../hooks/useCarrito';
-import { useAgentChat } from '../hooks/useAgentChat';
+import { useCarrito }           from '../hooks/useCarrito';
+import { useAgentNovaCierre }    from '../hooks/useAgentNovaCierre';
+import { useAgentIsabellaCierre } from '../hooks/useAgentIsabellaCierre';
 
 const isMobile = () => window.innerWidth < 768;
 
@@ -105,31 +106,47 @@ const PaymentModal = ({
     decrescens: balances?.vales?.decrescens || 0,
   }), [balances]);
 
-  const agentContext = useMemo(() => ({
-    comercio:  comercioPerfil || {},
-    carrito:   items,
-    vales:     valesUsuario,
-    catalogo:  catalogoItems,
-    personaje,
-  }), [comercioPerfil, items, valesUsuario, catalogoItems, personaje]);
+  const cierreHandoff = useCallback((data) => {
+    if (data.agente === 'OSOS')         setPantalla('novaCierre');
+    if (data.agente === 'CARRO_GENERAL') setPantalla('carro');
+    if (data.agente === 'BROSHOP_AVISO') onHandoff?.({ agente: 'BROSHOP_AVISO' });
+  }, [onHandoff]);
 
-  const handleAccionIA = useCallback(async (accion) => {
-    await procesarAccion(accion);
-    if (accion?.tipo === 'IR_A_PAGAR')       setPantalla('carro');
-    if (accion?.tipo === 'HANDOFF_FINANZAS') onHandoff?.({ agente: 'BROSHOP_AVISO' });
-  }, [procesarAccion, onHandoff]);
+  const {
+    mensaje:  novaMensaje,
+    loading:  novaLoading,
+    enviar:   novaEnviar,
+    bolas:    novaBolas,
+  } = useAgentNovaCierre({ iaMode: 'public', isAdmin: false, onHandoff: cierreHandoff });
+
+  const {
+    mensaje:  isabellaMensaje,
+    loading:  isabellaLoading,
+    enviar:   isabellaEnviar,
+    bolas:    isabellaBolas,
+  } = useAgentIsabellaCierre({ personaje, iaMode: 'public', isAdmin: false, onHandoff: cierreHandoff });
+
+  const carritoPayload = useMemo(() => ({
+    comercio:      comercioPerfil || {},
+    carrito:       items,
+    valesUsuario:  valesUsuario,
+    catalogo:      catalogoItems,
+    perfilUsuario: {},
+  }), [comercioPerfil, items, valesUsuario, catalogoItems]);
 
   const modeChat = pantalla === 'isabellaCierre' ? 'isabellaCierre' : 'novaCierre';
 
-  const { mensaje, bolas, loading, enviar } = useAgentChat({
-    mode:         modeChat,
-    contextData:  agentContext,
-    onHandoff: (data) => {
-      if (data.agente === 'CARRO_GENERAL') setPantalla('carro');
-      if (data.agente === 'BROSHOP_AVISO') onHandoff?.({ agente: 'BROSHOP_AVISO' });
-    },
-    onAccionNova: handleAccionIA,
-  });
+  const enviar = useCallback(async (texto) => {
+    const fn = modeChat === 'isabellaCierre' ? isabellaEnviar : novaEnviar;
+    const accion = await fn(texto, carritoPayload);
+    if (!accion) return;
+    await procesarAccion(accion);
+    if (accion.tipo === 'IR_A_PAGAR') setPantalla('carro');
+  }, [modeChat, isabellaEnviar, novaEnviar, carritoPayload, procesarAccion]);
+
+  const mensaje = modeChat === 'isabellaCierre' ? isabellaMensaje : novaMensaje;
+  const loading = modeChat === 'isabellaCierre' ? isabellaLoading : novaLoading;
+  const bolas   = modeChat === 'isabellaCierre' ? isabellaBolas   : novaBolas;
 
   const handleConfirmarPedido = useCallback(async () => {
     if (!currentUser?.id) return;

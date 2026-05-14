@@ -46,10 +46,9 @@ export default function DesktopLayout(props) {
     scope, sessionCP, sessionCity, sessionRef, handleGameWin, handleGoToShop, abrirTienda,
     setSelectedLog, setVlData, ososHandoffContext, setOsosHandoffContext,
     perfilOso, stripVisible, stripCards, stripLabel, setHoloPrismaIndex, findChannelByAlias, checkIfNew,
-    ososMensaje, ososLoading, handleOsosInput, ososModo, setOsosModo, handleLogout, selectedCard,
-  oraculoMensaje, oraculoLoading, handleOraculoInput, rumoresMensaje, rumoresLoading, handleRumoresInput,
-  novaEsPatrocinado,
-  oraculoEsPatrocinado, ososEsPatrocinado, oraculoPersonaje,
+    ososModo, setOsosModo, handleLogout, selectedCard,
+  rumoresMensaje, rumoresLoading, handleRumoresInput,
+  oraculoPersonaje,
    iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA
   } = props;
 
