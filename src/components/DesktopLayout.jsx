@@ -22,7 +22,8 @@ import SlideRail from './SlideRail';
 import SlideRailServicios from './SlideRailServicios';
 import SlideRailAvisos from './SlideRailAvisos';
 import SlideRailAudio from './SlideRailAudio';
-import NovaBanner from './NovaBanner';
+import NovaBanner  from './personajes/NovaBanner';
+import NovaCierre  from './personajes/NovaCierre';
 import IsabellaBanner from './IsabellaBanner';
 import EvelynBanner from './EvelynBanner';
 import MapacheBanner from './MapacheBanner';
@@ -46,7 +47,7 @@ export default function DesktopLayout(props) {
     setSelectedLog, setVlData, ososHandoffContext, setOsosHandoffContext, avisoEnConstruccion,
     perfilOso, stripVisible, stripCards, stripLabel, setHoloPrismaIndex, findChannelByAlias, checkIfNew,
     ososMensaje, ososLoading, handleOsosInput, ososModo, setOsosModo, handleLogout, selectedCard,
-   novaMensaje, novaLoading, handleNovaInput, isabellaMensaje, isabellaLoading, handleIsabellaInput,
+   isabellaMensaje, isabellaLoading, handleIsabellaInput,
   mapacheMensaje, mapacheLoading, handleMapacheInput, evelynMensaje, evelynLoading, handleEvelynInput,
   oraculoMensaje, oraculoLoading, handleOraculoInput, rumoresMensaje, rumoresLoading, handleRumoresInput,
   novaEsPatrocinado, isabellaEsPatrocinado, mapacheEsPatrocinado,
@@ -196,15 +197,24 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
       
       
       {/* ── PRODUCTOS ───────────────────────────────────────────────────── */}     
-      {step === 2 && intent === 'productos' && ( 
-        <NovaBanner sessionCity={sessionCity} sessionCP={sessionCP} realItems={realItems} onHandoff={handleCentralHandoff} stripVisible={stripVisible} stripCards={stripCards} stripLabel={stripLabel} onOpenTerminal={(c) => abrirTienda(c, 'novaCierre')} onSetActiveIndex={setHoloPrismaIndex} onInvokeOsos={() => setStep(1)} onInvokeMapache={() => setIntent('audios')} onEntityFocus={(u) => setActivePrismUser(u)} setIntent={setIntent}
-        novaMensaje={novaMensaje}
-  novaLoading={novaLoading}
-  onNovaEnviar={handleNovaInput}
-  iaMode={iaMode}
-  isAdmin={isAdmin}
-  esPatrocinado={novaEsPatrocinado}
-         />
+      {step === 2 && intent === 'productos' && (
+        <NovaBanner
+          sessionCity={sessionCity}
+          sessionCP={sessionCP}
+          realItems={realItems}
+          stripVisible={stripVisible}
+          stripCards={stripCards}
+          stripLabel={stripLabel}
+          onHandoff={handleCentralHandoff}
+          iaMode={iaMode}
+          isAdmin={isAdmin}
+          entidad={ososHandoffContext?.comercio_especifico}
+          hayTarjetas={stripVisible}
+          onOpenTerminal={(c) => abrirTienda(c, 'novaCierre')}
+          onSetActiveIndex={setHoloPrismaIndex}
+          onEntityFocus={(u) => setActivePrismUser(u)}
+          setIntent={setIntent}
+        />
       )}
       
       {/* ── SERVICIOS ───────────────────────────────────────────────────── */}

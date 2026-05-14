@@ -1,13 +1,14 @@
-// src/components/NovaBanner.jsx
+// src/components/personajes/NovaBanner.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import AgentChatInput from './AgentChatInput';
-import BroCardStrip from './BroCardStrip';
+import AgentChatInput from '../AgentChatInput';
+import BroCardStrip from '../BroCardStrip';
+import { useAgentNovaExplora } from '../../hooks/useAgentNovaExplora';
 
 const NOVA_GREETINGS = [
-"¡Oh, hola! Soy Nova, qué alegría saludarte. Dime qué buscas y me pongo en marcha enseguida, porfi,",
-"Nova al habla, ¡qué ilusión! ¿En qué podría ayudarte el día de hoy,",
-"¡Buenas! Soy Nova. Cuéntame qué necesitas y te ayudaré a encontrarlo con mucha dedicación,",
-"Hola, soy Nova 📸 ¿Qué cosita preciosa estás buscando hoy,",
+  "¡Oh, hola! Soy Nova, qué alegría saludarte. Dime qué buscas y me pongo en marcha enseguida, porfi,",
+  "Nova al habla, ¡qué ilusión! ¿En qué podría ayudarte el día de hoy,",
+  "¡Buenas! Soy Nova. Cuéntame qué necesitas y te ayudaré a encontrarlo con mucha dedicación,",
+  "Hola, soy Nova 📸 ¿Qué cosita preciosa estás buscando hoy,",
 ];
 
 export default function NovaBanner({
@@ -15,15 +16,25 @@ export default function NovaBanner({
   stripVisible, stripCards, stripLabel,
   onEntityFocus, onOpenTerminal, onSetActiveIndex,
   onInvokeOsos, onInvokeMapache, setIntent,
-  novaMensaje, novaLoading, onNovaEnviar,
-  esPatrocinado = false,
-  onHandoff,        // ← necesario para NOVA_CIERRE
+  onHandoff,
+  iaMode      = 'off',
+  isAdmin     = false,
+  entidad     = null,
+  hayTarjetas = false,
 }) {
-  const [display, setDisplay]       = useState('');
-  const [cursor, setCursor]         = useState(true);
-  const [currentMsg, setCurrentMsg] = useState('');
-  const [selectedCard, setSelectedCard] = useState(null);  // ← NUEVO
+  const [display, setDisplay]           = useState('');
+  const [cursor, setCursor]             = useState(true);
+  const [currentMsg, setCurrentMsg]     = useState('');
+  const [selectedCard, setSelectedCard] = useState(null);
   const charIdx = useRef(0);
+
+  const { mensaje: novaMensaje, loading: novaLoading, enviar: novaEnviar,
+          esPatrocinado } = useAgentNovaExplora({
+    iaMode,
+    isAdmin,
+    onHandoff,
+    ciudad: sessionCity,
+  });
 
   // ── Cursor parpadeante ───────────────────────────────────────────────────
   useEffect(() => {
@@ -36,11 +47,11 @@ export default function NovaBanner({
     setCurrentMsg(NOVA_GREETINGS[Math.floor(Math.random() * NOVA_GREETINGS.length)]);
   }, []);
 
-  // ── Mensajes del bot ─────────────────────────────────────────────────────
+  // ── Mensajes del hook ────────────────────────────────────────────────────
   useEffect(() => {
     if (novaMensaje) {
       setCurrentMsg(novaMensaje);
-      setSelectedCard(null); // el bot habla → limpia la card seleccionada
+      setSelectedCard(null);
     }
   }, [novaMensaje]);
 
@@ -59,15 +70,15 @@ export default function NovaBanner({
 
   // ── Clic en BroCard ──────────────────────────────────────────────────────
   const handleCardClick = (card) => {
-  setSelectedCard(prev => 
-    prev?.bro_id === card.bro_id ? null : card
-  );
-};
+    setSelectedCard(prev =>
+      prev?.bro_id === card.bro_id ? null : card
+    );
+  };
 
-  // ── Enviar desde input → limpia card ────────────────────────────────────
+  // ── Enviar desde input ───────────────────────────────────────────────────
   const handleEnviar = (texto) => {
     setSelectedCard(null);
-    onNovaEnviar(texto);
+    novaEnviar(texto, { entidad, hayTarjetas });
   };
 
   // ── Botón ENTRAR → HandOff NOVA_CIERRE ──────────────────────────────────
@@ -84,7 +95,7 @@ export default function NovaBanner({
   return (
     <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
 
-      {/* 1. CARRUSEL — alias visible, bro_id oculto */}
+      {/* 1. CARRUSEL */}
       {stripVisible && (
         <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
           <BroCardStrip
@@ -97,13 +108,12 @@ export default function NovaBanner({
         </div>
       )}
 
-      {/* 2. BANNER — descripción de card seleccionada O mensaje del bot */}
+      {/* 2. BANNER */}
       <div className="w-full max-w-2xl mb-3 pointer-events-auto">
         <div
           className="nv-wrap w-full flex flex-col items-center justify-center text-center bg-black/75 backdrop-blur-xl border border-amber-400/30 rounded-3xl p-5 shadow-[0_0_24px_rgba(251,191,36,0.2)]"
           style={{ transition: 'all 0.3s ease' }}
         >
-
           {/* Sin mensaje ni card */}
           {!currentMsg && !selectedCard && (
             <div className="flex items-center gap-2">
@@ -123,10 +133,9 @@ export default function NovaBanner({
             <span className="text-amber-400">Procesando...</span>
           )}
 
-          {/* Card seleccionada — descripción grande con estética Nova */}
+          {/* Card seleccionada */}
           {selectedCard && !novaLoading && (
             <div className="w-full flex flex-col items-center gap-3 animate-fadeIn">
-              {/* Nombre del comercio */}
               <p
                 className="text-amber-300 font-black italic uppercase text-base leading-tight tracking-widest"
                 style={{ textShadow: '0 0 16px rgba(251,191,36,0.7)' }}
@@ -134,25 +143,23 @@ export default function NovaBanner({
                 {selectedCard.nombre}
               </p>
 
-             {(selectedCard.neighborhood || selectedCard.nearby_ref) && (
-  <p className="text-amber-500/80 font-bold uppercase text-xs tracking-[0.25em]"
-     style={{ textShadow: '0 0 8px rgba(251,191,36,0.4)' }}>
-    {selectedCard.neighborhood}{selectedCard.neighborhood && selectedCard.nearby_ref ? ' · ' : ''}{selectedCard.nearby_ref}
-  </p>
-)}
-              {/* Descripción — misma fuente, color, tamaño que los mensajes de Nova */}
+              {(selectedCard.neighborhood || selectedCard.nearby_ref) && (
+                <p className="text-amber-500/80 font-bold uppercase text-xs tracking-[0.25em]"
+                   style={{ textShadow: '0 0 8px rgba(251,191,36,0.4)' }}>
+                  {selectedCard.neighborhood}{selectedCard.neighborhood && selectedCard.nearby_ref ? ' · ' : ''}{selectedCard.nearby_ref}
+                </p>
+              )}
+
               <p
                 className="text-amber-400 font-black italic uppercase text-lg leading-relaxed"
                 style={{ textShadow: '0 0 20px rgba(251,191,36,0.6)' }}
               >
-                {selectedCard.descripcion || selectedCard.descripcion}
+                {selectedCard.descripcion}
                 <span style={{ opacity: cursor ? 1 : 0 }}>_</span>
               </p>
 
-              {/* Botón ENTRAR */}
               <button
                 onClick={handleEntrar}
-               
                 className="mt-1 px-8 py-2.5 bg-amber-500/20 border border-amber-400/70 rounded-2xl text-amber-300 font-black text-sm uppercase tracking-widest hover:bg-amber-400/40 hover:text-white transition-all"
                 style={{ boxShadow: '0 0 16px rgba(251,191,36,0.3)' }}
               >
@@ -161,13 +168,12 @@ export default function NovaBanner({
             </div>
           )}
 
-          {/* Mensaje del bot (typewriter) — solo si no hay card seleccionada */}
+          {/* Mensaje del hook (typewriter) */}
           {!selectedCard && !novaLoading && currentMsg && (
             <p className="text-amber-400 font-black italic uppercase text-lg leading-relaxed shadow-amber-400">
               {display}<span style={{ opacity: cursor ? 1 : 0 }}>_</span>
             </p>
           )}
-
         </div>
       </div>
 

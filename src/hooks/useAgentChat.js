@@ -13,7 +13,6 @@ import { detectarBusquedaAviso, fraseBuscandoAviso } from '../services/agents/bo
 import { detectarBusquedaAudio, fraseBuscandoAudio } from '../services/agents/bots/mapacheBot';
 
 import { detectarSectorPS, detectarCiudadPS, detectarEntidadPS } from '../services/agents/ososPS';
-import { detectarRama } from '../services/agents/bots/ososUtils';
 
 import { detectarSalidaNova,     detectarIntencionNova     } from '../services/agents/bots/novaUtils';
 import { detectarSalidaIsabella, detectarInternoIsabella, detectarIntencionIsabella } from '../services/agents/bots/isabellaUtils';
@@ -693,15 +692,12 @@ const enviar = async (textoUsuario, extraContext = {}) => {
           return;
         }
 
-        const rama = detectarRama(textoUsuario);
-        if (rama) setRamaActual(rama);
-
         const resultado = await botOrchestrator({
           mode: 'osos', textoUsuario,
           oso_id:     contextData?.oso_id || 'lara',
           sectorFinal, ciudadFinal,
           actoActual: actoRef.current,
-          ramaActual: rama || ramaActual,
+          ramaActual: null,
           supabase,
         });
 

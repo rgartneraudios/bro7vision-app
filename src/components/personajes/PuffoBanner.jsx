@@ -5,10 +5,10 @@ import AgentChatInput from '../AgentChatInput';
 import { useAgentPuffo } from '../../hooks/useAgentPuffo';
 
 const VIDEO_DEFAULT = 'https://media.bro7vision.com/puffoDefault.mp4';
-const BORDER_COLOR  = 'rgba(100,150,255,0.40)';
+const BORDER_COLOR  = 'rgba(200,128,255,0.40)';
 const ICONO         = '🐻';
 const NOMBRE        = 'PUFFO';
-const slateColor    = '#94a3b8';
+const slateColor    = '#824FFF';
 
 const FRASES_BIENVENIDA = [
   "Puffo aquí 🎙️ Dime, ¿a dónde te llevo hoy?",

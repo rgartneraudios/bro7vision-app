@@ -5,10 +5,10 @@ import AgentChatInput from '../AgentChatInput';
 import { useAgentTito } from '../../hooks/useAgentTito';
 
 const VIDEO_DEFAULT = 'https://media.bro7vision.com/titoDefault.mp4';
-const BORDER_COLOR  = 'rgba(255,200,50,0.40)';
+const BORDER_COLOR  = 'rgba(200,128,255,0.40)';
 const ICONO         = '🐻';
 const NOMBRE        = 'TITO';
-const slateColor    = '#94a3b8';
+const slateColor    = '#824FFF';
 
 const FRASES_BIENVENIDA = [
   "Tito aquí 🐻 Oye, ¿qué necesitas hoy? Yo te ayudo con lo que pueda.",

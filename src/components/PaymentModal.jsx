@@ -1,7 +1,7 @@
 // src/components/PaymentModal.jsx
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
-import NovaCierre from './NovaCierre';
+import NovaCierre from './personajes/NovaCierre';
 import NovaCierreMobile from './NovaCierreMobile';
 import IsabellaCierre from './IsabellaCierre';
 import IsabellaCierreMobile from './IsabellaCierreMobile';

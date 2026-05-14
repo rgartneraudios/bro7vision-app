@@ -2,9 +2,6 @@
 // Cerebro del sistema. Recibe mode + input + contexto → devuelve { mensaje, handoff, extras }
 // Sin IA, sin API. Toda la lógica de negocio vive aquí, fuera del hook React.
 
-import { laraResponder }  from './bots/laraBot';
-import { titoResponder }  from './bots/titoBot';
-import { puffoResponder } from './bots/puffoBot';
 import { responder as novaResponder }      from './bots/novaBot';
 import { responder as isabellaResponder }  from './bots/isabellaBot';
 import { responder as profesorResponder } from './bots/profesorBot';
@@ -119,10 +116,12 @@ async function modoOsos({ textoUsuario, oso_id, sectorFinal, ciudadFinal, actoAc
   const update = await cargarUpdate(supabase, id);
   const args   = { textoUsuario, sectorFinal, ciudadFinal, actoActual: actoActual || 'acto_1', ramaActual: ramaActual || null, update };
 
-  let resultado;
-  if (id === 'tito')       resultado = titoResponder(args);
-  else if (id === 'puffo') resultado = puffoResponder(args);
-  else                     resultado = laraResponder(args);
+  const fallbacks = [
+    '¿A qué sector quieres ir? Dime y te llevo.',
+    'Dime qué buscas y te oriento.',
+    '¿Productos, servicios, audio o avisos?',
+  ];
+  const resultado = { mensaje: fallbacks[Math.floor(Math.random() * fallbacks.length)], handoff: false };
 
   return normalizarHandoff(resultado, { oso_id: resultado.oso_id });
 }

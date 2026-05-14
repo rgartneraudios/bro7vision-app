@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useAgentNovaCierre } from '../../hooks/useAgentNovaCierre';
+import { calcularPrecio }     from '../../services/agents/novaCierrePS';
 
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700;900&family=Rajdhani:wght@500;600;700;900&display=swap');
@@ -42,7 +44,7 @@ const CSS = `
 `;
 
 const cfg = {
-  accent:     '#fbbf24', 
+  accent:     '#fbbf24',
   accentGlow: 'rgba(251,191,36,0.38)',
   accentSoft: 'rgba(251,191,36,0.22)',
   video:      'https://media.bro7vision.com/NovaVentas1.mp4',
@@ -83,33 +85,123 @@ const ItemChip = ({ item, color, idx }) => (
   </div>
 );
 
-const NovaCierre = ({ comercio = {}, mensaje = null, carrito = [], precios = {}, vale_activo = null, delivery = 'pickup', valesUsuario = {}, bolas = [], loading = false, onSend, onIrAPagar, onClose }) => {
-  const [input, setInput] = useState('');
-  const inputRef = useRef(null);
-
-  // Estados del Reproductor 21:9
-  const videoRef = useRef(null);
-  const [isMuted, setIsMuted] = useState(false);
+const NovaCierre = ({
+  comercio = {},
+  mensaje: mensajeProp = null,
+  carrito: carritoProp = [],
+  precios: preciosProp = {},
+  vale_activo: valeActivoProp = null,
+  delivery: deliveryProp = 'pickup',
+  valesUsuario = {},
+  bolas: bolasProp = [],
+  loading: loadingProp = false,
+  catalogo = [],
+  onIrAPagar,
+  onClose,
+  // Props del cable IA
+  iaMode   = 'off',
+  isAdmin  = false,
+  onHandoff,
+  usuario_nombre = '',
+  ciudad = null,
+}) => {
+  const [input, setInput]       = useState('');
+  const inputRef                = useRef(null);
+  const videoRef                = useRef(null);
+  const [isMuted, setIsMuted]   = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const total_items = carrito.reduce((s, i) => s + i.qty, 0);
-  const delivery_extra = delivery === 'delivery' ? 2.00 : delivery === 'regalo' ? (comercio?.regalo_precio || 0) : 0;
-  const total_con_delivery = parseFloat(((precios.total_final || 0) + delivery_extra).toFixed(2));
+  // ── Estado interno del carrito ───────────────────────────────────────────
+  const [carrito, setCarrito]       = useState(carritoProp);
+  const [vale_activo, setValeActivo] = useState(valeActivoProp);
+  const [delivery, setDelivery]     = useState(deliveryProp);
+  const [mensajeLocal, setMensajeLocal] = useState(null);
 
-  // Subtotal neto de Productos
-  const subtotal_zona = carrito.filter(i => i.tipo === cfg.tipoItem).reduce((s, i) => s + (i.item_precio_base || 0) * i.qty, 0);
-  const items_zona = carrito.filter(i => i.tipo === cfg.tipoItem).reduce((s,i) => s + i.qty, 0);
-  const hasItems = items_zona > 0;
+  // ── Hook IA ──────────────────────────────────────────────────────────────
+  const { mensaje: iaMensaje, loading: iaLoading, enviar: enviarIA,
+          bolas: iaBolas } = useAgentNovaCierre({
+    iaMode,
+    isAdmin,
+    onHandoff,
+    ciudad: comercio?.ciudad || ciudad || null,
+  });
+
+  useEffect(() => { if (iaMensaje) setMensajeLocal(iaMensaje); }, [iaMensaje]);
+
+  // ── Cálculos ─────────────────────────────────────────────────────────────
+  const precios         = calcularPrecio({ items: carrito, vale: vale_activo, iva_pct: comercio?.iva_pct });
+  const total_items     = carrito.reduce((s, i) => s + i.qty, 0);
+  const delivery_extra  = delivery === 'delivery' ? 2.00 : delivery === 'regalo' ? (comercio?.regalo_precio || 0) : 0;
+  const total_con_delivery = parseFloat(((precios.total_final || 0) + delivery_extra).toFixed(2));
+  const subtotal_zona   = carrito.filter(i => i.tipo === cfg.tipoItem).reduce((s, i) => s + (i.item_precio_base || 0) * i.qty, 0);
+  const items_zona      = carrito.filter(i => i.tipo === cfg.tipoItem).reduce((s, i) => s + i.qty, 0);
+  const hasItems        = items_zona > 0;
+
+  // Valores efectivos (hook tiene prioridad sobre props)
+  const mensaje  = mensajeLocal || mensajeProp;
+  const loading  = iaLoading || loadingProp;
+  const bolas    = iaBolas.length > 0 ? iaBolas : bolasProp;
 
   useEffect(() => { setTimeout(() => inputRef.current?.focus(), 350); }, []);
 
-  const handleSend = () => { if (!input.trim() || loading) return; onSend?.(input.trim()); setInput(''); inputRef.current?.focus(); };
+  // ── handleSendConIA ───────────────────────────────────────────────────────
+  const handleSendConIA = async (texto) => {
+    const accion = await enviarIA(texto, {
+      comercio,
+      carrito,
+      precios: calcularPrecio({ items: carrito, vale: vale_activo, iva_pct: comercio?.iva_pct }),
+      vale_activo,
+      valesUsuario,
+      catalogo,
+      perfilUsuario: { usuario_nombre, usuario_city: ciudad },
+    });
+
+    if (!accion) return;
+
+    switch (accion.tipo) {
+      case 'AÑADIR_ITEM':
+        setCarrito(prev => {
+          const existe = prev.find(i => i.item_id === accion.item_id);
+          if (existe) return prev.map(i => i.item_id === accion.item_id ? { ...i, qty: i.qty + 1 } : i);
+          return [...prev, { ...accion, qty: 1, tipo: 'producto' }];
+        });
+        break;
+      case 'CAMBIAR_CANTIDAD':
+        setCarrito(prev => prev.map(i => i.item_id === accion.item_id ? { ...i, qty: accion.qty } : i));
+        break;
+      case 'RESTAR_ITEM':
+        setCarrito(prev => prev.map(i => i.item_id === accion.item_id ? { ...i, qty: Math.max(0, i.qty - 1) } : i).filter(i => i.qty > 0));
+        break;
+      case 'QUITAR_ITEM':
+        setCarrito(prev => prev.filter(i => i.item_id !== accion.item_id));
+        break;
+      case 'ACTIVAR_VALE':
+      case 'CAMBIAR_VALE':
+        setValeActivo(accion.vale || accion.a);
+        break;
+      case 'MODO_ENTREGA':
+        setDelivery(accion.modo);
+        break;
+      case 'IR_A_PAGAR':
+        onIrAPagar?.();
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleSend = () => {
+    if (!input.trim() || loading) return;
+    handleSendConIA(input.trim());
+    setInput('');
+    inputRef.current?.focus();
+  };
   const handleKey = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } };
 
-  // Funciones del Reproductor
+  // ── Reproductor ──────────────────────────────────────────────────────────
   const getCleanUrl = (url) => {
-    if (!url) return "";
+    if (!url) return '';
     let clean = url.trim();
     if (clean.includes('dropbox.com')) {
       clean = clean.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '').replace('&dl=0', '');
@@ -133,19 +225,19 @@ const NovaCierre = ({ comercio = {}, mensaje = null, carrito = [], precios = {},
   };
 
   const video_catalogo = comercio?.video_file_169 || comercio?.video_file;
-  console.log("DATOS DEL COMERCIO EN NOVA:", comercio);
+
   return (
     <>
       <style>{CSS}</style>
       <style>{`.vb-root { --accent: ${cfg.accent}; --accent-glow: ${cfg.accentGlow}; --accent-soft: ${cfg.accentSoft}; }`}</style>
 
       <div className="vb-root vb-wrap" style={{ position:'fixed', inset:0, zIndex:3500, display:'flex', flexDirection:'column', background:'#000' }}>
-        
-        {/* VIDEO FONDO AMBIENTAL */}
+
+        {/* VIDEO FONDO */}
         <div style={{position:'absolute', inset:0, zIndex:0, pointerEvents:'none'}}>
-          <video autoPlay loop muted playsInline src={cfg.video} style={{width:'100%', height:'100%', objectFit:'cover' }} />
-          <div style={{ position:'absolute', bottom:0, left:0, right:0, height:'65%', background:'linear-gradient(0deg,rgba(4,4,10,0.97) 0%,rgba(4,4,10,0.5) 60%,transparent 100%)' }}/>
-          <div style={{ position:'absolute', top:0, left:0, right:0, height:'20%', background:'linear-gradient(180deg,rgba(4,4,10,0.65) 0%,transparent 100%)' }}/>
+          <video autoPlay loop muted playsInline src={cfg.video} style={{width:'100%', height:'100%', objectFit:'cover'}} />
+          <div style={{ position:'absolute', bottom:0, left:0, right:0, height:'65%', background:'linear-gradient(0deg,rgba(4,4,10,0.97) 0%,rgba(4,4,10,0.5) 60%,transparent 100%)'}}/>
+          <div style={{ position:'absolute', top:0, left:0, right:0, height:'20%', background:'linear-gradient(180deg,rgba(4,4,10,0.65) 0%,transparent 100%)'}}/>
         </div>
 
         {/* HEADER */}
@@ -158,64 +250,57 @@ const NovaCierre = ({ comercio = {}, mensaje = null, carrito = [], precios = {},
           <button className="vb-close-btn" onClick={onClose} style={{ background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.1)', color:'rgba(255,255,255,0.5)', fontFamily:'Rajdhani,sans-serif', fontWeight:700, fontSize:12, padding:'6px 14px', borderRadius:7, textTransform:'uppercase' }}>✕ CERRAR</button>
         </div>
 
-        {/* CUERPO CENTRAL: VISOR 16:9 + VALES */}
+        {/* CUERPO CENTRAL */}
         <div style={{ position:'relative', zIndex:2, flex:1, minHeight:0, display:'flex', alignItems:'stretch', padding:'10px 16px 6px', gap:20 }}>
-  <div style={{ flex:1, minWidth:0, display:'flex', alignItems:'center', justifyContent:'center', paddingLeft: '180px' }}>
-    
-{video_catalogo ? (
-  <div style={{
-    position: 'relative', width: '100%', maxWidth: '960px', aspectRatio: '16/9',
-    borderRadius: '1.25rem', background: '#000', overflow: 'hidden',
-    border: '2px solid var(--accent)',
-    boxShadow: '0 0 18px var(--accent-glow), 0 0 36px var(--accent-soft), inset 0 0 16px var(--accent-soft)'
-  }}>
-    <video
-      ref={videoRef} src={getCleanUrl(video_catalogo)}
-      autoPlay loop playsInline muted={isMuted}
-      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-      onTimeUpdate={() => { if (videoRef.current?.duration) setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100); }}
-    />
+          <div style={{ flex:1, minWidth:0, display:'flex', alignItems:'center', justifyContent:'center', paddingLeft: '180px' }}>
 
-    {/* MUTE */}
-    <button onClick={() => setIsMuted(!isMuted)} style={{
-      position: 'absolute', top: '12px', right: '12px', zIndex: 50,
-      width: '28px', height: '28px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
-      borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', color: '#fff',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', cursor: 'pointer'
-    }}>
-      {isMuted ? '🔇' : '🔊'}
-    </button>
-
-    {/* CONTROLES */}
-    <div style={{ position: 'absolute', bottom: '16px', left: 0, width: '100%', zIndex: 50, padding: '0 16px' }}>
-      <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '99px', cursor: 'pointer', marginBottom: '8px' }} onClick={handleSeek}>
-        <div style={{ height: '100%', background: 'var(--accent)', borderRadius: '99px', boxShadow: '0 0 8px var(--accent-glow)', transition: 'width 0.1s linear', width: `${progress}%` }} />
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <button onClick={togglePlayPause} style={{
-          background: 'rgba(0,0,0,0.5)', border: '1px solid var(--accent-soft)', backdropFilter: 'blur(8px)',
-          width: '32px', height: '32px', borderRadius: '50%', color: '#fff',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px'
-        }}>
-          {isPaused ? '▶' : '⏸'}
-        </button>
-      </div>
-    </div>
-
-    {/* ESQUINAS */}
-    <div style={{ position: 'absolute', top: 0, left: 0, width: '24px', height: '24px', borderTop: '2px solid var(--accent)', borderLeft: '2px solid var(--accent)', borderTopLeftRadius: '1.25rem', zIndex: 50, pointerEvents: 'none' }} />
-    <div style={{ position: 'absolute', top: 0, right: 0, width: '24px', height: '24px', borderTop: '2px solid var(--accent)', borderRight: '2px solid var(--accent)', borderTopRightRadius: '1.25rem', zIndex: 50, pointerEvents: 'none' }} />
-    <div style={{ position: 'absolute', bottom: 0, left: 0, width: '24px', height: '24px', borderBottom: '2px solid var(--accent)', borderLeft: '2px solid var(--accent)', borderBottomLeftRadius: '1.25rem', zIndex: 50, pointerEvents: 'none' }} />
-    <div style={{ position: 'absolute', bottom: 0, right: 0, width: '24px', height: '24px', borderBottom: '2px solid var(--accent)', borderRight: '2px solid var(--accent)', borderBottomRightRadius: '1.25rem', zIndex: 50, pointerEvents: 'none' }} />
-  </div>
-) : (
-  <div style={{ width:'100%', maxWidth:'960px', aspectRatio:'16/9', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:12, background:'rgba(0,0,0,0.42)', borderRadius:'1.25rem', border:`2px dashed ${cfg.accentSoft}` }}>
-    <span style={{fontSize:36}}>🎥</span>
-    <span style={{ fontFamily:'Chakra Petch,sans-serif', fontSize:13, color:cfg.accent, fontWeight:600, textTransform:'uppercase', letterSpacing:'0.1em' }}>Sin video de catálogo</span>
-    <span style={{ fontFamily:'Rajdhani,sans-serif', fontSize:11, color:'rgba(255,255,255,0.3)' }}>El comercio puede subir su video 16:9 en el Booster</span>
-  </div>
-)}
-
+            {video_catalogo ? (
+              <div style={{
+                position: 'relative', width: '100%', maxWidth: '960px', aspectRatio: '16/9',
+                borderRadius: '1.25rem', background: '#000', overflow: 'hidden',
+                border: '2px solid var(--accent)',
+                boxShadow: '0 0 18px var(--accent-glow), 0 0 36px var(--accent-soft), inset 0 0 16px var(--accent-soft)'
+              }}>
+                <video
+                  ref={videoRef} src={getCleanUrl(video_catalogo)}
+                  autoPlay loop playsInline muted={isMuted}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onTimeUpdate={() => { if (videoRef.current?.duration) setProgress((videoRef.current.currentTime / videoRef.current.duration) * 100); }}
+                />
+                <button onClick={() => setIsMuted(!isMuted)} style={{
+                  position: 'absolute', top: '12px', right: '12px', zIndex: 50,
+                  width: '28px', height: '28px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
+                  borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', color: '#fff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', cursor: 'pointer'
+                }}>
+                  {isMuted ? '🔇' : '🔊'}
+                </button>
+                <div style={{ position: 'absolute', bottom: '16px', left: 0, width: '100%', zIndex: 50, padding: '0 16px' }}>
+                  <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '99px', cursor: 'pointer', marginBottom: '8px' }} onClick={handleSeek}>
+                    <div style={{ height: '100%', background: 'var(--accent)', borderRadius: '99px', boxShadow: '0 0 8px var(--accent-glow)', transition: 'width 0.1s linear', width: `${progress}%` }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <button onClick={togglePlayPause} style={{
+                      background: 'rgba(0,0,0,0.5)', border: '1px solid var(--accent-soft)', backdropFilter: 'blur(8px)',
+                      width: '32px', height: '32px', borderRadius: '50%', color: '#fff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px'
+                    }}>
+                      {isPaused ? '▶' : '⏸'}
+                    </button>
+                  </div>
+                </div>
+                <div style={{ position: 'absolute', top: 0, left: 0, width: '24px', height: '24px', borderTop: '2px solid var(--accent)', borderLeft: '2px solid var(--accent)', borderTopLeftRadius: '1.25rem', zIndex: 50, pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', top: 0, right: 0, width: '24px', height: '24px', borderTop: '2px solid var(--accent)', borderRight: '2px solid var(--accent)', borderTopRightRadius: '1.25rem', zIndex: 50, pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', bottom: 0, left: 0, width: '24px', height: '24px', borderBottom: '2px solid var(--accent)', borderLeft: '2px solid var(--accent)', borderBottomLeftRadius: '1.25rem', zIndex: 50, pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', bottom: 0, right: 0, width: '24px', height: '24px', borderBottom: '2px solid var(--accent)', borderRight: '2px solid var(--accent)', borderBottomRightRadius: '1.25rem', zIndex: 50, pointerEvents: 'none' }} />
+              </div>
+            ) : (
+              <div style={{ width:'100%', maxWidth:'960px', aspectRatio:'16/9', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:12, background:'rgba(0,0,0,0.42)', borderRadius:'1.25rem', border:`2px dashed ${cfg.accentSoft}` }}>
+                <span style={{fontSize:36}}>🎥</span>
+                <span style={{ fontFamily:'Chakra Petch,sans-serif', fontSize:13, color:cfg.accent, fontWeight:600, textTransform:'uppercase', letterSpacing:'0.1em' }}>Sin video de catálogo</span>
+                <span style={{ fontFamily:'Rajdhani,sans-serif', fontSize:11, color:'rgba(255,255,255,0.3)' }}>El comercio puede subir su video 16:9 en el Booster</span>
+              </div>
+            )}
           </div>
 
           {/* COLUMNA DERECHA (VALES) */}
@@ -242,12 +327,6 @@ const NovaCierre = ({ comercio = {}, mensaje = null, carrito = [], precios = {},
           </div>
         </div>
 
-        {/* ========================================================= */}
-        {/* ZONA INFERIOR: ALINEADA MAGNÉTICAMENTE AL VISOR CENTRAL   */}
-        {/* paddingLeft: 180px (compensa hueco izq del video)          */}
-        {/* paddingRight: 140px (compensa panel Vales a la derecha)   */}
-        {/* ========================================================= */}
-
         {/* BANNER MENSAJE */}
         <div style={{ position:'relative', zIndex:2, flexShrink:0, paddingTop:0, paddingRight:'140px', paddingBottom:'10px', paddingLeft:'160px', display: 'flex', justifyContent: 'center' }}>
           <div className={`vb-msg-wrap ${cfg.wrapClass}`} style={{ width: '100%', maxWidth: '750px' }}>
@@ -258,7 +337,7 @@ const NovaCierre = ({ comercio = {}, mensaje = null, carrito = [], precios = {},
             {carrito.length > 0 && (
               <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:10, flexWrap:'wrap', justifyContent:'center' }}>
                 <span style={{ fontFamily:'Chakra Petch,sans-serif', fontSize:9, color:'rgba(255,255,255,0.25)', textTransform:'uppercase', letterSpacing:'0.1em', flexShrink:0 }}>CARRITO</span>
-                {carrito.slice(0,5).map((item,i) => ( <ItemChip key={item.id} item={item} color={cfg.accent} idx={i}/> ))}
+                {carrito.slice(0,5).map((item,i) => ( <ItemChip key={item.id || item.item_id} item={item} color={cfg.accent} idx={i}/> ))}
                 {carrito.length > 5 && ( <span style={{fontFamily:'Rajdhani,sans-serif', fontSize:11, color:'rgba(255,255,255,0.3)'}}> +{carrito.length-5} más </span> )}
                 {precios?.total_final > 0 && ( <span style={{ fontFamily:'Chakra Petch,sans-serif', fontSize:14, fontWeight:700, color:cfg.accent, whiteSpace:'nowrap' }}>{total_con_delivery.toFixed(2)}€</span> )}
               </div>
@@ -269,7 +348,7 @@ const NovaCierre = ({ comercio = {}, mensaje = null, carrito = [], precios = {},
         {/* BOLAS */}
         {!loading && bolas.length > 0 && (
           <div style={{ position:'relative', zIndex:2, flexShrink:0, display:'flex', gap:12, flexWrap:'wrap', justifyContent:'center', paddingTop:0, paddingRight:'140px', paddingBottom:'12px', paddingLeft:'160px' }}>
-            {bolas.map((bola, i) => ( <button key={i} onClick={() => onSend?.(bola.texto)} className={cfg.bolaClass} style={{ padding:'12px 24px', borderRadius:'999px', fontSize:12, fontWeight:900, fontFamily:'Chakra Petch,sans-serif', textTransform:'uppercase', letterSpacing:'0.08em', cursor:'pointer', transition:'all 0.15s', animation:`floatBola ${1.8 + i*0.3}s ease-in-out infinite` }}>{bola.texto}</button> ))}
+            {bolas.map((bola, i) => ( <button key={i} onClick={() => handleSendConIA(bola.texto)} className={cfg.bolaClass} style={{ padding:'12px 24px', borderRadius:'999px', fontSize:12, fontWeight:900, fontFamily:'Chakra Petch,sans-serif', textTransform:'uppercase', letterSpacing:'0.08em', cursor:'pointer', transition:'all 0.15s', animation:`floatBola ${1.8 + i*0.3}s ease-in-out infinite` }}>{bola.texto}</button> ))}
           </div>
         )}
 

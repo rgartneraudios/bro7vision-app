@@ -5,10 +5,10 @@ import AgentChatInput from '../AgentChatInput';
 import { useAgentLara } from '../../hooks/useAgentLara';
 
 const VIDEO_DEFAULT = 'https://media.bro7vision.com/laraDefault.mp4';
-const BORDER_COLOR  = 'rgba(100,200,100,0.40)';
+const BORDER_COLOR  = 'rgba(200,128,255,0.40)';
 const ICONO         = '🐻';
 const NOMBRE        = 'LARA';
-const slateColor    = '#94a3b8';
+const slateColor    = '#824FFF';
 
 const FRASES_BIENVENIDA = [
   "Hola, soy Lara 🐻 Fluye conmigo — ¿a dónde te llevo hoy?",
