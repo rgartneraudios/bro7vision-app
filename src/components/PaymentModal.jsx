@@ -2,9 +2,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import NovaCierre from './personajes/NovaCierre';
-import NovaCierreMobile from './NovaCierreMobile';
-import IsabellaCierre from './IsabellaCierre';
-import IsabellaCierreMobile from './IsabellaCierreMobile';
+import NovaCierreMobile from './personajes/NovaCierreMobile';
+import IsabellaCierre from './personajes/IsabellaCierre';
+import IsabellaCierreMobile from './personajes/IsabellaCierreMobile';
 import CarroGeneral from './CarroGeneral';
 import { useCarrito } from '../hooks/useCarrito';
 import { useAgentChat } from '../hooks/useAgentChat';

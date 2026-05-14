@@ -24,7 +24,7 @@ import SlideRailAvisos from './SlideRailAvisos';
 import SlideRailAudio from './SlideRailAudio';
 import NovaBanner  from './personajes/NovaBanner';
 import NovaCierre  from './personajes/NovaCierre';
-import IsabellaBanner from './IsabellaBanner';
+import IsabellaBanner from './personajes/IsabellaBanner';
 import EvelynBanner from './EvelynBanner';
 import MapacheBanner from './MapacheBanner';
 import SmisterioBanner from "./personajes/SmisterioBanner";
@@ -47,10 +47,9 @@ export default function DesktopLayout(props) {
     setSelectedLog, setVlData, ososHandoffContext, setOsosHandoffContext, avisoEnConstruccion,
     perfilOso, stripVisible, stripCards, stripLabel, setHoloPrismaIndex, findChannelByAlias, checkIfNew,
     ososMensaje, ososLoading, handleOsosInput, ososModo, setOsosModo, handleLogout, selectedCard,
-   isabellaMensaje, isabellaLoading, handleIsabellaInput,
   mapacheMensaje, mapacheLoading, handleMapacheInput, evelynMensaje, evelynLoading, handleEvelynInput,
   oraculoMensaje, oraculoLoading, handleOraculoInput, rumoresMensaje, rumoresLoading, handleRumoresInput,
-  novaEsPatrocinado, isabellaEsPatrocinado, mapacheEsPatrocinado,
+  novaEsPatrocinado, mapacheEsPatrocinado,
   evelynEsPatrocinado, oraculoEsPatrocinado, ososEsPatrocinado, oraculoPersonaje,
    iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA
   } = props;
@@ -225,20 +224,17 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
           sessionCP={sessionCP}
           realItems={realItems}
           stripVisible={stripVisible}
-         onHandoff={handleCentralHandoff}
           stripCards={stripCards}
           stripLabel={stripLabel}
-          enviar={handleIsabellaInput}
-	mensaje={isabellaMensaje}
-	loading={isabellaLoading}
-          esPatrocinado={isabellaEsPatrocinado}
+          onHandoff={handleCentralHandoff}
+          iaMode={iaMode}
+          isAdmin={isAdmin}
+          entidad={ososHandoffContext?.comercio_especifico}
+          hayTarjetas={stripVisible}
           onOpenTerminal={(c) => abrirTienda(c, 'isabellaCierre')}
           onSetActiveIndex={setHoloPrismaIndex}
-          onInvokeOsos={() => setStep(1)}
-          onInvokeMapache={() => setIntent('audios')}
           onEntityFocus={(u) => setActivePrismUser(u)}
           setIntent={setIntent}
-          onPersonajeChange={handleCentralHandoff}
         />
       )}
 
