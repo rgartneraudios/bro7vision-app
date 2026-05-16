@@ -35,8 +35,9 @@ import SlideRailAudio from './components/SlideRailAudio';
 import { useAudioData } from './hooks/useAudioData';
 import BroCardStrip from './components/BroCardStrip';
 import AgentChatInput from './components/AgentChatInput';
-import { useAgOsosMobile } from './hooks/useAgOsosMobile';
-import { useAgentRumores } from './hooks/useAgentRumores';
+import { useAgOsosMobile }    from './hooks/useAgOsosMobile';
+import { useAgentRumores }    from './hooks/useAgentRumores';
+import { useAgSectorMobile }  from './hooks/useAgSectorMobile';
 import SlideRailServicios from './components/SlideRailServicios';
 import SlideRailAvisos from './components/SlideRailAvisos';
 import CityLocationBanner from './components/CityLocationBanner';
@@ -360,6 +361,17 @@ if (SIN_UBICACION.includes(agente)) {
     ciudad:    sessionCity,
   });
 
+  const { mensaje: sectorMensaje, loading: sectorLoading,
+          enviar: handleSectorInput, oraculoActivo } = useAgSectorMobile({
+    intent, iaMode, isAdmin,
+    onHandoff:   handleCentralHandoff,
+    ciudad:      sessionCity,
+    perfilSector,
+    genesis:     balances?.genesis || 0,
+    userId:      session?.user?.id,
+    autorAlias:  perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano',
+  });
+
   // ══════════════════════════════════════════════════════
   // NAVEGACIÓN — después de useAgentChat para acceder a resetOsos
   // ══════════════════════════════════════════════════════
@@ -402,17 +414,9 @@ if (SIN_UBICACION.includes(agente)) {
   // ══════════════════════════════════════════════════════
 
   const chatMobile = useMemo(() => {
-    if (step === 1) return { enviar: handleOsosInput, mensaje: ososMensaje, loading: ososLoading };
-    switch (intent) {
-      case 'productos':       return { enviar: () => {},            mensaje: null,            loading: false };
-      case 'servicios':       return { enviar: () => {},            mensaje: null,            loading: false };
-      case 'avisos':          return { enviar: () => {},            mensaje: null,            loading: false };
-      case 'audios':          return { enviar: () => {},            mensaje: null,            loading: false };
-      case 'ai':              return { enviar: () => {},           mensaje: null,            loading: false };
-      case 'internal_search': return { enviar: handleRumoresInput,  mensaje: rumoresMensaje,  loading: rumoresLoading };
-      default:                return { enviar: handleOsosInput,     mensaje: ososMensaje,     loading: ososLoading };
-    }
-  }, [intent, step, rumoresMensaje, ososMensaje]);
+    if (step === 1) return { enviar: handleOsosInput,   mensaje: ososMensaje,   loading: ososLoading   };
+    return           { enviar: handleSectorInput, mensaje: sectorMensaje, loading: sectorLoading };
+  }, [step, sectorMensaje, ososMensaje, sectorLoading, ososLoading]);
 
   const filteredItems = useMemo(() => {
     const supabaseItems = realItems.map(u => ({ ...u, id: u.id, name: u.product_title || u.alias, img: u.card_banner_url || u.banner_url || '/default.png', price: u.price || 0, type: u.video_file ? ['shop', 'live'] : ['shop'], source: 'supabase' }));
@@ -471,15 +475,6 @@ if (SIN_UBICACION.includes(agente)) {
 
   const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'audios']);
 
-  const chatPorIntent = {
-    productos:       { enviar: () => {},            mensaje: null,            loading: false },
-    servicios:       { enviar: () => {},            mensaje: null,            loading: false },
-    audios:          { enviar: () => {},            mensaje: null,            loading: false },
-    avisos:          { enviar: () => {},            mensaje: null,            loading: false },
-    ai:              { enviar: () => {},            mensaje: null,            loading: false },
-    internal_search: { enviar: handleRumoresInput,  mensaje: rumoresMensaje,  loading: rumoresLoading },
-  };
-
   // ══════════════════════════════════════════════════════
   // LAYOUTPROPS
   // ══════════════════════════════════════════════════════
@@ -502,7 +497,7 @@ if (SIN_UBICACION.includes(agente)) {
     perfilOso, stripVisible, stripCards, stripLabel,
     onHandoff: handleCentralHandoff,
     setHoloPrismaIndex, findChannelByAlias, checkIfNew,
-    chatMobile, perfilSector,
+    chatMobile, perfilSector, oraculoActivo,
     handleOsosInput, ososMensaje, ososLoading, ososModo, setOsosModo,
     handleLogout,
     onAvisoConectar: handleAvisoConectar,

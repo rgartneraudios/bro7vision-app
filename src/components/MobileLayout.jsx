@@ -458,6 +458,7 @@ const MobileLayout = ({
   audioUser,
   onToggleAudio,
   selectedCard,
+  oraculoActivo,
   ...props
 }) => {
   const [footerMode, setFooterMode] = useState('chat');
@@ -526,7 +527,9 @@ useEffect(() => {
     }
     const sectorMap = SECTOR_AVATARS[intent];
     if (!sectorMap) return [];
-    const personajeActivo = perfilSector?.personaje_id;
+    const personajeActivo = intent === 'ai'
+      ? (oraculoActivo || perfilSector?.personaje_id)
+      : perfilSector?.personaje_id;
     if (personajeActivo && sectorMap[personajeActivo]) return [sectorMap[personajeActivo]];
     return [Object.values(sectorMap)[0]];
   };
@@ -601,13 +604,13 @@ const nextAudio = () => {
   setIsPlaying(true);
 };
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     if (!audioRef.current) return;
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.play();
+      await audioRef.current.play();
       setIsPlaying(true);
     }
   };       
@@ -630,7 +633,6 @@ const nextAudio = () => {
   ref={audioRef}
   src={audioUrl}
   loop
-  autoPlay
   preload="auto"
   onEnded={() => setIsPlaying(false)}
 />
