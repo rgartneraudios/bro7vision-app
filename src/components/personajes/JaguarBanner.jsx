@@ -1,37 +1,10 @@
 // src/components/personajes/JaguarBanner.jsx
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; 
+import OraculoAcordeon from '../OraculoAcordeon';
 import AgentChatInput from '../AgentChatInput';
 import { useJaguarChat } from '../../hooks/useJaguarChat';
-import { calcularSignoSideral } from '../../data/jaguar/calcularSigno';
-import { aries }       from '../../data/jaguar/aries';
-import { tauro }       from '../../data/jaguar/tauro';
-import { geminis }     from '../../data/jaguar/geminis';
-import { cancer }      from '../../data/jaguar/cancer';
-import { leo }         from '../../data/jaguar/leo';
-import { virgo }       from '../../data/jaguar/virgo';
-import { libra }       from '../../data/jaguar/libra';
-import { escorpio }    from '../../data/jaguar/escorpio';
-import { ofiuco }      from '../../data/jaguar/ofiuco';
-import { sagitario }   from '../../data/jaguar/sagitario';
-import { capricornio } from '../../data/jaguar/capricornio';
-import { acuario }     from '../../data/jaguar/acuario';
-import { piscis }      from '../../data/jaguar/piscis';
-import { ariesMito }       from '../../data/jaguar/ariesMito';
-import { tauroMito }       from '../../data/jaguar/tauroMito';
-import { geminisMito }     from '../../data/jaguar/geminisMito';
-import { cancerMito }      from '../../data/jaguar/cancerMito';
-import { leoMito }         from '../../data/jaguar/leoMito';
-import { virgoMito }       from '../../data/jaguar/virgoMito';
-import { libraMito }       from '../../data/jaguar/libraMito';
-import { escorpioMito }    from '../../data/jaguar/escorpioMito';
-import { ofiucoMito }      from '../../data/jaguar/ofiucoMito';
-import { sagitarioMito }   from '../../data/jaguar/sagitarioMito';
-import { capricornioMito } from '../../data/jaguar/capricornioMito';
-import { acuarioMito }     from '../../data/jaguar/acuarioMito';
-import { piscisMito }      from '../../data/jaguar/piscisMito';
-import { amazonas1 }       from '../../data/jaguar/amazonas/amazonas1';
-import { amazonas2 }       from '../../data/jaguar/amazonas/amazonas2';
+import * as JD from '../../data/jaguar/jaguarData';
 
 // ─── CONSTANTES ──────────────────────────────────────────────────────────────
 
@@ -51,50 +24,50 @@ const buildTextoSigno = (s) =>
   `${s.simbolo} ${s.frase.trim()}\n\n${s.esencia.trim()}\n\n${s.consejo}`;
 
 const FRASES_CONFIRMO = {
-  aries:       `🐯Aries sideral — entre 19 abr y 13 may. Escribe CONFIRMO y revelo la frecuencia.`,
-  tauro:       `🐯 Tauro sideral — entre 14 may y 19 jun. Escribe CONFIRMO y revelo la frecuencia.`,
-  geminis:     `🐯 Géminis sideral — entre 20 jun y 20 jul. Escribe CONFIRMO y revelo la frecuencia.`,
-  cancer:      `🐯 Cáncer sideral — entre 21 jul y 9 ago. Escribe CONFIRMO y revelo la frecuencia.`,
-  leo:         `🐯 Leo sideral — entre 10 ago y 15 sep. Escribe CONFIRMO y revelo la frecuencia.`,
-  virgo:       `🐯 Virgo sideral — entre 16 sep y 30 oct. Escribe CONFIRMO y revelo la frecuencia.`,
-  libra:       `🐯 Libra sideral — entre 31 oct y 22 nov. Escribe CONFIRMO y revelo la frecuencia.`,
-  escorpio:    `🐯 Escorpio sideral — entre 23 nov y 29 nov. Escribe CONFIRMO y revelo la frecuencia.`,
-  ofiuco:      `🐯 Ofiuco sideral — entre 30 nov y 17 dic. El signo trece. Escribe CONFIRMO.`,
-  sagitario:   `🐯 Sagitario sideral — entre 18 dic y 18 ene. Escribe CONFIRMO y revelo la frecuencia.`,
-  capricornio: `🐯 Capricornio sideral — entre 19 ene y 15 feb. Escribe CONFIRMO y revelo la frecuencia.`,
-  acuario:     `🐯 Acuario sideral — entre 16 feb y 11 mar. Escribe CONFIRMO y revelo la frecuencia.`,
-  piscis:      `🐯 Piscis sideral — entre 12 mar y 18 abr. Escribe CONFIRMO y revelo la frecuencia.`,
+  aries:       `🐯Aries sideral — entre 19 abr y 13 may. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
+  tauro:       `🐯 Tauro sideral — entre 14 may y 19 jun. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
+  geminis:     `🐯 Géminis sideral — entre 20 jun y 20 jul. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
+  cancer:      `🐯 Cáncer sideral — entre 21 jul y 9 ago. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
+  leo:         `🐯 Leo sideral — entre 10 ago y 15 sep. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
+  virgo:       `🐯 Virgo sideral — entre 16 sep y 30 oct. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
+  libra:       `🐯 Libra sideral — entre 31 oct y 22 nov. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
+  escorpio:    `🐯 Escorpio sideral — entre 23 nov y 29 nov. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
+  ofiuco:      `🐯 Ofiuco sideral — entre 30 nov y 17 dic. El signo trece. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
+  sagitario:   `🐯 Sagitario sideral — entre 18 dic y 18 ene. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
+  capricornio: `🐯 Capricornio sideral — entre 19 ene y 15 feb. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
+  acuario:     `🐯 Acuario sideral — entre 16 feb y 11 mar. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
+  piscis:      `🐯 Piscis sideral — entre 12 mar y 18 abr. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
 };
 
 const ACORDEON_DATA = {
-  aries:       { texto: buildTextoSigno(aries),       video: 'https://media.bro7vision.com/jaguarSignos.mp4'       },
-  tauro:       { texto: buildTextoSigno(tauro),       video: 'https://media.bro7vision.com/jaguarSignos.mp4'       },
-  geminis:     { texto: buildTextoSigno(geminis),     video: 'https://media.bro7vision.com/jaguarSignos.mp4'     },
-  cancer:      { texto: buildTextoSigno(cancer),      video: 'https://media.bro7vision.com/jaguarSignos.mp4'      },
-  leo:         { texto: buildTextoSigno(leo),         video: 'https://media.bro7vision.com/jaguarSignos.mp4'         },
-  virgo:       { texto: buildTextoSigno(virgo),       video: 'https://media.bro7vision.com/jaguarSignos.mp4'       },
-  libra:       { texto: buildTextoSigno(libra),       video: 'https://media.bro7vision.com/jaguarSignos.mp4'       },
-  escorpio:    { texto: buildTextoSigno(escorpio),    video: 'https://media.bro7vision.com/jaguarSignos.mp4'    },
-  ofiuco:      { texto: buildTextoSigno(ofiuco),      video: 'https://media.bro7vision.com/jaguarSignos.mp4'      },
-  sagitario:   { texto: buildTextoSigno(sagitario),   video: 'https://media.bro7vision.com/jaguarSignos.mp4'   },
-  capricornio: { texto: buildTextoSigno(capricornio), video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
-  acuario:     { texto: buildTextoSigno(acuario),     video: 'https://media.bro7vision.com/jaguarSignos.mp4'     },
-  piscis:      { texto: buildTextoSigno(piscis),      video: 'https://media.bro7vision.com/jaguarSignos.mp4'      },
-  aries_mito:       { texto: ariesMito.data,       video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
-  tauro_mito:       { texto: tauroMito.data,        video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
-  geminis_mito:     { texto: geminisMito.data,      video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
-  cancer_mito:      { texto: cancerMito.data,       video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
-  leo_mito:         { texto: leoMito.data,          video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
-  virgo_mito:       { texto: virgoMito.data,        video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
-  libra_mito:       { texto: libraMito.data,        video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
-  escorpio_mito:    { texto: escorpioMito.data,     video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
-  ofiuco_mito:      { texto: ofiucoMito.data,       video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
-  sagitario_mito:   { texto: sagitarioMito.data,    video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
-  capricornio_mito: { texto: capricornioMito.data,  video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
-  acuario_mito:     { texto: acuarioMito.data,      video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
-  piscis_mito:      { texto: piscisMito.data,       video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
-  amazonas_1:       { texto: amazonas1.data,        video: 'https://media.bro7vision.com/jaguarDefaults.mp4' },
-  amazonas_2:       { texto: amazonas2.data,        video: 'https://media.bro7vision.com/jaguarDefaults.mp4' },
+  aries:       { texto: buildTextoSigno(JD.aries),       video: 'https://media.bro7vision.com/jaguarSignos.mp4'       },
+  tauro:       { texto: buildTextoSigno(JD.tauro),       video: 'https://media.bro7vision.com/jaguarSignos.mp4'       },
+  geminis:     { texto: buildTextoSigno(JD.geminis),     video: 'https://media.bro7vision.com/jaguarSignos.mp4'     },
+  cancer:      { texto: buildTextoSigno(JD.cancer),      video: 'https://media.bro7vision.com/jaguarSignos.mp4'      },
+  leo:         { texto: buildTextoSigno(JD.leo),         video: 'https://media.bro7vision.com/jaguarSignos.mp4'         },
+  virgo:       { texto: buildTextoSigno(JD.virgo),       video: 'https://media.bro7vision.com/jaguarSignos.mp4'       },
+  libra:       { texto: buildTextoSigno(JD.libra),       video: 'https://media.bro7vision.com/jaguarSignos.mp4'       },
+  escorpio:    { texto: buildTextoSigno(JD.escorpio),    video: 'https://media.bro7vision.com/jaguarSignos.mp4'    },
+  ofiuco:      { texto: buildTextoSigno(JD.ofiuco),      video: 'https://media.bro7vision.com/jaguarSignos.mp4'      },
+  sagitario:   { texto: buildTextoSigno(JD.sagitario),   video: 'https://media.bro7vision.com/jaguarSignos.mp4'   },
+  capricornio: { texto: buildTextoSigno(JD.capricornio), video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  acuario:     { texto: buildTextoSigno(JD.acuario),     video: 'https://media.bro7vision.com/jaguarSignos.mp4'     },
+  piscis:      { texto: buildTextoSigno(JD.piscis),      video: 'https://media.bro7vision.com/jaguarSignos.mp4'      },
+  aries_mito:       { texto: JD.ariesMito.data,       video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  tauro_mito:       { texto: JD.tauroMito.data,        video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  geminis_mito:     { texto: JD.geminisMito.data,      video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  cancer_mito:      { texto: JD.cancerMito.data,       video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  leo_mito:         { texto: JD.leoMito.data,          video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  virgo_mito:       { texto: JD.virgoMito.data,        video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  libra_mito:       { texto: JD.libraMito.data,        video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  escorpio_mito:    { texto: JD.escorpioMito.data,     video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  ofiuco_mito:      { texto: JD.ofiucoMito.data,       video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  sagitario_mito:   { texto: JD.sagitarioMito.data,    video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  capricornio_mito: { texto: JD.capricornioMito.data,  video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  acuario_mito:     { texto: JD.acuarioMito.data,      video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  piscis_mito:      { texto: JD.piscisMito.data,       video: 'https://media.bro7vision.com/jaguarSignos.mp4' },
+  amazonas_1:       { texto: JD.amazonas1.data,        video: 'https://media.bro7vision.com/jaguarDefaults.mp4' },
+  amazonas_2:       { texto: JD.amazonas2.data,        video: 'https://media.bro7vision.com/jaguarDefaults.mp4' },
 };
 
 const FRASES_EXPLORAR = [
@@ -192,6 +165,10 @@ export default function JaguarBanner({
   onInvokeOsos,
   iaMode          = 'off',
   isAdmin         = false,
+  isMobile        = false,
+  onMensaje,
+  onEnviarRef,
+  mostrarAcordeon: mostrarAcordeonExterno = true,
 }) {
   const [display, setDisplay]                 = useState('');
   const [cursor, setCursor]                   = useState(true);
@@ -199,10 +176,8 @@ export default function JaguarBanner({
   const [videoActual, setVideoActual]         = useState(null);
   const [videoFading, setVideoFading]         = useState(false);
   const [mostrarAcordeon, setMostrarAcordeon] = useState(false);
-  const [acordeonDisplay, setAcordeonDisplay] = useState('');
-  const [acordeonTitulo, setAcordeonTitulo]   = useState('');
+  const [acordeonData, setAcordeonData]       = useState({ titulo: '', texto: '' });
   const charIdx     = useRef(0);
-  const acordeonRef = useRef(null);
   const fadeTimer   = useRef(null);
   const origenRef   = useRef(origenLlegada);
 
@@ -212,7 +187,8 @@ export default function JaguarBanner({
     onBotContent: (tema) => {
       const data = ACORDEON_DATA[tema];
       if (data) {
-        lanzarAcordeon(data.texto, tema);
+        setAcordeonData({ titulo: tema, texto: data.texto });
+        setMostrarAcordeon(true);
         cambiarVideo(data.video);
       }
     },
@@ -228,10 +204,16 @@ export default function JaguarBanner({
   useEffect(() => { if (iaMensaje) setCurrentMsg(iaMensaje); }, [iaMensaje]);
 
   useEffect(() => {
-    const esHandoff = origenRef.current === 'handoff';
-    setCurrentMsg(esHandoff ? elegir(FRASES_LLEGADA) : elegir(FRASES_BIENVENIDA));
-    setVideoActual(VIDEO_DEFAULT);
-  }, []);
+    if (iaMensaje) onMensaje?.(iaMensaje);
+  }, [iaMensaje]);
+
+  useEffect(() => {
+  const esHandoff = origenRef.current === 'handoff';
+  const msgInicial = esHandoff ? elegir(FRASES_LLEGADA) : elegir(FRASES_BIENVENIDA);
+  setCurrentMsg(msgInicial);
+  setVideoActual(VIDEO_DEFAULT);
+  onMensaje?.(msgInicial);
+}, []);
 
   useEffect(() => {
     const t = setInterval(() => setCursor(c => !c), 530);
@@ -252,6 +234,23 @@ export default function JaguarBanner({
 
   useEffect(() => () => clearTimeout(fadeTimer.current), []);
 
+  useEffect(() => {
+    if (!onEnviarRef) return;
+    onEnviarRef.current = (texto) => {
+      enviarHook(texto, {
+        calcularSignoSideral: JD.calcularSignoSideral,
+        FRASES_CONFIRMO,
+        FRASES_HANDOFF: {
+          smisterio: FRASES_HANDOFF_SMISTERIO,
+          orumama:   FRASES_HANDOFF_ORUMAMA,
+          osos:      FRASES_HANDOFF_OSOS,
+        },
+        setCurrentMsg: (msg) => onMensaje?.(msg),
+        elegir,
+      });
+    };
+  }, [enviarHook, onMensaje]);
+
   const cambiarVideo = (url) => {
     if (url === videoActual) return;
     setVideoFading(true);
@@ -263,22 +262,13 @@ export default function JaguarBanner({
   };
 
   const lanzarAcordeon = (texto, titulo) => {
-    setAcordeonTitulo(titulo.toUpperCase());
-    setMostrarAcordeon(true);
-    setAcordeonDisplay('');
-    let i = 0;
-    clearInterval(acordeonRef.current);
-    acordeonRef.current = setInterval(() => {
-      i++;
-      setAcordeonDisplay(texto.slice(0, i));
-      if (i >= texto.length) clearInterval(acordeonRef.current);
-    }, 18);
+    // Método eliminado: OraculoAcordeon maneja internamente la animación.
   };
 
   const handleUserInput = (texto) => {
     if (!texto.trim()) return;
     enviarHook(texto, {
-      calcularSignoSideral,
+      calcularSignoSideral: JD.calcularSignoSideral,
       FRASES_CONFIRMO,
       FRASES_HANDOFF: {
         smisterio: FRASES_HANDOFF_SMISTERIO,
@@ -289,6 +279,24 @@ export default function JaguarBanner({
       elegir,
     });
   };
+
+  if (isMobile) {
+    return (
+      <>
+        {mostrarAcordeonExterno && mostrarAcordeon && (
+          <OraculoAcordeon
+            titulo={acordeonData.titulo}
+            texto={acordeonData.texto}
+            onClose={() => setMostrarAcordeon(false)}
+            isMobile={true}
+            borderColor={BORDER_COLOR}
+            icono={ICONO}
+            nombre={NOMBRE}
+          />
+        )}
+      </>
+    );
+  }
 
   return (
     <div className="absolute inset-0 z-[50] pointer-events-none">
@@ -373,22 +381,15 @@ export default function JaguarBanner({
 
       {/* ACORDEÓN LATERAL */}
       {mostrarAcordeon && (
-        <div className="or-acordeon" style={{ borderLeft: `2px solid ${BORDER_COLOR}` }}>
-          <button
-            onClick={() => setMostrarAcordeon(false)}
-            style={{ position: 'absolute', top: 14, right: 14, color: slateColor, fontSize: 18, background: 'none', border: 'none', cursor: 'pointer' }}
-          >
-            x
-          </button>
-          <div style={{ marginTop: 36 }}>
-            <p style={{ color: slateColor, fontWeight: 900, fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 14 }}>
-              {ICONO} {NOMBRE} · {acordeonTitulo}
-            </p>
-            <p style={{ color: '#f1f5f9', fontFamily: "'Playfair Display', Georgia, serif", fontSize: 19, lineHeight: 2.1, whiteSpace: 'pre-wrap', fontStyle: 'italic', letterSpacing: '0.01em' }}>
-              {acordeonDisplay}
-            </p>
-          </div>
-        </div>
+        <OraculoAcordeon
+          titulo={acordeonData.titulo}
+          texto={acordeonData.texto}
+          onClose={() => setMostrarAcordeon(false)}
+          isMobile={isMobile}
+          borderColor={BORDER_COLOR}
+          icono={ICONO}
+          nombre={NOMBRE}
+        />
       )}
 
       {/* BANNER + INPUT */}

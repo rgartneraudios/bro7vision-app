@@ -19,18 +19,16 @@ const elegir = (arr) =>
 export function useAgSectorMobile({
   intent, iaMode, isAdmin, onHandoff, ciudad, perfilSector,
   genesis = 0, userId = null, autorAlias = 'Ciudadano',
+  perfilOso,
 }) {
-  // ── Estado del personaje activo del Oráculo ────────────────────────────────
-  const [oraculoActivo, setOraculoActivo] = useState(
-    perfilSector?.personaje_id || 'orumama'
-  );
+  // ── Personaje activo del Oráculo (derivado de perfilOso) ───────────────────
+  const oraculoActivo = (perfilOso?.oraculo_personaje || 'ORUMAMA').toLowerCase();
 
   // Estado para mensajes de bot-mode del Oráculo (sustituye al setCurrentMsg del Banner)
   const [mensajeBot, setMensajeBot] = useState(null);
 
-  useEffect(() => {
-    if (perfilSector?.personaje_id) setOraculoActivo(perfilSector.personaje_id);
-  }, [perfilSector?.personaje_id]);
+  // Limpiar mensajeBot al cambiar personaje o sector
+  useEffect(() => { setMensajeBot(null); }, [oraculoActivo, intent]);
 
   // Limpiar mensajeBot al cambiar personaje o sector
   useEffect(() => { setMensajeBot(null); }, [oraculoActivo, intent]);
@@ -41,9 +39,9 @@ export function useAgSectorMobile({
 
   const onHandoffOraculo = useCallback((payload) => {
     const agente = typeof payload === 'string' ? payload : payload?.agente;
-    if (agente === 'jaguar'    || agente === 'ORACULO_JAGUAR')    { setOraculoActivo('jaguar');    return; }
-    if (agente === 'smisterio' || agente === 'ORACULO_SMISTERIO') { setOraculoActivo('smisterio'); return; }
-    if (agente === 'orumama'   || agente === 'ORACULO_ORUMAMA')   { setOraculoActivo('orumama');   return; }
+    if (agente === 'jaguar'    || agente === 'ORACULO_JAGUAR')    { return; }
+    if (agente === 'smisterio' || agente === 'ORACULO_SMISTERIO') { return; }
+    if (agente === 'orumama'   || agente === 'ORACULO_ORUMAMA')   { return; }
     onHandoffRef.current?.(payload);
   }, []);
 

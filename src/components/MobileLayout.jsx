@@ -7,6 +7,9 @@ import BroLives from '../components/BroLives';
 import BroTuner from '../components/BroTuner';
 import { getMoonSuffix } from '../utils/moonUtils';
 import { getVideoCandidates, resolveVideoFromCandidates, getTurno } from '../data/citycodes';
+import SmisterioBanner from './personajes/SmisterioBanner';
+import JaguarBanner from './personajes/JaguarBanner';
+import OrumamaBanner from './personajes/OrumamaBanner';
 
 // ─── ESTILOS NEÓN ───────────────────────────────────────────────────────────
 const MOBILE_STYLES = `
@@ -475,16 +478,10 @@ const MobileLayout = ({
   const inputRef     = useRef(null);
   const lastBotMsgId = useRef(null);
   
-  const audioList = hubAudios?.filter(a => a.audio_video) || [];
-const audioUrl  = audioList[audioIndex]?.audio_video;
-
-// ← Y EL USEEFFECT JUSTO DEBAJO
-useEffect(() => {
-  if (!audioRef.current) return;
-  audioRef.current.load();
-  if (isPlaying) audioRef.current.play();
-}, [audioUrl]);
-
+  const isOraculo = chatMobile?.tipo === 'ORACULO';
+  const oraculoPersonaje = chatMobile?.oraculo_personaje;
+  const oraculoEnviarRef = useRef(null);
+  
   const accent = SECTOR_ACCENT[intent] || '#00ffff';
   
 
@@ -505,13 +502,22 @@ useEffect(() => {
     if (lastBotMsgId.current === chatMensaje) return;
     lastBotMsgId.current = chatMensaje;
     setMessages(prev => [...prev, { from: 'bot', text: chatMensaje, ts: Date.now() }]);
-  }, [chatMensaje]);
+  }, [chatMensaje, isOraculo]);
+
+  useEffect(() => {
+    lastBotMsgId.current = null;
+    setMessages([]);
+  }, [oraculoPersonaje, isOraculo]);
 
   const handleSend = () => {
     const txt = inputText.trim();
     if (!txt || chatLoading) return;
     setMessages(prev => [...prev, { from: 'user', text: txt, ts: Date.now() }]);
-    enviar?.(txt);
+    if (isOraculo && oraculoEnviarRef.current) {
+      oraculoEnviarRef.current(txt);
+    } else {
+      enviar?.(txt);
+    }
     setInputText('');
     setBurbujaOpen(false);
   };
@@ -520,20 +526,60 @@ useEffect(() => {
   const sectorLabel  = step === 1 ? 'OSOS' : activeSector?.label || 'OSOS';
   const lastMessage  = messages.length > 0 ? messages[messages.length - 1] : null;
 
+  if (!perfilOso) {
+    return (
+      <div className="mobile-root fixed inset-0 overflow-hidden bg-black text-white flex items-center justify-center">
+        <style>{MOBILE_STYLES}</style>
+        <div className="flex flex-col items-center gap-6">
+          <div className="text-3xl uppercase tracking-widest font-black"
+            style={{ color: '#00ffff', textShadow: '0 0 16px #00ffff' }}>
+            CARGANDO...
+          </div>
+          <div className="flex gap-4 items-center">
+            {[0,1,2].map(i => (
+              <span key={i} className="block w-5 h-5 rounded-full animate-bounce"
+                style={{ background: '#00ffff', animationDelay: `${i * 0.15}s`, boxShadow: '0 0 16px #00ffff' }} />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!perfilOso) {
+    return (
+      <div className="mobile-root fixed inset-0 overflow-hidden bg-black text-white flex items-center justify-center">
+        <style>{MOBILE_STYLES}</style>
+        <div className="flex flex-col items-center gap-6">
+          <div className="text-3xl uppercase tracking-widest font-black"
+            style={{ color: '#00ffff', textShadow: '0 0 16px #00ffff' }}>
+            CARGANDO...
+          </div>
+          <div className="flex gap-4 items-center">
+            {[0,1,2].map(i => (
+              <span key={i} className="block w-5 h-5 rounded-full animate-bounce"
+                style={{ background: '#00ffff', animationDelay: `${i * 0.15}s`, boxShadow: '0 0 16px #00ffff' }} />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const getActiveAvatars = () => {
     if (step === 1 || !intent) {
       const oso = (perfilOso?.oso_id || 'tito').toLowerCase();
-      return [SECTOR_AVATARS.gps[oso] || SECTOR_AVATARS.gps.tito];
+      return { avatars: [SECTOR_AVATARS.gps[oso] || SECTOR_AVATARS.gps.tito], personajeActivo: null };
     }
     const sectorMap = SECTOR_AVATARS[intent];
-    if (!sectorMap) return [];
+    if (!sectorMap) return { avatars: [], personajeActivo: null };
     const personajeActivo = intent === 'ai'
-      ? (oraculoActivo || perfilSector?.personaje_id)
+      ? (perfilSector?.personaje_id || oraculoActivo)
       : perfilSector?.personaje_id;
-    if (personajeActivo && sectorMap[personajeActivo]) return [sectorMap[personajeActivo]];
-    return [Object.values(sectorMap)[0]];
+    if (personajeActivo && sectorMap[personajeActivo]) return { avatars: [sectorMap[personajeActivo]], personajeActivo };
+    return { avatars: [Object.values(sectorMap)[0]], personajeActivo };
   };
-  const activeAvatars = getActiveAvatars();
+  const { avatars: activeAvatars, personajeActivo } = getActiveAvatars();
 
   const puertasProps = {
     isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
@@ -732,9 +778,24 @@ const nextAudio = () => {
           {activeAvatars.length > 0 && (
             <div className="flex items-center justify-center gap-3">
               {activeAvatars.map((img, i) => (
-                <img key={i} src={img} alt=""
-                  className="w-20 h-20 rounded-full object-cover border-2"
-                  style={{ borderColor: accent, boxShadow: `0 0 12px ${accent}` }} />
+                <div key={i} className="flex flex-col items-center gap-1">
+                  <img src={img} alt=""
+                    className="w-20 h-20 rounded-full object-cover border-2"
+                    style={{ borderColor: accent, boxShadow: `0 0 12px ${accent}` }} />
+                  {intent === 'ai' && personajeActivo && (
+                    <span style={{
+                      fontFamily: "'Courier New', monospace",
+                      fontSize: 9, fontWeight: 900,
+                      letterSpacing: '0.2em',
+                      textTransform: 'uppercase',
+                      color: accent,
+                      opacity: 0.8,
+                    }}>
+                      {personajeActivo === 'jaguar' ? '🐯 JAGUAR' :
+                       personajeActivo === 'orumama' ? '🌿 ORUMAMA' : '☎️ SR. MISTERIO'}
+                    </span>
+                  )}
+                </div>
               ))}
             </div>
           )}
@@ -752,54 +813,160 @@ const nextAudio = () => {
         </div>
 
         {/* Chat */}
-        <section
-          className="flex-1 min-h-0 overflow-y-auto bro-scroll px-6 py-4 flex flex-col cursor-text"
-          onClick={() => {
-            if (footerMode !== 'chat') setFooterMode('chat');
-            setTimeout(() => inputRef.current?.focus(), 50);
-          }}
-        >
-          <div className="flex-1 flex flex-col items-center justify-center w-full">
-            {messages.length === 0 && !chatLoading && (
-              <div className="flex flex-col items-center text-center gap-6 animate-pulse">
-                <div className="huge-neon-text"
-                  style={{ color: accent, textShadow: `0 0 12px ${accent}, 0 0 24px ${accent}` }}>
-                  BRO7VISION
+        {!isOraculo && (
+          <section
+            className="flex-1 min-h-0 overflow-y-auto bro-scroll px-6 py-4 flex flex-col cursor-text"
+            onClick={() => {
+              if (footerMode !== 'chat') setFooterMode('chat');
+              setTimeout(() => inputRef.current?.focus(), 50);
+            }}
+          >
+            <div className="flex-1 flex flex-col items-center justify-center w-full">
+              {messages.length === 0 && !chatLoading && (
+                <div className="flex flex-col items-center text-center gap-6 animate-pulse">
+                  <div className="huge-neon-text"
+                    style={{ color: accent, textShadow: `0 0 12px ${accent}, 0 0 24px ${accent}` }}>
+                    BRO7VISION
+                  </div>
+                  <p className="text-white/60 text-xl tracking-widest uppercase font-black">
+                    ESCRIBE PARA INICIAR
+                  </p>
                 </div>
-                <p className="text-white/60 text-xl tracking-widest uppercase font-black">
-                  ESCRIBE PARA INICIAR
-                </p>
-              </div>
-            )}
-            {lastMessage && !chatLoading && (
-              <div key={lastMessage.ts} className="msg-in flex flex-col items-center text-center w-full">
-                <p className="huge-neon-text whitespace-pre-wrap break-words w-full"
-                  style={{
-                    color: lastMessage.from === 'bot' ? '#fff' : 'rgba(255,255,255,0.5)',
-                    textShadow: lastMessage.from === 'bot' ? `0 0 12px ${accent}, 0 0 24px ${accent}` : 'none',
-                  }}>
-                  {lastMessage.text}
-                </p>
-              </div>
-            )}
-            {chatLoading && (
-              <div className="msg-in flex flex-col items-center justify-center w-full gap-6">
-                <div className="text-2xl uppercase tracking-widest font-black"
-                  style={{ color: accent, textShadow: `0 0 16px ${accent}` }}>
-                  SINTONIZANDO...
+              )}
+              {lastMessage && !chatLoading && (
+                <div key={lastMessage.ts} className="msg-in flex flex-col items-center text-center w-full">
+                  <p className="huge-neon-text whitespace-pre-wrap break-words w-full"
+                    style={{
+                      color: lastMessage.from === 'bot' ? '#fff' : 'rgba(255,255,255,0.5)',
+                      textShadow: lastMessage.from === 'bot' ? `0 0 12px ${accent}, 0 0 24px ${accent}` : 'none',
+                    }}>
+                    {lastMessage.text}
+                  </p>
                 </div>
-                <div className="flex gap-4 items-center">
-                  {[0,1,2].map(i => (
-                    <span key={i} className="block w-5 h-5 rounded-full animate-bounce"
-                      style={{ background: accent, animationDelay: `${i * 0.15}s`, boxShadow: `0 0 16px ${accent}` }} />
-                  ))}
+              )}
+              {chatLoading && (
+                <div className="msg-in flex flex-col items-center justify-center w-full gap-6">
+                  <div className="text-2xl uppercase tracking-widest font-black"
+                    style={{ color: accent, textShadow: `0 0 16px ${accent}` }}>
+                    SINTONIZANDO...
+                  </div>
+                  <div className="flex gap-4 items-center">
+                    {[0,1,2].map(i => (
+                      <span key={i} className="block w-5 h-5 rounded-full animate-bounce"
+                        style={{ background: accent, animationDelay: `${i * 0.15}s`, boxShadow: `0 0 16px ${accent}` }} />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        </section>
+              )}
+              {!isOraculo && messages.length === 0 && chatLoading && (
+                <div className="text-center text-white/60 text-sm uppercase tracking-widest">
+                  ESPERANDO...
+                </div>
+              )}
+            </div>
+          </section>
+        )}
 
-        {/* Footer */}
+        {isOraculo && (
+          <section className="flex-1 min-h-0 overflow-y-auto bro-scroll px-6 py-4 flex flex-col cursor-text">
+            <div className="flex-1 flex flex-col items-center justify-center w-full">
+              {messages.length === 0 && !chatLoading && (
+                <div className="flex flex-col items-center text-center gap-6 animate-pulse">
+                  <div className="huge-neon-text"
+                    style={{ color: accent, textShadow: `0 0 12px ${accent}, 0 0 24px ${accent}` }}>
+                    {oraculoPersonaje === 'jaguar' ? '🐯 JAGUAR SIDÉREO' :
+                     oraculoPersonaje === 'orumama' ? '🌿 ORUMAMA' : '☎️ SR. MISTERIO'}
+                  </div>
+                  <p className="text-white/60 text-xl tracking-widest uppercase font-black">
+                    ESCRIBE PARA INICIAR
+                  </p>
+                </div>
+              )}
+              {lastMessage && !chatLoading && (
+                <div key={lastMessage.ts} className="msg-in flex flex-col items-center text-center w-full">
+                  <p className="huge-neon-text whitespace-pre-wrap break-words w-full"
+                    style={{
+                      color: lastMessage.from === 'bot' ? '#fff' : 'rgba(255,255,255,0.5)',
+                      textShadow: lastMessage.from === 'bot' ? `0 0 12px ${accent}, 0 0 24px ${accent}` : 'none',
+                    }}>
+                    {lastMessage.text}
+                  </p>
+                </div>
+              )}
+              {chatLoading && (
+                <div className="msg-in flex flex-col items-center justify-center w-full gap-6">
+                  <div className="text-2xl uppercase tracking-widest font-black"
+                    style={{ color: accent, textShadow: `0 0 16px ${accent}` }}>
+                    SINTONIZANDO...
+                  </div>
+                  <div className="flex gap-4 items-center">
+                    {[0,1,2].map(i => (
+                      <span key={i} className="block w-5 h-5 rounded-full animate-bounce"
+                        style={{ background: accent, animationDelay: `${i * 0.15}s`, boxShadow: `0 0 16px ${accent}` }} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Banners — SIEMPRE montados para mantener el hook activo */}
+            <div className="flex-shrink-0">
+              {(() => {
+                const p = oraculoPersonaje;
+                const handoffWrapper = (destino) => {
+                  if (destino === 'jaguar' || destino === 'orumama' || destino === 'smisterio') {
+                    onHandoff({ agente: 'ORACULO_INTERNO', personaje_id: destino });
+                  } else {
+                    onHandoff(destino);
+                  }
+                };
+                const invokeOsos = () => { setStep(1); setOsosModo?.('entrada'); };
+                return (
+                  <>
+                    {(p === 'smisterio' || !p) &&
+                      <SmisterioBanner isMobile={true}
+                        mostrarAcordeon={footerMode === 'dpad'}
+                        onHandoffPersonaje={handoffWrapper}
+                        onInvokeOsos={invokeOsos}
+                        onMensaje={(msg) => {
+                          if (lastBotMsgId.current === msg) return;
+                          lastBotMsgId.current = msg;
+                          setMessages(prev => [...prev, { from: 'bot', text: msg, ts: Date.now() }]);
+                        }}
+                        onEnviarRef={oraculoEnviarRef}
+                      />}
+                    {p === 'jaguar' &&
+                      <JaguarBanner isMobile={true}
+                        mostrarAcordeon={footerMode === 'dpad'}
+                        onHandoffPersonaje={handoffWrapper}
+                        onInvokeOsos={invokeOsos}
+                        onMensaje={(msg) => {
+                          if (lastBotMsgId.current === msg) return;
+                          lastBotMsgId.current = msg;
+                          setMessages(prev => [...prev, { from: 'bot', text: msg, ts: Date.now() }]);
+                        }}
+                        onEnviarRef={oraculoEnviarRef}
+                      />}
+                    {p === 'orumama' &&
+                      <OrumamaBanner isMobile={true}
+                        mostrarAcordeon={footerMode === 'dpad'}
+                        onHandoffPersonaje={handoffWrapper}
+                        onInvokeOsos={invokeOsos}
+                        onMensaje={(msg) => {
+                          if (lastBotMsgId.current === msg) return;
+                          lastBotMsgId.current = msg;
+                          setMessages(prev => [...prev, { from: 'bot', text: msg, ts: Date.now() }]);
+                        }}
+                        onEnviarRef={oraculoEnviarRef}
+                      />}
+                  </>
+                );
+              })()}
+            </div>
+          </section>
+        )}
+
+          {/* Footer */}
         <footer className="flex-shrink-0 border-t backdrop-blur-md pb-safe"
           style={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.6)' }}>
           <div className="flex border-b" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>

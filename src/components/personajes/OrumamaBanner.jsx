@@ -1,24 +1,10 @@
 // src/components/personajes/OrumamaBanner.jsx
 
 import React, { useState, useEffect, useRef } from 'react';
+import OraculoAcordeon from '../OraculoAcordeon';
 import AgentChatInput from '../AgentChatInput';
 import { useOrumamaChat } from '../../hooks/useOrumamaChat';
-import { albahaca }   from '../../data/orumama/albahaca';
-import { jengibre }   from '../../data/orumama/jengibre';
-import { lavanda }    from '../../data/orumama/lavanda';
-import { manzanilla } from '../../data/orumama/manzanilla';
-import { melisa }     from '../../data/orumama/melisa';
-import { menta }      from '../../data/orumama/menta';
-import { oregano }    from '../../data/orumama/oregano';
-import { romaza }     from '../../data/orumama/romaza';
-import { romero }     from '../../data/orumama/romero';
-import { ruda }       from '../../data/orumama/ruda';
-import { salvia }     from '../../data/orumama/salvia';
-import { tomillo }    from '../../data/orumama/tomillo';
-import { hierbas }    from '../../data/orumama/hierbas';
-import { guisos }     from '../../data/orumama/guisos';
-import { recetario1 } from '../../data/orumama/recetario/recetario1';
-import { recetario2 } from '../../data/orumama/recetario/recetario2';
+import * as OD from '../../data/orumama/orumamaData';
 
 // ─── CONSTANTES ──────────────────────────────────────────────────────────────
 
@@ -53,22 +39,22 @@ const FRASES_CONFIRMO = {
 };
 
 const ACORDEON_DATA = {
-  albahaca:    { texto: albahaca.data,    video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
-  jengibre:    { texto: jengibre.data,    video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
-  lavanda:     { texto: lavanda.data,     video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
-  manzanilla:  { texto: manzanilla.data,  video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
-  melisa:      { texto: melisa.data,      video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
-  menta:       { texto: menta.data,       video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
-  oregano:     { texto: oregano.data,     video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
-  romaza:      { texto: romaza.data,      video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
-  romero:      { texto: romero.data,      video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
-  ruda:        { texto: ruda.data,        video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
-  salvia:      { texto: salvia.data,      video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
-  tomillo:     { texto: tomillo.data,     video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
-  hierbas:     { texto: hierbas.data,     video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
-  guisos:      { texto: guisos.data,      video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
-  recetario_1: { texto: recetario1.data,  video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
-  recetario_2: { texto: recetario2.data,  video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  albahaca:    { texto: OD.albahaca.data,    video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  jengibre:    { texto: OD.jengibre.data,    video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  lavanda:     { texto: OD.lavanda.data,     video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  manzanilla:  { texto: OD.manzanilla.data,  video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  melisa:      { texto: OD.melisa.data,      video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  menta:       { texto: OD.menta.data,       video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  oregano:     { texto: OD.oregano.data,     video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  romaza:      { texto: OD.romaza.data,      video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  romero:      { texto: OD.romero.data,      video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  ruda:        { texto: OD.ruda.data,        video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  salvia:      { texto: OD.salvia.data,      video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  tomillo:     { texto: OD.tomillo.data,     video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  hierbas:     { texto: OD.hierbas.data,     video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  guisos:      { texto: OD.guisos.data,      video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  recetario_1: { texto: OD.recetario1.data,  video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
+  recetario_2: { texto: OD.recetario2.data,  video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
 };
 
 const FRASES_EXPLORAR = [
@@ -135,33 +121,37 @@ function detectarTema(texto) {
 // ─── COMPONENTE ───────────────────────────────────────────────────────────────
 
 export default function OrumamaBanner({
-  alias           = 'Ciudadano',
-  origenLlegada   = 'inicial',
+  alias = 'Ciudadano',
+  origenLlegada = 'inicial',
   onHandoffPersonaje,
   onInvokeOsos,
-  iaMode          = 'off',
-  isAdmin         = false,
+  iaMode = 'off',
+  isAdmin = false,
+  isMobile = false,
+  onMensaje,
+  onEnviarRef,
+  mostrarAcordeon: mostrarAcordeonExterno = true,
 }) {
-  const [display, setDisplay]                 = useState('');
-  const [cursor, setCursor]                   = useState(true);
-  const [currentMsg, setCurrentMsg]           = useState('');
-  const [videoActual, setVideoActual]         = useState(null);
-  const [videoFading, setVideoFading]         = useState(false);
+  const [display, setDisplay] = useState('');
+  const [cursor, setCursor] = useState(true);
+  const [currentMsg, setCurrentMsg] = useState('');
+  const [videoActual, setVideoActual] = useState(null);
+  const [videoFading, setVideoFading] = useState(false);
   const [mostrarAcordeon, setMostrarAcordeon] = useState(false);
-  const [acordeonDisplay, setAcordeonDisplay] = useState('');
-  const [acordeonTitulo, setAcordeonTitulo]   = useState('');
-  const charIdx     = useRef(0);
-  const acordeonRef = useRef(null);
-  const fadeTimer   = useRef(null);
-  const origenRef   = useRef(origenLlegada);
+  const [acordeonData, setAcordeonData] = useState({ titulo: '', texto: '' });
+  
+  const charIdx = useRef(0);
+  const fadeTimer = useRef(null);
+  const origenRef = useRef(origenLlegada);
 
-  const { mensaje: iaMensaje, loading, enviar: enviarHook, iaActiva } = useOrumamaChat({
+  const { mensaje: iaMensaje, loading, enviar: enviarHook } = useOrumamaChat({
     iaMode,
     isAdmin,
     onBotContent: (tema) => {
       const data = ACORDEON_DATA[tema];
       if (data) {
-        lanzarAcordeon(data.texto, tema);
+        setAcordeonData({ titulo: tema, texto: data.texto });
+        setMostrarAcordeon(true);
         cambiarVideo(data.video);
       }
     },
@@ -177,10 +167,16 @@ export default function OrumamaBanner({
   useEffect(() => { if (iaMensaje) setCurrentMsg(iaMensaje); }, [iaMensaje]);
 
   useEffect(() => {
-    const esHandoff = origenRef.current === 'handoff';
-    setCurrentMsg(esHandoff ? elegir(FRASES_LLEGADA) : elegir(FRASES_BIENVENIDA));
-    setVideoActual(VIDEO_DEFAULT);
-  }, []);
+    if (iaMensaje) onMensaje?.(iaMensaje);
+  }, [iaMensaje]);
+
+  useEffect(() => {
+  const esHandoff = origenRef.current === 'handoff';
+  const msgInicial = esHandoff ? elegir(FRASES_LLEGADA) : elegir(FRASES_BIENVENIDA);
+  setCurrentMsg(msgInicial);
+  setVideoActual(VIDEO_DEFAULT);
+  onMensaje?.(msgInicial);
+}, []);
 
   useEffect(() => {
     const t = setInterval(() => setCursor(c => !c), 530);
@@ -199,7 +195,21 @@ export default function OrumamaBanner({
     return () => clearInterval(t);
   }, [currentMsg]);
 
-  useEffect(() => () => clearTimeout(fadeTimer.current), []);
+  useEffect(() => {
+    if (!onEnviarRef) return;
+    onEnviarRef.current = (texto) => {
+      enviarHook(texto, {
+        FRASES_CONFIRMO,
+        FRASES_HANDOFF: {
+          jaguar:    FRASES_HANDOFF_JAGUAR,
+          smisterio: FRASES_HANDOFF_SMISTERIO,
+          osos:      FRASES_HANDOFF_OSOS,
+        },
+        setCurrentMsg: (msg) => onMensaje?.(msg),
+        elegir,
+      });
+    };
+  }, [enviarHook, onMensaje]);
 
   const cambiarVideo = (url) => {
     if (url === videoActual) return;
@@ -211,32 +221,37 @@ export default function OrumamaBanner({
     }, 300);
   };
 
-  const lanzarAcordeon = (texto, titulo) => {
-    setAcordeonTitulo(titulo.toUpperCase());
-    setMostrarAcordeon(true);
-    setAcordeonDisplay('');
-    let i = 0;
-    clearInterval(acordeonRef.current);
-    acordeonRef.current = setInterval(() => {
-      i++;
-      setAcordeonDisplay(texto.slice(0, i));
-      if (i >= texto.length) clearInterval(acordeonRef.current);
-    }, 18);
-  };
-
   const handleUserInput = (texto) => {
     if (!texto.trim()) return;
     enviarHook(texto, {
       FRASES_CONFIRMO,
       FRASES_HANDOFF: {
-        jaguar:    FRASES_HANDOFF_JAGUAR,
+        jaguar: FRASES_HANDOFF_JAGUAR,
         smisterio: FRASES_HANDOFF_SMISTERIO,
-        osos:      FRASES_HANDOFF_OSOS,
+        osos: FRASES_HANDOFF_OSOS,
       },
       setCurrentMsg,
       elegir,
     });
   };
+
+  if (isMobile) {
+    return (
+      <>
+        {mostrarAcordeonExterno && mostrarAcordeon && (
+          <OraculoAcordeon
+            titulo={acordeonData.titulo}
+            texto={acordeonData.texto}
+            onClose={() => setMostrarAcordeon(false)}
+            isMobile={true}
+            borderColor={BORDER_COLOR}
+            icono={ICONO}
+            nombre={NOMBRE}
+          />
+        )}
+      </>
+    );
+  }
 
   return (
     <div className="absolute inset-0 z-[50] pointer-events-none">
@@ -246,20 +261,16 @@ export default function OrumamaBanner({
 
         @keyframes neonPulseOraculo {
           0%, 100% { text-shadow: none; }
-          50%       { text-shadow: none; }
+          50%      { text-shadow: none; }
         }
-        @keyframes cascadaAcordeon {
-          from { transform: translateY(-100%); opacity: 0; }
-          to   { transform: translateY(0);     opacity: 1; }
-        }
+
         .or-wrap {
-          background: rgba(0,0,0,0.55);
-          backdrop-filter: blur(12px);
-          border: 1px solid rgba(148,163,184,0.30);
-          border-radius: 2rem;
-          padding: 14px 28px 16px 28px;
-          box-shadow: 0 0 24px rgba(148,163,184,0.15), inset 0 0 12px rgba(0,0,0,0.4);
-          min-height: 90px;
+          background: rgba(0,0,0,0.65);
+          backdrop-filter: blur(16px);
+          border: 1px solid ${slateColor}44;
+          border-radius: 16px;
+          padding: 20px;
+          box-shadow: 0 0 30px ${slateColor}22, inset 0 0 20px ${slateColor}11;
         }
         .or-texto {
           color: #fff;
@@ -270,6 +281,14 @@ export default function OrumamaBanner({
           line-height: 1.5;
           min-height: 3em;
           animation: neonPulseOraculo 3s ease-in-out infinite;
+        }
+        .or-cursor {
+          display: inline-block;
+          width: 3px; height: 0.8em;
+          margin-left: 3px;
+          vertical-align: middle;
+          background: ${slateColor};
+          box-shadow: 0 0 8px ${slateColor};
         }
         .or-cursor {
           display: inline-block;
@@ -321,22 +340,15 @@ export default function OrumamaBanner({
 
       {/* ACORDEÓN LATERAL */}
       {mostrarAcordeon && (
-        <div className="or-acordeon" style={{ borderLeft: `2px solid ${BORDER_COLOR}` }}>
-          <button
-            onClick={() => setMostrarAcordeon(false)}
-            style={{ position: 'absolute', top: 14, right: 14, color: slateColor, fontSize: 18, background: 'none', border: 'none', cursor: 'pointer' }}
-          >
-            x
-          </button>
-          <div style={{ marginTop: 36 }}>
-            <p style={{ color: slateColor, fontWeight: 900, fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 14 }}>
-              {ICONO} {NOMBRE} · {acordeonTitulo}
-            </p>
-            <p style={{ color: '#f1f5f9', fontFamily: "'Playfair Display', Georgia, serif", fontSize: 19, lineHeight: 2.1, whiteSpace: 'pre-wrap', fontStyle: 'italic', letterSpacing: '0.01em' }}>
-              {acordeonDisplay}
-            </p>
-          </div>
-        </div>
+        <OraculoAcordeon
+          titulo={acordeonData.titulo}
+          texto={acordeonData.texto}
+          onClose={() => setMostrarAcordeon(false)}
+          isMobile={isMobile}
+          borderColor={BORDER_COLOR}
+          icono={ICONO}
+          nombre={NOMBRE}
+        />
       )}
 
       {/* BANNER + INPUT */}

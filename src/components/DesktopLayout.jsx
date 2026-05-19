@@ -54,6 +54,13 @@ export default function DesktopLayout(props) {
 
 const [personajeOraculo, setPersonajeOraculo] = useState('orumama');
 const [oraculoEsHandoff, setOraculoEsHandoff] = useState(false);
+const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+
+useEffect(() => {
+  const handleResize = () => setIsMobile(window.innerWidth < 768);
+  window.addEventListener('resize', handleResize);
+  return () => window.removeEventListener('resize', handleResize);
+}, []);
 
 useEffect(() => {
   const personaje = perfilSector?.personaje_id || perfilOso?.oraculo_personaje;
@@ -291,6 +298,7 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
     onInvokeOsos={() => { setOraculoEsHandoff(false); setStep(1); setOsosModo('entrada'); }}
     iaMode={iaMode}
     isAdmin={isAdmin}
+    isMobile={isMobile}
   />
 )}
 {step === 2 && intent === 'ai' && personajeOraculo === 'jaguar' && (
@@ -301,6 +309,7 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
     onInvokeOsos={() => { setOraculoEsHandoff(false); setStep(1); setOsosModo('entrada'); }}
     iaMode={iaMode}
     isAdmin={isAdmin}
+    isMobile={isMobile}
   />
 )}
 {step === 2 && intent === 'ai' && personajeOraculo === 'orumama' && (
@@ -311,6 +320,7 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
     onInvokeOsos={() => { setOraculoEsHandoff(false); setStep(1); setOsosModo('entrada'); }}
     iaMode={iaMode}
     isAdmin={isAdmin}
+    isMobile={isMobile}
   />
 )}
       

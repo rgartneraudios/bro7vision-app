@@ -1,35 +1,10 @@
 // src/components/personajes/SmisterioBanner.jsx
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; 
+import OraculoAcordeon from '../OraculoAcordeon';
 import AgentChatInput from '../AgentChatInput';
 import { useSmisterioChat } from '../../hooks/useSmisterioChat';
-
-// Bot path — texto .bot para el acordeón tras CONFIRMO
-import { antartidabot } from '../../data/smisterio/antartida/AntartidaBot';
-import { bucegibot }    from '../../data/smisterio/bucegi/BucegiBot';
-import { egiptobot }    from '../../data/smisterio/egipto/EgiptoBot';
-import { tartariabot }  from '../../data/smisterio/tartaria/TartariaBot';
-
-// IA path — 4 episodios por tema, campos .titulo y .texto
-import { laOperacionHighjump }         from '../../data/smisterio/antartida/LaOperacionHighjump';
-import { elLagoVostok }                from '../../data/smisterio/antartida/ElLagoVostok';
-import { elPlanoSinFin }               from '../../data/smisterio/antartida/ElPlanoSinFin';
-import { lasCivilizacionesCongeladas } from '../../data/smisterio/antartida/LasCivilizacionesCongeladas';
-
-import { elBosqueDeDracula } from '../../data/smisterio/bucegi/ElBosqueDeDracula';
-import { rumboBucegi }       from '../../data/smisterio/bucegi/RumboBucegi';
-import { elPasadizoSecreto } from '../../data/smisterio/bucegi/ElPasadizoSecreto';
-import { laTeoriaStargate }  from '../../data/smisterio/bucegi/LaTeoriaStargate';
-
-import { elTeDeLMercader }        from '../../data/smisterio/egipto/ElTeDeLMercader';
-import { lanocheEnLaPiramide }    from '../../data/smisterio/egipto/LanocheEnLaPiramide';
-import { losSecretosDelDesierto } from '../../data/smisterio/egipto/LosSecretosDelDesierto';
-import { memphisYElMisissipi }    from '../../data/smisterio/egipto/MemphisYElMisissipi';
-
-import { elImperioPerdido }      from '../../data/smisterio/tartaria/ElImperioPerdido';
-import { lasCatedralosHundidas } from '../../data/smisterio/tartaria/LasCatedralosHundidas';
-import { artePerdido }           from '../../data/smisterio/tartaria/ArtePerdido';
-import { elTransiberiano }       from '../../data/smisterio/tartaria/ElTransiberiano';
+import * as SD from '../../data/smisterio/smisterioData';
 
 // ─── CONSTANTES ──────────────────────────────────────────────────────────────
 
@@ -45,25 +20,25 @@ const FRASES_LLEGADA = [
 ];
 
 const FRASES_CONFIRMO = {
-  antartida: "☎️ La Antártida guarda secretos que no aparecen en los mapas. Escribe CONFIRMO y te los revelo.",
-  egipto:    "☎️ Egipto. Miles de años de verdades ocultas. Escribe CONFIRMO y empezamos.",
-  bucegi:    "☎️ Bucegi. Rumanía esconde más de lo que parece. Escribe CONFIRMO si quieres saber.",
-  tartaria:  "☎️ Tartaria. El imperio que borraron de la historia. Escribe CONFIRMO para conocerlo.",
+  antartida: "☎️ La Antártida guarda secretos que no aparecen en los mapas. Escribe CONFIRMO y te los revelo aquí al costado. En modo móvil lo tendrás en la pestaña mando.",
+  egipto:    "☎️ Egipto. Miles de años de verdades ocultas. Escribe CONFIRMO y empezamos aquí al costado. En modo móvil lo tendrás en la pestaña mando.",
+  bucegi:    "☎️ Bucegi. Rumanía esconde más de lo que parece. Escribe CONFIRMO si quieres saber. Te lo revelo aquí al costado. En modo móvil lo tendrás en la pestaña mando.",
+  tartaria:  "☎️ Tartaria. El imperio que borraron de la historia. Escribe CONFIRMO para conocerlo aquí al costado. En modo móvil lo tendrás en la pestaña mando.",
 };
 
 const ACORDEON_DATA = {
-  antartida: { texto: antartidabot.bot, video: 'https://media.bro7vision.com/smantartidas.mp4' },
-  egipto:    { texto: egiptobot.bot,    video: 'https://media.bro7vision.com/smegipto.mp4'     },
-  bucegi:    { texto: bucegibot.bot,    video: 'https://media.bro7vision.com/smbucegi.mp4'     },
-  tartaria:  { texto: tartariabot.bot,  video: 'https://media.bro7vision.com/smtartaria.mp4'   },
+  antartida: { texto: SD.antartidabot.bot, video: 'https://media.bro7vision.com/smantartidas.mp4' },
+  egipto:    { texto: SD.egiptobot.bot,    video: 'https://media.bro7vision.com/smegipto.mp4'     },
+  bucegi:    { texto: SD.bucegibot.bot,    video: 'https://media.bro7vision.com/smbucegi.mp4'     },
+  tartaria:  { texto: SD.tartariabot.bot,  video: 'https://media.bro7vision.com/smtartaria.mp4'   },
 };
 
 // IA path — 4 episodios secuenciales por tema, campos .titulo y .texto
 const ACORDEON_DATA_IA = {
-  antartida: [laOperacionHighjump, elLagoVostok, elPlanoSinFin, lasCivilizacionesCongeladas],
-  bucegi:    [elBosqueDeDracula, rumboBucegi, elPasadizoSecreto, laTeoriaStargate],
-  egipto:    [elTeDeLMercader, lanocheEnLaPiramide, losSecretosDelDesierto, memphisYElMisissipi],
-  tartaria:  [elImperioPerdido, lasCatedralosHundidas, artePerdido, elTransiberiano],
+  antartida: [SD.laOperacionHighjump, SD.elLagoVostok, SD.elPlanoSinFin, SD.lasCivilizacionesCongeladas],
+  bucegi:    [SD.elBosqueDeDracula, SD.rumboBucegi, SD.elPasadizoSecreto, SD.laTeoriaStargate],
+  egipto:    [SD.elTeDeLMercader, SD.lanocheEnLaPiramide, SD.losSecretosDelDesierto, SD.memphisYElMisissipi],
+  tartaria:  [SD.elImperioPerdido, SD.lasCatedralosHundidas, SD.artePerdido, SD.elTransiberiano],
 };
 
 const FRASES_EXPLORAR = [
@@ -125,6 +100,10 @@ export default function SmisterioBanner({
   onInvokeOsos,
   iaMode          = 'off',
   isAdmin         = false,
+  isMobile        = false,
+  onMensaje,
+  onEnviarRef,
+  mostrarAcordeon: mostrarAcordeonExterno = true,
 }) {
   const [display, setDisplay]                 = useState('');
   const [cursor, setCursor]                   = useState(true);
@@ -132,10 +111,8 @@ export default function SmisterioBanner({
   const [videoActual, setVideoActual]         = useState(null);
   const [videoFading, setVideoFading]         = useState(false);
   const [mostrarAcordeon, setMostrarAcordeon] = useState(false);
-  const [acordeonDisplay, setAcordeonDisplay] = useState('');
-  const [acordeonTitulo, setAcordeonTitulo]   = useState('');
+  const [acordeonData, setAcordeonData]       = useState({ titulo: '', texto: '' });
   const charIdx     = useRef(0);
-  const acordeonRef = useRef(null);
   const fadeTimer   = useRef(null);
   const origenRef   = useRef(origenLlegada);
 
@@ -145,7 +122,8 @@ export default function SmisterioBanner({
     onBotContent: (tema) => {
       const data = ACORDEON_DATA[tema];
       if (data) {
-        lanzarAcordeon(data.texto, tema);
+        setAcordeonData({ titulo: tema, texto: data.texto });
+        setMostrarAcordeon(true);
         cambiarVideo(data.video);
       }
     },
@@ -153,7 +131,8 @@ export default function SmisterioBanner({
       const historias = ACORDEON_DATA_IA[tema];
       if (historias) {
         const indice = Math.min(yaContadas, historias.length - 1);
-        lanzarAcordeon(historias[indice].texto, historias[indice].titulo);
+        setAcordeonData({ titulo: historias[indice].titulo, texto: historias[indice].texto });
+        setMostrarAcordeon(true);
         cambiarVideo(ACORDEON_DATA[tema].video);
       }
     },
@@ -169,10 +148,16 @@ export default function SmisterioBanner({
   useEffect(() => { if (iaMensaje) setCurrentMsg(iaMensaje); }, [iaMensaje]);
 
   useEffect(() => {
-    const esHandoff = origenRef.current === 'handoff';
-    setCurrentMsg(esHandoff ? elegir(FRASES_LLEGADA) : elegir(FRASES_BIENVENIDA));
-    setVideoActual(VIDEO_DEFAULT);
-  }, []);
+    if (iaMensaje) onMensaje?.(iaMensaje);
+  }, [iaMensaje]);
+
+useEffect(() => {
+  const esHandoff = origenRef.current === 'handoff';
+  const msgInicial = esHandoff ? elegir(FRASES_LLEGADA) : elegir(FRASES_BIENVENIDA);
+  setCurrentMsg(msgInicial);
+  setVideoActual(VIDEO_DEFAULT);
+  onMensaje?.(msgInicial);
+}, []);
 
   useEffect(() => {
     const t = setInterval(() => setCursor(c => !c), 530);
@@ -193,6 +178,22 @@ export default function SmisterioBanner({
 
   useEffect(() => () => clearTimeout(fadeTimer.current), []);
 
+  useEffect(() => {
+    if (!onEnviarRef) return;
+    onEnviarRef.current = (texto) => {
+      enviarHook(texto, {
+        FRASES_CONFIRMO,
+        FRASES_HANDOFF: {
+          jaguar:  FRASES_HANDOFF_JAGUAR,
+          orumama: FRASES_HANDOFF_ORUMAMA,
+          osos:    FRASES_HANDOFF_OSOS,
+        },
+        setCurrentMsg: (msg) => onMensaje?.(msg),
+        elegir,
+      });
+    };
+  }, [enviarHook, onMensaje]);
+
   const cambiarVideo = (url) => {
     if (url === videoActual) return;
     setVideoFading(true);
@@ -204,16 +205,7 @@ export default function SmisterioBanner({
   };
 
   const lanzarAcordeon = (texto, titulo) => {
-    setAcordeonTitulo(titulo.toUpperCase());
-    setMostrarAcordeon(true);
-    setAcordeonDisplay('');
-    let i = 0;
-    clearInterval(acordeonRef.current);
-    acordeonRef.current = setInterval(() => {
-      i++;
-      setAcordeonDisplay(texto.slice(0, i));
-      if (i >= texto.length) clearInterval(acordeonRef.current);
-    }, 18);
+    // Método eliminado: OraculoAcordeon maneja internamente la animación.
   };
 
   const handleUserInput = (texto) => {
@@ -229,6 +221,24 @@ export default function SmisterioBanner({
       elegir,
     });
   };
+
+  if (isMobile) {
+    return (
+      <>
+        {mostrarAcordeonExterno && mostrarAcordeon && (
+          <OraculoAcordeon
+            titulo={acordeonData.titulo}
+            texto={acordeonData.texto}
+            onClose={() => setMostrarAcordeon(false)}
+            isMobile={true}
+            borderColor={BORDER_COLOR}
+            icono={ICONO}
+            nombre={NOMBRE}
+          />
+        )}
+      </>
+    );
+  }
 
   return (
     <div className="absolute inset-0 z-[50] pointer-events-none">
@@ -316,22 +326,15 @@ export default function SmisterioBanner({
 
       {/* ACORDEÓN LATERAL */}
       {mostrarAcordeon && (
-        <div className="or-acordeon" style={{ borderLeft: `2px solid ${BORDER_COLOR}` }}>
-          <button
-            onClick={() => setMostrarAcordeon(false)}
-            style={{ position: 'absolute', top: 14, right: 14, color: slateColor, fontSize: 18, background: 'none', border: 'none', cursor: 'pointer' }}
-          >
-            x
-          </button>
-          <div style={{ marginTop: 36 }}>
-            <p style={{ color: slateColor, fontWeight: 900, fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: 14 }}>
-              {ICONO} {NOMBRE} · {acordeonTitulo}
-            </p>
-            <p style={{ color: '#f1f5f9', fontFamily: "'Playfair Display', Georgia, serif", fontSize: 19, lineHeight: 2.1, whiteSpace: 'pre-wrap', fontStyle: 'italic', letterSpacing: '0.01em' }}>
-              {acordeonDisplay}
-            </p>
-          </div>
-        </div>
+        <OraculoAcordeon
+          titulo={acordeonData.titulo}
+          texto={acordeonData.texto}
+          onClose={() => setMostrarAcordeon(false)}
+          isMobile={isMobile}
+          borderColor={BORDER_COLOR}
+          icono={ICONO}
+          nombre={NOMBRE}
+        />
       )}
 
       {/* BANNER + INPUT */}

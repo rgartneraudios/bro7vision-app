@@ -318,16 +318,24 @@ function App() {
     };
 
     const SIN_UBICACION = ['REINOS', 'ORACULO', 'ORACULO_ORUMAMA', 'ORACULO_SMISTERIO', 'ORACULO_JAGUAR', 'GAMES'];
-if (SIN_UBICACION.includes(agente)) {
-  if (per_solicitado) {
-    setPerfilOso(prev => ({ ...prev, oraculo_personaje: per_solicitado }));
-  }
-  setPerfilSector(null);
-  setIntent(intentMap[agente] || 'ai');
-  setOsosModo('retorno');
-  setStep(2);
-  return;
-}
+    if (SIN_UBICACION.includes(agente)) {
+      // Derivar personaje desde el agente si no viene per_solicitado
+      const personajeMap = {
+        'ORACULO_SMISTERIO': 'smisterio',
+        'ORACULO_JAGUAR':    'jaguar',
+        'ORACULO_ORUMAMA':   'orumama',
+        'ORACULO':           'smisterio', // default
+      };
+      const personajeFinal = per_solicitado?.toLowerCase() 
+        || personajeMap[agente] 
+        || 'smisterio';
+      setPerfilOso(prev => ({ ...prev, oraculo_personaje: personajeFinal }));
+      setPerfilSector(null);
+      setIntent(intentMap[agente] || 'ai');
+      setOsosModo('retorno');
+      setStep(2);
+      return;
+    }
 
     setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
     const ciudadFinal = ciudad || perfilOso?.city || '';
@@ -367,6 +375,7 @@ if (SIN_UBICACION.includes(agente)) {
     onHandoff:   handleCentralHandoff,
     ciudad:      sessionCity,
     perfilSector,
+    perfilOso,
     genesis:     balances?.genesis || 0,
     userId:      session?.user?.id,
     autorAlias:  perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano',
@@ -414,9 +423,18 @@ if (SIN_UBICACION.includes(agente)) {
   // ══════════════════════════════════════════════════════
 
   const chatMobile = useMemo(() => {
-    if (step === 1) return { enviar: handleOsosInput,   mensaje: ososMensaje,   loading: ososLoading   };
-    return           { enviar: handleSectorInput, mensaje: sectorMensaje, loading: sectorLoading };
-  }, [step, sectorMensaje, ososMensaje, sectorLoading, ososLoading]);
+    if (step === 1) return { enviar: handleOsosInput, mensaje: ososMensaje, loading: ososLoading };
+    if (step === 2 && intent === 'ai') {
+      return {
+        tipo: 'ORACULO',
+        oraculo_personaje: perfilSector?.personaje_id || perfilOso?.oraculo_personaje,
+        enviar: handleSectorInput,
+        mensaje: sectorMensaje,
+        loading: sectorLoading,
+      };
+    }
+    return { enviar: handleSectorInput, mensaje: sectorMensaje, loading: sectorLoading };
+  }, [step, intent, perfilOso, perfilSector, sectorMensaje, ososMensaje, sectorLoading, ososLoading]);
 
   const filteredItems = useMemo(() => {
     const supabaseItems = realItems.map(u => ({ ...u, id: u.id, name: u.product_title || u.alias, img: u.card_banner_url || u.banner_url || '/default.png', price: u.price || 0, type: u.video_file ? ['shop', 'live'] : ['shop'], source: 'supabase' }));
