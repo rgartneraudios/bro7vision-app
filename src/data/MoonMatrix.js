@@ -11,20 +11,20 @@ export const PACKS_REGALOS = {
 // 2. VALES DE DESCUENTO (Se compran con Puntos Génesis)
 export const REGLAS_DESCUENTOS = {
   nova:       { 
-    label: 'NOVA VALE', pct: 0.05, min_items: 1, cost: 1000, 
+    label: 'NOVA VALE', pct: 0.10, min_items: 1, cost: 1000, 
     color: 'text-fuchsia-400', border: 'border-fuchsia-500', bg: 'bg-fuchsia-500' 
   },
   crescens:   { 
-    label: 'CRESCENS VALE', pct: 0.10, min_items: 1, cost: 2000, 
+    label: 'CRESCENS VALE', pct: 0.15, min_items: 1, cost: 2000, 
     color: 'text-green-400', border: 'border-green-500', bg: 'bg-green-500' 
   },
   plena:      { 
-    label: 'PLENA VALE', pct: 0.15, min_items: 2, cost: 4000, 
-    color: 'text-yellow-400', border: 'border-yellow-500', bg: 'bg-yellow-500' 
+    label: 'PLENA VALE', pct: 0.20, min_items: 2, cost: 4000, 
+    color: 'text-white-200', border: 'border-white-300', bg: 'bg-white-300' 
   },
   decrescens: { 
-    label: 'DECRESCENS VALE', pct: 0.15, min_items: 3, cost: 3000, 
-    color: 'text-orange-400', border: 'border-orange-500', bg: 'bg-orange-500' 
+    label: 'DECRESCENS VALE', pct: 0.20, min_items: 3, cost: 3000, 
+    color: 'text-orange-500', border: 'border-orange-500', bg: 'bg-orange-500' 
   },
 };
 

@@ -50,7 +50,7 @@ const NexusDashboard = ({
 
   // DETECCIÓN DE MODOS
   const isGameMode = intent === 'game';
-  const isCardMode = ['productos', 'servicios', 'avisos', 'audio'].includes(intent);
+  const isCardMode = ['productos', 'servicios', 'avisos', 'audios'].includes(intent);
 
   const handleLogClick = () => { 
     onOpenLog({ title: MOCK_LOGS[currentLogIndex], category: "MERCANTIL", author: "Sistema" }); 
@@ -92,7 +92,7 @@ const NexusDashboard = ({
     
       {/* --- PANEL LATERAL DERECHO COMPACTO --- */}
       {isCardMode && (
-        <div className="hidden lg:flex fixed right-20 top-[4%] bottom-8 w-52 flex-col gap-3 z-50 pointer-events-none">
+        <div className="hidden lg:flex fixed right-12 top-[4%] bottom-8 w-52 flex-col gap-3 z-50 pointer-events-none">
           
           {/* 1. BRO-LOGS */}
           <div onClick={handleLogClick} className="flex-[0.6] pointer-events-auto cursor-pointer">

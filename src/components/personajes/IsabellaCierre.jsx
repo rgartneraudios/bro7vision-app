@@ -65,8 +65,8 @@ const CFG = {
 
 const VALES = [
   { key:'nova',       emoji:'🌑', label:'Nova',   color:'#A855F7' },
-  { key:'crescens',   emoji:'🌙', label:'Cresc.', color:'#0EA5E9' },
-  { key:'plena',      emoji:'🌕', label:'Plena',  color:'#FFD000' },
+  { key:'crescens',   emoji:'🌙', label:'Cresc.', color:'#79FF1A' },
+  { key:'plena',      emoji:'🌕', label:'Plena',  color:'#FFFFFF' },
   { key:'decrescens', emoji:'🌗', label:'Dec.',   color:'#F97316' },
 ];
 

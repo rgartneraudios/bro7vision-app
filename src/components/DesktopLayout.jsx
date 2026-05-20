@@ -12,7 +12,7 @@ import ChannelMoon from './ChannelMoon';
 import BioForest from './BioForest';
 import WalletWidget from './WalletWidget';
 import MoonMatrixCircle from './MoonMatrixCircle';
-import BroLives from './BroLives';
+import BroLives3D from './BroLives3D';
 import BroTuner from './BroTuner';
 import NeuralButton from './NeuralButton';
 import NexusDashboard from './NexusDashboard';
@@ -143,7 +143,6 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
           )}
         </div>
         <div className="mt-auto flex flex-col w-full pb-10">
-          <div className="w-full px-4 mb-4"><BroLives playingCreator={audioUser} onToggleAudio={() => setAudioUser(prev => prev ? null : audioUser)} /></div>
           <div className="w-full px-4 pt-4 border-t border-white/5"><BroTuner ref={broTunerRef} /></div>
         </div>
       </div>      
@@ -189,8 +188,8 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
       )}      
 
       {/* HOLOPRISMA Y BANNERS */}
-      {step === 2 && ['productos', 'servicios', 'audios'].includes(intent) && (
-        <div className="hidden md:flex fixed left-1/2 top-[24%] -translate-x-1/2 -translate-y-1/2 z-[40] flex-col items-center animate-fadeIn pointer-events-none"><div className="scale-[1.1] origin-bottom-right relative z-20 transition-transform hover:scale-[1.15]"><HoloPrism user={activePrismUser} showNumbers={true} /></div></div>
+      {step === 2 && ['productos', 'servicios', 'audios', 'avisos'].includes(intent) && (
+        <div className="hidden md:flex fixed right-[12%] top-[24%] -translate-x-1/2 -translate-y-1/2 z-[40] flex-col items-center animate-fadeIn pointer-events-none"><div className="scale-[1.1] origin-bottom-right relative z-20 transition-transform hover:scale-[1.15]"><HoloPrism user={activePrismUser} showNumbers={true} /></div></div>
       )}
       
       {step === 2 && INTENTS_CON_UBICACION.has(intent) && !selectedCard && <CityLocationBanner scope={scope} />}
@@ -287,6 +286,13 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
           entidad={ososHandoffContext?.comercio_especifico}
           hayTarjetas={stripVisible}
         />
+      )}
+
+      {/* BROLIVES3D EN FOOTER - SOLO PRODUCTOS, SERVICIOS, AVISOS, AUDIO */}
+      {step === 2 && ['productos', 'servicios', 'avisos', 'audios'].includes(intent) && (
+        <div className="fixed right-[16%] bottom-4 z-[40]">
+          <BroLives3D playingCreator={audioUser} />
+        </div>
       )}
 
 {/* ── ORÁCULO ─────────────────────────────────────────────────────── */}
