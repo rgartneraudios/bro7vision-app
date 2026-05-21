@@ -366,7 +366,7 @@ export const MarketTab = ({ formData, setFormData }) => {
                       <div
                         key={producto.id}
                         className={`bg-white/5 border ${esUnoDeTres ? 'border-cyan-500/40' : 'border-white/10'} rounded-xl p-4 transition-all ${!esEditable ? 'opacity-60' : ''}`}
-                  >
+                      >
                     {esUnoDeTres && (
                       <div className="text-[9px] text-cyan-400 font-bold uppercase tracking-widest mb-2">
                         {esPrimero ? '🥇 Primer Producto en Portada' : `#${idx + 1} en Portada`}
@@ -461,15 +461,23 @@ export const MarketTab = ({ formData, setFormData }) => {
                           )}
                         </div>
 
-                        {producto.descripcion && (
-                          <p className="text-[9px] text-gray-500 mt-2 line-clamp-2">
-                            {producto.descripcion}
-                          </p>
-                    )}
-                  </div>
-                );
-              })
-            )}
+                         {producto.descripcion && (
+                           <p className="text-[9px] text-gray-500 mt-2 line-clamp-2">
+                             {producto.descripcion}
+                           </p>
+                         )}
+                       </div>
+                     </div>
+                   </div>
+                 );
+               })
+             )}
+                       </div>
+                     </div>
+                   </div>
+                 );
+               })
+             )}
 
             {(!isFaseActiva || isAdmin || isPremium) && campanaActual.length < MAX_PRODUCTOS && (
               <button
