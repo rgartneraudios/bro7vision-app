@@ -1,275 +1,755 @@
 // src/components/MarketTab.jsx
-
-import { useState, useEffect } from 'react';
+// ─────────────────────────────────────────────────────────────────────
+// Sistema de Campaña Lunar - Inventario destacado_ps
+// ─────────────────────────────────────────────────────────────────────
+// Tabla: profiles
+// Columna: destacados_ps (array de objetos JSON)
+// ─────────────────────────────────────────────────────────────────────
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
+import { getMoonSuffix } from '../utils/moonUtils';
 
-const CATALOG_PAGE_SIZE = 20;
+const MAX_PRODUCTOS = 10;
 
-const InputStyle = "w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all";
-const CardStyle  = "bg-blue-950/10 backdrop-blur-xl border border-white/10 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]";
+const THEMES = {
+  cyan:  { border: '#22d3ee', glow: 'rgba(34,211,238,0.3)', text: '#22d3ee', bg: 'cyan-500/10' },
+  gold:  { border: '#fbbf24', glow: 'rgba(251,191,36,0.3)', text: '#fbbf24', bg: 'amber-500/10' },
+};
+
+const LUNA_EMOJIS = { nova: '🌑', crescens: '🌙', plena: '🌕', decrescens: '🌗' };
+const LUNA_COLORS = {
+  nova:     '#A855F7',  // fucsia
+  crescens: '#79FF1A',  // verde
+  plena:    '#FFFFFF',  // blanco
+  decrescens: '#F97316', // naranja
+};
+
+const ALCANCE_OPTIONS = ['NACIONAL', 'GLOBAL'];
 
 export const MarketTab = ({ formData, setFormData }) => {
+  const [session, setSession] = useState(null);
+  const [perfilOso, setPerfilOso] = useState(null);
+  const [destacadosPs, setDestacadosPs] = useState([]);
+  const [campanaActual, setCampanaActual] = useState([]);
+  const [campanaSiguiente, setCampanaSiguiente] = useState([]);
+  const [faseLunarActual, setFaseLunarActual] = useState(1);
+  const [isFaseActiva, setIsFaseActiva] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [guardando, setGuardando] = useState(false);
+  const [acordeonActualAbierto, setAcordeonActualAbierto] = useState(true);
+  const [acordeonSiguienteAbierto, setAcordeonSiguienteAbierto] = useState(true);
+  const [nuevoProductoIndex, setNuevoProductoIndex] = useState(null);
+  const [productosEditando, setProductosEditando] = useState({});
 
-  // ── Estado catálogo ──
-  const [catalogItems, setCatalogItems]     = useState([]);
-  const [catalogTotal, setCatalogTotal]     = useState(0);
-  const [catalogPage, setCatalogPage]       = useState(0);
-  const [catalogSearch, setCatalogSearch]   = useState('');
-  const [catalogLoading, setCatalogLoading] = useState(false);
-
-  // ── Estado servicios (assets) ──
-  const [assets, setAssets]     = useState([]);
-  const [newService, setNewService] = useState({ title: '', desc: '', price: 0, url: '' });
-
-  const serviceItems = assets.filter(a => a.asset_type === 'service');
-  const totalPages   = Math.ceil(catalogTotal / CATALOG_PAGE_SIZE);
-
-  // ── Cargar assets al montar ──
+  // ── Auth y Perfil ──
   useEffect(() => {
-    const fetchAssets = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data } = await supabase.from('assets').select('*').eq('owner_id', user.id);
-      if (data) setAssets(data);
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      if (session?.user?.id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        setPerfilOso(profile);
+        setIsAdmin(profile?.role === 'admin');
+        setIsPremium(profile?.is_premium === true || profile?.rango !== undefined);
+      }
+      setLoading(false);
     };
-    fetchAssets();
+    checkSession();
   }, []);
 
-  // ── Cargar catálogo al montar y cuando cambia página/búsqueda ──
+  // ── Cargar destacados_ps ──
   useEffect(() => {
-    const fetchCatalog = async () => {
-      setCatalogLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      let query = supabase
-        .from('catalog_items')
-        .select('*', { count: 'exact' })
-        .eq('owner_id', user.id)
-        .order('created_at', { ascending: false })
-        .range(catalogPage * CATALOG_PAGE_SIZE, (catalogPage + 1) * CATALOG_PAGE_SIZE - 1);
-      if (catalogSearch.trim()) query = query.ilike('title', `%${catalogSearch.trim()}%`);
-      const { data, count, error } = await query;
-      if (!error) { setCatalogItems(data || []); setCatalogTotal(count || 0); }
-      setCatalogLoading(false);
+    const loadDestacados = async () => {
+      if (!perfilOso?.id) return;
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('destacados_ps')
+        .eq('id', perfilOso.id)
+        .single();
+      
+      if (profile?.destacados_ps && Array.isArray(profile.destacados_ps)) {
+        const items = profile.destacados_ps;
+        const actual = items.filter(i => i.campana_semana === 'actual');
+        const siguiente = items.filter(i => i.campana_semana === 'siguiente');
+        setDestacadosPs(items);
+        setCampanaActual(actual);
+        setCampanaSiguiente(siguiente);
+      } else {
+        // Default: 1 producto en siguiente con luna Nova activada
+        const defaultProducto = {
+          id: `new-${Date.now()}`,
+          campana_semana: 'siguiente',
+          producto_codigo: '',
+          producto_titulo: '',
+          categoria: '',
+          tallas: '',
+          peso: '',
+          material: '',
+          origen: '',
+          descripcion: '',
+          precio_original: 0,
+          precio_descuento: 0,
+          stock_inicial: 10,
+          stock_actual: 10,
+          alcance: 'NACIONAL',
+          lunas: { nova: true, crescens: false, plena: false, decrescens: false },
+          image_url: '',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        setCampanaSiguiente([defaultProducto]);
+      }
     };
-    fetchCatalog();
-  }, [catalogPage, catalogSearch]);
+    loadDestacados();
+  }, [perfilOso?.id]);
 
-  // ── Handlers catálogo ──
-  const handleDeleteCatalogItem = async (itemId) => {
-    if (!window.confirm('¿Eliminar este artículo del catálogo?')) return;
-    const { error } = await supabase.from('catalog_items').delete().eq('id', itemId);
-    if (!error) setCatalogItems(prev => prev.filter(i => i.id !== itemId));
-  };
+  // ── Calcular fase lunar actual ──
+  useEffect(() => {
+    const calcularFase = () => {
+      const fase = getMoonSuffix();
+      setFaseLunarActual(parseInt(fase));
+      // Fase activa si la luna actual es nova (1) o si hay items en campanaActual
+      setIsFaseActiva(fase === '1' || campanaActual.length > 0);
+    };
+    calcularFase();
+    const interval = setInterval(calcularFase, 60000);
+    return () => clearInterval(interval);
+  }, [campanaActual.length]);
 
-  const handleCSVUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const text = await file.text();
-    const lines = text.split('\n').slice(1).filter(Boolean);
-    const { data: { user } } = await supabase.auth.getUser();
-    const rows = lines.map(line => {
-      const [title, description, price_fiat, url, category] = line.split(',').map(s => s.trim().replace(/^"|"$/g, ''));
-      return { owner_id: user.id, title, description, price_fiat: parseFloat(price_fiat) || 0, url, category };
-    });
-    for (let i = 0; i < rows.length; i += 100) {
-      await supabase.from('catalog_items').insert(rows.slice(i, i + 100));
+  // ── Realtime Subscription para stock ──
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    
+    const channel = supabase
+      .channel(`profiles:${session.user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${session.user.id}`,
+        },
+        async ({ new: newProfile }) => {
+          if (newProfile?.destacados_ps) {
+            const items = newProfile.destacados_ps;
+            const actual = items.filter(i => i.campana_semana === 'actual');
+            const siguiente = items.filter(i => i.campana_semana === 'siguiente');
+            setCampanaActual(actual);
+            setCampanaSiguiente(siguiente);
+            setDestacadosPs(items);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [session?.user?.id]);
+
+  // ── Subida a R2 ──
+  const subirImagenR2 = async (file, setLoadingState) => {
+    if (!file) return null;
+    setLoadingState(true);
+    try {
+      const safeFileName = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName: safeFileName, fileType: file.type }),
+      });
+      const { uploadUrl } = await res.json();
+      if (!uploadUrl) throw new Error('Sin ticket de subida.');
+      await fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
+      return `https://media.bro7vision.com/${safeFileName}`;
+    } catch (err) {
+      console.error('Error subiendo a R2:', err);
+      alert('❌ Error al subir imagen: ' + err.message);
+      return null;
+    } finally {
+      setLoadingState(false);
     }
-    alert(`✅ ${rows.length} artículos importados al catálogo.`);
-    setCatalogPage(0);
-    setCatalogSearch('');
   };
 
-  // ── Handlers servicios ──
-  const handleDeleteItem = async (itemId) => {
-    if (!window.confirm('¿Desintegrar este ítem del sistema?')) return;
-    const { error } = await supabase.from('assets').delete().eq('id', itemId);
-    if (error) alert('Error: ' + error.message);
-    else setAssets(prev => prev.filter(a => a.id !== itemId));
+  // ── Handlers de Productos ──
+  const handleAddProducto = (campana) => {
+    if (campana === 'actual' && campanaActual.length >= MAX_PRODUCTOS) {
+      alert(`⚠️ Máximo ${MAX_PRODUCTOS} productos permitidos.`);
+      return;
+    }
+    if (campana === 'siguiente' && campanaSiguiente.length >= MAX_PRODUCTOS) {
+      alert(`⚠️ Máximo ${MAX_PRODUCTOS} productos permitidos.`);
+      return;
+    }
+    const defaultProducto = {
+      id: `new-${Date.now()}`,
+      campana_semana: campana,
+      producto_codigo: '',
+      producto_titulo: '',
+      categoria: '',
+      tallas: '',
+      peso: '',
+      material: '',
+      origen: '',
+      descripcion: '',
+      precio_original: 0,
+      precio_descuento: 0,
+      stock_inicial: 10,
+      stock_actual: 10,
+      alcance: 'NACIONAL',
+      lunas: { nova: true, crescens: false, plena: false, decrescens: false },
+      image_url: '',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    if (campana === 'actual') {
+      setCampanaActual(prev => [...prev, defaultProducto]);
+    } else {
+      setCampanaSiguiente(prev => [...prev, defaultProducto]);
+    }
+    setNuevoProductoIndex(campana === 'actual' ? campanaActual.length : campanaSiguiente.length);
+    setProductosEditando(prev => ({ ...prev, [defaultProducto.id]: true }));
   };
 
-  const handleAddService = async () => {
-    if (!newService.title) { alert('¡Falta el título!'); return; }
-    const { data: { user } } = await supabase.auth.getUser();
-    const { data, error } = await supabase.from('assets').insert([{
-      owner_id: user.id, title: newService.title, description: newService.desc,
-      price_fiat: newService.price, url: newService.url, asset_type: 'service',
-    }]).select();
-    if (error) { alert('❌ Error: ' + error.message); return; }
-    if (data) { setAssets(prev => [...prev, data[0]]); setNewService({ title: '', desc: '', price: 0, url: '' }); }
+  const handleUpdateProducto = (campana, id, field, value) => {
+    const setter = campana === 'actual' ? setCampanaActual : setCampanaSiguiente;
+    setter(prev => prev.map(item => {
+      if (item.id !== id) return item;
+      const updated = { ...item, [field]: value, updated_at: new Date().toISOString() };
+      if (field === 'stock_actual' && value < 0) return { ...item, stock_actual: 0 };
+      if (field === 'stock_actual' && value > item.stock_inicial) return { ...item, stock_actual: item.stock_inicial };
+      return updated;
+    }));
   };
+
+  const handleToggleLuna = (campana, id, lunaKey) => {
+    const setter = campana === 'actual' ? setCampanaActual : setCampanaSiguiente;
+    setter(prev => prev.map(item => {
+      if (item.id !== id) return item;
+      const nuevasLunas = { ...item.lunas, [lunaKey]: !item.lunas[lunaKey] };
+      return { ...item, lunas: nuevasLunas, updated_at: new Date().toISOString() };
+    }));
+  };
+
+  const handleDeleteProducto = (campana, id) => {
+    if (!window.confirm('¿Eliminar este producto?')) return;
+    const setter = campana === 'actual' ? setCampanaActual : setCampanaSiguiente;
+    setter(prev => prev.filter(item => item.id !== id));
+  };
+
+  const handleGuardarProducto = (campana, producto) => {
+    // Validaciones
+    if (!producto.producto_codigo || !producto.producto_titulo) {
+      alert('⚠️ Código y Título son obligatorios.');
+      return;
+    }
+    if (producto.precio_original < 0 || producto.precio_descuento < 0) {
+      alert('⚠️ Los precios no pueden ser negativos.');
+      return;
+    }
+    if (producto.stock_inicial < 0 || producto.stock_actual < 0) {
+      alert('⚠️ El stock no puede ser negativo.');
+      return;
+    }
+    if (producto.stock_actual > producto.stock_inicial) {
+      alert('⚠️ El stock actual no puede superar el stock inicial.');
+      return;
+    }
+    if (producto.precio_descuento > producto.precio_original) {
+      alert('⚠️ El precio de descuento no puede superar el precio original.');
+      return;
+    }
+  };
+
+  const handleGuardarCampana = async () => {
+    setGuardando(true);
+    try {
+      const todosProductos = [
+        ...campanaActual.map(p => ({ ...p, campana_semana: 'actual' })),
+        ...campanaSiguiente.map(p => ({ ...p, campana_semana: 'siguiente' })),
+      ];
+      
+      // Ordenar por created_at
+      todosProductos.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      
+      // Asignar orden_portada a los 3 primeros
+      todosProductos.forEach((p, idx) => {
+        p.orden_portada = idx < 3 ? idx + 1 : null;
+      });
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ destacados_ps: todosProductos })
+        .eq('id', perfilOso?.id);
+
+      if (error) throw error;
+      
+      alert('✅ Campaña guardada correctamente.');
+      setDestacadosPs(todosProductos);
+    } catch (err) {
+      console.error('Error guardando campaña:', err);
+      alert('❌ Error al guardar: ' + err.message);
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  // ── Render ──
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64 text-gray-500 text-sm">
+        ⏳ Cargando MarketTab...
+      </div>
+    );
+  }
+
+  const t = THEMES.cyan;
 
   return (
     <div className="space-y-6 animate-fadeIn max-w-5xl mx-auto">
+      {/* Banner Video Commerce */}
+      <div
+        className="bg-cyan-500/10 border border-cyan-500/30 rounded-2xl p-4 mb-6 backdrop-blur"
+        style={{ boxShadow: `0 0 20px ${t.glow}` }}
+      >
+        <p className="text-xs font-bold text-cyan-300 uppercase tracking-widest mb-1">
+          ⚠️ NOTA DE VIDEO COMMERCE
+        </p>
+        <p className="text-[10px] text-gray-400 leading-relaxed">
+          Tu video principal (16:9) se gestiona desde la pestaña 'Señal de archivos como Video Horizontal B'.
+          Sube allí tu clip mostrando tus 20 o 30 artículos para activar la experiencia de compra inmersiva en tu Teléfono Casa.
+        </p>
+      </div>
 
-      {/* ══ SECCIÓN 1: CATÁLOGO ESCALABLE ══ */}
-      <div className={`${CardStyle} border-yellow-500/20`}>
-        <div className="flex items-center justify-between mb-5">
+      {/* Acordeón: Campaña Actual */}
+      <div className={`${t.bg} border border-cyan-500/20 rounded-3xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl`}>
+        <button
+          onClick={() => setAcordeonActualAbierto(!acordeonActualAbierto)}
+          className="w-full flex items-center justify-between mb-4"
+        >
           <div>
-            <h3 className="text-sm font-bold text-yellow-400 uppercase tracking-widest">
-              📦 Catálogo BroShop
+            <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-widest">
+              📦 Campaña Actual (campana_semana: "actual")
             </h3>
             <p className="text-[10px] text-gray-500 mt-0.5">
-              {catalogTotal.toLocaleString()} artículos · Tabla <span className="text-yellow-600 font-mono">catalog_items</span>
+              {campanaActual.length} / {MAX_PRODUCTOS} productos
+              {isFaseActiva && !isAdmin && !isPremium && (
+                <span className="text-amber-400 ml-2">⚠️ CONGELADO - Fase lunar activa</span>
+              )}
             </p>
           </div>
-          <label className="cursor-pointer bg-yellow-500/10 border border-yellow-500/40 text-yellow-300 text-[10px] font-bold uppercase px-4 py-2 rounded-xl hover:bg-yellow-500/20 transition-all">
-            ⬆ IMPORTAR CSV
-            <input type="file" accept=".csv" onChange={handleCSVUpload} className="hidden" />
-          </label>
-        </div>
-
-        <div className="bg-black/30 border border-white/5 rounded-xl px-4 py-3 mb-4 flex items-start gap-3">
-          <span className="text-yellow-600 text-sm mt-0.5">ℹ</span>
-          <div>
-            <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Formato CSV esperado</p>
-            <p className="text-[9px] text-yellow-600 font-mono">title, description, price_fiat, url, category</p>
-            <p className="text-[9px] text-gray-600 mt-1">Primera fila = cabecera (se ignora). Máx 5.000 artículos por importación.</p>
-          </div>
-        </div>
-
-        <div className="relative mb-4">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">🔍</span>
-          <input
-            type="text"
-            value={catalogSearch}
-            onChange={e => { setCatalogSearch(e.target.value); setCatalogPage(0); }}
-            placeholder="Buscar en tu catálogo..."
-            className={`${InputStyle} pl-10`}
-          />
-        </div>
-
-        <div className="space-y-2 min-h-[200px]">
-          {catalogLoading ? (
-            <div className="flex items-center justify-center h-32 text-gray-600 text-xs">
-              ⏳ Cargando catálogo...
-            </div>
-          ) : catalogItems.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-32 text-gray-700 text-xs italic">
-              <span className="text-3xl mb-2">📭</span>
-              {catalogSearch ? 'Sin resultados para esa búsqueda.' : 'Catálogo vacío. Importa un CSV para empezar.'}
-            </div>
-          ) : (
-            catalogItems.map(item => (
-              <div key={item.id}
-                className="flex items-center justify-between bg-white/3 hover:bg-white/6 border border-white/5 hover:border-yellow-500/20 px-4 py-3 rounded-xl transition-all group">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-yellow-100 group-hover:text-yellow-300 transition-colors truncate">
-                    {item.title}
-                  </p>
-                  <div className="flex gap-3 mt-0.5 flex-wrap">
-                    {item.category && (
-                      <span className="text-[9px] bg-yellow-900/30 text-yellow-600 px-2 py-0.5 rounded-full">
-                        {item.category}
-                      </span>
-                    )}
-                    <span className="text-[10px] text-gray-500">{item.price_fiat}€</span>
-                    {item.description && (
-                      <span className="text-[9px] text-gray-600 truncate max-w-[200px]">{item.description}</span>
-                    )}
-                  </div>
-                </div>
-                <button onClick={() => handleDeleteCatalogItem(item.id)}
-                  className="ml-4 text-gray-700 hover:text-red-400 text-lg transition-all opacity-0 group-hover:opacity-100">
-                  🗑
-                </button>
-              </div>
-            ))
-          )}
-        </div>
-
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
-            <button
-              onClick={() => setCatalogPage(p => Math.max(0, p - 1))}
-              disabled={catalogPage === 0}
-              className="text-xs font-bold text-gray-400 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed px-4 py-2 rounded-xl border border-white/10 hover:border-white/20 transition-all">
-              ← Anterior
-            </button>
-            <span className="text-[10px] text-gray-500 font-bold">
-              Página {catalogPage + 1} de {totalPages} · {catalogTotal} artículos
-            </span>
-            <button
-              onClick={() => setCatalogPage(p => Math.min(totalPages - 1, p + 1))}
-              disabled={catalogPage >= totalPages - 1}
-              className="text-xs font-bold text-gray-400 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed px-4 py-2 rounded-xl border border-white/10 hover:border-white/20 transition-all">
-              Siguiente →
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* ══ SECCIÓN 2: SERVICIOS ══ */}
-      <div className={`${CardStyle} border-cyan-500/20`}>
-        <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-widest mb-4">🤝 Servicios</h3>
-        <div className="space-y-3 mb-4">
-          <input type="text" placeholder="TÍTULO (Ej: Consulta 1H)"
-            value={newService.title} onChange={e => setNewService({ ...newService, title: e.target.value })}
-            className={InputStyle} />
-          <div className="flex gap-3">
-            <input type="number" placeholder="PRECIO €"
-              value={newService.price} onChange={e => setNewService({ ...newService, price: e.target.value })}
-              className={InputStyle} />
-            <input type="text" placeholder="LINK CALENDARIO / BOOKING"
-              value={newService.url} onChange={e => setNewService({ ...newService, url: e.target.value })}
-              className={InputStyle} />
-          </div>
-          <textarea placeholder="Descripción del servicio..."
-            value={newService.desc} onChange={e => setNewService({ ...newService, desc: e.target.value })}
-            className={`${InputStyle} h-20 resize-none`} />
-        </div>
-        <button onClick={handleAddService}
-          className="w-full bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs uppercase py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)]">
-          + AÑADIR SERVICIO
+          <span className="text-gray-500 text-lg">{acordeonActualAbierto ? '▼' : '▶'}</span>
         </button>
 
-        {serviceItems.length > 0 && (
-          <div className="mt-4 space-y-2 border-t border-white/5 pt-4">
-            {serviceItems.map(s => (
-              <div key={s.id}
-                className="flex justify-between items-center bg-white/3 hover:bg-white/6 p-3 rounded-xl border border-cyan-500/10 group transition-all">
-                <div>
-                  <p className="text-sm font-bold text-cyan-100">{s.title}</p>
-                  <p className="text-[10px] text-gray-500">{s.price_fiat}€ · Reserva</p>
-                </div>
-                <button onClick={() => handleDeleteItem(s.id)}
-                  className="text-gray-600 hover:text-red-400 font-bold transition-all opacity-0 group-hover:opacity-100 text-lg">
-                  🗑
-                </button>
+        {acordeonActualAbierto && (
+          <div className="space-y-3">
+            {campanaActual.length === 0 ? (
+              <div className="text-center py-8 text-gray-600 text-sm">
+                <span className="text-3xl mb-2 block">📭</span>
+                Sin productos en campaña actual.
               </div>
-            ))}
+            ) : (
+              campanaActual.map((producto, idx) => {
+                const esEditable = !isFaseActiva || isAdmin || isPremium;
+                const esUnoDeTres = idx < 3;
+                const esPrimero = idx === 0;
+                return (
+                  <div
+                    key={producto.id}
+                    className={`bg-white/5 border ${esUnoDeTres ? 'border-cyan-500/40' : 'border-white/10'} rounded-xl p-4 transition-all ${!esEditable ? 'opacity-60' : ''}`}
+                  >
+                    {esUnoDeTres && (
+                      <div className="text-[9px] text-cyan-400 font-bold uppercase tracking-widest mb-2">
+                        {esPrimero ? '🥇 Primer Producto en Portada' : `#${idx + 1} en Portada`}
+                      </div>
+                    )}
+                    
+                    <div className="flex gap-4">
+                      {/* Miniatura */}
+                      <div className="w-20 h-30 bg-black/40 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
+                        {producto.image_url ? (
+                          <img src={producto.image_url} alt={producto.producto_titulo} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-gray-600 text-xs">Sin imagen</span>
+                        )}
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="text-sm font-bold text-cyan-100 truncate">
+                              {producto.producto_titulo}
+                            </p>
+                            <p className="text-[10px] text-gray-500">
+                              Código: {producto.producto_codigo || '—'}
+                            </p>
+                            {producto.categoria && (
+                              <span className="text-[9px] bg-cyan-900/30 text-cyan-600 px-2 py-0.5 rounded-full mt-1 inline-block">
+                                {producto.categoria}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-[9px] font-bold px-2 py-1 rounded ${producto.alcance === 'NACIONAL' ? 'bg-amber-500/20 text-amber-400' : 'bg-fuchsia-500/20 text-fuchsia-400'}`}>
+                              [{producto.alcance}]
+                            </span>
+                            {esEditable && (
+                              <button
+                                onClick={() => handleDeleteProducto('actual', producto.id)}
+                                className="text-gray-600 hover:text-red-400 text-lg transition-all"
+                              >
+                                🗑
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Semáforo Lunar */}
+                        <div className="flex gap-2 mt-2">
+                          {Object.keys(LUNA_EMOJIS).map(luna => (
+                            <button
+                              key={luna}
+                              onClick={() => esEditable && handleToggleLuna('actual', producto.id, luna)}
+                              disabled={!esEditable}
+                              style={{
+                                color: producto.lunas[luna] ? LUNA_COLORS[luna] : '#4B5563',
+                                textShadow: producto.lunas[luna] ? `0 0 8px ${LUNA_COLORS[luna]}` : 'none',
+                                opacity: esEditable ? 1 : 0.4,
+                                cursor: esEditable ? 'pointer' : 'not-allowed',
+                              }}
+                              className="text-lg transition-all"
+                            >
+                              {LUNA_EMOJIS[luna]}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Stock y Precio */}
+                        <div className="flex items-center gap-4 mt-3 text-[10px]">
+                          <span className="text-gray-400">
+                            Stock: <span className={producto.stock_actual === 0 ? 'text-red-400 font-bold' : 'text-white'}>
+                              {producto.stock_actual} / {producto.stock_inicial}
+                            </span>
+                          </span>
+                          {producto.precio_original > 0 && (
+                            <>
+                              <span className="text-gray-500 line-through">{producto.precio_original}€</span>
+                              <span className="text-emerald-400 font-bold">{producto.precio_descuento}€</span>
+                            </>
+                          )}
+                          {producto.tallas && (
+                            <span className="text-gray-500">Talles: {producto.tallas}</span>
+                          )}
+                          {producto.peso && (
+                            <span className="text-gray-500">| {producto.peso}</span>
+                          )}
+                          {producto.material && (
+                            <span className="text-gray-500">| {producto.material}</span>
+                          )}
+                          {producto.origen && (
+                            <span className="text-gray-500">| {producto.origen}</span>
+                          )}
+                        </div>
+
+                        {producto.descripcion && (
+                          <p className="text-[9px] text-gray-500 mt-2 line-clamp-2">
+                            {producto.descripcion}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+
+            {esEditable && campanaActual.length < MAX_PRODUCTOS && (
+              <button
+                onClick={() => handleAddProducto('actual')}
+                className="w-full mt-4 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 text-xs font-bold uppercase py-3 rounded-xl transition-all"
+              >
+                + Añadir Producto a Campaña Actual
+              </button>
+            )}
           </div>
         )}
       </div>
 
-      {/* ══ SECCIÓN 3: MAPACHE IA ══ */}
-      <div className="p-5 border border-fuchsia-500/30 rounded-3xl bg-fuchsia-500/5 relative overflow-hidden group">
-        <div className="absolute -right-5 -top-5 text-8xl opacity-5 group-hover:opacity-10 transition-opacity rotate-12">🦝</div>
-        <h3 className="text-xs text-fuchsia-300 font-bold uppercase tracking-widest mb-1">🧠 Instrucciones Mapache IA</h3>
-        <p className="text-[10px] text-gray-500 mb-3">
-          Describe tu negocio al Mapache. Cuanto más detalle, mejor responderá a tus clientes.
-          Cuando PORT AI esté activo, este texto también alimentará su contexto.
-        </p>
-        <textarea
-          value={formData.mapache_rules}
-          onChange={e => setFormData({ ...formData, mapache_rules: e.target.value })}
-          placeholder="Ej: Somos una ferretería familiar especializada en bricolaje. Nuestro horario es L-V 9-20h. Hacemos presupuestos gratuitos..."
-          className={`${InputStyle} border-fuchsia-500/30 focus:border-fuchsia-400 h-28 bg-black/40`}
-        />
+      {/* Acordeón: Campaña Siguiente */}
+      <div className={`${t.bg} border border-cyan-500/20 rounded-3xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl`}>
+        <button
+          onClick={() => setAcordeonSiguienteAbierto(!acordeonSiguienteAbierto)}
+          className="w-full flex items-center justify-between mb-4"
+        >
+          <div>
+            <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-widest">
+              📦 Campaña Siguiente (campana_semana: "siguiente")
+            </h3>
+            <p className="text-[10px] text-gray-500 mt-0.5">
+              {campanaSiguiente.length} / {MAX_PRODUCTOS} productos · Siempre editable
+            </p>
+          </div>
+          <span className="text-gray-500 text-lg">{acordeonSiguienteAbierto ? '▼' : '▶'}</span>
+        </button>
 
-        <div className="mt-4 pt-4 border-t border-fuchsia-500/10">
-          <label className="text-[10px] font-bold text-blue-300 uppercase tracking-widest block mb-2">
-            📸 Holo-Catálogo (Google Slides / URL)
-          </label>
-          <input type="text"
-            value={formData.catalog_url}
-            onChange={e => setFormData({ ...formData, catalog_url: e.target.value })}
-            placeholder="https://docs.google.com/presentation/..."
-            className={`${InputStyle} border-blue-500/30 focus:border-blue-400 bg-black/40`}
-          />
-        </div>
+        {acordeonSiguienteAbierto && (
+          <div className="space-y-3">
+            {campanaSiguiente.map((producto, idx) => (
+              <div key={producto.id} className="bg-white/5 border border-white/10 rounded-xl p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <span className="text-[10px] text-gray-500 font-bold uppercase">
+                    Producto #{idx + 1}
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleDeleteProducto('siguiente', producto.id)}
+                      className="text-gray-600 hover:text-red-400 text-lg transition-all"
+                    >
+                      🗑
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {/* Campos */}
+                  <div>
+                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Código</label>
+                    <input
+                      type="text"
+                      value={producto.producto_codigo}
+                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'producto_codigo', e.target.value)}
+                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                      placeholder="Ej: 550"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Título</label>
+                    <input
+                      type="text"
+                      value={producto.producto_titulo}
+                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'producto_titulo', e.target.value)}
+                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                      placeholder="Ej: Camiseta Neo"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Categoría</label>
+                    <input
+                      type="text"
+                      value={producto.categoria}
+                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'categoria', e.target.value)}
+                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                      placeholder="Ej: Moda"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Talles</label>
+                    <input
+                      type="text"
+                      value={producto.tallas}
+                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'tallas', e.target.value)}
+                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                      placeholder="Ej: S, M, L, XL"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Peso</label>
+                    <input
+                      type="text"
+                      value={producto.peso}
+                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'peso', e.target.value)}
+                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                      placeholder="Ej: 200g"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Material</label>
+                    <input
+                      type="text"
+                      value={producto.material}
+                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'material', e.target.value)}
+                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                      placeholder="Ej: Algodón orgánico"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Origen</label>
+                    <input
+                      type="text"
+                      value={producto.origen}
+                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'origen', e.target.value)}
+                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                      placeholder="Ej: Valencia, España"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Alcance</label>
+                    <select
+                      value={producto.alcance}
+                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'alcance', e.target.value)}
+                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                    >
+                      {ALCANCE_OPTIONS.map(opt => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Precio Original (€)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={producto.precio_original}
+                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'precio_original', parseFloat(e.target.value) || 0)}
+                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Precio Descuento (€)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={producto.precio_descuento}
+                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'precio_descuento', parseFloat(e.target.value) || 0)}
+                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Stock Inicial</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max={MAX_PRODUCTOS}
+                      value={producto.stock_inicial}
+                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'stock_inicial', Math.min(Math.max(0, parseInt(e.target.value) || 0), MAX_PRODUCTOS))}
+                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Stock Actual</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max={producto.stock_inicial}
+                      value={producto.stock_actual}
+                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'stock_actual', Math.min(Math.max(0, parseInt(e.target.value) || 0), producto.stock_inicial))}
+                      className={`w-full bg-black/60 border rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 ${producto.stock_actual === 0 ? 'border-red-500/40 text-red-400' : 'border-cyan-500/20'}`}
+                      disabled={producto.stock_actual === 0}
+                      title={producto.stock_actual === 0 ? 'Stock bloqueado en 0' : ''}
+                    />
+                  </div>
+
+                  {/* Lunas */}
+                  <div className="md:col-span-2">
+                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-2">Lunas Activas</label>
+                    <div className="flex gap-3">
+                      {Object.keys(LUNA_EMOJIS).map(luna => (
+                        <button
+                          key={luna}
+                          onClick={() => handleToggleLuna('siguiente', producto.id, luna)}
+                          style={{
+                            color: producto.lunas[luna] ? LUNA_COLORS[luna] : '#4B5563',
+                            textShadow: producto.lunas[luna] ? `0 0 8px ${LUNA_COLORS[luna]}` : 'none',
+                            transform: producto.lunas[luna] ? 'scale(1.2)' : 'scale(1)',
+                          }}
+                          className="text-xl transition-all"
+                        >
+                          {LUNA_EMOJIS[luna]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Imagen */}
+                  <div className="md:col-span-2">
+                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-2">Imagen (R2)</label>
+                    <div className="flex gap-3 items-center">
+                      {producto.image_url ? (
+                        <>
+                          <div className="w-16 h-16 bg-black/40 rounded-lg overflow-hidden flex-shrink-0">
+                            <img src={producto.image_url} alt="Preview" className="w-full h-full object-cover" />
+                          </div>
+                          <button
+                            onClick={async () => {
+                              const url = await subirImagenR2(null, () => {});
+                              if (url) handleUpdateProducto('siguiente', producto.id, 'image_url', url);
+                            }}
+                            className="text-xs text-cyan-400 hover:text-cyan-300 underline"
+                          >
+                            🔁 Reemplazar
+                          </button>
+                        </>
+                      ) : (
+                        <label className="flex-1 cursor-pointer bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-4 py-2 text-xs text-cyan-300 hover:bg-cyan-500/20 transition-all text-center">
+                          <span>Subir Imagen</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async e => {
+                              const url = await subirImagenR2(e.target.files[0], () => {});
+                              if (url) handleUpdateProducto('siguiente', producto.id, 'image_url', url);
+                            }}
+                          />
+                        </label>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Descripción */}
+                  <div className="md:col-span-2">
+                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Descripción</label>
+                    <textarea
+                      value={producto.descripcion}
+                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'descripcion', e.target.value)}
+                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 resize-none"
+                      rows="2"
+                      placeholder="Descripción corta de materiales y talles..."
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {campanaSiguiente.length < MAX_PRODUCTOS && (
+              <button
+                onClick={() => handleAddProducto('siguiente')}
+                className="w-full mt-4 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 text-xs font-bold uppercase py-3 rounded-xl transition-all"
+              >
+                + Añadir Producto a Campaña Siguiente
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
+      {/* Botón Guardar */}
+      <button
+        onClick={handleGuardarCampana}
+        disabled={guardando}
+        className="w-full bg-cyan-500 hover:bg-cyan-400 disabled:bg-cyan-500/50 text-black font-bold text-sm uppercase py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(34,211,238,0.3)]"
+      >
+        {guardando ? '💾 Guardando...' : '💾 GUARDAR CAMPAÑA'}
+      </button>
     </div>
   );
 };
