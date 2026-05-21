@@ -356,11 +356,17 @@ export const MarketTab = ({ formData, setFormData }) => {
                 Sin productos en campaña actual.
               </div>
             ) : (
-              campanaActual.map((producto, idx) => {
+              (() => {
                 const esEditable = !isFaseActiva || isAdmin || isPremium;
-                const esUnoDeTres = idx < 3;
-                const esPrimero = idx === 0;
                 return (
+                  campanaActual.map((producto, idx) => {
+                    const esUnoDeTres = idx < 3;
+                    const esPrimero = idx === 0;
+                    return (
+                  campanaActual.map((producto, idx) => {
+                    const esUnoDeTres = idx < 3;
+                    const esPrimero = idx === 0;
+                    return (
                   <div
                     key={producto.id}
                     className={`bg-white/5 border ${esUnoDeTres ? 'border-cyan-500/40' : 'border-white/10'} rounded-xl p-4 transition-all ${!esEditable ? 'opacity-60' : ''}`}
@@ -463,15 +469,13 @@ export const MarketTab = ({ formData, setFormData }) => {
                           <p className="text-[9px] text-gray-500 mt-2 line-clamp-2">
                             {producto.descripcion}
                           </p>
-                        )}
-                      </div>
-                    </div>
+                    )}
                   </div>
                 );
               })
             )}
 
-            {esEditable && campanaActual.length < MAX_PRODUCTOS && (
+            {(!isFaseActiva || isAdmin || isPremium) && campanaActual.length < MAX_PRODUCTOS && (
               <button
                 onClick={() => handleAddProducto('actual')}
                 className="w-full mt-4 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 text-xs font-bold uppercase py-3 rounded-xl transition-all"
