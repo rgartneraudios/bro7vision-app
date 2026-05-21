@@ -104,6 +104,46 @@ function BroCardPS({ card, theme, onClick, index }) {
           animation: "broCardPop 0.35s ease both",
         }}
       >
+        {card.alcance && (card.alcance === 'nacional' || card.alcance === 'internacional') && (
+          <div style={{
+            position: "absolute", top: 8, left: 8,
+            padding: "3px 8px",
+            background: "rgba(0,0,0,0.75)",
+            border: `1px solid ${t.border}`,
+            color: t.idColor,
+            fontSize: "9px",
+            fontWeight: 600,
+            letterSpacing: "0.5px",
+            textTransform: "uppercase",
+            borderRadius: "3px",
+            zIndex: 3,
+            boxShadow: `0 0 8px ${t.glow}`,
+            backdropFilter: "blur(4px)",
+          }}>
+            [{card.alcance === 'nacional' ? 'NACIONAL' : 'GLOBAL'}]
+          </div>
+        )}
+        
+        {card.alcance && (card.alcance === 'nacional' || card.alcance === 'internacional') && (
+          <div style={{
+            position: "absolute", top: 8, left: 8,
+            padding: "3px 8px",
+            background: "rgba(0,0,0,0.75)",
+            border: `1px solid ${t.border}`,
+            color: t.idColor,
+            fontSize: "9px",
+            fontWeight: 600,
+            letterSpacing: "0.5px",
+            textTransform: "uppercase",
+            borderRadius: "3px",
+            zIndex: 3,
+            boxShadow: `0 0 8px ${t.glow}`,
+            backdropFilter: "blur(4px)",
+          }}>
+            [{card.alcance === 'nacional' ? 'NACIONAL' : 'GLOBAL'}]
+          </div>
+        )}
+        
         <div style={{
           position: "absolute", top: 0, left: 0, right: 0, height: "2px",
           background: `linear-gradient(90deg, transparent, ${t.border}, transparent)`,
