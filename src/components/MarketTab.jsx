@@ -5,7 +5,7 @@
 // Tabla: profiles
 // Columna: destacados_ps (array de objetos JSON)
 // ─────────────────────────────────────────────────────────────────────
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { getMoonSuffix } from '../utils/moonUtils';
 
@@ -244,30 +244,6 @@ export const MarketTab = ({ formData, setFormData }) => {
     setter(prev => prev.filter(item => item.id !== id));
   };
 
-  const handleGuardarProducto = (campana, producto) => {
-    // Validaciones
-    if (!producto.producto_codigo || !producto.producto_titulo) {
-      alert('⚠️ Código y Título son obligatorios.');
-      return;
-    }
-    if (producto.precio_original < 0 || producto.precio_descuento < 0) {
-      alert('⚠️ Los precios no pueden ser negativos.');
-      return;
-    }
-    if (producto.stock_inicial < 0 || producto.stock_actual < 0) {
-      alert('⚠️ El stock no puede ser negativo.');
-      return;
-    }
-    if (producto.stock_actual > producto.stock_inicial) {
-      alert('⚠️ El stock actual no puede superar el stock inicial.');
-      return;
-    }
-    if (producto.precio_descuento > producto.precio_original) {
-      alert('⚠️ El precio de descuento no puede superar el precio original.');
-      return;
-    }
-  };
-
   const handleGuardarCampana = async () => {
     setGuardando(true);
     try {
@@ -301,7 +277,6 @@ export const MarketTab = ({ formData, setFormData }) => {
     }
   };
 
-  // ── Render ──
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64 text-gray-500 text-sm">
@@ -358,126 +333,120 @@ export const MarketTab = ({ formData, setFormData }) => {
             ) : (
               (() => {
                 const esEditable = !isFaseActiva || isAdmin || isPremium;
-                return (
-                  campanaActual.map((producto, idx) => {
-                    const esUnoDeTres = idx < 3;
-                    const esPrimero = idx === 0;
-                    return (
-                      <div
-                        key={producto.id}
-                        className={`bg-white/5 border ${esUnoDeTres ? 'border-cyan-500/40' : 'border-white/10'} rounded-xl p-4 transition-all ${!esEditable ? 'opacity-60' : ''}`}
-                      >
-                    {esUnoDeTres && (
-                      <div className="text-[9px] text-cyan-400 font-bold uppercase tracking-widest mb-2">
-                        {esPrimero ? '🥇 Primer Producto en Portada' : `#${idx + 1} en Portada`}
-                      </div>
-                    )}
-                    
-                    <div className="flex gap-4">
-                      {/* Miniatura */}
-                      <div className="w-20 h-30 bg-black/40 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
-                        {producto.image_url ? (
-                          <img src={producto.image_url} alt={producto.producto_titulo} className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-gray-600 text-xs">Sin imagen</span>
-                        )}
-                      </div>
+                return campanaActual.map((producto, idx) => {
+                  const esUnoDeTres = idx < 3;
+                  const esPrimero = idx === 0;
+                  return (
+                    <div
+                      key={producto.id}
+                      className={`bg-white/5 border ${esUnoDeTres ? 'border-cyan-500/40' : 'border-white/10'} rounded-xl p-4 transition-all ${!esEditable ? 'opacity-60' : ''}`}
+                    >
+                      {esUnoDeTres && (
+                        <div className="text-[9px] text-cyan-400 font-bold uppercase tracking-widest mb-2">
+                          {esPrimero ? '🥇 Primer Producto en Portada' : `#${idx + 1} en Portada`}
+                        </div>
+                      )}
+                      
+                      <div className="flex gap-4">
+                        {/* Miniatura */}
+                        <div className="w-20 h-30 bg-black/40 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
+                          {producto.image_url ? (
+                            <img src={producto.image_url} alt={producto.producto_titulo} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-gray-600 text-xs">Sin imagen</span>
+                          )}
+                        </div>
 
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <p className="text-sm font-bold text-cyan-100 truncate">
-                              {producto.producto_titulo}
-                            </p>
-                            <p className="text-[10px] text-gray-500">
-                              Código: {producto.producto_codigo || '—'}
-                            </p>
-                            {producto.categoria && (
-                              <span className="text-[9px] bg-cyan-900/30 text-cyan-600 px-2 py-0.5 rounded-full mt-1 inline-block">
-                                {producto.categoria}
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="text-sm font-bold text-cyan-100 truncate">
+                                {producto.producto_titulo}
+                              </p>
+                              <p className="text-[10px] text-gray-500">
+                                Código: {producto.producto_codigo || '—'}
+                              </p>
+                              {producto.categoria && (
+                                <span className="text-[9px] bg-cyan-900/30 text-cyan-600 px-2 py-0.5 rounded-full mt-1 inline-block">
+                                  {producto.categoria}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className={`text-[9px] font-bold px-2 py-1 rounded ${producto.alcance === 'NACIONAL' ? 'bg-amber-500/20 text-amber-400' : 'bg-fuchsia-500/20 text-fuchsia-400'}`}>
+                                [{producto.alcance}]
                               </span>
-                            )}
+                              {esEditable && (
+                                <button
+                                  onClick={() => handleDeleteProducto('actual', producto.id)}
+                                  className="text-gray-600 hover:text-red-400 text-lg transition-all"
+                                >
+                                  🗑
+                                </button>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className={`text-[9px] font-bold px-2 py-1 rounded ${producto.alcance === 'NACIONAL' ? 'bg-amber-500/20 text-amber-400' : 'bg-fuchsia-500/20 text-fuchsia-400'}`}>
-                              [{producto.alcance}]
-                            </span>
-                            {esEditable && (
+
+                          {/* Semáforo Lunar */}
+                          <div className="flex gap-2 mt-2">
+                            {Object.keys(LUNA_EMOJIS).map(luna => (
                               <button
-                                onClick={() => handleDeleteProducto('actual', producto.id)}
-                                className="text-gray-600 hover:text-red-400 text-lg transition-all"
+                                key={luna}
+                                onClick={() => esEditable && handleToggleLuna('actual', producto.id, luna)}
+                                disabled={!esEditable}
+                                style={{
+                                  color: producto.lunas[luna] ? LUNA_COLORS[luna] : '#4B5563',
+                                  textShadow: producto.lunas[luna] ? `0 0 8px ${LUNA_COLORS[luna]}` : 'none',
+                                  opacity: esEditable ? 1 : 0.4,
+                                  cursor: esEditable ? 'pointer' : 'not-allowed',
+                                }}
+                                className="text-lg transition-all"
                               >
-                                🗑
+                                {LUNA_EMOJIS[luna]}
                               </button>
+                            ))}
+                          </div>
+
+                          {/* Stock y Precio */}
+                          <div className="flex items-center gap-4 mt-3 text-[10px]">
+                            <span className="text-gray-400">
+                              Stock: <span className={producto.stock_actual === 0 ? 'text-red-400 font-bold' : 'text-white'}>
+                                {producto.stock_actual} / {producto.stock_inicial}
+                              </span>
+                            </span>
+                            {producto.precio_original > 0 && (
+                              <>
+                                <span className="text-gray-500 line-through">{producto.precio_original}€</span>
+                                <span className="text-emerald-400 font-bold">{producto.precio_descuento}€</span>
+                              </>
+                            )}
+                            {producto.tallas && (
+                              <span className="text-gray-500">Talles: {producto.tallas}</span>
+                            )}
+                            {producto.peso && (
+                              <span className="text-gray-500">| {producto.peso}</span>
+                            )}
+                            {producto.material && (
+                              <span className="text-gray-500">| {producto.material}</span>
+                            )}
+                            {producto.origen && (
+                              <span className="text-gray-500">| {producto.origen}</span>
                             )}
                           </div>
-                        </div>
 
-                        {/* Semáforo Lunar */}
-                        <div className="flex gap-2 mt-2">
-                          {Object.keys(LUNA_EMOJIS).map(luna => (
-                            <button
-                              key={luna}
-                              onClick={() => esEditable && handleToggleLuna('actual', producto.id, luna)}
-                              disabled={!esEditable}
-                              style={{
-                                color: producto.lunas[luna] ? LUNA_COLORS[luna] : '#4B5563',
-                                textShadow: producto.lunas[luna] ? `0 0 8px ${LUNA_COLORS[luna]}` : 'none',
-                                opacity: esEditable ? 1 : 0.4,
-                                cursor: esEditable ? 'pointer' : 'not-allowed',
-                              }}
-                              className="text-lg transition-all"
-                            >
-                              {LUNA_EMOJIS[luna]}
-                            </button>
-                          ))}
-                        </div>
-
-                        {/* Stock y Precio */}
-                        <div className="flex items-center gap-4 mt-3 text-[10px]">
-                          <span className="text-gray-400">
-                            Stock: <span className={producto.stock_actual === 0 ? 'text-red-400 font-bold' : 'text-white'}>
-                              {producto.stock_actual} / {producto.stock_inicial}
-                            </span>
-                          </span>
-                          {producto.precio_original > 0 && (
-                            <>
-                              <span className="text-gray-500 line-through">{producto.precio_original}€</span>
-                              <span className="text-emerald-400 font-bold">{producto.precio_descuento}€</span>
-                            </>
-                          )}
-                          {producto.tallas && (
-                            <span className="text-gray-500">Talles: {producto.tallas}</span>
-                          )}
-                          {producto.peso && (
-                            <span className="text-gray-500">| {producto.peso}</span>
-                          )}
-                          {producto.material && (
-                            <span className="text-gray-500">| {producto.material}</span>
-                          )}
-                          {producto.origen && (
-                            <span className="text-gray-500">| {producto.origen}</span>
+                          {producto.descripcion && (
+                            <p className="text-[9px] text-gray-500 mt-2 line-clamp-2">
+                              {producto.descripcion}
+                            </p>
                           )}
                         </div>
-
-                         {producto.descripcion && (
-                           <p className="text-[9px] text-gray-500 mt-2 line-clamp-2">
-                             {producto.descripcion}
-                           </p>
-                         )}
-                       </div>
-                     </div>
-                   </div>
-                 );
-               })
-             )}
-                       </div>
-                     </div>
-                   </div>
-                 );
-               })
-             )}
+                      </div>
+                    </div>
+                  );
+                });
+              })()
+            )}
 
             {(!isFaseActiva || isAdmin || isPremium) && campanaActual.length < MAX_PRODUCTOS && (
               <button
