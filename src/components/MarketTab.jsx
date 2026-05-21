@@ -364,8 +364,8 @@ export const MarketTab = ({ formData, setFormData }) => {
                     const esPrimero = idx === 0;
                     return (
                       <div
-                    key={producto.id}
-                    className={`bg-white/5 border ${esUnoDeTres ? 'border-cyan-500/40' : 'border-white/10'} rounded-xl p-4 transition-all ${!esEditable ? 'opacity-60' : ''}`}
+                        key={producto.id}
+                        className={`bg-white/5 border ${esUnoDeTres ? 'border-cyan-500/40' : 'border-white/10'} rounded-xl p-4 transition-all ${!esEditable ? 'opacity-60' : ''}`}
                   >
                     {esUnoDeTres && (
                       <div className="text-[9px] text-cyan-400 font-bold uppercase tracking-widest mb-2">
