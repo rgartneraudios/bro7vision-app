@@ -3,6 +3,7 @@ import CityLocationBanner from './CityLocationBanner';
 import AgentChatInput from './AgentChatInput';
 import NeuralButton from './NeuralButton';
 import BroCardStrip from './BroCardStrip';
+import BroCardStripPS from './BroCardStripPS';
 import BroLives from '../components/BroLives';
 import BroTuner from '../components/BroTuner';
 import { getMoonSuffix } from '../utils/moonUtils';
@@ -800,7 +801,22 @@ const nextAudio = () => {
             </div>
           )}
           {/* BroCards — solo cuando hay resultados de búsqueda */}
-          {stripVisible && stripCards?.length > 0 && (
+          {/* BroCardStripPS — Productos y Servicios */}
+          {stripVisible && stripCards?.length > 0 && 
+            (intent === 'productos' || intent === 'servicios') && (
+            <div className="w-full px-2 pointer-events-auto">
+              <BroCardStripPS
+                cards={stripCards}
+                onSelectCard={(card) => setBurbujaOpen(card)}
+                accentColor={STRIP_THEME[intent] || 'gold'}
+                visible={true}
+              />
+            </div>
+          )}
+
+          {/* BroCardStrip — Avisos y Audios */}
+          {stripVisible && stripCards?.length > 0 && 
+            (intent === 'avisos' || intent === 'audios') && (
             <div className="w-full px-2 pointer-events-auto">
               <BroCardStrip
                 cards={stripCards}

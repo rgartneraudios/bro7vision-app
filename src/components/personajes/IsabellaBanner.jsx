@@ -1,7 +1,7 @@
 // src/components/personajes/IsabellaBanner.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import AgentChatInput from '../AgentChatInput';
-import BroCardStrip from '../BroCardStrip';
+import BroCardStripPS from '../BroCardStripPS';
 import { useAgentIsabella } from '../../hooks/useAgentIsabella';
 
 const GREETINGS_ISABELLA = [
@@ -137,11 +137,10 @@ export default function IsabellaBanner({
       {/* 1. CARRUSEL */}
       {stripVisible && (
         <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
-          <BroCardStrip
+          <BroCardStripPS
             cards={stripCards}
             onSelectCard={handleCardClick}
             accentColor="slate"
-            label={stripLabel}
             visible={stripVisible}
           />
         </div>

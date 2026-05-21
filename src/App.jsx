@@ -34,6 +34,7 @@ import { AudioProvider } from './context/AudioContext';
 import SlideRailAudio from './components/SlideRailAudio';
 import { useAudioData } from './hooks/useAudioData';
 import BroCardStrip from './components/BroCardStrip';
+import BroCardStripPS from './components/BroCardStripPS';
 import AgentChatInput from './components/AgentChatInput';
 import { useAgOsosMobile }    from './hooks/useAgOsosMobile';
 import { useAgentRumores }    from './hooks/useAgentRumores';

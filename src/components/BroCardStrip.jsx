@@ -1,6 +1,6 @@
-// src/components/BroCardStrip.jsx  v3
+// src/components/BroCardStrip.jsx  v4
 // ─────────────────────────────────────────────────────────────
-// Imagen a sangre + ALIAS del comercio abajo.
+// Imagen 2:3 + Grid 2 filas × 4 tarjetas + Tooltip Cyberpunk flotante
 // bro_id es solo interno — el user ve la imagen y el nombre.
 // ─────────────────────────────────────────────────────────────
 import { useRef, useEffect, useState, useCallback } from "react";
@@ -12,7 +12,7 @@ const THEMES = {
   blue:  { glow: "rgba(30,58,138,0.5)",   border: "#1e3a8a", idColor: "#ffffff", footerBg: "#00081C" },
 };
 
-function BroCard({ card, theme, onClick, index }) {
+function BroCard({ card, theme, onClick, index, onHoverChange }) {
   const [loaded, setLoaded]   = useState(false);
   const [inView, setInView]   = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -30,86 +30,95 @@ function BroCard({ card, theme, onClick, index }) {
     return () => obs.disconnect();
   }, []);
 
-  // El alias: usa nombre si existe, si no recorta el bro_id (fallback)
   const displayName = card.nombre
     ? card.nombre.length > 10 ? card.nombre.slice(0, 10) + '…' : card.nombre
     : card.bro_id;
 
+  const handleMouseEnter = (e) => {
+    setHovered(true);
+    onHoverChange?.(card, true, e);
+  };
+
+  const handleMouseLeave = () => {
+    setHovered(false);
+    onHoverChange?.(card, false);
+  };
+
   return (
-    <div
-      ref={ref}
-      onClick={() => onClick(card)}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        flexShrink: 0,
-        width: "110px",
-        borderRadius: "10px",
-        overflow: "hidden",
-        cursor: "pointer",
-        position: "relative",
-        transition: "transform 0.2s ease, box-shadow 0.2s ease",
-        transform: hovered ? "translateY(-5px) scale(1.04)" : "translateY(0) scale(1)",
-        boxShadow: hovered ? `0 0 20px ${t.glow}` : "0 2px 8px rgba(0,0,0,0.5)",
-        animationDelay: `${index * 55}ms`,
-        animation: "broCardPop 0.35s ease both",
-        scrollSnapAlign: "start",
-      }}
-    >
-      {/* Línea top en hover */}
-      <div style={{
-        position: "absolute", top: 0, left: 0, right: 0, height: "2px",
-        background: `linear-gradient(90deg, transparent, ${t.border}, transparent)`,
-        opacity: hovered ? 1 : 0,
-        transition: "opacity 0.2s",
-        zIndex: 2,
-      }} />
-
-      {/* IMAGEN */}
-      <div style={{ width: "100%", height: "148px", background: "rgba(255,255,255,0.04)", overflow: "hidden", position: "relative" }}>
-        {inView && card.banner_url && (
-          <img
-            src={card.banner_url}
-            alt={displayName}
-            onLoad={() => setLoaded(true)}
-            style={{
-              width: "100%", height: "100%", objectFit: "cover", display: "block",
-              opacity: loaded ? 1 : 0,
-              transition: "opacity 0.3s ease",
-            }}
-          />
-        )}
-        {!loaded && (
-          <div style={{
-            position: "absolute", inset: 0,
-            background: "linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.03) 100%)",
-            backgroundSize: "200% 100%",
-            animation: "shimmer 1.6s infinite",
-          }} />
-        )}
-      </div>
-
-      {/* FOOTER — alias del comercio, no el bro_id */}
-      <div style={{
-        height: "44px", background: t.footerBg,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "0 6px",
-      }}>
-        <span style={{
-          fontFamily: "'Orbitron', 'Courier New', monospace",
-          fontWeight: 700,
-          fontSize: "11px",
-          letterSpacing: "0.05em",
-          color: t.idColor,
-          textAlign: "center",
-          lineHeight: 1.2,
+    <div style={{ position: "relative" }}>
+      <div
+        ref={ref}
+        onClick={() => onClick(card)}
+        onMouseEnter={(e) => handleMouseEnter(e)}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          width: "160px",
+          aspectRatio: "2 / 3",
+          borderRadius: "12px",
           overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-          width: "100%",
+          cursor: "pointer",
+          position: "relative",
+          transition: "transform 0.2s ease, box-shadow 0.2s ease",
+          transform: hovered ? "translateY(-5px) scale(1.04)" : "translateY(0) scale(1)",
+          boxShadow: hovered ? `0 0 20px ${t.glow}` : "0 2px 8px rgba(0,0,0,0.5)",
+          animationDelay: `${index * 55}ms`,
+          animation: "broCardPop 0.35s ease both",
+        }}
+      >
+        <div style={{
+          position: "absolute", top: 0, left: 0, right: 0, height: "2px",
+          background: `linear-gradient(90deg, transparent, ${t.border}, transparent)`,
+          opacity: hovered ? 1 : 0,
+          transition: "opacity 0.2s",
+          zIndex: 2,
+        }} />
+
+        <div style={{ width: "100%", height: "100%", background: "rgba(255,255,255,0.04)", overflow: "hidden", position: "relative" }}>
+          {inView && card.banner_url && (
+            <img
+              src={card.banner_url}
+              alt={displayName}
+              onLoad={() => setLoaded(true)}
+              style={{
+                width: "100%", height: "100%", objectFit: "cover", display: "block",
+                opacity: loaded ? 1 : 0,
+                transition: "opacity 0.3s ease",
+              }}
+            />
+          )}
+          {!loaded && (
+            <div style={{
+              position: "absolute", inset: 0,
+              background: "linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.03) 100%)",
+              backgroundSize: "200% 100%",
+              animation: "shimmer 1.6s infinite",
+            }} />
+          )}
+        </div>
+
+        <div style={{
+          position: "absolute", bottom: 0, left: 0, right: 0,
+          height: "44px", background: t.footerBg,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: "0 6px",
+          zIndex: 1,
         }}>
-          {displayName}
-        </span>
+          <span style={{
+            fontFamily: "'Orbitron', 'Courier New', monospace",
+            fontWeight: 700,
+            fontSize: "11px",
+            letterSpacing: "0.05em",
+            color: t.idColor,
+            textAlign: "center",
+            lineHeight: 1.2,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            width: "100%",
+          }}>
+            {displayName}
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -149,6 +158,10 @@ export default function BroCardStrip({
   const scroll = (dir) =>
     scrollRef.current?.scrollBy({ left: dir * 260, behavior: "smooth" });
 
+  const handleCardHover = useCallback((card, isHovering) => {
+    // Tooltip eliminado
+  }, []);
+
   if (!visible || cards.length === 0) return null;
 
   const arrowBtn = (dir, side) => (
@@ -180,6 +193,10 @@ export default function BroCardStrip({
           from { opacity:0; transform:translateY(10px); }
           to   { opacity:1; transform:translateY(0); }
         }
+        @keyframes tooltipFadeIn {
+          from { opacity:0; transform:translateY(10px) scale(0.95); }
+          to   { opacity:1; transform:translateY(0) scale(1); }
+        }
         .bcs-scroll::-webkit-scrollbar { height:2px; }
         .bcs-scroll::-webkit-scrollbar-track { background:transparent; }
         .bcs-scroll::-webkit-scrollbar-thumb { background:${t.border}44; border-radius:2px; }
@@ -198,11 +215,12 @@ export default function BroCardStrip({
             ref={scrollRef}
             className="bcs-scroll"
             style={{
-              display: "flex",
-              gap: "8px",
-              overflowX: "auto", overflowY: "hidden",
+              display: "grid",
+              gridTemplateColumns: "repeat(4, 1fr)",
+              gap: "12px",
+              overflowX: "auto", overflowY: "auto",
+              overflowY: "scroll",
               padding: "2px 2px 6px",
-              scrollSnapType: "x mandatory",
               WebkitOverflowScrolling: "touch",
               justifyContent: cards.length < 4 ? "center" : "flex-start",
             }}
@@ -214,6 +232,7 @@ export default function BroCardStrip({
                 theme={accentColor}
                 onClick={onSelectCard}
                 index={i}
+                onHoverChange={handleCardHover}
               />
             ))}
           </div>
