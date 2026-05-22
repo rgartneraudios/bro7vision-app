@@ -189,6 +189,9 @@ const BoosterModal = ({ onClose }) => {
 
             setFormData({
               alias:              profile.alias || user.user_metadata?.alias || '',
+             avatar_url:       profile.avatar_url      || '',
+  	    banner_url:       profile.banner_url      || '',
+  	    card_banner_url:  profile.card_banner_url || '',
               role: Array.isArray(profile.role) ? profile.role : (profile.role ? [profile.role] : []),
 	    bro_id:             profile.bro_id || '',
 	    bro_ser: profile.bro_ser || '',

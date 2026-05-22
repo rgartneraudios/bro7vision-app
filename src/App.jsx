@@ -165,7 +165,7 @@ function App() {
           ...u,
           shopName: u.alias,
           name:     u.product_title || u.alias,
-          img:      u.card_banner_url || u.banner_url,
+         img: u.avatar_url || u.card_banner_url || u.banner_url,
           type:     u.video_file ? ['shop', 'live'] : ['shop'],
         })).filter(u => u.video_file || u.audio_file || u.product_title || u.bro_ser || u.bro_aud || u.bro_pod || u.bro_avi || u.bro_id));
       }
