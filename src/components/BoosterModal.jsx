@@ -357,13 +357,21 @@ const MediaSlot = ({ title, fieldName, type, description }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fileName: safeFileName, fileType: archivoSeleccionado.type }),
       });
-      const { uploadUrl } = await res.json();
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error('Error HTTP ' + res.status + ': ' + errorText);
+      }
+      
+      const data = await res.json();
+      const { uploadUrl } = data;
       if (!uploadUrl) throw new Error('Sin ticket de subida.');
       await fetch(uploadUrl, { method: 'PUT', body: archivoSeleccionado, headers: { 'Content-Type': archivoSeleccionado.type } });
       const publicUrl = `https://media.bro7vision.com/${safeFileName}`;
       setFormData(prev => ({ ...prev, [fieldName]: publicUrl }));
       alert('🚀 ¡Imagen inyectada en el NÚCLEO R2!');
     } catch (err) {
+      console.error('Error subida:', err);
       alert('❌ Error: ' + err.message);
     } finally {
       setLoading(false);

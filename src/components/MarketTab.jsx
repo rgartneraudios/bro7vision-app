@@ -3,45 +3,647 @@
 // Sistema de Campaña Lunar - Inventario destacado_ps
 // ─────────────────────────────────────────────────────────────────────
 // Tabla: profiles
-// Columna: destacados_ps (array de objetos JSON)
+// Columna: destacados_ps (objeto JSON con vitrina[] + referencias[])
 // ─────────────────────────────────────────────────────────────────────
 import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { getMoonSuffix } from '../utils/moonUtils';
 
-const MAX_PRODUCTOS = 10;
+// ── Constantes ──────────────────────────────────────────────────────
+const MAX_REFERENCIAS = 50;
+const MAX_VITRINA     = 3;
+
+const ALCANCE_OPTIONS = [
+  { value: 'LOCAL',          label: 'Local',          color: '#22d3ee',  desc: 'Solo tu ciudad' },
+  { value: 'NACIONAL',       label: 'Nacional',       color: '#fbbf24',  desc: 'Todo el país' },
+  { value: 'INTERNACIONAL',  label: 'Internacional',  color: '#a855f7',  desc: 'Cualquier país' },
+];
+
+const SECTOR_OPTIONS = [
+  { value: 'PRODUCTO',  label: '📦 Producto',  color: '#fbbf24' },
+  { value: 'SERVICIO',  label: '🛠 Servicio',  color: '#22d3ee' },
+];
+
+// Lunas con su % y condición exacta
+const LUNA_CONFIG = {
+  nova:       { emoji: '🌑', color: '#A855F7', label: 'Nova',       pct: '10%',  cond: '1 artículo mín.',    condicional: false },
+  crescens:   { emoji: '🌙', color: '#79FF1A', label: 'Crescens',   pct: '15%',  cond: '1 artículo mín.',    condicional: false },
+  plena:      { emoji: '🌕', color: '#FFFFFF', label: 'Plena',      pct: '20%',  cond: 'mín. 2 artículos',   condicional: true  },
+  decrescens: { emoji: '🌗', color: '#F97316', label: 'Decrescens', pct: '20%',  cond: 'mín. 3 artículos',   condicional: true  },
+};
 
 const THEMES = {
-  cyan:  { border: '#22d3ee', glow: 'rgba(34,211,238,0.3)', text: '#22d3ee', bg: 'cyan-500/10' },
-  gold:  { border: '#fbbf24', glow: 'rgba(251,191,36,0.3)', text: '#fbbf24', bg: 'amber-500/10' },
+  cyan: { border: '#22d3ee', glow: 'rgba(34,211,238,0.3)', text: '#22d3ee', bg: 'cyan-500/10' },
+  gold: { border: '#fbbf24', glow: 'rgba(251,191,36,0.3)', text: '#fbbf24', bg: 'amber-500/10' },
 };
 
-const LUNA_EMOJIS = { nova: '🌑', crescens: '🌙', plena: '🌕', decrescens: '🌗' };
-const LUNA_COLORS = {
-  nova:     '#A855F7',  // fucsia
-  crescens: '#79FF1A',  // verde
-  plena:    '#FFFFFF',  // blanco
-  decrescens: '#F97316', // naranja
+// ── Helper: referencia vacía ─────────────────────────────────────────
+const nuevaReferencia = (campana = 'siguiente') => ({
+  id:               `ref-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,
+  campana_semana:   campana,
+  sector:           'PRODUCTO',
+  producto_codigo:  '',
+  producto_titulo:  '',
+  categoria:        '',
+  tallas:           '',
+  peso:             '',
+  material:         '',
+  origen:           '',
+  descripcion:      '',
+  precio_original:  0,
+  precio_descuento: 0,
+  stock_inicial:    10,
+  stock_actual:     10,
+  alcance:          'LOCAL',
+  lunas:            { nova: true, crescens: false, plena: false, decrescens: false },
+  image_url:        '',
+  orden_vitrina:    null,   // 1 | 2 | 3 | null
+  created_at:       new Date().toISOString(),
+  updated_at:       new Date().toISOString(),
+});
+
+// ── Subcomponente: selector de Lunas con descripción ────────────────
+function LunasSelector({ lunas, onChange, disabled }) {
+  return (
+    <div>
+      <label style={{
+        fontSize: '9px', color: '#6B7280',
+        textTransform: 'uppercase', letterSpacing: '0.1em',
+        display: 'block', marginBottom: '8px', fontWeight: 700,
+      }}>
+        Fases Lunares con Descuento
+      </label>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        {Object.entries(LUNA_CONFIG).map(([key, cfg]) => {
+          const activa = lunas?.[key] === true;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => !disabled && onChange(key)}
+              disabled={disabled}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '6px 10px',
+                borderRadius: '8px',
+                border: `1px solid ${activa ? cfg.color + '60' : '#ffffff10'}`,
+                background: activa ? cfg.color + '15' : 'rgba(0,0,0,0.3)',
+                cursor: disabled ? 'not-allowed' : 'pointer',
+                opacity: disabled ? 0.5 : 1,
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{
+                  fontSize: '16px',
+                  filter: activa ? `drop-shadow(0 0 6px ${cfg.color})` : 'grayscale(1)',
+                  transition: 'all 0.2s',
+                }}>
+                  {cfg.emoji}
+                </span>
+                <span style={{
+                  fontSize: '11px', fontWeight: 700,
+                  color: activa ? cfg.color : '#6B7280',
+                  transition: 'color 0.2s',
+                }}>
+                  {cfg.label}
+                </span>
+                <span style={{
+                  fontSize: '10px', fontWeight: 800,
+                  color: activa ? cfg.color : '#4B5563',
+                }}>
+                  {cfg.pct}
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                {cfg.condicional && (
+                  <span style={{
+                    fontSize: '8px', color: '#F97316',
+                    background: 'rgba(249,115,22,0.15)',
+                    border: '1px solid rgba(249,115,22,0.3)',
+                    padding: '1px 5px', borderRadius: '4px',
+                    fontWeight: 700,
+                  }}>
+                    ⚠️ {cfg.cond}
+                  </span>
+                )}
+                {!cfg.condicional && (
+                  <span style={{
+                    fontSize: '8px', color: '#6B7280',
+                    padding: '1px 5px',
+                  }}>
+                    {cfg.cond}
+                  </span>
+                )}
+                <div style={{
+                  width: '14px', height: '14px',
+                  borderRadius: '50%',
+                  background: activa ? cfg.color : 'transparent',
+                  border: `2px solid ${activa ? cfg.color : '#4B5563'}`,
+                  boxShadow: activa ? `0 0 8px ${cfg.color}` : 'none',
+                  transition: 'all 0.2s',
+                  flexShrink: 0,
+                }} />
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Subcomponente: card de referencia (colapsable) ───────────────────
+function ReferenciaCard({ referencia: producto, campana, idx, esEditable, onUpdate, onDelete, onToggleLuna, onSubirImagen }) {
+  const [abierto, setAbierto] = useState(false);
+  const esVitrina = producto.orden_vitrina !== null && producto.orden_vitrina !== undefined;
+  const sectorCfg = SECTOR_OPTIONS.find(s => s.value === producto.sector) || SECTOR_OPTIONS[0];
+  const alcanceCfg = ALCANCE_OPTIONS.find(a => a.value === producto.alcance) || ALCANCE_OPTIONS[0];
+  const sinStock = producto.stock_actual === 0;
+
+  return (
+    <div style={{
+      background: esVitrina ? 'rgba(251,191,36,0.06)' : 'rgba(255,255,255,0.03)',
+      border: `1px solid ${esVitrina ? '#fbbf2440' : sinStock ? '#ef444440' : '#ffffff15'}`,
+      borderRadius: '12px',
+      overflow: 'hidden',
+      opacity: sinStock ? 0.6 : 1,
+      transition: 'all 0.2s',
+    }}>
+      {/* Cabecera colapsable */}
+      <button
+        type="button"
+        onClick={() => setAbierto(!abierto)}
+        style={{
+          width: '100%', padding: '10px 14px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: 'transparent', border: 'none', cursor: 'pointer',
+          gap: '8px',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
+          {/* Número */}
+          <span style={{
+            fontSize: '9px', color: '#6B7280', fontWeight: 700,
+            flexShrink: 0,
+          }}>
+            #{idx + 1}
+          </span>
+
+          {/* Badge vitrina */}
+          {esVitrina && (
+            <span style={{
+              fontSize: '8px', fontWeight: 800,
+              color: '#fbbf24', background: 'rgba(251,191,36,0.15)',
+              border: '1px solid rgba(251,191,36,0.4)',
+              padding: '1px 6px', borderRadius: '4px', flexShrink: 0,
+            }}>
+              ⭐ VITRINA {producto.orden_vitrina}
+            </span>
+          )}
+
+          {/* Badge sector */}
+          <span style={{
+            fontSize: '8px', fontWeight: 700,
+            color: sectorCfg.color,
+            background: sectorCfg.color + '20',
+            border: `1px solid ${sectorCfg.color}40`,
+            padding: '1px 6px', borderRadius: '4px', flexShrink: 0,
+          }}>
+            {sectorCfg.label}
+          </span>
+
+          {/* Badge alcance */}
+          <span style={{
+            fontSize: '8px', fontWeight: 700,
+            color: alcanceCfg.color,
+            background: alcanceCfg.color + '15',
+            border: `1px solid ${alcanceCfg.color}30`,
+            padding: '1px 6px', borderRadius: '4px', flexShrink: 0,
+          }}>
+            {alcanceCfg.label}
+          </span>
+
+          {/* Título */}
+          <span style={{
+            fontSize: '11px', color: sinStock ? '#9CA3AF' : '#E5E7EB',
+            fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>
+            {producto.producto_titulo || '(sin título)'}
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+          {/* Stock pill */}
+          <span style={{
+            fontSize: '9px', fontWeight: 700,
+            color: sinStock ? '#ef4444' : producto.stock_actual <= 3 ? '#f59e0b' : '#10b981',
+            background: sinStock ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)',
+            border: `1px solid ${sinStock ? '#ef444430' : '#10b98130'}`,
+            padding: '2px 7px', borderRadius: '20px',
+          }}>
+            {sinStock ? '⛔ Sin stock' : `${producto.stock_actual}/${producto.stock_inicial}`}
+          </span>
+
+          {esEditable && (
+            <button
+              type="button"
+              onClick={e => { e.stopPropagation(); onDelete(producto.id); }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', color: '#6B7280', padding: '2px' }}
+            >🗑</button>
+          )}
+
+          <span style={{ color: '#6B7280', fontSize: '12px' }}>{abierto ? '▼' : '▶'}</span>
+        </div>
+      </button>
+
+      {/* Cuerpo expandible */}
+      {abierto && (
+        <div style={{ padding: '0 14px 14px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+
+          {/* Sector */}
+          <div>
+            <label style={labelStyle}>Sector</label>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              {SECTOR_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => esEditable && onUpdate(producto.id, 'sector', opt.value)}
+                  disabled={!esEditable}
+                  style={{
+                    flex: 1, padding: '6px 4px',
+                    borderRadius: '8px', border: `1px solid ${producto.sector === opt.value ? opt.color + '80' : '#ffffff20'}`,
+                    background: producto.sector === opt.value ? opt.color + '20' : 'rgba(0,0,0,0.3)',
+                    color: producto.sector === opt.value ? opt.color : '#6B7280',
+                    fontSize: '10px', fontWeight: 700, cursor: esEditable ? 'pointer' : 'not-allowed',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Alcance */}
+          <div>
+            <label style={labelStyle}>Alcance</label>
+            <select
+              value={producto.alcance}
+              onChange={e => onUpdate(producto.id, 'alcance', e.target.value)}
+              disabled={!esEditable}
+              style={inputStyle}
+            >
+              {ALCANCE_OPTIONS.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label} — {opt.desc}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Orden vitrina */}
+          <div>
+            <label style={labelStyle}>Slot Vitrina (1-3 o vacío)</label>
+            <select
+              value={producto.orden_vitrina ?? ''}
+              onChange={e => onUpdate(producto.id, 'orden_vitrina', e.target.value === '' ? null : parseInt(e.target.value))}
+              disabled={!esEditable}
+              style={inputStyle}
+            >
+              <option value="">— Sin vitrina —</option>
+              <option value="1">⭐ Destacado 1</option>
+              <option value="2">⭐ Destacado 2</option>
+              <option value="3">⭐ Destacado 3</option>
+            </select>
+          </div>
+
+          {/* Código */}
+          <div>
+            <label style={labelStyle}>Código</label>
+            <input
+              type="text"
+              value={producto.producto_codigo}
+              onChange={e => onUpdate(producto.id, 'producto_codigo', e.target.value)}
+              disabled={!esEditable}
+              placeholder="Ej: ZAPT-37"
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Título */}
+          <div style={{ gridColumn: '1 / -1' }}>
+            <label style={labelStyle}>Título de la Referencia</label>
+            <input
+              type="text"
+              value={producto.producto_titulo}
+              onChange={e => onUpdate(producto.id, 'producto_titulo', e.target.value)}
+              disabled={!esEditable}
+              placeholder="Ej: Zapatillas Neo modelo X talla 37"
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Categoría */}
+          <div>
+            <label style={labelStyle}>Categoría</label>
+            <input
+              type="text"
+              value={producto.categoria}
+              onChange={e => onUpdate(producto.id, 'categoria', e.target.value)}
+              disabled={!esEditable}
+              placeholder="Ej: Calzado"
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Tallas */}
+          <div>
+            <label style={labelStyle}>Tallas / Variante</label>
+            <input
+              type="text"
+              value={producto.tallas}
+              onChange={e => onUpdate(producto.id, 'tallas', e.target.value)}
+              disabled={!esEditable}
+              placeholder="Ej: Talla 37"
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Peso */}
+          <div>
+            <label style={labelStyle}>Peso</label>
+            <input
+              type="text"
+              value={producto.peso}
+              onChange={e => onUpdate(producto.id, 'peso', e.target.value)}
+              disabled={!esEditable}
+              placeholder="Ej: 300g"
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Material */}
+          <div>
+            <label style={labelStyle}>Material</label>
+            <input
+              type="text"
+              value={producto.material}
+              onChange={e => onUpdate(producto.id, 'material', e.target.value)}
+              disabled={!esEditable}
+              placeholder="Ej: Cuero sintético"
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Origen */}
+          <div>
+            <label style={labelStyle}>Origen</label>
+            <input
+              type="text"
+              value={producto.origen}
+              onChange={e => onUpdate(producto.id, 'origen', e.target.value)}
+              disabled={!esEditable}
+              placeholder="Ej: Valencia, España"
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Precio original */}
+          <div>
+            <label style={labelStyle}>Precio Original (€)</label>
+            <input
+              type="number" min="0"
+              value={producto.precio_original}
+              onChange={e => onUpdate(producto.id, 'precio_original', parseFloat(e.target.value) || 0)}
+              disabled={!esEditable}
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Precio descuento */}
+          <div>
+            <label style={labelStyle}>Precio con Descuento (€)</label>
+            <input
+              type="number" min="0"
+              value={producto.precio_descuento}
+              onChange={e => onUpdate(producto.id, 'precio_descuento', parseFloat(e.target.value) || 0)}
+              disabled={!esEditable}
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Stock inicial */}
+          <div>
+            <label style={labelStyle}>Stock Inicial</label>
+            <input
+              type="number" min="0"
+              value={producto.stock_inicial}
+              onChange={e => onUpdate(producto.id, 'stock_inicial', Math.max(0, parseInt(e.target.value) || 0))}
+              disabled={!esEditable}
+              style={inputStyle}
+            />
+          </div>
+
+          {/* Stock actual */}
+          <div>
+            <label style={labelStyle}>Stock Actual</label>
+            <input
+              type="number" min="0"
+              max={producto.stock_inicial}
+              value={producto.stock_actual}
+              onChange={e => onUpdate(producto.id, 'stock_actual', Math.min(Math.max(0, parseInt(e.target.value) || 0), producto.stock_inicial))}
+              disabled={!esEditable || sinStock}
+              style={{
+                ...inputStyle,
+                borderColor: sinStock ? 'rgba(239,68,68,0.4)' : undefined,
+                color: sinStock ? '#ef4444' : undefined,
+              }}
+            />
+          </div>
+
+          {/* Lunas — span completo */}
+          <div style={{ gridColumn: '1 / -1' }}>
+            <LunasSelector
+              lunas={producto.lunas}
+              onChange={(lunaKey) => onToggleLuna(campana, producto.id, lunaKey)}
+              disabled={!esEditable}
+            />
+          </div>
+
+          {/* Imagen R2 */}
+          <div style={{ gridColumn: '1 / -1' }}>
+            <label style={labelStyle}>Imagen (Cloudflare R2)</label>
+            {producto.image_url ? (
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <div style={{ width: '60px', height: '90px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, background: 'rgba(0,0,0,0.4)' }}>
+                  <img src={producto.image_url} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+                <label style={{ cursor: esEditable ? 'pointer' : 'default' }}>
+                  <span style={{
+                    fontSize: '11px', color: '#22d3ee',
+                    textDecoration: 'underline', cursor: 'pointer',
+                  }}>
+                    🔁 Reemplazar imagen
+                  </span>
+                  <input
+                    type="file" accept="image/*" className="hidden"
+                    style={{ display: 'none' }}
+                    disabled={!esEditable}
+                    onChange={async e => {
+                      const url = await onSubirImagen(e.target.files[0]);
+                      if (url) onUpdate(producto.id, 'image_url', url);
+                    }}
+                  />
+                </label>
+              </div>
+            ) : (
+              <label style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '16px',
+                background: 'rgba(34,211,238,0.05)',
+                border: '1px dashed rgba(34,211,238,0.3)',
+                borderRadius: '10px',
+                cursor: esEditable ? 'pointer' : 'not-allowed',
+                fontSize: '11px', color: '#22d3ee',
+              }}>
+                📷 Subir imagen a R2
+                <input
+                  type="file" accept="image/*"
+                  style={{ display: 'none' }}
+                  disabled={!esEditable}
+                  onChange={async e => {
+                    const url = await onSubirImagen(e.target.files[0]);
+                    if (url) onUpdate(producto.id, 'image_url', url);
+                  }}
+                />
+              </label>
+            )}
+          </div>
+
+          {/* Descripción */}
+          <div style={{ gridColumn: '1 / -1' }}>
+            <label style={labelStyle}>Descripción</label>
+            <textarea
+              value={producto.descripcion}
+              onChange={e => onUpdate(producto.id, 'descripcion', e.target.value)}
+              disabled={!esEditable}
+              rows={2}
+              placeholder="Descripción corta..."
+              style={{ ...inputStyle, resize: 'none' }}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Estilos compartidos ──────────────────────────────────────────────
+const labelStyle = {
+  fontSize: '9px', color: '#6B7280',
+  textTransform: 'uppercase', letterSpacing: '0.1em',
+  display: 'block', marginBottom: '4px', fontWeight: 700,
 };
 
-const ALCANCE_OPTIONS = ['NACIONAL', 'GLOBAL'];
+const inputStyle = {
+  width: '100%',
+  background: 'rgba(0,0,0,0.6)',
+  border: '1px solid rgba(34,211,238,0.2)',
+  borderRadius: '8px',
+  padding: '7px 10px',
+  fontSize: '11px',
+  color: '#fff',
+  outline: 'none',
+  boxSizing: 'border-box',
+};
 
+// ── Panel de Vitrina — los 3 slots de escaparate ─────────────────────
+function VitrinePanel({ referencias }) {
+  const slots = [1, 2, 3].map(n => referencias.find(r => r.orden_vitrina === n) || null);
+  return (
+    <div style={{
+      background: 'rgba(251,191,36,0.05)',
+      border: '1px solid rgba(251,191,36,0.2)',
+      borderRadius: '16px',
+      padding: '16px',
+      marginBottom: '16px',
+    }}>
+      <p style={{
+        fontSize: '9px', color: '#fbbf24',
+        textTransform: 'uppercase', letterSpacing: '0.1em',
+        fontWeight: 800, marginBottom: '12px',
+      }}>
+        ⭐ Vitrina Pública — 3 BroCards en el Cajón del Sector
+      </p>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+        {slots.map((ref, i) => (
+          <div key={i} style={{
+            background: ref ? 'rgba(251,191,36,0.08)' : 'rgba(0,0,0,0.3)',
+            border: `1px solid ${ref ? 'rgba(251,191,36,0.3)' : 'rgba(255,255,255,0.08)'}`,
+            borderRadius: '10px',
+            padding: '10px',
+            minHeight: '80px',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            gap: '4px',
+          }}>
+            {ref ? (
+              <>
+                {ref.image_url ? (
+                  <img src={ref.image_url} alt={ref.producto_titulo}
+                    style={{ width: '40px', height: '60px', objectFit: 'cover', borderRadius: '6px' }} />
+                ) : (
+                  <div style={{
+                    width: '40px', height: '60px', borderRadius: '6px',
+                    background: 'rgba(255,255,255,0.05)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '18px',
+                  }}>📷</div>
+                )}
+                <span style={{
+                  fontSize: '9px', color: ref.stock_actual === 0 ? '#ef4444' : '#fbbf24',
+                  fontWeight: 700, textAlign: 'center',
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  maxWidth: '100%',
+                }}>
+                  {ref.stock_actual === 0 ? '⛔ Sin stock' : ref.producto_titulo || '(sin título)'}
+                </span>
+                <span style={{ fontSize: '8px', color: '#6B7280' }}>
+                  {ref.sector === 'SERVICIO' ? '🛠 Servicio' : '📦 Producto'}
+                </span>
+              </>
+            ) : (
+              <>
+                <span style={{ fontSize: '20px', opacity: 0.3 }}>＋</span>
+                <span style={{ fontSize: '9px', color: '#4B5563', textAlign: 'center' }}>
+                  Destacado {i + 1}
+                  <br />vacío
+                </span>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+      <p style={{ fontSize: '9px', color: '#6B7280', marginTop: '8px' }}>
+        Asigna el slot (Destacado 1/2/3) desde cada referencia del listado. Stock = 0 → desaparece del cajón hasta la próxima fase.
+      </p>
+    </div>
+  );
+}
+
+// ── Componente Principal ─────────────────────────────────────────────
 export const MarketTab = ({ formData, setFormData }) => {
-  const [session, setSession] = useState(null);
-  const [perfilOso, setPerfilOso] = useState(null);
-  const [destacadosPs, setDestacadosPs] = useState([]);
-  const [campanaActual, setCampanaActual] = useState([]);
+  const [session,    setSession]    = useState(null);
+  const [perfilOso,  setPerfilOso]  = useState(null);
+  const [campanaActual,    setCampanaActual]    = useState([]);
   const [campanaSiguiente, setCampanaSiguiente] = useState([]);
-  const [faseLunarActual, setFaseLunarActual] = useState(1);
   const [isFaseActiva, setIsFaseActiva] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isPremium, setIsPremium] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [guardando, setGuardando] = useState(false);
-  const [acordeonActualAbierto, setAcordeonActualAbierto] = useState(true);
+  const [isAdmin,    setIsAdmin]    = useState(false);
+  const [isPremium,  setIsPremium]  = useState(false);
+  const [loading,    setLoading]    = useState(true);
+  const [guardando,  setGuardando]  = useState(false);
+  const [uploadingId, setUploadingId] = useState(null);
+  const [acordeonActualAbierto,    setAcordeonActualAbierto]    = useState(true);
   const [acordeonSiguienteAbierto, setAcordeonSiguienteAbierto] = useState(true);
-  const [nuevoProductoIndex, setNuevoProductoIndex] = useState(null);
-  const [productosEditando, setProductosEditando] = useState({});
 
   // ── Auth y Perfil ──
   useEffect(() => {
@@ -65,99 +667,61 @@ export const MarketTab = ({ formData, setFormData }) => {
 
   // ── Cargar destacados_ps ──
   useEffect(() => {
-    const loadDestacados = async () => {
+    const load = async () => {
       if (!perfilOso?.id) return;
       const { data: profile } = await supabase
         .from('profiles')
         .select('destacados_ps')
         .eq('id', perfilOso.id)
         .single();
-      
+
       if (profile?.destacados_ps && Array.isArray(profile.destacados_ps)) {
         const items = profile.destacados_ps;
-        const actual = items.filter(i => i.campana_semana === 'actual');
-        const siguiente = items.filter(i => i.campana_semana === 'siguiente');
-        setDestacadosPs(items);
-        setCampanaActual(actual);
-        setCampanaSiguiente(siguiente);
+        // Migración: si items viejos no tienen sector, se les pone PRODUCTO por defecto
+        const migrados = items.map(i => ({ ...nuevaReferencia(i.campana_semana), ...i }));
+        setCampanaActual(   migrados.filter(i => i.campana_semana === 'actual'));
+        setCampanaSiguiente(migrados.filter(i => i.campana_semana === 'siguiente'));
       } else {
-        // Default: 1 producto en siguiente con luna Nova activada
-        const defaultProducto = {
-          id: `new-${Date.now()}`,
-          campana_semana: 'siguiente',
-          producto_codigo: '',
-          producto_titulo: '',
-          categoria: '',
-          tallas: '',
-          peso: '',
-          material: '',
-          origen: '',
-          descripcion: '',
-          precio_original: 0,
-          precio_descuento: 0,
-          stock_inicial: 10,
-          stock_actual: 10,
-          alcance: 'NACIONAL',
-          lunas: { nova: true, crescens: false, plena: false, decrescens: false },
-          image_url: '',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
-        setCampanaSiguiente([defaultProducto]);
+        setCampanaSiguiente([nuevaReferencia('siguiente')]);
       }
     };
-    loadDestacados();
+    load();
   }, [perfilOso?.id]);
 
-  // ── Calcular fase lunar actual ──
+  // ── Fase lunar ──
   useEffect(() => {
-    const calcularFase = () => {
+    const calcular = () => {
       const fase = getMoonSuffix();
-      setFaseLunarActual(parseInt(fase));
-      // Fase activa si la luna actual es nova (1) o si hay items en campanaActual
       setIsFaseActiva(fase === '1' || campanaActual.length > 0);
     };
-    calcularFase();
-    const interval = setInterval(calcularFase, 60000);
-    return () => clearInterval(interval);
+    calcular();
+    const iv = setInterval(calcular, 60000);
+    return () => clearInterval(iv);
   }, [campanaActual.length]);
 
-  // ── Realtime Subscription para stock ──
+  // ── Realtime stock ──
   useEffect(() => {
     if (!session?.user?.id) return;
-    
     const channel = supabase
       .channel(`profiles:${session.user.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles',
-          filter: `id=eq.${session.user.id}`,
-        },
-        async ({ new: newProfile }) => {
-          if (newProfile?.destacados_ps) {
-            const items = newProfile.destacados_ps;
-            const actual = items.filter(i => i.campana_semana === 'actual');
-            const siguiente = items.filter(i => i.campana_semana === 'siguiente');
-            setCampanaActual(actual);
-            setCampanaSiguiente(siguiente);
-            setDestacadosPs(items);
-          }
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public', table: 'profiles',
+        filter: `id=eq.${session.user.id}`,
+      }, ({ new: np }) => {
+        if (np?.destacados_ps) {
+          const items = np.destacados_ps.map(i => ({ ...nuevaReferencia(i.campana_semana), ...i }));
+          setCampanaActual(   items.filter(i => i.campana_semana === 'actual'));
+          setCampanaSiguiente(items.filter(i => i.campana_semana === 'siguiente'));
         }
-      )
+      })
       .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => supabase.removeChannel(channel);
   }, [session?.user?.id]);
 
-  // ── Subida a R2 ──
-  const subirImagenR2 = async (file, setLoadingState) => {
+  // ── Subida R2 ──
+  const subirImagenR2 = async (file) => {
     if (!file) return null;
-    setLoadingState(true);
+    setUploadingId(true);
     try {
       const safeFileName = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
       const res = await fetch('/api/upload', {
@@ -174,101 +738,69 @@ export const MarketTab = ({ formData, setFormData }) => {
       alert('❌ Error al subir imagen: ' + err.message);
       return null;
     } finally {
-      setLoadingState(false);
+      setUploadingId(false);
     }
   };
 
-  // ── Handlers de Productos ──
-  const handleAddProducto = (campana) => {
-    if (campana === 'actual' && campanaActual.length >= MAX_PRODUCTOS) {
-      alert(`⚠️ Máximo ${MAX_PRODUCTOS} productos permitidos.`);
+  // ── Handlers ──
+  const handleAdd = (campana) => {
+    const lista = campana === 'actual' ? campanaActual : campanaSiguiente;
+    if (lista.length >= MAX_REFERENCIAS) {
+      alert(`⚠️ Máximo ${MAX_REFERENCIAS} referencias por campaña.`);
       return;
     }
-    if (campana === 'siguiente' && campanaSiguiente.length >= MAX_PRODUCTOS) {
-      alert(`⚠️ Máximo ${MAX_PRODUCTOS} productos permitidos.`);
-      return;
-    }
-    const defaultProducto = {
-      id: `new-${Date.now()}`,
-      campana_semana: campana,
-      producto_codigo: '',
-      producto_titulo: '',
-      categoria: '',
-      tallas: '',
-      peso: '',
-      material: '',
-      origen: '',
-      descripcion: '',
-      precio_original: 0,
-      precio_descuento: 0,
-      stock_inicial: 10,
-      stock_actual: 10,
-      alcance: 'NACIONAL',
-      lunas: { nova: true, crescens: false, plena: false, decrescens: false },
-      image_url: '',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-    if (campana === 'actual') {
-      setCampanaActual(prev => [...prev, defaultProducto]);
-    } else {
-      setCampanaSiguiente(prev => [...prev, defaultProducto]);
-    }
-    setNuevoProductoIndex(campana === 'actual' ? campanaActual.length : campanaSiguiente.length);
-    setProductosEditando(prev => ({ ...prev, [defaultProducto.id]: true }));
+    const setter = campana === 'actual' ? setCampanaActual : setCampanaSiguiente;
+    setter(prev => [...prev, nuevaReferencia(campana)]);
   };
 
-  const handleUpdateProducto = (campana, id, field, value) => {
+  const handleUpdate = (campana, id, field, value) => {
     const setter = campana === 'actual' ? setCampanaActual : setCampanaSiguiente;
     setter(prev => prev.map(item => {
       if (item.id !== id) return item;
-      const updated = { ...item, [field]: value, updated_at: new Date().toISOString() };
-      if (field === 'stock_actual' && value < 0) return { ...item, stock_actual: 0 };
-      if (field === 'stock_actual' && value > item.stock_inicial) return { ...item, stock_actual: item.stock_inicial };
-      return updated;
+      // Si asignamos orden_vitrina, limpiar el mismo slot en las demás
+      if (field === 'orden_vitrina' && value !== null) {
+        return { ...item, [field]: value, updated_at: new Date().toISOString() };
+      }
+      return { ...item, [field]: value, updated_at: new Date().toISOString() };
     }));
+    // Limpiar conflicto de slot vitrina
+    if (field === 'orden_vitrina' && value !== null) {
+      const setter2 = campana === 'actual' ? setCampanaActual : setCampanaSiguiente;
+      setter2(prev => prev.map(item =>
+        item.id !== id && item.orden_vitrina === value
+          ? { ...item, orden_vitrina: null }
+          : item
+      ));
+    }
   };
 
   const handleToggleLuna = (campana, id, lunaKey) => {
     const setter = campana === 'actual' ? setCampanaActual : setCampanaSiguiente;
     setter(prev => prev.map(item => {
       if (item.id !== id) return item;
-      const nuevasLunas = { ...item.lunas, [lunaKey]: !item.lunas[lunaKey] };
-      return { ...item, lunas: nuevasLunas, updated_at: new Date().toISOString() };
+      return { ...item, lunas: { ...item.lunas, [lunaKey]: !item.lunas[lunaKey] }, updated_at: new Date().toISOString() };
     }));
   };
 
-  const handleDeleteProducto = (campana, id) => {
-    if (!window.confirm('¿Eliminar este producto?')) return;
+  const handleDelete = (campana, id) => {
+    if (!window.confirm('¿Eliminar esta referencia?')) return;
     const setter = campana === 'actual' ? setCampanaActual : setCampanaSiguiente;
     setter(prev => prev.filter(item => item.id !== id));
   };
 
-  const handleGuardarCampana = async () => {
+  const handleGuardar = async () => {
     setGuardando(true);
     try {
-      const todosProductos = [
+      const todos = [
         ...campanaActual.map(p => ({ ...p, campana_semana: 'actual' })),
         ...campanaSiguiente.map(p => ({ ...p, campana_semana: 'siguiente' })),
       ];
-      
-      // Ordenar por created_at
-      todosProductos.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-      
-      // Asignar orden_portada a los 3 primeros
-      todosProductos.forEach((p, idx) => {
-        p.orden_portada = idx < 3 ? idx + 1 : null;
-      });
-
       const { error } = await supabase
         .from('profiles')
-        .update({ destacados_ps: todosProductos })
+        .update({ destacados_ps: todos })
         .eq('id', perfilOso?.id);
-
       if (error) throw error;
-      
       alert('✅ Campaña guardada correctamente.');
-      setDestacadosPs(todosProductos);
     } catch (err) {
       console.error('Error guardando campaña:', err);
       alert('❌ Error al guardar: ' + err.message);
@@ -277,442 +809,233 @@ export const MarketTab = ({ formData, setFormData }) => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64 text-gray-500 text-sm">
-        ⏳ Cargando MarketTab...
-      </div>
-    );
-  }
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px', color: '#6B7280', fontSize: '13px' }}>
+      ⏳ Cargando MarketTab...
+    </div>
+  );
 
   const t = THEMES.cyan;
+  const esEditableActual = !isFaseActiva || isAdmin || isPremium;
 
   return (
-    <div className="space-y-6 animate-fadeIn max-w-5xl mx-auto">
+    <div style={{ maxWidth: '860px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
       {/* Banner Video Commerce */}
-      <div
-        className="bg-cyan-500/10 border border-cyan-500/30 rounded-2xl p-4 mb-6 backdrop-blur"
-        style={{ boxShadow: `0 0 20px ${t.glow}` }}
-      >
-        <p className="text-xs font-bold text-cyan-300 uppercase tracking-widest mb-1">
+      <div style={{
+        background: 'rgba(34,211,238,0.07)',
+        border: '1px solid rgba(34,211,238,0.25)',
+        borderRadius: '16px', padding: '14px 16px',
+        boxShadow: `0 0 20px ${t.glow}`,
+      }}>
+        <p style={{ fontSize: '9px', fontWeight: 800, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
           ⚠️ NOTA DE VIDEO COMMERCE
         </p>
-        <p className="text-[10px] text-gray-400 leading-relaxed">
-          Tu video principal (16:9) se gestiona desde la pestaña 'Señal de archivos como Video Horizontal B'.
-          Sube allí tu clip mostrando tus 20 o 30 artículos para activar la experiencia de compra inmersiva en tu Teléfono Casa.
+        <p style={{ fontSize: '10px', color: '#9CA3AF', lineHeight: 1.5 }}>
+          Tu video principal (16:9) se gestiona desde la pestaña 'Señal de archivos — Video Horizontal B'.
+          Sube allí el clip con tus artículos para activar la experiencia de compra inmersiva en tu Teléfono Casa.
         </p>
       </div>
 
-      {/* Acordeón: Campaña Actual */}
-      <div className={`${t.bg} border border-cyan-500/20 rounded-3xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl`}>
+      {/* ── ACORDEÓN 1: Campaña Actual (sellada en fase activa) ── */}
+      <div style={{
+        background: 'rgba(34,211,238,0.04)',
+        border: '1px solid rgba(34,211,238,0.15)',
+        borderRadius: '24px', padding: '20px',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+      }}>
         <button
+          type="button"
           onClick={() => setAcordeonActualAbierto(!acordeonActualAbierto)}
-          className="w-full flex items-center justify-between mb-4"
+          style={{
+            width: '100%', display: 'flex', alignItems: 'flex-start',
+            justifyContent: 'space-between', background: 'none', border: 'none',
+            cursor: 'pointer', marginBottom: acordeonActualAbierto ? '16px' : '0',
+          }}
         >
-          <div>
-            <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-widest">
-              📦 Campaña Actual (campana_semana: "actual")
+          <div style={{ textAlign: 'left' }}>
+            <h3 style={{ fontSize: '12px', fontWeight: 800, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
+              🌕 Campaña en Curso
             </h3>
-            <p className="text-[10px] text-gray-500 mt-0.5">
-              {campanaActual.length} / {MAX_PRODUCTOS} productos
-              {isFaseActiva && !isAdmin && !isPremium && (
-                <span className="text-amber-400 ml-2">⚠️ CONGELADO - Fase lunar activa</span>
+            <p style={{ fontSize: '10px', color: '#6B7280' }}>
+              {campanaActual.length} / {MAX_REFERENCIAS} referencias
+              {isFaseActiva && !esEditableActual && (
+                <span style={{ color: '#f59e0b', marginLeft: '8px' }}>
+                  🔒 SELLADO — Fase lunar activa
+                </span>
+              )}
+              {isFaseActiva && (isAdmin || isPremium) && (
+                <span style={{ color: '#a855f7', marginLeft: '8px' }}>
+                  🔑 Acceso Admin/Premium
+                </span>
               )}
             </p>
           </div>
-          <span className="text-gray-500 text-lg">{acordeonActualAbierto ? '▼' : '▶'}</span>
+          <span style={{ color: '#6B7280', fontSize: '14px', marginTop: '2px' }}>
+            {acordeonActualAbierto ? '▼' : '▶'}
+          </span>
         </button>
 
         {acordeonActualAbierto && (
-          <div className="space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+
+            {/* Vitrina */}
+            {campanaActual.length > 0 && <VitrinePanel referencias={campanaActual} />}
+
             {campanaActual.length === 0 ? (
-              <div className="text-center py-8 text-gray-600 text-sm">
-                <span className="text-3xl mb-2 block">📭</span>
-                Sin productos en campaña actual.
+              <div style={{
+                textAlign: 'center', padding: '40px 20px',
+                color: '#4B5563', fontSize: '13px',
+              }}>
+                <span style={{ fontSize: '32px', display: 'block', marginBottom: '8px' }}>📭</span>
+                Sin referencias en la campaña actual.
+                {!isFaseActiva && (
+                  <p style={{ fontSize: '10px', color: '#374151', marginTop: '4px' }}>
+                    Las referencias de "Próxima Campaña" se copiarán aquí cuando comience la fase lunar.
+                  </p>
+                )}
               </div>
             ) : (
-              (() => {
-                const esEditable = !isFaseActiva || isAdmin || isPremium;
-                return campanaActual.map((producto, idx) => {
-                  const esUnoDeTres = idx < 3;
-                  const esPrimero = idx === 0;
-                  return (
-                    <div
-                      key={producto.id}
-                      className={`bg-white/5 border ${esUnoDeTres ? 'border-cyan-500/40' : 'border-white/10'} rounded-xl p-4 transition-all ${!esEditable ? 'opacity-60' : ''}`}
-                    >
-                      {esUnoDeTres && (
-                        <div className="text-[9px] text-cyan-400 font-bold uppercase tracking-widest mb-2">
-                          {esPrimero ? '🥇 Primer Producto en Portada' : `#${idx + 1} en Portada`}
-                        </div>
-                      )}
-                      
-                      <div className="flex gap-4">
-                        {/* Miniatura */}
-                        <div className="w-20 h-30 bg-black/40 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
-                          {producto.image_url ? (
-                            <img src={producto.image_url} alt={producto.producto_titulo} className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-gray-600 text-xs">Sin imagen</span>
-                          )}
-                        </div>
-
-                        {/* Info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <p className="text-sm font-bold text-cyan-100 truncate">
-                                {producto.producto_titulo}
-                              </p>
-                              <p className="text-[10px] text-gray-500">
-                                Código: {producto.producto_codigo || '—'}
-                              </p>
-                              {producto.categoria && (
-                                <span className="text-[9px] bg-cyan-900/30 text-cyan-600 px-2 py-0.5 rounded-full mt-1 inline-block">
-                                  {producto.categoria}
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className={`text-[9px] font-bold px-2 py-1 rounded ${producto.alcance === 'NACIONAL' ? 'bg-amber-500/20 text-amber-400' : 'bg-fuchsia-500/20 text-fuchsia-400'}`}>
-                                [{producto.alcance}]
-                              </span>
-                              {esEditable && (
-                                <button
-                                  onClick={() => handleDeleteProducto('actual', producto.id)}
-                                  className="text-gray-600 hover:text-red-400 text-lg transition-all"
-                                >
-                                  🗑
-                                </button>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Semáforo Lunar */}
-                          <div className="flex gap-2 mt-2">
-                            {Object.keys(LUNA_EMOJIS).map(luna => (
-                              <button
-                                key={luna}
-                                onClick={() => esEditable && handleToggleLuna('actual', producto.id, luna)}
-                                disabled={!esEditable}
-                                style={{
-                                  color: producto.lunas[luna] ? LUNA_COLORS[luna] : '#4B5563',
-                                  textShadow: producto.lunas[luna] ? `0 0 8px ${LUNA_COLORS[luna]}` : 'none',
-                                  opacity: esEditable ? 1 : 0.4,
-                                  cursor: esEditable ? 'pointer' : 'not-allowed',
-                                }}
-                                className="text-lg transition-all"
-                              >
-                                {LUNA_EMOJIS[luna]}
-                              </button>
-                            ))}
-                          </div>
-
-                          {/* Stock y Precio */}
-                          <div className="flex items-center gap-4 mt-3 text-[10px]">
-                            <span className="text-gray-400">
-                              Stock: <span className={producto.stock_actual === 0 ? 'text-red-400 font-bold' : 'text-white'}>
-                                {producto.stock_actual} / {producto.stock_inicial}
-                              </span>
-                            </span>
-                            {producto.precio_original > 0 && (
-                              <>
-                                <span className="text-gray-500 line-through">{producto.precio_original}€</span>
-                                <span className="text-emerald-400 font-bold">{producto.precio_descuento}€</span>
-                              </>
-                            )}
-                            {producto.tallas && (
-                              <span className="text-gray-500">Talles: {producto.tallas}</span>
-                            )}
-                            {producto.peso && (
-                              <span className="text-gray-500">| {producto.peso}</span>
-                            )}
-                            {producto.material && (
-                              <span className="text-gray-500">| {producto.material}</span>
-                            )}
-                            {producto.origen && (
-                              <span className="text-gray-500">| {producto.origen}</span>
-                            )}
-                          </div>
-
-                          {producto.descripcion && (
-                            <p className="text-[9px] text-gray-500 mt-2 line-clamp-2">
-                              {producto.descripcion}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                });
-              })()
+              campanaActual.map((ref, idx) => (
+                <ReferenciaCard
+                  key={ref.id}
+                  referencia={ref}
+                  campana="actual"
+                  idx={idx}
+                  esEditable={esEditableActual}
+                  onUpdate={(id, f, v) => handleUpdate('actual', id, f, v)}
+                  onDelete={(id) => handleDelete('actual', id)}
+                  onToggleLuna={handleToggleLuna}
+                  onSubirImagen={subirImagenR2}
+                />
+              ))
             )}
 
-            {(!isFaseActiva || isAdmin || isPremium) && campanaActual.length < MAX_PRODUCTOS && (
+            {/* Entrada tardía */}
+            {isFaseActiva && !isAdmin && !isPremium && (
+              <div style={{
+                background: 'rgba(245,158,11,0.08)',
+                border: '1px solid rgba(245,158,11,0.25)',
+                borderRadius: '12px', padding: '12px 16px',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              }}>
+                <div>
+                  <p style={{ fontSize: '11px', color: '#f59e0b', fontWeight: 700, marginBottom: '2px' }}>
+                    ⏱ ¿Llegaste tarde a esta fase?
+                  </p>
+                  <p style={{ fontSize: '10px', color: '#6B7280' }}>
+                    Puedes incorporarte pagando un plus de entrada tardía.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  style={{
+                    background: 'rgba(245,158,11,0.2)',
+                    border: '1px solid rgba(245,158,11,0.4)',
+                    borderRadius: '8px', padding: '6px 14px',
+                    fontSize: '10px', fontWeight: 700, color: '#f59e0b',
+                    cursor: 'pointer', whiteSpace: 'nowrap',
+                  }}
+                  onClick={() => alert('Próximamente: acceso por plus de entrada tardía.')}
+                >
+                  Solicitar acceso
+                </button>
+              </div>
+            )}
+
+            {esEditableActual && campanaActual.length < MAX_REFERENCIAS && (
               <button
-                onClick={() => handleAddProducto('actual')}
-                className="w-full mt-4 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 text-xs font-bold uppercase py-3 rounded-xl transition-all"
+                type="button"
+                onClick={() => handleAdd('actual')}
+                style={{
+                  width: '100%', marginTop: '4px',
+                  background: 'rgba(34,211,238,0.08)',
+                  border: '1px dashed rgba(34,211,238,0.3)',
+                  borderRadius: '10px', padding: '10px',
+                  fontSize: '11px', fontWeight: 700, color: '#22d3ee',
+                  cursor: 'pointer',
+                }}
               >
-                + Añadir Producto a Campaña Actual
+                + Añadir referencia a Campaña Actual
               </button>
             )}
           </div>
         )}
       </div>
 
-      {/* Acordeón: Campaña Siguiente */}
-      <div className={`${t.bg} border border-cyan-500/20 rounded-3xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl`}>
+      {/* ── ACORDEÓN 2: Próxima Campaña (siempre editable) ── */}
+      <div style={{
+        background: 'rgba(168,85,247,0.04)',
+        border: '1px solid rgba(168,85,247,0.15)',
+        borderRadius: '24px', padding: '20px',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+      }}>
         <button
+          type="button"
           onClick={() => setAcordeonSiguienteAbierto(!acordeonSiguienteAbierto)}
-          className="w-full flex items-center justify-between mb-4"
+          style={{
+            width: '100%', display: 'flex', alignItems: 'flex-start',
+            justifyContent: 'space-between', background: 'none', border: 'none',
+            cursor: 'pointer', marginBottom: acordeonSiguienteAbierto ? '16px' : '0',
+          }}
         >
-          <div>
-            <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-widest">
-              📦 Campaña Siguiente (campana_semana: "siguiente")
+          <div style={{ textAlign: 'left' }}>
+            <h3 style={{ fontSize: '12px', fontWeight: 800, color: '#a855f7', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
+              🌑 Próxima Campaña — Previo Abierto
             </h3>
-            <p className="text-[10px] text-gray-500 mt-0.5">
-              {campanaSiguiente.length} / {MAX_PRODUCTOS} productos · Siempre editable
+            <p style={{ fontSize: '10px', color: '#6B7280' }}>
+              {campanaSiguiente.length} / {MAX_REFERENCIAS} referencias · Siempre editable
             </p>
           </div>
-          <span className="text-gray-500 text-lg">{acordeonSiguienteAbierto ? '▼' : '▶'}</span>
+          <span style={{ color: '#6B7280', fontSize: '14px', marginTop: '2px' }}>
+            {acordeonSiguienteAbierto ? '▼' : '▶'}
+          </span>
         </button>
 
         {acordeonSiguienteAbierto && (
-          <div className="space-y-3">
-            {campanaSiguiente.map((producto, idx) => (
-              <div key={producto.id} className="bg-white/5 border border-white/10 rounded-xl p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <span className="text-[10px] text-gray-500 font-bold uppercase">
-                    Producto #{idx + 1}
-                  </span>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleDeleteProducto('siguiente', producto.id)}
-                      className="text-gray-600 hover:text-red-400 text-lg transition-all"
-                    >
-                      🗑
-                    </button>
-                  </div>
-                </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {/* Campos */}
-                  <div>
-                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Código</label>
-                    <input
-                      type="text"
-                      value={producto.producto_codigo}
-                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'producto_codigo', e.target.value)}
-                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
-                      placeholder="Ej: 550"
-                    />
-                  </div>
+            {/* Vitrina preview */}
+            {campanaSiguiente.length > 0 && <VitrinePanel referencias={campanaSiguiente} />}
 
-                  <div>
-                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Título</label>
-                    <input
-                      type="text"
-                      value={producto.producto_titulo}
-                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'producto_titulo', e.target.value)}
-                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
-                      placeholder="Ej: Camiseta Neo"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Categoría</label>
-                    <input
-                      type="text"
-                      value={producto.categoria}
-                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'categoria', e.target.value)}
-                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
-                      placeholder="Ej: Moda"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Talles</label>
-                    <input
-                      type="text"
-                      value={producto.tallas}
-                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'tallas', e.target.value)}
-                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
-                      placeholder="Ej: S, M, L, XL"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Peso</label>
-                    <input
-                      type="text"
-                      value={producto.peso}
-                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'peso', e.target.value)}
-                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
-                      placeholder="Ej: 200g"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Material</label>
-                    <input
-                      type="text"
-                      value={producto.material}
-                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'material', e.target.value)}
-                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
-                      placeholder="Ej: Algodón orgánico"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Origen</label>
-                    <input
-                      type="text"
-                      value={producto.origen}
-                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'origen', e.target.value)}
-                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
-                      placeholder="Ej: Valencia, España"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Alcance</label>
-                    <select
-                      value={producto.alcance}
-                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'alcance', e.target.value)}
-                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
-                    >
-                      {ALCANCE_OPTIONS.map(opt => (
-                        <option key={opt} value={opt}>{opt}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Precio Original (€)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={producto.precio_original}
-                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'precio_original', parseFloat(e.target.value) || 0)}
-                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Precio Descuento (€)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={producto.precio_descuento}
-                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'precio_descuento', parseFloat(e.target.value) || 0)}
-                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Stock Inicial</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max={MAX_PRODUCTOS}
-                      value={producto.stock_inicial}
-                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'stock_inicial', Math.min(Math.max(0, parseInt(e.target.value) || 0), MAX_PRODUCTOS))}
-                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Stock Actual</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max={producto.stock_inicial}
-                      value={producto.stock_actual}
-                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'stock_actual', Math.min(Math.max(0, parseInt(e.target.value) || 0), producto.stock_inicial))}
-                      className={`w-full bg-black/60 border rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 ${producto.stock_actual === 0 ? 'border-red-500/40 text-red-400' : 'border-cyan-500/20'}`}
-                      disabled={producto.stock_actual === 0}
-                      title={producto.stock_actual === 0 ? 'Stock bloqueado en 0' : ''}
-                    />
-                  </div>
-
-                  {/* Lunas */}
-                  <div className="md:col-span-2">
-                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-2">Lunas Activas</label>
-                    <div className="flex gap-3">
-                      {Object.keys(LUNA_EMOJIS).map(luna => (
-                        <button
-                          key={luna}
-                          onClick={() => handleToggleLuna('siguiente', producto.id, luna)}
-                          style={{
-                            color: producto.lunas[luna] ? LUNA_COLORS[luna] : '#4B5563',
-                            textShadow: producto.lunas[luna] ? `0 0 8px ${LUNA_COLORS[luna]}` : 'none',
-                            transform: producto.lunas[luna] ? 'scale(1.2)' : 'scale(1)',
-                          }}
-                          className="text-xl transition-all"
-                        >
-                          {LUNA_EMOJIS[luna]}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Imagen */}
-                  <div className="md:col-span-2">
-                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-2">Imagen (R2)</label>
-                    <div className="flex gap-3 items-center">
-                      {producto.image_url ? (
-                        <>
-                          <div className="w-16 h-16 bg-black/40 rounded-lg overflow-hidden flex-shrink-0">
-                            <img src={producto.image_url} alt="Preview" className="w-full h-full object-cover" />
-                          </div>
-                          <button
-                            onClick={async () => {
-                              const url = await subirImagenR2(null, () => {});
-                              if (url) handleUpdateProducto('siguiente', producto.id, 'image_url', url);
-                            }}
-                            className="text-xs text-cyan-400 hover:text-cyan-300 underline"
-                          >
-                            🔁 Reemplazar
-                          </button>
-                        </>
-                      ) : (
-                        <label className="flex-1 cursor-pointer bg-cyan-500/10 border border-cyan-500/30 rounded-lg px-4 py-2 text-xs text-cyan-300 hover:bg-cyan-500/20 transition-all text-center">
-                          <span>Subir Imagen</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={async e => {
-                              const url = await subirImagenR2(e.target.files[0], () => {});
-                              if (url) handleUpdateProducto('siguiente', producto.id, 'image_url', url);
-                            }}
-                          />
-                        </label>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Descripción */}
-                  <div className="md:col-span-2">
-                    <label className="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Descripción</label>
-                    <textarea
-                      value={producto.descripcion}
-                      onChange={e => handleUpdateProducto('siguiente', producto.id, 'descripcion', e.target.value)}
-                      className="w-full bg-black/60 border border-cyan-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400 resize-none"
-                      rows="2"
-                      placeholder="Descripción corta de materiales y talles..."
-                    />
-                  </div>
-                </div>
+            {campanaSiguiente.length === 0 ? (
+              <div style={{
+                textAlign: 'center', padding: '40px 20px',
+                color: '#4B5563', fontSize: '13px',
+              }}>
+                <span style={{ fontSize: '32px', display: 'block', marginBottom: '8px' }}>🌑</span>
+                Empieza a preparar tu próxima campaña lunar.
               </div>
-            ))}
+            ) : (
+              campanaSiguiente.map((ref, idx) => (
+                <ReferenciaCard
+                  key={ref.id}
+                  referencia={ref}
+                  campana="siguiente"
+                  idx={idx}
+                  esEditable={true}
+                  onUpdate={(id, f, v) => handleUpdate('siguiente', id, f, v)}
+                  onDelete={(id) => handleDelete('siguiente', id)}
+                  onToggleLuna={handleToggleLuna}
+                  onSubirImagen={subirImagenR2}
+                />
+              ))
+            )}
 
-            {campanaSiguiente.length < MAX_PRODUCTOS && (
+            {campanaSiguiente.length < MAX_REFERENCIAS && (
               <button
-                onClick={() => handleAddProducto('siguiente')}
-                className="w-full mt-4 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 text-xs font-bold uppercase py-3 rounded-xl transition-all"
+                type="button"
+                onClick={() => handleAdd('siguiente')}
+                style={{
+                  width: '100%', marginTop: '4px',
+                  background: 'rgba(168,85,247,0.08)',
+                  border: '1px dashed rgba(168,85,247,0.3)',
+                  borderRadius: '10px', padding: '10px',
+                  fontSize: '11px', fontWeight: 700, color: '#a855f7',
+                  cursor: 'pointer',
+                }}
               >
-                + Añadir Producto a Campaña Siguiente
+                + Añadir referencia a Próxima Campaña
               </button>
             )}
           </div>
@@ -721,12 +1044,24 @@ export const MarketTab = ({ formData, setFormData }) => {
 
       {/* Botón Guardar */}
       <button
-        onClick={handleGuardarCampana}
-        disabled={guardando}
-        className="w-full bg-cyan-500 hover:bg-cyan-400 disabled:bg-cyan-500/50 text-black font-bold text-sm uppercase py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(34,211,238,0.3)]"
+        type="button"
+        onClick={handleGuardar}
+        disabled={guardando || uploadingId}
+        style={{
+          width: '100%',
+          background: guardando ? 'rgba(34,211,238,0.3)' : '#22d3ee',
+          border: 'none', borderRadius: '14px',
+          padding: '14px',
+          fontSize: '13px', fontWeight: 800, color: '#000',
+          cursor: guardando ? 'not-allowed' : 'pointer',
+          textTransform: 'uppercase', letterSpacing: '0.08em',
+          boxShadow: '0 0 20px rgba(34,211,238,0.3)',
+          transition: 'all 0.2s',
+        }}
       >
-        {guardando ? '💾 Guardando...' : '💾 GUARDAR CAMPAÑA'}
+        {guardando ? '💾 Guardando...' : uploadingId ? '📤 Subiendo imagen...' : '💾 GUARDAR CAMPAÑA'}
       </button>
+
     </div>
   );
 };

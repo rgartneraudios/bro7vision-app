@@ -37,18 +37,37 @@ const BroLives3D = ({ playingCreator, onToggleAudio }) => {
                     });
             }
         }
-    } else {
+    }
+  }, [playingCreator]);
+
+  useEffect(() => {
+    if (!playingCreator) {
         setIsPlaying(false);
         if (audioRef.current) {
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
         }
     }
-  }, [playingCreator, isPlaying]);
+  }, [playingCreator]);
 
   const avatarImage = (playingCreator && (playingCreator.avatar_url || playingCreator.img)) 
     ? (playingCreator.avatar_url || playingCreator.img) 
     : 'https://placehold.co/150x150/000000/FFFFFF/png?text=Anon';
+
+  const pauseAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+  };
+
+  const stopAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      setIsPlaying(false);
+    }
+  };
     
   return (
     <div className="relative flex flex-col items-center justify-center p-6 pointer-events-auto">        
@@ -59,7 +78,8 @@ const BroLives3D = ({ playingCreator, onToggleAudio }) => {
         <div 
             onClick={() => {
                 if (isPlaying) { 
-                    audioRef.current.pause(); 
+                    audioRef.current.pause();
+                    audioRef.current.currentTime = 0;
                     setIsPlaying(false); 
                 } else { 
                     audioRef.current.play().catch(e => console.log(e)); 
