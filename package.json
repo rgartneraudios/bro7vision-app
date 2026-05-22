@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
   "dev": "vite",
-  "build": "vite build && cpx \"functions/**/*\" dist/functions",
+  "build": "vite build && mkdir -p dist/functions/api && cp functions/api/upload.js dist/functions/api/upload.js && cp functions/api/delete-r2.js dist/functions/api/delete-r2.js",
   "lint": "eslint .",
   "preview": "vite preview"
 },
