@@ -472,8 +472,6 @@ const MediaSlot = ({ title, fieldName, type, description }) => {
           <h2 className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-400 font-bold text-lg flex items-center gap-3 tracking-wider">
             <span className="text-2xl drop-shadow-[0_0_5px_rgba(34,211,238,0.8)]">✨</span> BOOSTER STUDIO TERMINAL
           </h2>
-          <button onClick={onClose}
-            className="text-gray-400 hover:text-white hover:rotate-90 transition-transform duration-300 text-xl">✕</button>
         </div>
 
         <div className="flex flex-col md:flex-row flex-1 overflow-hidden bg-transparent">
@@ -1331,7 +1329,7 @@ const MediaSlot = ({ title, fieldName, type, description }) => {
           <button onClick={onClose} className="text-gray-300 text-xs px-6 py-3 font-bold uppercase hover:text-white transition-all hover:bg-white/5 rounded-full">Desconectar</button>
           <button onClick={handleSave} disabled={loading}
             className="bg-white/90 text-black font-bold uppercase text-xs px-8 py-3 rounded-full hover:bg-white hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-            {loading ? '🚀 INYECTANDO...' : 'ACTUALIZAR NÚCLEO'}
+            {loading ? '🚀 INYECTANDO...' : 'ACTUALIZAR CAMBIOS'}
           </button>
         </div>
 
