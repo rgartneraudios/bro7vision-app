@@ -4,11 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build && xcopy /E /I /Y functions dist\\functions"
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
+  "dev": "vite",
+  "build": "vite build && cpx \"functions/**/*\" dist/functions",
+  "lint": "eslint .",
+  "preview": "vite preview"
+},
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1011.0",
     "@aws-sdk/s3-request-presigner": "^3.1011.0",
