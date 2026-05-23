@@ -437,14 +437,48 @@ function App() {
     return { enviar: handleSectorInput, mensaje: sectorMensaje, loading: sectorLoading };
   }, [step, intent, perfilOso, perfilSector, sectorMensaje, ososMensaje, sectorLoading, ososLoading]);
 
-  const filteredItems = useMemo(() => {
-    const supabaseItems = realItems.map(u => ({ ...u, id: u.id, name: u.product_title || u.alias, img: u.card_banner_url || u.banner_url || '/default.png', price: u.price || 0, type: u.video_file ? ['shop', 'live'] : ['shop'], source: 'supabase' }));
-    const masterItems   = MASTER_DB.map(m => ({ ...m, id: m.id, name: m.name, img: m.img || '/default.png', price: m.price || 15, type: m.type || ['shop'], source: 'master' }));
-    const ALL = [...supabaseItems, ...masterItems];
-    if (['productos', 'servicios', 'avisos'].includes(intent)) return ALL.filter(i => i.type?.includes('shop'));
-    if (intent === 'audios') return ALL.filter(i => i.type?.includes('live'));
-    return ALL;
-  }, [intent, realItems]);
+const filteredItems = useMemo(() => {
+  const supabaseItems = realItems.map(u => {
+    // Definimos el tipo según el archivo que contenga el registro
+    let itemType = ['shop'];
+    if (u.audio_file) {
+      itemType = ['live']; // Solo califica como audio
+    } else if (u.video_file) {
+      itemType = ['shop', 'live']; // Vídeo inmersivo / tienda
+    }
+
+    return { 
+      ...u, 
+      id: u.id, 
+      name: u.product_title || u.alias, 
+      img: u.card_banner_url || u.banner_url || '/default.png', 
+      price: u.price || 0, 
+      type: itemType, 
+      source: 'supabase' 
+    };
+  });
+
+  const masterItems = MASTER_DB.map(m => ({ 
+    ...m, 
+    id: m.id, 
+    name: m.name, 
+    img: m.img || '/default.png', 
+    price: m.price || 15, 
+    type: m.type || ['shop'], 
+    source: 'master' 
+  }));
+
+  const ALL = [...supabaseItems, ...masterItems];
+
+  if (['productos', 'servicios', 'avisos'].includes(intent)) {
+    return ALL.filter(i => i.type?.includes('shop'));
+  }
+  if (intent === 'audios') {
+    return ALL.filter(i => i.type?.includes('live'));
+  }
+  
+  return ALL;
+}, [intent, realItems]);
 
   const hubVideos = useMemo(() => {
     const masterVideos   = MASTER_DB.filter(m => m.video_file).map(m => ({ ...m, id: m.id, alias: m.name || m.alias, source: 'master' }));

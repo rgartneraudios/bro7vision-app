@@ -111,19 +111,61 @@ export const useStripCards = () => {
         return;
       }
 
-      // ── AUDIO — lógica propia sin vitrina ───────────────────────────
-      if (agente === 'AUDIO') {
-        const esPais = modalidad !== 'LOCAL';
+// ── AUDIO — lógica propia sin vitrina (Normalizado y Tolerante) ──
+      const agenteUpper = agente?.toUpperCase() || '';
+      if (agenteUpper === 'AUDIO' || agenteUpper === 'MUSIC') {
+        const esPais = modalidad !== 'LOCAL' || 
+                       ciudad?.toLowerCase() === 'españa' || 
+                       ciudad?.toLowerCase() === 'spain';
+        
+        console.log('[AUDIO DEBUG] Entrada hook:', { agente, ciudad, modalidad, esPais });
+
+        // Traemos los perfiles en bruto para filtrarlos de forma segura en JS
         let query = supabase
           .from('profiles')
-          .select('bro_aud, bro_pod, banner_url, alias, city, description, audio_type, track_name, audio_description, audio_file, role, nearby_ref')
-          .limit(20);
-        if (!esPais && ciudad) query = query.ilike('city', `%${ciudad}%`);
-        const { data: perfiles, error } = await query;
+          .select('bro_aud, bro_pod, banner_url, alias, city, country, description, audio_type, track_name, audio_description, audio_file, role, nearby_ref')
+          .limit(300); 
 
-        const filtrados = (perfiles || []).filter(p =>
-          Array.isArray(p.role) ? p.role.includes('music') : p.role === 'music'
-        );
+        const { data: perfiles, error } = await query;
+        if (error) {
+          console.error('[AUDIO DEBUG] Error en consulta Supabase:', error);
+        }
+
+        console.log('[AUDIO DEBUG] Perfiles devueltos por DB (sin filtrar):', perfiles?.length || 0);
+
+        // Filtrado ultra-robusto en JavaScript
+        const filtrados = (perfiles || []).filter(p => {
+          // 1. Filtro de Rol: Comprobamos si es creador de música
+          const tieneRolMusica = Array.isArray(p.role) 
+            ? p.role.includes('music') 
+            : p.role === 'music';
+          
+          if (!tieneRolMusica) return false;
+
+          // 2. Filtro Geográfico
+          if (!esPais && ciudad) {
+            // Modo Local: Coincidir ciudad
+            return p.city?.toLowerCase().includes(ciudad.toLowerCase());
+          } 
+          
+          if (esPais) {
+            const paisBuscado = (pais || ciudad || '').toLowerCase();
+            
+            // Salvavidas para España: si buscamos España, incluimos perfiles de "España", 
+            // o que tengan el country vacío/null (muy común en registros de prueba)
+            if (paisBuscado === 'españa' || paisBuscado === 'spain') {
+              return !p.country || 
+                     p.country.toLowerCase().includes('españa') || 
+                     p.country.toLowerCase().includes('spain') || 
+                     p.country.toLowerCase().includes('es');
+            }
+            return p.country?.toLowerCase().includes(paisBuscado);
+          }
+
+          return true;
+        });
+
+        console.log('[AUDIO DEBUG] Perfiles que superaron los filtros (Rol + Geo):', filtrados.length, filtrados);
 
         const cards = filtrados.flatMap(p => {
           if (!p.bro_aud && !p.bro_pod) return [];
@@ -146,6 +188,8 @@ export const useStripCards = () => {
           }];
         });
 
+        console.log('[AUDIO DEBUG] Tarjetas mapeadas para renderizar:', cards.length, cards);
+
         if (!error && cards.length > 0) {
           setStripCards(cards);
           setStripLabel('audio');
@@ -155,8 +199,7 @@ export const useStripCards = () => {
           setStripVisible(false);
         }
         return;
-      }
-
+      }      
       // ── BROSHOP_PRODUCTO / BROSHOP_SERVICIO — sistema de vitrina ────
       if (AGENTES_VITRINA.includes(agente)) {
         const sectorBuscado    = SECTOR_MAP[agente];
