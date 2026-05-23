@@ -1,6 +1,6 @@
 // src/components/MarketTab.jsx
 // ─────────────────────────────────────────────────────────────────────
-// Sistema de Campaña Lunar - Inventario destacado_ps
+// Sistema de Campaña Lunar - Inventario destacado_ps (Fuentes Escaladas)
 // ─────────────────────────────────────────────────────────────────────
 // Tabla: profiles
 // Columna: destacados_ps (objeto JSON con vitrina[] + referencias[])
@@ -67,13 +67,13 @@ function LunasSelector({ lunas, onChange, disabled }) {
   return (
     <div>
       <label style={{
-        fontSize: '9px', color: '#6B7280',
-        textTransform: 'uppercase', letterSpacing: '0.1em',
-        display: 'block', marginBottom: '8px', fontWeight: 700,
+        fontSize: '12px', color: '#9CA3AF',
+        textTransform: 'uppercase', letterSpacing: '0.08em',
+        display: 'block', marginBottom: '10px', fontWeight: 700,
       }}>
         Fases Lunares con Descuento
       </label>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {Object.entries(LUNA_CONFIG).map(([key, cfg]) => {
           const activa = lunas?.[key] === true;
           return (
@@ -84,8 +84,8 @@ function LunasSelector({ lunas, onChange, disabled }) {
               disabled={disabled}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '6px 10px',
-                borderRadius: '8px',
+                padding: '10px 14px',
+                borderRadius: '10px',
                 border: `1px solid ${activa ? cfg.color + '60' : '#ffffff10'}`,
                 background: activa ? cfg.color + '15' : 'rgba(0,0,0,0.3)',
                 cursor: disabled ? 'not-allowed' : 'pointer',
@@ -93,35 +93,35 @@ function LunasSelector({ lunas, onChange, disabled }) {
                 transition: 'all 0.2s ease',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span style={{
-                  fontSize: '16px',
+                  fontSize: '18px',
                   filter: activa ? `drop-shadow(0 0 6px ${cfg.color})` : 'grayscale(1)',
                   transition: 'all 0.2s',
                 }}>
                   {cfg.emoji}
                 </span>
                 <span style={{
-                  fontSize: '11px', fontWeight: 700,
-                  color: activa ? cfg.color : '#6B7280',
+                  fontSize: '13px', fontWeight: 700,
+                  color: activa ? cfg.color : '#9CA3AF',
                   transition: 'color 0.2s',
                 }}>
                   {cfg.label}
                 </span>
                 <span style={{
-                  fontSize: '10px', fontWeight: 800,
-                  color: activa ? cfg.color : '#4B5563',
+                  fontSize: '12px', fontWeight: 800,
+                  color: activa ? cfg.color : '#6B7280',
                 }}>
                   {cfg.pct}
                 </span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {cfg.condicional && (
                   <span style={{
-                    fontSize: '8px', color: '#F97316',
+                    fontSize: '11px', color: '#F97316',
                     background: 'rgba(249,115,22,0.15)',
                     border: '1px solid rgba(249,115,22,0.3)',
-                    padding: '1px 5px', borderRadius: '4px',
+                    padding: '2px 6px', borderRadius: '4px',
                     fontWeight: 700,
                   }}>
                     ⚠️ {cfg.cond}
@@ -129,17 +129,17 @@ function LunasSelector({ lunas, onChange, disabled }) {
                 )}
                 {!cfg.condicional && (
                   <span style={{
-                    fontSize: '8px', color: '#6B7280',
-                    padding: '1px 5px',
+                    fontSize: '11px', color: '#9CA3AF',
+                    padding: '2px 6px',
                   }}>
                     {cfg.cond}
                   </span>
                 )}
                 <div style={{
-                  width: '14px', height: '14px',
+                  width: '16px', height: '16px',
                   borderRadius: '50%',
                   background: activa ? cfg.color : 'transparent',
-                  border: `2px solid ${activa ? cfg.color : '#4B5563'}`,
+                  border: `2px solid ${activa ? cfg.color : '#6B7280'}`,
                   boxShadow: activa ? `0 0 8px ${cfg.color}` : 'none',
                   transition: 'all 0.2s',
                   flexShrink: 0,
@@ -175,16 +175,16 @@ function ReferenciaCard({ referencia: producto, campana, idx, esEditable, onUpda
         type="button"
         onClick={() => setAbierto(!abierto)}
         style={{
-          width: '100%', padding: '10px 14px',
+          width: '100%', padding: '12px 16px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           background: 'transparent', border: 'none', cursor: 'pointer',
-          gap: '8px',
+          gap: '10px',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
           {/* Número */}
           <span style={{
-            fontSize: '9px', color: '#6B7280', fontWeight: 700,
+            fontSize: '12px', color: '#9CA3AF', fontWeight: 700,
             flexShrink: 0,
           }}>
             #{idx + 1}
@@ -193,10 +193,10 @@ function ReferenciaCard({ referencia: producto, campana, idx, esEditable, onUpda
           {/* Badge vitrina */}
           {esVitrina && (
             <span style={{
-              fontSize: '8px', fontWeight: 800,
+              fontSize: '11px', fontWeight: 800,
               color: '#fbbf24', background: 'rgba(251,191,36,0.15)',
               border: '1px solid rgba(251,191,36,0.4)',
-              padding: '1px 6px', borderRadius: '4px', flexShrink: 0,
+              padding: '2px 8px', borderRadius: '4px', flexShrink: 0,
             }}>
               ⭐ VITRINA {producto.orden_vitrina}
             </span>
@@ -204,43 +204,43 @@ function ReferenciaCard({ referencia: producto, campana, idx, esEditable, onUpda
 
           {/* Badge sector */}
           <span style={{
-            fontSize: '8px', fontWeight: 700,
+            fontSize: '11px', fontWeight: 700,
             color: sectorCfg.color,
             background: sectorCfg.color + '20',
             border: `1px solid ${sectorCfg.color}40`,
-            padding: '1px 6px', borderRadius: '4px', flexShrink: 0,
+            padding: '2px 8px', borderRadius: '4px', flexShrink: 0,
           }}>
             {sectorCfg.label}
           </span>
 
           {/* Badge alcance */}
           <span style={{
-            fontSize: '8px', fontWeight: 700,
+            fontSize: '11px', fontWeight: 700,
             color: alcanceCfg.color,
             background: alcanceCfg.color + '15',
             border: `1px solid ${alcanceCfg.color}30`,
-            padding: '1px 6px', borderRadius: '4px', flexShrink: 0,
+            padding: '2px 8px', borderRadius: '4px', flexShrink: 0,
           }}>
             {alcanceCfg.label}
           </span>
 
           {/* Título */}
           <span style={{
-            fontSize: '11px', color: sinStock ? '#9CA3AF' : '#E5E7EB',
+            fontSize: '14px', color: sinStock ? '#9CA3AF' : '#E5E7EB',
             fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {producto.producto_titulo || '(sin título)'}
           </span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
           {/* Stock pill */}
           <span style={{
-            fontSize: '9px', fontWeight: 700,
+            fontSize: '12px', fontWeight: 700,
             color: sinStock ? '#ef4444' : producto.stock_actual <= 3 ? '#f59e0b' : '#10b981',
             background: sinStock ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)',
             border: `1px solid ${sinStock ? '#ef444430' : '#10b98130'}`,
-            padding: '2px 7px', borderRadius: '20px',
+            padding: '3px 9px', borderRadius: '20px',
           }}>
             {sinStock ? '⛔ Sin stock' : `${producto.stock_actual}/${producto.stock_inicial}`}
           </span>
@@ -249,22 +249,22 @@ function ReferenciaCard({ referencia: producto, campana, idx, esEditable, onUpda
             <button
               type="button"
               onClick={e => { e.stopPropagation(); onDelete(producto.id); }}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', color: '#6B7280', padding: '2px' }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', color: '#9CA3AF', padding: '4px' }}
             >🗑</button>
           )}
 
-          <span style={{ color: '#6B7280', fontSize: '12px' }}>{abierto ? '▼' : '▶'}</span>
+          <span style={{ color: '#9CA3AF', fontSize: '14px' }}>{abierto ? '▼' : '▶'}</span>
         </div>
       </button>
 
       {/* Cuerpo expandible */}
       {abierto && (
-        <div style={{ padding: '0 14px 14px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <div style={{ padding: '0 16px 16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
 
           {/* Sector */}
           <div>
             <label style={labelStyle}>Sector</label>
-            <div style={{ display: 'flex', gap: '6px' }}>
+            <div style={{ display: 'flex', gap: '8px' }}>
               {SECTOR_OPTIONS.map(opt => (
                 <button
                   key={opt.value}
@@ -272,11 +272,11 @@ function ReferenciaCard({ referencia: producto, campana, idx, esEditable, onUpda
                   onClick={() => esEditable && onUpdate(producto.id, 'sector', opt.value)}
                   disabled={!esEditable}
                   style={{
-                    flex: 1, padding: '6px 4px',
+                    flex: 1, padding: '8px 6px',
                     borderRadius: '8px', border: `1px solid ${producto.sector === opt.value ? opt.color + '80' : '#ffffff20'}`,
                     background: producto.sector === opt.value ? opt.color + '20' : 'rgba(0,0,0,0.3)',
-                    color: producto.sector === opt.value ? opt.color : '#6B7280',
-                    fontSize: '10px', fontWeight: 700, cursor: esEditable ? 'pointer' : 'not-allowed',
+                    color: producto.sector === opt.value ? opt.color : '#9CA3AF',
+                    fontSize: '12px', fontWeight: 700, cursor: esEditable ? 'pointer' : 'not-allowed',
                     transition: 'all 0.2s',
                   }}
                 >
@@ -474,13 +474,13 @@ function ReferenciaCard({ referencia: producto, campana, idx, esEditable, onUpda
           <div style={{ gridColumn: '1 / -1' }}>
             <label style={labelStyle}>Imagen (Cloudflare R2)</label>
             {producto.image_url ? (
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <div style={{ width: '60px', height: '90px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, background: 'rgba(0,0,0,0.4)' }}>
+              <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+                <div style={{ width: '70px', height: '105px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, background: 'rgba(0,0,0,0.4)' }}>
                   <img src={producto.image_url} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
                 <label style={{ cursor: esEditable ? 'pointer' : 'default' }}>
                   <span style={{
-                    fontSize: '11px', color: '#22d3ee',
+                    fontSize: '13px', color: '#22d3ee',
                     textDecoration: 'underline', cursor: 'pointer',
                   }}>
                     🔁 Reemplazar imagen
@@ -499,12 +499,12 @@ function ReferenciaCard({ referencia: producto, campana, idx, esEditable, onUpda
             ) : (
               <label style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                padding: '16px',
+                padding: '20px',
                 background: 'rgba(34,211,238,0.05)',
                 border: '1px dashed rgba(34,211,238,0.3)',
                 borderRadius: '10px',
                 cursor: esEditable ? 'pointer' : 'not-allowed',
-                fontSize: '11px', color: '#22d3ee',
+                fontSize: '13px', color: '#22d3ee',
               }}>
                 📷 Subir imagen a R2
                 <input
@@ -540,9 +540,9 @@ function ReferenciaCard({ referencia: producto, campana, idx, esEditable, onUpda
 
 // ── Estilos compartidos ──────────────────────────────────────────────
 const labelStyle = {
-  fontSize: '9px', color: '#6B7280',
-  textTransform: 'uppercase', letterSpacing: '0.1em',
-  display: 'block', marginBottom: '4px', fontWeight: 700,
+  fontSize: '12px', color: '#9CA3AF',
+  textTransform: 'uppercase', letterSpacing: '0.08em',
+  display: 'block', marginBottom: '6px', fontWeight: 700,
 };
 
 const inputStyle = {
@@ -550,8 +550,8 @@ const inputStyle = {
   background: 'rgba(0,0,0,0.6)',
   border: '1px solid rgba(34,211,238,0.2)',
   borderRadius: '8px',
-  padding: '7px 10px',
-  fontSize: '11px',
+  padding: '9px 12px',
+  fontSize: '14px',
   color: '#fff',
   outline: 'none',
   boxSizing: 'border-box',
@@ -569,52 +569,52 @@ function VitrinePanel({ referencias }) {
       marginBottom: '16px',
     }}>
       <p style={{
-        fontSize: '9px', color: '#fbbf24',
-        textTransform: 'uppercase', letterSpacing: '0.1em',
-        fontWeight: 800, marginBottom: '12px',
+        fontSize: '12px', color: '#fbbf24',
+        textTransform: 'uppercase', letterSpacing: '0.08em',
+        fontWeight: 800, marginBottom: '14px',
       }}>
         ⭐ Vitrina Pública — 3 BroCards en el Cajón del Sector
       </p>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
         {slots.map((ref, i) => (
           <div key={i} style={{
             background: ref ? 'rgba(251,191,36,0.08)' : 'rgba(0,0,0,0.3)',
             border: `1px solid ${ref ? 'rgba(251,191,36,0.3)' : 'rgba(255,255,255,0.08)'}`,
             borderRadius: '10px',
-            padding: '10px',
-            minHeight: '80px',
+            padding: '12px',
+            minHeight: '100px',
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            gap: '4px',
+            gap: '6px',
           }}>
             {ref ? (
               <>
                 {ref.image_url ? (
                   <img src={ref.image_url} alt={ref.producto_titulo}
-                    style={{ width: '40px', height: '60px', objectFit: 'cover', borderRadius: '6px' }} />
+                    style={{ width: '45px', height: '67px', objectFit: 'cover', borderRadius: '6px' }} />
                 ) : (
                   <div style={{
-                    width: '40px', height: '60px', borderRadius: '6px',
+                    width: '45px', height: '67px', borderRadius: '6px',
                     background: 'rgba(255,255,255,0.05)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '18px',
+                    fontSize: '20px',
                   }}>📷</div>
                 )}
                 <span style={{
-                  fontSize: '9px', color: ref.stock_actual === 0 ? '#ef4444' : '#fbbf24',
+                  fontSize: '12px', color: ref.stock_actual === 0 ? '#ef4444' : '#fbbf24',
                   fontWeight: 700, textAlign: 'center',
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   maxWidth: '100%',
                 }}>
                   {ref.stock_actual === 0 ? '⛔ Sin stock' : ref.producto_titulo || '(sin título)'}
                 </span>
-                <span style={{ fontSize: '8px', color: '#6B7280' }}>
+                <span style={{ fontSize: '11px', color: '#9CA3AF' }}>
                   {ref.sector === 'SERVICIO' ? '🛠 Servicio' : '📦 Producto'}
                 </span>
               </>
             ) : (
               <>
-                <span style={{ fontSize: '20px', opacity: 0.3 }}>＋</span>
-                <span style={{ fontSize: '9px', color: '#4B5563', textAlign: 'center' }}>
+                <span style={{ fontSize: '24px', opacity: 0.3 }}>＋</span>
+                <span style={{ fontSize: '11px', color: '#6B7280', textAlign: 'center' }}>
                   Destacado {i + 1}
                   <br />vacío
                 </span>
@@ -623,7 +623,7 @@ function VitrinePanel({ referencias }) {
           </div>
         ))}
       </div>
-      <p style={{ fontSize: '9px', color: '#6B7280', marginTop: '8px' }}>
+      <p style={{ fontSize: '11px', color: '#9CA3AF', marginTop: '10px', lineHeight: 1.4 }}>
         Asigna el slot (Destacado 1/2/3) desde cada referencia del listado. Stock = 0 → desaparece del cajón hasta la próxima fase.
       </p>
     </div>
@@ -810,7 +810,7 @@ export const MarketTab = ({ formData, setFormData }) => {
   };
 
   if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px', color: '#6B7280', fontSize: '13px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px', color: '#6B7280', fontSize: '14px' }}>
       ⏳ Cargando MarketTab...
     </div>
   );
@@ -819,19 +819,19 @@ export const MarketTab = ({ formData, setFormData }) => {
   const esEditableActual = !isFaseActiva || isAdmin || isPremium;
 
   return (
-    <div style={{ maxWidth: '860px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div style={{ maxWidth: '860px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
       {/* Banner Video Commerce */}
       <div style={{
         background: 'rgba(34,211,238,0.07)',
         border: '1px solid rgba(34,211,238,0.25)',
-        borderRadius: '16px', padding: '14px 16px',
+        borderRadius: '16px', padding: '16px 20px',
         boxShadow: `0 0 20px ${t.glow}`,
       }}>
-        <p style={{ fontSize: '9px', fontWeight: 800, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
+        <p style={{ fontSize: '12px', fontWeight: 800, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
           ⚠️ NOTA DE VIDEO COMMERCE
         </p>
-        <p style={{ fontSize: '10px', color: '#9CA3AF', lineHeight: 1.5 }}>
+        <p style={{ fontSize: '13px', color: '#9CA3AF', lineHeight: 1.6 }}>
           Tu video principal (16:9) se gestiona desde la pestaña 'Señal de archivos — Video Horizontal B'.
           Sube allí el clip con tus artículos para activar la experiencia de compra inmersiva en tu Teléfono Casa.
         </p>
@@ -841,7 +841,7 @@ export const MarketTab = ({ formData, setFormData }) => {
       <div style={{
         background: 'rgba(34,211,238,0.04)',
         border: '1px solid rgba(34,211,238,0.15)',
-        borderRadius: '24px', padding: '20px',
+        borderRadius: '24px', padding: '24px',
         boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
       }}>
         <button
@@ -850,47 +850,47 @@ export const MarketTab = ({ formData, setFormData }) => {
           style={{
             width: '100%', display: 'flex', alignItems: 'flex-start',
             justifyContent: 'space-between', background: 'none', border: 'none',
-            cursor: 'pointer', marginBottom: acordeonActualAbierto ? '16px' : '0',
+            cursor: 'pointer', marginBottom: acordeonActualAbierto ? '20px' : '0',
           }}
         >
           <div style={{ textAlign: 'left' }}>
-            <h3 style={{ fontSize: '12px', fontWeight: 800, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
+            <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#22d3ee', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
               🌕 Campaña en Curso
             </h3>
-            <p style={{ fontSize: '10px', color: '#6B7280' }}>
+            <p style={{ fontSize: '12px', color: '#9CA3AF' }}>
               {campanaActual.length} / {MAX_REFERENCIAS} referencias
               {isFaseActiva && !esEditableActual && (
-                <span style={{ color: '#f59e0b', marginLeft: '8px' }}>
+                <span style={{ color: '#f59e0b', marginLeft: '10px', fontWeight: 700 }}>
                   🔒 SELLADO — Fase lunar activa
                 </span>
               )}
               {isFaseActiva && (isAdmin || isPremium) && (
-                <span style={{ color: '#a855f7', marginLeft: '8px' }}>
+                <span style={{ color: '#a855f7', marginLeft: '10px', fontWeight: 700 }}>
                   🔑 Acceso Admin/Premium
                 </span>
               )}
             </p>
           </div>
-          <span style={{ color: '#6B7280', fontSize: '14px', marginTop: '2px' }}>
+          <span style={{ color: '#9CA3AF', fontSize: '16px', marginTop: '4px' }}>
             {acordeonActualAbierto ? '▼' : '▶'}
           </span>
         </button>
 
         {acordeonActualAbierto && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
 
             {/* Vitrina */}
             {campanaActual.length > 0 && <VitrinePanel referencias={campanaActual} />}
 
             {campanaActual.length === 0 ? (
               <div style={{
-                textAlign: 'center', padding: '40px 20px',
-                color: '#4B5563', fontSize: '13px',
+                textAlign: 'center', padding: '50px 20px',
+                color: '#6B7280', fontSize: '14px',
               }}>
-                <span style={{ fontSize: '32px', display: 'block', marginBottom: '8px' }}>📭</span>
+                <span style={{ fontSize: '36px', display: 'block', marginBottom: '10px' }}>📭</span>
                 Sin referencias en la campaña actual.
                 {!isFaseActiva && (
-                  <p style={{ fontSize: '10px', color: '#374151', marginTop: '4px' }}>
+                  <p style={{ fontSize: '12px', color: '#4B5563', marginTop: '6px' }}>
                     Las referencias de "Próxima Campaña" se copiarán aquí cuando comience la fase lunar.
                   </p>
                 )}
@@ -916,14 +916,15 @@ export const MarketTab = ({ formData, setFormData }) => {
               <div style={{
                 background: 'rgba(245,158,11,0.08)',
                 border: '1px solid rgba(245,158,11,0.25)',
-                borderRadius: '12px', padding: '12px 16px',
+                borderRadius: '12px', padding: '14px 18px',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                gap: '12px'
               }}>
                 <div>
-                  <p style={{ fontSize: '11px', color: '#f59e0b', fontWeight: 700, marginBottom: '2px' }}>
+                  <p style={{ fontSize: '13px', color: '#f59e0b', fontWeight: 700, marginBottom: '4px' }}>
                     ⏱ ¿Llegaste tarde a esta fase?
                   </p>
-                  <p style={{ fontSize: '10px', color: '#6B7280' }}>
+                  <p style={{ fontSize: '12px', color: '#9CA3AF' }}>
                     Puedes incorporarte pagando un plus de entrada tardía.
                   </p>
                 </div>
@@ -932,8 +933,8 @@ export const MarketTab = ({ formData, setFormData }) => {
                   style={{
                     background: 'rgba(245,158,11,0.2)',
                     border: '1px solid rgba(245,158,11,0.4)',
-                    borderRadius: '8px', padding: '6px 14px',
-                    fontSize: '10px', fontWeight: 700, color: '#f59e0b',
+                    borderRadius: '8px', padding: '8px 16px',
+                    fontSize: '11px', fontWeight: 700, color: '#f59e0b',
                     cursor: 'pointer', whiteSpace: 'nowrap',
                   }}
                   onClick={() => alert('Próximamente: acceso por plus de entrada tardía.')}
@@ -948,11 +949,11 @@ export const MarketTab = ({ formData, setFormData }) => {
                 type="button"
                 onClick={() => handleAdd('actual')}
                 style={{
-                  width: '100%', marginTop: '4px',
+                  width: '100%', marginTop: '6px',
                   background: 'rgba(34,211,238,0.08)',
                   border: '1px dashed rgba(34,211,238,0.3)',
-                  borderRadius: '10px', padding: '10px',
-                  fontSize: '11px', fontWeight: 700, color: '#22d3ee',
+                  borderRadius: '10px', padding: '12px',
+                  fontSize: '13px', fontWeight: 700, color: '#22d3ee',
                   cursor: 'pointer',
                 }}
               >
@@ -967,7 +968,7 @@ export const MarketTab = ({ formData, setFormData }) => {
       <div style={{
         background: 'rgba(168,85,247,0.04)',
         border: '1px solid rgba(168,85,247,0.15)',
-        borderRadius: '24px', padding: '20px',
+        borderRadius: '24px', padding: '24px',
         boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
       }}>
         <button
@@ -976,34 +977,34 @@ export const MarketTab = ({ formData, setFormData }) => {
           style={{
             width: '100%', display: 'flex', alignItems: 'flex-start',
             justifyContent: 'space-between', background: 'none', border: 'none',
-            cursor: 'pointer', marginBottom: acordeonSiguienteAbierto ? '16px' : '0',
+            cursor: 'pointer', marginBottom: acordeonSiguienteAbierto ? '20px' : '0',
           }}
         >
           <div style={{ textAlign: 'left' }}>
-            <h3 style={{ fontSize: '12px', fontWeight: 800, color: '#a855f7', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
+            <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#a855f7', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
               🌑 Próxima Campaña — Previo Abierto
             </h3>
-            <p style={{ fontSize: '10px', color: '#6B7280' }}>
+            <p style={{ fontSize: '12px', color: '#9CA3AF' }}>
               {campanaSiguiente.length} / {MAX_REFERENCIAS} referencias · Siempre editable
             </p>
           </div>
-          <span style={{ color: '#6B7280', fontSize: '14px', marginTop: '2px' }}>
+          <span style={{ color: '#9CA3AF', fontSize: '16px', marginTop: '4px' }}>
             {acordeonSiguienteAbierto ? '▼' : '▶'}
           </span>
         </button>
 
         {acordeonSiguienteAbierto && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
 
             {/* Vitrina preview */}
             {campanaSiguiente.length > 0 && <VitrinePanel referencias={campanaSiguiente} />}
 
             {campanaSiguiente.length === 0 ? (
               <div style={{
-                textAlign: 'center', padding: '40px 20px',
-                color: '#4B5563', fontSize: '13px',
+                textAlign: 'center', padding: '50px 20px',
+                color: '#6B7280', fontSize: '14px',
               }}>
-                <span style={{ fontSize: '32px', display: 'block', marginBottom: '8px' }}>🌑</span>
+                <span style={{ fontSize: '36px', display: 'block', marginBottom: '10px' }}>🌑</span>
                 Empieza a preparar tu próxima campaña lunar.
               </div>
             ) : (
@@ -1027,11 +1028,11 @@ export const MarketTab = ({ formData, setFormData }) => {
                 type="button"
                 onClick={() => handleAdd('siguiente')}
                 style={{
-                  width: '100%', marginTop: '4px',
+                  width: '100%', marginTop: '6px',
                   background: 'rgba(168,85,247,0.08)',
                   border: '1px dashed rgba(168,85,247,0.3)',
-                  borderRadius: '10px', padding: '10px',
-                  fontSize: '11px', fontWeight: 700, color: '#a855f7',
+                  borderRadius: '10px', padding: '12px',
+                  fontSize: '13px', fontWeight: 700, color: '#a855f7',
                   cursor: 'pointer',
                 }}
               >
@@ -1051,10 +1052,10 @@ export const MarketTab = ({ formData, setFormData }) => {
           width: '100%',
           background: guardando ? 'rgba(34,211,238,0.3)' : '#22d3ee',
           border: 'none', borderRadius: '14px',
-          padding: '14px',
-          fontSize: '13px', fontWeight: 800, color: '#000',
+          padding: '16px',
+          fontSize: '14px', fontWeight: 800, color: '#000',
           cursor: guardando ? 'not-allowed' : 'pointer',
-          textTransform: 'uppercase', letterSpacing: '0.08em',
+          textTransform: 'uppercase', letterSpacing: '0.1em',
           boxShadow: '0 0 20px rgba(34,211,238,0.3)',
           transition: 'all 0.2s',
         }}
