@@ -12,7 +12,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { marcarActividad } from '../hooks/useActividad';
-import { useFFmpeg } from '../hooks/useFFmpeg';
+import { useFFmpeg, BYPASS_LIMIT_MB, MAX_VIDEO_MB, MAX_AUDIO_MB } from '../hooks/useFFmpeg';
 
 const VERTICAL_SLOTS = ['video_file', 'video_file_2'];
 const SLOT_MAP = {
@@ -342,16 +342,7 @@ const VideoSlotVertical = ({ title, fieldName, slotNumber, formData, setFormData
             Archivo de video <span className="text-red-400">*</span>
           </label>
 
-          {/* Info FFmpeg */}
-          <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-xl p-3 flex gap-2 items-start mb-3">
-            <span className="text-base shrink-0">⚡</span>
-            <div>
-              <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest mb-0.5">Optimización automática</p>
-              <p className="text-[10px] text-gray-500">
-                Tu video se comprimirá a 720p y se extraerá el audio para móvil. Ocurre en tu dispositivo. Máx. 1500MB.
-              </p>
-            </div>
-          </div>
+          <AvisoLimites tipo="video" />
 
           <input
             ref={fileInputRef}
@@ -570,15 +561,8 @@ const MediaSlot = ({ title, fieldName, type, description, formData, setFormData,
             </span>
           </div>
 
-          {esVideo && (
-            <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-xl p-3 flex gap-2 items-start">
-              <span className="text-base shrink-0">⚡</span>
-              <div>
-                <p className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest mb-0.5">Optimización automática</p>
-                <p className="text-[10px] text-gray-500">Tu video se comprimirá a 720p. Ocurre en tu dispositivo.</p>
-              </div>
-            </div>
-          )}
+          {esVideo && <AvisoLimites tipo="video" />}
+          {esAudio && <AvisoLimites tipo="audio" />}
 
           <div>
             <label className="text-[9px] font-bold text-fuchsia-400 uppercase tracking-widest block mb-1">
@@ -680,6 +664,66 @@ const MediaSlot = ({ title, fieldName, type, description, formData, setFormData,
   );
 };
 
+
+// ════════════════════════════════════════════════
+// COMPONENTE AvisoLimites
+// Informa al usuario de los límites y cuándo se activa la compresión.
+// Se usa tanto en VideoSlotVertical como en MediaSlot (video 16:9).
+// ════════════════════════════════════════════════
+const AvisoLimites = ({ tipo = 'video' }) => {
+  if (tipo === 'audio') {
+    return (
+      <div className="bg-fuchsia-500/5 border border-fuchsia-500/20 rounded-xl p-4 flex gap-3 items-start">
+        <span className="text-xl shrink-0">🎙️</span>
+        <div className="space-y-1">
+          <p className="text-xs font-black text-fuchsia-300 uppercase tracking-widest">
+            Límite de audio
+          </p>
+          <p className="text-sm text-gray-300">
+            Máximo <span className="text-white font-bold">{MAX_AUDIO_MB} MB</span> por archivo.
+          </p>
+          <p className="text-xs text-gray-500">
+            Formatos aceptados: MP3, WAV, AAC, OGG.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-xl p-4 flex gap-3 items-start">
+      <span className="text-xl shrink-0">⚡</span>
+      <div className="space-y-2">
+        <p className="text-xs font-black text-cyan-300 uppercase tracking-widest">
+          Límites y optimización automática
+        </p>
+
+        {/* Tabla de límites */}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-1">
+          <p className="text-xs text-gray-400">Tamaño máximo</p>
+          <p className="text-sm font-bold text-white">{MAX_VIDEO_MB} MB</p>
+
+          <p className="text-xs text-gray-400">Sin compresión</p>
+          <p className="text-sm font-bold text-emerald-400">MP4 hasta {BYPASS_LIMIT_MB} MB</p>
+
+          <p className="text-xs text-gray-400">Con compresión</p>
+          <p className="text-sm font-bold text-amber-400">Otros formatos o más de {BYPASS_LIMIT_MB} MB</p>
+        </div>
+
+        {/* Separador */}
+        <div className="border-t border-cyan-500/10 pt-2">
+          <p className="text-xs text-gray-500 leading-relaxed">
+            Los videos MP4 ya optimizados (ej: descargados de YouTube) se suben
+            <span className="text-cyan-400 font-bold"> directamente sin espera</span>.
+            Solo extraemos el audio para la versión móvil (~15 seg).
+            Si tu video es de otro formato o supera los {BYPASS_LIMIT_MB} MB,
+            lo comprimiremos automáticamente a 720p antes de subir.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // ════════════════════════════════════════════════
 // COMPONENTE SemaforoWidget — Estado de Emisión
