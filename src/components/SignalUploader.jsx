@@ -3,6 +3,11 @@
 // Slots verticales: campos siempre visibles (estilo YouTube/TikTok).
 // Slots audio y 169: sin cambios.
 // Nuevos campos: categoria_declarada, descripcion_declarada (creator_media).
+//
+// FIXES:
+//  [1] Eliminados campos TÍTULO y DESCRIPCIÓN duplicados del audio en SignalUploader
+//      (ya existen dentro del acordeón de MediaSlot)
+//  [2] Límite de audio corregido: 100 MB (era 10 MB por bug en lógica esVideo)
 
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
@@ -41,9 +46,8 @@ const CATEGORIAS_DECLARADAS = [
   { id: 'otro',       label: '✦ Otro',                              desc: 'No encaja en las anteriores' },
 ];
 
-// ── Subida a R2 ──
 const subirArchivoR2 = async (blob, nombreBase, mimeType) => {
-  const safeFileName = `${Date.now()}-${nombreBase}`;
+  const safeFileName = `${Date.now()}_${nombreBase}`;  // ← guarda el _ en vez del -
   const res = await fetch('/api/upload', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -139,7 +143,7 @@ const VideoSlotVertical = ({ title, fieldName, slotNumber, formData, setFormData
       if (VERTICAL_SLOTS.includes(fieldName)) {
         const slot1 = formData.video_file   || null;
         const slot2 = formData.video_file_2 || null;
-                await deleteFromR2(slot3);
+                await deleteFromR2(slot2);
         setFormData(prev => ({ ...prev, video_file: publicUrl, video_file_2: slot1 }));
       }
 
@@ -416,11 +420,13 @@ const VideoSlotVertical = ({ title, fieldName, slotNumber, formData, setFormData
 
 
 // ════════════════════════════════════════════════
-// COMPONENTE MediaSlot — para 169 y audio (sin cambios)
+// COMPONENTE MediaSlot — para 169 y audio
+// FIX [2]: límite de audio corregido a 100 MB
 // ════════════════════════════════════════════════
 const MediaSlot = ({ title, fieldName, type, description, formData, setFormData, loading, setLoading, procesarVideo, progreso, fase, procesando }) => {
   const isOccupied = !!formData[fieldName];
   const esVideo    = fieldName === 'video_file_169' || fieldName === 'video_file_169b';
+  const esAudio    = fieldName === 'audio_file'; // FIX [2]
 
   const [acordeonAbierto,     setAcordeonAbierto]     = useState(false);
   const [archivoSeleccionado, setArchivoSeleccionado] = useState(null);
@@ -454,9 +460,14 @@ const MediaSlot = ({ title, fieldName, type, description, formData, setFormData,
     if (!metadatos.descripcion.trim()) { setErrorMeta('La descripción es obligatoria.'); return; }
     setErrorMeta('');
 
-    const maxSize = esVideo ? 1500 * 1024 * 1024 : 10 * 1024 * 1024;
+    // FIX [2]: lógica de límite corregida — audio = 100 MB, video = 1500 MB
+    const maxSize = esVideo ? 1500 * 1024 * 1024
+                 : esAudio  ?  100 * 1024 * 1024
+                 :             100 * 1024 * 1024; // fallback seguro
+    const maxLabel = esVideo ? '1500MB' : '100MB';
+
     if (archivoSeleccionado.size > maxSize) {
-      alert(`¡Archivo muy pesado! Máximo ${esVideo ? '1500MB' : '10MB'} permitido.`);
+      alert(`¡Archivo muy pesado! Máximo ${maxLabel} permitido.`);
       return;
     }
 
@@ -574,7 +585,7 @@ const MediaSlot = ({ title, fieldName, type, description, formData, setFormData,
               Título <span className="text-red-400">*</span>
             </label>
             <input type="text" maxLength={60}
-              placeholder="Ej: Video catálogo primavera 2026"
+              placeholder={esAudio ? 'Ej: Gorilas en el Asfalto' : 'Ej: Video catálogo primavera 2026'}
               value={metadatos.titulo}
               onChange={e => setMetadatos(prev => ({ ...prev, titulo: e.target.value }))}
               className="w-full bg-white/5 border border-white/10 focus:border-fuchsia-500/50 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 outline-none transition-all" />
@@ -586,7 +597,7 @@ const MediaSlot = ({ title, fieldName, type, description, formData, setFormData,
               Descripción <span className="text-red-400">*</span>
             </label>
             <textarea maxLength={200} rows={3}
-              placeholder="Descripción del contenido..."
+              placeholder={esAudio ? 'Ej: Pop de los 80s con guitarra y sintetizadores. Grabado en Madrid.' : 'Descripción del contenido...'}
               value={metadatos.descripcion}
               onChange={e => setMetadatos(prev => ({ ...prev, descripcion: e.target.value }))}
               className="w-full bg-white/5 border border-white/10 focus:border-fuchsia-500/50 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-600 outline-none transition-all resize-none" />
@@ -608,6 +619,31 @@ const MediaSlot = ({ title, fieldName, type, description, formData, setFormData,
               ))}
             </div>
           </div>
+
+          {/* Selector de tipo de audio — solo visible cuando es audio */}
+          {esAudio && (
+            <div>
+              <label className="text-[9px] font-bold text-fuchsia-400 uppercase tracking-widest block mb-2">
+                Tipo de audio <span className="text-red-400">*</span>
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { id: 'music',   label: '🎵 Música',  desc: 'Canción, EP, álbum' },
+                  { id: 'podcast', label: '🎙️ Podcast', desc: 'Programa, episodio'  },
+                ].map((t) => (
+                  <button key={t.id}
+                    onClick={() => setMetadatos(prev => ({ ...prev, audio_type: t.id }))}
+                    className={`p-3 rounded-xl border text-left transition-all
+                      ${metadatos.audio_type === t.id
+                        ? 'bg-fuchsia-900/40 border-fuchsia-500/60 text-fuchsia-300'
+                        : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20 hover:text-gray-300'}`}>
+                    <p className="text-xs font-bold mb-1">{t.label}</p>
+                    <p className="text-[9px] opacity-70 leading-tight">{t.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {procesando && esVideo && (
             <div className="space-y-2">
@@ -720,6 +756,8 @@ const SemaforoWidget = ({ formData, setFormData }) => {
 
 // ════════════════════════════════════════════════
 // COMPONENTE PRINCIPAL — SignalUploader
+// FIX [1]: eliminados campos track_name / audio_description / audio_type
+//          del padre — ya viven dentro del acordeón de MediaSlot
 // ════════════════════════════════════════════════
 const SignalUploader = ({ formData, setFormData, loading, setLoading }) => {
   const { procesarVideo, progreso, fase, procesando } = useFFmpeg();
@@ -752,59 +790,22 @@ const SignalUploader = ({ formData, setFormData, loading, setLoading }) => {
             📱 SEÑAL MÓVIL (9:16)
           </h3>
 
-          {/* Slots verticales — nuevo componente con campos siempre visibles */}
+          {/* Slots verticales */}
           <VideoSlotVertical title="Video Reality / Casa 1" fieldName="video_file"   slotNumber={1} {...sharedProps} />
           <VideoSlotVertical title="Video Casa 2"           fieldName="video_file_2" slotNumber={2} {...sharedProps} />
 
-          {/* ── Audio Live — sin cambios ── */}
-          <div className="mt-6 pt-6 border-t border-white/10 space-y-4">
+          {/* ── Audio Live ── */}
+          {/* FIX [1]: título, descripción y tipo de audio ahora viven DENTRO
+              del acordeón de MediaSlot — se eliminaron los campos duplicados
+              que estaban aquí debajo en el componente padre               */}
+          <div className="mt-6 pt-6 border-t border-white/10">
             <MediaSlot
               title="📡 SEÑAL AUDIO LIVE"
               fieldName="audio_file"
               type="audio/*"
-              description="Audio (MP3) para LiveGrid."
+              description="Audio (MP3) para LiveGrid. Máx. 100MB."
               {...sharedProps}
             />
-
-            <div>
-              <label className={LabelStyle}>TIPO DE AUDIO</label>
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                {[
-                  { id: 'music',   label: '🎵 Música',  desc: 'Canción, EP, álbum' },
-                  { id: 'podcast', label: '🎙️ Podcast', desc: 'Programa, episodio'  },
-                ].map((t) => (
-                  <button key={t.id}
-                    onClick={() => setFormData({ ...formData, audio_type: t.id })}
-                    className={`p-3 rounded-xl border text-left transition-all
-                      ${formData.audio_type === t.id
-                        ? 'bg-fuchsia-900/40 border-fuchsia-500/60 text-fuchsia-300'
-                        : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20 hover:text-gray-300'}`}>
-                    <p className="text-xs font-bold mb-1">{t.label}</p>
-                    <p className="text-[9px] opacity-70 leading-tight">{t.desc}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className={LabelStyle}>TÍTULO DE LA PISTA</label>
-              <input type="text"
-                value={formData.track_name || ''}
-                onChange={e => setFormData({ ...formData, track_name: e.target.value })}
-                placeholder="Ej: Gorilas en el Asfalto"
-                className={`${InputStyle} border-fuchsia-500/30`} />
-            </div>
-
-            <div>
-              <label className={LabelStyle}>DESCRIPCIÓN DEL AUDIO</label>
-              <textarea
-                value={formData.audio_description || ''}
-                onChange={e => setFormData({ ...formData, audio_description: e.target.value })}
-                placeholder="Ej: Pop de los 80s con guitarra y sintetizadores. Grabado en Madrid."
-                rows={3}
-                className={`${InputStyle} border-fuchsia-500/30 resize-none`} />
-              <p className="text-[9px] text-gray-600 mt-1">Mapache usa esta descripción para presentar tu audio.</p>
-            </div>
           </div>
         </div>
 
