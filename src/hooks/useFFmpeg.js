@@ -4,8 +4,28 @@
 //   · 9:16 vertical   → 480p, CRF 30  (frame móvil simulado en PC)
 //   · 21:9 ultrawide  → 720p, CRF 26  (escaparate catálogo, calidad alta)
 //   · otros ratios    → 720p, CRF 28  (estándar)
+//
+// BYPASS (sin recomprimir):
+//   Si el archivo ya es MP4 y pesa menos de BYPASS_LIMIT_MB →
+//   se salta la compresión y solo extrae el audio MP3.
+//   Ahorra varios minutos de espera para videos ya optimizados.
 
 import { useState, useRef } from 'react';
+
+// ── Umbral de bypass ──────────────────────────────────────────────────────
+// Por debajo de este peso + siendo MP4 → solo se extrae audio, sin recomprimir
+export const BYPASS_LIMIT_MB  = 500;
+export const MAX_VIDEO_MB     = 1500;
+export const MAX_AUDIO_MB     = 100;
+
+const BYPASS_LIMIT_BYTES = BYPASS_LIMIT_MB * 1024 * 1024;
+
+// ── ¿Merece bypass este archivo? ─────────────────────────────────────────
+export const esVideoOptimizado = (file) => {
+  const esMP4 = file.type === 'video/mp4' || file.name.toLowerCase().endsWith('.mp4');
+  const esLigero = file.size < BYPASS_LIMIT_BYTES;
+  return esMP4 && esLigero;
+};
 
 // ── Detecta ratio leyendo dimensiones antes de procesar ───────────────────
 const detectarRatio = (file) =>
@@ -19,9 +39,9 @@ const detectarRatio = (file) =>
       URL.revokeObjectURL(url);
       video.src = '';
       const ratio = w / h;
-      if (ratio < 0.7)    resolve({ tipo: 'vertical',   w, h }); // 9:16
-      else if (ratio > 2) resolve({ tipo: 'ultrawide',  w, h }); // 21:9
-      else                resolve({ tipo: 'estandar',   w, h }); // 16:9
+      if (ratio < 0.7)    resolve({ tipo: 'vertical',  w, h });
+      else if (ratio > 2) resolve({ tipo: 'ultrawide', w, h });
+      else                resolve({ tipo: 'estandar',  w, h });
     };
     video.onerror = () => { URL.revokeObjectURL(url); resolve({ tipo: 'estandar', w: 0, h: 0 }); };
     video.src = url;
@@ -29,26 +49,23 @@ const detectarRatio = (file) =>
 
 // ── Config FFmpeg por tipo ────────────────────────────────────────────────
 const CONFIG = {
-  // 9:16 — frame móvil pequeño, 480p más que suficiente
   vertical: {
-    label:  '9:16 · Señal Móvil',
-    vf:     'scale=-2:480',
-    crf:    '30',
-    audio:  '96k',
+    label: '9:16 · Señal Móvil',
+    vf:    'scale=-2:480',
+    crf:   '30',
+    audio: '96k',
   },
-  // 21:9 — escaparate catálogo, se ve en pantalla grande, más calidad
   ultrawide: {
-    label:  '21:9 · Catálogo',
-    vf:     'scale=-2:720',
-    crf:    '26',
-    audio:  '128k',
+    label: '21:9 · Catálogo',
+    vf:    'scale=-2:720',
+    crf:   '26',
+    audio: '128k',
   },
-  // 16:9 estándar
   estandar: {
-    label:  '16:9 · Estándar',
-    vf:     'scale=-2:720',
-    crf:    '28',
-    audio:  '128k',
+    label: '16:9 · Estándar',
+    vf:    'scale=-2:720',
+    crf:   '28',
+    audio: '128k',
   },
 };
 
@@ -76,7 +93,17 @@ export const useFFmpeg = () => {
     return ffmpegRef.current;
   };
 
-  // Recibe File · devuelve { videoBlob, audioBlob, tipo }
+  // ── procesarVideo ─────────────────────────────────────────────────────
+  // Recibe File · devuelve { videoBlob, audioBlob, tipo, bypass }
+  //
+  // MODO BYPASS (MP4 < BYPASS_LIMIT_MB):
+  //   · Devuelve el archivo original como videoBlob sin recomprimir
+  //   · Solo pasa por FFmpeg para extraer el audio MP3
+  //   · El usuario espera ~10-20 seg en vez de varios minutos
+  //
+  // MODO NORMAL (otros formatos o archivos grandes):
+  //   · Compresión completa con los parámetros de CONFIG
+  // ─────────────────────────────────────────────────────────────────────
   const procesarVideo = async (file) => {
     setProcesando(true);
     setProgreso(0);
@@ -90,15 +117,46 @@ export const useFFmpeg = () => {
       setTipoDetectado({ tipo, label: cfg.label, w, h });
 
       // 2 — Cargar FFmpeg
-      setFase('Cargando motor de optimización...');
+      setFase('Cargando motor de audio...');
       const { ffmpeg, fetchFile } = await cargarFFmpeg();
 
       const ext         = file.name.split('.').pop() || 'mp4';
       const inputName   = `input.${ext}`;
-      const outputVideo = 'output.mp4';
       const outputAudio = 'output.mp3';
 
       await ffmpeg.writeFile(inputName, await fetchFile(file));
+
+      // ── RAMA BYPASS ───────────────────────────────────────────────
+      if (esVideoOptimizado(file)) {
+        setFase('Video optimizado detectado · Extrayendo audio...');
+        setProgreso(10);
+
+        await ffmpeg.exec([
+          '-i', inputName,
+          '-vn',
+          '-ar', '44100',
+          '-ac', '2',
+          '-b:a', cfg.audio,
+          outputAudio,
+        ]);
+
+        const audioData = await ffmpeg.readFile(outputAudio);
+        const audioBlob = new Blob([audioData.buffer], { type: 'audio/mpeg' });
+
+        // El video viaja tal cual, sin recomprimir
+        const videoBlob = new Blob([file], { type: 'video/mp4' });
+
+        await ffmpeg.deleteFile(inputName);
+        await ffmpeg.deleteFile(outputAudio);
+
+        setFase('¡Listo! (sin recompresión)');
+        setProgreso(100);
+
+        return { videoBlob, audioBlob, tipo, bypass: true };
+      }
+
+      // ── RAMA NORMAL (compresión completa) ─────────────────────────
+      const outputVideo = 'output.mp4';
 
       // 3 — Comprimir según ratio
       setFase(`Optimizando ${cfg.label}...`);
@@ -115,7 +173,7 @@ export const useFFmpeg = () => {
         outputVideo,
       ]);
 
-      // 4 — Extraer MP3 (para BroLives móvil — útil en vertical, no daña en los demás)
+      // 4 — Extraer MP3
       setFase('Extrayendo audio para móvil...');
       setProgreso(0);
       await ffmpeg.exec([
@@ -140,7 +198,7 @@ export const useFFmpeg = () => {
       setFase('¡Listo!');
       setProgreso(100);
 
-      return { videoBlob, audioBlob, tipo };
+      return { videoBlob, audioBlob, tipo, bypass: false };
 
     } catch (err) {
       console.error('[useFFmpeg] Error:', err);
