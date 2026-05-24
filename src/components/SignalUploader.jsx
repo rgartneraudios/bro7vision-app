@@ -8,6 +8,10 @@
 //  [1] Eliminados campos TÍTULO y DESCRIPCIÓN duplicados del audio en SignalUploader
 //      (ya existen dentro del acordeón de MediaSlot)
 //  [2] Límite de audio corregido: 100 MB (era 10 MB por bug en lógica esVideo)
+//  [3] creator_media: upsert robusto — error ya no es silencioso, lanza excepción
+//  [4] audio_type guardado en creator_media para slot audio
+//  [5] Flujo REEMPLAZAR en MediaSlot corregido — abre acordeón tras borrar
+//  [6] profiles solo guarda el link — título/descripción viven SOLO en creator_media
 
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
@@ -16,11 +20,11 @@ import { useFFmpeg, BYPASS_LIMIT_MB, MAX_VIDEO_MB, MAX_AUDIO_MB } from '../hooks
 
 const VERTICAL_SLOTS = ['video_file', 'video_file_2'];
 const SLOT_MAP = {
-  video_file:     'v1',
-  video_file_2:   'v2',
-  video_file_169: 'horizontal',
+  video_file:      'v1',
+  video_file_2:    'v2',
+  video_file_169:  'horizontal',
   video_file_169b: 'horizontal2',
-  audio_file:     'audio',
+  audio_file:      'audio',
 };
 
 const LabelStyle = "text-xs font-bold text-gray-300 uppercase tracking-widest mb-2 block";
@@ -33,7 +37,6 @@ const TIPO_LABELS = {
   publicidad: { label: 'Publicidad',           color: 'text-amber-400  border-amber-500/40   bg-amber-500/10'   },
 };
 
-// Categorías para el algoritmo de Reality
 const CATEGORIAS_DECLARADAS = [
   { id: 'explico',    label: '🎓 Explico algo paso a paso',         desc: 'Tutorial, guía, how-to' },
   { id: 'cuento',     label: '🎭 Cuento algo que me pasó',          desc: 'Historia personal, experiencia' },
@@ -47,7 +50,7 @@ const CATEGORIAS_DECLARADAS = [
 ];
 
 const subirArchivoR2 = async (blob, nombreBase, mimeType) => {
-  const safeFileName = `${Date.now()}_${nombreBase}`;  // ← guarda el _ en vez del -
+  const safeFileName = `${Date.now()}_${nombreBase}`;
   const res = await fetch('/api/upload', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -74,11 +77,16 @@ const deleteFromR2 = async (fileUrl) => {
   }
 };
 
+
 // ════════════════════════════════════════════════
 // COMPONENTE VideoSlotVertical
 // Campos siempre visibles — estilo YouTube/TikTok
 // ════════════════════════════════════════════════
-const VideoSlotVertical = ({ title, fieldName, slotNumber, formData, setFormData, loading, setLoading, procesarVideo, progreso, fase, procesando }) => {
+const VideoSlotVertical = ({
+  title, fieldName, slotNumber,
+  formData, setFormData, loading, setLoading,
+  procesarVideo, progreso, fase, procesando,
+}) => {
   const isOccupied = !!formData[fieldName];
 
   const [metadatos, setMetadatos] = useState({
@@ -89,8 +97,8 @@ const VideoSlotVertical = ({ title, fieldName, slotNumber, formData, setFormData
     descripcion_declarada: '',
   });
   const [archivoSeleccionado, setArchivoSeleccionado] = useState(null);
-  const [errorMeta, setErrorMeta]                     = useState('');
-  const [modoReemplazar, setModoReemplazar]           = useState(false);
+  const [errorMeta,           setErrorMeta]           = useState('');
+  const [modoReemplazar,      setModoReemplazar]      = useState(false);
   const fileInputRef = React.useRef(null);
 
   const handleFileSelected = (e) => {
@@ -115,15 +123,14 @@ const VideoSlotVertical = ({ title, fieldName, slotNumber, formData, setFormData
   };
 
   const handleSubir = async () => {
-    if (!archivoSeleccionado)              { setErrorMeta('Elige un archivo primero.');            return; }
-    if (!metadatos.titulo.trim())          { setErrorMeta('El título es obligatorio.');             return; }
-    if (!metadatos.descripcion.trim())     { setErrorMeta('La descripción es obligatoria.');        return; }
-    if (!metadatos.categoria_declarada)    { setErrorMeta('Elige una categoría de contenido.');     return; }
-    if (!metadatos.descripcion_declarada.trim()) { setErrorMeta('Describe brevemente qué se ve.'); return; }
+    if (!archivoSeleccionado)                    { setErrorMeta('Elige un archivo primero.');            return; }
+    if (!metadatos.titulo.trim())                { setErrorMeta('El título es obligatorio.');             return; }
+    if (!metadatos.descripcion.trim())           { setErrorMeta('La descripción es obligatoria.');        return; }
+    if (!metadatos.categoria_declarada)          { setErrorMeta('Elige una categoría de contenido.');     return; }
+    if (!metadatos.descripcion_declarada.trim()) { setErrorMeta('Describe brevemente qué se ve.');        return; }
     setErrorMeta('');
 
-    const maxSize = 1500 * 1024 * 1024;
-    if (archivoSeleccionado.size > maxSize) {
+    if (archivoSeleccionado.size > 1500 * 1024 * 1024) {
       alert('¡Archivo muy pesado! Máximo 1500MB permitido.');
       return;
     }
@@ -139,15 +146,15 @@ const VideoSlotVertical = ({ title, fieldName, slotNumber, formData, setFormData
       const audioNombre = 'audio-' + nombreBase.replace(/\.[^/.]+$/, '') + '.mp3';
       const audioUrl    = await subirArchivoR2(audioBlob, audioNombre, 'audio/mpeg');
 
-      // Rotación de slots: nuevo video entra como v1, el resto baja
+      // Rotación de slots verticales
       if (VERTICAL_SLOTS.includes(fieldName)) {
         const slot1 = formData.video_file   || null;
         const slot2 = formData.video_file_2 || null;
-                await deleteFromR2(slot2);
+        await deleteFromR2(slot2);  // FIX: era slot3 (variable inexistente)
         setFormData(prev => ({ ...prev, video_file: publicUrl, video_file_2: slot1 }));
       }
 
-      // Upsert en creator_media con los campos nuevos
+      // FIX [3]: upsert robusto — si falla lanza error visible, no silencioso
       const slot = SLOT_MAP[fieldName];
       if (slot) {
         const upsertData = {
@@ -164,13 +171,12 @@ const VideoSlotVertical = ({ title, fieldName, slotNumber, formData, setFormData
         const { error } = await supabase
           .from('creator_media')
           .upsert(upsertData, { onConflict: 'user_id,slot' });
-        if (error) console.error('[creator_media upsert]', error);
+        if (error) throw new Error('[creator_media upsert vertical] ' + error.message);
       }
 
       await marcarActividad('video');
       alert('🚀 ¡Archivo inyectado en el NÚCLEO R2!');
 
-      // Reset
       setArchivoSeleccionado(null);
       setModoReemplazar(false);
       setMetadatos({ titulo: '', descripcion: '', tipo: 'original', categoria_declarada: '', descripcion_declarada: '' });
@@ -215,7 +221,6 @@ const VideoSlotVertical = ({ title, fieldName, slotNumber, formData, setFormData
   return (
     <div className="bg-black/40 rounded-2xl border border-fuchsia-500/20 overflow-hidden">
 
-      {/* Header del slot */}
       <div className="px-4 pt-4 pb-2 flex items-center justify-between">
         <div>
           <label className="text-[10px] font-bold text-fuchsia-300 uppercase tracking-widest block mb-0.5">{title}</label>
@@ -232,14 +237,12 @@ const VideoSlotVertical = ({ title, fieldName, slotNumber, formData, setFormData
 
       <div className="px-4 pb-4 space-y-4">
 
-        {/* ── Título ── */}
         <div>
           <label className="text-[9px] font-bold text-fuchsia-400 uppercase tracking-widest block mb-1">
             Título del video <span className="text-red-400">*</span>
           </label>
           <input
-            type="text"
-            maxLength={60}
+            type="text" maxLength={60}
             placeholder="Ej: Mi aventura en el bosque neon"
             value={metadatos.titulo}
             onChange={e => setMetadatos(prev => ({ ...prev, titulo: e.target.value }))}
@@ -248,14 +251,12 @@ const VideoSlotVertical = ({ title, fieldName, slotNumber, formData, setFormData
           <p className="text-[9px] text-gray-600 mt-0.5 text-right">{metadatos.titulo.length}/60</p>
         </div>
 
-        {/* ── Descripción ── */}
         <div>
           <label className="text-[9px] font-bold text-fuchsia-400 uppercase tracking-widest block mb-1">
             Descripción <span className="text-red-400">*</span>
           </label>
           <textarea
-            maxLength={200}
-            rows={2}
+            maxLength={200} rows={2}
             placeholder="Cuéntale al mundo de qué va este contenido..."
             value={metadatos.descripcion}
             onChange={e => setMetadatos(prev => ({ ...prev, descripcion: e.target.value }))}
@@ -264,15 +265,13 @@ const VideoSlotVertical = ({ title, fieldName, slotNumber, formData, setFormData
           <p className="text-[9px] text-gray-600 mt-0.5 text-right">{metadatos.descripcion.length}/200</p>
         </div>
 
-        {/* ── Tipo de contenido ── */}
         <div>
           <label className="text-[9px] font-bold text-fuchsia-400 uppercase tracking-widest block mb-2">
             Tipo <span className="text-red-400">*</span>
           </label>
           <div className="flex gap-2 flex-wrap">
             {Object.entries(TIPO_LABELS).map(([valor, { label, color }]) => (
-              <button
-                key={valor}
+              <button key={valor}
                 onClick={() => setMetadatos(prev => ({ ...prev, tipo: valor }))}
                 className={`text-[10px] font-bold px-3 py-1.5 rounded-lg border transition-all
                   ${metadatos.tipo === valor ? color + ' scale-105' : 'text-gray-500 border-gray-700 bg-white/5 hover:border-gray-500'}`}>
@@ -282,7 +281,6 @@ const VideoSlotVertical = ({ title, fieldName, slotNumber, formData, setFormData
           </div>
         </div>
 
-        {/* ── SEPARADOR ALGORITMO ── */}
         <div className="border-t border-cyan-500/10 pt-4">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-base">🛸</span>
@@ -292,15 +290,13 @@ const VideoSlotVertical = ({ title, fieldName, slotNumber, formData, setFormData
             </div>
           </div>
 
-          {/* Categoría declarada */}
           <div className="mb-3">
             <label className="text-[9px] font-bold text-cyan-400 uppercase tracking-widest block mb-2">
               ¿Qué estás haciendo en tu video? <span className="text-red-400">*</span>
             </label>
             <div className="grid grid-cols-1 gap-1.5">
               {CATEGORIAS_DECLARADAS.map(cat => (
-                <button
-                  key={cat.id}
+                <button key={cat.id}
                   onClick={() => setMetadatos(prev => ({ ...prev, categoria_declarada: cat.id }))}
                   className={`flex items-center gap-3 px-3 py-2 rounded-xl border text-left transition-all
                     ${metadatos.categoria_declarada === cat.id
@@ -319,14 +315,11 @@ const VideoSlotVertical = ({ title, fieldName, slotNumber, formData, setFormData
             </div>
           </div>
 
-          {/* Descripción corta — qué se ve */}
           <div>
             <label className="text-[9px] font-bold text-cyan-400 uppercase tracking-widest block mb-1">
               En pocas palabras, ¿qué se ve en tu video? <span className="text-red-400">*</span>
             </label>
-            <input
-              type="text"
-              maxLength={60}
+            <input type="text" maxLength={60}
               placeholder='Ej: "mi gato comiendo", "tutorial de Excel", "mis vacaciones en Grecia"'
               value={metadatos.descripcion_declarada}
               onChange={e => setMetadatos(prev => ({ ...prev, descripcion_declarada: e.target.value }))}
@@ -336,34 +329,23 @@ const VideoSlotVertical = ({ title, fieldName, slotNumber, formData, setFormData
           </div>
         </div>
 
-        {/* ── Selector de archivo ── */}
         <div className="border-t border-white/5 pt-4">
           <label className="text-[9px] font-bold text-fuchsia-400 uppercase tracking-widest block mb-2">
             Archivo de video <span className="text-red-400">*</span>
           </label>
-
           <AvisoLimites tipo="video" />
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="video/*"
-            onChange={handleFileSelected}
+          <input ref={fileInputRef} type="file" accept="video/*" onChange={handleFileSelected}
             className="w-full text-[10px] text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border file:border-fuchsia-500/40 file:bg-fuchsia-500/10 file:text-fuchsia-400 file:text-[10px] file:font-bold file:cursor-pointer hover:file:bg-fuchsia-500/20 transition-all cursor-pointer"
           />
-
           {archivoSeleccionado && (
             <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg mt-2">
               <span className="text-[9px] text-gray-500 uppercase tracking-widest">Archivo:</span>
               <span className="text-[10px] text-fuchsia-300 truncate">{archivoSeleccionado.name}</span>
-              <span className="text-[10px] text-gray-600 shrink-0">
-                ({(archivoSeleccionado.size / 1024 / 1024).toFixed(1)} MB)
-              </span>
+              <span className="text-[10px] text-gray-600 shrink-0">({(archivoSeleccionado.size / 1024 / 1024).toFixed(1)} MB)</span>
             </div>
           )}
         </div>
 
-        {/* ── Barra de progreso FFmpeg ── */}
         {procesando && (
           <div className="space-y-2">
             <div className="flex justify-between items-center">
@@ -371,34 +353,25 @@ const VideoSlotVertical = ({ title, fieldName, slotNumber, formData, setFormData
               <p className="text-[10px] text-gray-400">{progreso}%</p>
             </div>
             <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
-              <div
-                className="bg-gradient-to-r from-cyan-500 to-fuchsia-500 h-1.5 rounded-full transition-all duration-300"
-                style={{ width: `${progreso}%` }}
-              />
+              <div className="bg-gradient-to-r from-cyan-500 to-fuchsia-500 h-1.5 rounded-full transition-all duration-300"
+                style={{ width: `${progreso}%` }} />
             </div>
           </div>
         )}
 
-        {/* ── Error ── */}
         {errorMeta && (
           <p className="text-[10px] text-red-400 bg-red-500/10 border border-red-500/30 px-3 py-2 rounded-lg">
             ⚠️ {errorMeta}
           </p>
         )}
 
-        {/* ── Botón subir ── */}
-        <button
-          onClick={handleSubir}
-          disabled={procesando || loading}
+        <button onClick={handleSubir} disabled={procesando || loading}
           className="w-full text-[10px] font-bold bg-fuchsia-600/80 hover:bg-fuchsia-500 disabled:opacity-40 disabled:cursor-not-allowed text-white py-3 px-6 rounded-xl border border-fuchsia-500/50 transition-all uppercase tracking-widest">
           {procesando ? `⚡ ${fase || 'Procesando...'}` : loading ? '🚀 Subiendo...' : '🚀 SUBIR VIDEO'}
         </button>
 
-        {/* Botón borrar si está ocupado y en modo reemplazar */}
         {isOccupied && modoReemplazar && (
-          <button
-            onClick={handleDeleteMedia}
-            disabled={procesando || loading}
+          <button onClick={handleDeleteMedia} disabled={procesando || loading}
             className="w-full text-[10px] font-bold text-red-400 border border-red-500/30 hover:bg-red-500/10 py-2 rounded-xl transition-all">
             ☠️ Solo borrar sin reemplazar
           </button>
@@ -413,15 +386,22 @@ const VideoSlotVertical = ({ title, fieldName, slotNumber, formData, setFormData
 // ════════════════════════════════════════════════
 // COMPONENTE MediaSlot — para 169 y audio
 // FIX [2]: límite de audio corregido a 100 MB
+// FIX [3]: upsert robusto — error ya no es silencioso
+// FIX [4]: audio_type guardado en creator_media
+// FIX [5]: flujo REEMPLAZAR corregido — abre acordeón tras borrar
 // ════════════════════════════════════════════════
-const MediaSlot = ({ title, fieldName, type, description, formData, setFormData, loading, setLoading, procesarVideo, progreso, fase, procesando }) => {
+const MediaSlot = ({
+  title, fieldName, type, description,
+  formData, setFormData, loading, setLoading,
+  procesarVideo, progreso, fase, procesando,
+}) => {
   const isOccupied = !!formData[fieldName];
   const esVideo    = fieldName === 'video_file_169' || fieldName === 'video_file_169b';
-  const esAudio    = fieldName === 'audio_file'; // FIX [2]
+  const esAudio    = fieldName === 'audio_file';
 
   const [acordeonAbierto,     setAcordeonAbierto]     = useState(false);
   const [archivoSeleccionado, setArchivoSeleccionado] = useState(null);
-  const [metadatos,           setMetadatos]           = useState({ titulo: '', descripcion: '', tipo: 'original' });
+  const [metadatos,           setMetadatos]           = useState({ titulo: '', descripcion: '', tipo: 'original', audio_type: '' });
   const [errorMeta,           setErrorMeta]           = useState('');
   const fileInputRef = React.useRef(null);
 
@@ -433,13 +413,31 @@ const MediaSlot = ({ title, fieldName, type, description, formData, setFormData,
     setErrorMeta('');
   };
 
-  const handleDeleteMedia = async () => {
+  // FIX [5]: REEMPLAZAR borra el archivo y abre el acordeón para subir uno nuevo
+  const handleReemplazar = async () => {
+    const confirm1 = window.confirm('⚠️ ALERTA DE SISTEMA\n¿Quieres desintegrar este archivo y subir uno nuevo?');
+    if (!confirm1) return;
+    const confirm2 = window.prompt('MEDIDA DE SEGURIDAD:\nEscribe la palabra en mayúsculas: BORRAR');
+    if (confirm2 !== 'BORRAR') {
+      alert('❌ Protocolo cancelado.');
+      return;
+    }
+    await deleteFromR2(formData[fieldName]);
+    // FIX [6]: solo limpiamos el link en profiles — creator_media se sobreescribe con el upsert
+    setFormData(prev => ({ ...prev, [fieldName]: '' }));
+    // Abrimos el acordeón para que el usuario suba el nuevo archivo
+    setAcordeonAbierto(true);
+  };
+
+  // Borrar sin reemplazar (desde dentro del acordeón)
+  const handleSoloBorrar = async () => {
     const confirm1 = window.confirm('⚠️ ALERTA DE SISTEMA\n¿Quieres desintegrar este archivo?');
     if (!confirm1) return;
     const confirm2 = window.prompt('MEDIDA DE SEGURIDAD:\nEscribe la palabra en mayúsculas: BORRAR');
     if (confirm2 === 'BORRAR') {
       await deleteFromR2(formData[fieldName]);
       setFormData(prev => ({ ...prev, [fieldName]: '' }));
+      setAcordeonAbierto(false);
       alert("✅ Archivo desintegrado. Recuerda pulsar 'ACTUALIZAR NÚCLEO'.");
     } else {
       alert('❌ Protocolo cancelado.');
@@ -449,14 +447,13 @@ const MediaSlot = ({ title, fieldName, type, description, formData, setFormData,
   const handleConfirmarSubida = async () => {
     if (!metadatos.titulo.trim())      { setErrorMeta('El título es obligatorio.');      return; }
     if (!metadatos.descripcion.trim()) { setErrorMeta('La descripción es obligatoria.'); return; }
+    // FIX [4]: validar audio_type si es audio
+    if (esAudio && !metadatos.audio_type) { setErrorMeta('Elige el tipo de audio (Música o Podcast).'); return; }
     setErrorMeta('');
 
-    // FIX [2]: lógica de límite corregida — audio = 100 MB, video = 1500 MB
-    const maxSize = esVideo ? 1500 * 1024 * 1024
-                 : esAudio  ?  100 * 1024 * 1024
-                 :             100 * 1024 * 1024; // fallback seguro
+    // FIX [2]: límites correctos
+    const maxSize  = esVideo ? 1500 * 1024 * 1024 : 100 * 1024 * 1024;
     const maxLabel = esVideo ? '1500MB' : '100MB';
-
     if (archivoSeleccionado.size > maxSize) {
       alert(`¡Archivo muy pesado! Máximo ${maxLabel} permitido.`);
       return;
@@ -478,9 +475,10 @@ const MediaSlot = ({ title, fieldName, type, description, formData, setFormData,
         publicUrl = await subirArchivoR2(archivoSeleccionado, nombreBase, archivoSeleccionado.type);
       }
 
-      await deleteFromR2(formData[fieldName]);
+      // FIX [6]: profiles solo recibe el link
       setFormData(prev => ({ ...prev, [fieldName]: publicUrl }));
 
+      // FIX [3]: upsert robusto — lanza error si falla, no lo traga
       const slot = SLOT_MAP[fieldName];
       if (slot) {
         const upsertData = {
@@ -491,11 +489,16 @@ const MediaSlot = ({ title, fieldName, type, description, formData, setFormData,
           descripcion: metadatos.descripcion,
           tipo:        metadatos.tipo,
         };
+        // FIX [4]: audio_type solo para slot audio
+        if (esAudio)  upsertData.audio_type  = metadatos.audio_type;
+        // audio extraído del video 169 para reproducción móvil
         if (audioUrl) upsertData.audio_video = audioUrl;
+
         const { error } = await supabase
           .from('creator_media')
           .upsert(upsertData, { onConflict: 'user_id,slot' });
-        if (error) console.error('[creator_media upsert]', error);
+        // FIX [3]: si falla el upsert lo vemos — ya no es silencioso
+        if (error) throw new Error('[creator_media upsert] ' + error.message);
       }
 
       if (esVideo) await marcarActividad('video');
@@ -508,7 +511,7 @@ const MediaSlot = ({ title, fieldName, type, description, formData, setFormData,
       setLoading(false);
       setAcordeonAbierto(false);
       setArchivoSeleccionado(null);
-      setMetadatos({ titulo: '', descripcion: '', tipo: 'original' });
+      setMetadatos({ titulo: '', descripcion: '', tipo: 'original', audio_type: '' });
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -516,7 +519,7 @@ const MediaSlot = ({ title, fieldName, type, description, formData, setFormData,
   const handleCancelar = () => {
     setAcordeonAbierto(false);
     setArchivoSeleccionado(null);
-    setMetadatos({ titulo: '', descripcion: '', tipo: 'original' });
+    setMetadatos({ titulo: '', descripcion: '', tipo: 'original', audio_type: '' });
     setErrorMeta('');
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -530,10 +533,11 @@ const MediaSlot = ({ title, fieldName, type, description, formData, setFormData,
         <label className="text-[10px] font-bold text-gray-300 uppercase tracking-widest block mb-1">{title}</label>
         <p className="text-[9px] text-gray-500 mb-3">{description}</p>
 
+        {/* Estado ocupado — FIX [5]: usa handleReemplazar en vez de handleDeleteMedia */}
         {ocupado && (
           <div className="bg-cyan-900/20 p-3 rounded-xl border border-cyan-500/30 flex justify-between items-center">
             <span className="text-[10px] text-cyan-400 font-bold">✓ Ocupado</span>
-            <button onClick={handleDeleteMedia}
+            <button onClick={handleReemplazar}
               className="bg-red-500/10 text-red-400 border border-red-500/50 hover:bg-red-500 hover:text-white text-[10px] font-bold px-4 py-2 rounded-lg transition-all">
               REEMPLAZAR
             </button>
@@ -553,13 +557,25 @@ const MediaSlot = ({ title, fieldName, type, description, formData, setFormData,
 
       {acordeonAbierto && (
         <div className="border-t border-fuchsia-500/20 bg-black/60 p-4 space-y-4 animate-fadeIn">
-          <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg">
-            <span className="text-[9px] text-gray-500 uppercase tracking-widest">Archivo:</span>
-            <span className="text-[10px] text-cyan-300 truncate">{archivoSeleccionado?.name}</span>
-            <span className="text-[10px] text-gray-600 shrink-0">
-              ({(archivoSeleccionado?.size / 1024 / 1024).toFixed(1)} MB)
-            </span>
-          </div>
+
+          {archivoSeleccionado && (
+            <div className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg">
+              <span className="text-[9px] text-gray-500 uppercase tracking-widest">Archivo:</span>
+              <span className="text-[10px] text-cyan-300 truncate">{archivoSeleccionado.name}</span>
+              <span className="text-[10px] text-gray-600 shrink-0">
+                ({(archivoSeleccionado.size / 1024 / 1024).toFixed(1)} MB)
+              </span>
+            </div>
+          )}
+
+          {/* Si venimos de REEMPLAZAR y aún no hay archivo seleccionado, mostramos el selector */}
+          {!archivoSeleccionado && (
+            <div>
+              <p className="text-[9px] text-amber-400 mb-2">Selecciona el nuevo archivo:</p>
+              <input ref={fileInputRef} type="file" accept={type} onChange={handleFileSelected}
+                className="w-full text-[10px] text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border file:border-cyan-500/40 file:bg-cyan-500/10 file:text-cyan-400 file:text-[10px] file:font-bold file:cursor-pointer hover:file:bg-cyan-500/20 transition-all cursor-pointer" />
+            </div>
+          )}
 
           {esVideo && <AvisoLimites tipo="video" />}
           {esAudio && <AvisoLimites tipo="audio" />}
@@ -604,7 +620,7 @@ const MediaSlot = ({ title, fieldName, type, description, formData, setFormData,
             </div>
           </div>
 
-          {/* Selector de tipo de audio — solo visible cuando es audio */}
+          {/* FIX [4]: tipo de audio — solo visible para audio, guardado en creator_media */}
           {esAudio && (
             <div>
               <label className="text-[9px] font-bold text-fuchsia-400 uppercase tracking-widest block mb-2">
@@ -653,11 +669,20 @@ const MediaSlot = ({ title, fieldName, type, description, formData, setFormData,
               className="flex-1 text-[10px] font-bold text-gray-400 border border-gray-700 hover:border-gray-500 py-2 rounded-lg transition-all disabled:opacity-40">
               CANCELAR
             </button>
-            <button onClick={handleConfirmarSubida} disabled={procesando || loading}
+            <button onClick={handleConfirmarSubida} disabled={procesando || loading || !archivoSeleccionado}
               className="flex-[2] text-[10px] font-bold bg-fuchsia-600/80 hover:bg-fuchsia-500 disabled:opacity-40 disabled:cursor-not-allowed text-white py-2 px-6 rounded-lg border border-fuchsia-500/50 transition-all">
               {procesando ? `⚡ ${fase || 'Procesando...'}` : loading ? '🚀 Subiendo...' : '🚀 CONFIRMAR SUBIDA'}
             </button>
           </div>
+
+          {/* Botón solo borrar — disponible cuando el slot estaba ocupado */}
+          {isOccupied && (
+            <button onClick={handleSoloBorrar} disabled={procesando || loading}
+              className="w-full text-[10px] font-bold text-red-400 border border-red-500/30 hover:bg-red-500/10 py-2 rounded-xl transition-all">
+              ☠️ Solo borrar sin reemplazar
+            </button>
+          )}
+
         </div>
       )}
     </div>
@@ -667,8 +692,6 @@ const MediaSlot = ({ title, fieldName, type, description, formData, setFormData,
 
 // ════════════════════════════════════════════════
 // COMPONENTE AvisoLimites
-// Informa al usuario de los límites y cuándo se activa la compresión.
-// Se usa tanto en VideoSlotVertical como en MediaSlot (video 16:9).
 // ════════════════════════════════════════════════
 const AvisoLimites = ({ tipo = 'video' }) => {
   if (tipo === 'audio') {
@@ -676,15 +699,11 @@ const AvisoLimites = ({ tipo = 'video' }) => {
       <div className="bg-fuchsia-500/5 border border-fuchsia-500/20 rounded-xl p-4 flex gap-3 items-start">
         <span className="text-xl shrink-0">🎙️</span>
         <div className="space-y-1">
-          <p className="text-xs font-black text-fuchsia-300 uppercase tracking-widest">
-            Límite de audio
-          </p>
+          <p className="text-xs font-black text-fuchsia-300 uppercase tracking-widest">Límite de audio</p>
           <p className="text-sm text-gray-300">
             Máximo <span className="text-white font-bold">{MAX_AUDIO_MB} MB</span> por archivo.
           </p>
-          <p className="text-xs text-gray-500">
-            Formatos aceptados: MP3, WAV, AAC, OGG.
-          </p>
+          <p className="text-xs text-gray-500">Formatos aceptados: MP3, WAV, AAC, OGG.</p>
         </div>
       </div>
     );
@@ -694,26 +713,18 @@ const AvisoLimites = ({ tipo = 'video' }) => {
     <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-xl p-4 flex gap-3 items-start">
       <span className="text-xl shrink-0">⚡</span>
       <div className="space-y-2">
-        <p className="text-xs font-black text-cyan-300 uppercase tracking-widest">
-          Límites y optimización automática
-        </p>
-
-        {/* Tabla de límites */}
+        <p className="text-xs font-black text-cyan-300 uppercase tracking-widest">Límites y optimización automática</p>
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-1">
           <p className="text-xs text-gray-400">Tamaño máximo</p>
           <p className="text-sm font-bold text-white">{MAX_VIDEO_MB} MB</p>
-
           <p className="text-xs text-gray-400">Sin compresión</p>
           <p className="text-sm font-bold text-emerald-400">MP4 hasta {BYPASS_LIMIT_MB} MB</p>
-
           <p className="text-xs text-gray-400">Con compresión</p>
           <p className="text-sm font-bold text-amber-400">Otros formatos o más de {BYPASS_LIMIT_MB} MB</p>
         </div>
-
-        {/* Separador */}
         <div className="border-t border-cyan-500/10 pt-2">
           <p className="text-xs text-gray-500 leading-relaxed">
-            Los videos MP4 ya optimizados (ej: descargados de YouTube) se suben
+            Los videos MP4 ya optimizados se suben
             <span className="text-cyan-400 font-bold"> directamente sin espera</span>.
             Solo extraemos el audio para la versión móvil (~15 seg).
             Si tu video es de otro formato o supera los {BYPASS_LIMIT_MB} MB,
@@ -725,6 +736,7 @@ const AvisoLimites = ({ tipo = 'video' }) => {
   );
 };
 
+
 // ════════════════════════════════════════════════
 // COMPONENTE SemaforoWidget — Estado de Emisión
 // ════════════════════════════════════════════════
@@ -735,11 +747,10 @@ const SEMAFORO_CONFIG = {
 };
 
 const SemaforoWidget = ({ formData, setFormData }) => {
-  const semaforo = formData.semaforo || 'VERDE';
-  const fecha    = formData.semaforo_fecha;
+  const semaforo   = formData.semaforo || 'VERDE';
+  const fecha      = formData.semaforo_fecha;
   const solicitada = formData.revision_solicitada || false;
   const [enviando, setEnviando] = useState(false);
-
   const actual = SEMAFORO_CONFIG[semaforo] || SEMAFORO_CONFIG.VERDE;
 
   const handleSolicitarRevision = async () => {
@@ -757,8 +768,6 @@ const SemaforoWidget = ({ formData, setFormData }) => {
   return (
     <div className={`${actual.bg} border ${actual.border} rounded-2xl p-5`}>
       <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-4">Estado de Emisión en Reality</p>
-
-      {/* Indicadores tricolor */}
       <div className="flex items-center gap-5 mb-3">
         {['VERDE', 'AMARILLO', 'ROJO'].map(s => {
           const active = semaforo === s;
@@ -771,25 +780,19 @@ const SemaforoWidget = ({ formData, setFormData }) => {
           );
         })}
       </div>
-
       <p className={`text-xs font-bold ${actual.text} mb-1`}>{actual.label}</p>
-
       {fecha && (
         <p className="text-[9px] text-gray-600 mt-1">
           Revisión: {new Date(fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
         </p>
       )}
-
       {semaforo !== 'VERDE' && (
-        <button
-          onClick={handleSolicitarRevision}
-          disabled={solicitada || enviando}
+        <button onClick={handleSolicitarRevision} disabled={solicitada || enviando}
           className={`mt-3 text-[10px] font-bold px-4 py-2 rounded-xl border transition-all
             ${solicitada
               ? 'text-gray-500 border-gray-700 bg-gray-800/30 cursor-default'
               : 'text-amber-400 border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 active:scale-95'
-            }`}
-        >
+            }`}>
           {solicitada ? '✓ Revisión solicitada' : 'SOLICITAR REVISIÓN'}
         </button>
       )}
@@ -800,69 +803,55 @@ const SemaforoWidget = ({ formData, setFormData }) => {
 
 // ════════════════════════════════════════════════
 // COMPONENTE PRINCIPAL — SignalUploader
-// FIX [1]: eliminados campos track_name / audio_description / audio_type
-//          del padre — ya viven dentro del acordeón de MediaSlot
 // ════════════════════════════════════════════════
 const SignalUploader = ({ formData, setFormData, loading, setLoading }) => {
   const { procesarVideo, progreso, fase, procesando } = useFFmpeg();
-
   const sharedProps = { formData, setFormData, loading, setLoading, procesarVideo, progreso, fase, procesando };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-fadeIn">
 
-      {/* Semáforo de emisión */}
       <SemaforoWidget formData={formData} setFormData={setFormData} />
 
-      {/* Aviso legal */}
       <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-2xl flex gap-4 items-start">
         <div className="text-2xl mt-1">⚖️</div>
         <div>
           <h4 className="text-sm font-bold text-red-300 uppercase tracking-widest mb-1">Ley de Medios Bro7Vision</h4>
           <p className="text-xs text-red-200">
             Usa música propia o Licencia <span className="font-bold underline">CC 4.0</span>.
-            Cupo máximo: <span className="text-white font-bold">1 Audio, 3 Videos Verticales y 1 Horizontal</span>.
+            Cupo máximo: <span className="text-white font-bold">1 Audio, 2 Videos Verticales y 2 Horizontales</span>.
           </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        {/* ── Columna izquierda: videos verticales + audio live ── */}
         <div className={`${CardStyle} space-y-4`}>
           <h3 className="text-sm font-bold text-fuchsia-400 mb-4 border-b border-fuchsia-500/20 pb-2">
             📱 SEÑAL MÓVIL (9:16)
           </h3>
-
-          {/* Slots verticales */}
           <VideoSlotVertical title="Video Reality / Casa 1" fieldName="video_file"   slotNumber={1} {...sharedProps} />
           <VideoSlotVertical title="Video Casa 2"           fieldName="video_file_2" slotNumber={2} {...sharedProps} />
-
-          {/* ── Audio Live ── */}
-          {/* FIX [1]: título, descripción y tipo de audio ahora viven DENTRO
-              del acordeón de MediaSlot — se eliminaron los campos duplicados
-              que estaban aquí debajo en el componente padre               */}
           <div className="mt-6 pt-6 border-t border-white/10">
             <MediaSlot
               title="📡 SEÑAL AUDIO LIVE"
               fieldName="audio_file"
               type="audio/*"
-              description="Audio (MP3) para LiveGrid. Máx. 100MB."
+              description="Audio (MP3/WAV) para LiveGrid. Máx. 100MB."
               {...sharedProps}
             />
           </div>
         </div>
 
-        {/* ── Columna derecha: videos horizontales 16:9 ── */}
         <div className={`${CardStyle} h-fit space-y-4`}>
           <h3 className="text-sm font-bold text-cyan-400 mb-4 border-b border-cyan-500/20 pb-2">
-            🎬 FORMATO (16:9) TELEFONO CASA | PRODUCTOS | SERVICIOS
+            🎬 FORMATO (16:9) — TELÉFONO CASA | PRODUCTOS | SERVICIOS
           </h3>
           <MediaSlot
             title="Video Horizontal A"
             fieldName="video_file_169"
             type="video/*"
-            description="Formato horizontal panorámico para Catálogos."
+            description="Formato panorámico para Catálogos y Teléfono Casa."
             {...sharedProps}
           />
           <MediaSlot
