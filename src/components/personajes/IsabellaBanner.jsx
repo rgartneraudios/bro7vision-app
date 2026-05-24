@@ -75,7 +75,7 @@ export default function IsabellaBanner({
   // ── Clic en BroCard — toggle ─────────────────────────────────────────────
   const handleCardClick = (card) => {
     setSelectedCard(prev =>
-      prev?.bro_id === card.bro_id ? null : card
+      prev?.bro_pd === card.bro_pd ? null : card
     );
   };
 
@@ -90,7 +90,7 @@ export default function IsabellaBanner({
     if (!selectedCard || !onHandoff) return;
     onHandoff({
       agente:   'ISABELLA_CIERRE',
-      comercio: selectedCard.bro_id || selectedCard.bro_ser,
+      comercio: selectedCard.bro_pd || selectedCard.bro_ser,
     });
     setSelectedCard(null);
   };

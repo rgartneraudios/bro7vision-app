@@ -336,9 +336,9 @@ export function useAgentEvelyn({
       const avisos     = await consultarAvisosDB({ ciudad, codigoAvi });
       const campoActual = avisoActual ? siguienteCampo(avisoActual) : null;
 
-      const sobre = armarSobreEvelynTexto({
+const sobre = armarSobreEvelynTexto({
         alias:               autorAlias,
-        bro_id:              userId || '',
+        bro_pd:              userId || '',
         ciudad,
         ciudad_usuario:      ciudad,
         genesis,

@@ -71,7 +71,7 @@ export default function NovaBanner({
   // ── Clic en BroCard ──────────────────────────────────────────────────────
   const handleCardClick = (card) => {
     setSelectedCard(prev =>
-      prev?.bro_id === card.bro_id ? null : card
+      prev?.bro_pd === card.bro_pd ? null : card
     );
   };
 
@@ -86,7 +86,7 @@ export default function NovaBanner({
     if (!selectedCard || !onHandoff) return;
     onHandoff({
       agente:   'NOVA_CIERRE',
-      comercio: selectedCard.bro_id,
+      comercio: selectedCard.bro_pd,
     });
     setSelectedCard(null);
   };

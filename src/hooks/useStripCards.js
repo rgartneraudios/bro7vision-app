@@ -92,7 +92,7 @@ export const useStripCards = () => {
         (autores || []).forEach(p => { bannerMap[p.id] = p.banner_url || ''; });
 
         const cards = avisos.map(av => ({
-          bro_id:      av.id,
+          bro_pd:      av.id,
           aviso_id:    av.id,
           user_id:     av.user_id,
           nombre:      av.author_alias || 'Ciudadano',
@@ -173,7 +173,7 @@ export const useStripCards = () => {
           const codigo    = esPodcast ? p.bro_pod : p.bro_aud;
           if (!codigo) return [];
           return [{
-            bro_id:      codigo,
+            bro_pd:      codigo,
             banner_url:  p.banner_url || '',
             nombre:      p.alias || '',
             nearby_ref:  p.nearby_ref || '',
@@ -211,7 +211,7 @@ export const useStripCards = () => {
         //    destacados_ps es JSON y Supabase no filtra dentro de arrays JSON.
         let query = supabase
           .from('profiles')
-          .select('id, bro_id, bro_ser, banner_url, alias, city, country, role, destacados_ps')
+          .select('id, bro_pd, bro_ser, banner_url, alias, city, country, role, destacados_ps')
           .limit(200);  // margen suficiente para ciudades grandes
 
         // Pre-filtro servidor: si es LOCAL, acotar por ciudad para no traer todo
@@ -256,10 +256,10 @@ export const useStripCards = () => {
           top3.forEach(ref => {
             cards.push({
               // Identificadores
-              bro_id:          ref.id,
+              bro_pd:          ref.id,
               perfil_id:       perfil.id,
               bro_ser:         perfil.bro_ser || '',
-              bro_shop:        perfil.bro_id  || '',
+              bro_shop:        perfil.bro_pd  || '',
 
               // Datos del perfil (para el handoff al Teléfono Casa)
               banner_url:      perfil.banner_url || '',

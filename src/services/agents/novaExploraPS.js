@@ -24,7 +24,7 @@ export const buildNovaExploraPrompt = (contextData) => {
   const bloqueEntidad = entidad_detectada
     ? `
 # DATOS DEL COMERCIO (PORT SYSTEM — REAL)
-Código:     ${entidad_detectada.bro_id     || 'sin código'}
+Código:     ${entidad_detectada.bro_pd     || 'sin código'}
 Nombre:     ${entidad_detectada.nombre     || 'sin nombre'}
 ${intencion_detectada === 'ubicacion'   ? `Referencia: ${entidad_detectada.nearby_ref  || ''}\nBarrio:      ${entidad_detectada.neighborhood || ''}\nDirección:   ${entidad_detectada.address       || ''}` : ''}
 ${intencion_detectada === 'descripcion' ? `Categoría:   ${entidad_detectada.biz_category || entidad_detectada.biz_profession || ''}\nDescripción: ${entidad_detectada.description   || ''}` : ''}

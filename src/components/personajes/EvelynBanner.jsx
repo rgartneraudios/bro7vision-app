@@ -101,7 +101,7 @@ export default function EvelynBanner({
   }, [currentMsg]);
 
   const handleCardClick = (card) => {
-    if (selectedCard?.bro_id === card.bro_id) {
+    if (selectedCard?.bro_pd === card.bro_pd) {
       setSelectedCard(null);
       setEsperandoConexion(false);
       return;
@@ -129,7 +129,7 @@ export default function EvelynBanner({
   const handleConfirmar = () => {
     if (!selectedCard) return;
     onAvisoConectar?.({
-      id:      selectedCard.aviso_id || selectedCard.bro_id,
+      id:      selectedCard.aviso_id || selectedCard.bro_pd,
       user_id: selectedCard.user_id,
       title:   selectedCard.titulo,
     });

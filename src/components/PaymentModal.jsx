@@ -50,7 +50,7 @@ const PaymentModal = ({
         const { data: perfil } = await supabase
           .from('comercio_perfil')
           .select('*')
-          .eq('bro_id', card.id)
+          .eq('bro_pd', card.id)
           .maybeSingle();
 
         if (perfil) setComercioPerfil(perfil);

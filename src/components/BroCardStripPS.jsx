@@ -399,7 +399,7 @@ export default function BroCardStripPS({
             }}
           >
             {cardsVisibles.map((card, i) => (
-              <div key={card.bro_id || `card-${i}`} style={{ scrollSnapAlign: "start", flexShrink: 0 }}>
+              <div key={card.bro_pd || `card-${i}`} style={{ scrollSnapAlign: "start", flexShrink: 0 }}>
                 <BroCardPS
                   card={card}
                   theme={accentColor}

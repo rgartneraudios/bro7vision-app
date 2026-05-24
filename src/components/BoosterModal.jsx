@@ -74,7 +74,7 @@ const BoosterModal = ({ onClose }) => {
 
   // ── 4. FORMDATA PRINCIPAL ──  
   const [formData, setFormData] = useState({
-    alias: '', avatar_url: '', banner_url: '', card_banner_url: '', bro_id: '',
+    alias: '', avatar_url: '', banner_url: '', card_banner_url: '', bro_pd: '',
     twit_message: '', role:[], audio_file: '', video_file: '',
     audio_type: '', audio_description: '', track_name: '',
     video_file_2: '',  video_file_169: '', video_file_169b: '',
@@ -193,7 +193,7 @@ const BoosterModal = ({ onClose }) => {
   	    banner_url:       profile.banner_url      || '',
   	    card_banner_url:  profile.card_banner_url || '',
               role: Array.isArray(profile.role) ? profile.role : (profile.role ? [profile.role] : []),
-	    bro_id:             profile.bro_id || '',
+	    bro_pd:             profile.bro_pd || '',
 	    bro_ser: profile.bro_ser || '',
 	    bro_avi: profile.bro_avi || '',
 	    bro_aud: profile.bro_aud || '',
@@ -566,7 +566,7 @@ const MediaSlot = ({ title, fieldName, type, description }) => {
     {
       rol:    'shop',
       label:  '🏪 Productos',
-      campo:  'bro_id',
+      campo:  'bro_pd',
       prefijo: 'COM',
       color:  { dot: 'bg-yellow-400 shadow-[0_0_6px_rgba(251,191,36,0.8)]', text: 'text-yellow-400' },
     },

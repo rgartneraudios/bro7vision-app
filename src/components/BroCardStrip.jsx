@@ -32,7 +32,7 @@ function BroCard({ card, theme, onClick, index, onHoverChange }) {
 
   const displayName = card.nombre
     ? card.nombre.length > 10 ? card.nombre.slice(0, 10) + '…' : card.nombre
-    : card.bro_id;
+    : card.bro_pd;
 
   const handleMouseEnter = (e) => {
     setHovered(true);
@@ -226,7 +226,7 @@ export default function BroCardStrip({
           >
             {cards.map((card, i) => (
               <BroCard
-                key={card.bro_id || i}
+                key={card.bro_pd || i}
                 card={card}
                 theme={accentColor}
                 onClick={onSelectCard}
