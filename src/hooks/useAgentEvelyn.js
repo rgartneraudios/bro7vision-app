@@ -435,7 +435,7 @@ export function useAgentEvelyn({
 
         const expireDate = new Date();
         expireDate.setDate(expireDate.getDate() + 7);
-        await supabase.from('avisos').insert([{
+        const { error: insertError } = await supabase.from('avisos').insert([{
           user_id:        userId     || '',
           author_alias:   autorAlias || 'Ciudadano',
           type:           aviso.tipo,
@@ -446,6 +446,7 @@ export function useAgentEvelyn({
           is_active:      true,
           expires_at:     expireDate.toISOString(),
         }]);
+        if (insertError) throw insertError;
         onAvisoPublicar?.({ confirmado: true });
         setAvisoEnConstruccion(null);
         const r = bot({ intencion: 'publicado', textoUser: textoUsuario });
