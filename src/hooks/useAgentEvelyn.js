@@ -425,6 +425,14 @@ export function useAgentEvelyn({
       }
       setLoading(true);
       try {
+        console.log('Intentando INSERT:', {
+          user_id: userId,
+          type: aviso.tipo,
+          title: aviso.titulo,
+          content: aviso.contenido,
+          banner_avi: aviso.banner_avi,
+        });
+
         const expireDate = new Date();
         expireDate.setDate(expireDate.getDate() + 7);
         await supabase.from('avisos').insert([{
@@ -444,6 +452,43 @@ export function useAgentEvelyn({
         setMensaje(r.mensaje);
       } catch (err) {
         console.error('Error publicando aviso:', err);
+        console.error('Aviso intentado:', aviso);
+        setMensaje('Error al publicar. Inténtalo de nuevo.');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+      setLoading(true);
+      try {
+        console.log('Intentando INSERT:', {
+          user_id: userId,
+          type: aviso.tipo,
+          title: aviso.titulo,
+          content: aviso.contenido,
+          banner_avi: aviso.banner_avi,
+        });
+
+        const expireDate = new Date();
+        expireDate.setDate(expireDate.getDate() + 7);
+        await supabase.from('avisos').insert([{
+          user_id:        userId     || '',
+          author_alias:   autorAlias || 'Ciudadano',
+          type:           aviso.tipo,
+          title:          aviso.titulo,
+          content:        aviso.contenido,
+          banner_avi:     aviso.banner_avi || null,
+          cost_to_reveal: 200,
+          is_active:      true,
+          expires_at:     expireDate.toISOString(),
+        }]);
+        onAvisoPublicar?.({ confirmado: true });
+        setAvisoEnConstruccion(null);
+        const r = bot({ intencion: 'publicado', textoUser: textoUsuario });
+        setMensaje(r.mensaje);
+      } catch (err) {
+        console.error('Error publicando aviso:', err);
+        console.error('Aviso intentado:', aviso);
         setMensaje('Error al publicar. Inténtalo de nuevo.');
       } finally {
         setLoading(false);
