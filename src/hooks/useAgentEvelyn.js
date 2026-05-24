@@ -478,8 +478,22 @@ export function useAgentEvelyn({
 
   // ── Entrada principal ─────────────────────────────────────────────────────
   const enviar = async (textoUsuario) => {
+    console.log('useAgentEvelyn enviar:', {
+      textoUsuario,
+      avisoEnConstruccion,
+      avisoEnProceso: avisoEnConstruccion !== null && avisoEnConstruccion !== undefined,
+    });
+
     if (!textoUsuario?.trim()) return;
 
+    // 1. PRIMERO — ¿hay aviso en construcción?
+    const avisoEnProceso = avisoEnConstruccion !== null && avisoEnConstruccion !== undefined;
+    if (avisoEnProceso) {
+      await procesarPublicacion(textoUsuario);
+      return;
+    }
+
+    // 2. LUEGO — resto de detecciones
     const salida = detectarSalidaAviso(textoUsuario);
     if (salida) {
       setMensaje(salida.mensaje);
@@ -490,12 +504,6 @@ export function useAgentEvelyn({
     const interno = detectarInternoAviso(textoUsuario, personaje);
     if (interno) {
       setTimeout(() => onHandoff?.({ agente: 'AVISO_INTERNO', personaje_id: interno.personaje_id }), 1200);
-      return;
-    }
-
-    const avisoEnProceso = avisoEnConstruccion !== null && avisoEnConstruccion !== undefined;
-    if (avisoEnProceso) {
-      await procesarPublicacion(textoUsuario);
       return;
     }
 

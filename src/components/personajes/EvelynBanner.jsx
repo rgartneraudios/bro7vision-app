@@ -129,12 +129,20 @@ export default function EvelynBanner({
     setSelectedCard(null);
     setEsperandoConexion(false);
     
+    console.log('EvelynBanner handleEnviar:', {
+      texto,
+      avisoEnConstruccion,
+      camposCompletos: !!(avisoEnConstruccion?.tipo && avisoEnConstruccion?.titulo && avisoEnConstruccion?.contenido),
+      esperandoImagen,
+    });
+    
     // Si el aviso ya tiene los 3 campos, bloquear y mostrar subida de banner
     if (
       avisoEnConstruccion?.tipo &&
       avisoEnConstruccion?.titulo &&
       avisoEnConstruccion?.contenido
     ) {
+      console.log('Bloqueando chat, activando esperandoImagen');
       setEsperandoImagen(true);
       return;
     }
