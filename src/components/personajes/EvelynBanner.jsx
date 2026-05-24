@@ -128,6 +128,17 @@ export default function EvelynBanner({
   const handleEnviar = (texto) => {
     setSelectedCard(null);
     setEsperandoConexion(false);
+    
+    // Si el aviso ya tiene los 3 campos, bloquear y mostrar subida de banner
+    if (
+      avisoEnConstruccion?.tipo &&
+      avisoEnConstruccion?.titulo &&
+      avisoEnConstruccion?.contenido
+    ) {
+      setEsperandoImagen(true);
+      return;
+    }
+    
     enviar(texto);
   };
 
