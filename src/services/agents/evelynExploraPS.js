@@ -53,12 +53,12 @@ export function extraerCampo(campo, textoUser) {
   switch (campo) {
 
     case 'tipo': {
-  if (lower.includes('ofrezco') || lower.includes('oferta') || 
-      lower.includes('ofrec')   || lower.includes('vendo')) return 'OFREZCO';
-  if (lower.includes('necesito') || lower.includes('busco') || 
-      lower.includes('demanda')  || lower.includes('quiero encontrar')) return 'NECESITO';
-  if (lower === 'o' || lower === 'ofrezco') return 'OFREZCO';
-  if (lower === 'n' || lower === 'necesito') return 'NECESITO';
+  if (lower.includes('oferta') || lower.includes('oferta') || 
+      lower.includes('ofrec')   || lower.includes('vendo')) return 'OFERTA';
+  if (lower.includes('demanda') || lower.includes('busco') || 
+      lower.includes('demanda')  || lower.includes('quiero encontrar')) return 'DEMANDA';
+  if (lower === 'o' || lower === 'oferta') return 'OFERTA';
+  if (lower === 'n' || lower === 'demanda') return 'DEMANDA';
   return null;
 }
 
