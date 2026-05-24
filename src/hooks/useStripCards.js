@@ -123,7 +123,7 @@ export const useStripCards = () => {
         // Traemos los perfiles en bruto para filtrarlos de forma segura en JS
         let query = supabase
           .from('profiles')
-          .select('bro_aud, bro_pod, banner_url, alias, city, country, description, audio_type, track_name, audio_description, audio_file, role, nearby_ref')
+          .select('bro_mus, bro_aud, banner_url, alias, city, country, description, audio_type, track_name, audio_description, audio_file, role, nearby_ref')
           .limit(300); 
 
         const { data: perfiles, error } = await query;
@@ -168,9 +168,9 @@ export const useStripCards = () => {
         console.log('[AUDIO DEBUG] Perfiles que superaron los filtros (Rol + Geo):', filtrados.length, filtrados);
 
         const cards = filtrados.flatMap(p => {
-          if (!p.bro_aud && !p.bro_pod) return [];
+          if (!p.bro_mus && !p.bro_aud) return [];
           const esPodcast = p.audio_type === 'podcast';
-          const codigo    = esPodcast ? p.bro_pod : p.bro_aud;
+          const codigo    = esPodcast ? p.bro_aud : p.bro_mus;
           if (!codigo) return [];
           return [{
             bro_pd:      codigo,
@@ -183,8 +183,8 @@ export const useStripCards = () => {
             track_name:  p.track_name || '',
             audio_type:  p.audio_type || 'music',
             audio_file:  p.audio_file || '',
+            bro_mus:     p.bro_mus || '',
             bro_aud:     p.bro_aud || '',
-            bro_pod:     p.bro_pod || '',
           }];
         });
 

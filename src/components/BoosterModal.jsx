@@ -74,7 +74,7 @@ const BoosterModal = ({ onClose }) => {
 
   // ── 4. FORMDATA PRINCIPAL ──  
   const [formData, setFormData] = useState({
-    alias: '', avatar_url: '', banner_url: '', card_banner_url: '', bro_pd: '',
+    alias: '', avatar_url: '', banner_url: '', bro_pd: '', 
     twit_message: '', role:[], audio_file: '', video_file: '',
     audio_type: '', audio_description: '', track_name: '',
     video_file_2: '',  video_file_169: '', video_file_169b: '',
@@ -83,8 +83,8 @@ const BoosterModal = ({ onClose }) => {
     creator_loop_reply: '', editorial_title: '', editorial_content: '',
     bro_ser: '',
     bro_avi: '',
+    bro_mus: '',
     bro_aud: '',
-    bro_pod: '',
     description: '',
     genero: 'n',
     // OSOS IA
@@ -190,13 +190,13 @@ const BoosterModal = ({ onClose }) => {
               alias:              profile.alias || user.user_metadata?.alias || '',
              avatar_url:       profile.avatar_url      || '',
   	    banner_url:       profile.banner_url      || '',
-  	    card_banner_url:  profile.card_banner_url || '',
+
               role: Array.isArray(profile.role) ? profile.role : (profile.role ? [profile.role] : []),
 	    bro_pd:             profile.bro_pd || '',
 	    bro_ser: profile.bro_ser || '',
 	    bro_avi: profile.bro_avi || '',
+	    bro_mus: profile.bro_mus || '',
 	    bro_aud: profile.bro_aud || '',
-	    bro_pod: profile.bro_pod || '',
               video_file:         profile.video_file        || '',
               video_file_2:       profile.video_file_2      || '', 
               video_file_169:     profile.video_file_169    || '',
@@ -511,9 +511,9 @@ const MediaSlot = ({ title, fieldName, type, description }) => {
                   <div className={CardStyle}>
                     <h3 className="text-sm text-cyan-400 font-bold mb-4 flex items-center gap-2">📸 VISUALES (Carga R2)</h3>
                     <div className="space-y-4">
-                      <MediaSlot title="Avatar (Circular)"      fieldName="avatar_url"      type="image/*" description="Tu foto de ciudadano." />
-                      <MediaSlot title="Banner (LiveGrid)"      fieldName="banner_url"      type="image/*" description="Fondo para el mapa local." />
-                      <MediaSlot title="Banner (Nexus Tarjeta)" fieldName="card_banner_url" type="image/*" description="Fondo para tu tarjeta principal." />
+                      <MediaSlot title="Avatar (Circular)"      fieldName="avatar_url"      type="image/*" description="Tu foto de ciudadano.Imagen circular 150x150 px." />
+                      <MediaSlot title="Banner (Tarjetas)"      fieldName="banner_url"      type="image/*" description="Imagen para tarjetas.Imagen vertical ar 2:3 o 9:16" />
+
                     </div>
                   </div>
 
@@ -529,11 +529,11 @@ const MediaSlot = ({ title, fieldName, type, description }) => {
                       <label className={LabelStyle}>ROL EN BRO7VISION</label>
                       <div className="grid grid-cols-2 gap-2 mt-2 sm:grid-cols-3">
                         {[
-                          { id: 'citizen', label: '👤 Ciudadano',    desc: 'Explora y juega'         },
-                          { id: 'shop',    label: '🏪 Comercio',      desc: 'Vende productos'         },
-                          { id: 'service', label: '🤝 Profesional',   desc: 'Ofrece servicios'        },
-                          { id: 'talk',    label: '🎙️ Creador',       desc: 'Contenido & Blog'        },
-                          { id: 'music',   label: '🎵 Audio',          desc: 'Música & Podcast'        },
+                          { id: 'citizen', label: '👤 Ciudadano',    desc: 'Exploras y juegas'         },
+                          { id: 'shop',    label: '🏪 Comercio',      desc: 'Vendes tus productos'         },
+                          { id: 'service', label: '🤝 Profesional',   desc: 'Ofreces tus servicios'        },
+                          { id: 'talk',    label: '🎙️ Audio Blogger',       desc: 'Haces Podcast y Audio Blogs' },
+                          { id: 'music',   label: '🎵 Música',          desc: 'Subes tu Música'        },
                         ].map((r) => (
                         <button
                           key={r.id}
@@ -577,16 +577,16 @@ const MediaSlot = ({ title, fieldName, type, description }) => {
     },
     {
       rol:    'music',
-      label:  '🎵 Audio',
-      campo:  'bro_aud',
-      prefijo: 'AUD',
+      label:  '🎵 Música',
+      campo:  'bro_mus',
+      prefijo: 'MUS',
       color:  { dot: 'bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.8)]', text: 'text-cyan-400' },
     },
     {
       rol:    'talk',
-      label:  '🎙️ Podcast',
-      campo:  'bro_pod',
-      prefijo: 'POD',
+      label:  '🎙️Audios Podcast',
+      campo:  'bro_aud',
+      prefijo: 'AUD',
       color:  { dot: 'bg-fuchsia-400 shadow-[0_0_6px_rgba(217,70,239,0.8)]', text: 'text-fuchsia-400' },
     },
   ];

@@ -29,7 +29,7 @@ const HoloPrism = ({
   if (comercios && comercios.length > 0) {
     // MODO PLURAL — 1 imagen por comercio
     images = comercios.map(c => 
-      c.banner_url || c.card_banner_url || c.avatar_url || DEFAULT_IMGS[0]
+      c.banner_url || c.avatar_url || DEFAULT_IMGS[0]
     );
     labels = comercios.map((_, i) => String(i + 1));
   } else if (user) {

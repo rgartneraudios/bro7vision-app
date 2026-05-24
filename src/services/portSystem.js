@@ -16,20 +16,20 @@ export const armarSobreMapache = (realItems) => {
 
   const musica = realItems.filter(item => {
     const role = Array.isArray(item.role) ? item.role : [item.role];
-    return (role.includes('music') || item.audio_file) && item.bro_aud;
+    return (role.includes('music') || item.audio_file) && item.bro_mus;
   });
 
   const podcasts = realItems.filter(item => {
     const role = Array.isArray(item.role) ? item.role : [item.role];
-    return (role.includes('talk') || item.audio_file) && item.bro_pod;
+    return (role.includes('talk') || item.audio_file) && item.bro_aud;
   });
 
   const lineasMusica = musica.map(c =>
-    `- [AUD:${c.bro_aud}] ${c.alias || ''} | ${c.biz_category || 'Música'} | ${c.description || ''}`
+    `- [MUS:${c.bro_mus}] ${c.alias || ''} | ${c.biz_category || 'Música'} | ${c.description || ''}`
   );
 
   const lineasPodcast = podcasts.map(c =>
-    `- [POD:${c.bro_pod}] ${c.alias || ''} | ${c.biz_category || 'Podcast'} | ${c.description || ''}`
+    `- [AUD:${c.bro_aud}] ${c.alias || ''} | ${c.biz_category || 'Podcast'} | ${c.description || ''}`
   );
 
   const resultado = [...lineasMusica, ...lineasPodcast];

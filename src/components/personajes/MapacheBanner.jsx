@@ -109,7 +109,7 @@ export default function MapacheBanner({
     if (!selectedCard || !onHandoff) return;
     onHandoff({
       agente: 'AUDIO_PLAY',
-      codigo: selectedCard.bro_aud || selectedCard.bro_pod || selectedCard.bro_pd,
+      codigo: selectedCard.bro_mus || selectedCard.bro_aud || selectedCard.bro_pd,
       canal:  selectedCard,
     });
     setSelectedCard(null);

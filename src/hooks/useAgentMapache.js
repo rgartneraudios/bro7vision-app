@@ -311,7 +311,7 @@ export function useAgentMapache({
       const tLower = textoUsuario.trim().toLowerCase();
       const esConfirmacion = /^(play|pon|ponlo|dale|si|sí|ok|yes|poner|reproduce)$/.test(tLower);
       if (esConfirmacion) {
-        const codigo = cardActiva.bro_aud || cardActiva.bro_pod || cardActiva.bro_pd;
+        const codigo = cardActiva.bro_mus || cardActiva.bro_aud || cardActiva.bro_pd;
         if (codigo) {
           setMensaje('Dale. 🎵');
           onHandoff?.({ agente: 'AUDIO_PLAY', codigo, canal: cardActiva });

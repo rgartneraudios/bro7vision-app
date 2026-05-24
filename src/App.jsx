@@ -165,9 +165,9 @@ function App() {
           ...u,
           shopName: u.alias,
           name:     u.alias,
-         img: u.avatar_url || u.card_banner_url || u.banner_url,
+          img: u.avatar_url || u.banner_url,
           type:     u.video_file ? ['shop', 'live'] : ['shop'],
-        })).filter(u => u.video_file || u.audio_file || u.bro_ser || u.bro_aud || u.bro_pod || u.bro_avi || u.bro_pd));
+            })).filter(u => u.video_file || u.audio_file || u.bro_ser || u.bro_mus || u.bro_aud || u.bro_avi || u.bro_pd));
       }
     };
     fetchRealItems();
@@ -243,10 +243,10 @@ function App() {
 
     if (agente === 'AUDIO_PLAY') {
       console.log('AUDIO_PLAY codigo:', codigo);
-      console.log('realItems bro_aud:', realItems?.map(c => ({ bro_aud: c.bro_aud, alias: c.alias })));
+      console.log('realItems bro_mus:', realItems?.map(c => ({ bro_mus: c.bro_mus, alias: c.alias })));
       const itemCanal = canal || realItems.find(c =>
-        String(c.bro_aud) === String(codigo) ||
-        String(c.bro_pod) === String(codigo)
+        String(c.bro_mus) === String(codigo) ||
+        String(c.bro_aud) === String(codigo)
       );
       console.log('itemCanal:', itemCanal);
       if (itemCanal) {
@@ -450,7 +450,7 @@ const filteredItems = useMemo(() => {
       ...u, 
       id: u.id, 
       name: u.alias, 
-      img: u.card_banner_url || u.banner_url || '/default.png', 
+      img: u.avatar_url || u.banner_url || '/default.png', 
       price: u.price || 0, 
       type: itemType, 
       source: 'supabase' 

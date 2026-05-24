@@ -73,23 +73,13 @@ export function extraerCampo(campo, textoUser) {
       return clean.length >= 10 ? clean : null;
     }
 
-    case 'alcance': {
-      if (lower.includes('global') || lower.includes('mundo') || lower.includes('internacional')) return 'global';
-      if (lower.includes('españa') || lower.includes('espana') || lower.includes('nacional') || lower.includes('país') || lower.includes('pais')) return 'españa';
-      // Por defecto si dice ciudad o local
-      if (lower.includes('local') || lower.includes('ciudad') || lower.includes('aquí') || lower.includes('aqui') || lower.includes('mi ciudad')) return 'local';
-      // Si escribe algo corto que parece nombre de ciudad → local
-      if (t.length < 30 && !lower.includes(' ')) return 'local';
-      return 'local'; // Fallback razonable
-    }
-
     default:
       return null;
   }
 }
 
 // Secuencia de campos en orden
-export const CAMPOS_AVISO = ['tipo', 'titulo', 'contenido', 'alcance'];
+export const CAMPOS_AVISO = ['tipo', 'titulo', 'contenido'];
 
 // Devuelve el primer campo vacío del aviso en construcción
 export function siguienteCampo(aviso) {
@@ -211,7 +201,6 @@ export function armarSobreEvelynTexto({
       tipo:      `Pregunta al user si su aviso es una OFERTA (ofrece algo) o una DEMANDA (busca algo). Solo esa pregunta, con tu estilo.`,
       titulo:    `Pregunta al user cómo quiere titular su aviso. Solo esa pregunta, con tu estilo.`,
       contenido: `Pregunta al user qué quiere que sepan los interesados. Solo esa pregunta, con tu estilo.`,
-      alcance:   `Pregunta al user si quiere que el aviso sea Local (solo ${ciudad_usuario || ciudad || 'su ciudad'}), España o Global. Solo esa pregunta, con tu estilo.`,
     };
 
     lines.push(`INSTRUCCIÓN: ${instruccion[campoActual]}`);

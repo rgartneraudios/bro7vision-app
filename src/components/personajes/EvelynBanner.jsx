@@ -37,7 +37,7 @@ export default function EvelynBanner({
 }) {
   const personajeActivo = (avisos_personaje || personaje || 'evelyn').toLowerCase();
 
-  const { mensaje, loading, enviar, avisoEnConstruccion, esPatrocinado } = useAgentEvelyn({
+  const { mensaje, loading, enviar, avisoEnConstruccion, setAvisoEnConstruccion, esPatrocinado } = useAgentEvelyn({
     personaje:   personajeActivo,
     iaMode,
     isAdmin,
@@ -55,6 +55,10 @@ export default function EvelynBanner({
   const [currentMsg, setCurrentMsg]       = useState('');
   const [selectedCard, setSelectedCard]   = useState(null);
   const [esperandoConexion, setEsperandoConexion] = useState(false);
+  const [esperandoImagen, setEsperandoImagen] = useState(false);
+  const [subiendoBanner, setSubiendoBanner] = useState(false);
+  const [bannerFile, setBannerFile] = useState(null);
+  const fileInputRef = useRef(null);
   const charIdx = useRef(0);
 
   const esLarry         = personajeActivo === 'larry';
@@ -100,6 +104,17 @@ export default function EvelynBanner({
     return () => clearInterval(t);
   }, [currentMsg]);
 
+  useEffect(() => {
+    if (
+      avisoEnConstruccion?.tipo &&
+      avisoEnConstruccion?.titulo &&
+      avisoEnConstruccion?.contenido &&
+      !avisoEnConstruccion?.banner_avi_checked
+    ) {
+      setEsperandoImagen(true);
+    }
+  }, [avisoEnConstruccion]);
+
   const handleCardClick = (card) => {
     if (selectedCard?.bro_pd === card.bro_pd) {
       setSelectedCard(null);
@@ -138,6 +153,73 @@ export default function EvelynBanner({
     setCurrentMsg('Conectado. El autor recibirá tu mensaje. 🐺');
     setSelectedCard(null);
     setEsperandoConexion(false);
+  };
+
+  const handleBannerSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      alert('Solo se permite JPEG, PNG o WebP');
+      e.target.value = '';
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert('La imagen debe pesar máximo 2MB');
+      e.target.value = '';
+      return;
+    }
+
+    setBannerFile(file);
+    setEsperandoImagen(true);
+  };
+
+  const handleUploadBanner = async () => {
+    if (!bannerFile) return;
+    setSubiendoBanner(true);
+
+    try {
+      const safeFileName = `${Date.now()}-${bannerFile.name.replace(/\s+/g, '_')}`;
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName: safeFileName, fileType: bannerFile.type }),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error('Error HTTP ' + res.status + ': ' + errorText);
+      }
+
+      const { uploadUrl } = await res.json();
+      if (!uploadUrl) throw new Error('Sin ticket de subida');
+
+      await fetch(uploadUrl, {
+        method: 'PUT',
+        body: bannerFile,
+        headers: { 'Content-Type': bannerFile.type },
+      });
+
+      const publicUrl = `https://media.bro7vision.com/avisos/${safeFileName}`;
+      setAvisoEnConstruccion(prev => ({ ...prev, banner_avi: publicUrl, banner_avi_checked: true }));
+      setEsperandoImagen(false);
+      setBannerFile(null);
+
+    } catch (err) {
+      console.error('Error subida:', err);
+      alert('❌ Error: ' + err.message);
+    } finally {
+      setSubiendoBanner(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleSkipBanner = () => {
+    setAvisoEnConstruccion(prev => ({ ...prev, banner_avi: null, banner_avi_checked: true }));
+    setEsperandoImagen(false);
+    setBannerFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const avisoParaPreview = avisoEnConstruccion
@@ -219,6 +301,139 @@ export default function EvelynBanner({
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* 2.5. SUBIDA DE BANNER — condicional */}
+      {esperandoImagen && (
+        <div className="w-full max-w-2xl px-2 mb-2 pointer-events-auto">
+          <div className="bg-black/40 rounded-2xl border border-white/5 overflow-hidden transition-all duration-300 p-4">
+            <div className="flex flex-col items-center gap-3">
+              <p style={{
+                color: colorTexto,
+                fontSize: '10px',
+                fontWeight: 900,
+                letterSpacing: '0.15em',
+                textTransform: 'uppercase',
+              }}>
+                ◈ Banner Visual (Opcional)
+              </p>
+
+              {!bannerFile ? (
+                <>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    style={{
+                      padding: '10px 24px',
+                      background: `${colorPrimario}22`,
+                      border: `1px solid ${colorPrimario}88`,
+                      borderRadius: '1.5rem',
+                      color: colorTexto,
+                      fontWeight: 900,
+                      fontSize: 11,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.1em',
+                      cursor: 'pointer',
+                      boxShadow: `0 0 16px ${glowColor}`,
+                    }}
+                  >
+                    ◈ SUBIR BANNER
+                  </button>
+                  <button
+                    onClick={handleSkipBanner}
+                    style={{
+                      padding: '10px 24px',
+                      background: 'transparent',
+                      border: `1px solid ${colorPrimario}44`,
+                      borderRadius: '1.5rem',
+                      color: colorTexto,
+                      fontWeight: 900,
+                      fontSize: 11,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.1em',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    SALTAR
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="relative w-full max-w-xs">
+                    <img
+                      src={URL.createObjectURL(bannerFile)}
+                      alt="Preview"
+                      className="w-full rounded-lg border border-white/10"
+                      style={{ maxHeight: '200px', objectFit: 'contain' }}
+                    />
+                    <div style={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      background: 'rgba(0,0,0,0.75)',
+                      padding: '4px 8px',
+                      borderRadius: '999px',
+                      fontSize: '9px',
+                      fontWeight: 900,
+                      color: '#fff',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.1em',
+                    }}>
+                      {(bannerFile.size / 1024).toFixed(0)} KB
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 10, width: '100%', justifyContent: 'center' }}>
+                    <button
+                      onClick={handleSkipBanner}
+                      style={{
+                        padding: '8px 20px',
+                        background: 'transparent',
+                        border: `1px solid ${colorPrimario}44`,
+                        borderRadius: '1.5rem',
+                        color: colorTexto,
+                        fontWeight: 900,
+                        fontSize: 11,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      CAMBIAR
+                    </button>
+                    <button
+                      onClick={handleUploadBanner}
+                      disabled={subiendoBanner}
+                      style={{
+                        padding: '8px 20px',
+                        background: subiendoBanner ? `${colorPrimario}44` : `${colorPrimario}88`,
+                        border: `1px solid ${colorPrimario}`,
+                        borderRadius: '1.5rem',
+                        color: '#fff',
+                        fontWeight: 900,
+                        fontSize: 11,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        cursor: subiendoBanner ? 'not-allowed' : 'pointer',
+                        opacity: subiendoBanner ? 0.6 : 1,
+                        boxShadow: subiendoBanner ? 'none' : `0 0 16px ${glowColor}`,
+                      }}
+                    >
+                      {subiendoBanner ? '⏳ Subiendo...' : '✓ CONFIRMAR'}
+                    </button>
+                  </div>
+                </>
+              )}
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleBannerSelect}
+                className="hidden"
+              />
+            </div>
+          </div>
         </div>
       )}
 

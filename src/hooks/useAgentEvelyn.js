@@ -433,6 +433,7 @@ export function useAgentEvelyn({
           type:           aviso.tipo,
           title:          aviso.titulo,
           content:        aviso.contenido,
+          banner_avi:     aviso.banner_avi || null,
           cost_to_reveal: 200,
           is_active:      true,
           expires_at:     expireDate.toISOString(),
@@ -534,5 +535,5 @@ export function useAgentEvelyn({
     avisoConectarRef.current = null;
   };
 
-  return { mensaje, loading, enviar, reset, iaActiva, avisoEnConstruccion, esPatrocinado };
+  return { mensaje, loading, enviar, reset, iaActiva, avisoEnConstruccion, setAvisoEnConstruccion, esPatrocinado };
 }
