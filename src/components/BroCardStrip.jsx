@@ -95,30 +95,6 @@ function BroCard({ card, theme, onClick, index, onHoverChange }) {
             }} />
           )}
         </div>
-
-        <div style={{
-          position: "absolute", bottom: 0, left: 0, right: 0,
-          height: "44px", background: t.footerBg,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          padding: "0 6px",
-          zIndex: 1,
-        }}>
-          <span style={{
-            fontFamily: "'Orbitron', 'Courier New', monospace",
-            fontWeight: 700,
-            fontSize: "11px",
-            letterSpacing: "0.05em",
-            color: t.idColor,
-            textAlign: "center",
-            lineHeight: 1.2,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            width: "100%",
-          }}>
-            {displayName}
-          </span>
-        </div>
       </div>
     </div>
   );

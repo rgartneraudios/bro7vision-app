@@ -241,8 +241,7 @@ export const MASTER_DB = [
         video_file: "https://media.bro7vision.com/Horizon.mp4",
        audio_video: "https://media.bro7vision.com/Horizon.mp3",
         audio_file: "/audio/Horizon.mp3",
-        product_title: 'Pack Samples Techno', 
-        product_price: 15,
+         price: 15,
         lat: 40.4166,       // 📍 Vital para que salga en el mapa del LiveGrid / Shop
         lng: -3.7034,       // 📍 Vital para que salga en el mapa
         holo_images: ['/images/orq_1.jpg', '/images/orq_2.jpg', '/images/orq_3.jpg', '/images/orq_4.jpg']
@@ -256,8 +255,7 @@ export const MASTER_DB = [
         distance: '500km', 
         desc: 'Debate: Influencers', 
         isReal: false,
-        product_title: 'Pack Samples Techno', 
-        product_price: 15,
+         price: 15,
         audioFile: "/audio/Influencers__eqh.mp3",
         lat: 40.4188,       // 📍 Vital para que salga en el mapa del LiveGrid / Shop
         lng: -3.7048,       // 📍 Vital para que salga en el mapa

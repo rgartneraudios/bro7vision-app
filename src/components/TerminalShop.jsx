@@ -253,7 +253,7 @@ const TerminalShop = ({ initialItem, onUpdateTotal, activeSection }) => {
   const [aiIds, setAiIds] = useState(null);
 
   const sc = SECTION[activeSection] || SECTION.products;
-  const mainPrice = parsePrice(initialItem?.price || initialItem?.product_price);
+  const mainPrice = parsePrice(initialItem?.price);
 
   // 1. CARGAR INVENTARIO REAL DE SUPABASE
   useEffect(() => {
@@ -284,14 +284,14 @@ const TerminalShop = ({ initialItem, onUpdateTotal, activeSection }) => {
   // Mezclamos el producto "Main" (por si el usuario configuró uno rápido) con el inventario de la base de datos
   const INVENTORY = useMemo(() => {
     const base = [];
-    if (initialItem?.name || initialItem?.product_title) {
+    if (initialItem?.name || initialItem?.alias) {
         base.push({
             id: 'main', 
-            name: initialItem.name || initialItem.product_title || 'Producto Base', 
+            name: initialItem.name || initialItem.alias || 'Producto Base', 
             price: mainPrice, 
             cat: 'PRINCIPAL', 
             section: 'products',
-            desc: initialItem.product_desc || ''
+            desc: initialItem.desc || ''
         });
     }
     return [...base, ...dbInventory];

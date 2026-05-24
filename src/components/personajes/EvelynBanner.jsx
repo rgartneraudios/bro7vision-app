@@ -259,15 +259,6 @@ export default function EvelynBanner({
           {/* Card seleccionada */}
           {selectedCard && !loading && (
             <div className="w-full flex flex-col items-center gap-3">
-              <p style={{
-                color: colorTexto, fontWeight: 900, fontStyle: 'italic',
-                textTransform: 'uppercase', fontSize: 'clamp(11px, 1.4vw, 13px)',
-                letterSpacing: '0.2em',
-                textShadow: `0 0 10px ${glowColor}`,
-              }}>
-                {selectedCard.nombre}
-              </p>
-
               <span style={{
                 fontSize: 10, fontWeight: 900, letterSpacing: '0.2em',
                 textTransform: 'uppercase', padding: '3px 14px',

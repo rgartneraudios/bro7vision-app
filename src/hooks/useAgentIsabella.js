@@ -115,7 +115,7 @@ function isabellaBot({ textoUser = '', intencion = null, entidad = null, hayTarj
   if (entidad) {
     switch (intent) {
       case 'descripcion': return { handoff: false, mensaje: `${elegir(IB_DESCRIPCION)} ${entidad.nombre || entidad.bro_pd} — ${entidad.biz_profession || entidad.description || 'sin descripción disponible'}.`, bolas: [] };
-      case 'precio':      return { handoff: false, mensaje: `${elegir(IB_PRECIO)} ${entidad.nombre || entidad.bro_pd}: ${entidad.service_price || entidad.ref_price || 'precio no disponible'}.`, bolas: [] };
+      case 'precio':      return { handoff: false, mensaje: `${elegir(IB_PRECIO)} ${entidad.nombre || entidad.bro_pd}: ${entidad.ref_price || 'precio no disponible'}.`, bolas: [] };
       case 'ubicacion':   return { handoff: false, mensaje: `${elegir(IB_UBICACION)} ${entidad.nombre || entidad.bro_pd} — ${entidad.address || entidad.nearby_ref || 'ubicación no disponible'}.`, bolas: [] };
       case 'contacto':    return { handoff: false, mensaje: `${elegir(IB_CONTACTO)} ${entidad.nombre || entidad.bro_pd} — ${entidad.address || 'datos no disponibles'}.`, bolas: [] };
       default:            return { handoff: false, mensaje: `${elegir(IB_DESCRIPCION)} ${entidad.nombre || entidad.bro_pd} — ${entidad.biz_profession || entidad.description || 'sin descripción disponible'}.`, bolas: [] };
@@ -158,7 +158,7 @@ function profesorBot({ textoUser = '', intencion = null, entidad = null, hayTarj
   if (entidad) {
     switch (intent) {
       case 'descripcion': return { handoff: false, mensaje: `${elegir(PB_DESCRIPCION)} ${entidad.nombre || entidad.bro_pd} — ${entidad.biz_profession || entidad.description || 'sin descripción disponible'}.`, bolas: [] };
-      case 'precio':      return { handoff: false, mensaje: `${elegir(PB_PRECIO)} ${entidad.nombre || entidad.bro_pd}: ${entidad.service_price || entidad.ref_price || 'precio no disponible'}.`, bolas: [] };
+      case 'precio':      return { handoff: false, mensaje: `${elegir(PB_PRECIO)} ${entidad.nombre || entidad.bro_pd}: ${entidad.ref_price || 'precio no disponible'}.`, bolas: [] };
       case 'ubicacion':   return { handoff: false, mensaje: `${elegir(PB_UBICACION)} ${entidad.nombre || entidad.bro_pd} — ${entidad.address || entidad.nearby_ref || 'ubicación no disponible'}.`, bolas: [] };
       case 'contacto':    return { handoff: false, mensaje: `${elegir(PB_CONTACTO)} ${entidad.nombre || entidad.bro_pd} — ${entidad.address || 'datos no disponibles'}.`, bolas: [] };
       default:            return { handoff: false, mensaje: `${elegir(PB_DESCRIPCION)} ${entidad.nombre || entidad.bro_pd} — ${entidad.biz_profession || entidad.description || 'sin descripción disponible'}.`, bolas: [] };

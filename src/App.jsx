@@ -164,10 +164,10 @@ function App() {
         setRealItems(all.map(u => ({
           ...u,
           shopName: u.alias,
-          name:     u.product_title || u.alias,
+          name:     u.alias,
          img: u.avatar_url || u.card_banner_url || u.banner_url,
           type:     u.video_file ? ['shop', 'live'] : ['shop'],
-        })).filter(u => u.video_file || u.audio_file || u.product_title || u.bro_ser || u.bro_aud || u.bro_pod || u.bro_avi || u.bro_id));
+        })).filter(u => u.video_file || u.audio_file || u.bro_ser || u.bro_aud || u.bro_pod || u.bro_avi || u.bro_pd));
       }
     };
     fetchRealItems();
@@ -276,19 +276,18 @@ function App() {
       return;
     }
 
-    if (agente === 'NOVA_CIERRE') {
-      const bro_id_target  = comercio || intencion;
-      const comercioTarget = realItems.find(i => i.bro_id === bro_id_target || i.bro_ser === bro_id_target);
-      if (comercioTarget) abrirTienda(comercioTarget, 'novaCierre');
-      return;
-    }
-
-    if (agente === 'ISABELLA_CIERRE') {
-      const bro_id_target  = comercio || intencion;
-      const comercioTarget = realItems.find(i => i.bro_ser === bro_id_target || i.bro_id === bro_id_target);
-      if (comercioTarget) abrirTienda(comercioTarget, 'isabellaCierre');
-      return;
-    }
+   if (agente === 'NOVA_CIERRE') {
+  const bro_id_target  = comercio || intencion;
+  const comercioTarget = realItems.find(i => i.bro_pd === bro_id_target || i.bro_ser === bro_id_target);
+  if (comercioTarget) abrirTienda(comercioTarget, 'novaCierre');
+  return;
+}
+if (agente === 'ISABELLA_CIERRE') {
+  const bro_id_target  = comercio || intencion;
+  const comercioTarget = realItems.find(i => i.bro_ser === bro_id_target || i.bro_pd === bro_id_target);
+  if (comercioTarget) abrirTienda(comercioTarget, 'isabellaCierre');
+  return;
+}
 
     if (agente === 'BUSCAR_STRIP') {
       const ciudadActual = sessionCity || scope?.city || '';
@@ -450,7 +449,7 @@ const filteredItems = useMemo(() => {
     return { 
       ...u, 
       id: u.id, 
-      name: u.product_title || u.alias, 
+      name: u.alias, 
       img: u.card_banner_url || u.banner_url || '/default.png', 
       price: u.price || 0, 
       type: itemType, 

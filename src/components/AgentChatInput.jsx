@@ -75,9 +75,10 @@ const AGENT_PROFILES = {
     text: '✦  Ejemplos: Hola Lara · Nova en Medellín · Productos en España · Avisos en Madrid · Cuéntame una historia'
   },
   nova: {
-    theme: 'gold',
-    text: '✦  Hola! Dime el producto que necesitas! | Que buscas? | Pulsa en las BroCards para obtener una descripción y luego si quieres entrar a la tienda pulsa enter'
-  },
+  theme: 'gold',
+  text: `🟣 10%  🟢 15%  ⚪ 20%·2art. 🟠 20%·3art.
+  Hola! Dime el producto que necesitas! | Que buscas? | Pulsa en las BroCards para obtener una descripción`
+},
   isabella: {
     theme: 'pink',
     text: '✦  Hola! Dime el servicio que necesitas! | Que buscas? | Pulsa en las BroCards para obtener una descripción y luego si quieres conectar con el Profesional pulsa enter'

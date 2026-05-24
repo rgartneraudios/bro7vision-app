@@ -14,7 +14,11 @@ const AvisosTab = () => {
 
       const { data: avisos } = await supabase
         .from('avisos')
-        .select('*')
+        .select(`
+          id, user_id, author_alias, type, title, content, 
+          cost_to_reveal, expires_at, is_active, city, created_at,
+          profiles(bro_avi)
+        `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       if (avisos) setMisAvisos(avisos);
@@ -72,6 +76,7 @@ const AvisosTab = () => {
               const conexiones = mensajesRecibidos.filter(m => m.aviso_id === aviso.id);
               const sinLeer = conexiones.filter(m => !m.leido).length;
               const expirado = new Date(aviso.expires_at) < new Date();
+              const broAvi = aviso.profiles?.bro_avi || 'SIN CÓDIGO';
               return (
                 <div key={aviso.id}
                   className={`p-4 rounded-2xl border transition-all
@@ -103,6 +108,9 @@ const AvisosTab = () => {
                     </span>
                     <span className="text-[9px] text-blue-500 font-bold">
                       {conexiones.length} conexión{conexiones.length !== 1 ? 'es' : ''}
+                    </span>
+                    <span className="text-[9px] text-blue-400 font-bold">
+                      {broAvi}
                     </span>
                   </div>
                 </div>

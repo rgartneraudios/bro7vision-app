@@ -81,7 +81,6 @@ const BoosterModal = ({ onClose }) => {
     holo_1: '', holo_2: '', holo_3: '', holo_4: '',
     catalog_url: '', ventas_rules: '', intimo_bg: '',
     creator_loop_reply: '', editorial_title: '', editorial_content: '',
-    showcase_url: '',
     bro_ser: '',
     bro_avi: '',
     bro_aud: '',
@@ -212,7 +211,6 @@ const BoosterModal = ({ onClose }) => {
               creator_loop_reply: profile.creator_loop_reply || '',
               editorial_title:    profile.editorial_title   || '',
               editorial_content:  profile.editorial_content || '',
-              showcase_url:       profile.showcase_url      || '',
               // OSOS IA
               osos_nombre:        profile.osos_nombre    || '',
               osos_tono:          profile.osos_tono      || '',
@@ -1043,10 +1041,6 @@ const MediaSlot = ({ title, fieldName, type, description }) => {
                       onChange={e => setFormData({ ...formData, editorial_content: e.target.value })}
                       placeholder="Escribe el cuerpo del artículo..."
                       className={`${InputStyle} h-48 rounded-2xl resize-none mb-4`} />
-                    <label className={LabelStyle}>Link Imagen Mostrador</label>
-                    <input type="text" value={formData.showcase_url}
-                      onChange={e => setFormData({ ...formData, showcase_url: e.target.value })}
-                      className={InputStyle} />
                   </div>
                 </div>
                 {/* BUZÓN */}

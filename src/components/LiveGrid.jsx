@@ -63,14 +63,14 @@ const LiveGrid = ({ items, onTuneIn, onUserClick, onClose, onOpenVideo, onSelect
   const handleGoToShop = (creator) => {
       const shopItem = {
           ...creator,
-          name: creator.product_title || creator.name || 'Producto Genérico',
+          name: creator.alias || creator.name || 'Producto Genérico',
           shopName: creator.alias,
           img: creator.img || creator.banner_url || creator.avatar_url,
           isAsset: false,
           hasProduct: true,
           productData: { 
-              name: creator.product_title || 'Servicio Creator', 
-              price: creator.product_price || creator.price || 10 
+              name: creator.alias || 'Servicio Creator', 
+              price: creator.price || 10 
           }
       };
       onSelectShop(shopItem);
