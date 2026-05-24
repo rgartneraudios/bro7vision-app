@@ -71,7 +71,7 @@ export const useStripCards = () => {
         const ahora = new Date().toISOString();
         const { data: avisos, error } = await supabase
           .from('avisos')
-          .select('id, user_id, author_alias, type, title, content, cost_to_reveal, expires_at, is_active')
+          .select('id, user_id, author_alias, type, title, content, cost_to_reveal, expires_at, is_active, banner_avi')
           .eq('is_active', true)
           .gt('expires_at', ahora)
           .limit(20);
@@ -91,11 +91,14 @@ export const useStripCards = () => {
         const bannerMap = {};
         (autores || []).forEach(p => { bannerMap[p.id] = p.banner_url || ''; });
 
-        const cards = avisos.map(av => ({
+        const cards = avisos.map(av => {
+          console.log('aviso banner_avi:', av.id, av.banner_avi);
+          return {
           bro_pd:      av.id,
           aviso_id:    av.id,
           user_id:     av.user_id,
           nombre:      av.author_alias || 'Ciudadano',
+          banner_avi:  av.banner_avi || '',
           banner_url:  bannerMap[av.user_id] || '',
           categoria:   av.type || 'OFERTA',
           titulo:      av.title || '',
@@ -103,7 +106,8 @@ export const useStripCards = () => {
           cost:        av.cost_to_reveal || 200,
           ciudad:      '',
           es_aviso:    true,
-        }));
+        };
+        });
 
         setStripCards(cards);
         setStripLabel('broshop_aviso');

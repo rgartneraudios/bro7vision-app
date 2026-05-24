@@ -74,9 +74,9 @@ function BroCard({ card, theme, onClick, index, onHoverChange }) {
         }} />
 
         <div style={{ width: "100%", height: "100%", background: "rgba(255,255,255,0.04)", overflow: "hidden", position: "relative" }}>
-          {inView && card.banner_url && (
+          {inView && (card.banner_url || card.banner_avi) && (
             <img
-              src={card.banner_url}
+              src={card.banner_avi || card.banner_url}
               alt={displayName}
               onLoad={() => setLoaded(true)}
               style={{
