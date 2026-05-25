@@ -425,13 +425,7 @@ export function useAgentEvelyn({
       }
       setLoading(true);
       try {
-        console.log('Intentando INSERT:', {
-          user_id: userId,
-          type: aviso.tipo,
-          title: aviso.titulo,
-          content: aviso.contenido,
-          banner_avi: aviso.banner_avi,
-        });
+  
 
         const expireDate = new Date();
         expireDate.setDate(expireDate.getDate() + 7);
@@ -488,11 +482,7 @@ export function useAgentEvelyn({
 
   // ── Entrada principal ─────────────────────────────────────────────────────
   const enviar = async (textoUsuario) => {
-    console.log('useAgentEvelyn enviar:', {
-      textoUsuario,
-      avisoEnConstruccion,
-      avisoEnProceso: avisoEnConstruccion !== null && avisoEnConstruccion !== undefined,
-    });
+
 
     if (!textoUsuario?.trim()) return;
 

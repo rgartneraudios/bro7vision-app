@@ -92,7 +92,6 @@ export const useStripCards = () => {
         (autores || []).forEach(p => { bannerMap[p.id] = p.banner_url || ''; });
 
         const cards = avisos.map(av => {
-          console.log('aviso banner_avi:', av.id, av.banner_avi);
           return {
           bro_pd:      av.id,
           aviso_id:    av.id,
@@ -122,7 +121,6 @@ export const useStripCards = () => {
                        ciudad?.toLowerCase() === 'españa' || 
                        ciudad?.toLowerCase() === 'spain';
         
-        console.log('[AUDIO DEBUG] Entrada hook:', { agente, ciudad, modalidad, esPais });
 
         // Traemos los perfiles en bruto para filtrarlos de forma segura en JS
         let query = supabase
@@ -135,7 +133,6 @@ export const useStripCards = () => {
           console.error('[AUDIO DEBUG] Error en consulta Supabase:', error);
         }
 
-        console.log('[AUDIO DEBUG] Perfiles devueltos por DB (sin filtrar):', perfiles?.length || 0);
 
         // Filtrado ultra-robusto en JavaScript
         const filtrados = (perfiles || []).filter(p => {
@@ -169,7 +166,6 @@ export const useStripCards = () => {
           return true;
         });
 
-        console.log('[AUDIO DEBUG] Perfiles que superaron los filtros (Rol + Geo):', filtrados.length, filtrados);
 
         const cards = filtrados.flatMap(p => {
           if (!p.bro_mus && !p.bro_aud) return [];
@@ -192,7 +188,6 @@ export const useStripCards = () => {
           }];
         });
 
-        console.log('[AUDIO DEBUG] Tarjetas mapeadas para renderizar:', cards.length, cards);
 
         if (!error && cards.length > 0) {
           setStripCards(cards);
