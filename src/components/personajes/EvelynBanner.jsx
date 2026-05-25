@@ -333,8 +333,8 @@ export default function EvelynBanner({
 
               {!bannerFile ? (
                 <>
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
+                  <label
+                    htmlFor="banner-avi-input"
                     style={{
                       padding: '10px 24px',
                       background: `${colorPrimario}22`,
@@ -350,7 +350,7 @@ export default function EvelynBanner({
                     }}
                   >
                     ◈ SUBIR BANNER
-                  </button>
+                  </label>
                   <button
                     onClick={handleSkipBanner}
                     style={{
@@ -438,6 +438,7 @@ export default function EvelynBanner({
               )}
 
               <input
+                id="banner-avi-input"
                 ref={fileInputRef}
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
