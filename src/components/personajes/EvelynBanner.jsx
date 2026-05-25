@@ -192,7 +192,7 @@ export default function EvelynBanner({
     setSubiendoBanner(true);
 
     try {
-      const safeFileName = `${Date.now()}-${bannerFile.name.replace(/\s+/g, '_')}`;
+      const safeFileName = `avisos/${Date.now()}-${bannerFile.name.replace(/\s+/g, '_')}`;
       const res = await fetch('/api/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -213,7 +213,7 @@ export default function EvelynBanner({
         headers: { 'Content-Type': bannerFile.type },
       });
 
-      const publicUrl = `https://media.bro7vision.com/avisos/${safeFileName}`;
+      const publicUrl = `https://media.bro7vision.com/${safeFileName}`;
       setAvisoEnConstruccion(prev => ({ ...prev, banner_avi: publicUrl, banner_avi_checked: true }));
       setEsperandoImagen(false);
       setBannerFile(null);
