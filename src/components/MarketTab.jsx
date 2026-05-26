@@ -26,10 +26,10 @@ const SECTOR_OPTIONS = [
 
 // Lunas con su % y condición exacta
 const LUNA_CONFIG = {
-  nova:       { emoji: '🌑', color: '#A855F7', label: 'Nova',       pct: '10%',  cond: '1 artículo mín.',    condicional: false },
-  crescens:   { emoji: '🌙', color: '#79FF1A', label: 'Crescens',   pct: '15%',  cond: '1 artículo mín.',    condicional: false },
-  plena:      { emoji: '🌕', color: '#FFFFFF', label: 'Plena',      pct: '20%',  cond: 'mín. 2 artículos',   condicional: true  },
-  decrescens: { emoji: '🌗', color: '#F97316', label: 'Decrescens', pct: '20%',  cond: 'mín. 3 artículos',   condicional: true  },
+  nova:       { emoji: '🌑', color: '#A855F7', label: 'Luna Nueva',       pct: '10%',  cond: '1 artículo mín.',    condicional: false },
+  crescens:   { emoji: '🌙', color: '#79FF1A', label: 'Luna Creciente',   pct: '15%',  cond: '1 artículo mín.',    condicional: false },
+  plena:      { emoji: '🌕', color: '#FFFFFF', label: 'Luna Llena',      pct: '20%',  cond: 'mín. 2 artículos',   condicional: true  },
+  decrescens: { emoji: '🌗', color: '#F97316', label: 'Luna Menguante', pct: '20%',  cond: 'mín. 3 artículos',   condicional: true  },
 };
 
 const THEMES = {

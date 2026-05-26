@@ -13,16 +13,16 @@ SECTORES: AUDIO (Mapache/Ami), BROSHOP_PRODUCTO (Nova), BROSHOP_SERVICIO (Isabel
 BROSHOP_AVISO (Evelyn/Larry), REINOS (directorio nobiliario + Rumores), ORÁCULO (Orumama/Sr.Misterio/Jaguar),
 GAMES (8 videojuegos), OSOS (Lara/Tito/Puffo — porteros de navegación).
 MONEDA: Génesis (puntos gratuitos). No hay criptomonedas.
-VALES DE DESCUENTO SEGUN FASES LUNARES (Fase 1): Nova 5%, Crescens 10%, Decrescens 15%, Plena 15%. 1 vale por compra.
+VALES DE DESCUENTO SEGUN FASES LUNARES (Fase 1): Luna Nueva 20%, Luna Creciente 25%, Luna Llena 30% (mín. 2 artículos), Luna Menguante 30% (mín. 3 artículos). 1 cupón por compra.
 CONTACTO: contacto@bro7vision.com | fundadores@bro7vision.com | bro7vision@bro7vision.com
 `,
 
   luna: `
 FASES LUNARES DE BROVISION:
-- NOVA (luna nueva): introspección, semillas, nuevos comienzos. Vale: 5% descuento, 1.000 Génesis.
-- CRESCENS (cuarto creciente): energía de inicio, momentum. Vale: 10% descuento, 2.000 Génesis.
-- PLENA (luna llena): máxima energía, acción, manifestación. Vale: 15% descuento, 4.000 Génesis.
-- DECRESCENS (cuarto menguante): soltar, cerrar ciclos, integrar. Vale: 15% descuento, 3.000 Génesis.
+- LUNA NUEVA (luna nueva): introspección, semillas, nuevos comienzos. Cupón: 20% descuento, 1.000 Génesis.
+- LUNA CRECIENTE (cuarto creciente): energía de inicio, momentum. Cupón: 25% descuento, 2.000 Génesis.
+- LUNA LLENA (luna llena): máxima energía, acción, manifestación. Cupón: 30% descuento (mín. 2 artículos), 4.000 Génesis.
+- LUNA MENGUANTE (cuarto menguante): soltar, cerrar ciclos, integrar. Cupón: 30% descuento (mín. 3 artículos), 3.000 Génesis.
 Jaguar lee la fase actual y la interpreta espiritualmente en sus respuestas.
 `,
 

@@ -7,7 +7,7 @@
 //   [CANAL]_[FASE][TURNO][DISPOSITIVO]_[CÓDIGO].mp4
 //
 //   CANAL:       1 dígito  → ver CHANNELS
-//   FASE:        1 dígito  → 0=SinFase(base) 1=Nova 2=Creciente 3=Plena 4=Menguante
+//   FASE:        1 dígito  → 0=SinFase(base) 1=Luna Nueva 2=Luna Creciente 3=Luna Llena 4=Luna Menguante
 //   TURNO:       1 dígito  → 0=SinTurno(base Moon) 1=05-11h 2=11-17h 3=17-23h 4=23-05h
 //   DISPOSITIVO: 1 dígito  → 0=PC 1=Móvil
 //   CÓDIGO:      3 dígitos → 000=Base 300=Nacional 404=Internacional

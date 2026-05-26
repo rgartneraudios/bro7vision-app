@@ -13,7 +13,7 @@ Consultar CONTEXT.md para el sistema completo.
 
 ---
 
-## LO QUE SE HIZO EN ESTA SESIÓN
+## LO QUE SE HIZO EN SESIONES ANTERIORES
 
 ### MIGRACIÓN COMPLETA AL NUEVO SISTEMA DE PERSONAJES
 
@@ -62,54 +62,6 @@ REINOS
   useAgentRumores.js       (sin Banner PC, solo Mobile via chatMobile)
 ```
 
-### CONTEXTO DE SUPABASE POR PERSONAJE
-
-```
-src/services/contexto/
-  fetchContextoTito.js
-  fetchContextoLara.js
-  fetchContextoPuffo.js
-  fetchContextoNova.js
-  fetchContextoIsabella.js
-  fetchContextoProfesor.js
-  fetchContextoMapache.js
-  fetchContextoAmi.js
-  fetchContextoEvelyn.js
-  fetchContextoLarry.js
-  fetchContextoRumores.js
-```
-
-Cada fetch lee de `personaje_update` en Supabase:
-`vivencia_actual, estado_animo, promo_ciudad/regional/etc, special_*`
-
-### ARCHIVOS ELIMINADOS
-
-```
-src/hooks/useAgentChat.js          ← monolito 14 modos
-src/services/agents/botOrchestrator.js
-src/services/agents/promptBuilder.js
-src/services/agents/knowledgeSources.js
-src/services/agents/SystemBus.js
-src/data/*/Personalidad.js         ← 13 archivos
-src/services/agents/bots/titoBot.js
-src/services/agents/bots/laraBot.js
-src/services/agents/bots/puffoBot.js
-src/services/agents/bots/novaBot.js
-src/services/agents/bots/isabellaBot.js
-src/services/agents/bots/profesorBot.js
-src/services/agents/bots/mapacheBot.js
-src/services/agents/bots/amiBot.js
-src/services/agents/bots/evelynBot.js
-src/services/agents/bots/larryBot.js
-src/services/agents/bots/rumoresBot.js
-src/services/agents/bots/novaUtils.js
-src/services/agents/bots/isabellaUtils.js
-src/services/agents/bots/mapacheUtils.js
-src/services/agents/bots/avisoUtils.js
-src/services/agents/bots/reinosUtils.js
-src/hooks/usePersonajeChat.js      ← hook genérico del Oráculo viejo
-```
-
 ### ARCHIVOS MANTENIDOS COMO UTILIDADES
 
 ```
@@ -126,6 +78,58 @@ src/data/smisterio/   ← AntartidaBot, BucegiBot, EgiptoBot, TartariaBot + epis
 src/data/jaguar/      ← 13 signos + 13 XMito.js + amazonas/
 src/data/orumama/     ← 12 hierbas + hierbas.js + guisos.js + recetario/
 ```
+
+---
+
+## LO QUE SE HIZO EN ESTA SESIÓN (25 Mayo 2026)
+
+### LIMPIEZA DE SUPABASE — PROFILES
+
+- Eliminada columna `card_banner_url` de `profiles` — era redundante con `banner_url`
+- Unificado a `banner_url` en todo el código (App.jsx, BoosterModal.jsx, BroLives3D.jsx, HoloPrism.jsx)
+
+### ROLES SIMPLIFICADOS
+
+- Eliminado rol `video` (Video Vlogger) — no tiene sector propio ni buscador dedicado
+- Renombrado `bro_aud` → `bro_mus` (música)
+- Renombrado `bro_pod` → `bro_aud` (audio/podcast en general)
+- Rol `talk` queda vinculado a `bro_aud`
+
+### SECTOR AVISOS — MEJORAS COMPLETAS
+
+#### Supabase
+- Nueva columna `banner_avi` TEXT NULL en tabla `avisos` ← imagen del aviso
+- Carpeta `avisos/` creada en R2: `https://media.bro7vision.com/avisos/`
+
+#### evelynExploraPS.js
+- Eliminado campo `alcance` de `CAMPOS_AVISO` — no existía en tabla Supabase
+- Flujo limpio: `tipo → título → contenido → banner → CONFIRMO`
+
+#### useAgentEvelyn.js
+- Orden de detecciones corregido — `avisoEnProceso` se comprueba PRIMERO
+- `banner_avi` añadido al INSERT de avisos
+- `setAvisoEnConstruccion` expuesto en el return del hook
+- INSERT captura error de Supabase correctamente con `{ error: insertError }`
+- Valores de tipo corregidos: `OFREZCO/NECESITO` → `OFERTA/DEMANDA` (constraint Supabase)
+
+#### EvelynBanner.jsx
+- Nuevo estado `esperandoImagen` — se activa cuando tipo+título+contenido completos
+- `handleEnviar` bloquea el chat cuando `esperandoImagen` activo (excepto CONFIRMO)
+- Nuevo bloque UI de subida de imagen con previsualización, botón SALTAR y CONFIRMAR
+- Botón SUBIR BANNER implementado con `<label htmlFor>` para compatibilidad móvil
+- Upload a R2 con validación: solo JPEG/PNG/WebP, máximo 2MB
+- Ruta R2: `https://media.bro7vision.com/avisos/{timestamp}-{filename}`
+- NOTA: En móvil no hay subida de imagen — se publica sin banner (decisión de diseño)
+
+#### useStripCards.js
+- SELECT de avisos incluye `banner_avi`
+- Map separa `banner_avi` y `banner_url` como campos distintos
+- BroCardStrip muestra `banner_avi || banner_url` correctamente
+
+#### BroCardStrip.jsx — bro_avi en footer
+- Eliminado `author_alias` del footer de tarjetas de avisos
+- JOIN con profiles para obtener `bro_avi` del autor
+- `bro_avi` disponible internamente en EvelynBanner para referencia pero no renderizado
 
 ---
 
@@ -181,7 +185,6 @@ Jaguar:
 Orumama:
   - recetario1.js           ← receta de guiso tradicional
   - recetario2.js           ← receta de guiso tradicional
-
 ```
 
 ### LIMPIEZA PENDIENTE EN PROMPTBUILDER
@@ -210,4 +213,20 @@ Video Commerce con BroCredit según documento de Commerce.
 - Worker URL: `https://brovision-ai.bro7vision.workers.dev`
 - Supabase tabla personajes: `personaje_update` con `personaje_id`
 - Videos base en R2: `https://media.bro7vision.com/`
+- Imágenes de avisos en R2: `https://media.bro7vision.com/avisos/`
 - RGartner = Signor Roberto = el creador. Puede llamarse "Maravilla"
+
+### ESTADO ACTUAL DE COLUMNAS — TABLA PROFILES
+- `avatar_url` — foto circular del usuario
+- `banner_url` — banner de tarjetas (antes había card_banner_url, ya eliminada)
+- `bro_pd` — código sector Productos
+- `bro_ser` — código sector Servicios
+- `bro_avi` — código sector Avisos
+- `bro_mus` — código sector Música (antes bro_aud)
+- `bro_aud` — código sector Audio/Podcast (antes bro_pod)
+
+### ESTADO ACTUAL DE COLUMNAS — TABLA AVISOS
+- `banner_avi` TEXT NULL — imagen del aviso (URL R2)
+- `type` — OFERTA | DEMANDA (constraint check)
+- `author_alias` — alias del autor al momento de publicar
+- Upload móvil de banner NO implementado — decisión de diseño

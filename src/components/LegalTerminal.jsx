@@ -89,7 +89,7 @@ const LegalTerminal = ({ onClose }) => {
 
 <section>
   <h4 className="text-cyan-300 font-bold mb-2">3. ECONOMÍA DIGITAL</h4>
-  <p>Los "Puntos Génesis", "Moon Vales" y "Moon Packs" constituyen un sistema cerrado de lealtad y gamificación interna. No representan criptomonedas, activos financieros, ni valores regulables bajo la normativa de la CNMV o MiCA en su estado actual de simulación.</p>
+  <p>Los "Puntos Génesis", "Moon Cupones" y "Moon Packs" constituyen un sistema cerrado de lealtad y gamificación interna. No representan criptomonedas, activos financieros, ni valores regulables bajo la normativa de la CNMV o MiCA en su estado actual de simulación.</p>
 </section>
 
 <section>

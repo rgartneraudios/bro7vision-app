@@ -5,10 +5,10 @@ Sistema de lealtad basado en Puntos Génesis (gratuitos) y Activos Pay (dinero r
 Sincronizado con las fases reales de la luna.
 
 MOON VALES (Descuentos para usuarios):
-- NOVA VALE (Luna Nueva): 5% de descuento en 1 artículo. Coste: 1.000 Génesis.
-- CRESCENS VALE (C. Creciente): 10% de descuento en 1 artículo. Coste: 2.000 Génesis.
-- PLENA VALE (Luna Llena): 15% de descuento (mínimo 2 artículos). Coste: 4.000 Génesis.
-- DECRESCENS VALE (C. Menguante): 15% de descuento (mínimo 3 artículos). Coste: 3.000 Génesis.
+- NOVA VALE (Luna Nueva): 20% de descuento en 1 artículo. Coste: 1.000 Génesis.
+- CRESCENS VALE (C. Creciente): 25% de descuento en 1 artículo. Coste: 2.000 Génesis.
+- PLENA VALE (Luna Llena): 30% de descuento (mínimo 2 artículos). Coste: 4.000 Génesis.
+- DECRESCENS VALE (C. Menguante): 30% de descuento (mínimo 3 artículos). Coste: 3.000 Génesis.
 
 REGLAS COMERCIALES:
 1. Solo se permite UN (1) vale por compra.

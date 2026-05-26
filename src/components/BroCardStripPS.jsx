@@ -25,10 +25,10 @@ const ALCANCE_CFG = {
 
 // ── Semáforo lunar con % y condición en tooltip ──────────────────────
 const LUNA_CFG = {
-  nova:       { active: '#A855F7', inactive: '#2D1B4D', emoji: '🌑', pct: '10%',  cond: '1 art.'    },
-  crescens:   { active: '#79FF1A', inactive: '#1A3D1A', emoji: '🌙', pct: '15%',  cond: '1 art.'    },
-  plena:      { active: '#FFFFFF', inactive: '#3D3D3D', emoji: '🌕', pct: '20%',  cond: 'mín. 2'    },
-  decrescens: { active: '#F97316', inactive: '#3D2D1A', emoji: '🌗', pct: '20%',  cond: 'mín. 3'    },
+  nova:       { active: '#A855F7', inactive: '#2D1B4D', emoji: '🌑', pct: '10%',  cond: '1 art.',  label: 'Luna Nueva'    },
+  crescens:   { active: '#79FF1A', inactive: '#1A3D1A', emoji: '🌙', pct: '15%',  cond: '1 art.',  label: 'Luna Creciente'    },
+  plena:      { active: '#FFFFFF', inactive: '#3D3D3D', emoji: '🌕', pct: '20%',  cond: 'mín. 2',  label: 'Luna Llena'    },
+  decrescens: { active: '#F97316', inactive: '#3D2D1A', emoji: '🌗', pct: '20%',  cond: 'mín. 3',  label: 'Luna Menguante'    },
 };
 
 function LunarSemaphor({ lunas }) {
@@ -41,32 +41,32 @@ function LunarSemaphor({ lunas }) {
       {Object.entries(LUNA_CFG).map(([phase, cfg]) => {
         const isActive = lunas?.[phase] === true;
         return (
-          <div
-            key={phase}
-            title={isActive ? `${cfg.emoji} ${cfg.pct} · ${cfg.cond}` : `${cfg.emoji} No activo`}
-            style={{
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', gap: '2px',
-            }}
-          >
-            <div style={{
-              width: '12px', height: '12px', borderRadius: '50%',
-              backgroundColor: isActive ? cfg.active : cfg.inactive,
-              boxShadow: isActive ? `0 0 10px ${cfg.active}, 0 0 20px ${cfg.active}` : 'none',
-              opacity: isActive ? 1 : 0.35,
-              transition: 'all 0.3s ease',
-              flexShrink: 0,
-            }} />
-            {isActive && (
-              <span style={{
-                fontSize: '6px', color: cfg.active,
-                fontWeight: 800, lineHeight: 1,
-                letterSpacing: '-0.2px',
-              }}>
-                {cfg.pct}
-              </span>
-            )}
-          </div>
+            <div
+              key={phase}
+              title={isActive ? `${cfg.emoji} ${cfg.label} · ${cfg.pct} · ${cfg.cond}` : `${cfg.emoji} No activo`}
+              style={{
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', gap: '2px',
+              }}
+            >
+              <div style={{
+                width: '12px', height: '12px', borderRadius: '50%',
+                backgroundColor: isActive ? cfg.active : cfg.inactive,
+                boxShadow: isActive ? `0 0 10px ${cfg.active}, 0 0 20px ${cfg.active}` : 'none',
+                opacity: isActive ? 1 : 0.35,
+                transition: 'all 0.3s ease',
+                flexShrink: 0,
+              }} />
+              {isActive && (
+                <span style={{
+                  fontSize: '6px', color: cfg.active,
+                  fontWeight: 800, lineHeight: 1,
+                  letterSpacing: '-0.2px',
+                }}>
+                  {cfg.pct}
+                </span>
+              )}
+            </div>
         );
       })}
     </div>

@@ -64,10 +64,10 @@ const CFG = {
 };
 
 const VALES = [
-  { key:'nova',       emoji:'🌑', label:'Nova',   color:'#A855F7' },
-  { key:'crescens',   emoji:'🌙', label:'Cresc.', color:'#79FF1A' },
-  { key:'plena',      emoji:'🌕', label:'Plena',  color:'#FFFFFF' },
-  { key:'decrescens', emoji:'🌗', label:'Dec.',   color:'#F97316' },
+  { key:'nova',       emoji:'🌑', label:'Luna Nueva',   color:'#A855F7' },
+  { key:'crescens',   emoji:'🌙', label:'Luna Cre.', color:'#79FF1A' },
+  { key:'plena',      emoji:'🌕', label:'Luna Llena',  color:'#FFFFFF' },
+  { key:'decrescens', emoji:'🌗', label:'Luna Meng.',   color:'#F97316' },
 ];
 
 const DELIVERY = {

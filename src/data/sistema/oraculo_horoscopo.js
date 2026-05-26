@@ -16,9 +16,9 @@ HORÓSCOPO SIDERAL (13 SIGNOS):
 - Piscis (12 mar – 18 abr)
 
 FASES LUNARES:
-- Nova: Sembrar, nuevos comienzos.
-- Crescens: Impulso, crecimiento.
-- Plena: Manifestación, clímax.
-- Decrescens: Soltar, cierre de ciclos.
+- Luna Nueva: Sembrar, nuevos comienzos.
+- Luna Creciente: Impulso, crecimiento.
+- Luna Llena: Manifestación, clímax.
+- Luna Menguante: Soltar, cierre de ciclos.
 `;
 export default oraculo_horoscopo;

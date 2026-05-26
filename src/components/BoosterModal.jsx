@@ -314,7 +314,7 @@ const BoosterModal = ({ onClose }) => {
   const handleDeleteAccount = async () => {
     const alert1 = window.confirm("🚨 ¡ALERTA ROJA! 🚨\n¿Estás absolutamente seguro de que quieres desintegrar tu identidad de BRO7VISION?");
     if (!alert1) return;
-    const alert2 = window.confirm("Esta acción NO se puede deshacer. Perderás tus Puntos Génesis, Halos de Luz, Moon Vales y tu HoloPrisma desaparecerá del ciberespacio. ¿Proceder?");
+    const alert2 = window.confirm("Esta acción NO se puede deshacer. Perderás tus Puntos Génesis, Halos de Luz, Moon Cupones y tu HoloPrisma desaparecerá del ciberespacio. ¿Proceder?");
     if (!alert2) return;
     try {
       setLoading(true);
@@ -994,7 +994,7 @@ const MediaSlot = ({ title, fieldName, type, description }) => {
                   {/* ZONA DE RIESGO */}
                   <div className="bg-red-950/20 backdrop-blur-xl border border-red-500/30 p-6 rounded-3xl shadow-[0_0_20px_rgba(239,68,68,0.15)] mt-12">
                     <h3 className="text-sm text-red-400 font-bold mb-2 flex items-center gap-2">🚨 ZONA DE RIESGO</h3>
-                    <p className="text-xs text-gray-400 mb-4">Desintegrar tu identidad borrará tus Puntos, Vales y tu HoloPrisma de forma irreversible.</p>
+                    <p className="text-xs text-gray-400 mb-4">Desintegrar tu identidad borrará tus Puntos, Cupones y tu HoloPrisma de forma irreversible.</p>
                     <button onClick={handleDeleteAccount}
                       className="w-full py-3 px-4 bg-red-600/10 hover:bg-red-600/90 text-red-400 hover:text-white text-xs font-bold uppercase tracking-widest rounded-xl border border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.8)] transition-all duration-300 flex justify-center items-center gap-2">
                       <span>☠️</span> Iniciar Autodestrucción

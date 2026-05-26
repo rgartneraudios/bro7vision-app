@@ -28,11 +28,50 @@ const ConversionModal = ({ balances, setBalances, session, activePhase, onClose 
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-2 md:p-4 animate-fadeIn">
       <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" onClick={onClose}></div>
 
+      {/* ESTILOS SCROLL BIOLUMINISCENTE */}
+      <style>{`
+        .bioluminescent-scroll::-webkit-scrollbar {
+          width: 8px;
+        }
+        .bioluminescent-scroll::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.3);
+          border-radius: 4px;
+        }
+        .bioluminescent-scroll::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, #06b6d4, #3b82f6);
+          border-radius: 4px;
+          border: 2px solid transparent;
+          background-clip: padding-box;
+        }
+        .bioluminescent-scroll::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(180deg, #22d3ee, #60a5fa);
+          box-shadow: 0 0 10px rgba(6, 182, 212, 0.5), 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+        .bioluminescent-scroll::-webkit-scrollbar-thumb:active {
+          background: linear-gradient(180deg, #22d3ee, #3b82f6);
+          box-shadow: 0 0 15px rgba(6, 182, 212, 0.7), 0 0 30px rgba(59, 130, 246, 0.5);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.02);
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.2);
+        }
+      `}</style>
+
       {/* CONTENEDOR PRINCIPAL */}
       <div className="relative w-full max-w-5xl bg-[#0a0a0a] border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl flex flex-col md:flex-row h-[90vh] md:h-[720px]">
         
         {/* ================= SIDEBAR (IZQUIERDA) ================= */}
-        <div className="w-full md:w-[280px] flex-shrink-0 bg-[#111] border-b md:border-b-0 md:border-r border-white/5 p-4 md:p-6 flex flex-col overflow-y-auto md:overflow-hidden">
+        <div className="w-full md:w-[280px] flex-shrink-0 bg-[#111] border-b md:border-b-0 md:border-r border-white/5 p-4 md:p-6 flex flex-col overflow-y-auto md:overflow-hidden bioluminescent-scroll">
            <div className="mb-4 md:mb-6 text-center">
                <h2 className="text-white font-black italic tracking-widest text-lg md:text-xl">BRO<span className="text-cyan-500">MATRIX</span></h2>
            </div>
@@ -42,8 +81,8 @@ const ConversionModal = ({ balances, setBalances, session, activePhase, onClose 
                <div className="text-3xl md:text-4xl font-black text-white">{balances?.genesis || 0}</div>
            </div>
 
-           {/* INVENTARIO DINÁMICO */}
-           <div className="mb-4 md:mb-6 flex-1 overflow-y-auto pr-1 custom-scrollbar">
+            {/* INVENTARIO DINÁMICO */}
+            <div className="mb-4 md:mb-6 flex-1 overflow-y-auto pr-1 bioluminescent-scroll">
              <p className="text-[9px] md:text-[10px] text-cyan-400 uppercase tracking-widest mb-3 font-bold">TU INVENTARIO</p>
              
              {activeTab === 'strategy' ? (
@@ -90,9 +129,9 @@ const ConversionModal = ({ balances, setBalances, session, activePhase, onClose 
            
            {/* BOTONES NAVEGACIÓN SIDEBAR */}
            <nav className="grid grid-cols-3 md:flex md:flex-col gap-2 mt-auto">
-               <button onClick={() => setActiveTab('strategy')} className={`flex-1 p-2 md:p-3 rounded-xl flex items-center justify-center md:justify-start gap-2 text-[9px] md:text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'strategy' ? 'bg-white text-black shadow-lg shadow-white/10' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}>
-                   <span className="text-sm">😎</span> <span className="hidden md:inline">Vales & Gen</span>
-               </button>
+                <button onClick={() => setActiveTab('strategy')} className={`flex-1 p-2 md:p-3 rounded-xl flex items-center justify-center md:justify-start gap-2 text-[9px] md:text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'strategy' ? 'bg-white text-black shadow-lg shadow-white/10' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}>
+                    <span className="text-sm">😎</span> <span className="hidden md:inline">Cupones & Gen</span>
+                </button>
                <button onClick={() => setActiveTab('packs')} className={`flex-1 p-2 md:p-3 rounded-xl flex items-center justify-center md:justify-start gap-2 text-[9px] md:text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'packs' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}>
                    <span className="text-sm">🎁</span> <span className="hidden md:inline">Packs (FIAT)</span>
                </button>
@@ -103,12 +142,12 @@ const ConversionModal = ({ balances, setBalances, session, activePhase, onClose 
         </div>
 
         {/* ================= CONTENIDO DERECHO ================= */}
-        <div className="flex-1 p-4 md:p-6 lg:p-8 bg-black overflow-y-auto">
+        <div className="flex-1 p-4 md:p-6 lg:p-8 bg-black overflow-y-auto bioluminescent-scroll">
            
            {/* ---------------- PESTAÑA 1: ESTRATEGIA (VALES + GEN) ---------------- */}
            {activeTab === 'strategy' && (
               <div className="h-full flex flex-col animate-fadeIn">
-                 <h3 className="text-xl md:text-2xl font-black text-white uppercase mb-4 md:mb-6">Canje de Vales <span className="text-cyan-500">(Fase: {faseActual.toUpperCase()})</span></h3>
+                  <h3 className="text-xl md:text-2xl font-black text-white uppercase mb-4 md:mb-6">Canje de Cupones <span className="text-cyan-500">(Fase: {faseActual.toUpperCase()})</span></h3>
                  
                  <div className="grid grid-cols-1 gap-3 md:gap-4 mb-8">
                     {Object.entries(REGLAS_DESCUENTOS).map(([key, data]) => {

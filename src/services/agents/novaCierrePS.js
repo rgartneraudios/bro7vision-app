@@ -7,10 +7,10 @@
 
 // ── Reglas de vales ─────────────────────────────────
 export const REGLAS_VALES = {
-  nova:        { pct: 10, min_items: 1, emoji: '🌑', label: 'Nova'       },
-  crescens:    { pct: 15, min_items: 2, emoji: '🌙', label: 'Crescens'   },
-  plena:       { pct: 15, min_items: 2, emoji: '🌕', label: 'Plena'      },
-  decrescens:  { pct: 20, min_items: 3, emoji: '🌗', label: 'Decrescens' },
+  nova:        { pct: 20, min_items: 1, emoji: '🌑', label: 'Luna Nueva %'       },
+  crescens:    { pct: 25, min_items: 1, emoji: '🌙', label: 'Luna Creciente %'   },
+  plena:       { pct: 30, min_items: 2, emoji: '🌕', label: 'Luna Llena %'      },
+  decrescens:  { pct: 30, min_items: 3, emoji: '🌗', label: 'Luna Menguante %' },
 };
 
 // ── Cálculo de precios ───────────────────────────────
@@ -76,7 +76,7 @@ export const armarnovaCierre = ({ perfil_usuario, comercio, carrito, vales_usuar
   const precios_txt = `
 Base imponible:      ${base.toFixed(2)}€
 ${vale_activo
-  ? `Vale ${vale_activo} -${REGLAS_VALES[vale_activo].pct}%: -${descuento_importe.toFixed(2)}€
+  ? `Cupón ${vale_activo} -${REGLAS_VALES[vale_activo].pct}%: -${descuento_importe.toFixed(2)}€
 Base con descuento:  ${base_con_descuento.toFixed(2)}€`
   : '(sin vale activo)'}
 IVA ${comercio.iva_pct || 21}%:           ${iva_importe.toFixed(2)}€
@@ -145,7 +145,7 @@ QUITAR_ITEM:
 { "tipo": "QUITAR_ITEM", "item_id": "..." }
 
 ACTIVAR_VALE (solo si el usuario tiene vales suficientes Y el carrito cumple min_items):
-{ "tipo": "ACTIVAR_VALE", "vale": "plena", "descuento_pct": 15 }
+{ "tipo": "ACTIVAR_VALE", "vale": "plena", "descuento_pct": 30 }
 
 VALE_BLOQUEADO (si no cumple condición):
 { "tipo": "VALE_BLOQUEADO", "vale": "plena", "motivo": "min_items", "items_actuales": 1, "items_requeridos": 2 }
@@ -154,7 +154,7 @@ VALE_SIN_SALDO (si el usuario no tiene vales de ese tipo):
 { "tipo": "VALE_SIN_SALDO", "vale": "plena" }
 
 CAMBIAR_VALE (si ya hay un vale activo y quiere cambiarlo):
-{ "tipo": "CAMBIAR_VALE", "de": "nova", "a": "plena", "descuento_pct": 15 }
+{ "tipo": "CAMBIAR_VALE", "de": "nova", "a": "plena", "descuento_pct": 30 }
 
 MODO_ENTREGA:
 { "tipo": "MODO_ENTREGA", "modo": "pickup" }
@@ -169,8 +169,8 @@ HANDOFF_FINANZAS (cuando el usuario pregunta por vales y no tiene ninguno):
 
 Ejemplos de respuesta:
 {"mensaje":"Listo, el abrigo gris ya está en tu carrito 🛍️","accion":{"tipo":"AÑADIR_ITEM","item_id":"7891","item_nombre":"Abrigo gris","item_precio_base":208.26,"talla":"M","color":null}}
-{"mensaje":"El vale Plena necesita mínimo 2 artículos. Ahora tienes 1. ¿Añadimos algo más o prefieres el Nova que funciona desde 1?","accion":{"tipo":"VALE_BLOQUEADO","vale":"plena","motivo":"min_items","items_actuales":1,"items_requeridos":2}}
-{"mensaje":"Solo puedes usar un vale por compra. Ya tienes el Nova activo. ¿Lo cambiamos por el Plena?","accion":null}
+{"mensaje":"El vale Luna Llena necesita mínimo 2 artículos. Ahora tienes 1. ¿Añadimos algo más o prefieres el Luna Nueva que funciona desde 1?","accion":{"tipo":"VALE_BLOQUEADO","vale":"plena","motivo":"min_items","items_actuales":1,"items_requeridos":2}}
+{"mensaje":"Solo puedes usar un vale por compra. Ya tienes el Luna Nueva activo. ¿Lo cambiamos por el Luna Llena?","accion":null}
 {"mensaje":"Ahora mismo no tienes vales. Evelyn y Larry te pueden explicar cómo conseguirlos con génesis.","accion":{"tipo":"HANDOFF_FINANZAS"}}
 `.trim();
 
