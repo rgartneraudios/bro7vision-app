@@ -3,27 +3,27 @@
 // 1. PACKS FIAT (Generan activos "P" - Premium)
 export const PACKS_REGALOS = {
   nova: { label: 'LUNA NUEVA PACK', price: 9.00, halosP: 100, ecoP: 100, zapP: 50 },
-  crescens: { label: 'LUNA CRECIENTE PACK', price: 9.50, halosP: 110, ecoP: 100, zapP: 50 },
+  crescens: { label: 'CRECIENTE PACK', price: 9.50, halosP: 110, ecoP: 100, zapP: 50 },
   plena:     { label: 'LUNA LLENA PACK', price: 11.00, halosP: 130, ecoP: 100, zapP: 60 },
-  decrescens:{ label: 'LUNA MENGUANTE PACK', price: 10.50, halosP: 120, ecoP: 100, zapP: 60 },
+  decrescens:{ label: 'MENGUANTE PACK', price: 10.50, halosP: 120, ecoP: 100, zapP: 60 },
 };
 
-// 2. VALES DE DESCUENTO (Se compran con Puntos Génesis)
+// 2. CUPONES DE DESCUENTO (Se compran con Puntos Génesis)
 export const REGLAS_DESCUENTOS = {
   nova:       { 
-    label: 'LUNA NUEVA %', pct: 0.20, min_items: 1, cost: 1000, 
+    label: 'CUPÓN LUNA NUEVA', pct: 0.20, min_items: 1, cost: 1000, 
     color: 'text-fuchsia-400', border: 'border-fuchsia-500', bg: 'bg-fuchsia-500' 
   },
   crescens:   { 
-    label: 'LUNA CRECIENTE %', pct: 0.25, min_items: 1, cost: 2000, 
+    label: 'CUPÓN LUNA CRECIENTE', pct: 0.25, min_items: 1, cost: 2000, 
     color: 'text-green-400', border: 'border-green-500', bg: 'bg-green-500' 
   },
   plena:      { 
-    label: 'LUNA LLENA %', pct: 0.30, min_items: 2, cost: 4000, 
+    label: 'CUPÓN LUNA LLENA', pct: 0.30, min_items: 2, cost: 4000, 
     color: 'text-white-200', border: 'border-white-300', bg: 'bg-white-300' 
   },
   decrescens: { 
-    label: 'LUNA MENGUANTE %', pct: 0.30, min_items: 3, cost: 3000, 
+    label: 'CUPÓN LUNA MENGUANTE', pct: 0.30, min_items: 3, cost: 3000, 
     color: 'text-orange-500', border: 'border-orange-500', bg: 'bg-orange-500' 
   },
 };
