@@ -35,6 +35,7 @@ import LaraBanner  from "./personajes/LaraBanner";
 import PuffoBanner from "./personajes/PuffoBanner";
 import { getVideoForLocation } from '../data/VideoMap';
 
+
 export default function DesktopLayout(props) {
   // Desestructuramos todas las props que le manda App.jsx
   const {
@@ -47,10 +48,11 @@ export default function DesktopLayout(props) {
     setSelectedLog, setVlData, ososHandoffContext, setOsosHandoffContext,
     perfilOso, stripVisible, stripCards, stripLabel, setHoloPrismaIndex, findChannelByAlias, checkIfNew,
     ososModo, setOsosModo, handleLogout, selectedCard,
-  rumoresMensaje, rumoresLoading, handleRumoresInput,
+  rumoresMensaje, rumoresLoading, handleRumoresInput, onOpenMiniGuide,
   oraculoPersonaje,
    iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA
   } = props;
+  
 
 const [personajeOraculo, setPersonajeOraculo] = useState('orumama');
 const [oraculoEsHandoff, setOraculoEsHandoff] = useState(false);
@@ -109,7 +111,7 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
       </div>
 
       {/* 2. PUERTA IZQUIERDA */}
-      <div className={`side-panel side-panel-left ${isLeftOpen ? 'open' : ''} flex flex-col items-stretch p-0 overflow-y-auto custom-scrollbar`}>
+      <div className={`side-panel side-panel-left ${isLeftOpen ? 'open' : ''} flex flex-col items-stretch p-0 overflow-y-auto left-panel-scroll`}>
         <div className="mt-8 w-full px-4"><WalletWidget balances={balances} onClick={() => setShowWalletModal(true)} /></div>
         <div className="w-full flex justify-center my-2"><MoonMatrixCircle /></div>
         <div className="px-4 mt-4">
@@ -141,6 +143,21 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
               </div>
             </div>
           )}
+          {/* MINI BRO7VISION — Página de ayuda */}
+<div className="px-4 mt-4">
+<button
+  onClick={() => onOpenMiniGuide()}
+  className="w-full flex justify-between items-center p-3 bg-amber-500/10 border border-amber-400/40 rounded-2xl hover:bg-amber-500 hover:text-black transition-all group"
+>
+  <span
+    className="text-[10px] font-black uppercase group-hover:text-black"
+    style={{ fontFamily: "'Georgia', serif" }}
+  >
+    Mini Bro7Vision
+  </span>
+  <span className="text-lg">⬡</span>
+</button>
+</div>
         </div>
         <div className="mt-auto flex flex-col w-full pb-10">
           <div className="w-full px-4 pt-4 border-t border-white/5"><BroTuner ref={broTunerRef} /></div>
@@ -148,24 +165,24 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
       </div>      
 
       {/* 3. PUERTA DERECHA */}
-      <div className={`side-panel side-panel-right ${isRightOpen ? 'open' : ''} flex flex-col p-4 gap-2 overflow-y-auto custom-scrollbar`}>
+      <div className={`side-panel side-panel-right ${isRightOpen ? 'open' : ''} flex flex-col p-4 gap-2 overflow-y-auto right-panel-scroll`}>
         <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest text-right mb-1 mt-6 font-mono">Navegación</p>
         <div className="w-full flex flex-col gap-2.5 flex-1 mt-2">
           {navItems.map((item) => (
-            <button key={item.id} onClick={() => handleNavigation(item.id)} className={`w-full flex justify-between items-center p-4 bg-black/40 backdrop-blur-md border rounded-2xl transition-all group hover:scale-[1.02] active:scale-[0.98] ${item.color}`}>
-              <span className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 transition-colors">{item.label}</span>
+            <button key={item.id} onClick={() => handleNavigation(item.id)} className={`w-full flex justify-between items-center p-4 border rounded-2xl transition-all group hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-r from-amber-500/20 via-fuchsia-500/20 to-cyan-500/20 border-amber-400/30 hover:from-amber-500/40 hover:via-fuchsia-500/40 hover:to-cyan-500/40`}>
+              <span className="text-xs font-black uppercase tracking-[0.2em] text-amber-200 transition-colors group-hover:text-white">{item.label}</span>
               <div className="flex -space-x-3">{item.images.map((imgSrc, idx) => <img key={idx} src={imgSrc} alt="" className="w-9 h-9 rounded-full border-2 border-black object-cover shadow-[0_0_10px_rgba(0,0,0,0.8)]" />)}</div>
             </button>
           ))}
         </div>   
                <div className="mt-2 border-t border-white/10 pt-3 flex flex-col gap-2">
-          <button onClick={() => setShowBooster(true)} className="w-full p-3 border border-cyan-500/30 bg-cyan-500/10 rounded-xl text-cyan-400 font-mono text-[11px] hover:bg-cyan-500 hover:text-black transition-all">[ BOOSTER STUDIO ]</button>
-          <button onClick={() => { setShowStory(true); setIsLeftOpen(false); }} className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-violet-900/40 to-fuchsia-900/40 border border-fuchsia-500/30 rounded-xl hover:border-fuchsia-400 transition-all">
+          <button onClick={() => setShowBooster(true)} className="w-full p-3 border border-cyan-500/30 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-xl text-cyan-400 font-mono text-[11px] hover:from-cyan-500/40 hover:to-blue-500/40 transition-all">[ BOOSTER STUDIO ]</button>
+          <button onClick={() => { setShowStory(true); setIsLeftOpen(false); }} className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-violet-500/30 to-fuchsia-500/30 border border-fuchsia-500/30 rounded-xl hover:from-violet-500/50 hover:to-fuchsia-500/50 transition-all">
             <span className="text-sm">❄️</span><span className="text-[9px] font-black italic text-fuchsia-200">BRO STORIES</span>
           </button>  
           <div className="flex gap-2">
-            <button onClick={() => handleReportIssue()} className="flex-1 p-2 bg-red-900/20 border border-red-500/30 rounded-xl hover:bg-red-500/20 flex justify-center items-center group transition-all" title="Reportar Incidencia"><span className="text-sm">🚩</span></button>
-            <button onClick={() => setShowLegal(true)} className="flex-1 p-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 flex justify-center items-center group transition-all" title="Legal / Creador"><span className="text-sm text-gray-400 group-hover:text-cyan-400">⚖️</span></button>
+            <button onClick={() => handleReportIssue()} className="flex-1 p-2 bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-red-500/30 rounded-xl hover:from-red-500/40 hover:to-orange-500/40 flex justify-center items-center group transition-all" title="Reportar Incidencia"><span className="text-sm">🚩</span></button>
+            <button onClick={() => setShowLegal(true)} className="flex-1 p-2 bg-gradient-to-br from-gray-500/20 to-gray-700/20 border border-gray-500/30 rounded-xl hover:from-gray-500/40 hover:to-gray-700/40 flex justify-center items-center group transition-all" title="Legal / Creador"><span className="text-sm text-gray-400 group-hover:text-cyan-400">⚖️</span></button>
           </div>
         </div>
         <button onClick={handleLogout} className="mt-2 text-red-500 font-mono text-[10px] underline text-right w-full">[ DISCONNECT ]</button>
@@ -341,6 +358,41 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
       <PuffoBanner onHandoff={handleCentralHandoff} iaMode={iaMode} isAdmin={isAdmin} ciudad={sessionCity} />}
   	</>
 	)}
+
+      <style>{`
+        .left-panel-scroll {
+          scrollbar-width: thin;
+          scrollbar-color: #f59e0b #1a1a1a;
+        }
+        .left-panel-scroll::-webkit-scrollbar {
+          width: 8px;
+        }
+        .left-panel-scroll::-webkit-scrollbar-track {
+          background: #1a1a1a;
+          border-radius: 4px;
+        }
+        .left-panel-scroll::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, #f59e0b, #fbbf24, #f0abfc, #00ffff);
+          border-radius: 4px;
+          box-shadow:0 0 8px rgba(245,158,11,0.5), 0 0 4px rgba(0,255,255,0.5);
+        }
+        .right-panel-scroll {
+          scrollbar-width: thin;
+          scrollbar-color: #f59e0b #1a1a1a;
+        }
+        .right-panel-scroll::-webkit-scrollbar {
+          width: 8px;
+        }
+        .right-panel-scroll::-webkit-scrollbar-track {
+          background: #1a1a1a;
+          border-radius: 4px;
+        }
+        .right-panel-scroll::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, #f59e0b, #fbbf24, #f0abfc, #00ffff);
+          border-radius: 4px;
+          box-shadow:0 0 8px rgba(245,158,11,0.5), 0 0 4px rgba(0,255,255,0.5);
+        }
+      `}</style>
     </>
   );
 }

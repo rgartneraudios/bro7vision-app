@@ -46,6 +46,7 @@ import NeuralButton from './components/NeuralButton';
 import DesktopLayout from './components/DesktopLayout';
 import MobileLayout from './components/MobileLayout';
 import BackStage from './components/backstage/BackStage';
+import MiniGuide from './components/MiniGuide';
 
 import { useSessionManager }  from './hooks/useSessionManager';
 import { useNavigationState } from './hooks/useNavigationState';
@@ -126,6 +127,7 @@ function App() {
   const [vlData, setVlData]                     = useState(null);
   const [perfilSector, setPerfilSector]         = useState(null);
   const [avisoPendiente, setAvisoPendiente]     = useState(null);
+  const [showMiniGuide, setShowMiniGuide] = useState(false);
 
   const broTunerRef = useRef(null);
 
@@ -558,6 +560,7 @@ const filteredItems = useMemo(() => {
     onToggleAdminIA:     handleToggleAdminIA,
     onTogglePublicIA:    handleTogglePublicIA,
     rumoresMensaje, rumoresLoading, handleRumoresInput,
+    onOpenMiniGuide: () => setShowMiniGuide(true),
   };
 
   // ══════════════════════════════════════════════════════
@@ -594,6 +597,10 @@ const filteredItems = useMemo(() => {
           </div>
         </div>
       )}
+      
+      {showMiniGuide && (
+  <MiniGuide onClose={() => setShowMiniGuide(false)} />
+)}
 
       {showStory && (
         <div className="fixed inset-0 z-[200] bg-black">
