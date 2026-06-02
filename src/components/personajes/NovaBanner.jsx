@@ -83,11 +83,16 @@ export default function NovaBanner({
 
   // ── Botón ENTRAR → HandOff NOVA_CIERRE ──────────────────────────────────
   const handleEntrar = () => {
-    if (!selectedCard || !onHandoff) return;
-    onHandoff({
-      agente:   'NOVA_CIERRE',
-      comercio: selectedCard.bro_pd,
-    });
+    if (!selectedCard) return;
+    if (selectedCard.mini_url) window.open(selectedCard.mini_url, '_blank');
+    setSelectedCard(null);
+    // Legacy eliminado:
+
+    // onHandoff eliminado — ver handleEntrar arriba
+    // ({
+      // agente:   'NOVA_CIERRE',
+      // comercio: selectedCard.bro_pd
+    // });
     setSelectedCard(null);
   };
 
@@ -97,7 +102,7 @@ export default function NovaBanner({
 
       {/* 1. CARRUSEL */}
       {stripVisible && (
-        <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
+        <div className="w-full max-w-4xl pointer-events-auto px-2 mb-3">
           <BroCardStripPS
             cards={stripCards}
             onSelectCard={handleCardClick}

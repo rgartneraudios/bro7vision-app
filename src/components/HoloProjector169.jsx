@@ -352,14 +352,14 @@ const HoloProjector169 = ({ user, balances, setBalances, session, onClose, onOpe
           </button>
 
           <button
-            onClick={() => { if (typeof handleGoToShop === 'function') handleGoToShop(user); }}
+            onClick={() => {}}
             className="flex-1 flex flex-col items-center gap-1 text-yellow-500">
             <img src="/emojis/nova.webp" alt="Nova" className="w-7 h-7 object-contain" />
             <span className="text-[10px] font-black uppercase">Productos</span>
           </button>
 
           <button
-            onClick={() => { if (typeof handleGoToShop === 'function') handleGoToShop(user, 'isabellaCierre'); }}
+            onClick={() => {}}
             className="flex-1 flex flex-col items-center gap-1 text-fuchsia-400">
             <img src="/emojis/isabella.webp" alt="Isabella" className="w-7 h-7 object-contain" />
             <span className="text-[10px] font-black uppercase">Servicios</span>

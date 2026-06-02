@@ -2,12 +2,14 @@
 // ─────────────────────────────────────────────────────────────────────
 // Carga las cards para el cajón de cada sector.
 //
-// PRODUCTO / SERVICIO → leen de mini_vitrina_activa (Mini descentralizado)
-//   Filtros aplicados en Supabase:
-//     · fase_caduca > NOW()          (bloqueo lunar automático)
-//     · sector                       (PRODUCTO o SERVICIO)
-//     · alcance compatible con la modalidad del visitante
-//     · geolocalización si aplica
+// BROSHOP_PRODUCTO / BROSHOP_SERVICIO → leen de comercio_cupones
+//   Filtros aplicados:
+//     · activo = true
+//     · sector (PRODUCTO o SERVICIO)
+//     · alcance + geolocalización:
+//         LOCAL         → filtra por ciudad
+//         NACIONAL      → filtra por país
+//         INTERNACIONAL → sin filtro geográfico
 //
 // AVISOS / AUDIO → lógica propia sin cambios
 // ─────────────────────────────────────────────────────────────────────
@@ -15,7 +17,6 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 
-// Qué alcances son visibles según la modalidad del visitante
 const ALCANCES_VISIBLES = {
   LOCAL:         ['LOCAL', 'NACIONAL', 'INTERNACIONAL'],
   NACIONAL:      ['NACIONAL', 'INTERNACIONAL'],
@@ -36,37 +37,37 @@ export const useStripCards = () => {
 
     try {
 
-      // ══════════════════════════════════════════════════════════════
-      // BROSHOP_PRODUCTO / BROSHOP_SERVICIO
-      // Lee de mini_vitrina_activa — el Mini es la fuente de verdad
-      // ══════════════════════════════════════════════════════════════
       const agenteUpper = agente?.toUpperCase() || '';
 
+      // ══════════════════════════════════════════════════════════════
+      // BROSHOP_PRODUCTO / BROSHOP_SERVICIO
+      // Lee de comercio_cupones
+      // ══════════════════════════════════════════════════════════════
       if (agenteUpper === 'BROSHOP_PRODUCTO' || agenteUpper === 'BROSHOP_SERVICIO') {
         const sector          = agenteUpper === 'BROSHOP_PRODUCTO' ? 'PRODUCTO' : 'SERVICIO';
         const alcancesValidos = ALCANCES_VISIBLES[modalidad] || ALCANCES_VISIBLES.LOCAL;
 
-        // Consulta base — la vista ya filtra fase_caduca > NOW()
         let query = supabase
-          .from('mini_vitrina_activa')
+          .from('comercio_cupones')
           .select('*')
+          .eq('activo', true)
           .eq('sector', sector)
           .in('alcance', alcancesValidos)
-          .order('perfil_id')
-          .order('orden_vitrina');
+          .order('created_at', { ascending: false });
 
-        // Filtro geográfico en servidor
+        // Filtro geográfico
         if (modalidad === 'LOCAL' && ciudad) {
-          query = query.ilike('city', `%${ciudad}%`);
+          query = query.ilike('ciudad', `%${ciudad}%`);
         }
         if (modalidad === 'NACIONAL' && pais) {
-          query = query.eq('country', pais);
+          query = query.ilike('pais', `%${pais}%`);
         }
+        // INTERNACIONAL — sin filtro geográfico
 
         const { data: rows, error } = await query;
 
         if (error) {
-          console.error('[useStripCards] Error mini_vitrina_activa:', error);
+          console.error('[useStripCards] Error comercio_cupones:', error);
           setStripCards([]);
           setStripVisible(false);
           return;
@@ -78,40 +79,21 @@ export const useStripCards = () => {
           return;
         }
 
-        // Mapear al shape que espera BroCardStripPS
+        // Mapear al shape que espera BroCardStripPS v5
         const cards = rows.map(r => ({
-          // Identificadores
-          bro_pd:          r.id,
-          perfil_id:       r.perfil_id,
-          bro_ser:         r.bro_ser   || '',
-          bro_shop:        r.bro_pd    || '',
-
-          // Datos del perfil (para handoff al Mini / Teléfono Casa)
-          banner_url:      r.banner_url || '',
-          nombre:          r.alias      || '',
-          ciudad:          r.city       || '',
-          country:         r.country    || '',
-
-          // Datos de la card
+          id:              r.id,
+          nombre:          r.comercio_nombre || '',
+          banner_url:      r.banner_url      || '',
+          mini_url:        r.mini_url        || '',
+          descuento_pct:   r.descuento_pct,
+          condicion:       r.condicion       || '1 producto',
+          coste_genesis:   r.coste_genesis   || 1000,
           sector:          r.sector,
-          orden_vitrina:   r.orden_vitrina,
           alcance:         r.alcance,
-          producto_titulo: r.nombre        || '',
-          producto_codigo: r.ref_interna   || '',
-          categoria:       r.sector,
-          descripcion:     r.descripcion   || '',
-          precio_original: r.precio        || 0,
-          precio_descuento:r.precio        || 0,
-          precio_unidad:   r.precio_unidad || null,
-          tallas:          null,
-          imagen_url:      r.imagen_url    || '',
-          link_pago:       r.link_pago     || '',
-          whatsapp:        r.whatsapp      || null,
-          disponibilidad:  r.disponibilidad || 'libre',
-          stock_actual:    1,              // mini_vitrina no tiene stock — siempre visible
-          lunas:           r.semaforo || {},
-          fase_id:         r.fase_id,
-          fase_caduca:     r.fase_caduca,
+          ciudad:          r.ciudad          || '',
+          pais:            r.pais            || '',
+          fase_lunar:      faseActual(),
+          vencimiento:     vencimientoFase(),
         }));
 
         setStripCards(cards);
@@ -121,7 +103,7 @@ export const useStripCards = () => {
       }
 
       // ══════════════════════════════════════════════════════════════
-      // BROSHOP_AVISO — lógica propia sin cambios
+      // BROSHOP_AVISO — sin cambios
       // ══════════════════════════════════════════════════════════════
       if (agenteUpper === 'BROSHOP_AVISO') {
         const ahora = new Date().toISOString();
@@ -169,19 +151,18 @@ export const useStripCards = () => {
       }
 
       // ══════════════════════════════════════════════════════════════
-      // AUDIO / MUSIC — lógica propia sin cambios
+      // AUDIO / MUSIC — sin cambios
       // ══════════════════════════════════════════════════════════════
       if (agenteUpper === 'AUDIO' || agenteUpper === 'MUSIC') {
         const esPais = modalidad !== 'LOCAL' ||
                        ciudad?.toLowerCase() === 'españa' ||
                        ciudad?.toLowerCase() === 'spain';
 
-        let query = supabase
+        const { data: perfiles, error } = await supabase
           .from('profiles')
           .select('bro_mus, bro_aud, banner_url, alias, city, country, description, audio_type, track_name, audio_description, audio_file, role, nearby_ref')
           .limit(300);
 
-        const { data: perfiles, error } = await query;
         if (error) {
           console.error('[useStripCards] Error audio:', error);
         }
@@ -258,3 +239,41 @@ export const useStripCards = () => {
     cargarStripCards,
   };
 };
+
+// ── Helpers fase lunar ────────────────────────────────────────────────
+// Calcula la fase lunar aproximada y su fecha de vencimiento
+// basándose en el ciclo sinódico (29.53 días)
+
+function faseActual() {
+  const LUNA_NUEVA_REF = new Date('2024-01-11T00:00:00Z');
+  const CICLO = 29.530589;
+  const ahora = new Date();
+  const diasDesdeRef = (ahora - LUNA_NUEVA_REF) / (1000 * 60 * 60 * 24);
+  const diaEnCiclo = ((diasDesdeRef % CICLO) + CICLO) % CICLO;
+
+  if (diaEnCiclo < 7.38)  return 'Luna Nueva';
+  if (diaEnCiclo < 14.77) return 'Creciente';
+  if (diaEnCiclo < 22.15) return 'Luna Llena';
+  return 'Menguante';
+}
+
+function vencimientoFase() {
+  const LUNA_NUEVA_REF = new Date('2024-01-11T00:00:00Z');
+  const CICLO = 29.530589;
+  const ahora = new Date();
+  const diasDesdeRef = (ahora - LUNA_NUEVA_REF) / (1000 * 60 * 60 * 24);
+  const diaEnCiclo = ((diasDesdeRef % CICLO) + CICLO) % CICLO;
+
+  // Días restantes hasta el siguiente cambio de fase
+  let diasRestantes;
+  if (diaEnCiclo < 7.38)       diasRestantes = 7.38  - diaEnCiclo;
+  else if (diaEnCiclo < 14.77) diasRestantes = 14.77 - diaEnCiclo;
+  else if (diaEnCiclo < 22.15) diasRestantes = 22.15 - diaEnCiclo;
+  else                          diasRestantes = 29.53 - diaEnCiclo;
+
+  const vencimiento = new Date(ahora.getTime() + diasRestantes * 24 * 60 * 60 * 1000);
+  const d = String(vencimiento.getDate()).padStart(2, '0');
+  const m = String(vencimiento.getMonth() + 1).padStart(2, '0');
+  const y = vencimiento.getFullYear();
+  return `${d}-${m}-${y}`;
+}

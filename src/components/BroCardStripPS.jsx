@@ -1,68 +1,71 @@
-// src/components/BroCardStripPS.jsx  v3
+// src/components/BroCardStripPS.jsx  v6
 // ─────────────────────────────────────────────────────────────────────
-// Grid 2 columnas. Cards idénticas al Mini (400×300, imagen 200px izq).
-// card.lunas → { nova: bool, crescens: bool, plena: bool, decrescens: bool }
-// card.alcance → 'LOCAL' | 'NACIONAL' | 'INTERNACIONAL'
-// card.sector  → 'PRODUCTO' | 'SERVICIO'
-// card.image_url → imagen subida a R2
+// Grid 3 columnas × 240px. Scroll vertical por filas.
+// PLATA 15% | ZAFIRO 20% | GOLD 25%
 // ─────────────────────────────────────────────────────────────────────
 import { useRef, useEffect, useState } from "react";
 
-// ── Temas ────────────────────────────────────────────────────────────
-const THEMES = {
-  gold:  { glow: "rgba(251,191,36,0.5)",  border: "#fbbf24", idColor: "#fbbf24" },
-  cyan:  { glow: "rgba(34,211,238,0.5)",  border: "#22d3ee", idColor: "#22d3ee" },
-  slate: { glow: "rgba(100,116,139,0.5)", border: "#64748b", idColor: "#64748b" },
+const RAREZA = {
+  15: {
+    bg: 'linear-gradient(160deg, #2a2a2e 0%, #4a4a52 30%, #8a8a96 55%, #5a5a64 75%, #1e1e22 100%)',
+    shimmer: 'linear-gradient(105deg, transparent 35%, rgba(210,215,230,0.55) 50%, transparent 65%)',
+    borderGrad: 'linear-gradient(160deg, #c8ccd8, #f0f2f8, #9ca0b0, #e8eaf0, #7a7e8a)',
+    cornerBg: 'linear-gradient(135deg, #9ca0b0 0%, #f0f2f8 40%, #b0b4c4 70%, #787c8c 100%)',
+    cornerText: '#0a0a14',
+    nameColor: '#ffffff',
+    nameShadow: '0 0 18px rgba(220,225,245,0.9), 0 0 36px rgba(180,185,210,0.6)',
+    faseColor: '#d0d4e8',
+    infoColor: '#c0c4d8',
+    genesisColor: '#e8eaf8',
+    glowColor: 'rgba(200,205,225,0.35)',
+  },
+  20: {
+    bg: 'linear-gradient(160deg, #0a0f2e 0%, #0d1f5c 25%, #1a3a9e 50%, #0d2070 70%, #060b20 100%)',
+    shimmer: 'linear-gradient(105deg, transparent 35%, rgba(120,180,255,0.6) 50%, transparent 65%)',
+    borderGrad: 'linear-gradient(160deg, #2a4fcc, #6a9fff, #1a35aa, #5080ee, #0f2580)',
+    cornerBg: 'linear-gradient(135deg, #1a3acc 0%, #6a9fff 40%, #2a50dd 70%, #0f2299 100%)',
+    cornerText: '#ffffff',
+    nameColor: '#ffffff',
+    nameShadow: '0 0 18px rgba(100,160,255,0.95), 0 0 36px rgba(60,120,255,0.7)',
+    faseColor: '#90c0ff',
+    infoColor: '#80b0ff',
+    genesisColor: '#a0d0ff',
+    glowColor: 'rgba(80,130,255,0.4)',
+  },
+  25: {
+    bg: 'linear-gradient(160deg, #1a1200 0%, #3d2a00 25%, #8a6200 50%, #5a4000 70%, #120d00 100%)',
+    shimmer: 'linear-gradient(105deg, transparent 35%, rgba(255,220,80,0.65) 50%, transparent 65%)',
+    borderGrad: 'linear-gradient(160deg, #c8960a, #ffe066, #a07808, #ffd040, #7a5c06)',
+    cornerBg: 'linear-gradient(135deg, #c8960a 0%, #ffe566 40%, #d4a010 70%, #9a7008 100%)',
+    cornerText: '#0a0800',
+    nameColor: '#ffffff',
+    nameShadow: '0 0 18px rgba(255,210,50,0.95), 0 0 36px rgba(220,160,0,0.7)',
+    faseColor: '#ffd060',
+    infoColor: '#ffbc30',
+    genesisColor: '#ffe080',
+    glowColor: 'rgba(255,200,50,0.4)',
+  },
 };
 
-// ── Alcance ───────────────────────────────────────────────────────────
-const ALCANCE_CFG = {
-  LOCAL:         { label: 'LOCAL',         color: '#22d3ee' },
-  NACIONAL:      { label: 'NACIONAL',      color: '#fbbf24' },
-  INTERNACIONAL: { label: 'INTERNACIONAL', color: '#a855f7' },
+const RAREZA_DEFAULT = RAREZA[15];
+
+const FASE_CFG = {
+  'Luna Nueva': { emoji: '🌑', label: 'Luna Nueva' },
+  'Creciente':  { emoji: '🌙', label: 'Creciente'  },
+  'Luna Llena': { emoji: '🌕', label: 'Luna Llena' },
+  'Menguante':  { emoji: '🌗', label: 'Menguante'  },
 };
 
-// ── Semáforo lunar — mismos colores que el Mini ───────────────────────
-const LUNA_CFG = {
-  nova:       { active: '#e040fb', inactive: '#2D1B4D', emoji: '🌑', pct: '20%', cond: '1 art.',  label: 'Luna Nueva'     },
-  crescens:   { active: '#69ff47', inactive: '#1A3D1A', emoji: '🌙', pct: '25%', cond: '1 art.',  label: 'Luna Creciente' },
-  plena:      { active: '#e8f4ff', inactive: '#3D3D3D', emoji: '🌕', pct: '30%', cond: 'mín. 2',  label: 'Luna Llena'     },
-  decrescens: { active: '#ff9800', inactive: '#3D2D1A', emoji: '🌗', pct: '30%', cond: 'mín. 3',  label: 'Luna Menguante' },
-};
-
-// ── Semáforo — idéntico al Mini en row ───────────────────────────────
-function LunarSemaphor({ lunas }) {
-  return (
-    <div style={{ display: 'flex', gap: '5px', alignItems: 'center', margin: '6px 0 4px' }}>
-      {Object.entries(LUNA_CFG).map(([phase, cfg]) => {
-        const isActive = lunas?.[phase] === true;
-        return (
-          <div
-            key={phase}
-            title={isActive ? `${cfg.emoji} ${cfg.label} · ${cfg.pct} · ${cfg.cond}` : `${cfg.emoji} No activo`}
-            style={{
-              width: '10px', height: '10px', borderRadius: '50%',
-              border: '1px solid rgba(255,255,255,0.15)',
-              backgroundColor: isActive ? cfg.active : cfg.inactive,
-              boxShadow: isActive ? `0 0 6px ${cfg.active}` : 'none',
-              opacity: isActive ? 1 : 0.2,
-              transition: 'all 0.3s ease',
-              flexShrink: 0,
-            }}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
-// ── Card individual — layout idéntico al Mini ─────────────────────────
-function BroCardPS({ card, theme, onClick }) {
-  const [loaded,  setLoaded]  = useState(false);
-  const [inView,  setInView]  = useState(false);
-  const [hovered, setHovered] = useState(false);
+function BroCardCupon({ card, onClick }) {
+  const [imgLoaded,  setImgLoaded]  = useState(false);
+  const [inView,     setInView]     = useState(false);
+  const [hovered,    setHovered]    = useState(false);
+  const [shimmerPos, setShimmerPos] = useState(-100);
   const cardRef = useRef(null);
-  const t = THEMES[theme] || THEMES.gold;
+  const animRef = useRef(null);
+
+  const r    = RAREZA[card.descuento_pct] || RAREZA_DEFAULT;
+  const fase = FASE_CFG[card.fase_lunar]  || { emoji: '🌑', label: card.fase_lunar || '' };
 
   // Lazy load
   useEffect(() => {
@@ -70,15 +73,29 @@ function BroCardPS({ card, theme, onClick }) {
     if (!el) return;
     const obs = new IntersectionObserver(
       ([e]) => { if (e.isIntersecting) setInView(true); },
-      { threshold: 0.1, rootMargin: "0px 60px 0px 60px" }
+      { threshold: 0.05 }
     );
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
 
-  const alcanceCfg = ALCANCE_CFG[card.alcance] || null;
-  const mostrarBadgeAlcance = card.alcance && card.alcance !== 'LOCAL';
-  const sectorLabel = card.sector === 'SERVICIO' ? '🛠' : '📦';
+  // Shimmer sweep hover
+  useEffect(() => {
+    if (hovered) {
+      setShimmerPos(-100);
+      let pos = -100;
+      const tick = () => {
+        pos += 4;
+        setShimmerPos(pos);
+        if (pos < 200) animRef.current = requestAnimationFrame(tick);
+      };
+      animRef.current = requestAnimationFrame(tick);
+    } else {
+      if (animRef.current) cancelAnimationFrame(animRef.current);
+      setShimmerPos(-100);
+    }
+    return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
+  }, [hovered]);
 
   return (
     <div
@@ -87,239 +104,241 @@ function BroCardPS({ card, theme, onClick }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        // ── Dimensiones idénticas al Mini ──
-        width: '400px',
-        height: '300px',
-        display: 'grid',
-        gridTemplateColumns: '200px 1fr',
-        borderRadius: '12px',
+        width: '240px',
+        height: '340px',
+        borderRadius: '16px',
         overflow: 'hidden',
         cursor: 'pointer',
         position: 'relative',
-        background: 'rgba(255,250,245,0.08)',
-        border: `1px solid ${hovered ? t.border : 'rgba(0,245,255,0.18)'}`,
-        backdropFilter: 'blur(8px)',
-        transition: 'all 0.25s ease',
-        transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
-        boxShadow: hovered
-          ? `0 0 24px ${t.glow}, 0 4px 16px rgba(0,0,0,0.6)`
-          : '0 2px 10px rgba(0,0,0,0.5)',
-      }}
-    >
-      {/* ── Imagen izquierda 200px ── */}
-      <div style={{
-        width: '200px',
-        height: '100%',
-        background: '#1B1B26',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '32px',
-        color: 'rgba(232,244,255,0.55)',
-        overflow: 'hidden',
-        position: 'relative',
-        flexShrink: 0,
-      }}>
-        {inView && card.image_url ? (
-          <img
-            src={card.image_url}
-            alt={card.producto_titulo || card.nombre || 'Referencia'}
-            onLoad={() => setLoaded(true)}
-            style={{
-              width: '100%', height: '100%',
-              objectFit: 'cover', display: 'block',
-              opacity: loaded ? 1 : 0,
-              transition: 'opacity 0.3s ease',
-            }}
-          />
-        ) : null}
-
-        {/* Shimmer / placeholder */}
-        {(!loaded || !card.image_url) && (
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.03) 100%)',
-            backgroundSize: '200% 100%',
-            animation: 'shimmer 1.6s infinite',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            {!card.image_url && <span style={{ fontSize: '32px', opacity: 0.3 }}>🛍️</span>}
-          </div>
-        )}
-      </div>
-
-      {/* ── Body derecha ── */}
-      <div style={{
-        padding: '14px 16px',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
-        gap: '5px',
-        minWidth: 0,
-        position: 'relative',
+        alignItems: 'center',
+        background: r.bg,
+        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+        transform: hovered ? 'translateY(-6px) scale(1.03)' : 'translateY(0) scale(1)',
+        boxShadow: hovered
+          ? `0 16px 40px ${r.glowColor}, 0 4px 20px rgba(0,0,0,0.85)`
+          : '0 4px 16px rgba(0,0,0,0.7)',
+        flexShrink: 0,
+      }}
+    >
+      {/* Borde degradado */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        borderRadius: '16px',
+        background: r.borderGrad,
+        zIndex: 0, opacity: 0.85,
+      }} />
+
+      {/* Cuerpo */}
+      <div style={{
+        position: 'relative', zIndex: 1,
+        width: 'calc(100% - 2px)',
+        height: 'calc(100% - 2px)',
+        margin: '1px',
+        borderRadius: '15px',
+        overflow: 'hidden',
+        background: r.bg,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
       }}>
 
-        {/* Badge Destacado */}
-        {card.orden_vitrina && (
-          <div style={{
-            position: 'absolute', top: '8px', right: '8px',
-            background: 'rgba(2,8,18,0.9)',
-            border: `1px solid ${t.border}`,
-            borderRadius: '20px', padding: '2px 8px',
-            fontSize: '10px', fontFamily: "'Orbitron', monospace",
-            color: t.idColor, letterSpacing: '0.5px',
-          }}>
-            ★ Destacado
-          </div>
-        )}
+        {/* Shimmer */}
+        <div style={{
+          position: 'absolute', top: 0, bottom: 0,
+          left: `${shimmerPos}%`, width: '60%',
+          background: r.shimmer,
+          zIndex: 10, pointerEvents: 'none',
+        }} />
 
-        {/* Badges alcance + sector */}
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '2px' }}>
-          <span style={{ fontSize: '13px' }}>{sectorLabel}</span>
-          {mostrarBadgeAlcance && alcanceCfg && (
-            <span style={{
-              padding: '2px 6px',
-              background: 'rgba(0,0,0,0.80)',
-              border: `1px solid ${alcanceCfg.color}80`,
-              color: alcanceCfg.color,
-              fontSize: '8px', fontWeight: 700,
-              letterSpacing: '0.4px', textTransform: 'uppercase',
-              borderRadius: '4px',
-              boxShadow: `0 0 6px ${alcanceCfg.color}60`,
-            }}>
-              {alcanceCfg.label}
-            </span>
-          )}
-        </div>
-
-        {/* Nombre */}
-        {(card.producto_titulo || card.nombre) && (
+        {/* ── Nombre comercio — prominente con resplandor ── */}
+        <div style={{
+          marginTop: '22px',
+          width: '100%',
+          textAlign: 'center',
+          paddingInline: '10px',
+          zIndex: 5,
+        }}>
           <div style={{
             fontFamily: "'Orbitron', monospace",
-            fontSize: '14px', fontWeight: 700,
-            color: '#e8f4ff', letterSpacing: '1px',
-            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            fontSize: '13px',
+            fontWeight: 900,
+            color: r.nameColor,
+            letterSpacing: '2px',
+            textTransform: 'uppercase',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            textShadow: r.nameShadow,
           }}>
-            {card.producto_titulo || card.nombre}
+            {card.nombre || 'COMERCIO'}
           </div>
-        )}
-
-        {/* Referencia BRO-ID */}
-        {card.bro_pd && (
-          <div style={{
-            fontSize: '11px', color: 'rgba(232,244,255,0.55)',
-            fontFamily: "'Orbitron', monospace", letterSpacing: '0.5px',
-          }}>
-            {card.bro_pd}
-          </div>
-        )}
-
-        {/* Descripción */}
-        {card.descripcion && (
-          <div style={{
-            fontSize: '12px', color: 'rgba(232,244,255,0.55)',
-            lineHeight: 1.4,
-            display: '-webkit-box', WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical', overflow: 'hidden',
-          }}>
-            {card.descripcion}
-          </div>
-        )}
-
-        {/* Semáforo */}
-        <LunarSemaphor lunas={card.lunas} />
-
-        {/* Precios */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          {card.precio_descuento > 0 && (
-            <span style={{
-              fontFamily: "'Orbitron', monospace",
-              fontSize: '17px', fontWeight: 700, color: '#39ff14',
-            }}>
-              {card.precio_descuento.toFixed(2)} €
-            </span>
-          )}
-          {card.precio_original > 0 && (
-            <span style={{
-              fontSize: '12px', color: 'rgba(232,244,255,0.55)',
-              textDecoration: card.precio_descuento > 0 ? 'line-through' : 'none',
-            }}>
-              {card.precio_original.toFixed(2)} €
-            </span>
-          )}
         </div>
 
-        {/* Tallas */}
-        {card.tallas && (
-          <div style={{ fontSize: '11px', color: 'rgba(107,114,128,1)' }}>
-            {card.tallas}
-          </div>
-        )}
+        {/* ── Imagen 160×160 en perspectiva ── */}
+        <div style={{
+          marginTop: '12px',
+          width: '160px',
+          height: '160px',
+          borderRadius: '10px',
+          overflow: 'hidden',
+          position: 'relative',
+          zIndex: 5,
+          flexShrink: 0,
+          transform: hovered
+            ? 'perspective(500px) rotateY(-7deg) rotateX(5deg) scale(1.05)'
+            : 'perspective(500px) rotateY(-4deg) rotateX(3deg)',
+          transition: 'transform 0.4s ease',
+          boxShadow: `5px 7px 20px rgba(0,0,0,0.75), -2px -2px 8px ${r.glowColor}`,
+        }}>
+          {inView && card.banner_url ? (
+            <img
+              src={card.banner_url}
+              alt={card.nombre || 'Comercio'}
+              onLoad={() => setImgLoaded(true)}
+              style={{
+                width: '100%', height: '100%',
+                objectFit: 'cover', display: 'block',
+                opacity: imgLoaded ? 1 : 0,
+                transition: 'opacity 0.4s ease',
+              }}
+            />
+          ) : null}
+          {(!imgLoaded || !card.banner_url) && (
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'rgba(255,255,255,0.04)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <span style={{ fontSize: '30px', opacity: 0.2 }}>🏪</span>
+            </div>
+          )}
+          <div style={{
+            position: 'absolute', top: 0, left: 0, right: 0, height: '40%',
+            background: `linear-gradient(to bottom, ${r.glowColor}, transparent)`,
+            pointerEvents: 'none',
+          }} />
+        </div>
 
-        {/* Botón VER → handoff al Mini */}
-        <button
-          onClick={(e) => { e.stopPropagation(); onClick?.(card); }}
-          style={{
-            marginTop: '4px',
-            padding: '7px 18px',
-            background: 'transparent',
-            border: `1px solid #00f5ff`,
-            borderRadius: '7px',
-            color: '#00f5ff',
+        {/* ── Info inferior ── */}
+        <div style={{
+          flex: 1, width: '100%',
+          display: 'flex', flexDirection: 'column',
+          justifyContent: 'center', alignItems: 'center',
+          gap: '4px', paddingInline: '12px',
+          paddingBottom: '10px', zIndex: 5,
+        }}>
+
+          {/* Fase lunar — legible */}
+          <div style={{
             fontFamily: "'Orbitron', monospace",
-            fontSize: '10px', letterSpacing: '2px',
-            cursor: 'pointer', transition: 'all 0.2s',
-            textTransform: 'uppercase', alignSelf: 'flex-start',
-          }}
-          onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,245,255,0.1)'}
-          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-        >
-          VER
-        </button>
+            fontSize: '11px', fontWeight: 700,
+            color: r.faseColor,
+            letterSpacing: '1.5px',
+            textTransform: 'uppercase',
+            textShadow: `0 0 10px ${r.glowColor}`,
+          }}>
+            {fase.emoji} {fase.label}
+          </div>
+
+          {/* Vencimiento — legible */}
+          <div style={{
+            fontFamily: "'Orbitron', monospace",
+            fontSize: '10px', fontWeight: 600,
+            color: r.infoColor,
+            letterSpacing: '0.5px',
+          }}>
+            Vence {card.vencimiento || '—'}
+          </div>
+
+          {/* Coste génesis — legible */}
+          <div style={{
+            fontFamily: "'Orbitron', monospace",
+            fontSize: '11px', fontWeight: 700,
+            color: r.genesisColor,
+            letterSpacing: '0.5px',
+            textShadow: `0 0 8px ${r.glowColor}`,
+          }}>
+            {card.coste_genesis?.toLocaleString() || '1.000'} ✦ génesis
+          </div>
+
+          {/* Condición */}
+          <div style={{
+            fontFamily: "'Orbitron', monospace",
+            fontSize: '9px', fontWeight: 600,
+            color: r.infoColor,
+            letterSpacing: '1px',
+            textTransform: 'uppercase',
+            opacity: 0.85,
+          }}>
+            {card.condicion || '1 producto'}
+          </div>
+        </div>
+
+        {/* ── Esquina % — impacto máximo ── */}
+        <div style={{
+          position: 'absolute', bottom: 0, right: 0,
+          width: '100px', height: '100px',
+          overflow: 'hidden', zIndex: 6,
+          borderBottomRightRadius: '15px',
+        }}>
+          <div style={{
+            position: 'absolute', bottom: '-1px', right: '-1px',
+            width: '102px', height: '102px',
+            background: r.cornerBg,
+            clipPath: 'polygon(100% 0, 100% 100%, 0 100%)',
+          }} />
+          <div style={{
+            position: 'absolute',
+            bottom: '12px', right: '6px',
+            fontFamily: "'Orbitron', monospace",
+            fontSize: '26px', fontWeight: 900,
+            color: r.cornerText,
+            letterSpacing: '-1px', lineHeight: 1,
+            textAlign: 'right',
+            textShadow: '0 1px 4px rgba(0,0,0,0.4)',
+          }}>
+            {card.descuento_pct || '—'}%
+          </div>
+        </div>
+
       </div>
     </div>
   );
 }
 
-// ── Contenedor — grid 2 columnas ──────────────────────────────────────
+// ── Contenedor 3 columnas × 240px con scroll vertical ────────────────
 export default function BroCardStripPS({
   cards = [],
   onSelectCard,
-  accentColor = "gold",
   visible = true,
 }) {
-  // Filtro defensivo: stock > 0 y orden_vitrina 1-3
-  const cardsVisibles = cards
-    .filter(c => (c.stock_actual ?? 0) > 0 && c.orden_vitrina >= 1 && c.orden_vitrina <= 3)
-    .sort((a, b) => a.orden_vitrina - b.orden_vitrina);
-
-  if (!visible || cardsVisibles.length === 0) return null;
+  if (!visible || cards.length === 0) return null;
 
   return (
     <>
       <style>{`
-        @keyframes shimmer {
-          0%   { background-position: -200% 0; }
-          100% { background-position:  200% 0; }
-        }
-        @keyframes stripIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to   { opacity: 1; transform: translateY(0);    }
+        @keyframes stripInCupon {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(2, 400px)',
+        gridTemplateColumns: 'repeat(3, 240px)',
         gap: '14px',
-        animation: 'stripIn 0.35s ease both',
+        animation: 'stripInCupon 0.4s ease both',
         justifyContent: 'center',
+        overflowY: 'auto',
+        maxHeight: '720px',
+        paddingBottom: '8px',
       }}>
-        {cardsVisibles.map((card, i) => (
-          <BroCardPS
-            key={card.bro_pd || `card-${i}`}
+        {cards.map((card, i) => (
+          <BroCardCupon
+            key={card.nombre || `card-${i}`}
             card={card}
-            theme={accentColor}
             onClick={onSelectCard}
           />
         ))}

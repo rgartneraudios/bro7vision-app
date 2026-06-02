@@ -3,7 +3,6 @@ import { supabase } from './supabaseClient';
 import GenesisGate from './components/GenesisGate';
 import WalletWidget from './components/WalletWidget';
 import ConversionModal from './components/ConversionModal';
-import PaymentModal from './components/PaymentModal';
 import NexusDashboard from './components/NexusDashboard';
 import StoryPlayer from './components/StoryPlayer';
 import BroTuner from './components/BroTuner';
@@ -78,7 +77,6 @@ function App() {
     intent, setIntent,
     scope, setScope,
     realityMode, setRealityMode,
-    ventasMode, setVentasMode,
     ososModo, setOsosModo,
     ososHandoffContext, setOsosHandoffContext,
   } = useNavigationState();
@@ -179,13 +177,6 @@ function App() {
   // FUNCIONES SIMPLES
   // ══════════════════════════════════════════════════════
 
-  const abrirTienda = (comercio, mode = 'novaCierre') => {
-    setProjectingUser(null);
-    setSelectedCard(comercio);
-    setVentasMode(mode);
-  };
-
-  const handleGoToShop        = (user, mode = 'novaCierre') => abrirTienda(user, mode);
   const handleShowPurchaseModal = () => setShowWalletModal(true);
 
   const handleOpenProfile = (user) => {
@@ -277,19 +268,6 @@ function App() {
       setScope(null);
       return;
     }
-
-   if (agente === 'NOVA_CIERRE') {
-  const bro_id_target  = comercio || intencion;
-  const comercioTarget = realItems.find(i => i.bro_pd === bro_id_target || i.bro_ser === bro_id_target);
-  if (comercioTarget) abrirTienda(comercioTarget, 'novaCierre');
-  return;
-}
-if (agente === 'ISABELLA_CIERRE') {
-  const bro_id_target  = comercio || intencion;
-  const comercioTarget = realItems.find(i => i.bro_ser === bro_id_target || i.bro_pd === bro_id_target);
-  if (comercioTarget) abrirTienda(comercioTarget, 'isabellaCierre');
-  return;
-}
 
     if (agente === 'BUSCAR_STRIP') {
       const ciudadActual = sessionCity || scope?.city || '';
@@ -545,7 +523,7 @@ const filteredItems = useMemo(() => {
     broTunerRef, navItems, handleNavigation, handleReportIssue,
     setShowWalletModal, setShowBooster, setShowStory, setShowLegal,
     scope, sessionCP, sessionCity, sessionRef,
-    handleGameWin, handleGoToShop, abrirTienda,
+    handleGameWin,
     setSelectedLog, setVlData,
     ososHandoffContext, setOsosHandoffContext,
     perfilOso, stripVisible, stripCards, stripLabel,
@@ -631,7 +609,6 @@ const filteredItems = useMemo(() => {
         <HoloProjector
           videoUrl={projectingUser.video_file || projectingUser.videoUrl}
           user={projectingUser}
-          handleGoToShop={handleGoToShop}
           balances={balances} setBalances={setBalances}
           session={session}
           onOpenLog={setSelectedLog}
@@ -643,7 +620,6 @@ const filteredItems = useMemo(() => {
       {projectingUser && is169Mode && (
   <HoloProjector169
     user={projectingUser}
-    handleGoToShop={handleGoToShop}
     balances={balances} setBalances={setBalances}
     session={session}
     onOpenLog={setSelectedLog}
@@ -651,21 +627,6 @@ const filteredItems = useMemo(() => {
     onGoTo916={() => setIs169Mode(false)}
   />
 )}
-
-      {selectedCard && (
-        <PaymentModal
-          card={selectedCard} balances={balances} setBalances={setBalances}
-          ventasMode={ventasMode} currentUser={perfilOso}
-          onClose={() => { setSelectedCard(null); setVentasMode(null); }}
-          onHandoff={(handoffData) => {
-            if (handoffData.agente === 'BROSHOP_AVISO') {
-              setSelectedCard(null); setVentasMode(null);
-              setOsosHandoffContext({ intencion: 'BROSHOP_AVISO' });
-              setIntent('avisos'); setStep(2);
-            }
-          }}
-        />
-      )}
 
       {intent === 'internal_search' && step === 2 && (
         <div className={`fixed inset-x-0 top-[10%] bottom-[16%] z-[90] mx-auto max-w-5xl px-4 ${

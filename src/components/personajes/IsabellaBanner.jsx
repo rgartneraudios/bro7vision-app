@@ -87,11 +87,16 @@ export default function IsabellaBanner({
 
   // ── Botón ENTRAR → HandOff ISABELLA_CIERRE ──────────────────────────────
   const handleEntrar = () => {
-    if (!selectedCard || !onHandoff) return;
-    onHandoff({
-      agente:   'ISABELLA_CIERRE',
-      comercio: selectedCard.bro_pd || selectedCard.bro_ser,
-    });
+    if (!selectedCard) return;
+    if (selectedCard.mini_url) window.open(selectedCard.mini_url, '_blank');
+    setSelectedCard(null);
+    // Legacy eliminado:
+
+    // onHandoff eliminado — ver handleEntrar arriba
+    // ({
+      // agente:   'ISABELLA_CIERRE',
+      // comercio: eliminado
+    // });
     setSelectedCard(null);
   };
 
@@ -136,7 +141,7 @@ export default function IsabellaBanner({
 
       {/* 1. CARRUSEL */}
       {stripVisible && (
-        <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
+        <div className="w-full max-w-4xl pointer-events-auto px-2 mb-3">
           <BroCardStripPS
             cards={stripCards}
             onSelectCard={handleCardClick}

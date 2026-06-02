@@ -76,7 +76,7 @@ const AGENT_PROFILES = {
   },
   nova: {
   theme: 'gold',
-  text: `🟣 10%  🟢 15%  ⚪ 20%·2art. 🟠 20%·3art.
+  text: `🟣 20%  🟢 25%  ⚪ 30%·2art. 🟠 30%·3art.  🔴 Sin % comodín
   Hola! Dime el producto que necesitas! | Que buscas? | Pulsa en las BroCards para obtener una descripción`
 },
   isabella: {

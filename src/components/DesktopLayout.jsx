@@ -23,8 +23,7 @@ import SlideRailServicios from './SlideRailServicios';
 import SlideRailAvisos from './SlideRailAvisos';
 import SlideRailAudio from './SlideRailAudio';
 import NovaBanner  from './personajes/NovaBanner';
-import NovaCierre  from './personajes/NovaCierre';
-import IsabellaBanner from './personajes/IsabellaBanner';
+  import IsabellaBanner from './personajes/IsabellaBanner';
 import EvelynBanner from './personajes/EvelynBanner';
 import MapacheBanner from './personajes/MapacheBanner';
 import SmisterioBanner from "./personajes/SmisterioBanner";
@@ -206,7 +205,7 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
 
       {/* HOLOPRISMA Y BANNERS */}
       {step === 2 && ['productos', 'servicios', 'audios', 'avisos'].includes(intent) && (
-        <div className="hidden md:flex fixed right-[12%] top-[24%] -translate-x-1/2 -translate-y-1/2 z-[40] flex-col items-center animate-fadeIn pointer-events-none"><div className="scale-[1.1] origin-bottom-right relative z-20 transition-transform hover:scale-[1.15]"><HoloPrism user={activePrismUser} showNumbers={true} /></div></div>
+        <div className="hidden md:flex fixed right-[10%] top-[24%] -translate-x-1/2 -translate-y-1/2 z-[40] flex-col items-center animate-fadeIn pointer-events-none"><div className="scale-[1.1] origin-bottom-right relative z-20 transition-transform hover:scale-[1.15]"><HoloPrism user={activePrismUser} showNumbers={true} /></div></div>
       )}
       
       {step === 2 && INTENTS_CON_UBICACION.has(intent) && !selectedCard && <CityLocationBanner scope={scope} />}
@@ -230,7 +229,7 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
           isAdmin={isAdmin}
           entidad={ososHandoffContext?.comercio_especifico}
           hayTarjetas={stripVisible}
-          onOpenTerminal={(c) => abrirTienda(c, 'novaCierre')}
+          onOpenTerminal={(c) => {}}
           onSetActiveIndex={setHoloPrismaIndex}
           onEntityFocus={(u) => setActivePrismUser(u)}
           setIntent={setIntent}
@@ -252,7 +251,7 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
           isAdmin={isAdmin}
           entidad={ososHandoffContext?.comercio_especifico}
           hayTarjetas={stripVisible}
-          onOpenTerminal={(c) => abrirTienda(c, 'isabellaCierre')}
+          onOpenTerminal={(c) => {}}
           onSetActiveIndex={setHoloPrismaIndex}
           onEntityFocus={(u) => setActivePrismUser(u)}
           setIntent={setIntent}
@@ -307,7 +306,7 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
 
       {/* BROLIVES3D EN FOOTER - SOLO PRODUCTOS, SERVICIOS, AVISOS, AUDIO */}
       {step === 2 && ['productos', 'servicios', 'avisos', 'audios'].includes(intent) && (
-        <div className="fixed right-[16%] bottom-4 z-[40]">
+        <div className="fixed right-[14%] bottom-4 z-[40]">
           <BroLives3D playingCreator={audioUser} />
         </div>
       )}
