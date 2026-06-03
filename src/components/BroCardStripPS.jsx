@@ -11,7 +11,7 @@ const RAREZA = {
     shimmer: 'linear-gradient(105deg, transparent 35%, rgba(210,215,230,0.55) 50%, transparent 65%)',
     borderGrad: 'linear-gradient(160deg, #c8ccd8, #f0f2f8, #9ca0b0, #e8eaf0, #7a7e8a)',
     cornerBg: 'linear-gradient(135deg, #9ca0b0 0%, #f0f2f8 40%, #b0b4c4 70%, #787c8c 100%)',
-     cornerText: '#01053D',
+     cornerText: '#000252',
      nameColor: '#ffffff',
      nameShadow: '0 0 18px rgba(220,225,245,0.9), 0 0 36px rgba(180,185,210,0.6)',
      faseColor: '#ffffff',
