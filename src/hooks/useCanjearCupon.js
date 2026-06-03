@@ -9,7 +9,7 @@
 
 import { useState, useCallback } from 'react';
 
-const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
+const WORKER_URL = 'https://mini-sync.bro7vision.workers.dev';
 
 export function useCanjearCupon({ userId, onGenesisUpdate }) {
 
