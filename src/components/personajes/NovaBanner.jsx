@@ -105,7 +105,6 @@ export default function NovaBanner({
       />
     <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
 
-
       {/* 1. CARRUSEL */}
       {stripVisible && (
         <div className="w-full max-w-4xl pointer-events-auto px-2 mb-3">
@@ -116,7 +115,6 @@ export default function NovaBanner({
             visible={stripVisible}
           />
         </div>
-        
       )}
 
       {/* 2. BANNER */}

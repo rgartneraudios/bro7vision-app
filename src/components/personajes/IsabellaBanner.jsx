@@ -96,6 +96,19 @@ export default function IsabellaBanner({
   };
 
   return (
+     <>
+        {/* MODAL CUPÓN */}
+      <CuponModal
+        estado={estado}
+        cardPendiente={cardPendiente}
+        cuponActivo={cuponActivo}
+        errorMsg={errorMsg}
+        genesisBalance={genesisBalance}
+        onConfirmar={confirmar}
+        onCancelar={cancelar}
+        onCerrar={cerrar}
+      />
+      
     <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
       <style>{`
         @keyframes neonPulseServicios {
@@ -134,17 +147,6 @@ export default function IsabellaBanner({
         .sv-loading span:nth-child(3) { animation-delay: 0.4s; }
       `}</style>
 
-      {/* MODAL CUPÓN */}
-      <CuponModal
-        estado={estado}
-        cardPendiente={cardPendiente}
-        cuponActivo={cuponActivo}
-        errorMsg={errorMsg}
-        genesisBalance={genesisBalance}
-        onConfirmar={confirmar}
-        onCancelar={cancelar}
-        onCerrar={cerrar}
-      />
 
       {/* 1. CARRUSEL */}
       {stripVisible && (
@@ -240,5 +242,6 @@ export default function IsabellaBanner({
         <AgentChatInput agent="isabella" onSend={handleEnviar} isLoading={loading} />
       </div>
     </div>
+     </>
   );
 }
