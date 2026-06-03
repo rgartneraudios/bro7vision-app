@@ -48,7 +48,7 @@ export default function DesktopLayout(props) {
     perfilOso, stripVisible, stripCards, stripLabel, setHoloPrismaIndex, findChannelByAlias, checkIfNew,
     ososModo, setOsosModo, handleLogout, selectedCard,
   rumoresMensaje, rumoresLoading, handleRumoresInput, onOpenMiniGuide,
-  oraculoPersonaje,  userId, genesisBalance, onGenesisUpdate,
+  oraculoPersonaje, userId, genesisBalance, onGenesisUpdate,
    iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA
   } = props;
   

@@ -38,6 +38,8 @@ export function useCanjearCupon({ userId, onGenesisUpdate }) {
 
   // ── Usuario confirma — llama al Worker ───────────────────────────
   const confirmar = useCallback(async () => {
+    console.log('userId:', userId);
+  console.log('cardPendiente:', cardPendiente);
     if (!cardPendiente || !userId) return;
 
     setEstado('cargando');
