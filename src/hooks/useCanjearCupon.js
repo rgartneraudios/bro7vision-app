@@ -23,11 +23,11 @@ export function useCanjearCupon({ userId, onGenesisUpdate }) {
   const [errorMsg,      setErrorMsg]      = useState('');
 
   // ── Inicia el flujo — muestra popup de confirmación ──────────────
-  const iniciarCanje = useCallback((card) => {
-    setCardPendiente(card);
-    setEstado('confirmando');
-    setErrorMsg('');
-  }, []);
+const iniciarCanje = useCallback((card) => {
+  setCardPendiente(card);
+  setEstado('confirmando');
+  setErrorMsg('');
+}, []);
 
   // ── Usuario cancela ───────────────────────────────────────────────
   const cancelar = useCallback(() => {
@@ -38,8 +38,6 @@ export function useCanjearCupon({ userId, onGenesisUpdate }) {
 
   // ── Usuario confirma — llama al Worker ───────────────────────────
   const confirmar = useCallback(async () => {
-    console.log('userId:', userId);
-  console.log('cardPendiente:', cardPendiente);
     if (!cardPendiente || !userId) return;
 
     setEstado('cargando');
@@ -57,6 +55,9 @@ export function useCanjearCupon({ userId, onGenesisUpdate }) {
           coste_genesis:   cardPendiente.coste_genesis,
         }),
       });
+      
+
+onGenesisUpdate?.(data.balance_nuevo);
 
       const data = await res.json();
 
@@ -104,11 +105,12 @@ export function useCanjearCupon({ userId, onGenesisUpdate }) {
   }, [cardPendiente, userId, onGenesisUpdate]);
 
   // ── Cerrar resultado ──────────────────────────────────────────────
-  const cerrar = useCallback(() => {
-    setEstado('idle');
-    setCuponActivo(null);
-    setErrorMsg('');
-  }, []);
+const cerrar = useCallback(() => {
+  setEstado('idle');
+  setCuponActivo(null);
+  setErrorMsg('');
+  setCardPendiente(null); // ← añadir esto
+}, []);
 
   return {
     estado,

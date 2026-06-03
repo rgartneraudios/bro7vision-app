@@ -1,7 +1,7 @@
 // src/components/StoryPlayer.jsx (VERSIÓN CINE FULL SCREEN)
 
 import React, { useState, useEffect, useRef } from 'react';
-import { PACKS_REGALOS, REGLAS_DESCUENTOS, MOON_MATRIX } from '../data/MoonMatrix';
+import { PACKS_REGALOS, MOON_MATRIX } from '../data/MoonMatrix';
 import { marcarActividad } from '../hooks/useActividad';
 
 

@@ -5,6 +5,7 @@ import { supabase } from '../supabaseClient';
 import { marcarActividad } from '../hooks/useActividad';
 import { CoordenadosBlock } from '../components/CoordenadosBlock';
 import AvisosTab from './AvisosTab';
+import ColeccionCupones from './ColeccionCupones';
 
 // ── Estado de emisión — solo lectura, asignado por el equipo ─────────
 const EMISION_CFG = {
@@ -302,8 +303,9 @@ const BoosterModal = ({ onClose }) => {
               { id: 'avisos',   label: '📢 Mis Avisos',     color: 'blue'   },
               { id: 'metrics',  label: '🛰️ Órbita & Radar', color: 'orange' },
               // Linaje siempre visible — el rank vacío muestra estado pendiente
-              { id: 'linaje',   label: '👑 Linaje',         color: 'orange' },
-            ].map((item) => (
+               { id: 'linaje',   label: '👑 Linaje',         color: 'orange' },
+               { id: 'coleccion', label: '🎴 Colección', color: 'fuchsia' },
+             ].map((item) => (
               <button key={item.id} onClick={() => setTab(item.id)}
                 className={`text-left py-3 px-5 text-xs font-bold rounded-2xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap
                   ${tab === item.id
@@ -754,9 +756,9 @@ const BoosterModal = ({ onClose }) => {
               </div>
             )}
 
-            {/* ══ 👑 LINAJE ══ */}
-            {tab === 'linaje' && (() => {
-              const REINOS = [
+             {/* ══ 👑 LINAJE ══ */}
+             {tab === 'linaje' && (() => {
+               const REINOS = [
                 'Reino de Solaris','Reino de Lunaris','Reino de Polaris','Reino de Vega','Reino de Andrómeda',
                 'Reino de Cásiopea','Reino de las Pléyades','Reino de Orión','Reino de Ofiuco','Reino de Aries',
                 'Reino de Géminis','Reino de Leo','Reino de Zodíaco','Reino de Neptuno','Reino de Marte',
@@ -959,9 +961,12 @@ const BoosterModal = ({ onClose }) => {
                   <p className="text-center text-xs text-gray-700 uppercase tracking-[0.3em]" style={{ fontFamily:"'Georgia', serif" }}>La grandeza se sostiene con presencia y dedicación.</p>
                 </div>
               );
-            })()}
+             })()}
 
-          </div>
+             {/* ══ 🎴 COLECCIÓN ══ */}
+             {tab === 'coleccion' && <ColeccionCupones />}
+
+           </div>
         </div>
 
         {/* FOOTER */}
