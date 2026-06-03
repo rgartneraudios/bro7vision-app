@@ -2,7 +2,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AgentChatInput from '../AgentChatInput';
 import BroCardStripPS from '../BroCardStripPS';
+import CuponModal from '../CuponModal';
 import { useAgentIsabella } from '../../hooks/useAgentIsabella';
+import { useCanjearCupon } from '../../hooks/useCanjearCupon';
 
 const GREETINGS_ISABELLA = [
   "Hola, soy Isabella 🐘 ¿Cómo puedo acompañarte hoy?",
@@ -24,30 +26,33 @@ const INFO = {
 };
 
 export default function IsabellaBanner({
-  personaje   = 'isabella',
+  personaje    = 'isabella',
   sessionCity, sessionCP, realItems,
   stripVisible, stripCards, stripLabel,
   onEntityFocus, onOpenTerminal, onSetActiveIndex,
   onInvokeOsos, onInvokeMapache, setIntent,
   onHandoff,
-  iaMode  = 'off',
-  isAdmin = false,
-  entidad = null,
-  hayTarjetas = false,
+  iaMode         = 'off',
+  isAdmin        = false,
+  entidad        = null,
+  hayTarjetas    = false,
+  userId         = null,
+  genesisBalance = 0,
+  onGenesisUpdate,
 }) {
   const { mensaje, loading, enviar, esPatrocinado } = useAgentIsabella({
-    personaje,
-    iaMode,
-    isAdmin,
-    onHandoff,
-    ciudad:      sessionCity,
-    entidad,
-    hayTarjetas,
+    personaje, iaMode, isAdmin, onHandoff,
+    ciudad: sessionCity, entidad, hayTarjetas,
   });
 
-  const [display, setDisplay]       = useState('');
-  const [cursor, setCursor]         = useState(true);
-  const [currentMsg, setCurrentMsg] = useState('');
+  const {
+    estado, cuponActivo, cardPendiente, errorMsg,
+    iniciarCanje, cancelar, confirmar, cerrar,
+  } = useCanjearCupon({ userId, onGenesisUpdate });
+
+  const [display, setDisplay]           = useState('');
+  const [cursor, setCursor]             = useState(true);
+  const [currentMsg, setCurrentMsg]     = useState('');
   const [selectedCard, setSelectedCard] = useState(null);
   const charIdx = useRef(0);
 
@@ -72,31 +77,21 @@ export default function IsabellaBanner({
     return () => clearInterval(t);
   }, [currentMsg]);
 
-  // ── Clic en BroCard — toggle ─────────────────────────────────────────────
+  // ── Clic en BroCard ────────────────────────────────────────────────
   const handleCardClick = (card) => {
-    setSelectedCard(prev =>
-      prev?.bro_pd === card.bro_pd ? null : card
-    );
+    setSelectedCard(prev => prev?.id === card.id ? null : card);
   };
 
-  // ── Enviar desde input → limpia card ────────────────────────────────────
+  // ── Enviar desde input ─────────────────────────────────────────────
   const handleEnviar = (texto) => {
     setSelectedCard(null);
     enviar(texto);
   };
 
-  // ── Botón ENTRAR → HandOff ISABELLA_CIERRE ──────────────────────────────
-  const handleEntrar = () => {
+  // ── Botón CANJEAR ──────────────────────────────────────────────────
+  const handleCanjear = () => {
     if (!selectedCard) return;
-    if (selectedCard.mini_url) window.open(selectedCard.mini_url, '_blank');
-    setSelectedCard(null);
-    // Legacy eliminado:
-
-    // onHandoff eliminado — ver handleEntrar arriba
-    // ({
-      // agente:   'ISABELLA_CIERRE',
-      // comercio: eliminado
-    // });
+    iniciarCanje(selectedCard);
     setSelectedCard(null);
   };
 
@@ -139,6 +134,18 @@ export default function IsabellaBanner({
         .sv-loading span:nth-child(3) { animation-delay: 0.4s; }
       `}</style>
 
+      {/* MODAL CUPÓN */}
+      <CuponModal
+        estado={estado}
+        cardPendiente={cardPendiente}
+        cuponActivo={cuponActivo}
+        errorMsg={errorMsg}
+        genesisBalance={genesisBalance}
+        onConfirmar={confirmar}
+        onCancelar={cancelar}
+        onCerrar={cerrar}
+      />
+
       {/* 1. CARRUSEL */}
       {stripVisible && (
         <div className="w-full max-w-4xl pointer-events-auto px-2 mb-3">
@@ -155,7 +162,6 @@ export default function IsabellaBanner({
       <div className="w-full max-w-2xl mb-3 pointer-events-auto">
         <div className="sv-wrap w-full flex flex-col items-center justify-center text-center">
 
-          {/* Header personaje — siempre visible */}
           <div className="flex items-center gap-2 mb-2">
             <span className="text-lg">{iconoPersonaje}</span>
             <span style={{ color: '#F7C8BE', fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
@@ -168,41 +174,35 @@ export default function IsabellaBanner({
             )}
           </div>
 
-          {/* Sin mensaje ni card */}
           {!currentMsg && !loading && !selectedCard && (
             <p className="text-slate-500/60 text-xs uppercase tracking-widest font-bold">
               ◈ {nombrePersonaje} · EN LÍNEA
             </p>
           )}
 
-          {/* Procesando */}
           {loading && !selectedCard && (
             <div className="sv-loading"><span /><span /><span /></div>
           )}
 
-          {/* Card seleccionada — descripción con estética Isabella */}
+          {/* Card seleccionada */}
           {selectedCard && !loading && (
             <div className="w-full flex flex-col items-center gap-3" style={{ animation: 'stripIn 0.3s ease both' }}>
-              {/* Nombre */}
               <p className="sv-texto" style={{ minHeight: 'unset', fontSize: 'clamp(13px, 2vw, 16px)' }}>
                 {selectedCard.nombre}
               </p>
 
-              {(selectedCard.neighborhood || selectedCard.nearby_ref) && (
-  <p className="text-amber-500/80 font-bold uppercase text-xs tracking-[0.25em]"
-     style={{ textShadow: '0 0 8px rgba(251,191,36,0.4)' }}>
-    {selectedCard.neighborhood}{selectedCard.neighborhood && selectedCard.nearby_ref ? ' · ' : ''}{selectedCard.nearby_ref}
-  </p>
-)}
-              {/* Descripción — misma clase sv-texto que los mensajes */}
-              <p className="sv-texto">
-                {selectedCard.descripcion}
+              {/* Datos del cupón */}
+              <p className="sv-texto" style={{ minHeight: 'unset' }}>
+                {selectedCard.descuento_pct}% · {selectedCard.condicion}
                 <span className="sv-cursor" style={{ opacity: cursor ? 1 : 0 }} />
               </p>
 
-              {/* Botón ENTRAR */}
+              <p style={{ fontSize: 11, color: '#F792CF', opacity: 0.7, fontFamily: "'Orbitron', monospace", letterSpacing: '0.5px' }}>
+                {selectedCard.coste_genesis?.toLocaleString()} ✦ génesis · Vence {selectedCard.vencimiento}
+              </p>
+
               <button
-                onClick={handleEntrar}
+                onClick={handleCanjear}
                 style={{
                   marginTop: 4,
                   padding: '10px 32px',
@@ -217,22 +217,21 @@ export default function IsabellaBanner({
                   cursor: 'pointer',
                   boxShadow: '0 0 14px rgba(245,40,145,0.25)',
                   transition: 'all 0.2s',
+                  fontFamily: "'Orbitron', monospace",
                 }}
                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,40,145,0.35)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'rgba(245,40,145,0.15)'}
               >
-                ➤ ENTRAR
+                ✦ CANJEAR
               </button>
             </div>
           )}
 
-          {/* Mensaje del bot — solo si no hay card */}
           {!selectedCard && !loading && currentMsg && (
             <p className="sv-texto">
               {display}<span className="sv-cursor" style={{ opacity: cursor ? 1 : 0 }} />
             </p>
           )}
-
         </div>
       </div>
 

@@ -2,7 +2,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AgentChatInput from '../AgentChatInput';
 import BroCardStripPS from '../BroCardStripPS';
+import CuponModal from '../CuponModal';
 import { useAgentNovaExplora } from '../../hooks/useAgentNovaExplora';
+import { useCanjearCupon } from '../../hooks/useCanjearCupon';
 
 const NOVA_GREETINGS = [
   "¡Oh, hola! Soy Nova, qué alegría saludarte. Dime qué buscas y me pongo en marcha enseguida, porfi,",
@@ -17,10 +19,13 @@ export default function NovaBanner({
   onEntityFocus, onOpenTerminal, onSetActiveIndex,
   onInvokeOsos, onInvokeMapache, setIntent,
   onHandoff,
-  iaMode      = 'off',
-  isAdmin     = false,
-  entidad     = null,
-  hayTarjetas = false,
+  iaMode        = 'off',
+  isAdmin       = false,
+  entidad       = null,
+  hayTarjetas   = false,
+  userId        = null,
+  genesisBalance = 0,
+  onGenesisUpdate,
 }) {
   const [display, setDisplay]           = useState('');
   const [cursor, setCursor]             = useState(true);
@@ -30,32 +35,31 @@ export default function NovaBanner({
 
   const { mensaje: novaMensaje, loading: novaLoading, enviar: novaEnviar,
           esPatrocinado } = useAgentNovaExplora({
-    iaMode,
-    isAdmin,
-    onHandoff,
-    ciudad: sessionCity,
+    iaMode, isAdmin, onHandoff, ciudad: sessionCity,
   });
 
-  // ── Cursor parpadeante ───────────────────────────────────────────────────
+  const {
+    estado, cuponActivo, cardPendiente, errorMsg,
+    iniciarCanje, cancelar, confirmar, cerrar,
+  } = useCanjearCupon({ userId, onGenesisUpdate });
+
+  // ── Cursor parpadeante ─────────────────────────────────────────────
   useEffect(() => {
     const t = setInterval(() => setCursor(c => !c), 530);
     return () => clearInterval(t);
   }, []);
 
-  // ── Saludo inicial ───────────────────────────────────────────────────────
+  // ── Saludo inicial ─────────────────────────────────────────────────
   useEffect(() => {
     setCurrentMsg(NOVA_GREETINGS[Math.floor(Math.random() * NOVA_GREETINGS.length)]);
   }, []);
 
-  // ── Mensajes del hook ────────────────────────────────────────────────────
+  // ── Mensajes del hook ──────────────────────────────────────────────
   useEffect(() => {
-    if (novaMensaje) {
-      setCurrentMsg(novaMensaje);
-      setSelectedCard(null);
-    }
+    if (novaMensaje) { setCurrentMsg(novaMensaje); setSelectedCard(null); }
   }, [novaMensaje]);
 
-  // ── Efecto typewriter ────────────────────────────────────────────────────
+  // ── Typewriter ────────────────────────────────────────────────────
   useEffect(() => {
     if (!currentMsg) return;
     charIdx.current = 0;
@@ -68,37 +72,39 @@ export default function NovaBanner({
     return () => clearInterval(t);
   }, [currentMsg]);
 
-  // ── Clic en BroCard ──────────────────────────────────────────────────────
+  // ── Clic en BroCard ────────────────────────────────────────────────
   const handleCardClick = (card) => {
-    setSelectedCard(prev =>
-      prev?.bro_pd === card.bro_pd ? null : card
-    );
+    setSelectedCard(prev => prev?.id === card.id ? null : card);
   };
 
-  // ── Enviar desde input ───────────────────────────────────────────────────
+  // ── Enviar desde input ─────────────────────────────────────────────
   const handleEnviar = (texto) => {
     setSelectedCard(null);
     novaEnviar(texto, { entidad, hayTarjetas });
   };
 
-  // ── Botón ENTRAR → HandOff NOVA_CIERRE ──────────────────────────────────
-  const handleEntrar = () => {
+  // ── Botón CANJEAR ──────────────────────────────────────────────────
+  const handleCanjear = () => {
     if (!selectedCard) return;
-    if (selectedCard.mini_url) window.open(selectedCard.mini_url, '_blank');
-    setSelectedCard(null);
-    // Legacy eliminado:
-
-    // onHandoff eliminado — ver handleEntrar arriba
-    // ({
-      // agente:   'NOVA_CIERRE',
-      // comercio: selectedCard.bro_pd
-    // });
+    iniciarCanje(selectedCard);
     setSelectedCard(null);
   };
 
-  // ── UI ───────────────────────────────────────────────────────────────────
   return (
+  <>
+        {/* MODAL CUPÓN */}
+      <CuponModal
+        estado={estado}
+        cardPendiente={cardPendiente}
+        cuponActivo={cuponActivo}
+        errorMsg={errorMsg}
+        genesisBalance={genesisBalance}
+        onConfirmar={confirmar}
+        onCancelar={cancelar}
+        onCerrar={cerrar}
+      />
     <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
+
 
       {/* 1. CARRUSEL */}
       {stripVisible && (
@@ -110,6 +116,7 @@ export default function NovaBanner({
             visible={stripVisible}
           />
         </div>
+        
       )}
 
       {/* 2. BANNER */}
@@ -147,32 +154,28 @@ export default function NovaBanner({
                 {selectedCard.nombre}
               </p>
 
-              {(selectedCard.neighborhood || selectedCard.nearby_ref) && (
-                <p className="text-amber-500/80 font-bold uppercase text-xs tracking-[0.25em]"
-                   style={{ textShadow: '0 0 8px rgba(251,191,36,0.4)' }}>
-                  {selectedCard.neighborhood}{selectedCard.neighborhood && selectedCard.nearby_ref ? ' · ' : ''}{selectedCard.nearby_ref}
-                </p>
-              )}
-
-              <p
-                className="text-amber-400 font-black italic uppercase text-lg leading-relaxed"
-                style={{ textShadow: '0 0 20px rgba(251,191,36,0.6)' }}
-              >
-                {selectedCard.descripcion}
+              {/* Datos del cupón */}
+              <p className="text-amber-400 font-black italic uppercase text-lg leading-relaxed"
+                style={{ textShadow: '0 0 20px rgba(251,191,36,0.6)' }}>
+                {selectedCard.descuento_pct}% · {selectedCard.condicion}
                 <span style={{ opacity: cursor ? 1 : 0 }}>_</span>
               </p>
 
+              <p className="text-amber-300/70 font-bold text-xs uppercase tracking-widest">
+                {selectedCard.coste_genesis?.toLocaleString()} ✦ génesis · Vence {selectedCard.vencimiento}
+              </p>
+
               <button
-                onClick={handleEntrar}
+                onClick={handleCanjear}
                 className="mt-1 px-8 py-2.5 bg-amber-500/20 border border-amber-400/70 rounded-2xl text-amber-300 font-black text-sm uppercase tracking-widest hover:bg-amber-400/40 hover:text-white transition-all"
                 style={{ boxShadow: '0 0 16px rgba(251,191,36,0.3)' }}
               >
-                ➤ ENTRAR
+                ✦ CANJEAR
               </button>
             </div>
           )}
 
-          {/* Mensaje del hook (typewriter) */}
+          {/* Mensaje typewriter */}
           {!selectedCard && !novaLoading && currentMsg && (
             <p className="text-amber-400 font-black italic uppercase text-lg leading-relaxed shadow-amber-400">
               {display}<span style={{ opacity: cursor ? 1 : 0 }}>_</span>
@@ -186,5 +189,6 @@ export default function NovaBanner({
         <AgentChatInput agent="nova" onSend={handleEnviar} isLoading={novaLoading} />
       </div>
     </div>
+    </>
   );
 }

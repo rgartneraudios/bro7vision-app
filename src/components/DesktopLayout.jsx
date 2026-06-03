@@ -23,7 +23,7 @@ import SlideRailServicios from './SlideRailServicios';
 import SlideRailAvisos from './SlideRailAvisos';
 import SlideRailAudio from './SlideRailAudio';
 import NovaBanner  from './personajes/NovaBanner';
-  import IsabellaBanner from './personajes/IsabellaBanner';
+import IsabellaBanner from './personajes/IsabellaBanner';
 import EvelynBanner from './personajes/EvelynBanner';
 import MapacheBanner from './personajes/MapacheBanner';
 import SmisterioBanner from "./personajes/SmisterioBanner";
@@ -48,7 +48,7 @@ export default function DesktopLayout(props) {
     perfilOso, stripVisible, stripCards, stripLabel, setHoloPrismaIndex, findChannelByAlias, checkIfNew,
     ososModo, setOsosModo, handleLogout, selectedCard,
   rumoresMensaje, rumoresLoading, handleRumoresInput, onOpenMiniGuide,
-  oraculoPersonaje,
+  oraculoPersonaje,  userId, genesisBalance, onGenesisUpdate,
    iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA
   } = props;
   
@@ -233,6 +233,9 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
           onSetActiveIndex={setHoloPrismaIndex}
           onEntityFocus={(u) => setActivePrismUser(u)}
           setIntent={setIntent}
+         userId={userId}
+          genesisBalance={genesisBalance}
+          onGenesisUpdate={onGenesisUpdate}
         />
       )}
       
@@ -255,6 +258,9 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
           onSetActiveIndex={setHoloPrismaIndex}
           onEntityFocus={(u) => setActivePrismUser(u)}
           setIntent={setIntent}
+         userId={userId}
+          genesisBalance={genesisBalance}
+          onGenesisUpdate={onGenesisUpdate}
         />
       )}
 

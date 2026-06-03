@@ -11,25 +11,25 @@ const RAREZA = {
     shimmer: 'linear-gradient(105deg, transparent 35%, rgba(210,215,230,0.55) 50%, transparent 65%)',
     borderGrad: 'linear-gradient(160deg, #c8ccd8, #f0f2f8, #9ca0b0, #e8eaf0, #7a7e8a)',
     cornerBg: 'linear-gradient(135deg, #9ca0b0 0%, #f0f2f8 40%, #b0b4c4 70%, #787c8c 100%)',
-    cornerText: '#0a0a14',
-    nameColor: '#ffffff',
-    nameShadow: '0 0 18px rgba(220,225,245,0.9), 0 0 36px rgba(180,185,210,0.6)',
-    faseColor: '#d0d4e8',
-    infoColor: '#c0c4d8',
-    genesisColor: '#e8eaf8',
-    glowColor: 'rgba(200,205,225,0.35)',
-  },
-  20: {
+     cornerText: '#01053D',
+     nameColor: '#ffffff',
+     nameShadow: '0 0 18px rgba(220,225,245,0.9), 0 0 36px rgba(180,185,210,0.6)',
+     faseColor: '#ffffff',
+     infoColor: '#ffffff',
+     genesisColor: '#ffffff',
+     glowColor: 'rgba(200,205,225,0.35)',
+   },
+   20: {
     bg: 'linear-gradient(160deg, #0a0f2e 0%, #0d1f5c 25%, #1a3a9e 50%, #0d2070 70%, #060b20 100%)',
     shimmer: 'linear-gradient(105deg, transparent 35%, rgba(120,180,255,0.6) 50%, transparent 65%)',
     borderGrad: 'linear-gradient(160deg, #2a4fcc, #6a9fff, #1a35aa, #5080ee, #0f2580)',
     cornerBg: 'linear-gradient(135deg, #1a3acc 0%, #6a9fff 40%, #2a50dd 70%, #0f2299 100%)',
-    cornerText: '#ffffff',
-    nameColor: '#ffffff',
-    nameShadow: '0 0 18px rgba(100,160,255,0.95), 0 0 36px rgba(60,120,255,0.7)',
-    faseColor: '#90c0ff',
-    infoColor: '#80b0ff',
-    genesisColor: '#a0d0ff',
+     cornerText: '#ffffff',
+     nameColor: '#ffffff',
+     nameShadow: '0 0 18px rgba(100,160,255,0.95), 0 0 36px rgba(60,120,255,0.7)',
+     faseColor: '#ffffff',
+     infoColor: '#ffffff',
+     genesisColor: '#ffffff',
     glowColor: 'rgba(80,130,255,0.4)',
   },
   25: {
@@ -37,15 +37,15 @@ const RAREZA = {
     shimmer: 'linear-gradient(105deg, transparent 35%, rgba(255,220,80,0.65) 50%, transparent 65%)',
     borderGrad: 'linear-gradient(160deg, #c8960a, #ffe066, #a07808, #ffd040, #7a5c06)',
     cornerBg: 'linear-gradient(135deg, #c8960a 0%, #ffe566 40%, #d4a010 70%, #9a7008 100%)',
-    cornerText: '#0a0800',
-    nameColor: '#ffffff',
-    nameShadow: '0 0 18px rgba(255,210,50,0.95), 0 0 36px rgba(220,160,0,0.7)',
-    faseColor: '#ffd060',
-    infoColor: '#ffbc30',
-    genesisColor: '#ffe080',
-    glowColor: 'rgba(255,200,50,0.4)',
-  },
-};
+     cornerText: '#01053D',
+     nameColor: '#ffffff',
+     nameShadow: '0 0 18px rgba(255,220,80,0.95), 0 0 36px rgba(220,160,0,0.7)',
+     faseColor: '#ffffff',
+     infoColor: '#ffffff',
+     genesisColor: '#ffffff',
+     glowColor: 'rgba(255,200,50,0.4)',
+   },
+ };
 
 const RAREZA_DEFAULT = RAREZA[15];
 
@@ -190,88 +190,86 @@ function BroCardCupon({ card, onClick }) {
             ? 'perspective(500px) rotateY(-7deg) rotateX(5deg) scale(1.05)'
             : 'perspective(500px) rotateY(-4deg) rotateX(3deg)',
           transition: 'transform 0.4s ease',
-          boxShadow: `5px 7px 20px rgba(0,0,0,0.75), -2px -2px 8px ${r.glowColor}`,
-        }}>
-          {inView && card.banner_url ? (
-            <img
-              src={card.banner_url}
-              alt={card.nombre || 'Comercio'}
-              onLoad={() => setImgLoaded(true)}
-              style={{
-                width: '100%', height: '100%',
-                objectFit: 'cover', display: 'block',
-                opacity: imgLoaded ? 1 : 0,
-                transition: 'opacity 0.4s ease',
-              }}
-            />
-          ) : null}
-          {(!imgLoaded || !card.banner_url) && (
-            <div style={{
-              position: 'absolute', inset: 0,
-              background: 'rgba(255,255,255,0.04)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <span style={{ fontSize: '30px', opacity: 0.2 }}>🏪</span>
-            </div>
-          )}
-          <div style={{
-            position: 'absolute', top: 0, left: 0, right: 0, height: '40%',
-            background: `linear-gradient(to bottom, ${r.glowColor}, transparent)`,
-            pointerEvents: 'none',
-          }} />
-        </div>
+           boxShadow: `5px 7px 20px rgba(0,0,0,0.75)`,
+         }}>
+           {inView && card.banner_url ? (
+             <img
+               src={card.banner_url}
+               alt={card.nombre || 'Comercio'}
+               onLoad={() => setImgLoaded(true)}
+               style={{
+                 width: '100%', height: '100%',
+                 objectFit: 'cover', display: 'block',
+                 opacity: imgLoaded ? 1 : 0,
+                 transition: 'opacity 0.4s ease',
+               }}
+             />
+           ) : null}
+           {(!imgLoaded || !card.banner_url) && (
+             <div style={{
+               position: 'absolute', inset: 0,
+               background: 'rgba(255,255,255,0.04)',
+               display: 'flex', alignItems: 'center', justifyContent: 'center',
+             }}>
+               <span style={{ fontSize: '30px', opacity: 0.2 }}>🏪</span>
+             </div>
+           )}
+         </div>
 
         {/* ── Info inferior ── */}
         <div style={{
           flex: 1, width: '100%',
           display: 'flex', flexDirection: 'column',
-          justifyContent: 'center', alignItems: 'center',
+          justifyContent: 'center', alignItems: 'flex-start',
           gap: '4px', paddingInline: '12px',
           paddingBottom: '10px', zIndex: 5,
+          paddingLeft: '14px',
         }}>
 
-          {/* Fase lunar — legible */}
-          <div style={{
-            fontFamily: "'Orbitron', monospace",
-            fontSize: '11px', fontWeight: 700,
-            color: r.faseColor,
-            letterSpacing: '1.5px',
-            textTransform: 'uppercase',
-            textShadow: `0 0 10px ${r.glowColor}`,
-          }}>
+           {/* Fase lunar — legible */}
+           <div style={{
+             fontFamily: "'Orbitron', monospace",
+             fontSize: '12px', fontWeight: 700,
+             color: '#ffffff',
+             letterSpacing: '1.5px',
+             textTransform: 'uppercase',
+             textShadow: `0 0 10px rgba(255,255,255,0.5)`,
+           }}>
             {fase.emoji} {fase.label}
           </div>
 
-          {/* Vencimiento — legible */}
-          <div style={{
-            fontFamily: "'Orbitron', monospace",
-            fontSize: '10px', fontWeight: 600,
-            color: r.infoColor,
-            letterSpacing: '0.5px',
-          }}>
+           {/* Vencimiento — legible */}
+           <div style={{
+             fontFamily: "'Orbitron', monospace",
+             fontSize: '11px', fontWeight: 600,
+             color: '#ffffff',
+             letterSpacing: '0.5px',
+             textShadow: `0 0 8px rgba(255,255,255,0.4)`,
+           }}>
             Vence {card.vencimiento || '—'}
           </div>
 
-          {/* Coste génesis — legible */}
-          <div style={{
-            fontFamily: "'Orbitron', monospace",
-            fontSize: '11px', fontWeight: 700,
-            color: r.genesisColor,
-            letterSpacing: '0.5px',
-            textShadow: `0 0 8px ${r.glowColor}`,
-          }}>
+           {/* Coste génesis — legible */}
+           <div style={{
+             fontFamily: "'Orbitron', monospace",
+             fontSize: '12px', fontWeight: 700,
+             color: '#ffffff',
+             letterSpacing: '0.5px',
+             textShadow: `0 0 8px rgba(255,255,255,0.4)`,
+           }}>
             {card.coste_genesis?.toLocaleString() || '1.000'} ✦ génesis
           </div>
 
-          {/* Condición */}
-          <div style={{
-            fontFamily: "'Orbitron', monospace",
-            fontSize: '9px', fontWeight: 600,
-            color: r.infoColor,
-            letterSpacing: '1px',
-            textTransform: 'uppercase',
-            opacity: 0.85,
-          }}>
+           {/* Condición */}
+           <div style={{
+             fontFamily: "'Orbitron', monospace",
+             fontSize: '10px', fontWeight: 600,
+             color: '#ffffff',
+             letterSpacing: '1px',
+             textTransform: 'uppercase',
+             opacity: 0.85,
+             textShadow: `0 0 6px rgba(255,255,255,0.3)`,
+           }}>
             {card.condicion || '1 producto'}
           </div>
         </div>
@@ -313,6 +311,7 @@ export default function BroCardStripPS({
   cards = [],
   onSelectCard,
   visible = true,
+  columns = 3,
 }) {
   if (!visible || cards.length === 0) return null;
 
@@ -327,7 +326,7 @@ export default function BroCardStripPS({
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(3, 240px)',
+        gridTemplateColumns: `repeat(${columns || 3}, 240px)`,
         gap: '14px',
         animation: 'stripInCupon 0.4s ease both',
         justifyContent: 'center',

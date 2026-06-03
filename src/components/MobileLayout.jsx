@@ -11,6 +11,8 @@ import { getVideoCandidates, resolveVideoFromCandidates, getTurno } from '../dat
 import SmisterioBanner from './personajes/SmisterioBanner';
 import JaguarBanner from './personajes/JaguarBanner';
 import OrumamaBanner from './personajes/OrumamaBanner';
+import CuponModal from './CuponModal';
+import { useCanjearCupon } from '../hooks/useCanjearCupon';
 
 // ─── ESTILOS NEÓN ───────────────────────────────────────────────────────────
 const MOBILE_STYLES = `
@@ -463,6 +465,9 @@ const MobileLayout = ({
   onToggleAudio,
   selectedCard,
   oraculoActivo,
+  userId,
+  genesisBalance,
+  onGenesisUpdate,
   ...props
 }) => {
   const [footerMode, setFooterMode] = useState('chat');
@@ -484,6 +489,11 @@ const MobileLayout = ({
   const oraculoEnviarRef = useRef(null);
   
   const accent = SECTOR_ACCENT[intent] || '#00ffff';
+  
+  const {
+  estado, cuponActivo, cardPendiente, errorMsg,
+  iniciarCanje, cancelar, confirmar, cerrar,
+} = useCanjearCupon({ userId, onGenesisUpdate });
   
 
   useEffect(() => {
@@ -804,15 +814,27 @@ const nextAudio = () => {
           {/* BroCardStripPS — Productos y Servicios */}
           {stripVisible && stripCards?.length > 0 && 
             (intent === 'productos' || intent === 'servicios') && (
-            <div className="w-full px-2 pointer-events-auto">
-              <BroCardStripPS
-                cards={stripCards}
-                onSelectCard={(card) => setBurbujaOpen(card)}
-                accentColor={STRIP_THEME[intent] || 'gold'}
-                visible={true}
-              />
-            </div>
+          <div className="w-full px-2 pointer-events-auto overflow-y-auto"
+     style={{ maxHeight: '45vh' }}>
+  <BroCardStripPS
+    cards={stripCards}
+    onSelectCard={iniciarCanje}
+    visible={true}
+    columns={1}
+  />
+</div>
           )}
+          
+          <CuponModal
+  	estado={estado}
+  	cardPendiente={cardPendiente}
+  	cuponActivo={cuponActivo}
+  	errorMsg={errorMsg}
+  	genesisBalance={genesisBalance}
+  	onConfirmar={confirmar}
+  	onCancelar={cancelar}
+  	onCerrar={cerrar}
+	/>
 
           {/* BroCardStrip — Avisos y Audios */}
           {stripVisible && stripCards?.length > 0 && 

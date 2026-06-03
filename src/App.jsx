@@ -539,6 +539,9 @@ const filteredItems = useMemo(() => {
     onTogglePublicIA:    handleTogglePublicIA,
     rumoresMensaje, rumoresLoading, handleRumoresInput,
     onOpenMiniGuide: () => setShowMiniGuide(true),
+    userId:         session?.user?.id || null,
+  genesisBalance: balances.genesis  || 0,
+  onGenesisUpdate: (nuevoBalance) => setBalances(prev => ({ ...prev, genesis: nuevoBalance })),
   };
 
   // ══════════════════════════════════════════════════════

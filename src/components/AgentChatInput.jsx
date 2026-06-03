@@ -76,12 +76,11 @@ const AGENT_PROFILES = {
   },
   nova: {
   theme: 'gold',
-  text: `🟣 20%  🟢 25%  ⚪ 30%·2art. 🟠 30%·3art.  🔴 Sin % comodín
-  Hola! Dime el producto que necesitas! | Que buscas? | Pulsa en las BroCards para obtener una descripción`
+  text: ` ✦ Hola! Dime el producto que necesitas! | Que buscas? | Pulsa en las BroCards para obtener una descripción y obtener las tarjetas de descuentos o tarjetas de regalo canjeando tus génesis`
 },
   isabella: {
     theme: 'pink',
-    text: '✦  Hola! Dime el servicio que necesitas! | Que buscas? | Pulsa en las BroCards para obtener una descripción y luego si quieres conectar con el Profesional pulsa enter'
+    text: '✦  Hola! Dime el servicio que necesitas! | Que buscas? | Pulsa en las BroCards para obtener una descripción y obtener las tarjetas de descuentos o tarjetas de regalo canjeando tus génesis'
   },
   evelyn: {
     theme: 'blue',
