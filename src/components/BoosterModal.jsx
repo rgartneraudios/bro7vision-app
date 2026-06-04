@@ -5,7 +5,8 @@ import { supabase } from '../supabaseClient';
 import { marcarActividad } from '../hooks/useActividad';
 import { CoordenadosBlock } from '../components/CoordenadosBlock';
 import AvisosTab from './AvisosTab';
-import ColeccionCupones from './ColeccionCupones';
+import BoosterBroCards from './booster/BoosterBroCards';
+import BoosterMuseo from './booster/BoosterMuseo';
 
 // ── Estado de emisión — solo lectura, asignado por el equipo ─────────
 const EMISION_CFG = {
@@ -288,7 +289,7 @@ const BoosterModal = ({ onClose }) => {
       <div className="relative z-10 w-full h-full bg-black/10 backdrop-blur-[25px] border-0 shadow-none overflow-hidden flex flex-col">
 
         {/* HEADER */}
-        <div className="bg-white/5 border-b border-white/10 p-5 flex justify-between items-center shrink-0">
+        <div className="bg-white/5 border-b border-white/10 py-12 px-8 flex justify-between items-center shrink-0">
           <h2 className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-400 font-bold text-lg flex items-center gap-3 tracking-wider">
             <span className="text-2xl drop-shadow-[0_0_5px_rgba(34,211,238,0.8)]">✨</span> BOOSTER STUDIO TERMINAL
           </h2>
@@ -304,8 +305,9 @@ const BoosterModal = ({ onClose }) => {
               { id: 'metrics',  label: '🛰️ Órbita & Radar', color: 'orange' },
               // Linaje siempre visible — el rank vacío muestra estado pendiente
                { id: 'linaje',   label: '👑 Linaje',         color: 'orange' },
-               { id: 'coleccion', label: '🎴 Colección', color: 'fuchsia' },
-             ].map((item) => (
+               { id: 'mis-brocards', label: '📦 Mis BroCards', color: 'emerald' },
+               { id: 'museo',        label: '🏛️ Museo',       color: 'amber'  },
+              ].map((item) => (
               <button key={item.id} onClick={() => setTab(item.id)}
                 className={`text-left py-3 px-5 text-xs font-bold rounded-2xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap
                   ${tab === item.id
@@ -963,10 +965,13 @@ const BoosterModal = ({ onClose }) => {
               );
              })()}
 
-             {/* ══ 🎴 COLECCIÓN ══ */}
-             {tab === 'coleccion' && <ColeccionCupones />}
+             {/* ══ 📦 MIS BROCARDS ══ */}
+             {tab === 'mis-brocards' && <BoosterBroCards />}
 
-           </div>
+             {/* ══ 🏛️ MUSEO ══ */}
+             {tab === 'museo' && <BoosterMuseo />}
+
+            </div>
         </div>
 
         {/* FOOTER */}

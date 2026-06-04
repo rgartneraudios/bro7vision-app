@@ -115,7 +115,7 @@ export default function CityLocationBanner({ scope, isMobile }) {
         className={`w-full max-w-2xl flex flex-col items-center pointer-events-none px-4 ${
           isMobile 
             ? 'relative' // En móvil le quitamos la posición fija para que el layout principal lo baje y lo centre
-            : 'fixed top-12 left-[50%] -translate-x-1/2 z-[99999]' // Tu configuración original para PC
+            : 'fixed top-8 left-[50%] -translate-x-1/2 z-[99999]' // Subido un poco
         }`}
       >
         {/* clb-wrap es la cápsula semitransparente detrás del texto */}
