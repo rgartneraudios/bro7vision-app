@@ -166,13 +166,13 @@ realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances
       {/* 3. PUERTA DERECHA */}
       <div className={`side-panel side-panel-right ${isRightOpen ? 'open' : ''} flex flex-col p-4 gap-2 overflow-y-auto right-panel-scroll`}>
         <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest text-right mb-1 mt-6 font-mono">Navegación</p>
-        <div className="w-full flex flex-col gap-2.5 flex-1 mt-2">
-          {navItems.map((item) => (
-            <button key={item.id} onClick={() => handleNavigation(item.id)} className={`w-full flex justify-between items-center p-4 border rounded-2xl transition-all group hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-r from-amber-500/20 via-fuchsia-500/20 to-cyan-500/20 border-amber-400/30 hover:from-amber-500/40 hover:via-fuchsia-500/40 hover:to-cyan-500/40`}>
-              <span className="text-xs font-black uppercase tracking-[0.2em] text-amber-200 transition-colors group-hover:text-white">{item.label}</span>
-              <div className="flex -space-x-3">{item.images.map((imgSrc, idx) => <img key={idx} src={imgSrc} alt="" className="w-9 h-9 rounded-full border-2 border-black object-cover shadow-[0_0_10px_rgba(0,0,0,0.8)]" />)}</div>
-            </button>
-          ))}
+         <div className="w-full flex flex-col gap-2.5 flex-1 mt-2">
+           {navItems.map((item) => (
+             <button key={item.id} onClick={() => handleNavigation(item.id)} className={`w-full flex justify-between items-center pl-2 pr-4 py-4 border rounded-2xl transition-all group hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-r from-amber-500/20 via-fuchsia-500/20 to-cyan-500/20 border-amber-400/30 hover:from-amber-500/40 hover:via-fuchsia-500/40 hover:to-cyan-500/40`}>
+               <span className="text-xs font-black uppercase tracking-[0.2em] text-amber-200 transition-colors group-hover:text-white">{item.label}</span>
+               <div className="flex -space-x-3">{item.images.map((imgSrc, idx) => <img key={idx} src={imgSrc} alt="" className="w-9 h-9 rounded-full border-2 border-black object-cover shadow-[0_0_10px_rgba(0,0,0,0.8)]" />)}</div>
+             </button>
+           ))}
         </div>   
                <div className="mt-2 border-t border-white/10 pt-3 flex flex-col gap-2">
           <button onClick={() => setShowBooster(true)} className="w-full p-3 border border-cyan-500/30 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-xl text-cyan-400 font-mono text-[11px] hover:from-cyan-500/40 hover:to-blue-500/40 transition-all">[ BOOSTER STUDIO ]</button>

@@ -106,16 +106,14 @@ const [businessMessage, setBusinessMessage]   = useState(null);
       
       {/* --- 1. FONDO DE VIDEO (CINE) --- */}
        <div className="absolute inset-0 z-0">
-        <video 
-            src="https://media.bro7vision.com/genesisgate.mp4" 
-            autoPlay 
-            loop 
-            muted 
-            playsInline 
-            className="w-full h-full object-cover opacity-60" 
-        />
-        {/* Capa extra de oscurecimiento para leer mejor */}
-        <div className="absolute inset-0 bg-black/40"></div>
+         <video 
+             src="https://media.bro7vision.com/genesisgate.mp4" 
+             autoPlay 
+             loop 
+             muted 
+             playsInline 
+             className="w-full h-full object-cover opacity-100" 
+         />
        </div>
       
       {/* --- 2. TARJETA DE ACCESO --- */}
