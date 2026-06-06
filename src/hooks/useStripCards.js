@@ -74,11 +74,22 @@ export const useStripCards = () => {
           return;
         }
 
+        // Traer datos de perfil (neighborhood, nearby_ref, etc.) de los user_id
+        const userIds = [...new Set(rows.map(r => r.user_id).filter(Boolean))];
+        const { data: perfiles } = await supabase
+          .from('profiles')
+          .select('id, description, neighborhood, nearby_ref, biz_category, biz_profession')
+          .in('id', userIds);
+
+        const perfilMap = {};
+        (perfiles || []).forEach(p => { perfilMap[p.id] = p; });
+
         // Mapear al shape que espera BroCardStripPS
         const cards = rows.map(r => {
           const key = r.modelo_key;
           const modelo = BROCARD_MODELOS[key] || BROCARD_MODELOS[Number(key)];
           if (!modelo) return null;
+          const perfil = perfilMap[r.user_id] || {};
           return {
             ...r,
             ...modelo,
@@ -87,6 +98,11 @@ export const useStripCards = () => {
             fase_lunar: FASE_LABELS[r.fase_lunar] || faseActual(),
             vencimiento: r.vencimiento || vencimientoFase(),
             coste_genesis: modelo.coste_genesis,
+            description:    perfil.description    || '',
+            neighborhood:   perfil.neighborhood   || '',
+            nearby_ref:     perfil.nearby_ref     || '',
+            biz_category:   perfil.biz_category   || '',
+            biz_profession: perfil.biz_profession || '',
           };
         }).filter(Boolean);
 

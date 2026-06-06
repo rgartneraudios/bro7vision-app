@@ -142,36 +142,33 @@ export default function NovaBanner({
             <span className="text-amber-400">Procesando...</span>
           )}
 
-          {/* Card seleccionada */}
-          {selectedCard && !novaLoading && (
-            <div className="w-full flex flex-col items-center gap-3 animate-fadeIn">
-              <p
-                className="text-amber-300 font-black italic uppercase text-base leading-tight tracking-widest"
-                style={{ textShadow: '0 0 16px rgba(251,191,36,0.7)' }}
-              >
-                {selectedCard.nombre}
-              </p>
+           {/* Card seleccionada */}
+           {selectedCard && !novaLoading && (
+             <div className="w-full flex flex-col items-center gap-3 animate-fadeIn">
+               <p
+                 className="text-amber-300 font-black italic uppercase text-base leading-tight tracking-widest"
+                 style={{ textShadow: '0 0 16px rgba(251,191,36,0.7)' }}
+               >
+                 {selectedCard.nombre}
+               </p>
 
-              {/* Datos del cupón */}
-              <p className="text-amber-400 font-black italic uppercase text-lg leading-relaxed"
-                style={{ textShadow: '0 0 20px rgba(251,191,36,0.6)' }}>
-                {selectedCard.descuento_pct}% · {selectedCard.condicion}
-                <span style={{ opacity: cursor ? 1 : 0 }}>_</span>
-              </p>
+                <p className="text-amber-400 font-black italic uppercase text-lg leading-relaxed"
+                  style={{ textShadow: '0 0 20px rgba(251,191,36,0.6)' }}>
+                  El comercio te comenta que {selectedCard.description || 'sin descripción'}.
+                  La oferta incluye: {selectedCard.descripcion || 'sin detalles'}.
+                  Los encontrarás en {selectedCard.neighborhood || 'su zona'}, cerca de {selectedCard.nearby_ref || 'sin referencia'}.
+                  <span style={{ opacity: cursor ? 1 : 0 }}>_</span>
+                </p>
 
-              <p className="text-amber-300/70 font-bold text-xs uppercase tracking-widest">
-                {selectedCard.coste_genesis?.toLocaleString()} ✦ génesis · Vence {selectedCard.vencimiento}
-              </p>
-
-              <button
-                onClick={handleCanjear}
-                className="mt-1 px-8 py-2.5 bg-amber-500/20 border border-amber-400/70 rounded-2xl text-amber-300 font-black text-sm uppercase tracking-widest hover:bg-amber-400/40 hover:text-white transition-all"
-                style={{ boxShadow: '0 0 16px rgba(251,191,36,0.3)' }}
-              >
-                ✦ CANJEAR
-              </button>
-            </div>
-          )}
+               <button
+                 onClick={handleCanjear}
+                 className="mt-1 px-8 py-2.5 bg-amber-500/20 border border-amber-400/70 rounded-2xl text-amber-300 font-black text-sm uppercase tracking-widest hover:bg-amber-400/40 hover:text-white transition-all"
+                 style={{ boxShadow: '0 0 16px rgba(251,191,36,0.3)' }}
+               >
+                 ✦ CANJEAR
+               </button>
+             </div>
+           )}
 
           {/* Mensaje typewriter */}
           {!selectedCard && !novaLoading && currentMsg && (

@@ -186,48 +186,45 @@ export default function IsabellaBanner({
             <div className="sv-loading"><span /><span /><span /></div>
           )}
 
-          {/* Card seleccionada */}
-          {selectedCard && !loading && (
-            <div className="w-full flex flex-col items-center gap-3" style={{ animation: 'stripIn 0.3s ease both' }}>
-              <p className="sv-texto" style={{ minHeight: 'unset', fontSize: 'clamp(13px, 2vw, 16px)' }}>
-                {selectedCard.nombre}
-              </p>
+           {/* Card seleccionada */}
+           {selectedCard && !loading && (
+             <div className="w-full flex flex-col items-center gap-3" style={{ animation: 'stripIn 0.3s ease both' }}>
+               <p className="sv-texto" style={{ minHeight: 'unset', fontSize: 'clamp(13px, 2vw, 16px)' }}>
+                 {selectedCard.nombre}
+               </p>
 
-              {/* Datos del cupón */}
-              <p className="sv-texto" style={{ minHeight: 'unset' }}>
-                {selectedCard.descuento_pct}% · {selectedCard.condicion}
-                <span className="sv-cursor" style={{ opacity: cursor ? 1 : 0 }} />
-              </p>
+                <p className="sv-texto" style={{ minHeight: 'unset' }}>
+                  El profesional te comenta que {selectedCard.description || 'sin descripción'}.
+                  La oferta incluye: {selectedCard.descripcion || 'sin detalles'}.
+                  Especialidad: {selectedCard.biz_profession || 'sin especialidad'}. En {selectedCard.neighborhood || 'su zona'}.
+                  <span className="sv-cursor" style={{ opacity: cursor ? 1 : 0 }} />
+                </p>
 
-              <p style={{ fontSize: 11, color: '#F792CF', opacity: 0.7, fontFamily: "'Orbitron', monospace", letterSpacing: '0.5px' }}>
-                {selectedCard.coste_genesis?.toLocaleString()} ✦ génesis · Vence {selectedCard.vencimiento}
-              </p>
-
-              <button
-                onClick={handleCanjear}
-                style={{
-                  marginTop: 4,
-                  padding: '10px 32px',
-                  background: 'rgba(245,40,145,0.15)',
-                  border: '1px solid rgba(245,40,145,0.6)',
-                  borderRadius: '1rem',
-                  color: '#F792CF',
-                  fontWeight: 900,
-                  fontSize: 13,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.15em',
-                  cursor: 'pointer',
-                  boxShadow: '0 0 14px rgba(245,40,145,0.25)',
-                  transition: 'all 0.2s',
-                  fontFamily: "'Orbitron', monospace",
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,40,145,0.35)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'rgba(245,40,145,0.15)'}
-              >
-                ✦ CANJEAR
-              </button>
-            </div>
-          )}
+               <button
+                 onClick={handleCanjear}
+                 style={{
+                   marginTop: 4,
+                   padding: '10px 32px',
+                   background: 'rgba(245,40,145,0.15)',
+                   border: '1px solid rgba(245,40,145,0.6)',
+                   borderRadius: '1rem',
+                   color: '#F792CF',
+                   fontWeight: 900,
+                   fontSize: 13,
+                   textTransform: 'uppercase',
+                   letterSpacing: '0.15em',
+                   cursor: 'pointer',
+                   boxShadow: '0 0 14px rgba(245,40,145,0.25)',
+                   transition: 'all 0.2s',
+                   fontFamily: "'Orbitron', monospace",
+                 }}
+                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,40,145,0.35)'}
+                 onMouseLeave={e => e.currentTarget.style.background = 'rgba(245,40,145,0.15)'}
+               >
+                 ✦ CANJEAR
+               </button>
+             </div>
+           )}
 
           {!selectedCard && !loading && currentMsg && (
             <p className="sv-texto">

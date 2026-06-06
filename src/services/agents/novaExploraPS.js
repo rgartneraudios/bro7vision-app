@@ -28,7 +28,6 @@ Código:     ${entidad_detectada.bro_pd     || 'sin código'}
 Nombre:     ${entidad_detectada.nombre     || 'sin nombre'}
 ${intencion_detectada === 'ubicacion'   ? `Referencia: ${entidad_detectada.nearby_ref  || ''}\nBarrio:      ${entidad_detectada.neighborhood || ''}\nDirección:   ${entidad_detectada.address       || ''}` : ''}
 ${intencion_detectada === 'descripcion' ? `Categoría:   ${entidad_detectada.biz_category || entidad_detectada.biz_profession || ''}\nDescripción: ${entidad_detectada.description   || ''}` : ''}
-${intencion_detectada === 'precio'      ? `Precio ref:  ${entidad_detectada.ref_price || ''}` : ''}
 ${intencion_detectada === 'catalogo'    ? `Catálogo:    ${entidad_detectada.catalog_items ? JSON.stringify(entidad_detectada.catalog_items) : 'no disponible'}` : ''}
 
 INSTRUCCIÓN CRÍTICA: Usa SOLO estos datos para responder. 

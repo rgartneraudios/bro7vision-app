@@ -17,7 +17,7 @@ export function useCanjearCupon({ userId, onGenesisUpdate }) {
   // idle | confirmando | cargando | exito | error
 
   const [cuponActivo, setCuponActivo] = useState(null);
-  // { codigo, descuento_pct, comercio_nombre, mini_url, caduca_legible }
+  // { codigo, descuento_pct, comercio_nombre, mini_web_url, caduca_legible }
 
   const [cardPendiente, setCardPendiente] = useState(null);
   const [errorMsg,      setErrorMsg]      = useState('');
@@ -51,15 +51,15 @@ const iniciarCanje = useCallback((card) => {
           comercio_id:     cardPendiente.id,
           descuento_pct:   cardPendiente.descuento_pct,
           comercio_nombre: cardPendiente.nombre,
-          mini_url:        cardPendiente.mini_url  || '',
+          mini_web_url:        cardPendiente.mini_web_url  || '',
           coste_genesis:   cardPendiente.coste_genesis,
         }),
       });
       
 
-onGenesisUpdate?.(data.balance_nuevo);
-
       const data = await res.json();
+      
+      onGenesisUpdate?.(data.balance_nuevo);
 
       if (!res.ok || !data.ok) {
         // Cupón ya existente — mostrar el código que ya tenían
@@ -68,7 +68,7 @@ onGenesisUpdate?.(data.balance_nuevo);
             codigo:          data.codigo,
             descuento_pct:   cardPendiente.descuento_pct,
             comercio_nombre: cardPendiente.nombre,
-            mini_url:        cardPendiente.mini_url || '',
+            mini_web_url:        cardPendiente.mini_web_url || '',
             caduca_legible:  '—',
             ya_existia:      true,
           });
@@ -85,7 +85,7 @@ onGenesisUpdate?.(data.balance_nuevo);
         codigo:          data.codigo,
         descuento_pct:   data.descuento_pct,
         comercio_nombre: data.comercio_nombre,
-        mini_url:        data.mini_url,
+        mini_web_url:        data.mini_web_url,
         caduca_legible:  data.caduca_legible,
         ya_existia:      false,
       });

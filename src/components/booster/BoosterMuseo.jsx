@@ -20,7 +20,7 @@ const BoosterMuseo = () => {
         const { data: perfilData, error: perfilError } = await supabase
           .from('comercio_cupones')
           .select('comercio_nombre')
-          .eq('id', user.id)
+          .eq('user_id', user.id)
           .single();
 
         if (perfilError) throw perfilError;

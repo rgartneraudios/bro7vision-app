@@ -237,7 +237,6 @@ const BoosterModal = ({ onClose }) => {
         country, city, zip_code: zipCode,
         address, neighborhood, nearby_ref: nearbyRef,
         biz_category: bizCategory, biz_profession: bizProfession,
-        ref_price: description,
         updated_at: new Date(),
       };
       const { error } = await supabase.from('profiles').update(updates).eq('id', user.id);

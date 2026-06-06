@@ -228,9 +228,9 @@ export default function CuponModal({
               >
                 CERRAR
               </button>
-              {cuponActivo.mini_url && (
+              {cuponActivo.mini_web_url && (
                 <button
-                  onClick={() => { window.open(cuponActivo.mini_url, '_blank'); onCerrar(); }}
+                  onClick={() => { window.open(cuponActivo.mini_web_url, '_blank'); onCerrar(); }}
                   style={btnStyle(`${r.color}22`, r.color, r.color)}
                 >
                   IR AL MINI ➤
