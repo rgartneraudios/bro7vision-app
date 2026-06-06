@@ -305,7 +305,7 @@ const BoosterModal = ({ onClose }) => {
               { id: 'metrics',  label: '🛰️ Órbita & Radar', color: 'orange' },
               // Linaje siempre visible — el rank vacío muestra estado pendiente
                { id: 'linaje',   label: '👑 Linaje',         color: 'orange' },
-               { id: 'mis-brocards', label: '📦 Mis BroCards', color: 'emerald' },
+               { id: 'mis-brocards', label: '📇 Selección BroCards', color: 'emerald' },
                { id: 'museo',        label: '🏛️ Museo',       color: 'amber'  },
               ].map((item) => (
               <button key={item.id} onClick={() => setTab(item.id)}
@@ -965,7 +965,7 @@ const BoosterModal = ({ onClose }) => {
               );
              })()}
 
-             {/* ══ 📦 MIS BROCARDS ══ */}
+             {/* ══ 📇 SELECCION BROCARDS ══ */}
              {tab === 'mis-brocards' && <BoosterBroCards />}
 
              {/* ══ 🏛️ MUSEO ══ */}

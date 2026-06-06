@@ -18,7 +18,7 @@ const PACKS = [
       "Video horizontal 16:9 y vertical 9:16",
       "Audio — música o podcast",
       "BroBlog con artículos propios",
-      "BroTweet para mensajes cortos a tu comunidad",
+      "BroTwit para mensajes cortos a tu comunidad",
       "HoloPrisma — cubo 3D con tus imágenes",
       "Recibe mensajes de tus seguidores",
       "Redes sociales vinculadas",

@@ -16,12 +16,9 @@
 
 import { useState, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
+import { BROCARD_MODELOS } from '../components/booster/BoosterBroCards';
 
-const ALCANCES_VISIBLES = {
-  LOCAL:         ['LOCAL', 'NACIONAL', 'INTERNACIONAL'],
-  NACIONAL:      ['NACIONAL', 'INTERNACIONAL'],
-  INTERNACIONAL: ['INTERNACIONAL'],
-};
+const FASE_LABELS = { 1:'Luna Nueva', 2:'Creciente', 3:'Luna Llena', 4:'Menguante' };
 
 export const useStripCards = () => {
   const [stripCards,    setStripCards]    = useState([]);
@@ -45,24 +42,22 @@ export const useStripCards = () => {
       // ══════════════════════════════════════════════════════════════
       if (agenteUpper === 'BROSHOP_PRODUCTO' || agenteUpper === 'BROSHOP_SERVICIO') {
         const sector          = agenteUpper === 'BROSHOP_PRODUCTO' ? 'PRODUCTO' : 'SERVICIO';
-        const alcancesValidos = ALCANCES_VISIBLES[modalidad] || ALCANCES_VISIBLES.LOCAL;
 
-        let query = supabase
-          .from('comercio_cupones')
-          .select('*')
-          .eq('activo', true)
-          .eq('sector', sector)
-          .in('alcance', alcancesValidos)
-          .order('created_at', { ascending: false });
+         let query = supabase
+           .from('comercio_cupones')
+           .select('*')
+           .eq('activo', true)
+           .eq('sector', sector)
+           .order('created_at', { ascending: false });
 
-        // Filtro geográfico
-        if (modalidad === 'LOCAL' && ciudad) {
-          query = query.ilike('ciudad', `%${ciudad}%`);
-        }
-        if (modalidad === 'NACIONAL' && pais) {
-          query = query.ilike('pais', `%${pais}%`);
-        }
-        // INTERNACIONAL — sin filtro geográfico
+         // Filtro geográfico según alcance de la card
+         if (ciudad) {
+           query = query.or(
+             `alcance.eq.INTERNACIONAL,` +
+             `and(alcance.eq.NACIONAL,pais.ilike.%${pais || ''}%),` +
+             `and(alcance.eq.LOCAL,ciudad.ilike.%${ciudad}%)`
+           );
+         }
 
         const { data: rows, error } = await query;
 
@@ -79,22 +74,21 @@ export const useStripCards = () => {
           return;
         }
 
-        // Mapear al shape que espera BroCardStripPS v5
-        const cards = rows.map(r => ({
-          id:              r.id,
-          nombre:          r.comercio_nombre || '',
-          banner_url:      r.banner_url      || '',
-          mini_url:        r.mini_url        || '',
-          descuento_pct:   r.descuento_pct,
-          condicion:       r.condicion       || '1 producto',
-          coste_genesis:   r.coste_genesis   || 1000,
-          sector:          r.sector,
-          alcance:         r.alcance,
-          ciudad:          r.ciudad          || '',
-          pais:            r.pais            || '',
-          fase_lunar:      faseActual(),
-          vencimiento:     vencimientoFase(),
-        }));
+        // Mapear al shape que espera BroCardStripPS
+        const cards = rows.map(r => {
+          const key = r.modelo_key;
+          const modelo = BROCARD_MODELOS[key] || BROCARD_MODELOS[Number(key)];
+          if (!modelo) return null;
+          return {
+            ...r,
+            ...modelo,
+            nombre:        r.comercio_nombre || '',
+            banner_url:    r.banner_brocard  || '/images/brocard.webp',
+            fase_lunar: FASE_LABELS[r.fase_lunar] || faseActual(),
+            vencimiento: r.vencimiento || vencimientoFase(),
+            coste_genesis: modelo.coste_genesis,
+          };
+        }).filter(Boolean);
 
         setStripCards(cards);
         setStripLabel(agenteUpper === 'BROSHOP_PRODUCTO' ? 'broshop_producto' : 'broshop_servicio');

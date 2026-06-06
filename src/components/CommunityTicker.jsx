@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
 const FAKE_TWITS = [
-    { alias: 'Neo_Runner', twit_message: 'He perdido un dron en la Zona 4. Recompensa.', card_color: 'cyan' },
-    { alias: 'Cyber_Rose', twit_message: 'Buscando bajista para banda Synthwave.', card_color: 'fuchsia' },
-    { alias: 'Sys_Admin',  twit_message: 'Mantenimiento de nodos esta noche.', card_color: 'red' }
-];
+    { alias: 'Neo_Runner', twit_message: 'He perdido un drón en la Zona 4. Recompensa.' },
+    { alias: 'Cyber_Rose', twit_message: 'Buscando bajista para banda Synthwave.' },
+    { alias: 'Sys_Admin',  twit_message: 'Mantenimiento de nodos esta noche.' }
+  ];
 
 const CommunityTicker = ({ onUserClick }) => {
   const [messages, setMessages] = useState(FAKE_TWITS);
@@ -16,7 +16,7 @@ const CommunityTicker = ({ onUserClick }) => {
       try {
         const { data } = await supabase
           .from('profiles')
-          .select('alias, twit_message, card_color, banner_url, id')
+          .select('alias, twit_message, banner_url, id')
           .neq('twit_message', '')
           .neq('twit_message', null)
           .limit(10);
@@ -40,7 +40,16 @@ const CommunityTicker = ({ onUserClick }) => {
     cyan: '#00E1FF', fuchsia: '#FF007D', yellow: '#FFD700', 
     green: '#00FF48', red: '#FF1A1A', blue: '#006AED', orange: '#FF8000'
   };
-  const activeColor = colorMap[msg.card_color] || '#00E1FF';
+  // Asignar color por hash simple de id o alias
+  const getColor = (m) => {
+    if (!m) return '#00E1FF';
+    const str = m.id || m.alias || '';
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+    const keys = Object.keys(colorMap);
+    return colorMap[keys[Math.abs(hash) % keys.length]];
+  };
+  const activeColor = getColor(msg);
 
   return (
     <div className="w-full h-full animate-slideInRight pointer-events-auto">
