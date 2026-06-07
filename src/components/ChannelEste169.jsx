@@ -172,6 +172,8 @@ const ChannelEste169 = ({ videoUsers, balances, setBalances, session, realityMod
   const [selectedEmoji, setSelectedEmoji] = useState(1);
   const [isAccordionOpen, setIsAccordionOpen] = useState(false); // Para abrir/cerrar el historial
   const [bgVideoUrl, setBgVideoUrl] = useState('');
+  const [proyeccion, setProyeccion] = useState(null);
+  const [acordeonAbierto, setAcordeonAbierto] = useState(false);
 
 
   useEffect(() => {
@@ -312,9 +314,30 @@ const ChannelEste169 = ({ videoUsers, balances, setBalances, session, realityMod
     // Al video de Móvil le pasamos 'true' (silenciado) si estamos en PC.
     loadVideo(videoRefMob.current, url, !isMobile ? true : isMuted, hlsRefMob);
 
-    setVisualEchos([]);setFloatingEcos([]); // solo resetea Eco Text, los HyperZap sobreviven
-    }, [currentUser]);
-    
+     setVisualEchos([]);setFloatingEcos([]); // solo resetea Eco Text, los HyperZap sobreviven
+     }, [currentUser]);
+     
+     useEffect(() => {
+  if (!currentUser?.id || currentUser.id.length < 20) {
+    setProyeccion(null);
+    return;
+  }
+  const fetchProyeccion = async () => {
+    const { data, error } = await supabase
+      .from('mini_proyeccion')
+      .select('video_h_titulo, video_h_descripcion, video_h_tipo, video_v_titulo, video_v_descripcion, video_v_tipo')
+      .eq('user_id', currentUser.id)
+      .single();
+    if (error) { setProyeccion(null); return; }
+    setProyeccion(data);
+  };
+  fetchProyeccion();
+}, [currentUser?.id]);
+
+const videoTitulo = proyeccion?.video_v_titulo || null;
+const videoDesc   = proyeccion?.video_v_descripcion || null;
+const videoTipo   = proyeccion?.video_v_tipo || null;
+
      // NAVEGACIÓN TECLADO / D-PAD SMART TV ← nuevo
 useEffect(()=>{
   const handleKey=(e)=>{
@@ -536,10 +559,38 @@ useEffect(() => {
       <style>{ESTE169_STYLES}</style>
 
       {/* FONDO */}
-      <video ref={bgVideoRef} src={bgVideoUrl} autoPlay loop muted playsInline
-       className="absolute inset-0 w-full h-full object-cover z-[1]"/>
-       
-    {/* 2. ECOS FLOTANTES — MÁXIMO 3, OSCUROS, CON EMOJI */}
+       <video ref={bgVideoRef} src={bgVideoUrl} autoPlay loop muted playsInline
+        className="absolute inset-0 w-full h-full object-cover z-[1]"/>
+        
+{/* ── ACORDEÓN TÍTULO/DESC — flotante arriba ── */}
+{videoTitulo && (
+  <div className="absolute top-4 left-4 z-[110] pointer-events-auto flex flex-col items-start w-72">
+    <button
+      onClick={() => setAcordeonAbierto(prev => !prev)}
+      className="flex items-center gap-3 px-4 py-3 bg-black/60 backdrop-blur-md border border-white/20 rounded-xl hover:bg-white/10 transition-all w-full">
+      <span className="text-white/80 text-xs font-black uppercase tracking-widest flex-1 text-left truncate">
+        {videoTitulo}
+      </span>
+      <span className={`text-white/50 text-sm transition-transform duration-300 ${acordeonAbierto ? 'rotate-180' : ''}`}>▼</span>
+    </button>
+    {acordeonAbierto && (
+      <div className="mt-1 w-full px-5 py-5 bg-slate-950/80 backdrop-blur-md border border-slate-700/30 rounded-2xl overflow-y-auto max-h-[40vh]">
+        <p style={{ fontFamily: 'Georgia, serif' }}
+          className="text-white text-xl font-bold leading-snug mb-3">
+          {videoTitulo}
+        </p>
+        {videoDesc && (
+          <p style={{ fontFamily: 'Georgia, serif' }}
+            className="text-white/70 text-base italic leading-relaxed">
+            {videoDesc}
+          </p>
+        )}
+      </div>
+    )}
+  </div>
+)}
+
+     {/* 2. ECOS FLOTANTES — MÁXIMO 3, OSCUROS, CON EMOJI */}
 <div className="absolute inset-0 z-[10] pointer-events-none">
   {floatingEcos.map((echo) => {
     const isPay = echo.currency === 'pay';
@@ -828,48 +879,69 @@ useEffect(() => {
      {/* NUEVO HISTORIAL / ACORDEÓN (Gigante, Transparente y Moderno) */}
 <div className="absolute bottom-[20px] left-[54%] -translate-x-1/2 w-[95vw] md:w-[800px] z-[300] pointer-events-auto flex flex-col items-center font-moderna">
   
-  {isAccordionOpen && (
-    <div 
-      className="w-full h-[450px] mb-2 rounded-2xl border border-white/30 overflow-y-auto bro-scrollbar shadow-[0_0_50px_rgba(0,0,0,0.95)] flex flex-col gap-3 p-4 relative"
-    >
-      {/* Fondo Galáctico Fijo (se coloca como img absoluta para no afectar opacidades hijas) */}
-      <img src="/images/galaxy_bg.webp" alt="galaxia" className="absolute inset-0 w-full h-full object-cover z-0 opacity-80 pointer-events-none" />
-      
-      {/* Contenedor de Ecos (z-10 para estar sobre la galaxia) */}
-      <div className="relative z-10 flex flex-col gap-3 w-full">
-        {visualEchos.filter(echo => !echo.is_sponsored).map((echo, i) => {
-          const isInferno = echo.is_inferno; 
-          // AQUÍ ESTÁ LA MAGIA: bg-black/40 (muy transparente) y SIN backdrop-blur
-          const bgRow = isInferno ? 'bg-red-950/50 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.4)]' : 'bg-black/40 border-white/10 hover:bg-black/60 transition-colors';
-          const emojiId = echo.eco_emoji_id || 1;
+   {isAccordionOpen && (
+     <div 
+       className="w-full h-[450px] mb-2 rounded-2xl border border-white/30 overflow-y-auto bro-scrollbar shadow-[0_0_50px_rgba(0,0,0,0.95)] flex flex-col gap-3 p-4 relative"
+     >
+       {/* Fondo Galáctico Fijo (se coloca como img absoluta para no afectar opacidades hijas) */}
+       <img src="/images/galaxy_bg.webp" alt="galaxia" className="absolute inset-0 w-full h-full object-cover z-0 opacity-80 pointer-events-none" />
+       
+       {/* Contenedor de Ecos (z-10 para estar sobre la galaxia) */}
+       <div className="relative z-10 flex flex-col gap-3 w-full">
+         {visualEchos.filter(echo => !echo.is_sponsored).map((echo, i) => {
+           const isInferno = echo.is_inferno; 
+           // AQUÍ ESTÁ LA MAGIA: bg-black/40 (muy transparente) y SIN backdrop-blur
+           const bgRow = isInferno ? 'bg-red-950/50 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.4)]' : 'bg-black/40 border-white/10 hover:bg-black/60 transition-colors';
+           const emojiId = echo.eco_emoji_id || 1;
 
-          return (
-            <div key={i} className={`flex items-start gap-4 p-4 rounded-xl border ${bgRow}`}>
-              <img src={`/emojis/emoji_${emojiId}.webp`} alt="eco" className="w-[75px] h-[75px] flex-shrink-0 drop-shadow-md" />
-              <div className="flex flex-col w-full">
-                <div className="flex justify-between items-center w-full mb-1">
-                  <span className={`text-[12px] md:text-[14px] font-black uppercase tracking-widest ${isInferno ? 'text-red-400' : 'text-cyan-400'}`}>
-                    @{echo.author_alias}
-                  </span>
-                  {isInferno && <span className="text-[10px] md:text-[12px] font-black text-red-500 animate-pulse drop-shadow-md">🔥 INFIERNO</span>}
-                </div>
-                <p className="text-[14px] md:text-[16px] text-white/95 font-semibold leading-relaxed mt-1 tracking-wide">
-                  {echo.text}
-                </p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  )}
+           return (
+             <div key={i} className={`flex items-start gap-4 p-4 rounded-xl border ${bgRow}`}>
+               <img src={`/emojis/emoji_${emojiId}.webp`} alt="eco" className="w-[75px] h-[75px] flex-shrink-0 drop-shadow-md" />
+               <div className="flex flex-col w-full">
+                 <div className="flex justify-between items-center w-full mb-1">
+                   <span className={`text-[12px] md:text-[14px] font-black uppercase tracking-widest ${isInferno ? 'text-red-400' : 'text-cyan-400'}`}>
+                     @{echo.author_alias}
+                   </span>
+                   {isInferno && <span className="text-[10px] md:text-[12px] font-black text-red-500 animate-pulse drop-shadow-md">🔥 INFIERNO</span>}
+                 </div>
+                 <p className="text-[14px] md:text-[16px] text-white/95 font-semibold leading-relaxed mt-1 tracking-wide">
+                   {echo.text}
+                 </p>
+               </div>
+             </div>
+           );
+         })}
+       </div>
+     </div>
+   )}
 
-  <button 
-    onClick={() => setIsAccordionOpen(!isAccordionOpen)}
-    className="px-8 py-2.5 bg-black/95 backdrop-blur-md border border-white/30 rounded-t-2xl text-[12px] md:text-[14px] font-black text-white/80 tracking-[0.3em] hover:text-white hover:bg-white/10 hover:border-cyan-400 transition-all uppercase shadow-[0_-5px_25px_rgba(0,0,0,0.6)]"
-  >
-    {isAccordionOpen ? '▼ CERRAR HISTORIAL ▼' : '▲ VER HISTORIAL DE ECOS ▲'}
-  </button>
+   {/* ── BADGE TIPO — encima del historial de Ecos ── */}
+{videoTipo && (
+  <div className="mb-2 flex justify-center">
+    {videoTipo === 'original' && (
+      <span className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
+        ✦ Original
+      </span>
+    )}
+    {videoTipo === 'publicidad' && (
+      <span className="bg-amber-500 text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
+        📢 Publicidad
+      </span>
+    )}
+    {videoTipo === 'ia' && (
+      <span className="bg-violet-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
+        🤖 Hecho con IA
+      </span>
+    )}
+  </div>
+)}
+
+   <button 
+     onClick={() => setIsAccordionOpen(!isAccordionOpen)}
+     className="px-8 py-2.5 bg-black/95 backdrop-blur-md border border-white/30 rounded-t-2xl text-[12px] md:text-[14px] font-black text-white/80 tracking-[0.3em] hover:text-white hover:bg-white/10 hover:border-cyan-400 transition-all uppercase shadow-[0_-5px_25px_rgba(0,0,0,0.6)]"
+   >
+     {isAccordionOpen ? '▼ CERRAR HISTORIAL ▼' : '▲ VER HISTORIAL DE ECOS ▲'}
+   </button>
 </div>
 
 

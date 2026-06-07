@@ -13,7 +13,6 @@ import BroLogViewer from './components/BroLogViewer';
 import BoosterModal from './components/BoosterModal';
 import LegalTerminal from './components/LegalTerminal';
 import HoloProjector from './components/HoloProjector';
-import HoloProjector169 from './components/HoloProjector169';
 import BioForest from './components/BioForest';
 import ChannelEste from './components/ChannelEste';
 import ChannelEste169 from './components/ChannelEste169';
@@ -114,7 +113,6 @@ function App() {
   const [isTeleporting, setIsTeleporting]       = useState(false);
   const [teleportCoords, setTeleportCoords]     = useState({ city: '' });
   const [projectingUser, setProjectingUser]     = useState(null);
-  const [is169Mode, setIs169Mode]               = useState(false);
   const [selectedLog, setSelectedLog]           = useState(null);
   const [audioUser, setAudioUser]               = useState(null);
   const [activePrismUser, setActivePrismUser]   = useState(null);
@@ -126,6 +124,23 @@ function App() {
   const [perfilSector, setPerfilSector]         = useState(null);
   const [avisoPendiente, setAvisoPendiente]     = useState(null);
   const [showMiniGuide, setShowMiniGuide] = useState(false);
+
+  // ════════════════════════════════════════════════════
+  // EFECTO — Auto-montar BroLogViewer al abrir Teléfono Casa
+  // ══════════════════════════════════════════════════════
+
+  useEffect(() => {
+    if (projectingUser) {
+      setSelectedLog({
+        id: projectingUser.id,
+        title: projectingUser.editorial_title || "Sin Título",
+        author: projectingUser.alias || "Anónimo",
+        content: projectingUser.editorial_content || "..."
+      });
+    } else {
+      setSelectedLog(null);
+    }
+  }, [projectingUser]);
 
   const broTunerRef = useRef(null);
 
@@ -398,6 +413,19 @@ function App() {
     }
   }, [scope, cargarStripCards, resetOsos]);
 
+  // ════════════════════════════════════════════════════
+  // FUNCIÓN handleGoToShop
+  // ══════════════════════════════════════════════════════
+
+  const handleGoToShop = (target) => {
+    if (target === 'nova') {
+      setIntent('productos');
+    } else if (target === 'isabella') {
+      setIntent('servicios');
+    }
+    setStep(2);
+  };
+
   // ══════════════════════════════════════════════════════
   // USEMEMO
   // ══════════════════════════════════════════════════════
@@ -519,7 +547,7 @@ const filteredItems = useMemo(() => {
     realItems, filteredItems, hubVideos, hubVideos169,
     selectedForestUser, setSelectedForestUser, savedUserIndex,
     audioUser, setAudioUser, activePrismUser, setActivePrismUser,
-    projectingUser, setProjectingUser, is169Mode, setIs169Mode, selectedCard,
+    projectingUser, setProjectingUser, selectedCard,
     broTunerRef, navItems, handleNavigation, handleReportIssue,
     setShowWalletModal, setShowBooster, setShowStory, setShowLegal,
     scope, sessionCP, sessionCity, sessionRef,
@@ -542,6 +570,7 @@ const filteredItems = useMemo(() => {
     userId:         session?.user?.id || null,
   genesisBalance: balances.genesis  || 0,
   onGenesisUpdate: (nuevoBalance) => setBalances(prev => ({ ...prev, genesis: nuevoBalance })),
+  handleGoToShop,
   };
 
   // ══════════════════════════════════════════════════════
@@ -608,28 +637,15 @@ const filteredItems = useMemo(() => {
         </div>
       )}
 
-      {projectingUser && !is169Mode && (
+      {projectingUser && (
         <HoloProjector
-          videoUrl={projectingUser.video_file || projectingUser.videoUrl}
           user={projectingUser}
           balances={balances} setBalances={setBalances}
           session={session}
           onOpenLog={setSelectedLog}
-          onClose={() => { setProjectingUser(null); setIs169Mode(false); }}
-          onGoTo169={() => setIs169Mode(true)}
+          onClose={() => setProjectingUser(null)}
         />
       )}
-      
-      {projectingUser && is169Mode && (
-  <HoloProjector169
-    user={projectingUser}
-    balances={balances} setBalances={setBalances}
-    session={session}
-    onOpenLog={setSelectedLog}
-    onClose={() => { setProjectingUser(null); setIs169Mode(false); }}
-    onGoTo916={() => setIs169Mode(false)}
-  />
-)}
 
       {intent === 'internal_search' && step === 2 && (
         <div className={`fixed inset-x-0 top-[10%] bottom-[16%] z-[90] mx-auto max-w-5xl px-4 ${
@@ -647,7 +663,16 @@ const filteredItems = useMemo(() => {
         </div>
       )}
 
-      {selectedLog && <BroLogViewer log={selectedLog} onClose={() => setSelectedLog(null)} />}
+      {selectedLog && (
+        <BroLogViewer
+          log={selectedLog}
+          onClose={() => { setSelectedLog(null); setProjectingUser(null); }}
+          balances={balances}
+          setBalances={setBalances}
+          session={session}
+          handleGoToShop={handleGoToShop}
+        />
+      )}
 
       {/* Botón fullscreen — solo visible en browser normal (no PWA, no fullscreen activo) */}
       {!isPWA && !isFullscreen && (

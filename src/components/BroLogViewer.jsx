@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
-const BroLogViewer = ({ log, onClose, balances, setBalances, session }) => {
+const BroLogViewer = ({ log, onClose, balances, setBalances, session, handleGoToShop }) => {
   const [showAd, setShowAd] = useState(true);
   const [isTipping, setIsTipping] = useState(false);
   const [showHalo, setShowHalo] = useState(false);
@@ -84,7 +84,7 @@ const BroLogViewer = ({ log, onClose, balances, setBalances, session }) => {
          <div className="relative z-10 flex-1 overflow-y-auto custom-scrollbar p-6 md:p-12 pb-32">
             <div className="max-w-3xl mx-auto">
                 <header className="mb-10 text-center">
-                    <span className="inline-block px-3 py-1 border border-fuchsia-500/50 rounded-full text-[10px] text-fuchsia-400 mb-4 tracking-widest uppercase">Editorial Íntimo</span>
+                    <span className="inline-block px-3 py-1 border border-fuchsia-500/50 rounded-full text-[10px] text-fuchsia-400 mb-4 tracking-widest uppercase">Editorial</span>
                     <h1 className="text-3xl md:text-6xl font-bold text-white mb-6 leading-tight font-serif uppercase tracking-tighter">
                        {log.title}
                     </h1>
@@ -110,9 +110,36 @@ const BroLogViewer = ({ log, onClose, balances, setBalances, session }) => {
             </div>
          </div>
       </div>
-      )}
+       )}
 
-      <style>{`
+       {/* FOOTER — Bitácora + Productos + Servicios */}
+       <div className="fixed bottom-0 left-0 w-full z-[200002] bg-black/80 backdrop-blur-2xl border-t border-white/10">
+         <div className="flex h-20 items-center px-2">
+
+           <button
+             onClick={onClose}
+             className="flex-1 flex flex-col items-center gap-1 text-white/30">
+             <span className="text-xl">🚪</span>
+             <span className="text-[10px] font-black uppercase">Cerrar</span>
+           </button>
+
+            <button
+              onClick={() => { onClose(); handleGoToShop('nova'); }}
+              className="flex-1 flex flex-col items-center gap-1 text-yellow-500">
+              <img src="/emojis/nova.webp" alt="Nova" className="w-7 h-7 object-contain" />
+              <span className="text-[10px] font-black uppercase">BroCard Productos</span>
+            </button>
+
+            <button
+              onClick={() => { onClose(); handleGoToShop('isabella'); }}
+              className="flex-1 flex flex-col items-center gap-1 text-fuchsia-400">
+              <img src="/emojis/isabella.webp" alt="Isabella" className="w-7 h-7 object-contain" />
+              <span className="text-[10px] font-black uppercase">BroCard Servicios</span>
+            </button>
+         </div>
+       </div>
+
+       <style>{`
         @keyframes glowSwim { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 15% { opacity: 1; scale: 1; } 100% { transform: translateY(-115vh) scale(3.5); opacity: 0; } }
         .animate-glowSwim { animation: glowSwim 5.5s ease-in-out forwards; }
       `}</style>

@@ -158,6 +158,10 @@ const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, on
   const [isAccordionOpen, setIsAccordionOpen] = useState(false); // Para abrir/cerrar el historial
   const [bgVideoUrl, setBgVideoUrl] = useState('');
 
+  const [proyeccion, setProyeccion] = useState(null);
+  const [acordeonAbierto, setAcordeonAbierto] = useState(false);
+
+
 
   useEffect(() => {
   if (savedUserIndex) setCurrentIndex(savedUserIndex);
@@ -326,7 +330,28 @@ useEffect(()=>{
     if(video) video.pause();
     if(hlsRef.current){ hlsRef.current.destroy(); hlsRef.current=null; }
   };
-},[currentUser]); // SOLO currentUser
+  },[currentUser]); // SOLO currentUser
+
+  useEffect(() => {
+    if (!currentUser?.id || currentUser.id.length < 20) {
+      setProyeccion(null);
+      return;
+    }
+    const fetchProyeccion = async () => {
+      const { data, error } = await supabase
+        .from('mini_proyeccion')
+        .select('video_h_titulo, video_h_descripcion, video_h_tipo, video_v_titulo, video_v_descripcion, video_v_tipo')
+        .eq('user_id', currentUser.id)
+        .single();
+      if (error) { setProyeccion(null); return; }
+      setProyeccion(data);
+    };
+    fetchProyeccion();
+  }, [currentUser?.id]);
+
+  const videoTitulo = proyeccion?.video_v_titulo || null;
+  const videoDesc   = proyeccion?.video_v_descripcion || null;
+  const videoTipo   = proyeccion?.video_v_tipo || null;
 
   // FIX AUDIO — Efecto B: mute sin recargar
   useEffect(()=>{ if(videoRef.current) videoRef.current.muted=isMuted; },[isMuted]);
@@ -881,6 +906,34 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
       </div>
 
 
+      {/* ── ACORDEÓN TÍTULO/DESC — flotante arriba ── */}
+      {videoTitulo && (
+        <div className="absolute top-4 right-4 z-[110] pointer-events-auto flex flex-col items-start w-72">
+          <button
+            onClick={() => setAcordeonAbierto(prev => !prev)}
+            className="flex items-center gap-3 px-4 py-3 bg-black/60 backdrop-blur-md border border-white/20 rounded-xl hover:bg-white/10 transition-all w-full">
+            <span className="text-white/80 text-xs font-black uppercase tracking-widest flex-1 text-left truncate">
+              {videoTitulo}
+            </span>
+            <span className={`text-white/50 text-sm transition-transform duration-300 ${acordeonAbierto ? 'rotate-180' : ''}`}>▼</span>
+          </button>
+          {acordeonAbierto && (
+            <div className="mt-1 w-full px-5 py-5 bg-slate-950/80 backdrop-blur-md border border-slate-700/30 rounded-2xl overflow-y-auto max-h-[40vh]">
+              <p style={{ fontFamily: 'Georgia, serif' }}
+                className="text-white text-xl font-bold leading-snug mb-3">
+                {videoTitulo}
+              </p>
+              {videoDesc && (
+                <p style={{ fontFamily: 'Georgia, serif' }}
+                  className="text-white/70 text-base italic leading-relaxed">
+                  {videoDesc}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* 5. NUEVO FOOTER: SOMBREADO + BOTONES + CREADOR */}
       {/* Añadimos pointer-events-none al contenedor general, pero auto a los botones para que los clics funcionen sin bloquear la pantalla */}
       <div className="absolute bottom-0 left-0 w-full flex flex-col md:flex-row justify-between items-center md:items-end px-4 py-6 md:px-[10%] md:py-8 z-[150] pointer-events-none bg-gradient-to-t from-black/90 via-black/60 to-transparent">
@@ -955,6 +1008,27 @@ setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
       </div>
     </div>
   )}
+
+    {/* ── BADGE TIPO — encima del historial de Ecos ── */}
+    {videoTipo && (
+      <div className="mb-2 flex justify-center">
+        {videoTipo === 'original' && (
+          <span className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
+            ✦ Original
+          </span>
+        )}
+        {videoTipo === 'publicidad' && (
+          <span className="bg-amber-500 text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
+            📢 Publicidad
+          </span>
+        )}
+        {videoTipo === 'ia' && (
+          <span className="bg-violet-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
+            🤖 Hecho con IA
+          </span>
+        )}
+      </div>
+    )}
 
   <button 
     onClick={() => setIsAccordionOpen(!isAccordionOpen)}
