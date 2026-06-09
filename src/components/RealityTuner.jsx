@@ -58,12 +58,12 @@ const RealityTuner = ({ onSelect }) => {
     <div className="absolute inset-0 z-[100] bg-black flex flex-col items-center justify-center animate-fadeIn overflow-y-auto">
         
         {/* FONDO: VIDEO DEEP SPACE TRASLADADO AQUÍ */}
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline 
-          className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none opacity-60"
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
         >
           <source src="https://media.bro7vision.com/entrada_nova.mp4" type="video/mp4" />
         </video>
