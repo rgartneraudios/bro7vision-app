@@ -8,6 +8,13 @@ import AvisosTab from './AvisosTab';
 import BoosterBroCards from './booster/BoosterBroCards';
 import BoosterMuseo from './booster/BoosterMuseo';
 
+function getCicloLunar() {
+  const known = new Date('2000-01-06T18:14:00Z');
+  const now = new Date();
+  const elapsed = (now - known) / 86400000;
+  return Math.floor(elapsed / 29.53058867);
+}
+
 // ── Estado de emisión — solo lectura, asignado por el equipo ─────────
 const EMISION_CFG = {
   verde:    { emoji: '🟢', label: 'Verde',    desc: 'Emites en todos los turnos (00:00 – 24:00)', color: 'text-green-400',  border: 'border-green-500/40',  bg: 'bg-green-950/20'  },
@@ -127,7 +134,28 @@ const BoosterModal = ({ onClose }) => {
         const { data: profile } = await supabase
           .from('profiles').select('*').eq('id', user.id).single();
         if (!profile) return;
-        
+
+        const cicloActual = getCicloLunar();
+        const cicloGuardado = profile.actividad_reset_ciclo || 0;
+
+        if (cicloActual > cicloGuardado) {
+          await supabase
+            .from('profiles')
+            .update({
+              actividad_video:       false,
+              actividad_activo:      false,
+              actividad_games:       false,
+              actividad_brostory:    false,
+              actividad_reset_ciclo: cicloActual,
+            })
+            .eq('id', user.id);
+
+          profile.actividad_video       = false;
+          profile.actividad_activo      = false;
+          profile.actividad_games       = false;
+          profile.actividad_brostory    = false;
+          profile.actividad_reset_ciclo = cicloActual;
+        }
 
         setCountry(profile.country          || '');
         setCity(profile.city                || '');
@@ -193,10 +221,11 @@ const BoosterModal = ({ onClose }) => {
           reino:              profile.reino              || '',
           juramento_firmado:  profile.juramento_firmado  || false,
           juramento_fecha:    profile.juramento_fecha    || null,
-          actividad_video:    profile.actividad_video    || false,
-          actividad_activo:   profile.actividad_activo   || false,
-          actividad_games:    profile.actividad_games    || false,
-          actividad_brostory: profile.actividad_brostory || false,
+           actividad_video:    profile.actividad_video    || false,
+           actividad_activo:   profile.actividad_activo   || false,
+           actividad_games:    profile.actividad_games    || false,
+           actividad_brostory: profile.actividad_brostory || false,
+           actividad_reset_ciclo: profile.actividad_reset_ciclo || 0,
         });
       } catch (e) {
         console.error("Error cargando perfil:", e);
@@ -821,7 +850,7 @@ const BoosterModal = ({ onClose }) => {
               const gen    = GENESIS[rank]  || 0;
 
               const actividad = [
-                { key:'video',    label:'Subir contenido',  done: formData.actividad_video,    emoji:'🎬' },
+                { key:'video',    label:'Proyectar contenido',  done: formData.actividad_video,    emoji:'📡' },
                 { key:'activo',   label:'Halo · Eco · Zap', done: formData.actividad_activo,   emoji:'⚡' },
                 { key:'games',    label:'Jugar en Games',   done: formData.actividad_games,    emoji:'🎮' },
                 { key:'brostory', label:'Ver BroStory',     done: formData.actividad_brostory, emoji:'👁️' },
