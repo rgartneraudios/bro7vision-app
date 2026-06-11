@@ -34,10 +34,7 @@ const HoloProjector = ({ user, balances, setBalances, session, onClose, handleGo
       {/* MENSAJE DEL CREADOR */}
       <div className="absolute top-32 left-0 w-full px-6 z-30 pointer-events-none">
         <div className="animate-spirit">
-          <p className="bg-black/40 backdrop-blur-md border border-white/10 px-4 py-2 rounded-2xl text-[11px] text-[#FFFDD0] italic text-center shadow-xl">
-            "{user.creator_loop_reply || "Hola! Deja tu pregunta en la Bitácora..."}"
-          </p>
-          <p className="text-[7px] text-center mt-1 opacity-50 uppercase font-black text-white">Mensaje del Creador</p>
+          
         </div>
       </div>
 
@@ -68,9 +65,6 @@ const HoloProjector = ({ user, balances, setBalances, session, onClose, handleGo
             padding: '1.25rem',
           }}>
           <div className="space-y-4">
-            <div className="bg-white/5 p-3 rounded-xl border border-white/5">
-              <p className="text-gray-300 text-[11px] leading-relaxed italic">"{user.blog_text || "El creador está en directo..."}"</p>
-            </div>
             <div className="bg-black/40 p-4 rounded-2xl border border-white/10">
               <p className="text-[9px] text-gray-500 font-black mb-2 uppercase">Enviar Pregunta Privada</p>
               <div className="flex gap-2">

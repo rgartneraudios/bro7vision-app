@@ -117,6 +117,30 @@ export const BROCARD_MODELOS = {
      label: '100%\nREGALO',
      coste_genesis: 5000,
    },
+  // TARJETA REGALO 5€ — naranja
+   'regalo5': {
+     sector: 'regalo', descuento_pct: 0, condicion: 1, cornerStyle: 'circle',
+     bg: 'linear-gradient(160deg,#1a0a00,#4a2000,#cc6600)',
+     border: 'linear-gradient(160deg,#cc6600,#ffaa44,#aa5500)',
+     cornerBg: 'linear-gradient(135deg,#cc6600,#ffcc88)',
+     cornerText: '#fff',
+     shimmer: 'linear-gradient(105deg, transparent 35%, rgba(255,170,68,0.5) 50%, transparent 65%)',
+     glow: 'rgba(255,150,50,0.4)',
+     label: 'REGALO\n5€',
+     coste_genesis: 10000,
+   },
+  // TARJETA REGALO 10€ — rosa mármol
+   'regalo10': {
+     sector: 'regalo', descuento_pct: 0, condicion: 1, cornerStyle: 'circle',
+     bg: 'linear-gradient(160deg,#1a0a14,#4a2030,#cc6688)',
+     border: 'linear-gradient(160deg,#cc6688,#ffaacc,#aa5577)',
+     cornerBg: 'linear-gradient(135deg,#cc6688,#ffccee)',
+     cornerText: '#fff',
+     shimmer: 'linear-gradient(105deg, transparent 35%, rgba(255,170,204,0.5) 50%, transparent 65%)',
+     glow: 'rgba(255,100,150,0.4)',
+     label: 'REGALO\n10€',
+     coste_genesis: 15000,
+   },
 };
 
 const MODELO_KEYS = Object.keys(BROCARD_MODELOS);
@@ -169,7 +193,15 @@ const BoosterBroCards = () => {
   const [alcance, setAlcance] = useState('LOCAL');
   const [sectorComercio, setSectorComercio] = useState('PRODUCTO');
   const [nuevaDescripcion, setNuevaDescripcion] = useState('');
+  const [nuevoBannerUrl, setNuevoBannerUrl] = useState('');
   const [creando, setCreando] = useState(false);
+
+  // Estado para generador de sticker
+  const [stickerModel, setStickerModel] = useState('10');
+  const [palabraClave1, setPalabraClave1] = useState('');
+  const [palabraClave2, setPalabraClave2] = useState('');
+  const [palabraClave3, setPalabraClave3] = useState('');
+  const [generandoSticker, setGenerandoSticker] = useState(false);
 
   const cargarCupones = useCallback(async () => {
     try {
@@ -191,7 +223,7 @@ const BoosterBroCards = () => {
 
       if (data) {
         console.log('Columnas de comercio_cupones:', data.length > 0 ? Object.keys(data[0]) : 'sin datos');
-        console.log('Ejemplo banner_brocard:', data.length > 0 ? data[0].banner_brocard : 'N/A');
+        console.log('Ejemplo banner_11_url:', data.length > 0 ? data[0].banner_11_url : 'N/A');
         setCupones(data);
         const descMap = {};
         data.forEach(c => {
@@ -270,6 +302,7 @@ const BoosterBroCards = () => {
           condicion: modelo.condicion,
           alcance,
           descripcion: nuevaDescripcion,
+          banner_11_url: nuevoBannerUrl,
           fase_lunar,
           vencimiento,
         })
@@ -283,6 +316,7 @@ const BoosterBroCards = () => {
       setSelectedModelKey(null);
       setAlcance('Local');
       setNuevaDescripcion('');
+      setNuevoBannerUrl('');
     } catch (err) {
       console.error('Error creando cupón:', err);
       alert('Error al crear cupón: ' + err.message);
@@ -307,7 +341,7 @@ const BoosterBroCards = () => {
       ...modelo,      // estilos del modelo encima
       // estos SIEMPRE al final — nunca pisados
       nombre: c.comercio_nombre || 'COMERCIO',
-      banner_url: c.banner_brocard || '/images/brocard.webp',
+      banner_url: c.banner_11_url || '/images/brocard.webp',
       fase_lunar: getFaseLabel(Number(c.fase_lunar)) || getLunaActual().fase,
       vencimiento: c.vencimiento || getVencimiento(),
       coste_genesis: modelo.coste_genesis,
@@ -506,6 +540,18 @@ const BoosterBroCards = () => {
               />
             </div>
 
+            {/* banner_11_url */}
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-gray-300 uppercase tracking-widest block">
+                Banner cuadrado 160 x 160 px
+              </label>
+              <input type="text" value={nuevoBannerUrl}
+                onChange={e => setNuevoBannerUrl(e.target.value)}
+                placeholder="https://media.bro7vision.com/..."
+                className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all"
+              />
+            </div>
+
             {/* Crear */}
             <div className="flex justify-end">
               <button
@@ -574,6 +620,102 @@ const BoosterBroCards = () => {
           })}
         </div>
       )}
+
+      {/* ── GENERADOR DE STICKERS ────────────────────────────────── */}
+      <div className="bg-black/30 backdrop-blur-md border border-fuchsia-500/20 p-5 rounded-2xl space-y-5">
+        <h4 className="text-xs font-bold text-fuchsia-300 uppercase tracking-widest flex items-center gap-2">
+          <span className="text-lg">{'\uD83D\uDCF7'}</span> Generador de Stickers
+        </h4>
+
+        {/* Selector tipo BroCard */}
+        <div className="space-y-1">
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block">
+            Tipo de BroCard
+          </label>
+          <select value={stickerModel} onChange={e => setStickerModel(e.target.value)}
+            className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400 transition-all">
+            {MODELO_KEYS.map(key => {
+              const m = BROCARD_MODELOS[key];
+              return (
+                <option key={key} value={key} style={{ background: '#1a1a2e', color: '#fff' }}>
+                  {m.label.replace('\n', ' ')} — {m.coste_genesis} G
+                </option>
+              );
+            })}
+          </select>
+        </div>
+
+        {/* Palabras clave */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block">
+              Palabra clave 1 <span className="text-[9px] text-gray-600 normal-case">(aparece en sticker)</span>
+            </label>
+            <input type="text" value={palabraClave1}
+              onChange={e => setPalabraClave1(e.target.value)}
+              maxLength={30}
+              placeholder="Ej: DESCUENTO"
+              className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition-all" />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block">
+              Palabra clave 2 <span className="text-[9px] text-gray-600 normal-case">(va al email del cliente)</span>
+            </label>
+            <input type="text" value={palabraClave2}
+              onChange={e => setPalabraClave2(e.target.value)}
+              maxLength={30}
+              placeholder="Ej: BIENVENIDO"
+              className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition-all" />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block">
+              Palabra clave 3 <span className="text-[9px] text-gray-600 normal-case">(solo la ve el comercio)</span>
+            </label>
+            <input type="text" value={palabraClave3}
+              onChange={e => setPalabraClave3(e.target.value)}
+              maxLength={30}
+              placeholder="Ej: INTERNO_001"
+              className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition-all" />
+          </div>
+        </div>
+
+        {/* Botón generar */}
+        <div className="flex justify-end">
+          <button onClick={async () => {
+            if (!palabraClave1.trim()) {
+              alert('La palabra clave 1 es obligatoria (aparece en el sticker)');
+              return;
+            }
+            setGenerandoSticker(true);
+            try {
+              const { data: { user } } = await supabase.auth.getUser();
+              if (!user) throw new Error('No autenticado');
+              const modelo = BROCARD_MODELOS[stickerModel];
+              const { error } = await supabase.from('stickers_generados').insert({
+                user_id: user.id,
+                modelo_key: stickerModel,
+                palabra_clave_1: palabraClave1.trim(),
+                palabra_clave_2: palabraClave2.trim(),
+                palabra_clave_3: palabraClave3.trim(),
+                tipo: modelo.tipo,
+                label: modelo.label,
+              });
+              if (error) throw error;
+              alert('\u2728 \u00a1Sticker generado con \u00e9xito!');
+              setPalabraClave1('');
+              setPalabraClave2('');
+              setPalabraClave3('');
+            } catch (e) {
+              alert('Error al generar sticker: ' + e.message);
+            } finally {
+              setGenerandoSticker(false);
+            }
+          }} disabled={generandoSticker}
+            className="bg-fuchsia-500/20 hover:bg-fuchsia-500/30 text-fuchsia-400 text-xs font-bold uppercase tracking-widest px-8 py-3 rounded-full border border-fuchsia-500/30 transition-all disabled:opacity-50 flex items-center gap-2">
+            {generandoSticker ? '\u23F3 GENERANDO...' : '\uD83D\uDCF7 GENERAR STICKER'}
+          </button>
+        </div>
+      </div>
 
       {!loading && cupones.length === 0 && !selectedModelKey && (
         <div className="flex flex-col items-center justify-center h-64 gap-4 border border-white/5 rounded-3xl bg-white/2">

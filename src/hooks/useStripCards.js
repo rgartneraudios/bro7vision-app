@@ -94,7 +94,7 @@ export const useStripCards = () => {
             ...r,
             ...modelo,
             nombre:        r.comercio_nombre || '',
-            banner_url:    r.banner_brocard  || '/images/brocard.webp',
+            banner_url: r.banner_11_url || '/images/brocard.webp',
             fase_lunar: FASE_LABELS[r.fase_lunar] || faseActual(),
             vencimiento: r.vencimiento || vencimientoFase(),
             coste_genesis: modelo.coste_genesis,

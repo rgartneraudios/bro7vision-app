@@ -151,9 +151,9 @@ function BroCardCupon({ card, onClick }) {
           transition: 'transform 0.4s ease',
           boxShadow: '5px 7px 20px rgba(0,0,0,0.75)',
         }}>
-          {inView && card.banner_url ? (
+          {inView && (card.banner_11_url || card.banner_url) ? (
             <img
-              src={card.banner_url}
+              src={card.banner_11_url || card.banner_url}
               alt={card.nombre || 'Comercio'}
               onLoad={() => setImgLoaded(true)}
               style={{

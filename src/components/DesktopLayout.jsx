@@ -142,7 +142,7 @@ const handleHandoffPersonaje = (id) => {
               </div>
             </div>
           )}
-          {/* MINI BRO7VISION — Página de ayuda */}
+          {/* Subir Contenido — Página de ayuda */}
 <div className="px-4 mt-4">
 <button
   onClick={() => onOpenMiniGuide()}
@@ -152,7 +152,7 @@ const handleHandoffPersonaje = (id) => {
     className="text-[10px] font-black uppercase group-hover:text-black"
     style={{ fontFamily: "'Georgia', serif" }}
   >
-    Mini Bro7Vision
+    Subir Contenido
   </span>
   <span className="text-lg">⬡</span>
 </button>

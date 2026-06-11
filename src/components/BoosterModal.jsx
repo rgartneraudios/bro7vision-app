@@ -6,7 +6,7 @@ import { marcarActividad } from '../hooks/useActividad';
 import { CoordenadosBlock } from '../components/CoordenadosBlock';
 import AvisosTab from './AvisosTab';
 import BoosterBroCards from './booster/BoosterBroCards';
-import BoosterMuseo from './booster/BoosterMuseo';
+import BoosterEnlaces from './booster/BoosterEnlaces';
 
 function getCicloLunar() {
   const known = new Date('2000-01-06T18:14:00Z');
@@ -78,7 +78,7 @@ const BoosterModal = ({ onClose }) => {
     track_name: '', video_file_169: '',
      holo_1: '', holo_2: '', holo_3: '', holo_4: '',
      ventas_rules: '',
-    creator_loop_reply: '', editorial_title: '', editorial_content: '',
+    editorial_title: '', editorial_content: '',
     description: '', genero: 'n',
     // OSOS IA
     osos_nombre: '', osos_tono: '', osos_intereses: '', osos_frase: '', oso_id: 'TITO',
@@ -195,7 +195,7 @@ const BoosterModal = ({ onClose }) => {
           holo_3:             profile.holo_3             || '',
           holo_4:             profile.holo_4             || '',
       ventas_rules:       profile.ventas_rules       || '',
-          creator_loop_reply: profile.creator_loop_reply || '',
+          
           editorial_title:    profile.editorial_title    || '',
           editorial_content:  profile.editorial_content  || '',
           twit_message:       profile.twit_message       || '',
@@ -324,14 +324,14 @@ const BoosterModal = ({ onClose }) => {
 
           {/* SIDEBAR */}
           <div className="flex md:flex-col border-b md:border-b-0 md:border-r border-white/10 bg-black/10 p-3 gap-2 overflow-x-auto md:w-64 shrink-0 z-20">
-            {[
-              { id: 'identity', label: '👤 Identidad',      color: 'cyan'   },
-              { id: 'avisos',   label: '📢 Mis Avisos',     color: 'blue'   },
-              { id: 'metrics',  label: '🛰️ Órbita & Radar', color: 'orange' },
-              // Linaje siempre visible — el rank vacío muestra estado pendiente
-               { id: 'linaje',   label: '👑 Linaje',         color: 'orange' },
-               { id: 'mis-brocards', label: '📇 Selección BroCards', color: 'emerald' },
-               { id: 'museo',        label: '🏛️ Museo',       color: 'amber'  },
+{[
+                { id: 'identity', label: '👤 Identidad',      color: 'cyan'   },
+                { id: 'avisos',   label: '📢 Mis Avisos',     color: 'blue'   },
+                { id: 'enlaces',  label: '🔗 Enlaces',        color: 'fuchsia'  },
+                { id: 'metrics',  label: '🛰️ Órbita & Radar', color: 'orange' },
+                // Linaje siempre visible — el rank vacío muestra estado pendiente
+                 { id: 'linaje',   label: '👑 Linaje',         color: 'orange' },
+                 { id: 'mis-brocards', label: '📇 Selección BroCards', color: 'emerald' },
               ].map((item) => (
               <button key={item.id} onClick={() => setTab(item.id)}
                 className={`text-left py-3 px-5 text-xs font-bold rounded-2xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap
@@ -993,8 +993,8 @@ const BoosterModal = ({ onClose }) => {
              {/* ══ 📇 SELECCION BROCARDS ══ */}
              {tab === 'mis-brocards' && <BoosterBroCards />}
 
-             {/* ══ 🏛️ MUSEO ══ */}
-             {tab === 'museo' && <BoosterMuseo />}
+             {/* ══ 🔗 ENLACES ══ */}
+             {tab === 'enlaces' && <BoosterEnlaces />}
 
             </div>
         </div>
