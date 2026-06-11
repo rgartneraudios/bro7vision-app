@@ -170,7 +170,7 @@ const BoosterEnlaces = () => {
           <div className={CardStyle}>
             <p className="text-xs font-bold text-fuchsia-400 mb-4 flex items-center gap-2 uppercase tracking-widest">{'\u2500\u2500'} IDENTIDAD VISUAL {'\u2500\u2500'}</p>
             <div className="space-y-4">
-              <Field field="banner_23_url" label="Banner vertical 300 x 480 px" placeholder="https://media.bro7vision.com/..." />
+              <Field field="banner_23_url" label="imagen vertical 300 x 450 px" placeholder="https://media.bro7vision.com/..." />
               <Field field="brotwit" label="Mensaje a tu comunidad" placeholder="Escribe un mensaje para tus seguidores..." />
             </div>
 
@@ -178,10 +178,10 @@ const BoosterEnlaces = () => {
             <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">Holoprismas</p>
             <div className="space-y-4">
               {[
-                { field: 'holoprisma_1', label: 'Banner vertical 300 x 480 px #1' },
-                { field: 'holoprisma_2', label: 'Banner vertical 300 x 480 px #2' },
-                { field: 'holoprisma_3', label: 'Banner vertical 300 x 480 px #3' },
-                { field: 'holoprisma_4', label: 'Banner vertical 300 x 480 px #4' },
+                { field: 'holoprisma_1', label: 'imagen vertical 300 x 450 px #1' },
+                { field: 'holoprisma_2', label: 'imagen vertical 300 x 450 px #2' },
+                { field: 'holoprisma_3', label: 'imagen vertical 300 x 450 px #3' },
+                { field: 'holoprisma_4', label: 'imagen vertical 300 x 450 px #4' },
               ].map(h => (
                 <Field key={h.field} field={h.field} label={h.label} placeholder="https://media.bro7vision.com/..." />
               ))}

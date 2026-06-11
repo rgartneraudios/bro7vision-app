@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../supabaseClient';
 import BroCardStripPS from '../BroCardStripPS';
+import StickerCupon, { MODEL_COLORS } from './StickerCupon';
 
 // ── 10 MODELOS DE BROCARD ────────────────────────────────────────────────
 export const BROCARD_MODELOS = {
@@ -186,6 +187,11 @@ const BoosterBroCards = () => {
   const [cupones, setCupones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [descriptions, setDescripciones] = useState({});
+  const [palabrasClave1, setPalabrasClave1] = useState({});
+  const [palabrasClave2, setPalabrasClave2] = useState({});
+  const [palabrasClave3, setPalabrasClave3] = useState({});
+  const [tiposBrocard, setTiposBrocard] = useState({});
+  const [bannersUrl, setBannersUrl] = useState({});
   const [guardando, setGuardando] = useState({});
 
   // Estado para crear nuevo cupón
@@ -196,18 +202,20 @@ const BoosterBroCards = () => {
   const [nuevoBannerUrl, setNuevoBannerUrl] = useState('');
   const [creando, setCreando] = useState(false);
 
-  // Estado para generador de sticker
-  const [stickerModel, setStickerModel] = useState('10');
-  const [palabraClave1, setPalabraClave1] = useState('');
-  const [palabraClave2, setPalabraClave2] = useState('');
-  const [palabraClave3, setPalabraClave3] = useState('');
-  const [generandoSticker, setGenerandoSticker] = useState(false);
+  const [aliasUsuario, setAliasUsuario] = useState('');
 
   const cargarCupones = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       console.log('USER ID:', user?.id);
       if (!user) return;
+
+      const { data: perfil } = await supabase
+        .from('profiles')
+        .select('alias')
+        .eq('id', user.id)
+        .single();
+      if (perfil?.alias) setAliasUsuario(perfil.alias);
 
       const { data, error } = await supabase
         .from('comercio_cupones')
@@ -226,10 +234,25 @@ const BoosterBroCards = () => {
         console.log('Ejemplo banner_11_url:', data.length > 0 ? data[0].banner_11_url : 'N/A');
         setCupones(data);
         const descMap = {};
+        const pc1Map = {};
+        const pc2Map = {};
+        const pc3Map = {};
+        const tbMap = {};
+        const bannMap = {};
         data.forEach(c => {
           descMap[c.id] = c.descripcion || c.description || '';
+          pc1Map[c.id] = c.palabra_clave_1 || '';
+          pc2Map[c.id] = c.palabra_clave_2 || '';
+          pc3Map[c.id] = c.palabra_clave_3 || '';
+          tbMap[c.id] = c.tipo_brocard || '';
+          bannMap[c.id] = c.banner_11_url || '';
         });
         setDescripciones(descMap);
+        setPalabrasClave1(pc1Map);
+        setPalabrasClave2(pc2Map);
+        setPalabrasClave3(pc3Map);
+        setTiposBrocard(tbMap);
+        setBannersUrl(bannMap);
       }
     } catch (err) {
       console.error('Error cargando cupones:', err);
@@ -246,21 +269,60 @@ const BoosterBroCards = () => {
     setDescripciones(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleGuardar = async (cuponId) => {
-    setGuardando(prev => ({ ...prev, [cuponId]: true }));
-    try {
-      const { error } = await supabase
-        .from('comercio_cupones')
-        .update({ descripcion: descriptions[cuponId] })
-        .eq('id', cuponId);
+  const handlePalabraClave1Change = (id, value) => {
+    setPalabrasClave1(prev => ({ ...prev, [id]: value }));
+  };
 
+  const handlePalabraClave2Change = (id, value) => {
+    setPalabrasClave2(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handlePalabraClave3Change = (id, value) => {
+    setPalabrasClave3(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handleTipoBrocardChange = (id, value) => {
+    setTiposBrocard(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handleBannerUrlChange = (id, value) => {
+    setBannersUrl(prev => ({ ...prev, [id]: value }));
+  };
+
+const handleGuardar = async (cuponId) => {
+  setGuardando(prev => ({ ...prev, [cuponId]: true }));
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('comercio_cupones')
+      .update({
+        descripcion:     descriptions[cuponId],
+        palabra_clave_1: palabrasClave1[cuponId] || null,
+        palabra_clave_2: palabrasClave2[cuponId] || null,
+        palabra_clave_3: palabrasClave3[cuponId] || null,
+        tipo_brocard:    tiposBrocard[cuponId]   || null,
+        banner_11_url:   bannersUrl[cuponId]     || null,
+      })
+      .eq('id', cuponId)
+      .eq('user_id', user.id);
+      
       if (error) throw error;
 
       setCupones(prev =>
-        prev.map(c => c.id === cuponId ? { ...c, descripcion: descriptions[cuponId] } : c)
+        prev.map(c => c.id === cuponId ? {
+          ...c,
+          descripcion: descriptions[cuponId],
+          palabra_clave_1: palabrasClave1[cuponId] || null,
+          palabra_clave_2: palabrasClave2[cuponId] || null,
+          palabra_clave_3: palabrasClave3[cuponId] || null,
+          tipo_brocard: tiposBrocard[cuponId] || null,
+          banner_11_url: bannersUrl[cuponId] || null,
+        } : c)
       );
     } catch (err) {
-      console.error('Error guardando descripción:', err);
+      console.error('Error guardando cupón:', err);
       alert('Error al guardar: ' + err.message);
     } finally {
       setGuardando(prev => ({ ...prev, [cuponId]: false }));
@@ -313,6 +375,7 @@ const BoosterBroCards = () => {
 
       setCupones(prev => [data, ...prev]);
       setDescripciones(prev => ({ ...prev, [data.id]: nuevaDescripcion }));
+      setBannersUrl(prev => ({ ...prev, [data.id]: nuevoBannerUrl }));
       setSelectedModelKey(null);
       setAlcance('Local');
       setNuevaDescripcion('');
@@ -595,6 +658,60 @@ const BoosterBroCards = () => {
                 <BroCardStripPS cards={[card]} columns={1} visible={true} />
 
                 <div className="bg-black/20 backdrop-blur-md border border-white/10 p-4 rounded-2xl space-y-3">
+                  <h5 className="text-sm font-black text-fuchsia-300 uppercase tracking-widest">
+                    {'\uD83D\uDCF7'} Creaci\u00f3n de Sticker
+                  </h5>
+
+                  <label className="text-xs font-bold text-gray-300 uppercase tracking-widest block">
+                    Tipo BroCard
+                  </label>
+                  <select value={tiposBrocard[c.id] || ''}
+                    onChange={e => handleTipoBrocardChange(c.id, e.target.value)}
+                    className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400 transition-all">
+                    <option value="" style={{ background: '#1a1a2e', color: '#888' }}>Seleccionar...</option>
+                    {MODELO_KEYS.map(key => {
+                      const m = BROCARD_MODELOS[key];
+                      return (
+                        <option key={key} value={key} style={{ background: '#1a1a2e', color: '#fff' }}>
+                          {m.label.replace('\n', ' ')} — {m.coste_genesis} G
+                        </option>
+                      );
+                    })}
+                  </select>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block">
+                        Palabra clave 1
+                      </label>
+                      <input type="text" value={palabrasClave1[c.id] || ''}
+                        onChange={e => handlePalabraClave1Change(c.id, e.target.value)}
+                        maxLength={30}
+                        placeholder="Ej: DESCUENTO"
+                        className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition-all" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block">
+                        Palabra clave 2
+                      </label>
+                      <input type="text" value={palabrasClave2[c.id] || ''}
+                        onChange={e => handlePalabraClave2Change(c.id, e.target.value)}
+                        maxLength={30}
+                        placeholder="Ej: BIENVENIDO"
+                        className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition-all" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block">
+                        Palabra clave 3
+                      </label>
+                      <input type="text" value={palabrasClave3[c.id] || ''}
+                        onChange={e => handlePalabraClave3Change(c.id, e.target.value)}
+                        maxLength={30}
+                        placeholder="Ej: INTERNO_001"
+                        className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition-all" />
+                    </div>
+                  </div>
+
                   <label className="text-xs font-bold text-gray-300 uppercase tracking-widest block">
                     Descripción del cupón
                   </label>
@@ -614,108 +731,36 @@ const BoosterBroCards = () => {
                       {guardando[c.id] ? '⏳ GUARDANDO...' : '💾 GUARDAR'}
                     </button>
                   </div>
+                  {palabrasClave1[c.id]?.trim() && tiposBrocard[c.id] && (() => {
+                    const mSticker = BROCARD_MODELOS[tiposBrocard[c.id]];
+                    if (!mSticker) return null;
+                    const vencSticker = getVencimiento();
+                    const faseSticker = getFaseLabel(getFaseLunar());
+                    return (
+                      <div className="mt-4 pt-4 border-t border-fuchsia-500/20">
+                        <h5 className="text-xs font-bold text-fuchsia-300 uppercase tracking-widest mb-3">
+                          {'\uD83D\uDCF7'} Vista previa del sticker
+                        </h5>
+                        <div className="flex justify-center">
+                          <StickerCupon
+                            comercioNombre={aliasUsuario || 'COMERCIO'}
+                            tipoBrocard={mSticker.label.replace('\n', ' ')}
+                            colorBorde={MODEL_COLORS[tiposBrocard[c.id]] || '#888888'}
+                            palabraClave1={palabrasClave1[c.id]?.trim() || ''}
+                            aliasUsuario={aliasUsuario}
+                            fechaCaduca={`${faseSticker} - ${vencSticker}`}
+                            banner_11_url={bannersUrl[c.id] || c.banner_11_url || ''}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             );
           })}
         </div>
       )}
-
-      {/* ── GENERADOR DE STICKERS ────────────────────────────────── */}
-      <div className="bg-black/30 backdrop-blur-md border border-fuchsia-500/20 p-5 rounded-2xl space-y-5">
-        <h4 className="text-xs font-bold text-fuchsia-300 uppercase tracking-widest flex items-center gap-2">
-          <span className="text-lg">{'\uD83D\uDCF7'}</span> Generador de Stickers
-        </h4>
-
-        {/* Selector tipo BroCard */}
-        <div className="space-y-1">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block">
-            Tipo de BroCard
-          </label>
-          <select value={stickerModel} onChange={e => setStickerModel(e.target.value)}
-            className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400 transition-all">
-            {MODELO_KEYS.map(key => {
-              const m = BROCARD_MODELOS[key];
-              return (
-                <option key={key} value={key} style={{ background: '#1a1a2e', color: '#fff' }}>
-                  {m.label.replace('\n', ' ')} — {m.coste_genesis} G
-                </option>
-              );
-            })}
-          </select>
-        </div>
-
-        {/* Palabras clave */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block">
-              Palabra clave 1 <span className="text-[9px] text-gray-600 normal-case">(aparece en sticker)</span>
-            </label>
-            <input type="text" value={palabraClave1}
-              onChange={e => setPalabraClave1(e.target.value)}
-              maxLength={30}
-              placeholder="Ej: DESCUENTO"
-              className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition-all" />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block">
-              Palabra clave 2 <span className="text-[9px] text-gray-600 normal-case">(va al email del cliente)</span>
-            </label>
-            <input type="text" value={palabraClave2}
-              onChange={e => setPalabraClave2(e.target.value)}
-              maxLength={30}
-              placeholder="Ej: BIENVENIDO"
-              className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition-all" />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block">
-              Palabra clave 3 <span className="text-[9px] text-gray-600 normal-case">(solo la ve el comercio)</span>
-            </label>
-            <input type="text" value={palabraClave3}
-              onChange={e => setPalabraClave3(e.target.value)}
-              maxLength={30}
-              placeholder="Ej: INTERNO_001"
-              className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition-all" />
-          </div>
-        </div>
-
-        {/* Botón generar */}
-        <div className="flex justify-end">
-          <button onClick={async () => {
-            if (!palabraClave1.trim()) {
-              alert('La palabra clave 1 es obligatoria (aparece en el sticker)');
-              return;
-            }
-            setGenerandoSticker(true);
-            try {
-              const { data: { user } } = await supabase.auth.getUser();
-              if (!user) throw new Error('No autenticado');
-              const modelo = BROCARD_MODELOS[stickerModel];
-              const { error } = await supabase.from('stickers_generados').insert({
-                user_id: user.id,
-                modelo_key: stickerModel,
-                palabra_clave_1: palabraClave1.trim(),
-                palabra_clave_2: palabraClave2.trim(),
-                palabra_clave_3: palabraClave3.trim(),
-                tipo: modelo.tipo,
-                label: modelo.label,
-              });
-              if (error) throw error;
-              alert('\u2728 \u00a1Sticker generado con \u00e9xito!');
-              setPalabraClave1('');
-              setPalabraClave2('');
-              setPalabraClave3('');
-            } catch (e) {
-              alert('Error al generar sticker: ' + e.message);
-            } finally {
-              setGenerandoSticker(false);
-            }
-          }} disabled={generandoSticker}
-            className="bg-fuchsia-500/20 hover:bg-fuchsia-500/30 text-fuchsia-400 text-xs font-bold uppercase tracking-widest px-8 py-3 rounded-full border border-fuchsia-500/30 transition-all disabled:opacity-50 flex items-center gap-2">
-            {generandoSticker ? '\u23F3 GENERANDO...' : '\uD83D\uDCF7 GENERAR STICKER'}
-          </button>
-        </div>
-      </div>
 
       {!loading && cupones.length === 0 && !selectedModelKey && (
         <div className="flex flex-col items-center justify-center h-64 gap-4 border border-white/5 rounded-3xl bg-white/2">
@@ -730,3 +775,6 @@ const BoosterBroCards = () => {
 };
 
 export default BoosterBroCards;
+
+
+

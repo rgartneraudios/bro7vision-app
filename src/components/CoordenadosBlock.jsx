@@ -4,7 +4,7 @@ export const CoordenadosBlock = ({
   country, setCountry, city, setCity, zipCode, setZipCode,
   address, setAddress, neighborhood, setNeighborhood,
   nearbyRef, setNearbyRef, bizCategory, setBizCategory,
-  bizProfession, setBizProfession, refPrice, setRefPrice,
+  bizProfession, setBizProfession,
   description, setDescription,
   formData, InputStyle, LabelStyle,
 }) => {
@@ -120,14 +120,7 @@ export const CoordenadosBlock = ({
   />
 </div>
 
-        {/* Precio de referencia */}
-        <div className="mb-5">
-          <label className={LabelStyle}>Precio de referencia (€)</label>
-          <input type="text" value={refPrice} onChange={e => setRefPrice(e.target.value)}
-            className={InputStyle} placeholder="Ej: 15 · consulta desde 50 · artículos desde 3"
-            maxLength={60} />
         </div>
-       </div>
     </div>
   );
 };
