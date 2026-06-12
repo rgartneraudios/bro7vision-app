@@ -47,7 +47,7 @@ export default function CuponModal({
         top: '50%', left: '50%',
         transform: 'translate(-50%, -50%)',
         zIndex: 201,
-        width: '320px',
+        width: '640px',
         borderRadius: '20px',
         background: 'rgba(28,28,32,0.97)',
         border: `1px solid ${r.color}55`,
@@ -86,21 +86,23 @@ export default function CuponModal({
 
             <div style={{
               width: '100%',
-              background: 'rgba(255,255,255,0.04)',
-              borderRadius: '10px',
-              padding: '12px 16px',
+              background: 'linear-gradient(135deg, #E8B7C9, #d49bb0)',
+              borderRadius: '16px',
+              padding: '32px 36px',
               display: 'flex',
               flexDirection: 'column',
-              gap: '6px',
+              gap: '16px',
+              boxShadow: '0 4px 20px rgba(232,183,201,0.4)',
             }}>
-              <Row label="Descuento" value={`${cardPendiente.descuento_pct}%`} color={r.color} />
-              <Row label="Condición" value={cardPendiente.condicion || '1 producto'} />
-              <Row label="Coste"     value={`${cardPendiente.coste_genesis?.toLocaleString()} ✦`} color="#39ff14" />
-              <Row label="Tu saldo"  value={`${genesisBalance?.toLocaleString()} ✦`} />
+              <Row label="Descuento" value={`${cardPendiente.descuento_pct}%`} color="#2a2a2e" labelColor="#2a2a2e" />
+              <Row label="Condición" value={cardPendiente.condicion || '1 producto'} color="#2a2a2e" labelColor="#2a2a2e" />
+              <Row label="Coste"     value={`${cardPendiente.coste_genesis?.toLocaleString()} ✦`} color="#003b99" labelColor="#2a2a2e" />
+              <Row label="Tu saldo"  value={`${genesisBalance?.toLocaleString()} ✦`} color="#2a2a2e" labelColor="#2a2a2e" />
               <Row
                 label="Tras canje"
                 value={`${((genesisBalance || 0) - cardPendiente.coste_genesis).toLocaleString()} ✦`}
-                color={(genesisBalance || 0) - cardPendiente.coste_genesis < 0 ? '#ff4444' : '#e8f4ff'}
+                color={(genesisBalance || 0) - cardPendiente.coste_genesis < 0 ? '#cc2222' : '#2a2a2e'}
+                labelColor="#2a2a2e"
               />
             </div>
 
@@ -171,11 +173,16 @@ export default function CuponModal({
               {cuponActivo.comercio_nombre}
             </div>
 
-            {/* Mensaje éxito */}
+            {/* Mensaje éxito — Cupón Rosa Mármol */}
             <div style={{
-              fontSize: '11px', color: '#e8f4ff',
+              fontSize: '22px', color: '#2a2a2e',
               letterSpacing: '1px', textAlign: 'center',
-              lineHeight: 1.6, padding: '0 4px',
+              lineHeight: 1.6, padding: '24px 20px',
+              width: '100%',
+              background: 'linear-gradient(135deg, #E8B7C9, #d49bb0)',
+              borderRadius: '16px',
+              boxShadow: '0 4px 20px rgba(232,183,201,0.4)',
+              fontWeight: 700,
             }}>
               Operación realizada con éxito, en Mis Cupones de tu Booster Studio te espera tu Sticker y la palabra Clave
             </div>
@@ -243,13 +250,13 @@ export default function CuponModal({
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────
-function Row({ label, value, color = 'rgba(232,244,255,0.6)' }) {
+function Row({ label, value, color = '#2a2a2e', labelColor = '#2a2a2e' }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <span style={{ fontSize: '9px', color: 'rgba(232,244,255,0.4)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+      <span style={{ fontSize: '18px', color: labelColor, letterSpacing: '0.5px', textTransform: 'uppercase', fontWeight: 700 }}>
         {label}
       </span>
-      <span style={{ fontSize: '11px', fontWeight: 700, color, letterSpacing: '0.5px' }}>
+      <span style={{ fontSize: '22px', fontWeight: 700, color, letterSpacing: '0.5px' }}>
         {value}
       </span>
     </div>

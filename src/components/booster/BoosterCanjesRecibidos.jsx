@@ -6,8 +6,11 @@ const CardStyle = "bg-blue-950/10 backdrop-blur-xl border border-white/10 p-6 ro
 const BoosterCanjesRecibidos = () => {
   const [canjes, setCanjes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('TODOS');
+  const [showHistorial, setShowHistorial] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (verHistorial) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -17,24 +20,23 @@ const BoosterCanjesRecibidos = () => {
         .select('id')
         .eq('user_id', user.id);
 
-      console.log('[CanjesRecibidos] user.id:', user.id);
-      console.log('[CanjesRecibidos] comercio_cupones found:', comercios);
-
       if (!comercios || comercios.length === 0) {
         setCanjes([]);
         return;
       }
 
       const ids = comercios.map(c => c.id);
-      console.log('[CanjesRecibidos] buscando cupones con comercio_id IN:', ids);
 
-      const { data: rows } = await supabase
+      let query = supabase
         .from('cupones_generados')
         .select('*')
-        .in('comercio_id', ids)
-        .order('created_at', { ascending: false });
+        .in('comercio_id', ids);
 
-      console.log('[CanjesRecibidos] cupones_generados encontrados:', rows);
+      if (!verHistorial) {
+        query = query.gt('caduca_at', new Date().toISOString());
+      }
+
+      const { data: rows } = await query.order('created_at', { ascending: false });
 
       if (!rows) {
         setCanjes([]);
@@ -65,7 +67,7 @@ const BoosterCanjesRecibidos = () => {
   }, []);
 
   useEffect(() => {
-    load();
+    load(showHistorial);
 
     const channel = supabase
       .channel('canjes-recibidos')
@@ -74,14 +76,14 @@ const BoosterCanjesRecibidos = () => {
         schema: 'public',
         table: 'cupones_generados',
       }, () => {
-        load();
+        load(showHistorial);
       })
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [load]);
+  }, [load, showHistorial]);
 
   const formatDate = (d) => {
     if (!d) return '—';
@@ -90,24 +92,16 @@ const BoosterCanjesRecibidos = () => {
     });
   };
 
+  const filteredCanjes = canjes.filter(c => {
+    const matchesAlias = c.aliasUsuario.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'TODOS' || c.estado === statusFilter;
+    return matchesAlias && matchesStatus;
+  });
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <p className="text-gray-600 text-xs uppercase tracking-widest animate-pulse">Cargando canjes...</p>
-      </div>
-    );
-  }
-
-  if (canjes.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 gap-4 animate-fadeIn">
-        <span className="text-5xl">📋</span>
-        <p className="text-gray-400 text-sm font-bold uppercase tracking-widest text-center">
-          Aún no tienes canjes recibidos
-        </p>
-        <p className="text-gray-600 text-xs text-center max-w-sm">
-          Cuando un cliente canjee un cupón en tu comercio, aparecerá aquí.
-        </p>
       </div>
     );
   }
@@ -122,42 +116,88 @@ const BoosterCanjesRecibidos = () => {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-white/10 text-[10px] text-gray-500 uppercase tracking-widest">
-              <th className="py-3 px-4 font-bold">Cliente</th>
-              <th className="py-3 px-4 font-bold">Palabras clave</th>
-              <th className="py-3 px-4 font-bold">Tipo Brocard</th>
-              <th className="py-3 px-4 font-bold">Fecha</th>
-              <th className="py-3 px-4 font-bold">Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {canjes.map((canje) => (
-              <tr key={canje.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                <td className="py-3 px-4 text-sm text-white font-bold">@{canje.aliasUsuario}</td>
-                <td className="py-3 px-4">
-                  <span className="text-xs font-mono text-cyan-300">
-                    {canje.palabra_clave_1 || '—'} · {canje.palabra_clave_2 || '—'} · {canje.palabra_clave_3 || '—'}
-                  </span>
-                </td>
-                <td className="py-3 px-4 text-xs text-gray-300">{canje.tipo_brocard || '—'}</td>
-                <td className="py-3 px-4 text-xs text-gray-400">{formatDate(canje.created_at)}</td>
-                <td className="py-3 px-4">
-                  <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
-                    canje.estado === 'USADO'
-                      ? 'text-green-400 border-green-500/30 bg-green-950/20'
-                      : 'text-yellow-400 border-yellow-500/30 bg-yellow-950/20'
-                  }`}>
-                    {canje.estado === 'USADO' ? '✅ Usado' : '🟡 Pendiente'}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Filtros */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <input
+          type="text"
+          placeholder="🔍 Buscar por alias..."
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          className="bg-blue-950/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 outline-none focus:border-cyan-500/50 transition-colors flex-1 min-w-[200px]"
+        />
+        <select
+          value={statusFilter}
+          onChange={e => setStatusFilter(e.target.value)}
+          className="bg-blue-950/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-cyan-500/50 transition-colors"
+        >
+          <option value="TODOS">Todos los estados</option>
+          <option value="PENDIENTE">🟡 Pendiente</option>
+          <option value="USADO">✅ Usado</option>
+        </select>
+        <button
+          onClick={() => setShowHistorial(h => !h)}
+          className={`text-xs font-bold tracking-widest uppercase px-4 py-2.5 rounded-xl border transition-colors ${
+            showHistorial
+              ? 'text-cyan-400 border-cyan-500/30 bg-cyan-950/20'
+              : 'text-gray-500 border-white/10 hover:border-white/20'
+          }`}
+        >
+          {showHistorial ? '◀ Fase actual' : '📜 Ver historial completo'}
+        </button>
       </div>
+
+      {filteredCanjes.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-64 gap-4 animate-fadeIn">
+          <span className="text-5xl">📋</span>
+          <p className="text-gray-400 text-sm font-bold uppercase tracking-widest text-center">
+            {canjes.length === 0
+              ? 'Aún no tienes canjes recibidos'
+              : 'No hay resultados con esos filtros'}
+          </p>
+          <p className="text-gray-600 text-xs text-center max-w-sm">
+            {canjes.length === 0
+              ? 'Cuando un cliente canjee un cupón en tu comercio, aparecerá aquí.'
+              : 'Prueba a cambiar los filtros o el término de búsqueda.'}
+          </p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-white/10 text-[10px] text-gray-500 uppercase tracking-widest">
+                <th className="py-3 px-4 font-bold">Cliente</th>
+                <th className="py-3 px-4 font-bold">Palabras clave</th>
+                <th className="py-3 px-4 font-bold">Tipo Brocard</th>
+                <th className="py-3 px-4 font-bold">Fecha</th>
+                <th className="py-3 px-4 font-bold">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredCanjes.map((canje) => (
+                <tr key={canje.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                  <td className="py-3 px-4 text-sm text-white font-bold">@{canje.aliasUsuario}</td>
+                  <td className="py-3 px-4">
+                    <span className="text-xs font-mono text-cyan-300">
+                      {canje.palabra_clave_1 || '—'} · {canje.palabra_clave_2 || '—'} · {canje.palabra_clave_3 || '—'}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-xs text-gray-300">{canje.tipo_brocard || '—'}</td>
+                  <td className="py-3 px-4 text-xs text-gray-400">{formatDate(canje.created_at)}</td>
+                  <td className="py-3 px-4">
+                    <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
+                      canje.estado === 'USADO'
+                        ? 'text-green-400 border-green-500/30 bg-green-950/20'
+                        : 'text-yellow-400 border-yellow-500/30 bg-yellow-950/20'
+                    }`}>
+                      {canje.estado === 'USADO' ? '✅ Usado' : '🟡 Pendiente'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };
