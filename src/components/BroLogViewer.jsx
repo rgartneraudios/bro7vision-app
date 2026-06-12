@@ -127,14 +127,14 @@ const BroLogViewer = ({ log, onClose, balances, setBalances, session, handleGoTo
               onClick={() => { onClose(); handleGoToShop('nova'); }}
               className="flex-1 flex flex-col items-center gap-1 text-yellow-500">
               <img src="/emojis/nova.webp" alt="Nova" className="w-7 h-7 object-contain" />
-              <span className="text-[10px] font-black uppercase">BroCard Productos</span>
+              <span className="text-[10px] font-black uppercase">BroCupones Productos</span>
             </button>
 
             <button
               onClick={() => { onClose(); handleGoToShop('isabella'); }}
               className="flex-1 flex flex-col items-center gap-1 text-fuchsia-400">
               <img src="/emojis/isabella.webp" alt="Isabella" className="w-7 h-7 object-contain" />
-              <span className="text-[10px] font-black uppercase">BroCard Servicios</span>
+              <span className="text-[10px] font-black uppercase">BroCupones Servicios</span>
             </button>
          </div>
        </div>

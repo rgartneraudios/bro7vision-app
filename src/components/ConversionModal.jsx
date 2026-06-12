@@ -1,30 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { PACKS_REGALOS } from '../data/MoonMatrix';
 import { supabase } from '../supabaseClient';
 
 const ConversionModal = ({ balances, setBalances, session, activePhase, onClose }) => {
-  const[activeTab, setActiveTab] = useState('strategy'); // 'strategy', 'packs', 'ai'
-  const [cupones, setCupones] = useState([]);
-  const faseActual = activePhase || 'nova';
-
-  useEffect(() => {
-    if (!session?.user?.id) return;
-    const fetchCupones = async () => {
-      const { data } = await supabase
-        .from('cupones_generados')
-        .select('id, codigo, descuento_pct, comercio_nombre, mini_url, caduca_en')
-        .eq('user_id', session.user.id)
-        .eq('usado', false)
-        .gt('caduca_en', new Date().toISOString())
-        .order('created_at', { ascending: false });
-      if (data) setCupones(data);
-    };
-    fetchCupones();
-  }, [session]);
-
-  const copiarCodigo = (codigo) => {
-    navigator.clipboard.writeText(codigo);
-  };
+  const[activeTab, setActiveTab] = useState('strategy');
 
   const handleBuyGen = async (type) => {
     const cost = type === 'eco' ? 100 : 1000;
@@ -148,7 +127,7 @@ const ConversionModal = ({ balances, setBalances, session, activePhase, onClose 
            {/* BOTONES NAVEGACIÓN SIDEBAR */}
            <nav className="grid grid-cols-3 md:flex md:flex-col gap-2 mt-auto">
                 <button onClick={() => setActiveTab('strategy')} className={`flex-1 p-2 md:p-3 rounded-xl flex items-center justify-center md:justify-start gap-2 text-xs md:text-sm font-black uppercase tracking-wider transition-all ${activeTab === 'strategy' ? 'bg-white text-black shadow-lg shadow-white/10' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}>
-                    <span className="text-base">😎</span> <span className="hidden md:inline">Cupones & Gen</span>
+                    <span className="text-base">😎</span> <span className="hidden md:inline">Gen</span>
                 </button>
                <button onClick={() => setActiveTab('packs')} className={`flex-1 p-2 md:p-3 rounded-xl flex items-center justify-center md:justify-start gap-2 text-xs md:text-sm font-black uppercase tracking-wider transition-all ${activeTab === 'packs' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'bg-white/5 text-white/70 hover:bg-white/10'}`}>
                    <span className="text-base">🎁</span> <span className="hidden md:inline">Packs (FIAT)</span>
@@ -212,45 +191,8 @@ const ConversionModal = ({ balances, setBalances, session, activePhase, onClose 
                      </div>
                   </div>
 
-                  {/* CUPONES ACTIVOS */}
-                  <div className="mt-8 border-t border-white/10 pt-6">
-                    <h3 className="text-xl font-black text-white uppercase mb-4">
-                      Mis Cupones <span className="text-cyan-500">Activos</span>
-                    </h3>
-
-                    {cupones.length === 0 ? (
-                      <p className="text-sm uppercase tracking-widest text-center py-6">
-                        No tienes cupones activos — canjea Génesis para obtenerlos
-                      </p>
-                    ) : (
-                      <div className="space-y-3">
-                        {cupones.map((c) => (
-                          <div key={c.id} className="bg-[#151515] border border-cyan-500/20 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                            <div>
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-white font-black text-base">{c.comercio_nombre}</span>
-                                <span className="bg-cyan-500/20 text-cyan-400 text-xs font-black uppercase px-2 py-0.5 rounded-full">{c.descuento_pct}% DTO</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-cyan-300 font-mono text-sm tracking-widest">{c.codigo}</span>
-                                <button onClick={() => copiarCodigo(c.codigo)} className="text-gray-400 hover:text-white transition-colors text-sm">📋</button>
-                              </div>
-                              <div className="text-xs text-gray-500 mt-1 uppercase tracking-wider">
-                                Caduca: {new Date(c.caduca_en).toLocaleDateString('es-ES')}
-                              </div>
-                            </div>
-                            <a href={c.mini_url} target="_blank" rel="noopener noreferrer"
-                               className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black uppercase tracking-widest rounded-lg transition-colors text-center whitespace-nowrap">
-                              IR AL MINI →
-                            </a>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-               </div>
-            )}
+                </div>
+             )}
 
             {/* ---------------- PESTAÑA 2: PACKS PREMIUM Y QUEMA ---------------- */}
             {activeTab === 'packs' && (
