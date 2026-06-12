@@ -23,6 +23,7 @@ const BoosterEnlaces = () => {
     brotwit: '',
     holoprisma_1: '', holoprisma_2: '', holoprisma_3: '', holoprisma_4: '',
     editorial_title: '', editorial_img_url: '', editorial_text: '',
+    email_comercio: '',
   });
 
   useEffect(() => {
@@ -172,6 +173,7 @@ const BoosterEnlaces = () => {
             <div className="space-y-4">
               <Field field="banner_23_url" label="imagen vertical 300 x 450 px" placeholder="https://media.bro7vision.com/..." />
               <Field field="brotwit" label="Mensaje a tu comunidad" placeholder="Escribe un mensaje para tus seguidores..." />
+              <Field field="email_comercio" label="Email del comercio" placeholder="correo@comercio.com" />
             </div>
 
             <div className="border-t border-white/10 my-6" />

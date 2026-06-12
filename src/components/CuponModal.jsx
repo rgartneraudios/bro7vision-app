@@ -7,8 +7,6 @@
 //   error       → mensaje de error
 // ─────────────────────────────────────────────────────────────────────
 
-import { useState } from 'react';
-
 const RAREZA_COLOR = {
   15: { color: '#d0d4e8', glow: 'rgba(200,205,225,0.6)', label: 'PLATA'  },
   20: { color: '#7aacff', glow: 'rgba(80,130,255,0.6)',  label: 'ZAFIRO' },
@@ -25,18 +23,10 @@ export default function CuponModal({
   onCancelar,
   onCerrar,
 }) {
-  const [copiado, setCopiado] = useState(false);
 
   if (estado === 'idle') return null;
 
   const r = RAREZA_COLOR[cardPendiente?.descuento_pct || cuponActivo?.descuento_pct] || RAREZA_COLOR[15];
-
-  const copiarCodigo = () => {
-    if (!cuponActivo?.codigo) return;
-    navigator.clipboard.writeText(cuponActivo.codigo);
-    setCopiado(true);
-    setTimeout(() => setCopiado(false), 2000);
-  };
 
   return (
     <>
@@ -181,36 +171,24 @@ export default function CuponModal({
               {cuponActivo.comercio_nombre}
             </div>
 
-            {/* Código */}
-            <div
-              onClick={copiarCodigo}
-              title="Pulsa para copiar"
-              style={{
-                width: '100%',
-                background: `${r.color}14`,
-                border: `1px solid ${r.color}55`,
-                borderRadius: '10px',
-                padding: '14px',
-                textAlign: 'center',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-              }}
-            >
-              <div style={{
-                fontFamily: "'Orbitron', monospace",
-                fontSize: '18px', fontWeight: 900,
-                color: r.color, letterSpacing: '3px',
-                textShadow: `0 0 16px ${r.glow}`,
-              }}>
-                {cuponActivo.codigo}
-              </div>
-              <div style={{
-                fontSize: '8px', color: 'rgba(232,244,255,0.4)',
-                marginTop: '6px', letterSpacing: '1px',
-              }}>
-                {copiado ? '✓ COPIADO' : 'PULSA PARA COPIAR'}
-              </div>
+            {/* Mensaje éxito */}
+            <div style={{
+              fontSize: '11px', color: '#e8f4ff',
+              letterSpacing: '1px', textAlign: 'center',
+              lineHeight: 1.6, padding: '0 4px',
+            }}>
+              Operación realizada con éxito, en Mis Cupones de tu Booster Studio te espera tu Sticker y la palabra Clave
             </div>
+
+            {cuponActivo.palabra_clave_1 && (
+              <div style={{
+                fontSize: '14px', fontWeight: 900,
+                color: r.color, letterSpacing: '2px',
+                textShadow: `0 0 12px ${r.glow}`,
+              }}>
+                🔑 {cuponActivo.palabra_clave_1}
+              </div>
+            )}
 
             <div style={{
               fontSize: '9px', color: 'rgba(232,244,255,0.4)',

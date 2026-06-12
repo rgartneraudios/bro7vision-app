@@ -7,6 +7,8 @@ import { CoordenadosBlock } from '../components/CoordenadosBlock';
 import AvisosTab from './AvisosTab';
 import BoosterBroCards from './booster/BoosterBroCards';
 import BoosterEnlaces from './booster/BoosterEnlaces';
+import BoosterMisCupones from './booster/BoosterMisCupones';
+import BoosterCanjesRecibidos from './booster/BoosterCanjesRecibidos';
 
 function getCicloLunar() {
   const known = new Date('2000-01-06T18:14:00Z');
@@ -62,6 +64,9 @@ const BoosterModal = ({ onClose }) => {
 
   // ── MÉTRICAS ──
   const [followerCount, setFollowerCount] = useState(0);
+
+  // ── CUPONES ──
+  const [tieneComercioCupones, setTieneComercioCupones] = useState(false);
 
   // ── LINAJE ──
   const [reinoElegido,    setReinoElegido]    = useState('');
@@ -252,6 +257,20 @@ const BoosterModal = ({ onClose }) => {
     fetchOrbitsData();
   }, [tab]);
 
+  // ── CARGAR comercio_cupones ──
+  useEffect(() => {
+    const checkComercioCupones = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { count } = await supabase
+        .from('comercio_cupones')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+      setTieneComercioCupones((count || 0) > 0);
+    };
+    checkComercioCupones();
+  }, []);
+
   // ── GUARDAR ──
   const handleSave = async () => {
     try {
@@ -332,7 +351,9 @@ const BoosterModal = ({ onClose }) => {
                 // Linaje siempre visible — el rank vacío muestra estado pendiente
                  { id: 'linaje',   label: '👑 Linaje',         color: 'orange' },
                  { id: 'mis-brocards', label: '📇 Selección BroCards', color: 'emerald' },
-              ].map((item) => (
+                 { id: 'mis-cupones', label: '🎫 Mis Cupones', color: 'yellow' },
+                 ...(tieneComercioCupones ? [{ id: 'canjes-recibidos', label: '📋 Canjes Recibidos', color: 'cyan' }] : []),
+              ].filter(Boolean).map((item) => (
               <button key={item.id} onClick={() => setTab(item.id)}
                 className={`text-left py-3 px-5 text-xs font-bold rounded-2xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap
                   ${tab === item.id
@@ -995,6 +1016,12 @@ const BoosterModal = ({ onClose }) => {
 
              {/* ══ 🔗 ENLACES ══ */}
              {tab === 'enlaces' && <BoosterEnlaces />}
+
+             {/* ══ 🎫 MIS CUPONES ══ */}
+             {tab === 'mis-cupones' && <BoosterMisCupones />}
+
+             {/* ══ 📋 CANJES RECIBIDOS ══ */}
+             {tab === 'canjes-recibidos' && tieneComercioCupones && <BoosterCanjesRecibidos />}
 
             </div>
         </div>

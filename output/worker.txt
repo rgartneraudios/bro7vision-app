@@ -1,0 +1,486 @@
+/**
+ * CUPONES WORKER — Bro7Vision
+ * ================================================================
+ * Endpoints:
+ *   POST /canjear-cupon  → genera cupón, resta génesis, devuelve alias + mensaje
+ *   POST /proyectar      → sincroniza Mini Studio con mini_proyeccion
+ *   POST /cupones        → sincroniza BroCards con mini_vitrina
+ *
+ * Secrets requeridos en Cloudflare (Settings → Variables):
+ *   SUPABASE_URL         → https://xxxx.supabase.co
+ *   SUPABASE_SERVICE_KEY → service_role key de Supabase
+ * ================================================================
+ */
+
+export default {
+  async fetch(request, env) {
+
+    // ── CORS ──────────────────────────────────────────────────────
+    const corsHeaders = {
+      'Access-Control-Allow-Origin':  '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    };
+
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: corsHeaders });
+    }
+
+    if (request.method !== 'POST') {
+      return json({ error: 'Método no permitido' }, 405, corsHeaders);
+    }
+
+    // ── Captura de Errores Global con CORS habilitado ──────────────
+    try {
+      const url = new URL(request.url);
+
+      if (url.pathname === '/canjear-cupon') {
+        return await handleCanjearCupon(request, env, corsHeaders);
+      }
+
+      if (url.pathname === '/proyectar') {
+        return await handleProyectar(request, env, corsHeaders);
+      }
+
+      // ── /cupones (BroCards → mini_vitrina) ────────────────────
+      let payload;
+      try {
+        payload = await request.json();
+      } catch {
+        return json({ error: 'JSON inválido' }, 400, corsHeaders);
+      }
+
+      const { token, creator, destacados = [], svcDestacados = [] } = payload;
+
+      if (!token || !creator?.name) {
+        return json({ error: 'Token o nombre comercial ausente' }, 400, corsHeaders);
+      }
+
+      const tokenHash = await sha256(token);
+
+      const perfil = await sbGet(env,
+        `profiles?token_hash=eq.${tokenHash}&select=id,city,country,alias&limit=1`
+      );
+
+      if (!perfil || perfil.length === 0) {
+        return json({ error: 'Token no reconocido' }, 401, corsHeaders);
+      }
+
+      const perfilId = perfil[0].id;
+
+      const { faseId, faseCaduca } = getMoonPhase();
+
+      const todasLasCards = [
+        ...destacados.filter(d => d.nombre || d.name),
+        ...svcDestacados.filter(d => d.nombre || d.name),
+      ];
+
+      if (todasLasCards.length === 0) {
+        return json({
+          ok: true,
+          mensaje: 'Sin cards que proyectar. Rellena al menos un destacado.',
+        }, 200, corsHeaders);
+      }
+
+      const porSector = { PRODUCTO: [], SERVICIO: [] };
+      for (const card of todasLasCards) {
+        const sector = card.sector || 'PRODUCTO';
+        if (porSector[sector]) porSector[sector].push(card);
+      }
+
+      const resultados = [];
+
+      for (const [sector, cards] of Object.entries(porSector)) {
+        if (cards.length === 0) continue;
+
+        const existentes = await sbGet(env,
+          `mini_vitrina?perfil_id=eq.${perfilId}&sector=eq.${sector}&fase_id=eq.${faseId}&fase_caduca=gt.${new Date().toISOString()}&select=id,orden_vitrina`
+        );
+
+        const slotsUsados = existentes ? existentes.length : 0;
+        const slotsLibres = 3 - slotsUsados;
+
+        if (slotsLibres <= 0) {
+          resultados.push({
+            sector,
+            cupo_lleno: true,
+            mensaje: `Cupo completo para ${sector} en fase ${faseId}. Se libera cuando cambie la luna.`,
+          });
+          continue;
+        }
+
+        let insertadas = 0;
+        for (const card of cards.slice(0, slotsLibres)) {
+          const ordenVitrina = card.orden_vitrina || 1;
+          const slotExistente = existentes?.find(e => e.orden_vitrina === ordenVitrina);
+
+          const registro = {
+            perfil_id:      perfilId,
+            token_hash:     tokenHash,
+            sector,
+            orden_vitrina:  ordenVitrina,
+            alcance:        card.alcance        || 'LOCAL',
+            fase_id:        faseId,
+            fase_caduca:    faseCaduca,
+            nombre:         card.name           || card.nombre || '',
+            ref_interna:    card.ref            || '',
+            precio:         card.price          || card.precio || 0,
+            precio_unidad:  card.priceUnit      || null,
+            descripcion:    card.desc           || card.descripcion || '',
+            imagen_url:     card.img            || card.imagen_url || '',
+            link_pago:      card.pay            || card.link_pago || '',
+            whatsapp:       card.whatsapp       || null,
+            disponibilidad: card.disponibilidad || 'libre',
+            semaforo:       buildSemaforo(card.semaforo),
+            updated_at:     new Date().toISOString(),
+          };
+
+          if (slotExistente) {
+            await sbPatch(env, `mini_vitrina?id=eq.${slotExistente.id}`, registro);
+          } else {
+            await sbPost(env, 'mini_vitrina', registro);
+          }
+          insertadas++;
+        }
+
+        resultados.push({
+          sector,
+          cupo_lleno:   false,
+          insertadas,
+          slots_libres: slotsLibres - insertadas,
+          fase:         faseId,
+          caduca:       faseCaduca,
+        });
+      }
+
+      // ── Actualiza alias/ciudad en profiles (solo datos de identidad) ──
+      if (creator) {
+        await sbPatch(env, `profiles?id=eq.${perfilId}`, {
+          alias:      creator.name    || undefined,
+          city:       creator.city    || undefined,
+          country:    creator.country || undefined,
+          updated_at: new Date().toISOString(),
+        });
+      }
+
+      const algunoCupoLleno = resultados.some(r => r.cupo_lleno);
+      const todosOk         = resultados.every(r => !r.cupo_lleno);
+
+      return json({
+        ok:         true,
+        cupo_lleno: algunoCupoLleno,
+        mensaje:    todosOk
+          ? `¡Proyectado! Fase activa: ${faseId}. Caduca: ${new Date(faseCaduca).toLocaleDateString('es-ES')}`
+          : resultados.find(r => r.cupo_lleno)?.mensaje,
+        resultados,
+      }, 200, corsHeaders);
+
+    } catch (err) {
+      console.error('[Worker Global Error]', err);
+      return json({
+        error:    'Error interno en el servidor',
+        detalles: err.message || String(err),
+      }, 500, corsHeaders);
+    }
+  }
+};
+
+// ================================================================
+// ENDPOINT: /proyectar → escribe en mini_proyeccion
+// ================================================================
+
+async function handleProyectar(request, env, corsHeaders) {
+
+  let payload;
+  try {
+    payload = await request.json();
+  } catch {
+    return json({ error: 'JSON inválido' }, 400, corsHeaders);
+  }
+
+  const { token, proyeccion } = payload;
+
+  if (!token || !proyeccion) {
+    return json({ error: 'Token o datos de proyección ausentes' }, 400, corsHeaders);
+  }
+
+  // 1. Verificar token
+  const tokenHash = await sha256(token);
+  const perfil = await sbGet(env,
+    `profiles?token_hash=eq.${tokenHash}&select=id&limit=1`
+  );
+
+  if (!perfil || perfil.length === 0) {
+    return json({ error: 'Token no reconocido' }, 401, corsHeaders);
+  }
+
+  const user_id = perfil[0].id;
+
+  // 2. ¿Ya existe una proyección para este user?
+  const existente = await sbGet(env,
+    `mini_proyeccion?user_id=eq.${user_id}&select=id&limit=1`
+  );
+
+  const registro = {
+    user_id,
+    es_brovision:        proyeccion.es_brovision        || false,
+
+    video_h_url:         proyeccion.video_h_url         || null,
+    video_h_titulo:      proyeccion.video_h_titulo       || null,
+    video_h_descripcion: proyeccion.video_h_descripcion  || null,
+    video_h_tipo:        proyeccion.video_h_tipo         || null,  // ← NUEVO: 'original' | 'ia' | 'publicidad'
+
+    video_v_url:         proyeccion.video_v_url         || null,
+    video_v_titulo:      proyeccion.video_v_titulo       || null,
+    video_v_descripcion: proyeccion.video_v_descripcion  || null,
+    video_v_tipo:        proyeccion.video_v_tipo         || null,  // ← NUEVO: 'original' | 'ia' | 'publicidad'
+
+    audio_url:           proyeccion.audio_url           || null,
+    audio_titulo:        proyeccion.audio_titulo         || null,
+    audio_descripcion:   proyeccion.audio_descripcion    || null,
+    audio_tipo:          proyeccion.audio_tipo           || null,  // ← NUEVO: 'original' | 'ia' | 'publicidad'
+
+    editorial_title:   proyeccion.editorial_title  || null,
+     editorial_text:    proyeccion.editorial_text   || null,
+     editorial_img_url: proyeccion.editorial_img_url || null,
+     audio_video_url:   proyeccion.audio_video_url  || null,
+     banner_11_url:     proyeccion.banner_11_url    || null,
+     banner_23_url:     proyeccion.banner_23_url    || null,
+    brotwit:             proyeccion.brotwit             || null,
+
+    holoprisma_1:        proyeccion.holoprisma_1        || null,
+    holoprisma_2:        proyeccion.holoprisma_2        || null,
+    holoprisma_3:        proyeccion.holoprisma_3        || null,
+    holoprisma_4:        proyeccion.holoprisma_4        || null,
+
+    updated_at:          new Date().toISOString(),
+  };
+
+  // 3. Upsert — actualiza si existe, inserta si no
+  if (existente && existente.length > 0) {
+    await sbPatch(env,
+      `mini_proyeccion?user_id=eq.${user_id}`,
+      registro
+    );
+  } else {
+    registro.proyectado_at = new Date().toISOString();
+    await sbPost(env, 'mini_proyeccion', registro);
+  }
+  
+  // 4. Marcar actividad_video en profiles
+  await sbPatch(env,
+    `profiles?id=eq.${user_id}`,
+    { actividad_video: true }
+  );
+  
+  return json({
+    ok:      true,
+    mensaje: '¡Proyectado! Tu contenido ya está en Brovision.',
+  }, 200, corsHeaders);
+}
+
+
+
+// ================================================================
+// ENDPOINT: /canjear-cupon
+// ================================================================
+
+async function handleCanjearCupon(request, env, corsHeaders) {
+
+  let payload;
+  try {
+    payload = await request.json();
+  } catch {
+    return json({ error: 'JSON inválido' }, 400, corsHeaders);
+  }
+
+  const {
+    user_id,
+    tipo_brocard,
+    comercio_id,
+    descuento_pct,
+    comercio_nombre,
+    web_url,
+    coste_genesis,
+  } = payload;
+
+  if (!user_id || !comercio_id || !descuento_pct || !coste_genesis) {
+    return json({ error: 'Faltan campos obligatorios' }, 400, corsHeaders);
+  }
+
+  // 1. Verificar comercio activo
+  const comercios = await sbGet(env,
+    `comercio_cupones?id=eq.${comercio_id}&activo=eq.true&select=id,comercio_nombre,web_url,palabra_clave_1,palabra_clave_2,palabra_clave_3&limit=1`
+      );
+
+  if (!comercios || comercios.length === 0) {
+    return json({ error: 'Comercio no encontrado o inactivo' }, 404, corsHeaders);
+  }
+
+  // 2. Leer balance génesis + alias
+  const perfiles = await sbGet(env,
+    `profiles?id=eq.${user_id}&select=id,genesis,alias&limit=1`
+  );
+
+  if (!perfiles || perfiles.length === 0) {
+    return json({ error: 'Usuario no encontrado' }, 404, corsHeaders);
+  }
+
+  const balanceActual = perfiles[0].genesis || 0;
+  const aliasUsuario  = perfiles[0].alias || 'desconocido';
+
+  if (balanceActual < coste_genesis) {
+    return json({
+      error:     'Génesis insuficientes',
+      balance:   balanceActual,
+      necesario: coste_genesis,
+    }, 400, corsHeaders);
+  }
+
+  // 3. Verificar cupón activo ya existente para este comercio
+  const yaExiste = await sbGet(env,
+    `cupones_generados?user_id=eq.${user_id}&comercio_id=eq.${comercio_id}&usado=eq.false&caduca_at=gt.${new Date().toISOString()}&select=id&limit=1`
+  );
+
+  if (yaExiste && yaExiste.length > 0) {
+    return json({
+      error:  'Ya tienes un cupón activo para este comercio',
+    }, 409, corsHeaders);
+  }
+
+  // 4. Caducidad desde fase lunar
+  const { faseCaduca } = getMoonPhase();
+
+  // 5. Restar génesis
+  const nuevoBalance  = balanceActual - coste_genesis;
+  const updateBalance = await sbPatch(env,
+    `profiles?id=eq.${user_id}`,
+    { genesis: nuevoBalance }
+  );
+
+  if (!updateBalance) {
+    return json({ error: 'Error al restar génesis' }, 500, corsHeaders);
+  }
+
+  // 7. Insertar cupón
+  const cupon = await sbPost(env, 'cupones_generados', {
+    user_id,
+    comercio_id,
+    codigo: null,
+    descuento_pct,
+    palabra_clave_1: comercios[0].palabra_clave_1 || null,
+     palabra_clave_2: comercios[0].palabra_clave_2 || null,
+     palabra_clave_3: comercios[0].palabra_clave_3 || null,
+    tipo_brocard: tipo_brocard || null,
+    comercio_nombre: comercio_nombre || comercios[0].comercio_nombre,
+    web_url:    web_url    || comercios[0].web_url || '',
+    usado: false,
+    caduca_at:       faseCaduca,
+    created_at:      new Date().toISOString(),
+  });
+
+  if (!cupon) {
+    // Rollback génesis
+    await sbPatch(env,
+      `profiles?id=eq.${user_id}`,
+      { genesis: balanceActual }
+    );
+    return json({ error: 'Error al generar cupón. Génesis devueltos.' }, 500, corsHeaders);
+  }
+
+  // 8. Respuesta
+  const fechaLegible = new Date(faseCaduca).toLocaleDateString('es-ES', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+  });
+
+  return json({
+    ok:               true,
+    alias:            aliasUsuario,
+    descuento_pct,
+    comercio_nombre:  comercio_nombre || comercios[0].comercio_nombre,
+    web_url:     web_url    || comercios[0].web_url || '',
+    palabra_clave_1:  comercios[0].palabra_clave_1 || null,
+    caduca_at:        faseCaduca,
+    caduca_legible:   fechaLegible,
+    genesis_restados: coste_genesis,
+    balance_nuevo:    nuevoBalance,
+    mensaje:          `Cupón canjeado! En tu Booster Studio en Mis Cupones te espera tu Sticker con la palabra Clave`,
+  }, 200, corsHeaders);
+}
+
+// ================================================================
+// HELPERS COMPARTIDOS
+// ================================================================
+
+function json(data, status = 200, headers = {}) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...headers },
+  });
+}
+
+async function sha256(text) {
+  const buf = await crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(text)
+  );
+  return Array.from(new Uint8Array(buf))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+function getMoonPhase() {
+  const known   = new Date('2000-01-06T18:14:00Z');
+  const now     = new Date();
+  const elapsed = (now - known) / 86400000;
+  const age     = ((elapsed % 29.53058867) + 29.53058867) % 29.53058867;
+
+  const fases = [
+    { id: 'NUEVA',     inicio: 0,     fin: 1.85  },
+    { id: 'CRECIENTE', inicio: 1.85,  fin: 14.77 },
+    { id: 'LLENA',     inicio: 14.77, fin: 16.61 },
+    { id: 'MENGUANTE', inicio: 16.61, fin: 29.53 },
+  ];
+
+  const fase          = fases.find(f => age >= f.inicio && age < f.fin) || fases[0];
+  const diasRestantes = fase.fin - age;
+  const faseCaduca    = new Date(now.getTime() + diasRestantes * 86400000);
+
+  return { faseId: fase.id, faseCaduca: faseCaduca.toISOString(), age };
+}
+
+function buildSemaforo(raw) {
+  const keys = ['fuchsia', 'green', 'white', 'orange', 'red'];
+  if (Array.isArray(raw)) {
+    const obj = {};
+    keys.forEach(k => { obj[k] = raw.includes(k); });
+    return obj;
+  }
+  if (raw && typeof raw === 'object') return raw;
+  const obj = {};
+  keys.forEach(k => { obj[k] = false; });
+  return obj;
+}
+
+async function sbFetch(env, path, method = 'GET', body = null) {
+  const url = `${env.SUPABASE_URL}/rest/v1/${path}`;
+  const headers = {
+    'apikey':        env.SUPABASE_SERVICE_KEY,
+    'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+    'Content-Type':  'application/json',
+    'Prefer':        'return=representation',
+  };
+  const opts = { method, headers };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(url, opts);
+  if (!res.ok) {
+    const err = await res.text();
+    console.error(`[Supabase ${method}] ${path}`, err);
+    return null;
+  }
+  return res.json();
+}
+
+const sbGet   = (env, path)       => sbFetch(env, path, 'GET');
+const sbPost  = (env, path, body) => sbFetch(env, path, 'POST',  body);
+const sbPatch = (env, path, body) => sbFetch(env, path, 'PATCH', body);
