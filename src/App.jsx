@@ -490,18 +490,18 @@ const filteredItems = useMemo(() => {
   const hubVideos = useMemo(() => {
     const masterVideos   = MASTER_DB.filter(m => m.video_file).map(m => ({ ...m, id: m.id, alias: m.name || m.alias, source: 'master' }));
     const supabaseVideos = realItems.filter(i => i.video_file).map(i => ({ ...i, alias: i.alias, id: i.id, source: 'supabase' }));
-    return [{ alias: 'BRO MASTER', video_file: 'https://media.bro7vision.com/Mapache-habla5.mp4', video_file_169: 'https://media.bro7vision.com/Mapache-habla5H.mp4', id: 'bro_master' }, ...masterVideos, ...supabaseVideos];
+    return [{ alias: 'BRO MASTER', video_file: 'https://media.bro7vision.com/Mapache-habla7.mp4', video_file_169: 'https://media.bro7vision.com/Mapache-habla7H.mp4', id: 'bro_master' }, ...masterVideos, ...supabaseVideos];
   }, [realItems]);
   
   const hubVideos169 = useMemo(() => {
   const supabaseVideos169 = realItems.filter(i => i.video_file_169).map(i => ({ ...i, alias: i.alias, id: i.id, source: 'supabase', video_file: i.video_file_169 }));
-  return [{ alias: 'BRO MASTER', video_file: 'https://media.bro7vision.com/Mapache-habla5H.mp4', id: 'bro_master' }, ...supabaseVideos169];
+  return [{ alias: 'BRO MASTER', video_file: 'https://media.bro7vision.com/Mapache-habla7H.mp4', id: 'bro_master' }, ...supabaseVideos169];
 }, [realItems]);
 
   const hubAudios = useMemo(() => {
     const masterAudios   = MASTER_DB.filter(m => m.audio_video).map(m => ({ ...m, id: m.id, alias: m.name || m.alias, source: 'master' }));
     const supabaseAudios = realItems.filter(i => i.audio_video).map(i => ({ ...i, alias: i.alias, id: i.id, source: 'supabase' }));
-    return [{ alias: 'BRO MASTER', audio_video: 'https://media.bro7vision.com/Mapache-habla5.mp3', id: 'bro_master' }, ...masterAudios, ...supabaseAudios];
+    return [{ alias: 'BRO MASTER', audio_video: 'https://media.bro7vision.com/Mapache-habla7.mp3', id: 'bro_master' }, ...masterAudios, ...supabaseAudios];
   }, [realItems]);
  
 
