@@ -302,18 +302,16 @@ const ChannelMoon = ({ videoUsers, balances, setBalances, session, realityMode, 
     return c;
   };
 
-  useEffect(() => {
-    if(!currentUser) return;
-    const url169 = cleanUrl(currentUser.video_file_169 || currentUser.video_file || '');
-    const url = cleanUrl(currentUser.video_file || '');
-    const isMobile = window.innerWidth < 768;
+useEffect(() => {
+  if(!currentUser) return;
+  const url = cleanUrl(currentUser.video_file || '');
+  const isMobile = window.innerWidth < 768; 
 
-    // PC usa video_file_169 (visor horizontal), móvil usa video_file (visor vertical)
-    loadVideo(videoRefPC.current, url169, isMobile ? true : isMuted, hlsRefPC);
-    loadVideo(videoRefMob.current, url, !isMobile ? true : isMuted, hlsRefMob);
+  loadVideo(videoRefPC.current,  url, isMobile ? true : isMuted, hlsRefPC);
+  loadVideo(videoRefMob.current, url, !isMobile ? true : isMuted, hlsRefMob);
 
-    setVisualEchos([]);setFloatingEcos([]);
-    }, [currentUser]);
+  setVisualEchos([]); setFloatingEcos([]);
+}, [currentUser]);
 
   useEffect(() => {
     if (!currentUser?.id || currentUser.id.length < 20) {

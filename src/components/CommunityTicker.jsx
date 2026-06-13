@@ -12,22 +12,41 @@ const CommunityTicker = ({ onUserClick }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const { data } = await supabase
-          .from('profiles')
-          .select('alias, twit_message, banner_url, id')
-          .neq('twit_message', '')
-          .neq('twit_message', null)
-          .limit(10);
-        if (data && data.length > 0) {
-          setMessages([...data, ...FAKE_TWITS].sort(() => Math.random() - 0.5));
-        }
-      } catch (e) { console.error("Error fetching twits:", e); }
-    };
-    fetchMessages();
-  }, []);
+  const fetchMessages = async () => {
+    try {
+      const { data: proyData } = await supabase
+        .from('mini_proyeccion')
+        .select('user_id, brotwit, banner_23_url')
+        .neq('brotwit', '')
+        .not('brotwit', 'is', null)
+        .limit(10);
 
+      if (!proyData || proyData.length === 0) {
+        setMessages(FAKE_TWITS);
+        return;
+      }
+
+      const userIds = proyData.map(p => p.user_id);
+      const { data: profData } = await supabase
+        .from('profiles')
+        .select('id, alias')
+        .in('id', userIds);
+
+      const profMap = {};
+      if (profData) profData.forEach(p => { profMap[p.id] = p; });
+
+      const merged = proyData.map(p => ({
+        id:           p.user_id,
+        alias:        profMap[p.user_id]?.alias || 'Anon',
+        twit_message: p.brotwit,
+        banner_url:   p.banner_23_url,
+      }));
+
+      setMessages([...merged, ...FAKE_TWITS].sort(() => Math.random() - 0.5));
+    } catch (e) { console.error("Error fetching twits:", e); }
+  };
+  fetchMessages();
+}, []);
   useEffect(() => {
     const timer = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % messages.length);

@@ -39,7 +39,7 @@ const BroLives3D = ({ playingCreator, onToggleAudio }) => {
 
   useEffect(() => {
     if (!playingCreator) return;
-    const url = getCleanAudioUrl(playingCreator.audio_file || playingCreator.audioFile);
+    const url = getCleanAudioUrl(playingCreator.audio_url || playingCreator.audio_file || playingCreator.audioFile);
     if (url && audioRef.current) {
       audioRef.current.src = url;
       audioRef.current.load();

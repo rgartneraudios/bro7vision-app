@@ -88,7 +88,7 @@ const handleHandoffPersonaje = (id) => {
           realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => setProjectingUser(u)} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
           realityMode === 'solo_o169' ? <SoloO169 videoUsers={hubVideos169} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => setProjectingUser(u)} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
           realityMode === 'solo_e169' ? <SoloE169 videoUsers={hubVideos169} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => setProjectingUser(u)} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
-          realityMode === 'moon'  ? <ChannelMoon  videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => setProjectingUser(u)} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
+          realityMode === 'moon'  ? <ChannelMoon  videoUsers={hubVideos169} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => setProjectingUser(u)} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
           <BioForest videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => setProjectingUser(u)} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} />
         )}
           

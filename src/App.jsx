@@ -132,11 +132,11 @@ function App() {
   useEffect(() => {
     if (projectingUser) {
       setSelectedLog({
-        id: projectingUser.id,
-        title: projectingUser.editorial_title || "Sin Título",
-        author: projectingUser.alias || "Anónimo",
-        content: projectingUser.editorial_content || "..."
-      });
+  	id:      u.id,
+  	title:   u.editorial_title || 'Sin título',
+  	author:  u.alias,
+  	content: u.editorial_text  || '',
+	});
     } else {
       setSelectedLog(null);
     }
@@ -171,23 +171,61 @@ function App() {
   const isPWA = window.matchMedia('(display-mode: fullscreen)').matches ||
                 window.matchMedia('(display-mode: standalone)').matches;
 
-  useEffect(() => {
-    if (!session) return;
-    const fetchRealItems = async () => {
-      const { data: all } = await supabase.from('profiles').select('*');
-      if (all) {
-        setRealItems(all.map(u => ({
-          ...u,
-          shopName: u.alias,
-          name:     u.alias,
-          img: u.avatar_url || u.banner_url,
-          type:     u.video_file ? ['shop', 'live'] : ['shop'],
-            })).filter(u => u.video_file || u.audio_file || u.bro_ser || u.bro_mus || u.bro_aud || u.bro_avi || u.bro_pd));
-      }
-    };
-    fetchRealItems();
-  }, [session, step]);
+useEffect(() => {
+  if (!session) return;
+  const fetchRealItems = async () => {
+    const { data: all } = await supabase.from('profiles').select('*');
+    if (!all) return;
 
+    const { data: proyecciones } = await supabase
+      .from('mini_proyeccion')
+      .select('*');
+
+    const proyMap = {};
+    if (proyecciones) {
+      proyecciones.forEach(p => { proyMap[p.user_id] = p; });
+    }
+
+    setRealItems(all.map(u => {
+      const proy = proyMap[u.id] || {};
+      return {
+        ...u,
+        // Contenido multimedia — viene de mini_proyeccion
+        video_v_url:         proy.video_v_url         || null,
+        video_v_titulo:      proy.video_v_titulo       || null,
+        video_v_descripcion: proy.video_v_descripcion  || null,
+        video_v_tipo:        proy.video_v_tipo         || null,
+        video_h_url:         proy.video_h_url          || null,
+        video_h_titulo:      proy.video_h_titulo       || null,
+        video_h_descripcion: proy.video_h_descripcion  || null,
+        video_h_tipo:        proy.video_h_tipo         || null,
+        audio_url:           proy.audio_url            || null,
+        audio_titulo:        proy.audio_titulo         || null,
+        audio_descripcion:   proy.audio_descripcion    || null,
+        audio_tipo:          proy.audio_tipo           || null,
+        audio_video_url:     proy.audio_video_url      || null,
+        brotwit:             proy.brotwit              || null,
+        holoprisma_1:        proy.holoprisma_1         || null,
+        holoprisma_2:        proy.holoprisma_2         || null,
+        holoprisma_3:        proy.holoprisma_3         || null,
+        holoprisma_4:        proy.holoprisma_4         || null,
+        editorial_title:     proy.editorial_title      || null,
+        editorial_text:      proy.editorial_text       || null,
+        editorial_img_url:   proy.editorial_img_url    || null,
+        banner_23_url:       proy.banner_23_url        || null,
+        // Alias de compatibilidad para componentes existentes
+        shopName: u.alias,
+        name:     u.alias,
+        img:      u.avatar_url || u.banner_url,
+        type:     proy.video_v_url || proy.video_h_url ? ['shop', 'live'] : ['shop'],
+      };
+    }).filter(u =>
+      u.video_v_url || u.video_h_url || u.audio_url ||
+      u.bro_ser || u.bro_mus || u.bro_aud || u.bro_avi || u.bro_pd
+    ));
+  };
+  fetchRealItems();
+}, [session, step]);
   // ══════════════════════════════════════════════════════
   // FUNCIONES SIMPLES
   // ══════════════════════════════════════════════════════
@@ -487,15 +525,22 @@ const filteredItems = useMemo(() => {
   return ALL;
 }, [intent, realItems]);
 
-  const hubVideos = useMemo(() => {
-    const masterVideos   = MASTER_DB.filter(m => m.video_file).map(m => ({ ...m, id: m.id, alias: m.name || m.alias, source: 'master' }));
-    const supabaseVideos = realItems.filter(i => i.video_file).map(i => ({ ...i, alias: i.alias, id: i.id, source: 'supabase' }));
-    return [{ alias: 'BRO MASTER', video_file: 'https://media.bro7vision.com/Mapache-habla7.mp4', video_file_169: 'https://media.bro7vision.com/Mapache-habla7H.mp4', id: 'bro_master' }, ...masterVideos, ...supabaseVideos];
-  }, [realItems]);
-  
-  const hubVideos169 = useMemo(() => {
-  const supabaseVideos169 = realItems.filter(i => i.video_file_169).map(i => ({ ...i, alias: i.alias, id: i.id, source: 'supabase', video_file: i.video_file_169 }));
-  return [{ alias: 'BRO MASTER', video_file: 'https://media.bro7vision.com/Mapache-habla7H.mp4', id: 'bro_master' }, ...supabaseVideos169];
+const hubVideos = useMemo(() => {
+  const supabaseVideos = realItems.filter(i => i.video_v_url)
+    .map(i => ({ ...i, video_file: i.video_v_url })); // alias de campo para canales verticales
+  return [{ alias: 'BRO MASTER', video_file: 'https://media.bro7vision.com/Mapache-habla7.mp4', id: 'bro_master' }, ...supabaseVideos];
+}, [realItems]);
+
+const hubVideos169 = useMemo(() => {
+  const supabaseVideos169 = realItems.filter(i => i.video_h_url)
+    .map(i => ({ ...i, video_file: i.video_h_url })); // alias de campo para canales horizontales
+  return [{ 
+  alias: 'BRO MASTER', 
+  video_file: 'https://media.bro7vision.com/Mapache-habla7H.mp4',
+  video_h_url: 'https://media.bro7vision.com/Mapache-habla7H.mp4',
+  video_v_url: 'https://media.bro7vision.com/Mapache-habla7.mp4',
+  id: 'bro_master' 
+}, ...supabaseVideos169];
 }, [realItems]);
 
   const hubAudios = useMemo(() => {

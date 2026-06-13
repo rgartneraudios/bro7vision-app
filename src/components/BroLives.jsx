@@ -22,7 +22,7 @@ const BroLives = ({ playingCreator, onToggleAudio }) => {
   useEffect(() => {
     if (playingCreator) {
         // Buscamos cualquier variante del nombre del campo
-        const rawUrl = playingCreator.audio_file || playingCreator.audioFile;
+        const rawUrl = playingCreator.audio_url || playingCreator.audio_file || playingCreator.audioFile;
         const playUrl = getCleanAudioUrl(rawUrl);
 
         if (playUrl && audioRef.current) {

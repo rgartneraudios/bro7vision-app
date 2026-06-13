@@ -813,7 +813,7 @@ useEffect(()=>{
 
       {/* ── ACORDEÓN TÍTULO/DESC — flotante arriba ── */}
       {videoTitulo && (
-        <div className="absolute top-4 left-4 z-[110] pointer-events-auto flex flex-col items-start w-72">
+        <div className="absolute top-4 right-4 z-[110] pointer-events-auto flex flex-col items-end w-72">
           <button
             onClick={() => setAcordeonAbierto(prev => !prev)}
             className="flex items-center gap-3 px-4 py-3 bg-black/60 backdrop-blur-md border border-white/20 rounded-xl hover:bg-white/10 transition-all w-full">

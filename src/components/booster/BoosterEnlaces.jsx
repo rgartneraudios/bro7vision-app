@@ -14,17 +14,15 @@ const TIPO_OPTS = [
 const BoosterEnlaces = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [data, setData] = useState({
-    video_v_url: '', video_v_titulo: '', video_v_descripcion: '', video_v_tipo: 'original',
-    video_h_url: '', video_h_titulo: '', video_h_descripcion: '', video_h_tipo: 'original',
-    audio_url: '', audio_titulo: '', audio_descripcion: '', audio_tipo: 'original',
-    audio_video_url: '',
-    banner_23_url: '',
-    brotwit: '',
-    holoprisma_1: '', holoprisma_2: '', holoprisma_3: '', holoprisma_4: '',
-    editorial_title: '', editorial_img_url: '', editorial_text: '',
-    email_comercio: '',
-  });
+const [data, setData] = useState({
+  video_v_url: '', video_v_titulo: '', video_v_descripcion: '', video_v_tipo: 'original',
+  video_h_url: '', video_h_titulo: '', video_h_descripcion: '', video_h_tipo: 'original',
+  audio_url: '', audio_titulo: '', audio_descripcion: '', audio_tipo: 'original',
+  audio_video_url: '',
+  brotwit: '',
+  holoprisma_1: '', holoprisma_2: '', holoprisma_3: '', holoprisma_4: '',
+  editorial_title: '', editorial_img_url: '', editorial_text: '',
+});
 
   useEffect(() => {
     const load = async () => {
@@ -171,9 +169,8 @@ const BoosterEnlaces = () => {
           <div className={CardStyle}>
             <p className="text-xs font-bold text-fuchsia-400 mb-4 flex items-center gap-2 uppercase tracking-widest">{'\u2500\u2500'} IDENTIDAD VISUAL {'\u2500\u2500'}</p>
             <div className="space-y-4">
-              <Field field="banner_23_url" label="imagen vertical 300 x 450 px" placeholder="https://media.bro7vision.com/..." />
+	<Field field="brotwit" label="Mensaje a tu comunidad" placeholder="Escribe un mensaje para tus seguidores..." />
               <Field field="brotwit" label="Mensaje a tu comunidad" placeholder="Escribe un mensaje para tus seguidores..." />
-              <Field field="email_comercio" label="Email del comercio" placeholder="correo@comercio.com" />
             </div>
 
             <div className="border-t border-white/10 my-6" />
