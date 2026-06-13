@@ -81,9 +81,7 @@ const BoosterModal = ({ onClose }) => {
     twit_message: '', role: [],
     audio_file: '', video_file: '', audio_type: '', audio_description: '',
     track_name: '', video_file_169: '',
-     holo_1: '', holo_2: '', holo_3: '', holo_4: '',
-     ventas_rules: '',
-    editorial_title: '', editorial_content: '',
+     editorial_title: '', editorial_content: '',
     description: '', genero: 'n',
     // OSOS IA
     osos_nombre: '', osos_tono: '', osos_intereses: '', osos_frase: '', oso_id: 'TITO',
@@ -195,13 +193,8 @@ const BoosterModal = ({ onClose }) => {
           bro_aud:            profile.bro_aud            || '',
           video_file:         profile.video_file         || '',
           video_file_169:     profile.video_file_169     || '',
-          holo_1:             profile.holo_1             || '',
-          holo_2:             profile.holo_2             || '',
-          holo_3:             profile.holo_3             || '',
-          holo_4:             profile.holo_4             || '',
-      ventas_rules:       profile.ventas_rules       || '',
-          
-          editorial_title:    profile.editorial_title    || '',
+
+           editorial_title:    profile.editorial_title    || '',
           editorial_content:  profile.editorial_content  || '',
           twit_message:       profile.twit_message       || '',
           description:        profile.description        || '',

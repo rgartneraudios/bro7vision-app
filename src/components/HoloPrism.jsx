@@ -33,24 +33,17 @@ const HoloPrism = ({
     );
     labels = comercios.map((_, i) => String(i + 1));
   } else if (user) {
-  if (user.holo_images && Array.isArray(user.holo_images)) {
-    images = user.holo_images;
-  } else if (user.holoprisma_1 || user.holoprisma_2 || user.holoprisma_3 || user.holoprisma_4) {
-    images = [
-      user.holoprisma_1 || DEFAULT_IMGS[0],
-      user.holoprisma_2 || DEFAULT_IMGS[1],
-      user.holoprisma_3 || DEFAULT_IMGS[2],
-      user.holoprisma_4 || DEFAULT_IMGS[3]
-    ];
-  } else if (user.holo_1 || user.holo_2 || user.holo_3 || user.holo_4) {
-    images = [
-      user.holo_1 || DEFAULT_IMGS[0],
-      user.holo_2 || DEFAULT_IMGS[1],
-      user.holo_3 || DEFAULT_IMGS[2],
-      user.holo_4 || DEFAULT_IMGS[3]
-    ];
+    if (user.holo_images && Array.isArray(user.holo_images)) {
+      images = user.holo_images;
+    } else if (user.holoprisma_1 || user.holoprisma_2 || user.holoprisma_3 || user.holoprisma_4) {
+      images = [
+        user.holoprisma_1 || DEFAULT_IMGS[0],
+        user.holoprisma_2 || DEFAULT_IMGS[1],
+        user.holoprisma_3 || DEFAULT_IMGS[2],
+        user.holoprisma_4 || DEFAULT_IMGS[3]
+      ];
+    }
   }
-}
   return (
     <div className={`perspective-[1000px] ${className}`}>
      <div 

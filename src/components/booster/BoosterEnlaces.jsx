@@ -167,20 +167,19 @@ const [data, setData] = useState({
 
           {/* IDENTIDAD VISUAL */}
           <div className={CardStyle}>
-            <p className="text-xs font-bold text-fuchsia-400 mb-4 flex items-center gap-2 uppercase tracking-widest">{'\u2500\u2500'} IDENTIDAD VISUAL {'\u2500\u2500'}</p>
+            <p className="text-xs font-bold text-fuchsia-400 mb-4 flex items-center gap-2 uppercase tracking-widest">{'\u2500\u2500'} BROTWIT {'\u2500\u2500'}</p>
             <div className="space-y-4">
 	<Field field="brotwit" label="Mensaje a tu comunidad" placeholder="Escribe un mensaje para tus seguidores..." />
-              <Field field="brotwit" label="Mensaje a tu comunidad" placeholder="Escribe un mensaje para tus seguidores..." />
             </div>
 
             <div className="border-t border-white/10 my-6" />
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">Holoprismas</p>
+            <p className="text-[10px] font-bold text-fuchsia-400 uppercase tracking-widest mb-3">Holoprisma</p>
             <div className="space-y-4">
               {[
-                { field: 'holoprisma_1', label: 'imagen vertical 300 x 450 px #1' },
-                { field: 'holoprisma_2', label: 'imagen vertical 300 x 450 px #2' },
-                { field: 'holoprisma_3', label: 'imagen vertical 300 x 450 px #3' },
-                { field: 'holoprisma_4', label: 'imagen vertical 300 x 450 px #4' },
+                { field: 'holoprisma_1', label: 'imagen holoprisma 1 vertical 300 x 450 px' },
+                { field: 'holoprisma_2', label: 'imagen holoprisma 2 vertical 300 x 450 px' },
+                { field: 'holoprisma_3', label: 'imagen holoprisma 3 vertical 300 x 450 px' },
+                { field: 'holoprisma_4', label: 'imagen holoprisma 4 vertical 300 x 450 px' },
               ].map(h => (
                 <Field key={h.field} field={h.field} label={h.label} placeholder="https://media.bro7vision.com/..." />
               ))}
