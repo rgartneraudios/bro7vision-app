@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { marcarActividad } from '../hooks/useActividad';
-import { useAudioContext } from '../context/AudioContext';
+import { marcarActividad } from '../../hooks/useActividad';
+import { useAudioContext } from '../../context/AudioContext';
 
 // --- BASE DE DATOS DE FRASES ---
 const HEAVEN_QUOTES = [

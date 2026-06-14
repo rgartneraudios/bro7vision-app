@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import RealityTuner from './RealityTuner';
-import ChannelEste from './ChannelEste';
-import ChannelEste169 from './ChannelEste169';
-import ChannelOeste from './ChannelOeste';
-import ChannelOeste169 from './ChannelOeste169';
-import SoloO169 from './SoloO169';
-import SoloE169 from './SoloE169';
-import ChannelMoon from './ChannelMoon';
-import BioForest from './BioForest';
+import ChannelEste from './Canales/ChannelEste';
+import ChannelEste169 from './Canales/ChannelEste169';
+import ChannelOeste from './Canales/ChannelOeste';
+import ChannelOeste169 from './Canales/ChannelOeste169';
+import SoloO169 from './Canales/SoloO169';
+import SoloE169 from './Canales/SoloE169';
+import ChannelMoon from './Canales/ChannelMoon';
+import BioForest from './Canales/BioForest';
 import WalletWidget from './WalletWidget';
 import MoonMatrixCircle from './MoonMatrixCircle';
 import BroLives3D from './BroLives3D';

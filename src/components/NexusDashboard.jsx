@@ -5,13 +5,13 @@ import CommunityTicker from './CommunityTicker';
 import { supabase } from '../supabaseClient';
 
 // JUEGOS
-import NeonReact from './NeonReact'; 
-import ScalextricPhaser from './ScalextricPhaser'; 
-import CosmicQuiz from './CosmicQuiz'; 
-import SevenGates from './SevenGates';
-import CruceDeCaminos from './CruceDeCaminos';
-import AtlasGame from './AtlasGame';
-import CronosGame from './CronosGame';
+import NeonReact from './Games/NeonReact'; 
+import ScalextricPhaser from './Games/ScalextricPhaser'; 
+import CosmicQuiz from './Games/CosmicQuiz'; 
+import SevenGates from './Games/SevenGates';
+import Therians from './Games/Therians';
+import AtlasGame from './Games/AtlasGame';
+import Telecronos from './Games/Telecronos';
 
 const NexusDashboard = ({ 
     intent, setIntent, handleGoToShop,
@@ -232,7 +232,7 @@ const NexusDashboard = ({
             <div className="w-full h-full relative flex items-center justify-center">
               <button onClick={() => setSelectedGame(null)} className="absolute -top-8 left-0 text-white font-bold uppercase text-xs z-50 pointer-events-auto">❮ MENU</button>
               <div className="w-full max-w-4xl h-full md:h-[600px] pointer-events-auto shadow-2xl rounded-xl overflow-hidden bg-black border border-indigo-500/30">
-                <CruceDeCaminos onWin={(amt) => { onGameWin(amt); setSelectedGame(null); }} onClose={() => setSelectedGame(null)} />
+                <Therians onWin={(amt) => { onGameWin(amt); setSelectedGame(null); }} onClose={() => setSelectedGame(null)} />
               </div>
             </div>
           )}
@@ -248,7 +248,7 @@ const NexusDashboard = ({
             <div className="w-full h-full relative flex items-center justify-center">
               <button onClick={() => setSelectedGame(null)} className="absolute -top-8 left-0 text-white font-bold uppercase text-xs z-50 pointer-events-auto">❮ MENU</button>
               <div className="w-full max-w-4xl h-full md:h-[600px] pointer-events-auto shadow-2xl rounded-xl overflow-hidden bg-black border border-orange-500/30">
-                <CronosGame onWin={(amt) => { onGameWin(amt); setSelectedGame(null); }} onClose={() => setSelectedGame(null)} />
+                <Telecronos onWin={(amt) => { onGameWin(amt); setSelectedGame(null); }} onClose={() => setSelectedGame(null)} />
               </div>
             </div>
           )}       

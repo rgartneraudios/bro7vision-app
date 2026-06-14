@@ -2,9 +2,12 @@
  * CUPONES WORKER — Bro7Vision
  * ================================================================
  * Endpoints:
- *   POST /canjear-cupon  → genera cupón, resta génesis, devuelve alias + mensaje
- *   POST /proyectar      → sincroniza Mini Studio con mini_proyeccion
- *   POST /cupones        → sincroniza BroCards con mini_vitrina
+ *   POST /canjear-cupon     → genera cupón, resta génesis
+ *   POST /proyectar         → sincroniza brotwit, blog, holoprisma → mini_proyeccion
+ *   POST /proyectar-169     → sincroniza video 16:9 → proyeccion_169
+ *   POST /proyectar-916     → sincroniza video 9:16 → proyeccion_916
+ *   POST /proyectar-audio   → sincroniza audio PC   → proyeccion_audio
+ *   POST /proyectar-audmovil → sincroniza audio móvil → proyeccion_audmovil
  *
  * Secrets requeridos en Cloudflare (Settings → Variables):
  *   SUPABASE_URL         → https://xxxx.supabase.co
@@ -12,10 +15,42 @@
  * ================================================================
  */
 
+// ================================================================
+// DOMINIOS BLOQUEADOS — solo contenido soberano del creador
+// ================================================================
+const DOMINIOS_BLOQUEADOS = [
+  'youtube.com',
+  'youtu.be',
+  'tiktok.com',
+  'vimeo.com',
+  'instagram.com',
+  'facebook.com',
+  'fb.watch',
+  'twitter.com',
+  'x.com',
+];
+
+function validarURL(url) {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    const dominio = parsed.hostname.replace('www.', '');
+    const bloqueado = DOMINIOS_BLOQUEADOS.find(d => dominio === d || dominio.endsWith('.' + d));
+    if (bloqueado) {
+      return `URL no permitida (${bloqueado}). Solo se aceptan URLs de almacenamiento propio: Cloudflare R2, Bunny CDN u hosting soberano.`;
+    }
+    return null;
+  } catch {
+    return 'URL con formato inválido.';
+  }
+}
+
+// ================================================================
+// ENTRY POINT
+// ================================================================
 export default {
   async fetch(request, env) {
 
-    // ── CORS ──────────────────────────────────────────────────────
     const corsHeaders = {
       'Access-Control-Allow-Origin':  '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -30,150 +65,17 @@ export default {
       return json({ error: 'Método no permitido' }, 405, corsHeaders);
     }
 
-    // ── Captura de Errores Global con CORS habilitado ──────────────
     try {
       const url = new URL(request.url);
 
-      if (url.pathname === '/canjear-cupon') {
-        return await handleCanjearCupon(request, env, corsHeaders);
-      }
+      if (url.pathname === '/canjear-cupon')      return await handleCanjearCupon(request, env, corsHeaders);
+      if (url.pathname === '/proyectar')          return await handleProyectar(request, env, corsHeaders);
+      if (url.pathname === '/proyectar-169')      return await handleProyectar169(request, env, corsHeaders);
+      if (url.pathname === '/proyectar-916')      return await handleProyectar916(request, env, corsHeaders);
+      if (url.pathname === '/proyectar-audio')    return await handleProyectarAudio(request, env, corsHeaders);
+      if (url.pathname === '/proyectar-audmovil') return await handleProyectarAudmovil(request, env, corsHeaders);
 
-      if (url.pathname === '/proyectar') {
-        return await handleProyectar(request, env, corsHeaders);
-      }
-
-      // ── /cupones (BroCards → mini_vitrina) ────────────────────
-      let payload;
-      try {
-        payload = await request.json();
-      } catch {
-        return json({ error: 'JSON inválido' }, 400, corsHeaders);
-      }
-
-      const { token, creator, destacados = [], svcDestacados = [] } = payload;
-
-      if (!token || !creator?.name) {
-        return json({ error: 'Token o nombre comercial ausente' }, 400, corsHeaders);
-      }
-
-      const tokenHash = await sha256(token);
-
-      const perfil = await sbGet(env,
-        `profiles?token_hash=eq.${tokenHash}&select=id,city,country,alias&limit=1`
-      );
-
-      if (!perfil || perfil.length === 0) {
-        return json({ error: 'Token no reconocido' }, 401, corsHeaders);
-      }
-
-      const perfilId = perfil[0].id;
-
-      const { faseId, faseCaduca } = getMoonPhase();
-
-      const todasLasCards = [
-        ...destacados.filter(d => d.nombre || d.name),
-        ...svcDestacados.filter(d => d.nombre || d.name),
-      ];
-
-      if (todasLasCards.length === 0) {
-        return json({
-          ok: true,
-          mensaje: 'Sin cards que proyectar. Rellena al menos un destacado.',
-        }, 200, corsHeaders);
-      }
-
-      const porSector = { PRODUCTO: [], SERVICIO: [] };
-      for (const card of todasLasCards) {
-        const sector = card.sector || 'PRODUCTO';
-        if (porSector[sector]) porSector[sector].push(card);
-      }
-
-      const resultados = [];
-
-      for (const [sector, cards] of Object.entries(porSector)) {
-        if (cards.length === 0) continue;
-
-        const existentes = await sbGet(env,
-          `mini_vitrina?perfil_id=eq.${perfilId}&sector=eq.${sector}&fase_id=eq.${faseId}&fase_caduca=gt.${new Date().toISOString()}&select=id,orden_vitrina`
-        );
-
-        const slotsUsados = existentes ? existentes.length : 0;
-        const slotsLibres = 3 - slotsUsados;
-
-        if (slotsLibres <= 0) {
-          resultados.push({
-            sector,
-            cupo_lleno: true,
-            mensaje: `Cupo completo para ${sector} en fase ${faseId}. Se libera cuando cambie la luna.`,
-          });
-          continue;
-        }
-
-        let insertadas = 0;
-        for (const card of cards.slice(0, slotsLibres)) {
-          const ordenVitrina = card.orden_vitrina || 1;
-          const slotExistente = existentes?.find(e => e.orden_vitrina === ordenVitrina);
-
-          const registro = {
-            perfil_id:      perfilId,
-            token_hash:     tokenHash,
-            sector,
-            orden_vitrina:  ordenVitrina,
-            alcance:        card.alcance        || 'LOCAL',
-            fase_id:        faseId,
-            fase_caduca:    faseCaduca,
-            nombre:         card.name           || card.nombre || '',
-            ref_interna:    card.ref            || '',
-            precio:         card.price          || card.precio || 0,
-            precio_unidad:  card.priceUnit      || null,
-            descripcion:    card.desc           || card.descripcion || '',
-            imagen_url:     card.img            || card.imagen_url || '',
-            link_pago:      card.pay            || card.link_pago || '',
-            whatsapp:       card.whatsapp       || null,
-            disponibilidad: card.disponibilidad || 'libre',
-            semaforo:       buildSemaforo(card.semaforo),
-            updated_at:     new Date().toISOString(),
-          };
-
-          if (slotExistente) {
-            await sbPatch(env, `mini_vitrina?id=eq.${slotExistente.id}`, registro);
-          } else {
-            await sbPost(env, 'mini_vitrina', registro);
-          }
-          insertadas++;
-        }
-
-        resultados.push({
-          sector,
-          cupo_lleno:   false,
-          insertadas,
-          slots_libres: slotsLibres - insertadas,
-          fase:         faseId,
-          caduca:       faseCaduca,
-        });
-      }
-
-      // ── Actualiza alias/ciudad en profiles (solo datos de identidad) ──
-      if (creator) {
-        await sbPatch(env, `profiles?id=eq.${perfilId}`, {
-          alias:      creator.name    || undefined,
-          city:       creator.city    || undefined,
-          country:    creator.country || undefined,
-          updated_at: new Date().toISOString(),
-        });
-      }
-
-      const algunoCupoLleno = resultados.some(r => r.cupo_lleno);
-      const todosOk         = resultados.every(r => !r.cupo_lleno);
-
-      return json({
-        ok:         true,
-        cupo_lleno: algunoCupoLleno,
-        mensaje:    todosOk
-          ? `¡Proyectado! Fase activa: ${faseId}. Caduca: ${new Date(faseCaduca).toLocaleDateString('es-ES')}`
-          : resultados.find(r => r.cupo_lleno)?.mensaje,
-        resultados,
-      }, 200, corsHeaders);
+      return json({ error: 'Ruta no encontrada' }, 404, corsHeaders);
 
     } catch (err) {
       console.error('[Worker Global Error]', err);
@@ -186,113 +88,268 @@ export default {
 };
 
 // ================================================================
-// ENDPOINT: /proyectar → escribe en mini_proyeccion
+// HELPER COMPARTIDO — verifica token y devuelve user_id
 // ================================================================
-
-async function handleProyectar(request, env, corsHeaders) {
-
-  let payload;
-  try {
-    payload = await request.json();
-  } catch {
-    return json({ error: 'JSON inválido' }, 400, corsHeaders);
-  }
-
-  const { token, proyeccion } = payload;
-
-  if (!token || !proyeccion) {
-    return json({ error: 'Token o datos de proyección ausentes' }, 400, corsHeaders);
-  }
-
-  // 1. Verificar token
+async function resolverUsuario(env, token) {
+  if (!token) return null;
   const tokenHash = await sha256(token);
   const perfil = await sbGet(env,
     `profiles?token_hash=eq.${tokenHash}&select=id&limit=1`
   );
+  if (!perfil || perfil.length === 0) return null;
+  return perfil[0].id;
+}
 
-  if (!perfil || perfil.length === 0) {
-    return json({ error: 'Token no reconocido' }, 401, corsHeaders);
+// ================================================================
+// HELPER COMPARTIDO — marca actividad en profiles
+// ================================================================
+async function marcarActividad(env, user_id) {
+  await sbPatch(env,
+    `profiles?id=eq.${user_id}`,
+    { actividad_video: true, updated_at: new Date().toISOString() }
+  );
+}
+
+// ================================================================
+// ENDPOINT: /proyectar → brotwit, blog, holoprisma → mini_proyeccion
+// ================================================================
+async function handleProyectar(request, env, corsHeaders) {
+
+  let payload;
+  try { payload = await request.json(); }
+  catch { return json({ error: 'JSON inválido' }, 400, corsHeaders); }
+
+  const { token, proyeccion } = payload;
+  if (!token || !proyeccion) {
+    return json({ error: 'Token o datos de proyección ausentes' }, 400, corsHeaders);
   }
 
-  const user_id = perfil[0].id;
+  const user_id = await resolverUsuario(env, token);
+  if (!user_id) return json({ error: 'Token no reconocido' }, 401, corsHeaders);
 
-  // 2. ¿Ya existe una proyección para este user?
+  const registro = {
+    user_id,
+    brotwit:           proyeccion.brotwit           || null,
+    editorial_title:   proyeccion.editorial_title   || null,
+    editorial_text:    proyeccion.editorial_text    || null,
+    editorial_img_url: proyeccion.editorial_img_url || null,
+    holoprisma_1:      proyeccion.holoprisma_1      || null,
+    holoprisma_2:      proyeccion.holoprisma_2      || null,
+    holoprisma_3:      proyeccion.holoprisma_3      || null,
+    holoprisma_4:      proyeccion.holoprisma_4      || null,
+    updated_at:        new Date().toISOString(),
+  };
+
   const existente = await sbGet(env,
     `mini_proyeccion?user_id=eq.${user_id}&select=id&limit=1`
   );
 
-  const registro = {
-    user_id,
-    es_brovision:        proyeccion.es_brovision        || false,
-
-    video_h_url:         proyeccion.video_h_url         || null,
-    video_h_titulo:      proyeccion.video_h_titulo       || null,
-    video_h_descripcion: proyeccion.video_h_descripcion  || null,
-    video_h_tipo:        proyeccion.video_h_tipo         || null,  // ← NUEVO: 'original' | 'ia' | 'publicidad'
-
-    video_v_url:         proyeccion.video_v_url         || null,
-    video_v_titulo:      proyeccion.video_v_titulo       || null,
-    video_v_descripcion: proyeccion.video_v_descripcion  || null,
-    video_v_tipo:        proyeccion.video_v_tipo         || null,  // ← NUEVO: 'original' | 'ia' | 'publicidad'
-
-    audio_url:           proyeccion.audio_url           || null,
-    audio_titulo:        proyeccion.audio_titulo         || null,
-    audio_descripcion:   proyeccion.audio_descripcion    || null,
-    audio_tipo:          proyeccion.audio_tipo           || null,  // ← NUEVO: 'original' | 'ia' | 'publicidad'
-
-    editorial_title:   proyeccion.editorial_title  || null,
-     editorial_text:    proyeccion.editorial_text   || null,
-     editorial_img_url: proyeccion.editorial_img_url || null,
-     audio_video_url:   proyeccion.audio_video_url  || null,
-     banner_11_url:     proyeccion.banner_11_url    || null,
-     banner_23_url:     proyeccion.banner_23_url    || null,
-    brotwit:             proyeccion.brotwit             || null,
-
-    holoprisma_1:        proyeccion.holoprisma_1        || null,
-    holoprisma_2:        proyeccion.holoprisma_2        || null,
-    holoprisma_3:        proyeccion.holoprisma_3        || null,
-    holoprisma_4:        proyeccion.holoprisma_4        || null,
-
-    updated_at:          new Date().toISOString(),
-  };
-
-  // 3. Upsert — actualiza si existe, inserta si no
   if (existente && existente.length > 0) {
-    await sbPatch(env,
-      `mini_proyeccion?user_id=eq.${user_id}`,
-      registro
-    );
+    await sbPatch(env, `mini_proyeccion?user_id=eq.${user_id}`, registro);
   } else {
     registro.proyectado_at = new Date().toISOString();
     await sbPost(env, 'mini_proyeccion', registro);
   }
-  
-  // 4. Marcar actividad_video en profiles
-  await sbPatch(env,
-    `profiles?id=eq.${user_id}`,
-    { actividad_video: true }
-  );
-  
-  return json({
-    ok:      true,
-    mensaje: '¡Proyectado! Tu contenido ya está en Brovision.',
-  }, 200, corsHeaders);
+
+  return json({ ok: true, mensaje: '¡Proyectado! Tu blog y BroTwit ya están en Brovision.' }, 200, corsHeaders);
 }
 
+// ================================================================
+// ENDPOINT: /proyectar-169 → video 16:9 → proyeccion_169
+// ================================================================
+async function handleProyectar169(request, env, corsHeaders) {
 
+  let payload;
+  try { payload = await request.json(); }
+  catch { return json({ error: 'JSON inválido' }, 400, corsHeaders); }
+
+  const { token, url, titulo, descripcion, tipo } = payload;
+  if (!token) return json({ error: 'Token ausente' }, 400, corsHeaders);
+  if (!url)   return json({ error: 'URL de video ausente' }, 400, corsHeaders);
+
+  const errorURL = validarURL(url);
+  if (errorURL) return json({ error: errorURL }, 400, corsHeaders);
+
+  const tiposValidos = ['original', 'ia', 'publicidad'];
+  const tipoFinal = tiposValidos.includes(tipo) ? tipo : 'original';
+
+  const user_id = await resolverUsuario(env, token);
+  if (!user_id) return json({ error: 'Token no reconocido' }, 401, corsHeaders);
+
+  const registro = {
+    user_id,
+    url,
+    titulo:      titulo      || null,
+    descripcion: descripcion || null,
+    tipo:        tipoFinal,
+    updated_at:  new Date().toISOString(),
+  };
+
+  const existente = await sbGet(env,
+    `proyeccion_169?user_id=eq.${user_id}&select=id&limit=1`
+  );
+
+  if (existente && existente.length > 0) {
+    await sbPatch(env, `proyeccion_169?user_id=eq.${user_id}`, registro);
+  } else {
+    registro.created_at = new Date().toISOString();
+    await sbPost(env, 'proyeccion_169', registro);
+  }
+
+  await marcarActividad(env, user_id);
+
+  return json({ ok: true, mensaje: '¡Video 16:9 proyectado! Ya aparece en los canales horizontales de Brovision.' }, 200, corsHeaders);
+}
 
 // ================================================================
-// ENDPOINT: /canjear-cupon
+// ENDPOINT: /proyectar-916 → video 9:16 → proyeccion_916
 // ================================================================
+async function handleProyectar916(request, env, corsHeaders) {
 
+  let payload;
+  try { payload = await request.json(); }
+  catch { return json({ error: 'JSON inválido' }, 400, corsHeaders); }
+
+  const { token, url, titulo, descripcion, tipo } = payload;
+  if (!token) return json({ error: 'Token ausente' }, 400, corsHeaders);
+  if (!url)   return json({ error: 'URL de video ausente' }, 400, corsHeaders);
+
+  const errorURL = validarURL(url);
+  if (errorURL) return json({ error: errorURL }, 400, corsHeaders);
+
+  const tiposValidos = ['original', 'ia', 'publicidad'];
+  const tipoFinal = tiposValidos.includes(tipo) ? tipo : 'original';
+
+  const user_id = await resolverUsuario(env, token);
+  if (!user_id) return json({ error: 'Token no reconocido' }, 401, corsHeaders);
+
+  const registro = {
+    user_id,
+    url,
+    titulo:      titulo      || null,
+    descripcion: descripcion || null,
+    tipo:        tipoFinal,
+    updated_at:  new Date().toISOString(),
+  };
+
+  const existente = await sbGet(env,
+    `proyeccion_916?user_id=eq.${user_id}&select=id&limit=1`
+  );
+
+  if (existente && existente.length > 0) {
+    await sbPatch(env, `proyeccion_916?user_id=eq.${user_id}`, registro);
+  } else {
+    registro.created_at = new Date().toISOString();
+    await sbPost(env, 'proyeccion_916', registro);
+  }
+
+  await marcarActividad(env, user_id);
+
+  return json({ ok: true, mensaje: '¡Video 9:16 proyectado! Ya aparece en los canales verticales de Brovision.' }, 200, corsHeaders);
+}
+
+// ================================================================
+// ENDPOINT: /proyectar-audio → audio PC → proyeccion_audio
+// ================================================================
+async function handleProyectarAudio(request, env, corsHeaders) {
+
+  let payload;
+  try { payload = await request.json(); }
+  catch { return json({ error: 'JSON inválido' }, 400, corsHeaders); }
+
+  const { token, url, titulo, descripcion, tipo } = payload;
+  if (!token) return json({ error: 'Token ausente' }, 400, corsHeaders);
+  if (!url)   return json({ error: 'URL de audio ausente' }, 400, corsHeaders);
+
+  const errorURL = validarURL(url);
+  if (errorURL) return json({ error: errorURL }, 400, corsHeaders);
+
+  const tiposValidos = ['original', 'ia', 'publicidad'];
+  const tipoFinal = tiposValidos.includes(tipo) ? tipo : 'original';
+
+  const user_id = await resolverUsuario(env, token);
+  if (!user_id) return json({ error: 'Token no reconocido' }, 401, corsHeaders);
+
+  const registro = {
+    user_id,
+    url,
+    titulo:      titulo      || null,
+    descripcion: descripcion || null,
+    tipo:        tipoFinal,
+    updated_at:  new Date().toISOString(),
+  };
+
+  const existente = await sbGet(env,
+    `proyeccion_audio?user_id=eq.${user_id}&select=id&limit=1`
+  );
+
+  if (existente && existente.length > 0) {
+    await sbPatch(env, `proyeccion_audio?user_id=eq.${user_id}`, registro);
+  } else {
+    registro.created_at = new Date().toISOString();
+    await sbPost(env, 'proyeccion_audio', registro);
+  }
+
+  await marcarActividad(env, user_id);
+
+  return json({ ok: true, mensaje: '¡Audio proyectado! Ya suena en BroLives de Brovision.' }, 200, corsHeaders);
+}
+
+// ================================================================
+// ENDPOINT: /proyectar-audmovil → audio móvil → proyeccion_audmovil
+// ================================================================
+async function handleProyectarAudmovil(request, env, corsHeaders) {
+
+  let payload;
+  try { payload = await request.json(); }
+  catch { return json({ error: 'JSON inválido' }, 400, corsHeaders); }
+
+  const { token, url, titulo, descripcion, tipo } = payload;
+  if (!token) return json({ error: 'Token ausente' }, 400, corsHeaders);
+  if (!url)   return json({ error: 'URL de audio ausente' }, 400, corsHeaders);
+
+  const errorURL = validarURL(url);
+  if (errorURL) return json({ error: errorURL }, 400, corsHeaders);
+
+  const tiposValidos = ['original', 'ia', 'publicidad'];
+  const tipoFinal = tiposValidos.includes(tipo) ? tipo : 'original';
+
+  const user_id = await resolverUsuario(env, token);
+  if (!user_id) return json({ error: 'Token no reconocido' }, 401, corsHeaders);
+
+  const registro = {
+    user_id,
+    url,
+    titulo:      titulo      || null,
+    descripcion: descripcion || null,
+    tipo:        tipoFinal,
+    updated_at:  new Date().toISOString(),
+  };
+
+  const existente = await sbGet(env,
+    `proyeccion_audmovil?user_id=eq.${user_id}&select=id&limit=1`
+  );
+
+  if (existente && existente.length > 0) {
+    await sbPatch(env, `proyeccion_audmovil?user_id=eq.${user_id}`, registro);
+  } else {
+    registro.created_at = new Date().toISOString();
+    await sbPost(env, 'proyeccion_audmovil', registro);
+  }
+
+  await marcarActividad(env, user_id);
+
+  return json({ ok: true, mensaje: '¡Audio móvil proyectado! Ya disponible en el reproductor central de Brovision.' }, 200, corsHeaders);
+}
+
+// ================================================================
+// ENDPOINT: /canjear-cupon — sin cambios
+// ================================================================
 async function handleCanjearCupon(request, env, corsHeaders) {
 
   let payload;
-  try {
-    payload = await request.json();
-  } catch {
-    return json({ error: 'JSON inválido' }, 400, corsHeaders);
-  }
+  try { payload = await request.json(); }
+  catch { return json({ error: 'JSON inválido' }, 400, corsHeaders); }
 
   const {
     user_id,
@@ -308,26 +365,22 @@ async function handleCanjearCupon(request, env, corsHeaders) {
     return json({ error: 'Faltan campos obligatorios' }, 400, corsHeaders);
   }
 
-  // 1. Verificar comercio activo
   const comercios = await sbGet(env,
     `comercio_cupones?id=eq.${comercio_id}&activo=eq.true&select=id,comercio_nombre,web_url,palabra_clave_1,palabra_clave_2,palabra_clave_3&limit=1`
-      );
-
+  );
   if (!comercios || comercios.length === 0) {
     return json({ error: 'Comercio no encontrado o inactivo' }, 404, corsHeaders);
   }
 
-  // 2. Leer balance génesis + alias
   const perfiles = await sbGet(env,
     `profiles?id=eq.${user_id}&select=id,genesis,alias&limit=1`
   );
-
   if (!perfiles || perfiles.length === 0) {
     return json({ error: 'Usuario no encontrado' }, 404, corsHeaders);
   }
 
   const balanceActual = perfiles[0].genesis || 0;
-  const aliasUsuario  = perfiles[0].alias || 'desconocido';
+  const aliasUsuario  = perfiles[0].alias   || 'desconocido';
 
   if (balanceActual < coste_genesis) {
     return json({
@@ -337,58 +390,45 @@ async function handleCanjearCupon(request, env, corsHeaders) {
     }, 400, corsHeaders);
   }
 
-  // 3. Verificar cupón activo ya existente para este comercio
   const yaExiste = await sbGet(env,
     `cupones_generados?user_id=eq.${user_id}&comercio_id=eq.${comercio_id}&usado=eq.false&caduca_at=gt.${new Date().toISOString()}&select=id&limit=1`
   );
-
   if (yaExiste && yaExiste.length > 0) {
-    return json({
-      error:  'Ya tienes un cupón activo para este comercio',
-    }, 409, corsHeaders);
+    return json({ error: 'Ya tienes un cupón activo para este comercio' }, 409, corsHeaders);
   }
 
-  // 4. Caducidad desde fase lunar
   const { faseCaduca } = getMoonPhase();
+  const nuevoBalance   = balanceActual - coste_genesis;
 
-  // 5. Restar génesis
-  const nuevoBalance  = balanceActual - coste_genesis;
   const updateBalance = await sbPatch(env,
     `profiles?id=eq.${user_id}`,
     { genesis: nuevoBalance }
   );
-
   if (!updateBalance) {
     return json({ error: 'Error al restar génesis' }, 500, corsHeaders);
   }
 
-  // 7. Insertar cupón
   const cupon = await sbPost(env, 'cupones_generados', {
     user_id,
     comercio_id,
-    codigo: null,
+    codigo:          null,
     descuento_pct,
     palabra_clave_1: comercios[0].palabra_clave_1 || null,
-     palabra_clave_2: comercios[0].palabra_clave_2 || null,
-     palabra_clave_3: comercios[0].palabra_clave_3 || null,
-    tipo_brocard: tipo_brocard || null,
+    palabra_clave_2: comercios[0].palabra_clave_2 || null,
+    palabra_clave_3: comercios[0].palabra_clave_3 || null,
+    tipo_brocard:    tipo_brocard                 || null,
     comercio_nombre: comercio_nombre || comercios[0].comercio_nombre,
-    web_url:    web_url    || comercios[0].web_url || '',
-    usado: false,
+    web_url:         web_url         || comercios[0].web_url || '',
+    usado:           false,
     caduca_at:       faseCaduca,
     created_at:      new Date().toISOString(),
   });
 
   if (!cupon) {
-    // Rollback génesis
-    await sbPatch(env,
-      `profiles?id=eq.${user_id}`,
-      { genesis: balanceActual }
-    );
+    await sbPatch(env, `profiles?id=eq.${user_id}`, { genesis: balanceActual });
     return json({ error: 'Error al generar cupón. Génesis devueltos.' }, 500, corsHeaders);
   }
 
-  // 8. Respuesta
   const fechaLegible = new Date(faseCaduca).toLocaleDateString('es-ES', {
     day: '2-digit', month: '2-digit', year: 'numeric',
   });
@@ -398,13 +438,13 @@ async function handleCanjearCupon(request, env, corsHeaders) {
     alias:            aliasUsuario,
     descuento_pct,
     comercio_nombre:  comercio_nombre || comercios[0].comercio_nombre,
-    web_url:     web_url    || comercios[0].web_url || '',
+    web_url:          web_url         || comercios[0].web_url || '',
     palabra_clave_1:  comercios[0].palabra_clave_1 || null,
     caduca_at:        faseCaduca,
     caduca_legible:   fechaLegible,
     genesis_restados: coste_genesis,
     balance_nuevo:    nuevoBalance,
-    mensaje:          `Cupón canjeado! En tu Booster Studio en Mis Cupones te espera tu Sticker con la palabra Clave`,
+    mensaje:          'Cupón canjeado! En tu Booster Studio en Mis Cupones te espera tu Sticker con la palabra Clave',
   }, 200, corsHeaders);
 }
 
@@ -447,19 +487,6 @@ function getMoonPhase() {
   const faseCaduca    = new Date(now.getTime() + diasRestantes * 86400000);
 
   return { faseId: fase.id, faseCaduca: faseCaduca.toISOString(), age };
-}
-
-function buildSemaforo(raw) {
-  const keys = ['fuchsia', 'green', 'white', 'orange', 'red'];
-  if (Array.isArray(raw)) {
-    const obj = {};
-    keys.forEach(k => { obj[k] = raw.includes(k); });
-    return obj;
-  }
-  if (raw && typeof raw === 'object') return raw;
-  const obj = {};
-  keys.forEach(k => { obj[k] = false; });
-  return obj;
 }
 
 async function sbFetch(env, path, method = 'GET', body = null) {

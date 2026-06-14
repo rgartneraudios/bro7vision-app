@@ -1,9 +1,9 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import PhaserGame from './PhaserGame';
-import ScalextricScene from '../game/ScalextricScene';
+import ScalextricScene from '../../game/ScalextricScene';
 import Phaser from 'phaser';
-import { marcarActividad } from '../hooks/useActividad';
-import { useAudioContext } from '../context/AudioContext';
+import { marcarActividad } from '../../hooks/useActividad';
+import { useAudioContext } from '../../context/AudioContext';
 
 const ScalextricPhaser = ({ onWin, difficulty }) => {
   const [mode, setMode] = useState('menu'); 

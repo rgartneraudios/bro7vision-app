@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { marcarActividad } from '../hooks/useActividad';
-import { useAudioContext } from '../context/AudioContext';
+import { marcarActividad } from '../../hooks/useActividad';
+import { useAudioContext } from '../../context/AudioContext';
 
 const TILE_SIZE = 100;
 const COLS = 11;
@@ -26,7 +26,7 @@ const rectIntersect = (r1, r2) => {
            r2.bottom < r1.top);
 };
 
-const CronosGame = ({ onWin, onClose }) => {
+const Telecronos = ({ onWin, onClose }) => {
   const canvasRef = useRef(null);
   const [score, setScore] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
@@ -590,7 +590,7 @@ const CronosGame = ({ onWin, onClose }) => {
     const finalAmount = hasWonAll ? score : 10; 
     
     console.log('Telecronos - Enviando puntos:', finalAmount);
-    onWin(finalAmount); 
+    if (onWin) onWin(finalAmount); 
     
     if (assets.current.audios.loop) { 
       assets.current.audios.loop.pause();
@@ -608,7 +608,7 @@ const CronosGame = ({ onWin, onClose }) => {
         </div>
       )}
       <canvas ref={canvasRef} width={WIDTH} height={HEIGHT} className="max-w-full max-h-full object-contain" />
-      <button onClick={handleClose} className="absolute top-10 right-10 text-white/40 hover:text-white font-black text-xl uppercase tracking-widest">❮ EXIT</button>
+      <button onClick={handleClose} className="absolute top-10 right-10 z-[30] text-white/40 hover:text-white font-black text-xl uppercase tracking-widest">❮ EXIT</button>
       <div className="absolute top-6 left-16 text-cyan-400 font-black text-5xl italic drop-shadow-2xl">GÉNESIS: {score}</div>
       
       {gameOver && (
@@ -656,4 +656,4 @@ const CronosGame = ({ onWin, onClose }) => {
   );
 };
 
-export default CronosGame;
+export default Telecronos;

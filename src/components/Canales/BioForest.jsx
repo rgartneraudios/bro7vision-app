@@ -1,54 +1,50 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { supabase } from '../supabaseClient';
-import { TV_NODES } from '../data/TvDatabase';
-import Hls from 'hls.js';
-import { marcarActividad } from '../hooks/useActividad';
-import { getMoonSuffix } from '../utils/moonUtils';
-import { getVideoCandidates, resolveVideoFromCandidates, getTurno } from '../data/citycodes';
+// src/components/BioForest.jsx
+// VERSIÓN COMPLETA: Nihilanth + Fix Audio + Fix Touch + Ecos completos + Hyper Zap
 
-// ¡CORREGIDO! Ya no se corta el borde (border-left: none eliminado)
-const OESTE169_STYLES = `
-  @keyframes visor-glow-fuchsia {
-    0%,100% { box-shadow: 0 0 20px rgba(217,70,239,0.5), 0 0 60px rgba(217,70,239,0.2), inset 0 0 20px rgba(217,70,239,0.05); }
-    50%      { box-shadow: 0 0 40px rgba(217,70,239,0.8), 0 0 100px rgba(217,70,239,0.3), inset 0 0 30px rgba(217,70,239,0.10); }
-  }
-  .oeste169-visor {
-    border: 2px solid rgba(217,70,239,0.4);
-    border-radius: 3.5rem;
-  }
-  @keyframes orb-float { 0%,100%{transform:translateY(0px)} 50%{transform:translateY(-7px)} }
-  .animate-orb-float { animation: orb-float 3s ease-in-out infinite; }
-  @keyframes pulse-orb {
-    0%,100% { box-shadow:0 0 15px currentColor; opacity:0.8; }
-    50%      { box-shadow:0 0 30px currentColor,0 0 55px currentColor; opacity:1; }
-  }
-  .animate-orb-glow { animation: pulse-orb 2s ease-in-out infinite; }
-  @keyframes spin-cw  { from{transform:rotate(0deg)}   to{transform:rotate(360deg)}  }
-  @keyframes spin-ccw { from{transform:rotate(360deg)} to{transform:rotate(0deg)}    }
-  .animate-spin-cw  { animation: spin-cw  8s linear infinite; }
-  .animate-spin-ccw { animation: spin-ccw 8s linear infinite; }
-  @keyframes spiritFade {
-    0%   { opacity:0; transform:translateY(15px);  filter:blur(5px);  }
-    8%   { opacity:1; transform:translateY(0);     filter:blur(0px);  }
-    85%  { opacity:1; transform:translateY(-12px); filter:blur(0px);  }
-    100% { opacity:0; transform:translateY(-35px); filter:blur(10px); }
-  }
-  .animate-spirit { animation: spiritFade 10s ease-in-out forwards; }
-  @keyframes shimmer { 100%{transform:translateX(100%)} }
-  .animate-shimmer { animation: shimmer 2s infinite; }
-  @keyframes vortexRise {
-    0%   { transform: translate(-80vw,-30vh) scale(0.9) rotate(0deg);    opacity:0.8; }
-    15%  { transform: translate(-30vw,0vh)   scale(1.3) rotate(90deg);               }
-    70%  { transform: translate(10vw,-35vh)  scale(1.2) rotate(450deg);              }
-    80%  { transform: translate(5vw,-75vh)   scale(0.9) rotate(540deg);              }
-    100% { transform: translate(-70vw,-60vh) scale(0.05) rotate(720deg); opacity:0.8;}
-  }
-  
-  @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
-.animate-ticker { animation: ticker 25s linear infinite; 
-}
-  
-  .animate-vortex { animation: vortexRise 6s cubic-bezier(0.45,0.05,0.55,0.95) forwards; }
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { supabase } from '../../supabaseClient';
+import { TV_NODES } from '../../data/TvDatabase';
+import Hls from 'hls.js';
+import { marcarActividad } from '../../hooks/useActividad';
+import { getMoonSuffix } from '../../utils/moonUtils';
+import { getVideoCandidates, resolveVideoFromCandidates, getTurno } from '../../data/citycodes';
+
+const FOREST_STYLES = `
+    @keyframes spiritFade {
+        0% { opacity: 0; transform: translateY(15px); filter: blur(5px); }
+        8% { opacity: 1; transform: translateY(0); filter: blur(0px); }
+        85% { opacity: 1; transform: translateY(-12px); filter: blur(0px); }
+        100% { opacity: 0; transform: translateY(-35px); filter: blur(10px); }
+    }
+    
+    /* SCROLLBAR NEON PARA EL ACORDEÓN */
+    .bro-scrollbar::-webkit-scrollbar { width: 6px; }
+    .bro-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.8); border-radius: 8px; }
+    .bro-scrollbar::-webkit-scrollbar-thumb { background: #00ffff; border-radius: 8px; box-shadow: 0 0 10px #00ffff; }
+    .bro-scrollbar::-webkit-scrollbar-thumb:hover { background: #d946ef; }
+    
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap');
+    
+    .font-moderna { font-family: 'Outfit', sans-serif; }
+    
+    /* SCROLLBAR NEON (Que ya tenías) */
+    .bro-scrollbar::-webkit-scrollbar { width: 6px; }
+    .bro-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.6); border-radius: 8px; }
+    .bro-scrollbar::-webkit-scrollbar-thumb { background: #00ffff; border-radius: 8px; box-shadow: 0 0 10px #00ffff; }
+    .bro-scrollbar::-webkit-scrollbar-thumb:hover { background: #d946ef; }
+    
+    @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.animate-ticker { animation: ticker 25s linear infinite; }
+    
+    .animate-spirit { animation: spiritFade 10s ease-in-out forwards; }
+    @keyframes vortexRise {
+        0%   { transform: translate(-80vw,-30vh) scale(0.9) rotate(0deg); opacity:0.8; }
+        15%  { transform: translate(-30vw,0vh) scale(1.3) rotate(90deg); }
+        70%  { transform: translate(10vw,-35vh) scale(1.2) rotate(450deg); }
+        80%  { transform: translate(5vw,-45vh) scale(0.9) rotate(540deg); }
+        100% { transform: translate(-30vw,-60vh) scale(0.05) rotate(720deg); opacity:0.8; }
+    }
+    .animate-vortex { animation: vortexRise 6s cubic-bezier(0.45,0.05,0.55,0.95) forwards; }
     @keyframes vortexSpin { 0%{transform:rotate(0deg) scale(1)} 100%{transform:rotate(360deg) scale(1.05)} }
     .animate-spin-vortex { animation: vortexSpin 1.5s linear infinite; }
     @keyframes energyPulse { 0%,100%{transform:scale(1);opacity:0.8} 50%{transform:scale(1.2);opacity:1} }
@@ -61,8 +57,25 @@ const OESTE169_STYLES = `
     .animate-flare { animation: flare 3s ease-in-out infinite; }
     @keyframes shimmer { 100%{transform:translateX(100%)} }
     .animate-shimmer { animation: shimmer 2s infinite; }
+
+
+    /* VISOR BORDE RESPLANDOR BLANCO */
+    @keyframes visor-glow-pulse {
+        0%,100% { box-shadow: 0 0 18px rgba(255,255,255,0.25),0 0 40px rgba(255,255,255,0.10),inset 0 0 20px rgba(255,255,255,0.04); }
+        50%      { box-shadow: 0 0 30px rgba(255,255,255,0.45),0 0 70px rgba(255,255,255,0.20),inset 0 0 30px rgba(255,255,255,0.08); }
+    }
+    .visor-border { border: 1.5px solid rgba(255,255,255,0.30); animation: visor-glow-pulse 3s ease-in-out infinite; }
+
+    /* ORBES */
+    @keyframes pulse-orb {
+        0%,100% { box-shadow:0 0 15px currentColor; transform:scale(1); opacity:0.8; }
+        50%      { box-shadow:0 0 30px currentColor,0 0 50px currentColor; transform:scale(1.1); opacity:1; }
+    }
+    .orb-glow { animation: pulse-orb 2s ease-in-out infinite; }
+    @keyframes orb-float { 0%,100%{transform:translateY(0px) scale(1)} 50%{transform:translateY(-6px) scale(1.06)} }
+    .orb-float { animation: orb-float 3s ease-in-out infinite; }
     
-     /* El contenedor de la órbita le da la perspectiva 3D */
+   /* El contenedor de la órbita le da la perspectiva 3D */
 .orbita-cometa-container {
   position: absolute;
   top: 50%;
@@ -79,22 +92,26 @@ const OESTE169_STYLES = `
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 1px dashed rgba(0, 255, 255, 0.4); /* Trazo definido, no borroso */
+  /* CAMBIO 1: Aumentamos opacidad y añadimos una sombra sutil para separar la línea del fondo */
+  border: 1.5px dashed rgba(0, 255, 255, 0.8); 
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8)); /* Esto hace que la línea se vea aunque el fondo sea blanco */
 }
 
 /* La cabeza del cometa (un punto brillante) */
 .orbita-cabeza {
   position: absolute;
-  top: -3px; /* Se alinea con el borde superior */
+  top: -4px; /* Ajuste leve para compensar el tamaño */
   left: 50%;
   transform: translateX(-50%);
-  width: 6px;
-  height: 6px;
-  background-color: #00ffff;
+  /* CAMBIO 2: Ligeramente más grande para que sea un punto de atención real */
+  width: 8px;
+  height: 8px;
+  background-color: #ffffff; /* El centro blanco puro da sensación de luz intensa */
+  border: 2px solid #00ffff; /* Borde cian para mantener el color */
   border-radius: 50%;
-  box-shadow: 0 0 10px 2px #00ffff, 0 0 20px #00ffff; /* Brillo del cometa */
+  /* CAMBIO 3: Sombra más cerrada y definida (menos blur, más intensidad) */
+  box-shadow: 0 0 8px 2px #00ffff; 
 }
-
 @keyframes girar-orbita {
   0% {
     transform: translate(-50%, -50%) rotateX(75deg) rotateZ(0deg);
@@ -103,68 +120,47 @@ const OESTE169_STYLES = `
     transform: translate(-50%, -50%) rotateX(75deg) rotateZ(360deg);
   }
 }
-
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap');
     
-    .font-moderna { font-family: 'Outfit', sans-serif; }
-    
-    /* SCROLLBAR NEON (Que ya tenías) */
-    .bro-scrollbar::-webkit-scrollbar { width: 6px; }
-    .bro-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.6); border-radius: 8px; }
-    .bro-scrollbar::-webkit-scrollbar-thumb { background: #00ffff; border-radius: 8px; box-shadow: 0 0 10px #00ffff; }
-    .bro-scrollbar::-webkit-scrollbar-thumb:hover { background: #d946ef; }
- 
 `;
 
-const PC_SLOTS     = [{x:75,y:6},{x:48,y:12},{x:52,y:35},{x:70,y:45},{x:68,y:70},{x:6,y:80}];
+const PC_SLOTS = [
+    {x:5,y:25},{x:7,y:40},{x:15,y:65},
+    {x:62,y:10},{x:75,y:25},{x:75,y:7},
+    {x:15,y:3},{x:65,y:43},{x:80,y:40},
+];
 const MOBILE_SLOTS = [{x:5,y:75}, {x:50,y:75}];
 
 // HYPER ZAP — zonas derecha, para no pisarse
 const HYPER_PC_SLOTS = [
-  {x:72,y:15},{x:75,y:40},{x:70,y:65},
-  {x:78,y:28},{x:73,y:55},{x:76,y:40},
+  {x:70,y:60},{x:80,y:75},
+  {x:4,y:78},{x:15,y:50},{x:16,y:27},
 ];
 const HYPER_MOBILE_SLOTS = [{x:20,y:2}];
 
-const neonColors = [
-  {border:'border-cyan-400',    text:'text-cyan-400',    glow:'shadow-[0_0_10px_rgba(34,211,238,0.5)]'  },
-  {border:'border-fuchsia-500', text:'text-fuchsia-400', glow:'shadow-[0_0_10px_rgba(217,70,239,0.5)]' },
-  {border:'border-emerald-400', text:'text-emerald-400', glow:'shadow-[0_0_10px_rgba(52,211,153,0.5)]' },
-  {border:'border-violet-500',  text:'text-violet-400',  glow:'shadow-[0_0_10px_rgba(139,92,246,0.5)]' },
-];
-
-function loadVideo(videoEl,url,isMuted,hlsRef){
-  if(!videoEl||!url)return;
-  if(hlsRef.current){hlsRef.current.destroy();hlsRef.current=null;}
-  if(url.includes('.m3u8')){
-    if(videoEl.canPlayType('application/vnd.apple.mpegurl')){videoEl.src=url;videoEl.muted=isMuted;videoEl.play().catch(()=>{});}
-    else if(Hls.isSupported()){const hls=new Hls();hls.loadSource(url);hls.attachMedia(videoEl);hls.on(Hls.Events.MANIFEST_PARSED,()=>{videoEl.muted=isMuted;videoEl.play().catch(()=>{});});hlsRef.current=hls;}
-  } else {
-    const same=videoEl.src===url||videoEl.src===window.location.origin+url;
-    if(!same){videoEl.pause();videoEl.src='';videoEl.load();videoEl.src=url;videoEl.muted=isMuted;videoEl.load();videoEl.play().catch(()=>{});}
-  }
-}
-
-const ChannelOeste169 = ({ videoUsers, balances, setBalances, session, realityMode, onOpenProfile, selectedForestUser, savedUserIndex, setShow169 }) => {
-  const [currentIndex,  setCurrentIndex]  = useState(0);
-  const [isMuted,       setIsMuted]       = useState(false);
-  const [progress,      setProgress]      = useState(0);
-  const [activeReaction,setActiveReaction]= useState(null);
-  const [showEchoInput, setShowEchoInput] = useState(false);
-  const [echoType,      setEchoType]      = useState('text');
-  const [echoText,      setEchoText]      = useState('');
-  const [realUserAlias, setRealUserAlias] = useState('');
-  const [visualEchos,   setVisualEchos]   = useState([]);
+const BioForest = ({ videoUsers, balances, setBalances, session, realityMode, onOpenProfile, selectedForestUser, savedUserIndex }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isMuted, setIsMuted] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [activeReaction, setActiveReaction] = useState(null);
+  const [visualEchos, setVisualEchos] = useState([]);
   const [floatingEcos, setFloatingEcos] = useState([]);        // se reinicia con el video ✅
   const [floatingHyperZaps, setFloatingHyperZaps] = useState([]); // persiste al scrollear ✅
+  const [visorScale, setVisorScale] = useState(1);
+  const [showEchoInput, setShowEchoInput] = useState(false);
+  const [echoType, setEchoType] = useState('text');
+  const [echoText, setEchoText] = useState("");
+  const [realUserAlias, setRealUserAlias] = useState("");
+  const mediaRecorderRef = useRef(null);
+  const [isOrbitando, setIsOrbitando] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [ecoVariant, setEcoVariant] = useState('pay');
-  const [isOrbitando, setIsOrbitando] = useState(false);
   const [selectedEmoji, setSelectedEmoji] = useState(1);
   const [isAccordionOpen, setIsAccordionOpen] = useState(false); // Para abrir/cerrar el historial
   const [bgVideoUrl, setBgVideoUrl] = useState('');
+
   const [proyeccion, setProyeccion] = useState(null);
   const [acordeonAbierto, setAcordeonAbierto] = useState(false);
+
 
 
   useEffect(() => {
@@ -172,20 +168,21 @@ const ChannelOeste169 = ({ videoUsers, balances, setBalances, session, realityMo
 }, []);
 
   useEffect(() => {
+    const BIOFOREST_CANAL = { solo_fantasy:5, band_fantasy:8};
+    const canal = BIOFOREST_CANAL[realityMode];
+    if (!canal) return;
     let active = true;
-    resolveVideoFromCandidates(getVideoCandidates(7, getMoonSuffix(), getTurno(), 0, null))
+    resolveVideoFromCandidates(getVideoCandidates(canal, getMoonSuffix(), getTurno(), 0, null))
       .then(url => { if (active) setBgVideoUrl(url); });
     return () => { active = false; };
-  }, []);
+  }, [realityMode]);
 
 
-  const videoRefPC  = useRef(null);
-  const videoRefMob = useRef(null);
-  const bgVideoRef  = useRef(null);
-  const hlsRefPC    = useRef(null);
-  const hlsRefMob   = useRef(null);
-  const touchStart  = useRef(0);
-  const touchEnd    = useRef(0);
+  const videoRef = useRef(null);
+  const bgVideoRef = useRef(null);
+  const hlsRef = useRef(null);
+  const touchStart = useRef(0);
+  const touchEnd = useRef(0);
 
   const displayUsers = useMemo(() => {
     const turnoActual = getTurno();
@@ -195,9 +192,12 @@ const ChannelOeste169 = ({ videoUsers, balances, setBalances, session, realityMo
       return true;
     });
     const combined = [...elegibles, ...TV_NODES];
-    return combined.length===0?[{id:'loading_01',alias:'SINTONIZANDO...',video_file:''}]:combined;
+    if (combined.length === 0) {
+      return [{ id: 'loading_01', alias: 'SINTONIZANDO...', video_file: '' }];
+    }
+    return combined;
   }, [videoUsers]);
-
+  
   // 1. Definimos el usuario que vemos en pantalla
   const currentUser = useMemo(() => displayUsers[currentIndex % displayUsers.length], [displayUsers,currentIndex]);
   const creatorId = currentUser?.id; 
@@ -282,47 +282,55 @@ const ChannelOeste169 = ({ videoUsers, balances, setBalances, session, realityMo
       setIsOrbitando(!nuevoEstado); // Si falla internet o la BD, deshacemos el giro del cometa visualmente
     }
   }; 
+  
+  const config = useMemo(() => {
+    switch(realityMode){
+      case 'solo_fantasy': return {colors:['text-cyan-400','text-fuchsia-400'],  reactionColor:'cyan',   labelClass:'text-cyan-400',   labelText:'SOLO FANTASY',navColor:'text-cyan-400'   };
+      case 'band_fantasy': return {colors:['text-fuchsia-500','text-purple-300'],reactionColor:'fuchsia',labelClass:'text-fuchsia-400', labelText:'BAND FANTASY',navColor:'text-fuchsia-500'};
+      default:             return {colors:['text-cyan-400','text-white'],         reactionColor:'cyan',   labelClass:'text-cyan-400',  labelText:'GENESIS NODE',navColor:'text-cyan-400'  };
+    }
+  },[realityMode]);
 
+  useEffect(()=>{
+    const f=async()=>{if(!session?.user?.id)return;const{data}=await supabase.from('profiles').select('alias').eq('id',session.user.id).single();if(data?.alias)setRealUserAlias(data.alias);};
+    f();
+  },[session]);
 
+  useEffect(()=>{
+    if(selectedForestUser&&displayUsers.length>0){const i=displayUsers.findIndex(u=>u.id===selectedForestUser.id);if(i!==-1)setCurrentIndex(i);}
+  },[selectedForestUser,displayUsers]);
 
   const cleanUrl=(url)=>{
-    if(!url)return'';
-    let c=url.trim();
-    if(c.includes('dropbox.com')){
-      c=c.replace('www.dropbox.com','dl.dropboxusercontent.com').replace('dropbox.com','dl.dropboxusercontent.com').replace('?dl=0','').replace('&dl=0','');
-      return c.includes('?')?`${c}&raw=1`:`${c}?raw=1`;
-    }
+    if(!url)return"";let c=url.trim();
+    if(c.includes('dropbox.com')){c=c.replace('www.dropbox.com','dl.dropboxusercontent.com').replace('dropbox.com','dl.dropboxusercontent.com').replace('?dl=0','').replace('&dl=0','');return c.includes('?')?`${c}&raw=1`:`${c}?raw=1`;}
     return c;
   };
 
-  useEffect(() => {
-    if(!currentUser) return;
-    const url = cleanUrl(currentUser.video_file || '');
-    const isMobile = window.innerWidth < 768;
-
-    // Al video de PC le pasamos 'true' (silenciado) si estamos en móvil.
-    loadVideo(videoRefPC.current, url, isMobile ? true : isMuted, hlsRefPC);
-    
-    // Al video de Móvil le pasamos 'true' (silenciado) si estamos en PC.
-    loadVideo(videoRefMob.current, url, !isMobile ? true : isMuted, hlsRefMob);
-
-    setVisualEchos([]);setFloatingEcos([]); // solo resetea Eco Text, los HyperZap sobreviven
-    }, [currentUser]);
-  
-  useEffect(() => {
-    const handleResize = () => {
-      const isMobile = window.innerWidth < 768;
-      // Solo permitimos sonido en el reproductor visible
-      if (videoRefPC.current)  videoRefPC.current.muted  = isMobile ? true : isMuted;
-      if (videoRefMob.current) videoRefMob.current.muted = !isMobile ? true : isMuted;
-    };
-
-    // Escuchamos por si giras el móvil o achicas la ventana en PC
-    window.addEventListener('resize', handleResize);
-    handleResize(); // Aplicar inmediatamente
-
-    return () => window.removeEventListener('resize', handleResize);
-}, [isMuted]);
+  // FIX AUDIO — Efecto A: solo carga cuando cambia usuario
+useEffect(()=>{
+  const video=videoRef.current;
+  const bgVideo=bgVideoRef.current;
+  if(!video||!currentUser)return;
+  const playUrl=cleanUrl(currentUser.video_file||"");
+  if(hlsRef.current){hlsRef.current.destroy();hlsRef.current=null;}
+  const isHLS=playUrl.includes('.m3u8');
+  if(isHLS){
+    if(video.canPlayType('application/vnd.apple.mpegurl')){video.src=playUrl;video.muted=isMuted;video.play().catch(()=>{});}
+    else if(Hls.isSupported()){const hls=new Hls();hls.loadSource(playUrl);hls.attachMedia(video);hls.on(Hls.Events.MANIFEST_PARSED,()=>{video.muted=isMuted;video.play().catch(()=>{});});hlsRef.current=hls;}
+  } else {
+    const same=video.src===playUrl||video.src===window.location.origin+playUrl;
+    if(!same){
+      video.pause();video.src="";video.load();
+      video.src=playUrl;video.muted=isMuted;video.load();video.play().catch(()=>{});
+      setIsPaused(false);
+    }
+  }
+  setVisualEchos([]);setFloatingEcos([]);
+  return () => {
+    if(video) video.pause();
+    if(hlsRef.current){ hlsRef.current.destroy(); hlsRef.current=null; }
+  };
+  },[currentUser]); // SOLO currentUser
 
   useEffect(() => {
     if (!currentUser?.id || currentUser.id.length < 20) {
@@ -345,7 +353,10 @@ const ChannelOeste169 = ({ videoUsers, balances, setBalances, session, realityMo
   const videoDesc   = proyeccion?.video_v_descripcion || null;
   const videoTipo   = proyeccion?.video_v_tipo || null;
 
-   // NAVEGACIÓN TECLADO / D-PAD SMART TV ← nuevo
+  // FIX AUDIO — Efecto B: mute sin recargar
+  useEffect(()=>{ if(videoRef.current) videoRef.current.muted=isMuted; },[isMuted]);
+  
+  // NAVEGACIÓN TECLADO / D-PAD SMART TV ← nuevo
 useEffect(()=>{
   const handleKey=(e)=>{
     if(e.key==='ArrowRight'||e.key==='ArrowDown')
@@ -356,19 +367,6 @@ useEffect(()=>{
   window.addEventListener('keydown',handleKey);
   return()=>window.removeEventListener('keydown',handleKey);
 },[displayUsers]);
-
-  
-  useEffect(()=>{
-    if(!session?.user?.id)return;
-    supabase.from('profiles').select('alias').eq('id',session.user.id).single().then(({data})=>{if(data?.alias)setRealUserAlias(data.alias);});
-  },[session]);
-
-  useEffect(()=>{
-    if(selectedForestUser&&displayUsers.length>0){
-      const i=displayUsers.findIndex(u=>u.id===selectedForestUser.id);
-      if(i!==-1)setCurrentIndex(i);
-    }
-  },[selectedForestUser,displayUsers]);
 
   // Fetch ecos completo con Hyper Zap (VERSIÓN LIMPIA SIN AUDIO Y SIN LA PALABRA AD)
   useEffect(() => {
@@ -413,8 +411,8 @@ useEffect(()=>{
     
     fetch();
   }, [currentUser]);
-
-
+  
+  
   useEffect(() => {
     if(!visualEchos || visualEchos.length === 0) return;
     
@@ -480,13 +478,11 @@ useEffect(()=>{
     return () => clearInterval(interval);
   }, [visualEchos, currentUser]);  
   
-  const handleTouchStart=(e)=>{if(e.target.closest('button'))return;touchStart.current=e.targetTouches[0].clientX;};
-  const handleTouchMove =(e)=>{if(e.target.closest('button'))return;touchEnd.current  =e.targetTouches[0].clientX;};
-  const handleTouchEnd  =()=>{
-    if(!touchStart.current||!touchEnd.current)return;
-    const d=touchStart.current-touchEnd.current;
-    if(d>70)setCurrentIndex(p=>p+1); if(d<-70)setCurrentIndex(p=>p>0?p-1:0);
-    touchStart.current=0;touchEnd.current=0;
+  const handleReport=async(echoId)=>{
+    if(!confirm("¿Reportar este mensaje como inapropiado?"))return;
+    await supabase.rpc('increment_report',{row_id:echoId});
+   alert("Reporte enviado. Gracias por limpiar el bosque.");
+setVisualEchos(prev=>prev.filter(e=>e.id!==echoId));
   };
 
   const handleAction = async (type) => {
@@ -515,13 +511,12 @@ useEffect(()=>{
       await marcarActividad('uso_genesis');
     }
   } catch (e) { console.error(e); }
-
+  
   // Solo llega aquí si es echo/zap
   if (!balances || balances[col] < 1) {
     alert(`NECESITAS ${echoType === 'hyper' ? 'ZAP' : 'ECO'} ${ecoVariant.toUpperCase()}...`);
     return;
   }
-  
 
   const myAlias = realUserAlias || 'CIUDADANO';
   const { data } = await supabase.from('bro_echos').insert([{
@@ -544,23 +539,95 @@ useEffect(()=>{
   await supabase.from('profiles').update({ [col]: newVal }).eq('id', session.user.id);
 };
 
+  // FIX TOUCH — botones ignorados para no encimar videos
+  const handleTouchStart=(e)=>{if(e.target.closest('button'))return;touchStart.current=e.targetTouches[0].clientX;};
+  const handleTouchMove =(e)=>{if(e.target.closest('button'))return;touchEnd.current=e.targetTouches[0].clientX;};
+  const handleTouchEnd  =()=>{
+    if(!touchStart.current||!touchEnd.current)return;
+    const d=touchStart.current-touchEnd.current;
+    if(d>70)setCurrentIndex(p=>p+1);
+    if(d<-70)setCurrentIndex(p=>p>0?p-1:0);
+    touchStart.current=0;touchEnd.current=0;
+  };
+
   const isTvMode=currentUser&&(currentUser.isTv||currentUser.is_tv);
+  const portalTransform=`scale(${visorScale})`; // visor fijo, sin paralaje
+
+  const neonColors=[
+    {border:'border-cyan-400',   text:'text-cyan-400',   glow:'shadow-[0_0_10px_rgba(34,211,238,0.5)]' },
+    {border:'border-fuchsia-500',text:'text-fuchsia-400',glow:'shadow-[0_0_10px_rgba(217,70,239,0.5)]' },
+    {border:'border-emerald-400',text:'text-emerald-400',glow:'shadow-[0_0_10px_rgba(52,211,153,0.5)]' },
+    {border:'border-violet-500', text:'text-violet-400', glow:'shadow-[0_0_10px_rgba(139,92,246,0.5)]' }
+  ];
+  
+  const LiquidSVGFilter = () => (
+  <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+    <defs>
+      <filter id="liquid-border" x="-20%" y="-20%" width="140%" height="140%">
+        {/* Genera el ruido orgánico animado */}
+        <feTurbulence
+          id="turbulence"
+          type="turbulence"
+          baseFrequency="0.018 0.022"
+          numOctaves="3"
+          seed="2"
+          result="noise"
+        >
+          {/* La animación cambia el seed continuamente → olas vivas */}
+          <animate
+            attributeName="baseFrequency"
+            values="0.018 0.022; 0.025 0.015; 0.018 0.022"
+            dur="6s"
+            repeatCount="indefinite"
+          />
+        </feTurbulence>
+
+        {/* Desplaza los píxeles del borde según el ruido */}
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="noise"
+          scale="10"
+          xChannelSelector="R"
+          yChannelSelector="G"
+          result="displaced"
+        />
+
+        {/* Recorta para que el efecto solo viva en el borde,
+            no distorsione el contenido interior del visor */}
+        <feComposite in="displaced" in2="SourceGraphic" operator="atop" />
+      </filter>
+    </defs>
+  </svg>
+);
+
 
   return (
     <div className="absolute inset-0 z-0 bg-black overflow-hidden select-none font-mono">
-      <style>{OESTE169_STYLES}</style>
+      <style>{FOREST_STYLES}</style>
 
-      {/* FONDO */}
-      <video ref={bgVideoRef} src={bgVideoUrl} autoPlay loop muted playsInline
-       className="absolute inset-0 w-full h-full object-cover z-[1]"/>
-       
-     {/* 2. ECOS FLOTANTES — MÁXIMO 3, OSCUROS, CON EMOJI */}
+      {/* 1. FONDO  */}
+      {bgVideoUrl && (
+        <div className="absolute inset-0 z-[1] transition-transform duration-300 ease-out will-change-transform" >
+          <video
+          key={bgVideoUrl}
+          ref={bgVideoRef}
+            src={bgVideoUrl}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
+
+   {/* 2. ECOS FLOTANTES — MÁXIMO 3, OSCUROS, CON EMOJI */}
 <div className="absolute inset-0 z-[10] pointer-events-none">
   {floatingEcos.map((echo) => {
     const isPay = echo.currency === 'pay';
-    const borderColor = isPay ? 'border-fuchsia-400' : 'border-fuchsia-500';
+    const borderColor = isPay ? 'border-blue-400' : 'border-blue-500';
     const shadowColor = isPay ? 'shadow-[0_0_15px_rgba(34,211,238,0.4)]' : 'shadow-[0_0_15px_rgba(245,158,11,0.4)]';
-    const textColor   = isPay ? 'text-fuchsia-400' : 'text-fuchsia-400';
+    const textColor   = isPay ? 'text-cyan-400' : 'text-amber-400';
     const emojiId = echo.eco_emoji_id || 1; 
 
     return (
@@ -626,9 +693,9 @@ useEffect(()=>{
           <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-50 pointer-events-none" />
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-shimmer pointer-events-none" />
 
-          <span className="text-[11px] md:text-[12px] uppercase tracking-[0.4em] md:tracking-[0.5em] font-black text-[#FFD700] border-b border-black/30 pb-1 w-full flex items-center justify-center gap-1"
+          <span className="text-[12px] md:text-[12px] uppercase tracking-[0.4em] md:tracking-[0.5em] font-black text-[#FFD700] border-b border-black/30 pb-1 w-full flex items-center justify-center gap-1"
                 style={{ textShadow: '3px 3px 0px #000, -1px -1px 0px #000, 0px 4px 6px rgba(0,0,0,0.8)' }}>
-            <span className="animate-pulse">🔔___</span> @{echo.author_alias || 'SPONSOR'}___🔔
+            <span className="animate-pulse">🔔___</span>  {echo.author_alias || 'SPONSOR'}___🔔
           </span>
 
           <span className="text-[13px] md:text-[15px] leading-snug font-black italic text-white w-full text-left px-1"
@@ -652,77 +719,7 @@ useEffect(()=>{
     );
   })}
 </div>
-     
 
-           {/* ══════════════════════════════════════════════
-          MUTE + ORBIT — FUERA del div con handlers touch
-          Espejado: lateral DERECHO del visor izquierdo,
-          encima de los orbes.
-          ══════════════════════════════════════════════ */}
-      {/* PC — VISOR OESTE169 */}
-      <div
-        className="absolute top-1/2 -translate-y-[65%] left-8 z-[30] hidden md:flex items-center justify-start"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}>
-
-        {/* VISOR OESTE169 */}
-        <div className="relative bg-black overflow-hidden w-[62vw] max-w-[920px] aspect-video"
-  style={{ borderRadius: '1.5rem', border: '2px solid rgba(122,255,131,0.4)', boxShadow: '0 0 20px rgba(122,255,131,0.5), 0 0 60px rgba(122,255,131,0.2)' }}>
-  
-          {isTvMode && (
-            <div className="absolute inset-0 z-0 opacity-30 blur-[60px] scale-150 pointer-events-none bg-gradient-to-t from-blue-900 via-purple-900 to-pink-900" />
-          )}
-
-          <video
-            ref={videoRefPC}
-            key={`pc_${currentUser?.id}`}
-            poster={currentUser?.poster || ''}
-            autoPlay
-            loop={!isTvMode}
-            playsInline
-            className={`relative z-10 transition-all duration-700 ${isTvMode ? 'w-full h-auto aspect-video object-contain bg-black' : 'w-full h-full object-cover'}`}
-            onTimeUpdate={() =>
-              videoRefPC.current &&
-              setProgress((videoRefPC.current.currentTime / (videoRefPC.current.duration || 100)) * 100)
-            }
-          />
-
-          {/* CONTROLES — barra progreso + play/pause */}
-          {!isTvMode && (
-            <div className="absolute bottom-0 left-0 w-full z-[150] px-4 pb-4 bg-gradient-to-t from-black/70 to-transparent pointer-events-auto">
-              <div
-                className="w-full h-1 bg-white/20 rounded-full cursor-pointer mb-3 group"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const pos = (e.clientX - rect.left) / rect.width;
-                  if (videoRefPC.current)
-                    videoRefPC.current.currentTime = pos * videoRefPC.current.duration;
-                }}>
-                <div
-                  className="h-full bg-fuchsia-400 rounded-full transition-all duration-100 group-hover:h-[5px]"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-              <div className="flex justify-center">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (videoRefPC.current) {
-                      if (videoRefPC.current.paused) { videoRefPC.current.play(); setIsPaused(false); }
-                      else { videoRefPC.current.pause(); setIsPaused(true); }
-                    }
-                  }}
-                  className="bg-black/50 border border-white/20 backdrop-blur-md w-9 h-9 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all">
-                  {isPaused ? '▶' : '⏸'}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-            
       {/* 3. VÓRTICE GEMAS */}
       {activeReaction&&(
         <div className="fixed bottom-4 right-[15%] z-[100] pointer-events-none animate-vortex">
@@ -762,9 +759,156 @@ useEffect(()=>{
         </div>
       )}
 
-      {/* ── ACORDEÓN TÍTULO/DESC — flotante arriba derecha ── */}
+     {/* 4. VISOR PORTAL — */}
+      {/* =====================================================
+          BOTONES ORBIT y MUTE
+          FIX: completamente FUERA del div con handlers touch.
+          Usan posicionamiento fixed+transform para seguir al visor.
+          ===================================================== */}
+      <div
+        className={`absolute pointer-events-none transition-all duration-500 ease-in-out ${isAccordionOpen ? 'opacity-0 z-[10] pointer-events-none' : 'opacity-100 z-[200]'}`}
+        style={{
+          top: '45%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+        }}>
+                {/* Ancho igual al visor para que los botones se alineen a sus lados */}
+        <div className="relative w-[62vw] md:w-[470px]" style={{height:0}}>
+          {/* MUTE — izquierda del visor */}
+          <button
+            onClick={(e) => { e.stopPropagation(); setIsMuted(p => !p); }}
+            className="absolute pointer-events-auto bg-black/60 backdrop-blur-md p-3 rounded-full text-lg border border-white/20 hover:bg-white/20 transition-all"
+            style={{ left: '-60px', top: '340px' }}>
+            {isMuted ? '🔇' : '🔊'}
+          </button>
+          {/* ORBIT — derecha del visor */}
+          <button
+            onClick={handleOrbitar}
+            className={`absolute pointer-events-auto p-3 rounded-full border transition-all ${
+              isOrbitando
+                ? 'bg-cyan-500/20 border-cyan-400 shadow-[0_0_10px_cyan]'
+                : 'bg-black/60 backdrop-blur-md border-white/20 hover:bg-white/20'
+            }`}
+            style={{ right: '-60px', top: '340px' }}>
+            {isOrbitando ? '☄️' : '🛸'}
+          </button>
+        </div>
+      </div>
+
+      {/* =====================================================
+          4. VISOR PORTAL — handler touch SOLO aquí
+          FIX: pointer-events-none en el contenedor de posición,
+          pointer-events-auto EXPLÍCITO en los controles internos.
+          ===================================================== */}
+      <div
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        className="absolute top-[45%] md:top-[48%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[20] pointer-events-none"
+        style={{ perspective: '2000px' }}>
+
+        {/* ORBE ANTERIOR */}
+        <div
+          className="hidden md:block absolute z-[110] cursor-pointer group orb-float pointer-events-auto"
+          style={{ left: '-130px', bottom: '-40px' }}
+          onClick={() => setCurrentIndex(p => p > 0 ? p - 1 : displayUsers.length - 1)}>
+          <div
+            className={`w-14 h-14 rounded-full flex items-center justify-center relative orb-glow transition-transform group-hover:scale-110 ${config.colors[0]}`}
+            style={{ color: 'currentColor' }}>
+            <div className="absolute inset-0 bg-current opacity-20 blur-xl rounded-full" />
+            <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-slow" />
+            <span className="text-3xl font-black text-white relative z-10 pb-1">‹</span>
+          </div>
+        </div>
+
+        {/* ORBE SIGUIENTE */}
+        <div
+          className="hidden md:block absolute z-[110] cursor-pointer group orb-float pointer-events-auto"
+          style={{ right: '-130px', bottom: '-40px', animationDelay: '1.5s' }}
+          onClick={() => setCurrentIndex(p => p + 1)}>
+          <div
+            className={`w-14 h-14 rounded-full flex items-center justify-center relative orb-glow transition-transform group-hover:scale-110 ${config.colors[0]}`}
+            style={{ color: 'currentColor' }}>
+            <div className="absolute inset-0 bg-current opacity-20 blur-xl rounded-full" />
+            <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-reverse" />
+            <span className="text-3xl font-black text-white relative z-10 pb-1">›</span>
+          </div>
+        </div>
+
+        {/* VISOR */}
+        <div
+          className="relative w-[62vw] aspect-[9/16] md:w-auto md:h-[82vh] md:max-h-[950px] md:aspect-[9/16] flex items-center justify-center overflow-visible"
+          style={{ transformStyle: 'preserve-3d' }}>
+          <div
+            className="relative w-full h-full z-[10]"
+            style={{ transform: portalTransform, transformStyle: 'preserve-3d' }}
+            onDoubleClick={() => setVisorScale(1)}>
+            <div className="relative w-full h-full rounded-[3.5rem] overflow-hidden visor-border bg-black flex items-center justify-center">
+
+              {isTvMode && (
+                <div className="absolute inset-0 z-0 opacity-30 blur-[60px] scale-150 pointer-events-none bg-gradient-to-t from-blue-900 via-purple-900 to-pink-900" />
+              )}
+
+              <video
+                ref={videoRef}
+                poster={currentUser.poster || ""}
+                autoPlay
+                loop={!isTvMode}
+                playsInline
+                className={`relative z-10 transition-all duration-700 ${isTvMode ? 'w-full h-auto aspect-video object-contain bg-black' : 'w-full h-full object-cover'}`}
+                onTimeUpdate={() =>
+                  videoRef.current &&
+                  setProgress((videoRef.current.currentTime / (videoRef.current.duration || 100)) * 100)
+                }
+              />
+
+              {/* =====================================================
+                  CONTROLES: pointer-events-auto EXPLÍCITO
+                  Sin esto, el pointer-events-none del padre los bloquea.
+                  ===================================================== */}
+              {!isTvMode && (
+                <div className="absolute bottom-0 left-0 w-full z-[150] px-4 pb-3 bg-gradient-to-t from-black/70 to-transparent pointer-events-auto">
+                  {/* BARRA DE PROGRESO */}
+                  <div
+                    className="w-full h-1 bg-white/20 rounded-full cursor-pointer mb-3 group"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const pos = (e.clientX - rect.left) / rect.width;
+                      if (videoRef.current)
+                        videoRef.current.currentTime = pos * videoRef.current.duration;
+                    }}>
+                    <div
+                      className={`h-full rounded-full transition-all duration-100 group-hover:h-[5px] ${config.reactionColor === 'orange' ? 'bg-orange-500' : 'bg-cyan-500'}`}
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                  {/* PLAY/PAUSE */}
+                  <div className="flex justify-center">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (videoRef.current) {
+                          if (videoRef.current.paused) { videoRef.current.play(); setIsPaused(false); }
+                          else { videoRef.current.pause(); setIsPaused(true); }
+                        }
+                      }}
+                      className="bg-black/50 border border-white/20 backdrop-blur-md w-9 h-9 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all">
+                      {isPaused ? '▶' : '⏸'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      {/* ── ACORDEÓN TÍTULO/DESC — flotante arriba ── */}
       {videoTitulo && (
-        <div className="absolute top-4 right-4 z-[110] pointer-events-auto flex flex-col items-end w-72">
+        <div className="absolute top-4 right-4 z-[110] pointer-events-auto flex flex-col items-start w-72">
           <button
             onClick={() => setAcordeonAbierto(prev => !prev)}
             className="flex items-center gap-3 px-4 py-3 bg-black/60 backdrop-blur-md border border-white/20 rounded-xl hover:bg-white/10 transition-all w-full">
@@ -790,89 +934,44 @@ useEffect(()=>{
         </div>
       )}
 
-     {/* ══ FOOTER PC ══ */}
-      <div className="absolute bottom-0 left-0 w-full flex items-center justify-between px-6 py-6 md:px-10 md:py-8 z-[150] pointer-events-none bg-gradient-to-t from-black/90 via-black/50 to-transparent">
-
-        {/* GRUPO IZQUIERDA — controles de navegación */}
-        <div className="flex flex-row items-center gap-3 pointer-events-auto">
-
-          {/* MUTE */}
-          <button onClick={(e) => { e.stopPropagation(); setIsMuted(p => !p); }}
-            className="bg-black/60 backdrop-blur-md p-3 rounded-full text-lg border border-white/20 hover:bg-white/20 transition-all">
-            {isMuted ? '🔇' : '🔊'}
-          </button>
-
-          {/* ORBIT */}
-          <button onClick={handleOrbitar}
-            className={`p-3 rounded-full border transition-all ${isOrbitando ? 'bg-cyan-500/20 border-cyan-400 shadow-[0_0_10px_cyan]' : 'bg-black/60 backdrop-blur-md border-white/20 hover:bg-white/20'}`}>
-            {isOrbitando ? '☄️' : '🛸'}
-          </button>
-
-          {/* PREV */}
-          <div className="cursor-pointer group animate-orb-float"
-            onClick={() => setCurrentIndex(p => p > 0 ? p - 1 : displayUsers.length - 1)}>
-            <div className="w-10 h-10 rounded-full flex items-center justify-center relative animate-orb-glow transition-transform group-hover:scale-110 text-white">
-              <div className="absolute inset-0 bg-white opacity-10 blur-xl rounded-full" />
-              <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-cw" />
-              <span className="text-xl font-black text-white relative z-10">←</span>
-            </div>
-          </div>
-
-          {/* NEXT */}
-          <div className="cursor-pointer group animate-orb-float" style={{ animationDelay: '1.5s' }}
-            onClick={() => setCurrentIndex(p => p + 1)}>
-            <div className="w-10 h-10 rounded-full flex items-center justify-center relative animate-orb-glow transition-transform group-hover:scale-110 text-white">
-              <div className="absolute inset-0 bg-white opacity-10 blur-xl rounded-full" />
-              <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-spin-ccw" />
-              <span className="text-xl font-black text-white relative z-10">→</span>
-            </div>
-          </div>
-        </div>
-
-        {/* GRUPO DERECHA — nombre + acciones */}
-        <div className="flex flex-row items-center gap-3 pointer-events-auto">
-
-          {/* NOMBRE */}
-          <div className="relative bg-black/40 backdrop-blur-md px-6 py-3 md:py-4 rounded-xl border border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.5)] flex items-center justify-center">
-            {isOrbitando && (
-              <div className="orbita-cometa-container z-0">
-                <div className="orbita-trazo"></div>
-                <div className="orbita-cabeza"></div>
-              </div>
-            )}
-            <p className="relative z-10 text-[10px] md:text-[12px] font-black tracking-[0.4em] uppercase text-green-200 drop-shadow-lg text-center">
-              CANAL OESTE 169 <span className="text-white/40 mx-2">//</span> {currentUser?.alias||'ANÓNIMO'}
-            </p>
-          </div>
-
+      {/* 5. NUEVO FOOTER: SOMBREADO + BOTONES + CREADOR */}
+      {/* Añadimos pointer-events-none al contenedor general, pero auto a los botones para que los clics funcionen sin bloquear la pantalla */}
+      <div className="absolute bottom-0 left-0 w-full flex flex-col md:flex-row justify-between items-center md:items-end px-4 py-6 md:px-[10%] md:py-8 z-[150] pointer-events-none bg-gradient-to-t from-black/90 via-black/60 to-transparent">
+        
+        {/* IZQUIERDA: Botonera */}
+        <div className="flex items-center justify-center gap-3 w-full md:w-auto pointer-events-auto mb-4 md:mb-0">
           <button onClick={()=>handleAction('reaction')} className="px-5 py-3 md:py-4 bg-white text-black border border-white rounded-xl text-[9px] md:text-[11px] font-black uppercase shadow-[0_0_15px_rgba(255,255,255,0.4)] hover:scale-105 transition-transform">
             ✨ HALO
           </button>
-          <button
-  		onClick={() => { if(currentUser) onOpenProfile({ ...currentUser, _savedIndex: currentIndex, _mode169: true }); }}
-  		className="px-5 py-3 md:py-4 bg-black text-white border-2 border-[#A5FF75] rounded-xl text-[9px] md:text-[11px] font-black 		uppercase shadow-[0_0_15px_rgba(150,235,131,0.6),inset_0_0_8px_rgba(150,235,131,0.4)] hover:scale-105 transition-all animate-		pulse">
-  		<span className="drop-shadow-[0_0_8px_rgba(150,235,131,0.9)]">☝️ TELEFONO CASA</span>
+          <button 
+  		onClick={() => { if(currentUser) onOpenProfile({ ...currentUser, _savedIndex: currentIndex }); }} 
+  		className="px-5 py-3 md:py-4 bg-black text-white border-2 border-[#bf00ff] rounded-xl text-[9px] md:text-[11px] font-black 		uppercase shadow-[0_0_15px_rgba(191,0,255,0.6),inset_0_0_8px_rgba(191,0,255,0.4)] hover:scale-105 transition-all animate-		pulse">
+  		<span className="drop-shadow-[0_0_8px_rgba(191,0,255,0.9)]">☝️ TELEFONO CASA</span>
 	</button>
           <button onClick={()=>setShowEchoInput(true)} className="px-6 py-3 md:py-4 bg-black/90 border border-white/20 text-white rounded-xl text-[9px] md:text-[11px] font-black uppercase hover:bg-white/10 transition-colors">
             💬 ECO
           </button>
         </div>
+
+      {/* DERECHA: Nombre / Alias */}
+<div className="relative pointer-events-auto bg-black/40 backdrop-blur-md px-6 py-3 rounded-xl border border-white/10 shadow-[0_0_20px_rgba(0,0,0,0.5)] flex items-center justify-center">
+  
+  {/* LA ÓRBITA DEL COMETA (Solo visible si isOrbitando es true) */}
+  {isOrbitando && (
+      <div className="orbita-cometa-container z-0">
+          <div className="orbita-trazo"></div>
+          <div className="orbita-cabeza"></div>
       </div>
-      
-      {/* ══ MÓVIL (TALL VISOR) ══ */}
-      <div className="md:hidden absolute top-[48%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[20]"
-           onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
-        <div className="relative w-[62vw] aspect-[9/19] flex flex-col items-center">
-          <div className="relative w-full h-full overflow-hidden bg-black oeste169-visor">
-            <video ref={videoRefMob} key={`mob_${currentUser?.id}`} poster={currentUser?.poster||''}
-                   autoPlay loop={!isTvMode} playsInline className="w-full h-full object-cover"
-                   onTimeUpdate={()=>videoRefMob.current&&setProgress((videoRefMob.current.currentTime/(videoRefMob.current.duration||100))*100)}/>   
-          </div>          
-        </div> 
-      </div>
+  )}
+
+  {/* TU TEXTO ORIGINAL RECUPERADO (con relative y z-10 añadidos) */}
+  <p className={`relative z-10 text-[10px] md:text-[12px] font-black tracking-[0.4em] uppercase ${config.labelClass} drop-shadow-lg text-center`}>
+    {config.labelText} <span className="text-white/40 mx-2">//</span> {currentUser?.alias || 'ANÓNIMO'}
+  </p>
+</div>     
 
 {/* NUEVO HISTORIAL / ACORDEÓN (Gigante, Transparente y Moderno) */}
-<div className="absolute bottom-[20px] left-[46%] -translate-x-1/2 w-[95vw] md:w-[800px] z-[300] pointer-events-auto flex flex-col items-center font-moderna">
+<div className="absolute bottom-[20px] left-1/2 -translate-x-1/2 w-[95vw] md:w-[800px] z-[300] pointer-events-auto flex flex-col items-center font-moderna">
   
   {isAccordionOpen && (
     <div 
@@ -910,26 +1009,26 @@ useEffect(()=>{
     </div>
   )}
 
-  {/* ── BADGE TIPO — encima del historial de Ecos ── */}
-  {videoTipo && (
-    <div className="mb-2 flex justify-center">
-      {videoTipo === 'original' && (
-        <span className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
-          ✦ Original
-        </span>
-      )}
-      {videoTipo === 'publicidad' && (
-        <span className="bg-amber-500 text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
-          📢 Publicidad
-        </span>
-      )}
-      {videoTipo === 'ia' && (
-        <span className="bg-violet-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
-          🤖 Hecho con IA
-        </span>
-      )}
-    </div>
-  )}
+    {/* ── BADGE TIPO — encima del historial de Ecos ── */}
+    {videoTipo && (
+      <div className="mb-2 flex justify-center">
+        {videoTipo === 'original' && (
+          <span className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
+            ✦ Original
+          </span>
+        )}
+        {videoTipo === 'publicidad' && (
+          <span className="bg-amber-500 text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
+            📢 Publicidad
+          </span>
+        )}
+        {videoTipo === 'ia' && (
+          <span className="bg-violet-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
+            🤖 Hecho con IA
+          </span>
+        )}
+      </div>
+    )}
 
   <button 
     onClick={() => setIsAccordionOpen(!isAccordionOpen)}
@@ -939,6 +1038,9 @@ useEffect(()=>{
   </button>
 </div>
 
+
+      </div>
+      
 
       {/* ══ MODAL ECO ══ */}
 {showEchoInput && (
@@ -1039,7 +1141,7 @@ useEffect(()=>{
           <button
             key={id}
             onClick={() => setSelectedEmoji(id)}
-            className={`relative w-[45px] h-[45px] md:w-[65px] md:h-[65px] rounded-full transition-all duration-300 flex-shrink-0
+            className={`relative w-[45px] h-[45px] md:w-[55px] md:h-[55px] rounded-full transition-all duration-300 flex-shrink-0
               ${selectedEmoji === id
                 ? 'scale-125 z-10 shadow-[0_0_15px_rgba(34,211,238,0.8)] border-2 border-cyan-400 bg-black/60'
                 : 'opacity-50 hover:opacity-100 hover:scale-110 border border-transparent'
@@ -1070,7 +1172,7 @@ useEffect(()=>{
       {/* BOTÓN EMITIR - Margen superior muy reducido (mt-16 a mt-6) */}
       <button 
         onClick={()=>handleAction('echo')} 
-        className="w-full max-w-[280px] py-3 rounded-2xl font-black text-[14px] tracking-widest uppercase transition-all shadow-xl bg-green-600 text-white mt-6 mb-4 hover:bg-green-500"
+        className="w-full max-w-[280px] py-3 rounded-2xl font-black text-[14px] tracking-widest uppercase transition-all shadow-xl bg-fuchsia-600 text-white mt-6 mb-4 hover:bg-fuchsia-500"
       >
         EMITIR
       </button>
@@ -1087,8 +1189,9 @@ useEffect(()=>{
   </div>
 )}
 
+            
     </div>
   );
 };
 
-export default ChannelOeste169;
+export default BioForest;

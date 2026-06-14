@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom'; // <--- IMPORTANTE: Necesario para el Portal
-import { marcarActividad } from '../hooks/useActividad';
-import { useAudioContext } from '../context/AudioContext';
+import { marcarActividad } from '../../hooks/useActividad';
+import { useAudioContext } from '../../context/AudioContext';
 
 
 const AtlasGame = ({ onWin, onClose }) => {

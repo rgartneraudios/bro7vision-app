@@ -13,16 +13,16 @@ import BroLogViewer from './components/BroLogViewer';
 import BoosterModal from './components/BoosterModal';
 import LegalTerminal from './components/LegalTerminal';
 import HoloProjector from './components/HoloProjector';
-import BioForest from './components/BioForest';
-import ChannelEste from './components/ChannelEste';
-import ChannelEste169 from './components/ChannelEste169';
-import ChannelOeste from './components/ChannelOeste';
-import ChannelOeste169 from './components/ChannelOeste169';
+import BioForest from './components/Canales/BioForest';
+import ChannelEste from './components/Canales/ChannelEste';
+import ChannelEste169 from './components/Canales/ChannelEste169';
+import ChannelOeste from './components/Canales/ChannelOeste';
+import ChannelOeste169 from './components/Canales/ChannelOeste169';
 import Reinos from './components/Reinos';
 import RealityTuner from './components/RealityTuner';
 import HoloPrism from './components/HoloPrism';
 import MoonMatrixCircle from './components/MoonMatrixCircle';
-import ChannelMoon from './components/ChannelMoon';
+import ChannelMoon from './components/Canales/ChannelMoon';
 import { getMoonSuffix } from './utils/moonUtils';
 import TitoBanner  from "./components/personajes/TitoBanner";
 import LaraBanner  from "./components/personajes/LaraBanner";
@@ -132,10 +132,10 @@ function App() {
   useEffect(() => {
     if (projectingUser) {
       setSelectedLog({
-  	id:      u.id,
-  	title:   u.editorial_title || 'Sin título',
-  	author:  u.alias,
-  	content: u.editorial_text  || '',
+  	id:      projectingUser.id,
+  	title:   projectingUser.editorial_title || 'Sin título',
+  	author:  projectingUser.alias,
+  	content: projectingUser.editorial_text  || '',
 	});
     } else {
       setSelectedLog(null);

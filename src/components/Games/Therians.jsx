@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { SCENARIOS, EMOTIONAL_MATRIX } from '../data/CruceDeCaminosData';
-import { marcarActividad } from '../hooks/useActividad';
-import { useAudioContext } from '../context/AudioContext';
+import { SCENARIOS, EMOTIONAL_MATRIX } from '../../data/CruceDeCaminosData';
+import { marcarActividad } from '../../hooks/useActividad';
+import { useAudioContext } from '../../context/AudioContext';
 
 const BUTTON_SETS = {
     HOT: [
@@ -24,7 +24,7 @@ const BUTTON_SETS = {
     ]
 };
 
-const CruceDeCaminos = ({ onWin, onClose }) => {
+const Therians = ({ onWin, onClose }) => {
     const [gameState, setGameState] = useState('CATEGORIES'); 
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [activeScenario, setActiveScenario] = useState(null);
@@ -319,4 +319,4 @@ const CruceDeCaminos = ({ onWin, onClose }) => {
     );
 };
 
-export default CruceDeCaminos;
+export default Therians;
