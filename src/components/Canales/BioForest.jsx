@@ -339,8 +339,8 @@ useEffect(()=>{
     }
     const fetchProyeccion = async () => {
       const { data, error } = await supabase
-        .from('mini_proyeccion')
-        .select('video_h_titulo, video_h_descripcion, video_h_tipo, video_v_titulo, video_v_descripcion, video_v_tipo')
+        .from('proyeccion_916')
+        .select('titulo, descripcion, tipo')
         .eq('user_id', currentUser.id)
         .single();
       if (error) { setProyeccion(null); return; }
@@ -349,9 +349,9 @@ useEffect(()=>{
     fetchProyeccion();
   }, [currentUser?.id]);
 
-  const videoTitulo = proyeccion?.video_v_titulo || null;
-  const videoDesc   = proyeccion?.video_v_descripcion || null;
-  const videoTipo   = proyeccion?.video_v_tipo || null;
+const videoTitulo = proyeccion?.titulo || null;
+const videoDesc   = proyeccion?.descripcion || null;
+const videoTipo   = proyeccion?.tipo || null;
 
   // FIX AUDIO — Efecto B: mute sin recargar
   useEffect(()=>{ if(videoRef.current) videoRef.current.muted=isMuted; },[isMuted]);

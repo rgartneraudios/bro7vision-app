@@ -178,46 +178,66 @@ useEffect(() => {
     if (!all) return;
 
     const { data: proyecciones } = await supabase
-      .from('mini_proyeccion')
+      .from('proyeccion_916')
       .select('*');
+
+    const { data: proyecciones169 } = await supabase
+      .from('proyeccion_169')
+      .select('*');
+
+    const { data: meta } = await supabase
+      .from('mini_proyeccion')
+      .select('user_id, audio_url, audio_titulo, audio_descripcion, audio_tipo, audio_video_url, brotwit, holoprisma_1, holoprisma_2, holoprisma_3, holoprisma_4, editorial_title, editorial_text, editorial_img_url, banner_23_url');
 
     const proyMap = {};
     if (proyecciones) {
       proyecciones.forEach(p => { proyMap[p.user_id] = p; });
     }
 
+    const proy169Map = {};
+    if (proyecciones169) {
+      proyecciones169.forEach(p => { proy169Map[p.user_id] = p; });
+    }
+
+    const metaMap = {};
+    if (meta) {
+      meta.forEach(m => { metaMap[m.user_id] = m; });
+    }
+
     setRealItems(all.map(u => {
       const proy = proyMap[u.id] || {};
+      const p169 = proy169Map[u.id] || {};
+      const metaRow = metaMap[u.id] || {};
       return {
         ...u,
-        // Contenido multimedia — viene de mini_proyeccion
-        video_v_url:         proy.video_v_url         || null,
-        video_v_titulo:      proy.video_v_titulo       || null,
-        video_v_descripcion: proy.video_v_descripcion  || null,
-        video_v_tipo:        proy.video_v_tipo         || null,
-        video_h_url:         proy.video_h_url          || null,
-        video_h_titulo:      proy.video_h_titulo       || null,
-        video_h_descripcion: proy.video_h_descripcion  || null,
-        video_h_tipo:        proy.video_h_tipo         || null,
-        audio_url:           proy.audio_url            || null,
-        audio_titulo:        proy.audio_titulo         || null,
-        audio_descripcion:   proy.audio_descripcion    || null,
-        audio_tipo:          proy.audio_tipo           || null,
-        audio_video_url:     proy.audio_video_url      || null,
-        brotwit:             proy.brotwit              || null,
-        holoprisma_1:        proy.holoprisma_1         || null,
-        holoprisma_2:        proy.holoprisma_2         || null,
-        holoprisma_3:        proy.holoprisma_3         || null,
-        holoprisma_4:        proy.holoprisma_4         || null,
-        editorial_title:     proy.editorial_title      || null,
-        editorial_text:      proy.editorial_text       || null,
-        editorial_img_url:   proy.editorial_img_url    || null,
-        banner_23_url:       proy.banner_23_url        || null,
+        // Contenido multimedia — vertical desde proyeccion_916
+        video_v_url:         proy.url         || null,
+        video_v_titulo:      proy.titulo       || null,
+        video_v_descripcion: proy.descripcion  || null,
+        // Contenido multimedia — horizontal desde proyeccion_169
+        video_h_url:         p169.url         || null,
+        video_h_titulo:      p169.titulo       || null,
+        video_h_descripcion: p169.descripcion  || null,
+        // Metadata restante desde mini_proyeccion
+        audio_url:           metaRow.audio_url            || null,
+        audio_titulo:        metaRow.audio_titulo         || null,
+        audio_descripcion:   metaRow.audio_descripcion    || null,
+        audio_tipo:          metaRow.audio_tipo           || null,
+        audio_video_url:     metaRow.audio_video_url      || null,
+        brotwit:             metaRow.brotwit              || null,
+        holoprisma_1:        metaRow.holoprisma_1         || null,
+        holoprisma_2:        metaRow.holoprisma_2         || null,
+        holoprisma_3:        metaRow.holoprisma_3         || null,
+        holoprisma_4:        metaRow.holoprisma_4         || null,
+        editorial_title:     metaRow.editorial_title      || null,
+        editorial_text:      metaRow.editorial_text       || null,
+        editorial_img_url:   metaRow.editorial_img_url    || null,
+        banner_23_url:       metaRow.banner_23_url        || null,
         // Alias de compatibilidad para componentes existentes
         shopName: u.alias,
         name:     u.alias,
         img:      u.avatar_url || u.banner_url,
-        type:     proy.video_v_url || proy.video_h_url ? ['shop', 'live'] : ['shop'],
+        type:     proy.url || p169.url ? ['shop', 'live'] : ['shop'],
       };
     }).filter(u =>
       u.video_v_url || u.video_h_url || u.audio_url ||
