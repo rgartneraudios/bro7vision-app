@@ -39,7 +39,7 @@ const BroLives3D = ({ playingCreator, onToggleAudio }) => {
 
   useEffect(() => {
     if (!playingCreator) return;
-    const url = getCleanAudioUrl(playingCreator.audio_url || playingCreator.audio_file || playingCreator.audioFile);
+    const url = getCleanAudioUrl(playingCreator.audio_url);
     if (url && audioRef.current) {
       audioRef.current.src = url;
       audioRef.current.load();
@@ -91,9 +91,9 @@ const BroLives3D = ({ playingCreator, onToggleAudio }) => {
   const descripcion = playingCreator?.descripcion  || playingCreator?.description || null;
 
   // Avatar: prueba todos los campos de imagen
-  const avatarImage = playingCreator?.img
+  const avatarImage = playingCreator?.circular_url
+    || playingCreator?.img
     || playingCreator?.avatar_url
-    || playingCreator?.banner_url
     || playingCreator?.banner_url
     || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=111&color=a3e635&size=150`;
 

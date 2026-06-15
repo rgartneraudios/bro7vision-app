@@ -6,7 +6,6 @@ import ConversionModal from './components/ConversionModal';
 import NexusDashboard from './components/NexusDashboard';
 import StoryPlayer from './components/StoryPlayer';
 import BroTuner from './components/BroTuner';
-import BroLives from './components/BroLives';
 import { MASTER_DB } from './data/database';
 import { getVideoForLocation } from './data/VideoMap';
 import BroLogViewer from './components/BroLogViewer';
@@ -189,6 +188,10 @@ useEffect(() => {
       .from('mini_proyeccion')
       .select('user_id, audio_url, audio_titulo, audio_descripcion, audio_tipo, audio_video_url, brotwit, holoprisma_1, holoprisma_2, holoprisma_3, holoprisma_4, editorial_title, editorial_text, editorial_img_url, banner_23_url');
 
+    const { data: proyeccionAudio } = await supabase
+      .from('proyeccion_audio')
+      .select('user_id, url, titulo, descripcion, tipo, circular_url');
+
     const proyMap = {};
     if (proyecciones) {
       proyecciones.forEach(p => { proyMap[p.user_id] = p; });
@@ -204,10 +207,16 @@ useEffect(() => {
       meta.forEach(m => { metaMap[m.user_id] = m; });
     }
 
+    const audioMap = {};
+    if (proyeccionAudio) {
+      proyeccionAudio.forEach(a => { audioMap[a.user_id] = a; });
+    }
+
     setRealItems(all.map(u => {
       const proy = proyMap[u.id] || {};
       const p169 = proy169Map[u.id] || {};
       const metaRow = metaMap[u.id] || {};
+      const audioRow = audioMap[u.id] || {};
       return {
         ...u,
         // Contenido multimedia — vertical desde proyeccion_916
@@ -219,10 +228,12 @@ useEffect(() => {
         video_h_titulo:      p169.titulo       || null,
         video_h_descripcion: p169.descripcion  || null,
         // Metadata restante desde mini_proyeccion
-        audio_url:           metaRow.audio_url            || null,
-        audio_titulo:        metaRow.audio_titulo         || null,
-        audio_descripcion:   metaRow.audio_descripcion    || null,
-        audio_tipo:          metaRow.audio_tipo           || null,
+        // Audio desde proyeccion_audio (prioridad) o mini_proyeccion (legado)
+        audio_url:           audioRow.url         || metaRow.audio_url            || null,
+        audio_titulo:        audioRow.titulo      || metaRow.audio_titulo         || null,
+        audio_descripcion:   audioRow.descripcion || metaRow.audio_descripcion    || null,
+        audio_tipo:          audioRow.tipo        || metaRow.audio_tipo           || null,
+        circular_url:        audioRow.circular_url                                 || null,
         audio_video_url:     metaRow.audio_video_url      || null,
         brotwit:             metaRow.brotwit              || null,
         holoprisma_1:        metaRow.holoprisma_1         || null,
@@ -506,7 +517,7 @@ const filteredItems = useMemo(() => {
   const supabaseItems = realItems.map(u => {
     // Definimos el tipo según el archivo que contenga el registro
     let itemType = ['shop'];
-    if (u.audio_file) {
+    if (u.audio_url) {
       itemType = ['live']; // Solo califica como audio
     } else if (u.video_file) {
       itemType = ['shop', 'live']; // Vídeo inmersivo / tienda

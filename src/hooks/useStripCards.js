@@ -170,12 +170,20 @@ export const useStripCards = () => {
 
         const { data: perfiles, error } = await supabase
           .from('profiles')
-          .select('bro_mus, bro_aud, banner_url, alias, city, country, description, audio_type, track_name, audio_description, audio_file, role, nearby_ref')
+          .select('id, bro_mus, bro_aud, banner_url, alias, city, country, description, audio_type, track_name, audio_description, role, nearby_ref')
           .limit(300);
 
         if (error) {
           console.error('[useStripCards] Error audio:', error);
         }
+
+        const userIds = (perfiles || []).map(p => p.id).filter(Boolean);
+        const { data: audioRows } = await supabase
+          .from('proyeccion_audio')
+          .select('user_id, url, circular_url')
+          .in('user_id', userIds);
+        const audioMap = {};
+        (audioRows || []).forEach(a => { audioMap[a.user_id] = a; });
 
         const filtrados = (perfiles || []).filter(p => {
           const tieneRolMusica = Array.isArray(p.role)
@@ -204,9 +212,12 @@ export const useStripCards = () => {
           const esPodcast = p.audio_type === 'podcast';
           const codigo    = esPodcast ? p.bro_aud : p.bro_mus;
           if (!codigo) return [];
+          const audioRow = audioMap[p.id] || {};
           return [{
             bro_pd:      codigo,
             banner_url:  p.banner_url  || '',
+            circular_url: audioRow.circular_url || '',
+            audio_url:   audioRow.url  || '',
             nombre:      p.alias       || '',
             nearby_ref:  p.nearby_ref  || '',
             categoria:   esPodcast ? 'Podcast' : 'Música',
@@ -214,7 +225,6 @@ export const useStripCards = () => {
             descripcion: p.audio_description || p.description || '',
             track_name:  p.track_name  || '',
             audio_type:  p.audio_type  || 'music',
-            audio_file:  p.audio_file  || '',
             bro_mus:     p.bro_mus     || '',
             bro_aud:     p.bro_aud     || '',
           }];

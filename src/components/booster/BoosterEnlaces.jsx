@@ -15,6 +15,12 @@ const TIPO_OPTS = [
   { value: 'publicidad', label: '📢 Publicidad' },
 ];
 
+const ALCANCE_OPTS = [
+  { value: 'local',        label: '📍 Local' },
+  { value: 'nacional',     label: '🇪🇸 Nacional' },
+  { value: 'internacional', label: '🌍 Internacional' },
+];
+
 // Dominios bloqueados — misma lista que el Worker
 const DOMINIOS_BLOQUEADOS = [
   'youtube.com', 'youtu.be', 'tiktok.com', 'vimeo.com',
@@ -37,7 +43,7 @@ function validarURL(url) {
 // ── Estado inicial separado por bloque ──────────────────────────
 const initVideo916  = { url: '', titulo: '', descripcion: '', tipo: 'original' };
 const initVideo169  = { url: '', titulo: '', descripcion: '', tipo: 'original' };
-const initAudio     = { url: '', titulo: '', descripcion: '', tipo: 'original' };
+const initAudio     = { url: '', titulo: '', descripcion: '', tipo: 'original', alcance: '', circular_url: '' };
 const initAudmovil  = { url: '', titulo: '', descripcion: '', tipo: 'original' };
 const initMeta      = {
   brotwit: '',
@@ -109,10 +115,10 @@ const BoosterEnlaces = () => {
         // Leer proyeccion_audio
         const { data: rowAudio } = await supabase
           .from('proyeccion_audio')
-          .select('url,titulo,descripcion,tipo')
+          .select('url,titulo,descripcion,tipo,alcance,circular_url')
           .eq('user_id', user.id)
           .single();
-        if (rowAudio) setAudio({ url: rowAudio.url || '', titulo: rowAudio.titulo || '', descripcion: rowAudio.descripcion || '', tipo: rowAudio.tipo || 'original' });
+        if (rowAudio) setAudio({ url: rowAudio.url || '', titulo: rowAudio.titulo || '', descripcion: rowAudio.descripcion || '', tipo: rowAudio.tipo || 'original', alcance: rowAudio.alcance || '', circular_url: rowAudio.circular_url || '' });
 
         // Leer proyeccion_audmovil
         const { data: rowAudmovil } = await supabase
@@ -209,6 +215,8 @@ const BoosterEnlaces = () => {
         titulo:      audio.titulo,
         descripcion: audio.descripcion,
         tipo:        audio.tipo,
+        alcance:     audio.alcance,
+        circular_url: audio.circular_url,
       });
       alert('✨ ' + res.mensaje);
     } catch (e) {
@@ -267,6 +275,24 @@ const BoosterEnlaces = () => {
             className={`px-4 py-2 rounded-full text-xs font-bold border transition-all
               ${value === opt.value
                 ? 'bg-fuchsia-500/20 border-fuchsia-400 text-fuchsia-300'
+                : 'bg-white/5 border-white/10 text-gray-500'}`}>
+            {value === opt.value ? '✓ ' : ''}{opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  const AlcanceSelect = ({ value, onChange, label }) => (
+    <div className="space-y-1">
+      <label className={LabelStyle}>{label}</label>
+      <div className="flex gap-2 flex-wrap">
+        {ALCANCE_OPTS.map(opt => (
+          <button key={opt.value}
+            onClick={() => onChange(opt.value)}
+            className={`px-4 py-2 rounded-full text-xs font-bold border transition-all
+              ${value === opt.value
+                ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300'
                 : 'bg-white/5 border-white/10 text-gray-500'}`}>
             {value === opt.value ? '✓ ' : ''}{opt.label}
           </button>
@@ -410,6 +436,8 @@ const BoosterEnlaces = () => {
               <TextField value={audio.titulo}      onChange={v => setAudio(p => ({ ...p, titulo: v }))}      label="Título del audio" />
               <TextField value={audio.descripcion} onChange={v => setAudio(p => ({ ...p, descripcion: v }))} label="Descripción del audio" />
               <TipoSelect value={audio.tipo} onChange={v => setAudio(p => ({ ...p, tipo: v }))} label="Tipo de audio" />
+              <AlcanceSelect value={audio.alcance} onChange={v => setAudio(p => ({ ...p, alcance: v }))} label="Alcance del audio" />
+              <TextField value={audio.circular_url} onChange={v => setAudio(p => ({ ...p, circular_url: v }))} label="Coloca una imagen circular 150 x 150 px para el prisma de audio BROAUDIO 3D" placeholder="https://media.bro7vision.com/..." />
             </div>
             <SaveBtn onClick={handleSaveAudio} saving={saving.audio} label="PROYECTAR AUDIO PC" />
           </div>

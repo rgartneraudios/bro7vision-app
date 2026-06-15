@@ -4,7 +4,6 @@ import AgentChatInput from './AgentChatInput';
 import NeuralButton from './NeuralButton';
 import BroCardStrip from './BroCardStrip';
 import BroCardStripPS from './BroCardStripPS';
-import BroLives from '../components/BroLives';
 import BroTuner from '../components/BroTuner';
 import { getMoonSuffix } from '../utils/moonUtils';
 import { getVideoCandidates, resolveVideoFromCandidates, getTurno } from '../data/citycodes';
@@ -333,7 +332,6 @@ function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
             setShowWalletModal={setShowWalletModal} />
         </div>
         <div className="flex flex-col w-full px-4 mt-4 gap-4">
-          <BroLives playingCreator={audioUser} onToggleAudio={onToggleAudio} />
           <div className="pt-4 border-t border-white/5">
             <BroTuner ref={broTunerRef} />
           </div>

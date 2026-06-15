@@ -16,12 +16,12 @@ export const armarSobreMapache = (realItems) => {
 
   const musica = realItems.filter(item => {
     const role = Array.isArray(item.role) ? item.role : [item.role];
-    return (role.includes('music') || item.audio_file) && item.bro_mus;
+    return (role.includes('music') || item.audio_url) && item.bro_mus;
   });
 
   const podcasts = realItems.filter(item => {
     const role = Array.isArray(item.role) ? item.role : [item.role];
-    return (role.includes('talk') || item.audio_file) && item.bro_aud;
+    return (role.includes('talk') || item.audio_url) && item.bro_aud;
   });
 
   const lineasMusica = musica.map(c =>

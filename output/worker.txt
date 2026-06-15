@@ -256,7 +256,7 @@ async function handleProyectarAudio(request, env, corsHeaders) {
   try { payload = await request.json(); }
   catch { return json({ error: 'JSON inválido' }, 400, corsHeaders); }
 
-  const { token, url, titulo, descripcion, tipo } = payload;
+  const { token, url, titulo, descripcion, tipo, alcance, circular_url } = payload;
   if (!token) return json({ error: 'Token ausente' }, 400, corsHeaders);
   if (!url)   return json({ error: 'URL de audio ausente' }, 400, corsHeaders);
 
@@ -275,6 +275,8 @@ async function handleProyectarAudio(request, env, corsHeaders) {
     titulo:      titulo      || null,
     descripcion: descripcion || null,
     tipo:        tipoFinal,
+    alcance:     ['local','nacional','internacional'].includes(alcance) ? alcance : null,
+    circular_url: circular_url || null,
     updated_at:  new Date().toISOString(),
   };
 
