@@ -3,16 +3,15 @@
 // personaje = 'evelyn' | 'larry'
 // Toda la lógica de publicación, consulta y conexión de avisos vive aquí.
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import { fetchContextoEvelyn } from '../services/contexto/fetchContextoEvelyn';
 import { fetchContextoLarry }  from '../services/contexto/fetchContextoLarry';
 import {
-  buildEvelynExploraPrompt,
-  armarSobreEvelynTexto,
-  extraerCampo,
-  siguienteCampo,
-  generarCodigoAvi,
+  detectarIntencionWikiBro,
+  extraerParametrosBusqueda,
+  buildEvelynWikiPrompt,
+  armarSobreWikiBro,
 } from '../services/agents/evelynExploraPS';
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
@@ -271,26 +270,6 @@ function esIntencionConsultar(texto) {
   return /\bver avisos\b|\bconsultar avisos\b|\bque avisos hay\b|\bqué avisos hay\b/i.test(t);
 }
 
-async function consultarAvisosDB({ ciudad, codigoAvi }) {
-  try {
-    let query = supabase
-      .from('avisos')
-      .select('id, type, title, content, author_alias, city, user_id, cost_to_reveal, expires_at')
-      .gt('expires_at', new Date().toISOString());
-
-    if (codigoAvi) {
-      const { data: todos } = await query.limit(200);
-      const encontrado = (todos || []).find(av => generarCodigoAvi(av.id) === codigoAvi);
-      return encontrado ? [encontrado] : [];
-    }
-    if (ciudad && ciudad !== 'global') {
-      query = query.or(`city.ilike.%${ciudad}%,city.eq.global`);
-    }
-    const { data } = await query.limit(20);
-    return data || [];
-  } catch { return []; }
-}
-
 // ── Hook principal ─────────────────────────────────────────────────────────────
 
 export function useAgentEvelyn({
@@ -310,6 +289,7 @@ export function useAgentEvelyn({
   const [chatHistory, setChatHistory]                 = useState([]);
   const [avisoEnConstruccion, setAvisoEnConstruccion] = useState(null);
   const [esPatrocinado, setEsPatrocinado]             = useState(false);
+  const [ultimaRespuesta, setUltimaRespuesta]           = useState(null);
   const avisoConectarRef                               = useRef(null);
 
   const iaActiva = (iaMode === 'admin' && isAdmin) || (iaMode === 'public' && !isAdmin);
@@ -332,24 +312,28 @@ export function useAgentEvelyn({
       const contexto   = await fetchContexto();
       if (contexto?.esPatrocinado) setEsPatrocinado(true);
 
-      const codigoAvi  = textoUsuario.match(/AVI-[A-Z0-9]{4}/i)?.[0]?.toUpperCase() || null;
-      const avisos     = await consultarAvisosDB({ ciudad, codigoAvi });
-      const campoActual = avisoActual ? siguienteCampo(avisoActual) : null;
+      const intencion = detectarIntencionWikiBro(textoUsuario);
+      const { categoria, barrio, telefono } = extraerParametrosBusqueda(textoUsuario);
 
-      const sobre = armarSobreEvelynTexto({
-        alias:               autorAlias,
-        bro_id:              userId || '',
+      const resultados = await buscarEnWikiBro({
         ciudad,
-        ciudad_usuario:      ciudad,
-        genesis,
-        intencion:           'explorar',
-        avisos,
-        codigoAvi,
-        campoActual,
-        avisoEnConstruccion: avisoActual,
+        categoria,
+        barrio,
+        telefono,
+        esSpam: intencion === 'spam',
       });
 
-      const system = buildEvelynExploraPrompt({ personaje, sobre });
+      const sobre = armarSobreWikiBro({
+        alias: autorAlias,
+        ciudad,
+        intencion,
+        categoria,
+        barrio,
+        telefono,
+        resultados,
+      });
+
+      const system = buildEvelynWikiPrompt({ personaje, sobre });
 
       const res = await fetch(WORKER_URL, {
         method: 'POST',
@@ -390,6 +374,7 @@ export function useAgentEvelyn({
 
         pushHistory('user', textoUsuario);
         pushHistory('assistant', parsed.mensaje || '...');
+        setUltimaRespuesta(parsed);
         setMensaje(parsed.mensaje || '...');
 
       } catch {
@@ -406,94 +391,12 @@ export function useAgentEvelyn({
     }
   };
 
-  // ── Publicar aviso — flujo campo a campo ─────────────────────────────────
-  const procesarPublicacion = async (textoUsuario) => {
-    const aviso = avisoEnConstruccion || {};
-
-    if (/\bcancelar\b/i.test(textoUsuario)) {
-      setAvisoEnConstruccion(null);
-      const r = bot({ intencion: 'cancelado', textoUser: textoUsuario });
-      setMensaje(r.mensaje);
-      return;
-    }
-
-    if (textoUsuario.trim().toUpperCase() === 'CONFIRMO' && aviso.tipo && aviso.titulo && aviso.contenido) {
-      if (genesis < 200) {
-        const r = bot({ intencion: 'sin_genesis', textoUser: textoUsuario });
-        setMensaje(r.mensaje);
-        return;
-      }
-      setLoading(true);
-      try {
-  
-
-        const expireDate = new Date();
-        expireDate.setDate(expireDate.getDate() + 7);
-        const { error: insertError } = await supabase.from('avisos').insert([{
-          user_id:        userId     || '',
-          author_alias:   autorAlias || 'Ciudadano',
-          type:           aviso.tipo,
-          title:          aviso.titulo,
-          content:        aviso.contenido,
-          banner_avi:     aviso.banner_avi || null,
-          cost_to_reveal: 200,
-          is_active:      true,
-          expires_at:     expireDate.toISOString(),
-        }]);
-        if (insertError) throw insertError;
-        onAvisoPublicar?.({ confirmado: true });
-        setAvisoEnConstruccion(null);
-        const r = bot({ intencion: 'publicado', textoUser: textoUsuario });
-        setMensaje(r.mensaje);
-      } catch (err) {
-        console.error('Error publicando aviso:', err);
-        console.error('Aviso intentado:', aviso);
-        setMensaje('Error al publicar. Inténtalo de nuevo.');
-      } finally {
-        setLoading(false);
-      }
-      return;
-    }
-
-    const campoActual = siguienteCampo(aviso);
-    if (campoActual) {
-      const valor = extraerCampo(campoActual, textoUsuario);
-      if (valor) {
-        const avisoActualizado = { ...aviso, [campoActual]: valor };
-        setAvisoEnConstruccion(avisoActualizado);
-        const siguienteCampoNow = siguienteCampo(avisoActualizado);
-        if (siguienteCampoNow) {
-          if (iaActiva) {
-            await enviarIA(textoUsuario, avisoActualizado);
-          } else {
-            const r = bot({ intencion: siguienteCampoNow, textoUser: textoUsuario });
-            setMensaje(r.mensaje);
-          }
-        } else {
-          const r = bot({ intencion: 'confirmar', textoUser: textoUsuario });
-          setMensaje(r.mensaje);
-        }
-      } else {
-        const r = bot({ intencion: campoActual === 'tipo' ? 'error_tipo' : campoActual, textoUser: textoUsuario });
-        setMensaje(r.mensaje);
-      }
-    }
-  };
-
-  // ── Entrada principal ─────────────────────────────────────────────────────
+// ── Entrada principal ─────────────────────────────────────────────────────
   const enviar = async (textoUsuario) => {
 
 
     if (!textoUsuario?.trim()) return;
 
-    // 1. PRIMERO — ¿hay aviso en construcción?
-    const avisoEnProceso = avisoEnConstruccion !== null && avisoEnConstruccion !== undefined;
-    if (avisoEnProceso) {
-      await procesarPublicacion(textoUsuario);
-      return;
-    }
-
-    // 2. LUEGO — resto de detecciones
     const salida = detectarSalidaAviso(textoUsuario);
     if (salida) {
       setMensaje(salida.mensaje);
@@ -543,5 +446,23 @@ export function useAgentEvelyn({
     avisoConectarRef.current = null;
   };
 
-  return { mensaje, loading, enviar, reset, iaActiva, avisoEnConstruccion, setAvisoEnConstruccion, esPatrocinado };
+  const buscarEnWikiBro = useCallback(async ({ ciudad, categoria, barrio, telefono, esSpam }) => {
+  let query = supabase.from('wikibro').select('*');
+
+  if (esSpam && telefono) {
+    query = query.eq('es_spam_report', true).ilike('telefono', `%${telefono}%`);
+  } else {
+    if (ciudad)    query = query.ilike('ciudad', `%${ciudad}%`);
+    if (barrio)    query = query.ilike('barrio', `%${barrio}%`);
+    if (categoria) query = query.ilike('categoria', `%${categoria}%`);
+    query = query.eq('es_spam_report', false);
+  }
+
+  query = query.limit(10);
+  const { data, error } = await query;
+  if (error) return [];
+  return data || [];
+}, []);
+
+  return { mensaje, loading, enviar, reset, iaActiva, avisoEnConstruccion, setAvisoEnConstruccion, esPatrocinado, ultimaRespuesta };
 }

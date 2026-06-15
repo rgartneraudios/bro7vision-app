@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import AgentChatInput from '../AgentChatInput';
-import BroCardStrip from '../BroCardStrip';
 import { useAgentEvelyn } from '../../hooks/useAgentEvelyn';
 
 const GREETINGS_EVELYN = [
@@ -27,7 +26,6 @@ export default function EvelynBanner({
   userId       = null,
   autorAlias   = 'Ciudadano',
   realItems    = [],
-  stripVisible, stripCards, stripLabel,
   onAvisoConectar,
   onAvisoPublicar,
   setProjectingUser,
@@ -37,7 +35,7 @@ export default function EvelynBanner({
 }) {
   const personajeActivo = (avisos_personaje || personaje || 'evelyn').toLowerCase();
 
-  const { mensaje, loading, enviar, avisoEnConstruccion, setAvisoEnConstruccion, esPatrocinado } = useAgentEvelyn({
+  const { mensaje, loading, enviar, avisoEnConstruccion, setAvisoEnConstruccion, esPatrocinado, ultimaRespuesta } = useAgentEvelyn({
     personaje:   personajeActivo,
     iaMode,
     isAdmin,
@@ -58,6 +56,7 @@ export default function EvelynBanner({
   const [esperandoImagen, setEsperandoImagen] = useState(false);
   const [subiendoBanner, setSubiendoBanner] = useState(false);
   const [bannerFile, setBannerFile] = useState(null);
+  const [wikiResultados, setWikiResultados] = useState([]);
   const fileInputRef = useRef(null);
   const charIdx = useRef(0);
 
@@ -91,6 +90,14 @@ export default function EvelynBanner({
       setEsperandoConexion(false);
     }
   }, [mensaje]);
+
+useEffect(() => {
+    if (ultimaRespuesta?.resultados?.length > 0) {
+      setWikiResultados(ultimaRespuesta.resultados);
+    } else {
+      setWikiResultados([]);
+    }
+  }, [ultimaRespuesta]);
 
   useEffect(() => {
     if (!currentMsg) return;
@@ -275,16 +282,55 @@ export default function EvelynBanner({
         }
       `}</style>
 
-      {/* 1. CARRUSEL */}
-      {stripVisible && (
+      {/* 1. RESULTADOS WIKIBRO */}
+      {wikiResultados.length > 0 && (
         <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
-          <BroCardStrip
-            cards={stripCards}
-            onSelectCard={handleCardClick}
-            accentColor="blue"
-            label={stripLabel}
-            visible={stripVisible}
-          />
+          <div style={{
+            background: 'rgba(0,0,0,0.55)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(34,211,238,0.2)',
+            borderRadius: '16px',
+            padding: '12px 16px',
+            marginTop: '10px',
+            maxHeight: '260px',
+            overflowY: 'auto',
+          }}>
+            {wikiResultados.map((r, i) => (
+              <div key={i} style={{
+                borderBottom: i < wikiResultados.length - 1
+                  ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                padding: '10px 0',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '10px' }}>
+                    {r.verificado ? '🟢' : '⚪'}
+                  </span>
+                  <span style={{
+                    fontSize: '13px',
+                    fontWeight: 'bold',
+                    color: '#e2e8f0',
+                  }}>{r.nombre}</span>
+                  {r.verificado && (
+                    <span style={{
+                      fontSize: '9px',
+                      color: '#22d3ee',
+                      border: '1px solid rgba(34,211,238,0.4)',
+                      borderRadius: '4px',
+                      padding: '1px 5px',
+                      fontWeight: 'bold',
+                    }}>OFICIAL</span>
+                  )}
+                </div>
+                <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.6' }}>
+                  {r.barrio    && <span>📍 {r.barrio} · </span>}
+                  {r.direccion && <span>{r.direccion} · </span>}
+                  {r.telefono  && <span>📞 {r.telefono} · </span>}
+                  {r.horario   && <span>🕐 {r.horario}</span>}
+                  {r.red_social && <span> · {r.red_social}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -590,3 +636,4 @@ export default function EvelynBanner({
     </div>
   );
 }
+

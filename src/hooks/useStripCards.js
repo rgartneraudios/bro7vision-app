@@ -113,54 +113,6 @@ export const useStripCards = () => {
       }
 
       // ══════════════════════════════════════════════════════════════
-      // BROSHOP_AVISO — sin cambios
-      // ══════════════════════════════════════════════════════════════
-      if (agenteUpper === 'BROSHOP_AVISO') {
-        const ahora = new Date().toISOString();
-        const { data: avisos, error } = await supabase
-          .from('avisos')
-          .select('id, user_id, author_alias, type, title, content, cost_to_reveal, expires_at, is_active, banner_avi')
-          .eq('is_active', true)
-          .gt('expires_at', ahora)
-          .limit(20);
-
-        if (error || !avisos?.length) {
-          setStripCards([]);
-          setStripVisible(false);
-          return;
-        }
-
-        const userIds = [...new Set(avisos.map(a => a.user_id).filter(Boolean))];
-        const { data: autores } = await supabase
-          .from('profiles')
-          .select('id, banner_url')
-          .in('id', userIds);
-
-        const bannerMap = {};
-        (autores || []).forEach(p => { bannerMap[p.id] = p.banner_url || ''; });
-
-        const cards = avisos.map(av => ({
-          bro_pd:      av.id,
-          aviso_id:    av.id,
-          user_id:     av.user_id,
-          nombre:      av.author_alias || 'Ciudadano',
-          banner_avi:  av.banner_avi   || '',
-          banner_url:  bannerMap[av.user_id] || '',
-          categoria:   av.type         || 'OFERTA',
-          titulo:      av.title        || '',
-          descripcion: av.content      || '',
-          cost:        av.cost_to_reveal || 200,
-          ciudad:      '',
-          es_aviso:    true,
-        }));
-
-        setStripCards(cards);
-        setStripLabel('broshop_aviso');
-        setStripVisible(true);
-        return;
-      }
-
-      // ══════════════════════════════════════════════════════════════
       // AUDIO / MUSIC — sin cambios
       // ══════════════════════════════════════════════════════════════
       if (agenteUpper === 'AUDIO' || agenteUpper === 'MUSIC') {

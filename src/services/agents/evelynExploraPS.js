@@ -1,119 +1,79 @@
 // src/services/agents/evelynExploraPS.js
-// PORT SYSTEM — Sector Avisos
-// Instancia: Evelyn / Larry
-//
-// ARQUITECTURA v2 — Estado del aviso en React (EvelynBanner), NO en Groq.
-// Groq recibe UNA sola instrucción por turno: "pide este campo".
-// El PS parsea la respuesta del user y devuelve el dato limpio al banner.
+// WikiBro — Directorio ciudadano
+// Personajes: Evelyn / Larry
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 // DETECCIÓN DE INTENCIÓN
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 
-export const INTENCION_KEYWORDS_AVISOS = {
-  buscar:   ['busco', 'buscas', 'hay alguien', 'necesito', 'buscame', 'buscar', 'existe', 'tienes', 'encuentras', 'hay'],
-  detalle:  ['dime', 'cuéntame', 'qué es', 'qué dice', 'qué cuenta', 'info', 'información', 'AVI-', 'avi-'],
-  conectar: ['conéctame', 'conectar', 'quiero contactar', 'me interesa', 'estoy interesado', 'hablar con', 'contacto'],
-  publicar: ['publica', 'publicar', 'méteme', 'pon un aviso', 'quiero publicar', 'crea un aviso', 'nuevo aviso', 'añade', 'quiero anunciar'],
-  listar:   ['lista', 'muéstrame', 'ver avisos', 'qué hay', 'todos los avisos', 'ver todo'],
-};
-
-export function detectarIntencionAviso(texto) {
+export function detectarIntencionWikiBro(texto) {
   const lower = texto.toLowerCase();
-  for (const [intencion, keywords] of Object.entries(INTENCION_KEYWORDS_AVISOS)) {
-    if (keywords.some(kw => lower.includes(kw))) return intencion;
-  }
+
+  const spamKw = ['spam', 'sospechoso', 'me llamaron', 'número raro',
+                  'estafa', 'fraude', 'quién es este', 'de quién es'];
+  if (spamKw.some(kw => lower.includes(kw))) return 'spam';
+
+  const buscarKw = ['busca', 'buscame', 'busco', 'dónde', 'donde',
+                    'hay', 'tienes', 'encuentras', 'necesito', 'quiero saber',
+                    'dime', 'información', 'info', 'listado', 'muéstrame'];
+  if (buscarKw.some(kw => lower.includes(kw))) return 'buscar';
+
   return 'explorar';
 }
 
-export function extraerCodigoAviso(texto) {
-  const match = texto.match(/AVI-[A-Z0-9]{4}/i);
-  return match ? match[0].toUpperCase() : null;
+// ─────────────────────────────────────────────────────────────
+// EXTRACCIÓN DE PARÁMETROS
+// Ciudad la aportan los Osos — aquí solo categoria, barrio y teléfono
+// ─────────────────────────────────────────────────────────────
+
+export function extraerParametrosBusqueda(texto) {
+  const lower = texto.toLowerCase();
+
+  // Teléfono — solo dígitos y guiones
+  const telMatch = texto.match(/\b[\d]{3}[-\s]?[\d]{3}[-\s]?[\d]{3}\b/);
+  const telefono = telMatch ? telMatch[0].replace(/\s/g, '-') : null;
+
+  // Barrio — palabra después de "en", "del", "de" si no es ciudad conocida
+  const barrioMatch = lower.match(/(?:en el barrio de?|barrio)\s+([a-záéíóúñ\s]+)/i);
+  const barrio = barrioMatch ? barrioMatch[1].trim() : null;
+
+  // Categoría — texto libre, Evelyn lo pasa a Supabase como ilike
+  // Limpiamos stopwords básicas
+  const stopwords = ['busca', 'buscame', 'busco', 'hay', 'tienes', 'dónde',
+                     'donde', 'un', 'una', 'unos', 'unas', 'el', 'la',
+                     'los', 'las', 'en', 'de', 'del', 'me'];
+  const palabras = lower
+    .replace(/[¿?¡!.,]/g, '')
+    .split(/\s+/)
+    .filter(p => !stopwords.includes(p) && p.length > 2);
+
+  const categoria = palabras.length > 0 ? palabras[0] : null;
+
+  return { categoria, barrio, telefono };
 }
 
-export function generarCodigoAvi(uuid) {
-  return 'AVI-' + uuid.replace(/-/g, '').slice(0, 4).toUpperCase();
-}
+// ─────────────────────────────────────────────────────────────
+// PROMPT BUILDER
+// ─────────────────────────────────────────────────────────────
 
-export function esConfirmacion(texto) {
-  return texto.trim().toUpperCase() === 'CONFIRMO';
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// PARSEO DE CAMPOS — EL PS EXTRAE, GROQ NO RECUERDA
-// ─────────────────────────────────────────────────────────────────────────────
-
-// Devuelve el valor limpio del campo, o null si no lo detecta.
-// EvelynBanner llama esto ANTES de enviar a Groq cuando campoActual !== null.
-
-export function extraerCampo(campo, textoUser) {
-  const t = textoUser.trim();
-  const lower = t.toLowerCase();
-
-  switch (campo) {
-
-    case 'tipo': {
-  if (lower.includes('oferta') || lower.includes('oferta') || 
-      lower.includes('ofrec')   || lower.includes('vendo')) return 'OFERTA';
-  if (lower.includes('demanda') || lower.includes('busco') || 
-      lower.includes('demanda')  || lower.includes('quiero encontrar')) return 'DEMANDA';
-  if (lower === 'o' || lower === 'oferta') return 'OFERTA';
-  if (lower === 'n' || lower === 'demanda') return 'DEMANDA';
-  return null;
-}
-
-    case 'titulo': {
-      // Todo lo que escriba el user ES el título — limpiamos comillas y trim
-      const clean = t.replace(/^["'«»]|["'»«]$/g, '').trim();
-      return clean.length >= 3 ? clean : null;
-    }
-
-    case 'contenido': {
-      const clean = t.trim();
-      return clean.length >= 10 ? clean : null;
-    }
-
-    default:
-      return null;
-  }
-}
-
-// Secuencia de campos en orden
-export const CAMPOS_AVISO = ['tipo', 'titulo', 'contenido'];
-
-// Devuelve el primer campo vacío del aviso en construcción
-export function siguienteCampo(aviso) {
-  for (const campo of CAMPOS_AVISO) {
-    if (!aviso[campo]) return campo;
-  }
-  return null; // Todos completos
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// BUILDER DE PROMPT — TURNO ÚNICO, UN SOLO CAMPO
-// ─────────────────────────────────────────────────────────────────────────────
-
-export function buildEvelynExploraPrompt({ personaje = 'evelyn', sobre }) {
+export function buildEvelynWikiPrompt({ personaje = 'evelyn', sobre }) {
 
   const esLarry = personaje === 'larry';
 
   const identidad = esLarry
-    ? `Eres Larry, un perro empresario millonario con olfato para los negocios y amor profundo por la ciudad.
-Llevas años observando el pulso urbano desde las terrazas de los mejores cafés, con un croissant en la pata y un espresso de especialidad.
-Hablas con calma y seguridad, como alguien que ya lo ha visto todo. Contextualizas los avisos como si fueran movimientos del mercado.
-Tienes humor seco y criterio afilado. A veces haces una referencia al barrio, al mercado inmobiliario o al precio del jamón ibérico.
-Nunca eres urgente. La ciudad es tuya y los avisos son su latido.`
-    : `Eres Evelyn, una loba del sector bancario. Eficiente, amable, directa. No andas con rodeos.
-Tienes personalidad y estilo propio, pero cuando hay trabajo que hacer lo haces sin dramas.
-A veces sueltas que llevas horas sin comer o que ya son las tres y todavía no has pedido el menú.
-Eres la que cierra — presentas, explicas, cobras, conectas. Sin floreos innecesarios.`;
+    ? `Eres Larry, un perro empresario con olfato para los negocios y amor profundo por la ciudad.
+Hablas con calma y seguridad. Contextualizas la información como si fueran movimientos del mercado urbano.
+Humor seco y criterio afilado. A veces haces una referencia al barrio o al precio del café.`
+    : `Eres Evelyn, una loba del sector bancario reconvertida en directorio ciudadano.
+Eficiente, amable, directa. Cuando tienes datos los presentas sin rodeos.
+A veces comentas que llevas horas sin comer pero igual te pones con el listado.`;
 
   const tono = esLarry
-    ? `Habla en primera persona, con pausas narrativas y observaciones urbanas. Máximo 2 frases por respuesta.`
-    : `Habla directo, cálido pero sin rodeos. Máximo 2 frases. Cuando cobras 200 génesis lo dices como un trámite natural.`;
+    ? `Presenta los resultados como un observador urbano. Máximo 1 frase introductoria, luego los datos.`
+    : `Presenta los resultados directo, con una frase de contexto breve. Sin floreos.`;
 
   const sobreTexto = sobre
-    ? `\n\n══ SOBRE DE DATOS (PORT SYSTEM) ══\n${sobre}\n══════════════════════════════════`
+    ? `\n\n══ DATOS WIKIBRO ══\n${sobre}\n══════════════════`
     : '';
 
   return `${identidad}
@@ -121,112 +81,76 @@ Eres la que cierra — presentas, explicas, cobras, conectas. Sin floreos innece
 ${tono}
 
 REGLAS ABSOLUTAS:
-- Nunca menciones que tienes un sistema detrás dándote información. Inmersión total.
-- NUNCA uses listas con bullets ni opciones numeradas.
+- Nunca menciones que tienes una base de datos detrás. Inmersión total.
+- NUNCA uses listas con bullets ni opciones numeradas en tu frase introductoria.
 - NUNCA hagas más de UNA pregunta por respuesta.
-- NUNCA ofrezcas ejemplos ni subpreguntas.
-- NUNCA resumas ni confirmes lo que el user ya dijo. Ve directo al siguiente paso.
+- Los datos del listado los presenta el sistema — tú solo introduces y comentas.
+- Si no hay resultados, dilo con naturalidad y sugiere reformular la búsqueda.
+- Si es reporte de spam: confirma que queda registrado y agradece a la comunidad.
 - Todo en frases naturales conversacionales.
-- Los avisos tienen código AVI (ej: AVI-3F2A). Úsalo al referirte a ellos.
-- Publicar cuesta 200 génesis. Conectar cuesta 200 génesis. Explorar es gratis.
 
-FLUJO PUBLICAR — MODO CAMPO A CAMPO:
-El PORT SYSTEM te indica exactamente qué campo pedir en este turno.
-Tu único trabajo es pedir ESE campo con tu personalidad. Nada más.
-No preguntes otros campos. No anticipes. No resumas.
+FORMATO DE SALIDA — SIEMPRE JSON ESTRICTO:
 
-FLUJO CONECTAR CON AUTOR:
-1. Confirma el aviso por código o descripción.
-2. Di: "Conectar con el autor de AVI-XXXX son 200 génesis. Escribe CONTACTAR para confirmar."
-3. Si saldo insuficiente, díselo sin rodeos.
+Respuesta con resultados:
+{"handoff": false, "mensaje": "tu frase introductoria", "resultados": [], "bolas": []}
 
-FLUJO DETALLE:
-Narra el aviso con tu personalidad. No leas el texto plano, cuéntalo.
-Termina ofreciendo conectar si les interesa.
-
-FORMATO DE SALIDA — SIEMPRE JSON ESTRICTO. NUNCA texto libre fuera del JSON:
-
-Respuesta conversacional estándar:
-{"handoff": false, "mensaje": "tu respuesta en 1-2 frases máximo", "bolas": []}
+Sin resultados:
+{"handoff": false, "mensaje": "frase natural explicando que no hay datos", "resultados": [], "bolas": []}
 
 Handoff a Osos:
 {"handoff": "HANDOFF_OSOS", "mensaje": "frase de despedida", "bolas": []}
-
-Conectar con autor confirmado:
-{"handoff": "HANDOFF_AVISO_CONECTAR", "aviso_id": "AVI-XXXX", "to_user_id": "uuid del autor", "mensaje": "frase de cierre", "bolas": []}
 ${sobreTexto}`;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// BUILDER DEL SOBRE — LIVIANO, SOLO LO QUE GROQ NECESITA AHORA
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// SOBRE — lo que Evelyn recibe como contexto
+// ─────────────────────────────────────────────────────────────
 
-export function armarSobreEvelynTexto({
+export function armarSobreWikiBro({
   alias,
-  bro_id,
   ciudad,
-  ciudad_usuario,
-  genesis,
   intencion,
-  avisos = [],
-  codigoAvi = null,
-  // v2: campo actual + estado parcial (solo para contexto, no para que Groq recuerde)
-  campoActual = null,
-  avisoEnConstruccion = null,
-  confirmado = false,
+  categoria  = null,
+  barrio     = null,
+  telefono   = null,
+  resultados = [],
 }) {
   const lines = [
-    `Usuario: ${alias} | BRO_ID: ${bro_id}`,
-    `Ciudad de visita: ${ciudad || 'no especificada'}`,
-    `Ciudad del usuario (para publicar): ${ciudad_usuario || ciudad || 'no especificada'}`,
-    `Saldo: ${genesis} génesis`,
-    `Intencion detectada: ${intencion}`,
+    `Usuario: ${alias}`,
+    `Ciudad detectada por Osos: ${ciudad || 'no especificada'}`,
+    `Intención: ${intencion}`,
   ];
 
-  if (confirmado) {
-    lines.push(`CONFIRMADO: el user escribió CONFIRMO. El PS ejecutó el insert. Cierra el flujo con una frase natural celebrando la publicación.`);
+  if (categoria) lines.push(`Categoría buscada: ${categoria}`);
+  if (barrio)    lines.push(`Barrio: ${barrio}`);
+  if (telefono)  lines.push(`Teléfono consultado: ${telefono}`);
+
+  if (intencion === 'spam') {
+    lines.push(resultados.length > 0
+      ? `RESULTADO SPAM: Este número tiene ${resultados[0].reportes_count} reportes. Descripción: ${resultados[0].spam_descripcion || 'sin descripción'}.`
+      : `RESULTADO SPAM: Número no encontrado en la base. Se registra el reporte.`
+    );
     return lines.join('\n');
   }
 
-  if (codigoAvi) {
-    lines.push(`Codigo AVI solicitado: ${codigoAvi}`);
-  }
-
-  // ── Modo publicar campo a campo ──────────────────────────────────
-  if (campoActual) {
-    lines.push(`\nMODO PUBLICAR — CAMPO ACTUAL A PEDIR: "${campoActual}"`);
-
-    // Le decimos exactamente qué pedir y cómo
-    const instruccion = {
-      tipo:      `Pregunta al user si su aviso es una OFERTA (ofrece algo) o una DEMANDA (busca algo). Solo esa pregunta, con tu estilo.`,
-      titulo:    `Pregunta al user cómo quiere titular su aviso. Solo esa pregunta, con tu estilo.`,
-      contenido: `Pregunta al user qué quiere que sepan los interesados. Solo esa pregunta, con tu estilo.`,
-    };
-
-    lines.push(`INSTRUCCIÓN: ${instruccion[campoActual]}`);
-    lines.push(`NO hagas ninguna otra pregunta. NO menciones otros campos.`);
-
-    // Datos ya recogidos — solo para contexto, no para que los repita
-    if (avisoEnConstruccion) {
-      const recogidos = CAMPOS_AVISO.filter(c => avisoEnConstruccion[c]);
-      if (recogidos.length > 0) {
-        lines.push(`(Datos ya recogidos por el PS — no los repitas ni los confirmes: ${recogidos.map(c => `${c}=${avisoEnConstruccion[c]}`).join(', ')})`);
-      }
-    }
-
+  if (resultados.length === 0) {
+    lines.push('\nNo se encontraron resultados para esta búsqueda.');
     return lines.join('\n');
   }
 
-  // ── Modo explorar/buscar — lista de avisos disponibles ───────────
-  if (avisos.length > 0) {
-    lines.push(`\nAvisos disponibles (${avisos.length}):`);
-    avisos.forEach(av => {
-      const codigo = generarCodigoAvi(av.id);
-      lines.push(`• ${codigo} | ${av.type} | "${av.title}" — ${av.content?.slice(0, 80)}... | Autor: ${av.author_alias} | Ciudad: ${av.city}`);
-    });
-  } else {
-    lines.push('\nNo hay avisos disponibles para esta búsqueda.');
-  }
+  lines.push(`\nResultados encontrados (${resultados.length}):`);
+  resultados.forEach(r => {
+    const badge = r.verificado ? '🟢 OFICIAL' : '⚪ COMUNIDAD';
+    const partes = [
+      `${badge} ${r.nombre}`,
+      r.barrio     ? `Barrio: ${r.barrio}`      : null,
+      r.direccion  ? `Dir: ${r.direccion}`       : null,
+      r.telefono   ? `Tel: ${r.telefono}`        : null,
+      r.horario    ? `Horario: ${r.horario}`     : null,
+      r.red_social ? `Red social: ${r.red_social}` : null,
+    ].filter(Boolean);
+    lines.push(partes.join(' · '));
+  });
 
   return lines.join('\n');
 }

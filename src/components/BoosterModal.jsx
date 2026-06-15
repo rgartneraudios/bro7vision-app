@@ -3,8 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { marcarActividad } from '../hooks/useActividad';
-import { CoordenadosBlock } from '../components/CoordenadosBlock';
-import AvisosTab from './AvisosTab';
 import BoosterBroCards from './booster/BoosterBroCards';
 import BoosterEnlaces from './booster/BoosterEnlaces';
 import BoosterMisCupones from './booster/BoosterMisCupones';
@@ -338,7 +336,6 @@ const BoosterModal = ({ onClose }) => {
           <div className="flex md:flex-col border-b md:border-b-0 md:border-r border-white/10 bg-black/10 p-3 gap-2 overflow-x-auto md:w-64 shrink-0 z-20">
 {[
                 { id: 'identity', label: '👤 Identidad',      color: 'cyan'   },
-                { id: 'avisos',   label: '📢 Mis Avisos',     color: 'blue'   },
                 { id: 'enlaces',  label: '🔗 Enlaces',        color: 'fuchsia'  },
                 { id: 'metrics',  label: '🛰️ Órbita & Radar', color: 'orange' },
                 // Linaje siempre visible — el rank vacío muestra estado pendiente
@@ -753,9 +750,6 @@ const BoosterModal = ({ onClose }) => {
                 </div>
               </div>
             )}
-
-            {/* ══ 📢 MIS AVISOS ══ */}
-            {tab === 'avisos' && <AvisosTab />}
 
             {/* ══ 🛰️ ÓRBITA & RADAR ══ */}
             {tab === 'metrics' && (
