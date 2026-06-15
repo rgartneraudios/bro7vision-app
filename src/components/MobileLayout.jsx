@@ -442,6 +442,7 @@ const MobileLayout = ({
   children,
   realityMode, setRealityMode,
   hubAudios={hubAudios},
+  audmovilList=[],
   scope, setScope,
   step, setStep,
   intent, setIntent,
@@ -476,7 +477,7 @@ const MobileLayout = ({
 
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [audioIndex, setAudioIndex] = useState(0);
+  const [audmovilIndex, setAudmovilIndex] = useState(0);
 
   const { enviar, mensaje: chatMensaje, loading: chatLoading } = chatMobile || {};
   const inputRef     = useRef(null);
@@ -506,6 +507,29 @@ const MobileLayout = ({
 
   useEffect(() => { setBurbujaOpen(false); }, [stripCards]);
 
+  useEffect(() => { setAudmovilIndex(0); }, [realityMode]);
+
+  const currentAudioUrl = useMemo(() => {
+    if (step === 0 && realityMode) {
+      return audmovilList[audmovilIndex]?.audmovil_url || null;
+    }
+    if (step === 2 && intent === 'audios' && audioUser?.audio_url) {
+      return audioUser.audio_url;
+    }
+    return null;
+  }, [step, realityMode, audmovilIndex, audmovilList, intent, audioUser]);
+
+  const prevAudmovil = () => {
+    if (!audmovilList.length) return;
+    setAudmovilIndex(i => (i - 1 + audmovilList.length) % audmovilList.length);
+    setIsPlaying(true);
+  };
+  const nextAudmovil = () => {
+    if (!audmovilList.length) return;
+    setAudmovilIndex(i => (i + 1) % audmovilList.length);
+    setIsPlaying(true);
+  };
+
   useEffect(() => {
     if (!chatMensaje) return;
     if (lastBotMsgId.current === chatMensaje) return;
@@ -530,6 +554,14 @@ const MobileLayout = ({
     setInputText('');
     setBurbujaOpen(false);
   };
+
+  useEffect(() => {
+    if (!audioRef.current || !currentAudioUrl) return;
+    audioRef.current.load();
+    audioRef.current.play()
+      .then(() => setIsPlaying(true))
+      .catch(() => setIsPlaying(false));
+  }, [currentAudioUrl]);
 
   const activeSector = navItems?.find(n => n.id === intent);
   const sectorLabel  = step === 1 ? 'OSOS' : activeSector?.label || 'OSOS';
@@ -649,15 +681,7 @@ const MobileLayout = ({
 if (step === 0 && realityMode) {
   const escena = REALITIES.find(r => r.id === realityMode);
   
-
-const prevAudio = () => {
-  setAudioIndex(i => (i - 1 + audioList.length) % audioList.length);
-  setIsPlaying(true);
-};
-const nextAudio = () => {
-  setAudioIndex(i => (i + 1) % audioList.length);
-  setIsPlaying(true);
-};
+  const audmovilActual = audmovilList[audmovilIndex];
 
   const togglePlay = async () => {
     if (!audioRef.current) return;
@@ -670,9 +694,10 @@ const nextAudio = () => {
     }
   };       
     return (
+      <>
       <div className="mobile-root fixed inset-0 overflow-hidden bg-black text-white select-none">
         <style>{MOBILE_STYLES}</style>
-
+        
         {/* Video de fondo vertical — solo en Reality Player */}
         {bgVideoUrl && (
           <video key={bgVideoUrl} autoPlay loop muted playsInline
@@ -682,16 +707,6 @@ const nextAudio = () => {
           </video>
         )}
         
-        {/* AUDIO */}
-{audioUrl && (
-  <audio
-  ref={audioRef}
-  src={audioUrl}
-  loop
-  preload="auto"
-  onEnded={() => setIsPlaying(false)}
-/>
-)}
         <div className="absolute inset-0 z-[1]"
           style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0.6) 100%)' }} />
         <div className="scanline z-[2]" />
@@ -712,7 +727,7 @@ const nextAudio = () => {
   style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)' }}>
   <div className="text-white/30 text-[10px] uppercase tracking-[0.3em] font-mono">AUDIO DEL CANAL</div>
   <div className="flex gap-5 items-center">
-    <button className="dpad-btn" onClick={prevAudio}>⏮</button>
+    <button className="dpad-btn" onClick={prevAudmovil}>⏮</button>
     <button 
       className="dpad-btn" 
       onClick={togglePlay}
@@ -727,31 +742,47 @@ const nextAudio = () => {
       }}>
       {isPlaying ? '⏸' : '▶'}
     </button>
-    <button className="dpad-btn" onClick={nextAudio}>⏭</button>
+    <button className="dpad-btn" onClick={nextAudmovil}>⏭</button>
   </div>
   
-  {/* ← AÑADE ESTO: señales de debug */}
-  <div className="text-center mt-4">
-    {audioUrl ? (
-      <div className="text-cyan-400 text-xs uppercase tracking-widest">
-        ✓ Audio cargado
-        {isPlaying && <div className="text-green-400 mt-1">▌▌ Reproduciendo</div>}
+  {/* Info del creador en reproducción */}
+  {audmovilActual && (
+    <div className="text-center mt-2">
+      <div className="text-cyan-400 text-[11px] font-black tracking-widest uppercase">
+        {audmovilActual.alias || 'Creador'}
       </div>
-    ) : (
-      <div className="text-red-400 text-xs uppercase tracking-widest">
-        ✗ Sin audio
+      <div className="text-white/30 text-[9px] uppercase tracking-widest mt-1">
+        {audmovilIndex + 1} / {audmovilList.length}
       </div>
-    )}
-  </div>
+    </div>
+  )}
+  {!audmovilActual && (
+    <div className="text-center mt-4">
+      <div className="text-white/20 text-[10px] uppercase tracking-widest">
+        Sin creadores con audio móvil
+      </div>
+    </div>
+  )}
 </footer>
         </main>
       </div>
+      {currentAudioUrl && (
+        <audio
+          key={currentAudioUrl}
+          ref={audioRef}
+          src={currentAudioUrl}
+          loop
+          preload="auto"
+          onEnded={() => setIsPlaying(false)}
+        />
+      )}
+      </>
     );
   }
 
   // ── LAYOUT PRINCIPAL (step 1 y 2) — siempre mobile.webp, sin video ────────
-  return (
-    <div className="mobile-root fixed inset-0 overflow-hidden bg-black text-white select-none">
+return (
+      <div className="mobile-root fixed inset-0 overflow-hidden bg-black text-white select-none">
       <style>{MOBILE_STYLES}</style>
 
       {/* Fondo fijo — siempre mobile.webp en sectores */}
@@ -1068,6 +1099,16 @@ const nextAudio = () => {
       </main>
 
       {children}
+      {currentAudioUrl && (
+        <audio
+          key={currentAudioUrl}
+          ref={audioRef}
+          src={currentAudioUrl}
+          loop
+          preload="auto"
+          onEnded={() => setIsPlaying(false)}
+        />
+      )}
     </div>
   );
 };

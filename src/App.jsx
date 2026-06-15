@@ -192,6 +192,10 @@ useEffect(() => {
       .from('proyeccion_audio')
       .select('user_id, url, titulo, descripcion, tipo, circular_url');
 
+    const { data: proyeccionAudmovil } = await supabase
+      .from('proyeccion_audmovil')
+      .select('user_id, url, titulo, descripcion, tipo');
+
     const proyMap = {};
     if (proyecciones) {
       proyecciones.forEach(p => { proyMap[p.user_id] = p; });
@@ -212,11 +216,17 @@ useEffect(() => {
       proyeccionAudio.forEach(a => { audioMap[a.user_id] = a; });
     }
 
+    const audmovilMap = {};
+    if (proyeccionAudmovil) {
+      proyeccionAudmovil.forEach(a => { audmovilMap[a.user_id] = a; });
+    }
+
     setRealItems(all.map(u => {
       const proy = proyMap[u.id] || {};
       const p169 = proy169Map[u.id] || {};
       const metaRow = metaMap[u.id] || {};
       const audioRow = audioMap[u.id] || {};
+      const audmovilRow = audmovilMap[u.id] || {};
       return {
         ...u,
         // Contenido multimedia — vertical desde proyeccion_916
@@ -234,6 +244,11 @@ useEffect(() => {
         audio_descripcion:   audioRow.descripcion || metaRow.audio_descripcion    || null,
         audio_tipo:          audioRow.tipo        || metaRow.audio_tipo           || null,
         circular_url:        audioRow.circular_url                                 || null,
+        // Audio móvil desde proyeccion_audmovil
+        audmovil_url:        audmovilRow.url         || null,
+        audmovil_titulo:     audmovilRow.titulo      || null,
+        audmovil_descripcion: audmovilRow.descripcion || null,
+        audmovil_tipo:       audmovilRow.tipo        || null,
         audio_video_url:     metaRow.audio_video_url      || null,
         brotwit:             metaRow.brotwit              || null,
         holoprisma_1:        metaRow.holoprisma_1         || null,
@@ -251,7 +266,7 @@ useEffect(() => {
         type:     proy.url || p169.url ? ['shop', 'live'] : ['shop'],
       };
     }).filter(u =>
-      u.video_v_url || u.video_h_url || u.audio_url ||
+      u.video_v_url || u.video_h_url || u.audio_url || u.audmovil_url ||
       u.bro_ser || u.bro_mus || u.bro_aud || u.bro_avi || u.bro_pd
     ));
   };
@@ -579,6 +594,10 @@ const hubVideos169 = useMemo(() => {
     const supabaseAudios = realItems.filter(i => i.audio_video).map(i => ({ ...i, alias: i.alias, id: i.id, source: 'supabase' }));
     return [{ alias: 'BRO MASTER', audio_video: 'https://media.bro7vision.com/Mapache-habla7.mp3', id: 'bro_master' }, ...masterAudios, ...supabaseAudios];
   }, [realItems]);
+
+  const audmovilList = useMemo(() => {
+    return (realItems || []).filter(i => i.audmovil_url);
+  }, [realItems]);
  
 
   // ══════════════════════════════════════════════════════
@@ -664,6 +683,7 @@ const hubVideos169 = useMemo(() => {
           onToggleAudio={() => setAudioUser(prev => prev ? null : audioUser)}
           setRealityMode={setRealityMode}
           hubAudios={hubAudios}
+          audmovilList={audmovilList}
           {...layoutProps}
         />
       ) : (
