@@ -153,6 +153,13 @@ const MOBILE_STYLES = `
     background: rgba(0,255,255,0.3);
     box-shadow: 0 0 20px rgba(0,255,255,0.6);
   }
+
+  @keyframes glowSwim {
+    0%   { transform: translateY(0) scale(0.5); opacity: 0; }
+    15%  { opacity: 1; transform: scale(1); }
+    100% { transform: translateY(-115vh) scale(3.5); opacity: 0; }
+  }
+  .animate-glowSwim { animation: glowSwim 5.5s ease-in-out forwards; }
 `;
 
 // ─── ACCENT POR SECTOR ──────────────────────────────────────────────────────
@@ -291,10 +298,11 @@ const LockClockWidget = ({ accent }) => {
 // ─── PUERTAS (reutilizadas en los 3 early returns) ──────────────────────────
 function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
                    audioUser, onToggleAudio, broTunerRef,
-                   accent, balances, navItems, handleNavigation, setMessages,
+                   accent, balances, setBalances, navItems, handleNavigation, setMessages,
                    iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA,
                    setShowWalletModal, handleLogout, intent,
-                   setStep, setRealityMode, setScope }) {
+                   setStep, setRealityMode, setScope,
+                   handleHalo, showHalo, isTipping, audmovilActual }) {
 
   return (
     <>
@@ -331,6 +339,34 @@ function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
             onToggleAdmin={onToggleAdminIA} onTogglePublic={onTogglePublicIA}
             setShowWalletModal={setShowWalletModal} />
         </div>
+
+        {/* Botón Halo de Luz — solo si hay audio activo con creador identificado */}
+        {audmovilActual?.audmovil_user_id && (
+          <button
+            onClick={handleHalo}
+            disabled={isTipping}
+            className="w-full flex flex-col items-center gap-1 py-3 rounded-xl border transition-all active:scale-95"
+            style={{
+              borderColor: isTipping ? 'rgba(255,255,255,0.1)' : 'rgba(234,179,8,0.5)',
+              background:  isTipping ? 'rgba(0,0,0,0.3)' : 'rgba(234,179,8,0.08)',
+              opacity:     isTipping ? 0.5 : 1,
+            }}>
+            <div className="relative w-7 h-7">
+              <div className="absolute inset-0 bg-yellow-400/30 rounded-full blur-sm" />
+              <div className="absolute inset-1 bg-yellow-300/40 rounded-full blur-[2px]" />
+              <div className="absolute inset-2 bg-white/80 rounded-full shadow-[0_0_10px_gold]" />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-yellow-400">
+              {isTipping ? 'Enviando...' : 'Halo de Luz [50G]'}
+            </span>
+            {audmovilActual.username && (
+              <span className="text-[9px] text-white/30 uppercase tracking-widest">
+                @{audmovilActual.username}
+              </span>
+            )}
+          </button>
+        )}
+
         <div className="flex flex-col w-full px-4 mt-4 gap-4">
           <div className="pt-4 border-t border-white/5">
             <BroTuner ref={broTunerRef} />
@@ -446,7 +482,7 @@ const MobileLayout = ({
   scope, setScope,
   step, setStep,
   intent, setIntent,
-  session, balances,
+  session, balances, setBalances,
   navItems, handleNavigation,
   chatMobile,
   ososModo, setOsosModo,
@@ -478,6 +514,10 @@ const MobileLayout = ({
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audmovilIndex, setAudmovilIndex] = useState(0);
+  const [progress, setProgress]   = useState(0);
+  const [duration, setDuration]   = useState(0);
+  const [showHalo, setShowHalo] = useState(false);
+  const [isTipping, setIsTipping] = useState(false);
 
   const { enviar, mensaje: chatMensaje, loading: chatLoading } = chatMobile || {};
   const inputRef     = useRef(null);
@@ -528,6 +568,34 @@ const MobileLayout = ({
     if (!audmovilList.length) return;
     setAudmovilIndex(i => (i + 1) % audmovilList.length);
     setIsPlaying(true);
+  };
+
+  const handleHalo = async () => {
+    const audmovilActual = audmovilList[audmovilIndex];
+    if (!audmovilActual?.audmovil_user_id) return;
+    if (!balances || balances.genesis < 50) { alert('SUEÑAS CON GÉNESIS...'); return; }
+    if (isTipping) return;
+    setIsTipping(true);
+
+    try {
+      const { supabase } = await import('../supabaseClient');
+      const newBalance = balances.genesis - 50;
+      setBalances(prev => ({ ...prev, genesis: newBalance }));
+      await supabase.from('profiles').update({ genesis: newBalance }).eq('id', session.user.id);
+
+      const { data: autorData } = await supabase
+        .from('profiles').select('genesis').eq('id', audmovilActual.user_id).single();
+      if (autorData) {
+        await supabase.from('profiles')
+          .update({ genesis: autorData.genesis + 50 }).eq('id', audmovilActual.user_id);
+      }
+
+      setShowHalo(true);
+      setTimeout(() => { setShowHalo(false); setIsTipping(false); }, 5500);
+    } catch (err) {
+      console.error('[Halo móvil]', err);
+      setIsTipping(false);
+    }
   };
 
   useEffect(() => {
@@ -625,10 +693,14 @@ const MobileLayout = ({
   const puertasProps = {
     isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
     audioUser, onToggleAudio, broTunerRef,
-    accent, balances, navItems, handleNavigation, setMessages,
+    accent, balances, setBalances, navItems, handleNavigation, setMessages,
     iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA,
     setShowWalletModal, handleLogout, intent,
     setStep, setRealityMode, setScope,
+    handleHalo,
+    showHalo,
+    isTipping,
+    audmovilActual: audmovilList[audmovilIndex] || null,
   };
 
   // ── REALITY TUNER ─────────────────────────────────────────────────────────
@@ -744,7 +816,29 @@ if (step === 0 && realityMode) {
     </button>
     <button className="dpad-btn" onClick={nextAudmovil}>⏭</button>
   </div>
-  
+
+  {/* Barra de progreso */}
+  {duration > 0 && (
+    <input
+      type="range"
+      min={0}
+      max={duration}
+      step={0.1}
+      value={progress}
+      onChange={e => {
+        const val = parseFloat(e.target.value);
+        if (audioRef.current) audioRef.current.currentTime = val;
+        setProgress(val);
+      }}
+      style={{
+        width: '100%',
+        accentColor: escena?.color || '#00ffff',
+        cursor: 'pointer',
+        height: 3,
+      }}
+    />
+  )}
+
   {/* Info del creador en reproducción */}
   {audmovilActual && (
     <div className="text-center mt-2">
@@ -766,6 +860,18 @@ if (step === 0 && realityMode) {
 </footer>
         </main>
       </div>
+      {/* Animación Halo de Luz */}
+      {showHalo && (
+        <div className="fixed inset-0 pointer-events-none z-[500]">
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-glowSwim">
+            <div className="relative w-48 h-48 flex items-center justify-center">
+              <div className="absolute inset-0 bg-yellow-500/30 rounded-full blur-[60px] animate-pulse" />
+              <div className="absolute w-32 h-32 bg-white/20 rounded-full blur-[40px]" />
+              <div className="absolute w-14 h-14 bg-white rounded-full shadow-[0_0_50px_gold]" />
+            </div>
+          </div>
+        </div>
+      )}
       {currentAudioUrl && (
         <audio
           key={currentAudioUrl}
@@ -774,6 +880,14 @@ if (step === 0 && realityMode) {
           loop
           preload="auto"
           onEnded={() => setIsPlaying(false)}
+          onTimeUpdate={() => {
+            if (!audioRef.current) return;
+            setProgress(audioRef.current.currentTime);
+          }}
+          onLoadedMetadata={() => {
+            if (!audioRef.current) return;
+            setDuration(audioRef.current.duration || 0);
+          }}
         />
       )}
       </>

@@ -249,6 +249,7 @@ useEffect(() => {
         audmovil_titulo:     audmovilRow.titulo      || null,
         audmovil_descripcion: audmovilRow.descripcion || null,
         audmovil_tipo:       audmovilRow.tipo        || null,
+        audmovil_user_id:    audmovilRow.user_id || u.id,
         audio_video_url:     metaRow.audio_video_url      || null,
         brotwit:             metaRow.brotwit              || null,
         holoprisma_1:        metaRow.holoprisma_1         || null,
@@ -619,7 +620,7 @@ const hubVideos169 = useMemo(() => {
   }
 
   const navItems = [
-    { id: 'gps',             label: 'RUTA',      color: 'border-fuchsia-500/30 hover:border-fuchsia-400',  images: ['/emojis/lara.webp', '/emojis/tito.webp', '/emojis/puffo.webp'] },
+    { id: 'gps',             label: 'DESTINO',      color: 'border-fuchsia-500/30 hover:border-fuchsia-400',  images: ['/emojis/lara.webp', '/emojis/tito.webp', '/emojis/puffo.webp'] },
     { id: 'productos',       label: 'BROCUPONES PRODUCTOS',  color: 'border-yellow-500/30 hover:border-yellow-400',    images: ['/emojis/nova.webp'] },
     { id: 'servicios',       label: 'BROCUPONES SERVICIOS',  color: 'border-rose-500/30 hover:border-rose-400',        images: ['/emojis/isabella.webp', '/emojis/prmaestro.webp'] },
     { id: 'avisos',          label: 'WIKIBRO',     color: 'border-slate-500/30 hover:border-slate-400',      images: ['/emojis/evelyn.webp', '/emojis/larry.webp'] },
