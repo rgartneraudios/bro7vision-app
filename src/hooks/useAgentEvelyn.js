@@ -447,7 +447,19 @@ export function useAgentEvelyn({
   };
 
   const buscarEnWikiBro = useCallback(async ({ ciudad, categoria, barrio, telefono, esSpam }) => {
-  let query = supabase.from('wikibro').select('*');
+  let query = supabase
+    .from('wikibro')
+    .select(`
+      *,
+      comercio_cupones (
+        id,
+        descripcion,
+        tipo_descuento,
+        valor,
+        activo
+      )
+    `)
+    .eq('comercio_cupones.activo', true);
 
   if (esSpam && telefono) {
     query = query.eq('es_spam_report', true).ilike('telefono', `%${telefono}%`);

@@ -318,9 +318,28 @@ useEffect(() => {
                       borderRadius: '4px',
                       padding: '1px 5px',
                       fontWeight: 'bold',
-                    }}>OFICIAL</span>
+}}>OFICIAL</span>
+                  )}
+                  {r.tiene_brocupon && r.comercio_cupones?.length > 0 && (
+                    <span style={{
+                      fontSize: '9px',
+                      color: '#FACC15',
+                      border: '1px solid rgba(250,204,21,0.4)',
+                      borderRadius: '4px',
+                      padding: '1px 5px',
+                      fontWeight: 'bold',
+                      marginLeft: 'auto',
+                    }}>🟡 BroCupón activo</span>
                   )}
                 </div>
+                {r.tiene_brocupon && r.comercio_cupones?.[0]?.descripcion && (
+                  <p style={{
+                    fontSize: '10px',
+                    color: '#FACC15',
+                    fontStyle: 'italic',
+                    margin: '2px 0 4px 18px',
+                  }}>{r.comercio_cupones[0].descripcion}</p>
+                )}
                 <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.6' }}>
                   {r.barrio    && <span>📍 {r.barrio} · </span>}
                   {r.direccion && <span>{r.direccion} · </span>}

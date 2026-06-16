@@ -2,8 +2,8 @@ import { useState } from "react";
 
 const C = {
   bg:        "#262524",
-  bgCard:    "rgba(37,37,35,0.95)",
-  bgInner:   "rgba(30,28,27,0.85)",
+  bgCard:    "rgba(86,84,102,0.25)",
+  bgInner:   "rgba(86,84,102,0.15)",
   border:    "rgba(217,193,202,0.12)",
   borderAcc: "rgba(217,193,202,0.35)",
   rosa:      "#D9C1CA",
@@ -181,7 +181,7 @@ export default function MiniGuide({ onClose }) {
             <div>
               <SectionTitle>¿Por qué Cloudflare R2?</SectionTitle>
               <Tip>
-                R2 te da <strong style={{color:C.rosa}}>10 GB gratuitos</strong> para alojar tus videos, audios e imágenes. El contenido vive en <strong style={{color:C.rosa}}>tu cuenta, no en los servidores de Brovision</strong>. Si mañana cambias de plataforma, solo actualizas las URLs en Booster Studio y proyectas de nuevo. Migración en menos de 5 minutos.
+        Bro7vision solicita enlaces para emitir tu contenido. Dichos enlaces los ubicas en tu Booster Studio. Para ello necesitas una plataforma de almacenamiento que Bro7vision no ofrece. Con Cloudflare R2 puedes tener una web propia con un espacio de almacenamiento generoso y además no tendrás que pagar un dominio propio, ya que Cloudflare te dará un dominio público. Es una oferta difícil de rechazar .Cloudflare R2 te da <strong style={{color:C.rosa}}>10 GB gratuitos</strong> para alojar tus videos, audios e imágenes. El contenido vive en <strong style={{color:C.rosa}}>tu cuenta, no en los servidores de Bro7vision</strong>. Si mañana cambias de plataforma, solo actualizas las URLs en Booster Studio y proyectas de nuevo. Migración en menos de 5 minutos. <strong style={{color:C.rosa}}>La IA te guía paso a paso</strong> Hoy en día cualquier IA conoce a CloudFlare y conoce su sistema. Te recomendamos que solicites una guía paso a paso para que sea todo más sencillo. 
               </Tip>
 
               <Notice>
@@ -226,7 +226,7 @@ Explícamelo paso a paso con descripciones detalladas.`}
             <div>
               <SectionTitle>Cómo funciona</SectionTitle>
               <Tip>
-                Brovision no almacena tu contenido. <strong style={{color:C.rosa}}>Actúa como emisor</strong>: lee las URLs que tú le das y las muestra en los visores de la plataforma. El contenido es tuyo, siempre.
+                Bro7vision no almacena tu contenido. <strong style={{color:C.rosa}}>Actúa como emisor</strong>: lee las URLs que tú le das y las muestra en los visores de la plataforma. El contenido es tuyo, siempre.
               </Tip>
 
               <SectionTitle>Flujo completo</SectionTitle>
@@ -245,7 +245,7 @@ Explícamelo paso a paso con descripciones detalladas.`}
                 ))}
               </div>
 
-              <Notice>Los cambios se reflejan en tiempo real. No hace falta que nadie de Brovision apruebe el enlace — solo el semáforo de emisión puede limitar el horario de aparición.</Notice>
+              <Notice>Los cambios se reflejan en tiempo real. No hace falta que nadie de Bro7vision apruebe el enlace — solo el semáforo de emisión puede limitar el horario de aparición.</Notice>
 
               <SectionTitle>Qué puedes proyectar</SectionTitle>
               <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(180px, 1fr))", gap:"1rem", margin:"1rem 0"}}>
@@ -269,13 +269,13 @@ Explícamelo paso a paso con descripciones detalladas.`}
               <Tip>
                 <strong style={{color:C.rosa}}>Blog y BroTwit</strong> se escriben directamente en <strong style={{color:C.rosa}}>Booster Studio</strong>, sin necesidad de alojar nada en R2. El resto del contenido sí requiere una URL pública de tu hosting.
               </Tip>
-              <Tip>Brovision no descarga ni copia tus archivos. Solo los embebe por URL. Si cambias de hosting, actualizas la URL en Studio y proyectas de nuevo. Sin pérdida de datos, sin dependencia.</Tip>
+              <Tip>Bro7vision no descarga ni copia tus archivos. Solo los embebe por URL. Si cambias de hosting, actualizas la URL en Studio y proyectas de nuevo. Sin pérdida de datos, sin dependencia.</Tip>
             </div>
           )}
 
           {tab === "audio" && (
             <div>
-              <SectionTitle>La experiencia radio FM de Brovision</SectionTitle>
+              <SectionTitle>La experiencia radio FM de Bro7vision</SectionTitle>
               <Tip>
                 En móvil Brovision no emite los videos de los creadores para ahorrar datos. En su lugar el usuario ve los <strong style={{color:C.rosa}}>videos de fondo de los 9 escenarios del Reality rotando como un salvapantallas</strong> y escucha tu audio. Es una experiencia de radio FM inmersiva: imagen atmosférica + sonido del creador.
               </Tip>
@@ -299,7 +299,7 @@ Explícamelo paso a paso con descripciones detalladas.`}
 
               <SectionTitle>Cómo convertir un mp4 a mp3</SectionTitle>
               {[
-                { n:1, title:"Descarga el video de fondo", body:"Consigue el archivo mp4 del escenario que quieras usar. Puedes pedírselo al equipo de Brovision o usar uno de tus propios videos." },
+                { n:1, title:"Descarga el video de fondo", body:"Consigue el archivo mp4 del escenario que quieras usar. Puedes pedírselo al equipo de Bro7vision o usar uno de tus propios videos." },
                 { n:2, title:"Conviértelo a mp3", body:<>Usa una herramienta online como <a href="https://cloudconvert.com" target="_blank" rel="noreferrer" style={{color:C.rosa}}>CloudConvert</a> o pídele ayuda a Claude, Gemini o ChatGPT con este prompt:<pre style={{background:C.codeBg,border:`1px solid ${C.border}`,borderRadius:6,padding:"0.65rem 0.9rem",fontFamily:"monospace",fontSize:"1rem",color:C.rosa,marginTop:"0.6rem",whiteSpace:"pre-wrap"}}>{"Tengo un archivo mp4 y quiero extraer solo el audio en formato mp3 con buena calidad. ¿Cómo lo hago desde Windows/Mac sin instalar programas complejos?"}</pre></> },
                 { n:3, title:"Sube el mp3 a tu R2", body:"Arrastra el archivo mp3 a tu bucket de Cloudflare R2, copia la URL pública y pégala en Booster Studio → Audio Móvil." },
                 { n:4, title:"Proyecta", body:"Pulsa «Proyectar Audio Móvil». A partir de ese momento el reproductor central del móvil emitirá tu audio mientras el usuario navega." },
@@ -316,7 +316,7 @@ Explícamelo paso a paso con descripciones detalladas.`}
             <div>
               <SectionTitle>¿Qué es el semáforo?</SectionTitle>
               <Tip>
-                Brovision quiere ser una plataforma abierta, pero con respeto hacia todos los públicos. El semáforo clasifica tu contenido por sensibilidad y determina en qué franja horaria puede aparecer. <strong style={{color:C.rosa}}>No es censura: es un sistema de convivencia.</strong> El equipo de Brovision asigna el estado tras revisar tu contenido, y puedes solicitar revisión en cualquier momento desde Booster Studio.
+                Bro7vision quiere ser una plataforma abierta, pero con respeto hacia todos los públicos. El semáforo clasifica tu contenido por sensibilidad y determina en qué franja horaria puede aparecer. <strong style={{color:C.rosa}}>No es censura: es un sistema de convivencia.</strong> El equipo de Bro7vision asigna el estado tras revisar tu contenido, y puedes solicitar revisión en cualquier momento desde Booster Studio.
               </Tip>
 
               <SectionTitle>Los tres estados</SectionTitle>

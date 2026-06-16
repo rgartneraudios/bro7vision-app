@@ -1,0 +1,81 @@
+[CONTEXTO PARA NUEVO CHAT — BROVISION / WIKIBRO]
+Soy RGartner, creador de BRO7VISION. Llámame Signor Roberto o Maravilla. Tono TARS. NOCOD = no código, solo reflexión. COCHI = OpenCode, ejecuta los cambios.
+
+QUÉ ES WIKIBRO
+Directorio ciudadano hiperlocal integrado en BRO7VISION, gestionado por los personajes Evelyn y Larry en el sector que antes se llamaba Avisos. Sustituye completamente el flujo de avisos entre usuarios.
+Funciona como Wikipedia ciudadana: la comunidad aporta datos de negocios, servicios públicos, entidades — y gana Génesis por ello tras moderación. Evelyn y Larry son el interfaz de búsqueda vía chat.
+
+LO QUE YA ESTÁ HECHO
+
+Tabla wikibro creada en Supabase con campos: id, ciudad, barrio, categoria, nombre, direccion, telefono, horario, red_social, imagen_url, fuente (OFICIAL/COMUNIDAD/OPENSTREETMAP), verificado, aportado_por, genesis_otorgados, es_spam_report, spam_descripcion, reportes_count, created_at, updated_at
+RLS: lectura pública, inserción autenticada, update solo admin
+Índices en ciudad, barrio, categoria, es_spam_report
+evelynExploraPS.js reescrito con tres funciones: detectarIntencionWikiBro, extraerParametrosBusqueda, buildEvelynWikiPrompt, armarSobreWikiBro
+useAgentEvelyn.js adaptado: detecta intención → extrae parámetros → consulta tabla wikibro → arma sobre → Evelyn responde
+EvelynBanner.jsx limpio: sin BroCardStrip, con acordeón traslúcido WikiBro que muestra resultados con badge 🟢 OFICIAL / ⚪ COMUNIDAD
+AvisosTab.jsx eliminado
+Pestaña Avisos eliminada del BoosterModal
+Bloque BROSHOP_AVISO eliminado de useStripCards.js
+system_profiles.js actualizado: Evelyn y Larry con sector/destino WIKIBRO, entrada AVI eliminada de PREFIJOS_COMERCIO
+Todo commiteado y pusheado
+
+
+STACK
+
+React/Vite → Cloudflare Pages
+Cloudflare Workers (backend)
+Supabase (PostgreSQL + RLS)
+Groq (IA de personajes)
+
+
+PENDIENTE WIKIBRO — HOJA DE RUTA
+A — Formulario de aportación
+
+Panel donde usuario registrado aporta una entrada al directorio
+Campos: ciudad, barrio, categoria, nombre, direccion, telefono, horario, red_social, imagen_url
+Sin enlaces clicables ni URLs en campos de texto — validación frontend que bloquea http, https, bit.ly
+Al enviar: estado verificado = false, genesis_otorgados = false
+El usuario ve sus aportaciones pendientes de moderación
+Recompensa: tarifa plana (a definir cantidad exacta) de Génesis al aprobar
+
+B — Panel de moderación admin
+
+Lista de entradas con verificado = false
+Botón aprobar → verificado = true + genesis_otorgados = true + suma Génesis al aportado_por
+Botón rechazar → elimina entrada + notificación al usuario
+
+C — Reporte de spam
+
+Desde Evelyn: usuario reporta número sospechoso
+Crea entrada en wikibro con es_spam_report = true + telefono + spam_descripcion
+reportes_count se incrementa si el número ya existe
+La comunidad puede confirmar reportes existentes sumando al contador
+
+D — Importación semilla OpenStreetMap
+
+Script que consulta Overpass API por ciudad y categoría
+Puebla wikibro con fuente = 'OPENSTREETMAP', verificado = true
+Arranca con datos reales desde el día uno sin depender de la comunidad
+
+E — Campaña email Brevo
+
+300 emails/mes a entidades y negocios reales
+Invitación a verificar su ficha en WikiBro y registrarse en BroVision
+Excusa natural para captación de comercios y profesionales
+
+F — Contacto de creadores vía Evelyn
+
+Si buscas un creador/comercio registrado en BroVision, Evelyn lee de profiles
+Muestra email público y @handle de red social que el creador expuso en su Booster
+Sin mensajes privados internos — el contacto ocurre fuera de BroVision
+
+
+DECISIONES DE PRODUCTO TOMADAS
+
+Sin BroCards en WikiBro — panel tipo acordeón traslúcido con listado limpio
+Sin mapa ni API de mapas — el barrio es el orientador geográfico
+Sin mensajes privados — contacto vía email/@handle público
+Emails solo texto plano en listado, no como mailto clicable
+URLs bloqueadas en aportaciones de comunidad
+Génesis por aportar, no por consumir el directorio
+Ciudad la aportan los Osos — Evelyn solo extrae categoría y barrio del texto libre

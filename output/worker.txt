@@ -53,7 +53,7 @@ export default {
 
     const corsHeaders = {
       'Access-Control-Allow-Origin':  '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     };
 
@@ -61,12 +61,17 @@ export default {
       return new Response(null, { status: 204, headers: corsHeaders });
     }
 
-    if (request.method !== 'POST') {
+    if (request.method !== 'POST' && request.method !== 'GET') {
       return json({ error: 'Método no permitido' }, 405, corsHeaders);
     }
 
     try {
       const url = new URL(request.url);
+
+      // GET /carrusel-audmovil
+      if (request.method === 'GET' && url.pathname === '/carrusel-audmovil') {
+        return await handleCarruselAudmovil(env, corsHeaders);
+      }
 
       if (url.pathname === '/canjear-cupon')      return await handleCanjearCupon(request, env, corsHeaders);
       if (url.pathname === '/proyectar')          return await handleProyectar(request, env, corsHeaders);
@@ -447,6 +452,32 @@ async function handleCanjearCupon(request, env, corsHeaders) {
     balance_nuevo:    nuevoBalance,
     mensaje:          'Cupón canjeado! En tu Booster Studio en Mis Cupones te espera tu Sticker con la palabra Clave',
   }, 200, corsHeaders);
+}
+
+// ================================================================
+// ENDPOINT: GET /carrusel-audmovil → carrusel audio móvil con datos de creador
+// ================================================================
+async function handleCarruselAudmovil(env, corsHeaders) {
+  const datos = await sbGet(env,
+    'proyeccion_audmovil?select=url,titulo,descripcion,tipo,updated_at,promoted_until,user_id,profiles(username)&order=promoted_until.desc.nullslast,updated_at.desc&limit=40'
+  );
+
+  if (!datos) {
+    return json({ error: 'Error al obtener carrusel' }, 500, corsHeaders);
+  }
+
+  const carrusel = datos.map(item => ({
+    url:            item.url,
+    titulo:         item.titulo         || null,
+    descripcion:    item.descripcion    || null,
+    tipo:           item.tipo           || 'original',
+    updated_at:     item.updated_at,
+    promoted_until: item.promoted_until || null,
+    user_id:        item.user_id,
+    username:       item.profiles?.username || null,
+  }));
+
+  return json({ ok: true, carrusel }, 200, corsHeaders);
 }
 
 // ================================================================
