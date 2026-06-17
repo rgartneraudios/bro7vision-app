@@ -1,8 +1,7 @@
-// src/components/personajes/EvelynBanner.jsx
-
 import React, { useState, useEffect, useRef } from 'react';
 import AgentChatInput from '../AgentChatInput';
 import { useAgentEvelyn } from '../../hooks/useAgentEvelyn';
+import WikiBroAcordeon from './WikiBroAcordeon';
 
 const GREETINGS_EVELYN = [
   "Soy Evelyn 🧡 Básicamente, ¿qué aviso te trae por aquí?",
@@ -25,39 +24,27 @@ export default function EvelynBanner({
   genesis      = 0,
   userId       = null,
   autorAlias   = 'Ciudadano',
-  realItems    = [],
-  onAvisoConectar,
-  onAvisoPublicar,
-  setProjectingUser,
   onHandoff,
   iaMode  = 'off',
   isAdmin = false,
 }) {
   const personajeActivo = (avisos_personaje || personaje || 'evelyn').toLowerCase();
 
-  const { mensaje, loading, enviar, avisoEnConstruccion, setAvisoEnConstruccion, esPatrocinado, ultimaRespuesta } = useAgentEvelyn({
+  const { mensaje, loading, enviar, resultadosWiki, acordeonAbierto, setAcordeonAbierto } = useAgentEvelyn({
     personaje:   personajeActivo,
     iaMode,
     isAdmin,
     onHandoff,
-    onAvisoConectar,
-    onAvisoPublicar,
     ciudad:      sessionCity,
     genesis,
     userId,
     autorAlias,
   });
 
-  const [display, setDisplay]             = useState('');
-  const [cursor, setCursor]               = useState(true);
-  const [currentMsg, setCurrentMsg]       = useState('');
-  const [selectedCard, setSelectedCard]   = useState(null);
-  const [esperandoConexion, setEsperandoConexion] = useState(false);
-  const [esperandoImagen, setEsperandoImagen] = useState(false);
-  const [subiendoBanner, setSubiendoBanner] = useState(false);
-  const [bannerFile, setBannerFile] = useState(null);
-  const [wikiResultados, setWikiResultados] = useState([]);
-  const fileInputRef = useRef(null);
+  const [display, setDisplay]       = useState('');
+  const [cursor, setCursor]         = useState(true);
+  const [currentMsg, setCurrentMsg] = useState('');
+  const [isMobile, setIsMobile]     = useState(false);
   const charIdx = useRef(0);
 
   const esLarry         = personajeActivo === 'larry';
@@ -86,18 +73,8 @@ export default function EvelynBanner({
   useEffect(() => {
     if (mensaje) {
       setCurrentMsg(mensaje);
-      setSelectedCard(null);
-      setEsperandoConexion(false);
     }
   }, [mensaje]);
-
-useEffect(() => {
-    if (ultimaRespuesta?.resultados?.length > 0) {
-      setWikiResultados(ultimaRespuesta.resultados);
-    } else {
-      setWikiResultados([]);
-    }
-  }, [ultimaRespuesta]);
 
   useEffect(() => {
     if (!currentMsg) return;
@@ -112,144 +89,15 @@ useEffect(() => {
   }, [currentMsg]);
 
   useEffect(() => {
-    if (
-      avisoEnConstruccion?.tipo &&
-      avisoEnConstruccion?.titulo &&
-      avisoEnConstruccion?.contenido &&
-      !avisoEnConstruccion?.banner_avi_checked
-    ) {
-      setEsperandoImagen(true);
-    }
-  }, [avisoEnConstruccion]);
-
-  const handleCardClick = (card) => {
-    if (selectedCard?.bro_pd === card.bro_pd) {
-      setSelectedCard(null);
-      setEsperandoConexion(false);
-      return;
-    }
-    setSelectedCard(card);
-    setEsperandoConexion(false);
-  };
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleEnviar = (texto) => {
-    setSelectedCard(null);
-    setEsperandoConexion(false);
-
-    if (
-      avisoEnConstruccion?.tipo &&
-      avisoEnConstruccion?.titulo &&
-      avisoEnConstruccion?.contenido &&
-      esperandoImagen === false &&
-      texto.trim().toUpperCase() !== 'CONFIRMO'
-    ) {
-      setEsperandoImagen(true);
-      return;
-    }
-
     enviar(texto);
   };
-
-  const handleConectar = () => {
-    if (!selectedCard) return;
-    if (genesis < 200) {
-      setCurrentMsg('No tienes suficientes génesis. Necesitas 200 para conectar.');
-      setSelectedCard(null);
-      return;
-    }
-    setEsperandoConexion(true);
-  };
-
-  const handleConfirmar = () => {
-    if (!selectedCard) return;
-    onAvisoConectar?.({
-      id:      selectedCard.aviso_id || selectedCard.bro_pd,
-      user_id: selectedCard.user_id,
-      title:   selectedCard.titulo,
-    });
-    const autorProfile = realItems.find(i => i.id === selectedCard.user_id);
-    if (autorProfile && setProjectingUser) setProjectingUser(autorProfile);
-    setCurrentMsg('Conectado. El autor recibirá tu mensaje. 🐺');
-    setSelectedCard(null);
-    setEsperandoConexion(false);
-  };
-
-  const handleBannerSelect = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      alert('Solo se permite JPEG, PNG o WebP');
-      e.target.value = '';
-      return;
-    }
-
-    if (file.size > 2 * 1024 * 1024) {
-      alert('La imagen debe pesar máximo 2MB');
-      e.target.value = '';
-      return;
-    }
-
-    setBannerFile(file);
-    setEsperandoImagen(true);
-  };
-
-  const handleUploadBanner = async () => {
-    if (!bannerFile) return;
-    setSubiendoBanner(true);
-
-    try {
-      const safeFileName = `avisos/${Date.now()}-${bannerFile.name.replace(/\s+/g, '_')}`;
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileName: safeFileName, fileType: bannerFile.type }),
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error('Error HTTP ' + res.status + ': ' + errorText);
-      }
-
-      const { uploadUrl } = await res.json();
-      if (!uploadUrl) throw new Error('Sin ticket de subida');
-
-      await fetch(uploadUrl, {
-        method: 'PUT',
-        body: bannerFile,
-        headers: { 'Content-Type': bannerFile.type },
-      });
-
-      const publicUrl = `https://media.bro7vision.com/${safeFileName}`;
-      setAvisoEnConstruccion(prev => ({ ...prev, banner_avi: publicUrl, banner_avi_checked: true }));
-      setEsperandoImagen(false);
-      setBannerFile(null);
-
-    } catch (err) {
-      console.error('Error subida:', err);
-      alert('❌ Error: ' + err.message);
-    } finally {
-      setSubiendoBanner(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
-
-  const handleSkipBanner = () => {
-    setAvisoEnConstruccion(prev => ({ ...prev, banner_avi: null, banner_avi_checked: true }));
-    setEsperandoImagen(false);
-    setBannerFile(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  const avisoParaPreview = avisoEnConstruccion
-    ? { ...avisoEnConstruccion, ciudad: sessionCity || '' }
-    : null;
-
-  const CAMPOS_AVISO = ['tipo', 'titulo', 'contenido'];
-  const labelCampo = (c) => ({ tipo: 'Tipo', titulo: 'Título', contenido: 'Descripción' }[c] || '');
-  const campoActual = avisoEnConstruccion
-    ? CAMPOS_AVISO.find(c => !avisoEnConstruccion[c]) || 'confirmar'
-    : null;
 
   return (
     <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
@@ -269,11 +117,6 @@ useEffect(() => {
         }
         .av-loading span:nth-child(2) { animation-delay: 0.2s; }
         .av-loading span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes stepIn {
-          from { opacity: 0; transform: translateX(-6px); }
-          to   { opacity: 1; transform: translateX(0); }
-        }
-        .av-step { animation: stepIn 0.25s ease both; }
         .av-texto {
           color: ${colorTexto};
           font-style: italic; font-weight: 900; text-transform: uppercase;
@@ -282,240 +125,16 @@ useEffect(() => {
         }
       `}</style>
 
-      {/* 1. RESULTADOS WIKIBRO */}
-      {wikiResultados.length > 0 && (
-        <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
-          <div style={{
-            background: 'rgba(0,0,0,0.55)',
-            backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(34,211,238,0.2)',
-            borderRadius: '16px',
-            padding: '12px 16px',
-            marginTop: '10px',
-            maxHeight: '260px',
-            overflowY: 'auto',
-          }}>
-            {wikiResultados.map((r, i) => (
-              <div key={i} style={{
-                borderBottom: i < wikiResultados.length - 1
-                  ? '1px solid rgba(255,255,255,0.06)' : 'none',
-                padding: '10px 0',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '10px' }}>
-                    {r.verificado ? '🟢' : '⚪'}
-                  </span>
-                  <span style={{
-                    fontSize: '13px',
-                    fontWeight: 'bold',
-                    color: '#e2e8f0',
-                  }}>{r.nombre}</span>
-                  {r.verificado && (
-                    <span style={{
-                      fontSize: '9px',
-                      color: '#22d3ee',
-                      border: '1px solid rgba(34,211,238,0.4)',
-                      borderRadius: '4px',
-                      padding: '1px 5px',
-                      fontWeight: 'bold',
-}}>OFICIAL</span>
-                  )}
-                  {r.tiene_brocupon && r.comercio_cupones?.length > 0 && (
-                    <span style={{
-                      fontSize: '9px',
-                      color: '#FACC15',
-                      border: '1px solid rgba(250,204,21,0.4)',
-                      borderRadius: '4px',
-                      padding: '1px 5px',
-                      fontWeight: 'bold',
-                      marginLeft: 'auto',
-                    }}>🟡 BroCupón activo</span>
-                  )}
-                </div>
-                {r.tiene_brocupon && r.comercio_cupones?.[0]?.descripcion && (
-                  <p style={{
-                    fontSize: '10px',
-                    color: '#FACC15',
-                    fontStyle: 'italic',
-                    margin: '2px 0 4px 18px',
-                  }}>{r.comercio_cupones[0].descripcion}</p>
-                )}
-                <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: '1.6' }}>
-                  {r.barrio    && <span>📍 {r.barrio} · </span>}
-                  {r.direccion && <span>{r.direccion} · </span>}
-                  {r.telefono  && <span>📞 {r.telefono} · </span>}
-                  {r.horario   && <span>🕐 {r.horario}</span>}
-                  {r.red_social && <span> · {r.red_social}</span>}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* WikiBroAcordeon overlay */}
+      {acordeonAbierto && (
+        <WikiBroAcordeon
+          resultados={resultadosWiki}
+          onClose={() => setAcordeonAbierto(false)}
+          isMobile={isMobile}
+        />
       )}
 
-      {/* 2. INDICADOR DE PROGRESO — solo durante construcción */}
-      {avisoEnConstruccion && campoActual && (
-        <div className="flex items-center gap-2 w-full max-w-2xl px-2 mb-2">
-          {CAMPOS_AVISO.map((campo) => {
-            const completado = !!avisoEnConstruccion[campo];
-            const activo     = campo === campoActual;
-            return (
-              <div key={campo} className="av-step flex items-center gap-1.5">
-                <div style={{
-                  width: activo ? '10px' : '8px', height: activo ? '10px' : '8px',
-                  borderRadius: '50%',
-                  background: completado ? colorPrimario : activo ? colorTexto : `${colorPrimario}33`,
-                  boxShadow: activo ? `0 0 8px ${colorPrimario}` : 'none',
-                  transition: 'all 0.3s ease',
-                }} />
-                <span style={{
-                  fontSize: '9px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-                  color: completado ? colorPrimario : activo ? colorTexto : `${colorPrimario}44`,
-                  transition: 'all 0.3s ease',
-                }}>
-                  {labelCampo(campo)}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* 2.5. SUBIDA DE BANNER — condicional */}
-      {esperandoImagen && (
-        <div className="w-full max-w-2xl px-2 mb-2 pointer-events-auto">
-          <div className="bg-black/40 rounded-2xl border border-white/5 overflow-hidden transition-all duration-300 p-4">
-            <div className="flex flex-col items-center gap-3">
-              <p style={{
-                color: colorTexto,
-                fontSize: '10px',
-                fontWeight: 900,
-                letterSpacing: '0.15em',
-                textTransform: 'uppercase',
-              }}>
-                ◈ Banner Visual (Opcional)
-              </p>
-
-              {!bannerFile ? (
-                <>
-                  <label
-                    htmlFor="banner-avi-input"
-                    style={{
-                      padding: '10px 24px',
-                      background: `${colorPrimario}22`,
-                      border: `1px solid ${colorPrimario}88`,
-                      borderRadius: '1.5rem',
-                      color: colorTexto,
-                      fontWeight: 900,
-                      fontSize: 11,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.1em',
-                      cursor: 'pointer',
-                      boxShadow: `0 0 16px ${glowColor}`,
-                    }}
-                  >
-                    ◈ SUBIR BANNER
-                  </label>
-                  <button
-                    onClick={handleSkipBanner}
-                    style={{
-                      padding: '10px 24px',
-                      background: 'transparent',
-                      border: `1px solid ${colorPrimario}44`,
-                      borderRadius: '1.5rem',
-                      color: colorTexto,
-                      fontWeight: 900,
-                      fontSize: 11,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.1em',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    SALTAR
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div className="relative w-full max-w-xs">
-                    <img
-                      src={URL.createObjectURL(bannerFile)}
-                      alt="Preview"
-                      className="w-full rounded-lg border border-white/10"
-                      style={{ maxHeight: '200px', objectFit: 'contain' }}
-                    />
-                    <div style={{
-                      position: 'absolute',
-                      top: 8,
-                      right: 8,
-                      background: 'rgba(0,0,0,0.75)',
-                      padding: '4px 8px',
-                      borderRadius: '999px',
-                      fontSize: '9px',
-                      fontWeight: 900,
-                      color: '#fff',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.1em',
-                    }}>
-                      {(bannerFile.size / 1024).toFixed(0)} KB
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: 10, width: '100%', justifyContent: 'center' }}>
-                    <button
-                      onClick={handleSkipBanner}
-                      style={{
-                        padding: '8px 20px',
-                        background: 'transparent',
-                        border: `1px solid ${colorPrimario}44`,
-                        borderRadius: '1.5rem',
-                        color: colorTexto,
-                        fontWeight: 900,
-                        fontSize: 11,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.1em',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      CAMBIAR
-                    </button>
-                    <button
-                      onClick={handleUploadBanner}
-                      disabled={subiendoBanner}
-                      style={{
-                        padding: '8px 20px',
-                        background: subiendoBanner ? `${colorPrimario}44` : `${colorPrimario}88`,
-                        border: `1px solid ${colorPrimario}`,
-                        borderRadius: '1.5rem',
-                        color: '#fff',
-                        fontWeight: 900,
-                        fontSize: 11,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.1em',
-                        cursor: subiendoBanner ? 'not-allowed' : 'pointer',
-                        opacity: subiendoBanner ? 0.6 : 1,
-                        boxShadow: subiendoBanner ? 'none' : `0 0 16px ${glowColor}`,
-                      }}
-                    >
-                      {subiendoBanner ? '⏳ Subiendo...' : '✓ CONFIRMAR'}
-                    </button>
-                  </div>
-                </>
-              )}
-
-              <input
-                id="banner-avi-input"
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={handleBannerSelect}
-                className="hidden"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 3. BANNER */}
+      {/* BANNER */}
       <div className="w-full max-w-2xl mb-3 pointer-events-auto">
         <div
           className="w-full flex flex-col items-center justify-center text-center"
@@ -530,117 +149,22 @@ useEffect(() => {
             transition: 'all 0.3s ease',
           }}
         >
-          {/* Sin mensaje ni card */}
-          {!currentMsg && !selectedCard && !loading && (
+          {/* Sin mensaje */}
+          {!currentMsg && !loading && (
             <div className="flex items-center gap-2">
               <p style={{ color: `${colorPrimario}99`, fontSize: 10, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
                 ◈ {nombrePersonaje} · AVISOS
               </p>
-              {esPatrocinado && (
-                <span style={{ fontSize: 8, fontWeight: 900, letterSpacing: '0.2em', color: '#000', background: '#FACC15', borderRadius: 3, padding: '1px 5px', textTransform: 'uppercase' }}>
-                  PATROCINADO
-                </span>
-              )}
             </div>
           )}
 
           {/* Loading */}
-          {loading && !selectedCard && (
+          {loading && (
             <div className="av-loading"><span /><span /><span /></div>
           )}
 
-          {/* Card seleccionada */}
-          {selectedCard && !loading && (
-            <div className="w-full flex flex-col items-center gap-3">
-              <span style={{
-                fontSize: 10, fontWeight: 900, letterSpacing: '0.2em',
-                textTransform: 'uppercase', padding: '3px 14px',
-                border: `1px solid ${colorPrimario}55`,
-                borderRadius: '999px',
-                color: selectedCard.categoria === 'OFERTA' ? '#00FF9C' : '#00C3FF',
-              }}>
-                {selectedCard.categoria}
-              </span>
-
-              <p style={{
-                color: '#fff', fontWeight: 900, fontStyle: 'italic',
-                textTransform: 'uppercase',
-                fontSize: 'clamp(14px, 2vw, 18px)',
-                lineHeight: 1.3,
-                textShadow: `0 0 16px ${glowColor}`,
-              }}>
-                {selectedCard.titulo}
-              </p>
-
-              <p style={{
-                color: colorTexto, fontWeight: 900, fontStyle: 'italic',
-                textTransform: 'uppercase',
-                fontSize: 'clamp(12px, 1.6vw, 15px)',
-                lineHeight: 1.5,
-                textShadow: `0 0 12px ${glowColor}`,
-              }}>
-                {selectedCard.descripcion}
-                <span style={{ opacity: cursor ? 1 : 0 }}>_</span>
-              </p>
-
-              {!esperandoConexion ? (
-                <button
-                  onClick={handleConectar}
-                  style={{
-                    marginTop: 4,
-                    padding: '10px 28px',
-                    background: `${colorPrimario}22`,
-                    border: `1px solid ${colorPrimario}88`,
-                    borderRadius: '1.5rem',
-                    color: colorTexto,
-                    fontWeight: 900, fontSize: 12,
-                    textTransform: 'uppercase', letterSpacing: '0.15em',
-                    cursor: 'pointer',
-                    boxShadow: `0 0 16px ${glowColor}`,
-                  }}
-                >
-                  ◈ CONECTAR · 200 GÉNESIS
-                </button>
-              ) : (
-                <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-                  <button
-                    onClick={handleConfirmar}
-                    style={{
-                      padding: '10px 24px',
-                      background: '#00ff8822',
-                      border: '1px solid #00ff88',
-                      borderRadius: '1.5rem',
-                      color: '#00ff88',
-                      fontWeight: 900, fontSize: 12,
-                      textTransform: 'uppercase', letterSpacing: '0.15em',
-                      cursor: 'pointer',
-                      boxShadow: '0 0 16px #00ff8844',
-                    }}
-                  >
-                    ✓ CONFIRMAR · 200 GÉNESIS
-                  </button>
-                  <button
-                    onClick={() => { setSelectedCard(null); setEsperandoConexion(false); }}
-                    style={{
-                      padding: '10px 18px',
-                      background: 'transparent',
-                      border: `1px solid ${colorPrimario}44`,
-                      borderRadius: '1.5rem',
-                      color: colorTexto,
-                      fontWeight: 900, fontSize: 11,
-                      textTransform: 'uppercase', letterSpacing: '0.1em',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    CANCELAR
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
           {/* Mensaje del bot */}
-          {!selectedCard && !loading && currentMsg && (
+          {!loading && currentMsg && (
             <p className="av-texto">
               {display}<span style={{ opacity: cursor ? 1 : 0 }}>_</span>
             </p>
@@ -648,11 +172,10 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* 4. INPUT */}
+      {/* INPUT */}
       <div className="w-full max-w-2xl pointer-events-auto mb-4">
         <AgentChatInput agent="evelyn" onSend={handleEnviar} isLoading={loading} />
       </div>
     </div>
   );
 }
-
