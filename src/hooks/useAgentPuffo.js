@@ -23,9 +23,9 @@ const FRASES_PEDIR_CIUDAD = [
   "¿Dónde buscas? Ciudad o país — lo que tengas sobre la mesa.",
 ];
 const FRASES_FALLBACK = [
-  "Ajá... no te sigo del todo. ¿Productos, servicios, música o avisos? Dame el titular.",
+  "Ajá... no te sigo del todo. ¿BroCupones Productos, BroCupones Servicios, música o BroDeseos? Dame el titular.",
   "Interesante... pero necesito más contexto. ¿A qué sector quieres ir?",
-  "Te corto un segundo ahí. ¿Productos, servicios, audio o avisos? Eso primero.",
+  "Te corto un segundo ahí. ¿BroCupones Productos, BroCupones Servicios, audio o BroDeseos? Eso primero.",
 ];
 
 export function useAgentPuffo({ iaMode, isAdmin, onHandoff, ciudad = null }) {

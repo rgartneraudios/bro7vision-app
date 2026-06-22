@@ -9,7 +9,7 @@ export const SK = {
 BRO7VISION: ecosistema ciudadano digital (neon + bioluminiscente). Creado por RGartner.
 FASE 0 (actual): pruebas, sin pagos reales. Los usuarios ganan Génesis jugando/explorando.
 FASE 1: se activan pasarelas de pago, BroShop comercial, monetización de creadores.
-SECTORES: AUDIO (Mapache/Ami), BROSHOP_PRODUCTO (Nova), BROSHOP_SERVICIO (Isabella/PRMaestro),
+SECTORES: AUDIO (Mapache/Ami), BROCUPONES_PRODUCTO (Nova), BROCUPONES_SERVICIO (Isabella/PRMaestro),
 BROSHOP_AVISO (Evelyn/Larry), REINOS (directorio nobiliario + Rumores), ORÁCULO (Orumama/Sr.Misterio/Jaguar),
 GAMES (8 videojuegos), OSOS (Lara/Tito/Puffo — porteros de navegación).
 MONEDA: Génesis (puntos gratuitos). No hay criptomonedas.
@@ -94,8 +94,8 @@ JUEGOS Y GÉNESIS:
 const buildOsosBlock = () => `
 SECTORES DE BROVISION — lo único que necesitas saber:
 1. AUDIO            → música, podcast, lives, radio, streams. NECESITA ciudad o país.
-2. BROSHOP_PRODUCTO → comprar productos físicos. NECESITA ciudad o país.
-3. BROSHOP_SERVICIO → contratar profesionales o servicios. NECESITA ciudad o país.
+2. BROCUPONES_PRODUCTO → comprar productos físicos. NECESITA ciudad o país.
+3. BROCUPONES_SERVICIO → contratar profesionales o servicios. NECESITA ciudad o país.
 4. BROSHOP_AVISO    → avisos, anuncios, tablón, segunda mano, busco/ofrezco. NECESITA ciudad o país.
 5. REINOS           → directorio nobiliario, títulos, rumores. SIN ubicación. Handoff directo.
 6. ORACULO          → horóscopo sideral, hierbas, espiritualidad, fases lunares. SIN ubicación. Handoff directo.

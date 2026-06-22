@@ -7,6 +7,9 @@ import BoosterBroCards from './booster/BoosterBroCards';
 import BoosterEnlaces from './booster/BoosterEnlaces';
 import BoosterMisCupones from './booster/BoosterMisCupones';
 import BoosterCanjesRecibidos from './booster/BoosterCanjesRecibidos';
+import BoosterMisDeseos from './booster/BoosterMisDeseos';
+import BoosterEnviarOferta from './booster/BoosterEnviarOferta';
+import { CoordenadosBlock } from './CoordenadosBlock';
 
 function getCicloLunar() {
   const known = new Date('2000-01-06T18:14:00Z');
@@ -71,6 +74,7 @@ const BoosterModal = ({ onClose }) => {
   const [reinoPropuesto,  setReinoPropuesto]  = useState('');
   const [juramentoFirmado,setJuramentoFirmado]= useState(false);
   const [guardandoReino,  setGuardandoReino]  = useState(false);
+  const [userId, setUserId] = useState(null);
 
   // ── FORMDATA PRINCIPAL ──
   const [formData, setFormData] = useState({
@@ -132,6 +136,7 @@ const BoosterModal = ({ onClose }) => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
+        setUserId(user.id);
         const { data: profile } = await supabase
           .from('profiles').select('*').eq('id', user.id).single();
         if (!profile) return;
@@ -342,6 +347,8 @@ const BoosterModal = ({ onClose }) => {
                  { id: 'linaje',   label: '👑 Linaje',         color: 'orange' },
                  { id: 'mis-brocards', label: '📇 Selección BroCards', color: 'emerald' },
                  { id: 'mis-cupones', label: '🎫 Mis Cupones', color: 'yellow' },
+                 { id: 'mis-deseos',     label: '🌠 Mis Deseos',     color: 'cyan'   },
+                 { id: 'enviar-oferta',  label: '📨 Enviar Oferta',  color: 'fuchsia'  },
                  ...(tieneComercioCupones ? [{ id: 'canjes-recibidos', label: '📋 Canjes Recibidos', color: 'cyan' }] : []),
               ].filter(Boolean).map((item) => (
               <button key={item.id} onClick={() => setTab(item.id)}
@@ -1009,6 +1016,10 @@ const BoosterModal = ({ onClose }) => {
 
              {/* ══ 📋 CANJES RECIBIDOS ══ */}
              {tab === 'canjes-recibidos' && tieneComercioCupones && <BoosterCanjesRecibidos />}
+
+              {tab === 'mis-deseos' && <BoosterMisDeseos userId={userId} />}
+
+              {tab === 'enviar-oferta' && <BoosterEnviarOferta userId={userId} />}
 
             </div>
         </div>

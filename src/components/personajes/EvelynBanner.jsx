@@ -1,20 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AgentChatInput from '../AgentChatInput';
 import { useAgentEvelyn } from '../../hooks/useAgentEvelyn';
-import WikiBroAcordeon from './WikiBroAcordeon';
+import BroDeseosPanel from './BroDeseosPanel';
 
 const GREETINGS_EVELYN = [
-  "Soy Evelyn 🧡 Básicamente, ¿qué aviso te trae por aquí?",
-  "Evelyn comunica. Qué necesitas y lo resolvemos rápido.",
-  "Soy Evelyn 🧡 A ver — ¿buscas algo o tienes algo que ofrecer?",
-  "Evelyn aquí. En resumen — ¿qué aviso te trae por aquí?",
+  "Soy Evelyn. ¿Quieres publicar algo que buscas o ver lo que la gente necesita?",
+  "Evelyn al habla. ¿Tienes algo que publicar o quieres ver los deseos activos?",
+  "Soy Evelyn. A ver — ¿quieres publicar un deseo de compra o buscar lo que pide la gente?",
+  "Evelyn aquí. ¿Publicamos tu deseo o echamos un ojo a lo que busca la ciudad?",
 ];
 
 const GREETINGS_LARRY = [
-  "Larry al aparato. La sesión de Tokyo acaba de cerrar — ¿qué movimiento traes? ☕",
-  "Soy Larry. He visto subir y caer mercados enteros... ¿qué aviso buscas, amigo mío?",
-  "Larry aquí, con el café y las gráficas abiertas. ¿Qué posición traes hoy? 🐕",
-  "Soy Larry. El tablón siempre cotiza. ¿Qué aviso te trae por aquí?",
+  "Larry al aparato. Negocios en marcha — ¿buscas algo o tienes algo que publicar?",
+  "Soy Larry. He visto oferta y demanda... ¿qué movimiento quieres hacer hoy?",
+  "Larry aquí. ¿Quieres publicar una necesidad o estás explorando el mercado?",
 ];
 
 export default function EvelynBanner({
@@ -30,7 +29,7 @@ export default function EvelynBanner({
 }) {
   const personajeActivo = (avisos_personaje || personaje || 'evelyn').toLowerCase();
 
-  const { mensaje, loading, enviar, resultadosWiki, acordeonAbierto, setAcordeonAbierto } = useAgentEvelyn({
+  const { mensaje, loading, enviar, resultadosBroDeseos, panelAbierto, setPanelAbierto } = useAgentEvelyn({
     personaje:   personajeActivo,
     iaMode,
     isAdmin,
@@ -125,11 +124,11 @@ export default function EvelynBanner({
         }
       `}</style>
 
-      {/* WikiBroAcordeon overlay */}
-      {acordeonAbierto && (
-        <WikiBroAcordeon
-          resultados={resultadosWiki}
-          onClose={() => setAcordeonAbierto(false)}
+      {panelAbierto && (
+        <BroDeseosPanel
+          modo="listado"
+          resultados={resultadosBroDeseos}
+          onClose={() => setPanelAbierto(false)}
           isMobile={isMobile}
         />
       )}
@@ -153,7 +152,7 @@ export default function EvelynBanner({
           {!currentMsg && !loading && (
             <div className="flex items-center gap-2">
               <p style={{ color: `${colorPrimario}99`, fontSize: 10, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
-                ◈ {nombrePersonaje} · AVISOS
+                ◈ {nombrePersonaje} · BRODESEOS
               </p>
             </div>
           )}

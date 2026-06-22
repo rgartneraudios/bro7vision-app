@@ -34,8 +34,8 @@ REGLAS:
 5. Sin asteriscos ni acciones entre asteriscos.
 
 HANDOFFS DISPONIBLES:
-- HANDOFF:BROSHOP_PRODUCTO → productos (necesita ciudad)
-- HANDOFF:BROSHOP_SERVICIO → servicios (necesita ciudad)
+- HANDOFF:BROCUPONES_PRODUCTO → productos (necesita ciudad)
+- HANDOFF:BROCUPONES_SERVICIO → servicios (necesita ciudad)
 - HANDOFF:AUDIO → audio (necesita ciudad)
 - HANDOFF:BROSHOP_AVISO → avisos (necesita ciudad)
 - HANDOFF:ORACULO → oráculo (sin ciudad)

@@ -72,7 +72,7 @@ blue: {
 const AGENT_PROFILES = {
   osos: {
     theme: 'violet',
-    text: '✦  Ejemplos: Hola Lara · Nova en Medellín · Productos en España · Avisos en Madrid · Cuéntame una historia'
+    text: '✦  Saluda a tu personaje favorito y elige Sector y ubicación. Ellos te llevarán. Ejemplos: Hola Lara · Pasame con Nova · BroProductos en España · BroDeseos · BroServicios · Dame con Mapache'
   },
   nova: {
   theme: 'gold',
@@ -84,7 +84,7 @@ const AGENT_PROFILES = {
   },
   evelyn: {
     theme: 'blue',
-    text: '✦  Hola! Quieres publicar un aviso? Escribe P + Enter | Quieres consultar avisos? Pulsa las tarjetas BroCards '
+    text: '✦  Publica o busca lo que necesitas — BroDeseos '
   },
   mapache: {
     theme: 'cyan',

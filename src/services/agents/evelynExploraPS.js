@@ -1,70 +1,80 @@
 // src/services/agents/evelynExploraPS.js
-// WikiBro — Directorio ciudadano
+// BroDeseos — Deseos de compra ciudadanos
 // Personajes: Evelyn / Larry
+
+export const CATEGORIAS = [
+  'Electrodomésticos',
+  'Ropa y calzado',
+  'Alimentación y restauración',
+  'Salud y bienestar',
+  'Hogar y muebles',
+  'Tecnología',
+  'Servicios profesionales',
+  'Ocio y viajes',
+  'Otros',
+];
+
+const CATEGORIA_KEYWORDS = {
+  'Electrodomésticos':          ['electrodoméstico', 'lavadora', 'nevera', 'frigorífico', 'microondas', 'horno', 'lavavajillas', 'cocina', 'frigo', 'congelador'],
+  'Ropa y calzado':             ['ropa', 'calzado', 'zapatos', 'vestido', 'camiseta', 'pantalón', 'chaqueta', 'abrigo', 'zapatilla', 'bufanda', 'gorro'],
+  'Alimentación y restauración': ['comida', 'restaurante', 'bar', 'cafetería', 'supermercado', 'alimentación', 'comer', 'cena', 'desayuno', 'almuerzo', 'panadería'],
+  'Salud y bienestar':          ['salud', 'bienestar', 'farmacia', 'médico', 'dentista', 'seguro', 'gimnasio', 'yoga', 'pilates', 'masaje', 'peluquería'],
+  'Hogar y muebles':            ['hogar', 'mueble', 'sofá', 'mesa', 'silla', 'cama', 'armario', 'decoración', 'lámpara', 'estantería', 'cortina'],
+  'Tecnología':                 ['tecnología', 'móvil', 'ordenador', 'tablet', 'portátil', 'cargador', 'auricular', 'altavoz', 'pantalla', 'teclado', 'ratón'],
+  'Servicios profesionales':    ['servicio', 'profesional', 'abogado', 'arquitecto', 'fontanero', 'electricista', 'pintor', 'albañil', 'informático', 'clases'],
+  'Ocio y viajes':              ['ocio', 'viaje', 'vacaciones', 'hotel', 'vuelo', 'cine', 'teatro', 'concierto', 'evento', 'escape room', 'parque'],
+};
 
 // ─────────────────────────────────────────────────────────────
 // DETECCIÓN DE INTENCIÓN
 // ─────────────────────────────────────────────────────────────
 
-export function detectarIntencionWikiBro(texto) {
+export function detectarIntencionBroDeseos(texto) {
   const lower = texto.toLowerCase();
 
-  const spamKw = ['spam', 'sospechoso', 'me llamaron', 'número raro',
-                  'estafa', 'fraude', 'quién es este', 'de quién es'];
-  if (spamKw.some(kw => lower.includes(kw))) return 'spam';
+  const publicarKw = ['quiero comprar', 'ponme que quiero', 'publícame', 'necesito comprar',
+                      'vendo', 'ofrezco', 'quiero vender', 'busco comprador', 'pongo a la venta',
+                      'publicar', 'anunciar'];
+  if (publicarKw.some(kw => lower.includes(kw))) return 'publicar';
 
-  const buscarKw = ['busca', 'buscame', 'busco', 'dónde', 'donde',
-                    'hay', 'tienes', 'encuentras', 'necesito', 'quiero saber',
-                    'dime', 'información', 'info', 'listado', 'muéstrame'];
+  const buscarKw = ['busca', 'muéstrame', 'listado', 'quién quiere', 'hay alguien que quiera',
+                    'necesito encontrar', 'dónde comprar', 'quién vende', 'qué hay',
+                    'encuentra', 'listar', 'muestra'];
   if (buscarKw.some(kw => lower.includes(kw))) return 'buscar';
 
-  return 'explorar';
+  return 'HANDOFF';
 }
 
 // ─────────────────────────────────────────────────────────────
-// EXTRACCIÓN DE PARÁMETROS
-// Ciudad la aportan los Osos — aquí solo categoria, barrio y teléfono
+// DETECCIÓN DE CATEGORÍA
 // ─────────────────────────────────────────────────────────────
 
-export function extraerParametrosBusqueda(texto) {
+export function detectarCategoria(texto) {
   const lower = texto.toLowerCase();
 
-  // Teléfono — solo dígitos y guiones
-  const telMatch = texto.match(/\b[\d]{3}[-\s]?[\d]{3}[-\s]?[\d]{3}\b/);
-  const telefono = telMatch ? telMatch[0].replace(/\s/g, '-') : null;
+  for (const [categoria, keywords] of Object.entries(CATEGORIA_KEYWORDS)) {
+    if (keywords.some(kw => lower.includes(kw))) return categoria;
+  }
 
-  // Barrio — palabra después de "en", "del", "de" si no es ciudad conocida
-  const barrioMatch = lower.match(/(?:en el barrio de?|barrio)\s+([a-záéíóúñ\s]+)/i);
-  const barrio = barrioMatch ? barrioMatch[1].trim() : null;
-
-  // Categoría — texto libre, Evelyn lo pasa a Supabase como ilike
-  // Limpiamos stopwords básicas
-  const stopwords = ['busca', 'buscame', 'busco', 'hay', 'tienes', 'dónde',
-                     'donde', 'un', 'una', 'unos', 'unas', 'el', 'la',
-                     'los', 'las', 'en', 'de', 'del', 'me'];
-  const palabras = lower
-    .replace(/[¿?¡!.,]/g, '')
-    .split(/\s+/)
-    .filter(p => !stopwords.includes(p) && p.length > 2);
-
-  const categoria = palabras.length > 0 ? palabras[0] : null;
-
-  return { categoria, barrio, telefono };
+  return null;
 }
 
 // ─────────────────────────────────────────────────────────────
 // PROMPT BUILDER
 // ─────────────────────────────────────────────────────────────
 
-export function buildEvelynWikiPrompt({ personaje = 'evelyn', sobre }) {
-
+export function buildEvelynBroDeseosPrompt({ personaje = 'evelyn', sobre }) {
   const esLarry = personaje === 'larry';
 
   const identidad = esLarry
     ? `Eres Larry, un perro empresario con olfato para los negocios y amor profundo por la ciudad.
+Gestionas los deseos de compra de los ciudadanos. Ayudas a los empresarios a encontrar oportunidades
+en la lista de deseos ciudadanos para conectar oferta y demanda.
 Hablas con calma y seguridad. Contextualizas la información como si fueran movimientos del mercado urbano.
 Humor seco y criterio afilado. A veces haces una referencia al barrio o al precio del café.`
-    : `Eres Evelyn, una loba del sector bancario reconvertida en directorio ciudadano.
+    : `Eres Evelyn, una loba del sector bancario reconvertida en gestora de deseos ciudadanos.
+Gestionas los deseos de compra de los ciudadanos. Ayudas a publicar lo que buscan y a encontrar
+lo que necesitan.
 Eficiente, amable, directa. Cuando tienes datos los presentas sin rodeos.
 A veces comentas que llevas horas sin comer pero igual te pones con el listado.`;
 
@@ -73,7 +83,7 @@ A veces comentas que llevas horas sin comer pero igual te pones con el listado.`
     : `Presenta los resultados directo, con una frase de contexto breve. Sin floreos.`;
 
   const sobreTexto = sobre
-    ? `\n\n══ DATOS WIKIBRO ══\n${sobre}\n══════════════════`
+    ? `\n\n══ DATOS BRODESEOS ══\n${sobre}\n══════════════════`
     : '';
 
   return `${identidad}
@@ -86,7 +96,7 @@ REGLAS ABSOLUTAS:
 - NUNCA hagas más de UNA pregunta por respuesta.
 - Los datos del listado los presenta el sistema — tú solo introduces y comentas.
 - Si no hay resultados, dilo con naturalidad y sugiere reformular la búsqueda.
-- Si es reporte de spam: confirma que queda registrado y agradece a la comunidad.
+- Si es una publicación nueva, confirma los datos con el usuario antes de finalizar.
 - Todo en frases naturales conversacionales.
 
 FORMATO DE SALIDA — SIEMPRE JSON ESTRICTO:
@@ -106,48 +116,42 @@ ${sobreTexto}`;
 // SOBRE — lo que Evelyn recibe como contexto
 // ─────────────────────────────────────────────────────────────
 
-export function armarSobreWikiBro({
+export function armarSobreBroDeseos({
   alias,
-  ciudad,
   intencion,
-  categoria  = null,
-  barrio     = null,
-  telefono   = null,
-  resultados = [],
+  descripcion  = null,
+  categoria    = null,
+  alcance      = null,
+  resultados   = [],
 }) {
   const lines = [
     `Usuario: ${alias}`,
-    `Ciudad detectada por Osos: ${ciudad || 'no especificada'}`,
     `Intención: ${intencion}`,
   ];
 
-  if (categoria) lines.push(`Categoría buscada: ${categoria}`);
-  if (barrio)    lines.push(`Barrio: ${barrio}`);
-  if (telefono)  lines.push(`Teléfono consultado: ${telefono}`);
+  if (descripcion) lines.push(`Descripción: ${descripcion}`);
+  if (categoria)   lines.push(`Categoría: ${categoria}`);
+  if (alcance)     lines.push(`Alcance: ${alcance}`);
 
-  if (intencion === 'spam') {
-    lines.push(resultados.length > 0
-      ? `RESULTADO SPAM: Este número tiene ${resultados[0].reportes_count} reportes. Descripción: ${resultados[0].spam_descripcion || 'sin descripción'}.`
-      : `RESULTADO SPAM: Número no encontrado en la base. Se registra el reporte.`
-    );
+  if (intencion === 'publicar') {
+    lines.push(descripcion
+      ? `PROCESO DE PUBLICACIÓN: Confirmar descripción, categoría y alcance con el usuario. Coste: 500 Génesis.`
+      : `NUEVO DESEO: Extraer descripción del mensaje del usuario.`);
     return lines.join('\n');
   }
 
   if (resultados.length === 0) {
-    lines.push('\nNo se encontraron resultados para esta búsqueda.');
+    lines.push('\nNo se encontraron deseos para esta búsqueda.');
     return lines.join('\n');
   }
 
-  lines.push(`\nResultados encontrados (${resultados.length}):`);
-  resultados.forEach(r => {
-    const badge = r.verificado ? '🟢 OFICIAL' : '⚪ COMUNIDAD';
+  lines.push(`\nDeseos encontrados (${resultados.length}):`);
+  resultados.forEach((r, i) => {
+    const badge = r.categoria ? `[${r.categoria}]` : '[Sin categoría]';
     const partes = [
-      `${badge} ${r.nombre}`,
-      r.barrio     ? `Barrio: ${r.barrio}`      : null,
-      r.direccion  ? `Dir: ${r.direccion}`       : null,
-      r.telefono   ? `Tel: ${r.telefono}`        : null,
-      r.horario    ? `Horario: ${r.horario}`     : null,
-      r.red_social ? `Red social: ${r.red_social}` : null,
+      `#${i + 1} ${badge} ${r.descripcion || 'Sin descripción'}`,
+      r.alcance    ? `Alcance: ${r.alcance}`          : null,
+      r.caduca_en  ? `Caduca: ${r.caduca_en}`         : null,
     ].filter(Boolean);
     lines.push(partes.join(' · '));
   });

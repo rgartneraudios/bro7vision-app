@@ -335,7 +335,7 @@ export function useAgentIsabella({
 
     if (detectarBusquedaServicio(textoUsuario)) {
       setMensaje(fraseBuscando(textoUsuario));
-      onHandoff?.({ agente: 'BUSCAR_STRIP', keyword: textoUsuario, intencion: 'BROSHOP_SERVICIO' });
+      onHandoff?.({ agente: 'BUSCAR_STRIP', keyword: textoUsuario, intencion: 'BROCUPONES_SERVICIO' });
       return;
     }
 

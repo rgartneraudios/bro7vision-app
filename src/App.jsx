@@ -295,28 +295,6 @@ useEffect(() => {
     if (!error) alert('Reporte enviado a la central de seguridad.');
   };
 
-  const handleAvisoConectar = (aviso) => {
-    const newBalance = balances.genesis - 200;
-    setBalances(prev => ({ ...prev, genesis: newBalance }));
-    supabase.from('profiles').update({ genesis: newBalance }).eq('id', session.user.id);
-    supabase.from('mensajes_privados').insert([{
-      from_user_id: session.user.id,
-      to_user_id:   aviso.user_id,
-      from_alias:   perfilOso?.osos_nombre || 'Ciudadano',
-      text:         `Conexión iniciada desde aviso: ${aviso.title}`,
-      aviso_id:     aviso.id,
-    }]);
-    const autorProfile = realItems.find(i => i.id === aviso.user_id);
-    if (autorProfile) setProjectingUser(autorProfile);
-  };
-
-  const handleAvisoPublicar = async ({ confirmado }) => {
-    if (!confirmado) return;
-    const newBalance = balances.genesis - 200;
-    setBalances(prev => ({ ...prev, genesis: newBalance }));
-    await supabase.from('profiles').update({ genesis: newBalance }).eq('id', session.user.id);
-  };
-
   // ══════════════════════════════════════════════════════
   // HANDLER CENTRAL DE HANDOFF
   // ══════════════════════════════════════════════════════
@@ -371,11 +349,11 @@ useEffect(() => {
 
     if (agente === 'BUSCAR_STRIP') {
       const ciudadActual = sessionCity || scope?.city || '';
-      const intentActual = intencion || 'BROSHOP_PRODUCTO';
+      const intentActual = intencion || 'BROPRODUCTOS';
       const intentMap = {
-        'BROSHOP_PRODUCTO': 'productos',
-        'BROSHOP_SERVICIO': 'servicios',
-        'BROSHOP_AVISO':    'avisos',
+        'BROPRODUCTOS': 'productos',
+        'BROSERVICIOS': 'servicios',
+        'BRODESEOS':        'avisos',
         'AUDIO':            'audios',
       };
       cargarStripCards(intentActual, ciudadActual, 'LOCAL');
@@ -385,9 +363,9 @@ useEffect(() => {
     }
 
     const intentMap = {
-      'BROSHOP_PRODUCTO':  'productos',
-      'BROSHOP_SERVICIO':  'servicios',
-      'BROSHOP_AVISO':     'avisos',
+      'BROPRODUCTOS':  'productos',
+      'BROSERVICIOS':  'servicios',
+      'BRODESEOS':         'avisos',
       'AUDIO':             'audios',
       'REINOS':            'internal_search',
       'ORACULO':           'ai',
@@ -483,9 +461,9 @@ useEffect(() => {
       setStep(2);
       if (scope) {
         const agenteMap = {
-          productos: 'BROSHOP_PRODUCTO',
-          servicios: 'BROSHOP_SERVICIO',
-          avisos:    'BROSHOP_AVISO',
+          productos: 'BROPRODUCTOS',
+          servicios: 'BROSERVICIOS',
+          avisos:    'BRODESEOS',
           audios:    'AUDIO',
         };
         const agente = agenteMap[targetIntent];
@@ -621,9 +599,9 @@ const hubVideos169 = useMemo(() => {
 
   const navItems = [
     { id: 'gps',             label: 'DESTINO',      color: 'border-fuchsia-500/30 hover:border-fuchsia-400',  images: ['/emojis/lara.webp', '/emojis/tito.webp', '/emojis/puffo.webp'] },
-    { id: 'productos',       label: 'BROCUPONES PRODUCTOS',  color: 'border-yellow-500/30 hover:border-yellow-400',    images: ['/emojis/nova.webp'] },
-    { id: 'servicios',       label: 'BROCUPONES SERVICIOS',  color: 'border-rose-500/30 hover:border-rose-400',        images: ['/emojis/isabella.webp', '/emojis/prmaestro.webp'] },
-    { id: 'avisos',          label: 'WIKIBRO',     color: 'border-slate-500/30 hover:border-slate-400',      images: ['/emojis/evelyn.webp', '/emojis/larry.webp'] },
+    { id: 'productos',       label: 'TARJETAS BROPRODUCTOS',  color: 'border-yellow-500/30 hover:border-yellow-400',    images: ['/emojis/nova.webp'] },
+    { id: 'servicios',       label: 'TARJETAS BROSERVICIOS',  color: 'border-rose-500/30 hover:border-rose-400',        images: ['/emojis/isabella.webp', '/emojis/prmaestro.webp'] },
+    { id: 'avisos',          label: 'BRODESEOS',     color: 'border-slate-500/30 hover:border-slate-400',      images: ['/emojis/evelyn.webp', '/emojis/larry.webp'] },
     { id: 'audios',          label: 'AUDIOS',     color: 'border-cyan-500/30 hover:border-cyan-400',        images: ['/emojis/mapache.webp', '/emojis/ami.webp'] },
     { id: 'internal_search', label: 'REINOS',     color: 'border-orange-500/30 hover:border-orange-400',    images: ['/emojis/rumores.webp'] },
     { id: 'ai',              label: 'ORÁCULO',    color: 'border-lime-500/30 hover:border-lime-400',        images: ['/emojis/orumama.webp', '/emojis/smisterio.webp', '/emojis/jaguar.webp'] },
@@ -657,8 +635,6 @@ const hubVideos169 = useMemo(() => {
     chatMobile, perfilSector, oraculoActivo,
     handleOsosInput, ososMensaje, ososLoading, ososModo, setOsosModo,
     handleLogout,
-    onAvisoConectar: handleAvisoConectar,
-    onAvisoPublicar: handleAvisoPublicar,
     iaMode, isAdmin, userCredits,
     onToggleAdminIA:     handleToggleAdminIA,
     onTogglePublicIA:    handleTogglePublicIA,

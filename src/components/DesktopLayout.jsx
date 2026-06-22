@@ -97,7 +97,7 @@ const handleHandoffPersonaje = (id) => {
             key={step === 1 ? (ososModo === 'retorno' ? 'ososia_recepcion2' : 'ososia_recepcion_v3') : intent}
             src={
               step === 1
-                ? ososModo === 'retorno' ? "https://media.bro7vision.com/ososia_recepcion5.mp4" : "https://media.bro7vision.com/ososia_recepcion5.mp4"
+                ? ososModo === 'retorno' ? "https://media.bro7vision.com/ososia_recepcion8.mp4" : "https://media.bro7vision.com/ososia_recepcion8.mp4"
                 : intent === 'ai'              ? "https://media.bro7vision.com/oraculo0.mp4"
                 : intent === 'game'            ? "https://media.bro7vision.com/game_bg.mp4"
                 : intent === 'audios'           ? "https://media.bro7vision.com/brolives1.mp4"
@@ -277,8 +277,6 @@ const handleHandoffPersonaje = (id) => {
           stripCards={stripCards}
           stripLabel={stripLabel}
           onHandoff={handleCentralHandoff}
-          onAvisoConectar={props.onAvisoConectar}
-          onAvisoPublicar={props.onAvisoPublicar}
           setProjectingUser={setProjectingUser}
           iaMode={iaMode}
           isAdmin={isAdmin}

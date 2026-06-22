@@ -178,7 +178,7 @@ export function useAgentNovaExplora({ iaMode, isAdmin, onHandoff, ciudad = null,
     const keyword = detectarBusquedaProducto(textoUsuario);
     if (keyword) {
       setMensaje(fraseBuscando());
-      onHandoff?.({ agente: 'BUSCAR_STRIP', keyword, intencion: 'BROSHOP_PRODUCTO' });
+      onHandoff?.({ agente: 'BUSCAR_STRIP', keyword, intencion: 'BROCUPONES_PRODUCTO' });
       return;
     }
 

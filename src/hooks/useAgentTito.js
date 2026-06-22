@@ -23,7 +23,7 @@ const FRASES_PEDIR_CIUDAD = [
   "Necesito la ciudad para anotarlo bien. Qué complicado sería todo sin direcciones, ¿verdad?",
 ];
 const FRASES_FALLBACK = [
-  "Mmm, oye, una preguntita... ¿buscas productos, servicios, audio o avisos?",
+  "Mmm, oye, una preguntita... ¿buscas BroCupones productos, BroCupones servicios, audio o BroDeseos?",
   "Yo solo decía... que si me dices el sector te llevo directo. ¿Cuál es?",
   "Es curioso, ¿verdad? que a veces cuesta decir lo que se busca. ¿A qué sector quieres ir?",
 ];

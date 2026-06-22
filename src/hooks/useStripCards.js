@@ -2,10 +2,10 @@
 // ─────────────────────────────────────────────────────────────────────
 // Carga las cards para el cajón de cada sector.
 //
-// BROSHOP_PRODUCTO / BROSHOP_SERVICIO → leen de comercio_cupones
+// BROPRODUCTOS / BROSERVICIOS → leen de comercio_cupones
 //   Filtros aplicados:
 //     · activo = true
-//     · sector (PRODUCTO o SERVICIO)
+//     · sector (PRODUCTOS o SERVICIOS)
 //     · alcance + geolocalización:
 //         LOCAL         → filtra por ciudad
 //         NACIONAL      → filtra por país
@@ -37,11 +37,11 @@ export const useStripCards = () => {
       const agenteUpper = agente?.toUpperCase() || '';
 
       // ══════════════════════════════════════════════════════════════
-      // BROSHOP_PRODUCTO / BROSHOP_SERVICIO
+      // BROPRODUCTOS / BROSERVICIOS
       // Lee de comercio_cupones
       // ══════════════════════════════════════════════════════════════
-      if (agenteUpper === 'BROSHOP_PRODUCTO' || agenteUpper === 'BROSHOP_SERVICIO') {
-        const sector          = agenteUpper === 'BROSHOP_PRODUCTO' ? 'PRODUCTO' : 'SERVICIO';
+      if (agenteUpper === 'BROPRODUCTOS' || agenteUpper === 'BROERVICIOS') {
+        const sector          = agenteUpper === 'BROPRODUCTOS' ? 'PRODUCTOS' : 'SERVICIOS';
 
          let query = supabase
            .from('comercio_cupones')
@@ -107,7 +107,7 @@ export const useStripCards = () => {
         }).filter(Boolean);
 
         setStripCards(cards);
-        setStripLabel(agenteUpper === 'BROSHOP_PRODUCTO' ? 'broshop_producto' : 'broshop_servicio');
+        setStripLabel(agenteUpper === 'BROCUPONES_PRODUCTO' ? 'broshop_producto' : 'broshop_servicio');
         setStripVisible(true);
         return;
       }

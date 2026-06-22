@@ -10,7 +10,7 @@ const NOVA_GREETINGS = [
   "¡Oh, hola! Soy Nova, qué alegría saludarte. Dime qué buscas y me pongo en marcha enseguida, porfi,",
   "Nova al habla, ¡qué ilusión! ¿En qué podría ayudarte el día de hoy,",
   "¡Buenas! Soy Nova. Cuéntame qué necesitas y te ayudaré a encontrarlo con mucha dedicación,",
-  "Hola, soy Nova 📸 ¿Qué cosita preciosa estás buscando hoy,",
+  "Hola, soy Nova 📸 ¿Qué descuento especial estás buscando hoy,",
 ];
 
 export default function NovaBanner({

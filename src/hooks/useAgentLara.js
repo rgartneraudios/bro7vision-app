@@ -23,9 +23,9 @@ const FRASES_PEDIR_CIUDAD = [
   "¿Dónde estás buscando? Ciudad o país — lo que fluya.",
 ];
 const FRASES_FALLBACK = [
-  "No te pillo del todo, y eso que tengo el radar bien calibrado. ¿Buscas productos, servicios, música o avisos?",
+  "No te pillo del todo, y eso que tengo el radar bien calibrado. ¿Buscas BroCupones productos, BroCupones servicios, Audios o BroDeseos?",
   "Mmm, noto que hay más detrás de eso. ¿A qué sector quieres fluir hoy?",
-  "Cuéntame mejor. ¿Productos, servicios, audio o avisos?",
+  "Cuéntame mejor. ¿Productos, servicios, audio o BroDeseos?",
 ];
 
 export function useAgentLara({ iaMode, isAdmin, onHandoff, ciudad = null }) {
