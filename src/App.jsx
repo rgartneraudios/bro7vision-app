@@ -571,7 +571,7 @@ const hubVideos169 = useMemo(() => {
   const hubAudios = useMemo(() => {
     const masterAudios   = MASTER_DB.filter(m => m.audio_video).map(m => ({ ...m, id: m.id, alias: m.name || m.alias, source: 'master' }));
     const supabaseAudios = realItems.filter(i => i.audio_video).map(i => ({ ...i, alias: i.alias, id: i.id, source: 'supabase' }));
-    return [{ alias: 'BRO MASTER', audio_video: 'https://media.bro7vision.com/Mapache-habla7.mp3', id: 'bro_master' }, ...masterAudios, ...supabaseAudios];
+    return [{ alias: 'BRO MASTER', audio_video: 'https://pub-a77d1f38b28849c1ad7e977150ecb53f.r2.dev/Mapache-habla8.mp3', id: 'bro_master' }, ...masterAudios, ...supabaseAudios];
   }, [realItems]);
 
   const audmovilList = useMemo(() => {
