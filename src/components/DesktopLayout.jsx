@@ -277,6 +277,7 @@ const handleHandoffPersonaje = (id) => {
           stripCards={stripCards}
           stripLabel={stripLabel}
           onHandoff={handleCentralHandoff}
+          onGenesisUpdate={onGenesisUpdate}
           setProjectingUser={setProjectingUser}
           iaMode={iaMode}
           isAdmin={isAdmin}

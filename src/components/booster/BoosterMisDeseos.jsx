@@ -12,7 +12,7 @@ const OfertaCard = ({ oferta, expanded, onToggle }) => {
   return (
     <div
       onClick={onToggle}
-      className="flex-shrink-0 w-120 bg-gradient-to-br from-amber-200 via-yellow-200 to-gray-300 border border-pink-400/50 rounded-2xl cursor-pointer hover:border-pink-500/70 transition-all animate-fadeIn overflow-hidden"
+      className="flex-shrink-0 w-120 bg-gradient-to-br from-amber-200 via-yellow-100 to-gray-600 border border-pink-400/50 rounded-2xl cursor-pointer hover:border-pink-500/70 transition-all animate-fadeIn overflow-hidden"
     >
       <div className="flex h-full">
         <div className="flex-1 p-6 flex flex-col justify-between">

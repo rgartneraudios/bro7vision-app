@@ -321,7 +321,7 @@ const BoosterModal = ({ onClose }) => {
     <div className="fixed inset-0 z-[9999] flex items-center justify-center animate-fadeIn font-sans">
 
       {/* FONDO */}
-      <img src="/images/boosterstudio_bg.webp"
+      <img src="/images/boosterstudio_bg1.webp"
         className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none" alt="Studio Background" />
       <div className="absolute inset-0 bg-black/40 z-[5]" />
 
