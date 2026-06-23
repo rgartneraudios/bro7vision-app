@@ -32,17 +32,15 @@ const CATEGORIA_KEYWORDS = {
 export function detectarIntencionBroDeseos(texto) {
   const lower = texto.toLowerCase();
 
-  const publicarKw = ['quiero comprar', 'ponme que quiero', 'publícame', 'necesito comprar',
-                      'vendo', 'ofrezco', 'quiero vender', 'busco comprador', 'pongo a la venta',
-                      'publicar', 'anunciar'];
-  if (publicarKw.some(kw => lower.includes(kw))) return 'publicar';
+  const KEYWORDS_PUBLICAR = [
+    'quiero comprar', 'ponme que quiero', 'publícame', 'publicame',
+    'necesito comprar', 'quiero publicar', 'publicar deseo',
+    'quiero anunciar', 'pon que busco',
+  ];
 
-  const buscarKw = ['busca', 'muéstrame', 'listado', 'quién quiere', 'hay alguien que quiera',
-                    'necesito encontrar', 'dónde comprar', 'quién vende', 'qué hay',
-                    'encuentra', 'listar', 'muestra'];
-  if (buscarKw.some(kw => lower.includes(kw))) return 'buscar';
+  if (KEYWORDS_PUBLICAR.some(kw => lower.includes(kw))) return 'publicar';
 
-  return 'HANDOFF';
+  return 'buscar';
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -120,8 +118,7 @@ export function armarSobreBroDeseos({
   alias,
   intencion,
   descripcion  = null,
-  categoria    = null,
-  alcance      = null,
+  ubicacion    = null,
   resultados   = [],
 }) {
   const lines = [
@@ -130,12 +127,11 @@ export function armarSobreBroDeseos({
   ];
 
   if (descripcion) lines.push(`Descripción: ${descripcion}`);
-  if (categoria)   lines.push(`Categoría: ${categoria}`);
-  if (alcance)     lines.push(`Alcance: ${alcance}`);
+  if (ubicacion)   lines.push(`Ubicación: ${ubicacion}`);
 
   if (intencion === 'publicar') {
     lines.push(descripcion
-      ? `PROCESO DE PUBLICACIÓN: Confirmar descripción, categoría y alcance con el usuario. Coste: 500 Génesis.`
+      ? `PROCESO DE PUBLICACIÓN: Confirmar descripción y ubicación con el usuario. Coste: 500 Génesis.`
       : `NUEVO DESEO: Extraer descripción del mensaje del usuario.`);
     return lines.join('\n');
   }

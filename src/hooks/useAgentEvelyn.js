@@ -4,7 +4,6 @@ import { fetchContextoEvelyn } from '../services/contexto/fetchContextoEvelyn';
 import { fetchContextoLarry }  from '../services/contexto/fetchContextoLarry';
 import {
   detectarIntencionBroDeseos,
-  detectarCategoria,
   buildEvelynBroDeseosPrompt,
   armarSobreBroDeseos,
 } from '../services/agents/evelynExploraPS';
@@ -62,6 +61,7 @@ export function useAgentEvelyn({
   onHandoff,
   ciudad       = null,
   genesis      = 0,
+  onGenesisUpdate,
   userId       = null,
   autorAlias   = 'Ciudadano',
 }) {
@@ -71,7 +71,7 @@ export function useAgentEvelyn({
   const [ultimaRespuesta, setUltimaRespuesta]           = useState(null);
 
   const [flujoActivo, setFlujoActivo]                 = useState(null);
-  const [borrador, setBorrador]                       = useState({ descripcion: '', categoria: null, alcance: null });
+  const [borrador, setBorrador]                       = useState({ ubicacion: null, descripcion: null });
   const [resultadosBroDeseos, setResultadosBroDeseos] = useState([]);
   const [panelAbierto, setPanelAbierto]               = useState(false);
 
@@ -86,10 +86,10 @@ export function useAgentEvelyn({
     return esLarry ? fetchContextoLarry(ciudad) : fetchContextoEvelyn(ciudad);
   };
 
-  const enviarIA = async (textoUsuario, resultados, categoria, intencion, descripcion, alcance) => {
+  const enviarIA = async (textoUsuario, resultados, intencion, descripcion, ubicacion) => {
     try {
       const sobre = armarSobreBroDeseos({
-        alias: autorAlias, intencion, descripcion, categoria, alcance, resultados,
+        alias: autorAlias, intencion, descripcion, ubicacion, resultados,
       });
 
       const system = buildEvelynBroDeseosPrompt({ personaje, sobre });
@@ -127,110 +127,90 @@ export function useAgentEvelyn({
     }
   };
 
-  const flujoPublicar = async (textoUsuario) => {
-    const descripcionCandidata = textoUsuario
-      .replace(/quiero comprar|publícame|necesito comprar|ponme que quiero|publicar|anunciar/gi, '')
-      .trim();
-
-    const categoria = detectarCategoria(textoUsuario);
-
-    if (!categoria) {
-      setBorrador(prev => ({ ...prev, descripcion: descripcionCandidata }));
-      const msg = '¿En qué categoría encaja? Las opciones son: Electrodomésticos, Ropa y calzado, Alimentación y restauración, Salud y bienestar, Hogar y muebles, Tecnología, Servicios profesionales, Ocio y viajes, u Otros.';
-      setMensaje(msg);
-      return;
-    }
-
-    setBorrador({ descripcion: descripcionCandidata, categoria, alcance: null });
-    setMensaje(`Perfecto, categoría: ${categoria}. ¿Tu búsqueda tiene alcance local (ciudad/barrio) o es para toda la red?`);
-  };
-
   const flujoBuscar = async (textoUsuario) => {
-    const categoria = detectarCategoria(textoUsuario);
-    let query = supabase
-      .from('brodeseos')
-      .select('*')
-      .eq('activo', true);
+  const textoBusqueda = textoUsuario.trim();
 
-    if (categoria) {
-      query = query.eq('categoria', categoria);
-    }
+  console.log('Query ilike:', `descripcion.ilike.%${textoBusqueda}%,ubicacion.ilike.%${textoBusqueda}%`);
 
-    const { data, error } = await query.limit(20);
-    const resultados = error ? [] : (data || []);
+  const { data, error } = await supabase
+    .from('brodeseos')
+    .select('*')
+    .eq('activo', true)
+    .or(`descripcion.ilike.%${textoBusqueda}%,ubicacion.ilike.%${textoBusqueda}%`)
+    .limit(20);
 
-    setResultadosBroDeseos(resultados);
-    setPanelAbierto(resultados.length > 0);
+  if (error) console.error('Error flujoBuscar:', error);
+  console.log('BroDeseos query resultado:', { data, error, textoBusqueda });
+  const resultados = error ? [] : (data || []);
 
-    if (!iaActiva) {
-      setMensaje(resultados.length === 0
-        ? 'No encontré deseos para eso. ¿Buscas otra cosa?'
-        : `Encontré ${resultados.length} deseo${resultados.length !== 1 ? 's' : ''}. Ahí tienes el listado.`);
-    } else {
-      await enviarIA(textoUsuario, resultados, categoria, 'buscar');
-    }
-  };
+  setResultadosBroDeseos(resultados);
+  setPanelAbierto(resultados.length > 0);
 
-  const confirmarPublicar = async () => {
-    if (!borrador.descripcion || !borrador.categoria) {
-      setMensaje('Faltan datos para publicar. Empieza de nuevo.');
-      return;
-    }
-
-    const alcanceFinal = borrador.alcance || ciudad || 'toda la red';
-    const caducaEn = new Date(Date.now() + 29 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-
-    const { error } = await supabase
-      .from('brodeseos')
-      .insert({
-        alias: autorAlias,
-        user_id: userId,
-        descripcion: borrador.descripcion,
-        categoria: borrador.categoria,
-        alcance: alcanceFinal,
-        costo_genesis: 500,
-        caduca_en: caducaEn,
-        activo: true,
-        creado_en: new Date().toISOString(),
-      });
-
-    if (error) {
-      console.error('Error al publicar BroDeseo:', error);
-      setMensaje('Hubo un problema al publicar. Inténtalo de nuevo.');
-      return;
-    }
-
-    setFlujoActivo(null);
-    setBorrador({ descripcion: '', categoria: null, alcance: null });
-    setMensaje('¡Publicado! Tu deseo está activo. Que encuentres lo que buscas.');
-  };
+  if (!iaActiva) {
+    setMensaje(resultados.length === 0
+      ? 'No encontré deseos para eso. ¿Buscas otra cosa?'
+      : `Encontré ${resultados.length} deseo${resultados.length !== 1 ? 's' : ''}. Ahí tienes el listado.`);
+  } else {
+    await enviarIA(textoUsuario, resultados, 'buscar');
+  }
+};
 
   const enviar = async (textoUsuario) => {
     if (!textoUsuario?.trim()) return;
 
-    if (flujoActivo === 'publicar') {
-      const lower = textoUsuario.toLowerCase();
-      if (lower.includes('si') || lower.includes('confirmo') || lower.includes('dale') || lower.includes('ok')) {
-        await confirmarPublicar();
-      } else if (!borrador.categoria) {
-        const cat = detectarCategoria(textoUsuario);
-        if (cat) {
-          setBorrador(prev => ({ ...prev, categoria: cat }));
-          setMensaje(`Categoría: ${cat}. ¿Alcance local o toda la red?`);
-        } else {
-          setMensaje('No reconozco esa categoría. Elige entre: Electrodomésticos, Ropa y calzado, Alimentación y restauración, Salud y bienestar, Hogar y muebles, Tecnología, Servicios profesionales, Ocio y viajes, u Otros.');
-        }
-      } else if (!borrador.alcance) {
-        if (lower.includes('local') || lower.includes('ciudad') || lower.includes('barrio')) {
-          setBorrador(prev => ({ ...prev, alcance: ciudad || 'local' }));
-          setMensaje(`Vale. Publicar "${borrador.descripcion}" en categoría ${borrador.categoria} con alcance local cuesta 500 Génesis. ¿Confirmas?`);
-        } else if (lower.includes('red') || lower.includes('todo') || lower.includes('global')) {
-          setBorrador(prev => ({ ...prev, alcance: 'toda la red' }));
-          setMensaje(`Vale. Publicar "${borrador.descripcion}" en categoría ${borrador.categoria} para toda la red cuesta 500 Génesis. ¿Confirmas?`);
-        } else {
-          setMensaje('¿Alcance local (ciudad/barrio) o para toda la red?');
-        }
+    if (flujoActivo === 'ubicacion') {
+      setBorrador(prev => ({ ...prev, ubicacion: textoUsuario }));
+      setFlujoActivo('descripcion');
+      setMensaje('Perfecto. Ahora descríbeme bien tu deseo, con detalle — cuanto más claro, mejores ofertas recibirás.');
+      return;
+    }
+
+    if (flujoActivo === 'descripcion') {
+      setBorrador(prev => ({ ...prev, descripcion: textoUsuario }));
+      setFlujoActivo('confirmar');
+      setMensaje('Escribe CONFIRMO en mayúsculas para publicarlo. El coste es 500 Génesis.');
+      return;
+    }
+
+    if (flujoActivo === 'confirmar') {
+      if (textoUsuario.trim() !== 'CONFIRMO') {
+        setMensaje('Escribe CONFIRMO en mayúsculas para confirmar, o cuéntame otra cosa.');
+        return;
       }
+
+      if (!genesis || genesis < 500) {
+        setMensaje('No tienes suficientes Génesis.');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('brodeseos')
+        .insert({
+          user_id: userId,
+          descripcion: borrador.descripcion,
+          ubicacion: borrador.ubicacion,
+          caduca_en: new Date(Date.now() + 29 * 24 * 60 * 60 * 1000).toISOString(),
+          activo: true,
+        });
+
+      if (error) {
+        console.error('Error al publicar BroDeseo:', error);
+        setMensaje('Hubo un problema al publicar. Inténtalo de nuevo.');
+        return;
+      }
+
+      onGenesisUpdate?.(genesis - 500);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ genesis: genesis - 500 })
+        .eq('id', userId);
+
+      if (updateError) console.error('Error al actualizar Génesis:', updateError);
+
+      setFlujoActivo(null);
+      setBorrador({ ubicacion: null, descripcion: null });
+      setMensaje('✅ Listo. Tu deseo está publicado — las ofertas llegarán a tu Booster cuando las empresas respondan.');
       return;
     }
 
@@ -259,8 +239,8 @@ export function useAgentEvelyn({
     }
 
     if (intencion === 'publicar') {
-      setFlujoActivo('publicar');
-      await flujoPublicar(textoUsuario);
+      setFlujoActivo('ubicacion');
+      setMensaje('Dime la ubicación de tu deseo — ¿en tu ciudad, en toda España, en el mundo?');
     } else if (intencion === 'buscar') {
       await flujoBuscar(textoUsuario);
     }
@@ -274,7 +254,7 @@ export function useAgentEvelyn({
     setResultadosBroDeseos([]);
     setPanelAbierto(false);
     setFlujoActivo(null);
-    setBorrador({ descripcion: '', categoria: null, alcance: null });
+    setBorrador({ ubicacion: null, descripcion: null });
   };
 
   return {

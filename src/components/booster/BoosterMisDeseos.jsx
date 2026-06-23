@@ -1,50 +1,70 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../supabaseClient';
 
-const CardStyle = "bg-blue-950/10 backdrop-blur-xl border border-white/10 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]";
+const CardStyle = "bg-pink-950/10 backdrop-blur-xl border border-pink-500/20 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]";
 
 const OfertaCard = ({ oferta, expanded, onToggle }) => {
   const truncate = (text, max) =>
     text?.length > max ? text.slice(0, max) + '...' : text || '';
 
+  const profile = oferta.profiles;
+
   return (
     <div
       onClick={onToggle}
-      className="flex-shrink-0 w-64 bg-black/40 border border-white/10 rounded-2xl p-4 cursor-pointer hover:border-cyan-500/30 transition-all animate-fadeIn"
+      className="flex-shrink-0 w-120 bg-gradient-to-br from-amber-200 via-yellow-200 to-gray-300 border border-pink-400/50 rounded-2xl cursor-pointer hover:border-pink-500/70 transition-all animate-fadeIn overflow-hidden"
     >
-      <p className="text-sm font-bold text-white mb-1">{oferta.nombre_empresa || 'Empresa'}</p>
-      <p className="text-xs text-gray-400">{truncate(oferta.oferta_descripcion, 60)}</p>
+      <div className="flex h-full">
+        <div className="flex-1 p-6 flex flex-col justify-between">
+          <div>
+            <p className="text-lg font-bold text-pink-700 mb-3">{profile?.alias || oferta.nombre_empresa || 'Empresa'}</p>
+            <p className="text-xl text-pink-600/80 leading-relaxed mb-4">{truncate(oferta.oferta_descripcion, 120)}</p>
+            {oferta.mensaje && (
+              <p className="text-xl font-semibold text-pink-700 mb-3">"{oferta.mensaje}"</p>
+            )}
+          </div>
 
-      {expanded && (
-        <div className="mt-3 pt-3 border-t border-white/10 space-y-2 text-xs text-gray-300">
-          {oferta.direccion && (
-            <p><span className="text-gray-500">📍</span> {oferta.direccion}</p>
+          {expanded && (
+            <div className="mt-4 pt-3 border-t border-pink-300/40 space-y-2 text-base text-pink-800/90">
+              {oferta.direccion && (
+                <p><span className="text-pink-500">📍</span> {oferta.direccion}</p>
+              )}
+              {oferta.telefono && (
+                <p><span className="text-pink-500">📞</span> {oferta.telefono}</p>
+              )}
+              {oferta.link_web && (
+                <p>
+                  <a
+                    href={oferta.link_web}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={e => e.stopPropagation()}
+                    className="inline-block text-pink-600 underline hover:text-pink-800 mt-1"
+                  >
+                    🔗 {oferta.link_web}
+                  </a>
+                  {oferta.link_verificado && (
+                    <span className="inline-block ml-2 px-3 py-1 rounded-full bg-emerald-100 border border-emerald-300 text-sm text-emerald-700 font-bold">
+                      ✅ verificado
+                    </span>
+                  )}
+                </p>
+              )}
+            </div>
           )}
-          {oferta.telefono && (
-            <p><span className="text-gray-500">📞</span> {oferta.telefono}</p>
-          )}
-          {oferta.mensaje && (
-            <p className="text-gray-400">{oferta.mensaje}</p>
-          )}
-          {oferta.link ? (
-            oferta.link_verificado ? (
-              <a
-                href={oferta.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={e => e.stopPropagation()}
-                className="inline-block text-cyan-400 underline hover:text-cyan-300 mt-1"
-              >
-                🔗 {oferta.link}
-              </a>
-            ) : (
-              <p className="text-gray-500 mt-1">
-                🔗 {oferta.link} <span className="inline-block ml-1 px-2 py-0.5 rounded-full border border-gray-600 text-[10px] text-gray-500">⚪ sin verificar</span>
-              </p>
-            )
-          ) : null}
         </div>
-      )}
+
+        {profile?.banner_url && (
+          <div className="w-[200px] flex-shrink-0">
+            <img
+              src={profile.banner_url}
+              alt=""
+              className="w-full h-full object-cover"
+              onClick={e => e.stopPropagation()}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -76,7 +96,7 @@ const BoosterMisDeseos = ({ userId }) => {
       for (const deseo of deseosData) {
         const { data: ofertasData } = await supabase
           .from('brodeseos_ofertas')
-          .select('*')
+          .select('*, profiles(banner_url, alias)')
           .eq('deseo_id', deseo.id);
         ofertas[deseo.id] = ofertasData || [];
       }
@@ -126,7 +146,7 @@ const BoosterMisDeseos = ({ userId }) => {
       <div className="flex items-center gap-4 mb-6">
         <span className="text-4xl">💭</span>
         <div>
-          <h3 className="text-xl font-black text-cyan-400 tracking-widest uppercase">Mis Deseos</h3>
+          <h3 className="text-xl font-black text-pink-400 tracking-widest uppercase">Mis Deseos</h3>
           <p className="text-xs text-gray-500 font-bold tracking-widest mt-0.5">Ofertas recibidas de empresas</p>
         </div>
       </div>
@@ -143,7 +163,7 @@ const BoosterMisDeseos = ({ userId }) => {
 
             <div className={CardStyle}>
               <div className="flex items-center justify-between mb-4">
-                <p className="text-sm font-bold text-cyan-400">
+                <p className="text-sm font-bold text-pink-400">
                   Ofertas para tu deseo de {deseo.descripcion}
                 </p>
                 <span className="text-[11px] text-gray-500 font-mono whitespace-nowrap ml-4">

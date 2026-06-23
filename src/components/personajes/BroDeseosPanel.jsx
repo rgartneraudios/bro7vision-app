@@ -63,7 +63,7 @@ export default function BroDeseosPanel({
           onClick={onClose}
           style={{
             position: 'absolute', top: 14, right: 14, color: '#e2e8f0',
-            fontSize: 18, background: 'none', border: 'none', cursor: 'pointer', zIndex: 10,
+            fontSize: 18, background: 'none', border: 'none', cursor: 'pointer', zIndex: 10, pointerEvents: 'all',
           }}
         >
           ✕
@@ -103,13 +103,48 @@ export default function BroDeseosPanel({
                 }}>
                   {item.categoria || 'Otros'}
                 </span>
-                {modo === 'listado' && (
-                  <span style={{
-                    color: '#64748b', fontSize: 11, fontFamily: 'monospace',
-                    marginLeft: 'auto',
+{modo === 'listado' && (
+                  <div style={{
+                    color: '#ff1493', fontSize: 22, fontFamily: 'monospace',
+                    marginLeft: 'auto', fontWeight: 700,
+                    textShadow: '0 0 8px rgba(255,20,147,0.6)',
+                    display: 'inline-flex', alignItems: 'center', gap: 8,
                   }}>
-                    #{item.codigo_anonimo || `BD-${String(item.id).slice(0, 6).toUpperCase()}`}
-                  </span>
+                    <span>#{item.id.slice(0, 8).toUpperCase()}</span>
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const uuid = item.id;
+                        const ta = document.createElement('textarea');
+                        ta.value = uuid;
+                        ta.style.position = 'fixed';
+                        ta.style.opacity = '0';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        e.target.textContent = '✓';
+                        setTimeout(() => { e.target.textContent = 'COPiar'; }, 1500);
+                      }}
+                      title="Copiar UUID completo"
+                      style={{
+                        display: 'inline-block',
+                        background: 'rgba(255,20,147,0.15)',
+                        border: '1px solid rgba(255,20,147,0.3)',
+                        color: '#ff1493',
+                        borderRadius: 6,
+                        padding: '2px 8px',
+                        fontSize: 10,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        letterSpacing: '0.05em',
+                        lineHeight: '1.4',
+                        pointerEvents: 'all',
+                      }}
+                    >
+                      COPiar
+                    </span>
+                  </div>
                 )}
               </div>
 

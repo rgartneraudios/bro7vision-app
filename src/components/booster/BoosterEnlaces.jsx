@@ -57,6 +57,7 @@ const initMeta      = {
 const BoosterEnlaces = () => {
   const [loading,   setLoading]   = useState(true);
   const [tokenHash, setTokenHash] = useState(null);
+  const [bannerUrl, setBannerUrl] = useState('');
 
   // Cuatro bloques de contenido independientes
   const [v916,    setV916]    = useState(initVideo916);
@@ -70,7 +71,7 @@ const BoosterEnlaces = () => {
 
   // Estados de guardado independientes
   const [saving, setSaving] = useState({
-    v916: false, v169: false, audio: false, audmovil: false, meta: false,
+    v916: false, v169: false, audio: false, audmovil: false, meta: false, banner: false,
   });
 
   // ── Carga inicial ──────────────────────────────────────────────
@@ -87,6 +88,7 @@ const BoosterEnlaces = () => {
           .eq('id', user.id)
           .single();
         if (perfil?.token_hash) setTokenHash(perfil.token_hash);
+        if (perfil?.banner_url) setBannerUrl(perfil.banner_url);
 
         // Leer mini_proyeccion (brotwit, blog, holoprisma)
         const { data: rowMeta } = await supabase
@@ -261,6 +263,22 @@ const BoosterEnlaces = () => {
       alert('Error: ' + e.message);
     } finally {
       setSavingKey('meta', false);
+    }
+  };
+
+  // ── Guardado Banner URL (profiles) ──────────────────────────
+  const handleSaveBanner = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return alert('⚠️ No hay sesión activa.');
+      const { error } = await supabase
+        .from('profiles')
+        .update({ banner_url: bannerUrl.trim() || null })
+        .eq('id', user.id);
+      if (error) throw error;
+      alert('✨ Banner de tarjeta actualizado.');
+    } catch (e) {
+      alert('Error: ' + e.message);
     }
   };
 
@@ -461,6 +479,23 @@ const BoosterEnlaces = () => {
               <TipoSelect value={audmovil.tipo} onChange={v => setAudmovil(p => ({ ...p, tipo: v }))} label="Tipo de audio" />
             </div>
             <SaveBtn onClick={handleSaveAudmovil} saving={saving.audmovil} label="PROYECTAR AUDIO MÓVIL" />
+          </div>
+
+          {/* BANNER TARJETAS */}
+          <div className={CardStyle}>
+            <SectionTitle icon="🖼️" title="Banner para Tarjetas" />
+            <p className="text-xs text-gray-500 mb-4 leading-relaxed">
+              Imagen vertical 300 x 450 px que aparece en las tarjetas de oferta de BroDeseos.
+            </p>
+            <div className="space-y-4">
+              <TextField
+                value={bannerUrl}
+                onChange={setBannerUrl}
+                label="URL del banner"
+                placeholder="https://media.bro7vision.com/..."
+              />
+            </div>
+            <SaveBtn onClick={handleSaveBanner} saving={saving.banner} label="GUARDAR BANNER" />
           </div>
         </div>
 

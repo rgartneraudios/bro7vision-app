@@ -24,6 +24,7 @@ export default function EvelynBanner({
   userId       = null,
   autorAlias   = 'Ciudadano',
   onHandoff,
+  onGenesisUpdate,
   iaMode  = 'off',
   isAdmin = false,
 }) {
@@ -34,6 +35,7 @@ export default function EvelynBanner({
     iaMode,
     isAdmin,
     onHandoff,
+    onGenesisUpdate,
     ciudad:      sessionCity,
     genesis,
     userId,
@@ -99,7 +101,17 @@ export default function EvelynBanner({
   };
 
   return (
-    <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
+    <>
+      {panelAbierto && (
+        <BroDeseosPanel
+          modo="listado"
+          resultados={resultadosBroDeseos}
+          onClose={() => setPanelAbierto(false)}
+          isMobile={isMobile}
+        />
+      )}
+
+      <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
       <style>{`
         @keyframes neonPulseAvisos {
           0%, 100% { text-shadow: 0 0 8px ${colorPrimario}, 0 0 22px ${colorSecundario}, 0 0 45px ${colorSecundario}; }
@@ -123,15 +135,6 @@ export default function EvelynBanner({
           animation: neonPulseAvisos 3s ease-in-out infinite;
         }
       `}</style>
-
-      {panelAbierto && (
-        <BroDeseosPanel
-          modo="listado"
-          resultados={resultadosBroDeseos}
-          onClose={() => setPanelAbierto(false)}
-          isMobile={isMobile}
-        />
-      )}
 
       {/* BANNER */}
       <div className="w-full max-w-2xl mb-3 pointer-events-auto">
@@ -176,5 +179,6 @@ export default function EvelynBanner({
         <AgentChatInput agent="evelyn" onSend={handleEnviar} isLoading={loading} />
       </div>
     </div>
+    </>
   );
 }

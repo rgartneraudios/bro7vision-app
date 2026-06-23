@@ -12,8 +12,7 @@ const initForm = {
   telefono: '',
   mensaje: '',
   oferta: '',
-  banner_url: '',
-  link: '',
+  link_web: '',
 };
 
 const BoosterEnviarOferta = ({ userId }) => {
@@ -27,7 +26,7 @@ const BoosterEnviarOferta = ({ userId }) => {
     e.preventDefault();
     setError('');
 
-    if (!form.codigo.trim()) return setError('El código del deseo es obligatorio.');
+    if (!form.codigo?.trim()) return setError('Escribe el código del deseo.');
     if (!form.nombre.trim()) return setError('Tu nombre o empresa es obligatorio.');
     if (!form.mensaje.trim()) return setError('El mensaje es obligatorio.');
     if (!form.oferta.trim()) return setError('La oferta es obligatoria.');
@@ -37,7 +36,7 @@ const BoosterEnviarOferta = ({ userId }) => {
       const { data: deseo } = await supabase
         .from('brodeseos')
         .select('id')
-        .eq('id', form.codigo.trim())
+        .eq('id', (form.codigo || '').trim())
         .eq('activo', true)
         .maybeSingle();
 
@@ -57,8 +56,8 @@ const BoosterEnviarOferta = ({ userId }) => {
           telefono: form.telefono.trim() || null,
           mensaje: form.mensaje.trim(),
           oferta_descripcion: form.oferta.trim(),
-          banner_url: form.banner_url.trim() || null,
-          link: form.link.trim() || null,
+          link_web: form.link_web.trim() || null,
+          link_verificado: false,
         });
 
       if (insertError) throw insertError;
@@ -81,6 +80,23 @@ const BoosterEnviarOferta = ({ userId }) => {
           <h3 className="text-xl font-black text-fuchsia-400 tracking-widest uppercase">Enviar Oferta</h3>
           <p className="text-xs text-gray-500 font-bold tracking-widest mt-0.5">Responde al deseo de un ciudadano</p>
         </div>
+      </div>
+
+      <div style={{
+        background: 'rgba(255,200,0,0.07)',
+        border: '1px solid rgba(255,200,0,0.2)',
+        color: '#cbd5e1',
+        fontSize: 12,
+        borderRadius: 10,
+        padding: 12,
+        marginBottom: 20,
+        lineHeight: 1.6,
+      }}>
+        💡 <strong>Consejo antes de enviar:</strong><br />
+        Revisa bien la descripción del deseo antes de responder.<br />
+        Usa palabras clave claras en tu oferta para que el usuario
+        la identifique fácilmente. Si envías la misma oferta varias
+        veces al mismo deseo, solo contará una — evita duplicados.
       </div>
 
       <form onSubmit={handleSubmit} className={CardStyle}>
@@ -136,15 +152,8 @@ const BoosterEnviarOferta = ({ userId }) => {
           </div>
 
           <div>
-            <label className={LabelStyle}>Banner URL</label>
-            <input type="text" value={form.banner_url} onChange={set('banner_url')}
-              placeholder="https://media.bro7vision.com/..."
-              className={InputStyle} />
-          </div>
-
-          <div>
             <label className={LabelStyle}>Link web</label>
-            <input type="text" value={form.link} onChange={set('link')}
+            <input type="text" value={form.link_web} onChange={set('link_web')}
               placeholder="https://tutienda.com/oferta..."
               className={InputStyle} />
           </div>
