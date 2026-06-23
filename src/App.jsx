@@ -553,7 +553,7 @@ const filteredItems = useMemo(() => {
 const hubVideos = useMemo(() => {
   const supabaseVideos = realItems.filter(i => i.video_v_url)
     .map(i => ({ ...i, video_file: i.video_v_url })); // alias de campo para canales verticales
-  return [{ alias: 'BRO MASTER', video_file: 'https://media.bro7vision.com/Mapache-habla7.mp4', id: 'bro_master' }, ...supabaseVideos];
+  return [{ alias: 'BRO MASTER', video_file: 'https://pub-a77d1f38b28849c1ad7e977150ecb53f.r2.dev/Mapache-habla8.mp4', id: 'bro_master' }, ...supabaseVideos];
 }, [realItems]);
 
 const hubVideos169 = useMemo(() => {
@@ -561,9 +561,9 @@ const hubVideos169 = useMemo(() => {
     .map(i => ({ ...i, video_file: i.video_h_url })); // alias de campo para canales horizontales
   return [{ 
   alias: 'BRO MASTER', 
-  video_file: 'https://media.bro7vision.com/Mapache-habla7H.mp4',
-  video_h_url: 'https://media.bro7vision.com/Mapache-habla7H.mp4',
-  video_v_url: 'https://media.bro7vision.com/Mapache-habla7.mp4',
+  video_file: 'https://pub-a77d1f38b28849c1ad7e977150ecb53f.r2.dev/Mapache-habla8H.mp4',
+  video_h_url: 'https://pub-a77d1f38b28849c1ad7e977150ecb53f.r2.dev/Mapache-habla8H.mp4',
+  video_v_url: 'https://pub-a77d1f38b28849c1ad7e977150ecb53f.r2.dev/Mapache-habla8.mp4.mp4',
   id: 'bro_master' 
 }, ...supabaseVideos169];
 }, [realItems]);
