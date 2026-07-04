@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { marcarActividad } from '../hooks/useActividad';
 import BoosterBroCards from './booster/BoosterBroCards';
-import BoosterEnlaces from './booster/BoosterEnlaces';
 import BoosterMisCupones from './booster/BoosterMisCupones';
 import BoosterCanjesRecibidos from './booster/BoosterCanjesRecibidos';
 import BoosterMisDeseos from './booster/BoosterMisDeseos';
@@ -17,13 +16,6 @@ function getCicloLunar() {
   const elapsed = (now - known) / 86400000;
   return Math.floor(elapsed / 29.53058867);
 }
-
-// ── Estado de emisión — solo lectura, asignado por el equipo ─────────
-const EMISION_CFG = {
-  verde:    { emoji: '🟢', label: 'Verde',    desc: 'Emites en todos los turnos (00:00 – 24:00)', color: 'text-green-400',  border: 'border-green-500/40',  bg: 'bg-green-950/20'  },
-  amarillo: { emoji: '🟡', label: 'Revisión', desc: 'Tu contenido está siendo revisado por el equipo', color: 'text-yellow-400', border: 'border-yellow-500/40', bg: 'bg-yellow-950/20' },
-  rojo:     { emoji: '🔴', label: 'Nocturno', desc: 'Contenido sensible — emisión en horario nocturno', color: 'text-red-400',   border: 'border-red-500/40',   bg: 'bg-red-950/20'    },
-};
 
 const OSOS_TONOS = [
   { id: 'formal',  label: 'Formal'      },
@@ -56,15 +48,8 @@ const BoosterModal = ({ onClose }) => {
   const [bizProfession,setBizProfession]= useState('');
   const [description,  setDescription]  = useState('');
 
-  // ── ESTADO DE EMISIÓN (solo lectura) ──
-  const [emisionEstado, setEmisionEstado] = useState('verde');
-  const [semaforoNotas,  setSemaforoNotas]  = useState('');
-
   // ── OSOS IA ──
   const [ososInteresesArr, setOsosInteresesArr] = useState([]);
-
-  // ── MÉTRICAS ──
-  const [followerCount, setFollowerCount] = useState(0);
 
   // ── CUPONES ──
   const [tieneComercioCupones, setTieneComercioCupones] = useState(false);
@@ -87,11 +72,6 @@ const BoosterModal = ({ onClose }) => {
     description: '', genero: 'n',
     // OSOS IA
     osos_nombre: '', osos_tono: '', osos_intereses: '', osos_frase: '', oso_id: 'TITO',
-    // SECTORES
-    servicios_id: '', servicios_personaje: '',
-    audio_personaje: '', audio_id: '',
-    oraculo_personaje: '', oraculo_id: '',
-    avisos_personaje: '', avisos_id: '',
     // LINAJE
     rank: '', reino: '',
     juramento_firmado: false, juramento_fecha: null,
@@ -172,9 +152,6 @@ const BoosterModal = ({ onClose }) => {
         setBizCategory(profile.biz_category  || '');
         setBizProfession(profile.biz_profession || '');
         setDescription(profile.description  || '');
-        
-        setEmisionEstado(profile.semaforo || 'verde');
-        setSemaforoNotas(profile.semaforo_notas || '');
 
         const interesesGuardados = profile.osos_intereses
           ? profile.osos_intereses.split(',').filter(Boolean)
@@ -208,15 +185,6 @@ const BoosterModal = ({ onClose }) => {
           osos_intereses:     profile.osos_intereses     || '',
           osos_frase:         profile.osos_frase         || '',
           oso_id:             profile.oso_id             || 'TITO',
-          // SECTORES
-          servicios_id:       profile.servicios_id       || 'ISABELLA',
-          servicios_personaje:profile.servicios_personaje|| 'ISABELLA',
-          audio_id:           profile.audio_id           || 'MAPACHE',
-          audio_personaje:    profile.audio_personaje    || 'MAPACHE',
-          oraculo_personaje:  profile.oraculo_personaje  || 'ORUMAMA',
-          oraculo_id:         profile.oraculo_id         || 'ORUMAMA',
-          avisos_personaje:   profile.avisos_personaje   || 'EVELYN',
-          avisos_id:          profile.avisos_id          || 'EVELYN',
           // LINAJE
           rank:               profile.rank               || '',
           reino:              profile.reino              || '',
@@ -234,24 +202,6 @@ const BoosterModal = ({ onClose }) => {
     };
     loadData();
   }, []);
-
-  // ── CARGAR MÉTRICAS ──
-  useEffect(() => {
-    const fetchOrbitsData = async () => {
-      if (tab === 'metrics') {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { count, error } = await supabase
-            .from('user_creators_orbits')
-            .select('*', { count: 'exact', head: true })
-            .eq('creator_id', user.id)
-            .eq('is_orbiting', true);
-          if (!error) setFollowerCount(count || 0);
-        }
-      }
-    };
-    fetchOrbitsData();
-  }, [tab]);
 
   // ── CARGAR comercio_cupones ──
   useEffect(() => {
@@ -341,8 +291,6 @@ const BoosterModal = ({ onClose }) => {
           <div className="flex md:flex-col border-b md:border-b-0 md:border-r border-white/10 bg-black/10 p-3 gap-2 overflow-x-auto md:w-64 shrink-0 z-20">
 {[
                 { id: 'identity', label: '👤 Identidad',      color: 'cyan'   },
-                { id: 'enlaces',  label: '🔗 Enlaces',        color: 'fuchsia'  },
-                { id: 'metrics',  label: '🛰️ Órbita & Radar', color: 'orange' },
                 // Linaje siempre visible — el rank vacío muestra estado pendiente
                  { id: 'linaje',   label: '👑 Linaje',         color: 'orange' },
                  { id: 'mis-brocards', label: '📇 Selección BroCards', color: 'emerald' },
@@ -371,63 +319,12 @@ const BoosterModal = ({ onClose }) => {
                 {/* ── COLUMNA IZQUIERDA ── */}
                 <div className="space-y-6">
 
-                  {/* NICK + GÉNERO + ROL */}
-                  <div className={CardStyle}>
-                    <label className={LabelStyle}>NICK DE CIUDADANO</label>
-                    <input type="text" value={formData.alias}
-                      onChange={e => setFormData({ ...formData, alias: e.target.value })}
-                      className={`${InputStyle} text-lg font-bold text-center tracking-widest border-cyan-500/40`} />
-
-                    {/* ROL */}
-                    <div className="mt-5">
-                      <label className={LabelStyle}>ROL EN BRO7VISION</label>
-                      <div className="grid grid-cols-2 gap-2 mt-2 sm:grid-cols-3">
-                        {[
-                          { id: 'citizen', label: '👤 Ciudadano',     desc: 'Exploras y juegas'          },
-                          { id: 'shop',    label: '🏪 Comercio',       desc: 'Vendes tus productos'        },
-                          { id: 'service', label: '🤝 Profesional',    desc: 'Ofreces tus servicios'       },
-                          { id: 'talk',    label: '🎙️ Audio Blogger',  desc: 'Haces Podcast y Audio Blogs' },
-                          { id: 'music',   label: '🎵 Música',          desc: 'Subes tu Música'             },
-                        ].map((r) => (
-                          <button key={r.id}
-                            onClick={() => {
-                              const current = Array.isArray(formData.role) ? formData.role : [];
-                              const updated = current.includes(r.id)
-                                ? current.filter(x => x !== r.id)
-                                : [...current, r.id];
-                              setFormData({ ...formData, role: updated });
-                            }}
-                            className={`p-3 rounded-xl border text-left transition-all
-                              ${(Array.isArray(formData.role) ? formData.role : []).includes(r.id)
-                                ? 'bg-cyan-900/40 border-cyan-500/60 text-cyan-300'
-                                : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20 hover:text-gray-300'}`}>
-                            <p className="text-xs font-bold mb-1">{r.label}</p>
-                            <p className="text-[9px] opacity-70 leading-tight">{r.desc}</p>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* GÉNERO */}
-                    <div className="mt-5">
-                      <label className={LabelStyle}>IDENTIDAD DE GÉNERO</label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {[
-                          { id: 'm', label: '♂ Masculino', desc: 'Rey · Don'      },
-                          { id: 'f', label: '♀ Femenino',  desc: 'Reina · Doña'   },
-                          { id: 'n', label: '◈ Plural',    desc: 'Reyes · Excmos' },
-                        ].map((g) => (
-                          <button key={g.id} onClick={() => setFormData({ ...formData, genero: g.id })}
-                            className={`p-3 rounded-xl border text-left transition-all
-                              ${formData.genero === g.id
-                                ? 'bg-cyan-900/40 border-cyan-500/60 text-cyan-300'
-                                : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20 hover:text-gray-300'}`}>
-                            <p className="text-xs font-bold mb-1">{g.label}</p>
-                            <p className="text-[9px] opacity-70 leading-tight">{g.desc}</p>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+{/* NICK */}
+                    <div className={CardStyle}>
+                      <label className={LabelStyle}>NICK DE CIUDADANO</label>
+                      <input type="text" value={formData.alias}
+                        onChange={e => setFormData({ ...formData, alias: e.target.value })}
+                        className={`${InputStyle} text-lg font-bold text-center tracking-widest border-cyan-500/40`} />
 
                     {/* COORDENADAS */}
                     <CoordenadosBlock
@@ -524,207 +421,6 @@ const BoosterModal = ({ onClose }) => {
                 {/* ── COLUMNA DERECHA ── */}
                 <div className="space-y-6">
 
-{/* ESTADO DE EMISIÓN EN REALITY — solo lectura */}
-<div className={`${CardStyle} border-cyan-500/20`}>
-  <p className="text-xs font-bold text-cyan-400 mb-4 flex items-center gap-2 uppercase tracking-widest">
-    📡 Estado de Emisión en Reality
-  </p>
-  {(() => {
-    const cfg = EMISION_CFG[emisionEstado] || EMISION_CFG.verde;
-    return (
-      <div className={`flex items-start gap-4 p-4 rounded-2xl border ${cfg.border} ${cfg.bg}`}>
-        <span className="text-3xl mt-0.5">{cfg.emoji}</span>
-        <div>
-          <p className={`text-sm font-black uppercase tracking-wider ${cfg.color}`}>{cfg.label}</p>
-          <p className="text-xs text-gray-400 mt-1 leading-relaxed">{cfg.desc}</p>
-          {/* Nota del equipo si existe */}
-          {semaforoNotas && (
- 	 <p className="text-[10px] text-gray-500 mt-2 italic border-t border-white/10 pt-2">
-    	📋 {semaforoNotas}
-  	</p>
-	)}
-        </div>
-      </div>
-    );
-  })()}
-
-  {/* Indicadores de los tres estados */}
-  <div className="mt-4 flex gap-2 flex-wrap">
-    {Object.entries(EMISION_CFG).map(([key, cfg]) => (
-      <div key={key}
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] font-bold
-          ${emisionEstado === key
-            ? `${cfg.border} ${cfg.bg} ${cfg.color}`
-            : 'border-white/10 bg-white/5 text-gray-600'}`}>
-        {cfg.emoji} {cfg.label}
-        {emisionEstado === key && <span className="ml-1">← activo</span>}
-      </div>
-    ))}
-  </div>
-
-  {/* Botón solicitar revisión — solo visible si está en rojo */}
-  {emisionEstado === 'rojo' && (
-    <div className="mt-4 border-t border-white/10 pt-4">
-      <button
-        onClick={async () => {
-          const { data: { user } } = await supabase.auth.getUser();
-          const { error } = await supabase
-            .from('profiles')
-            .update({
-              revision_solicitada: true,
-              semaforo_fecha: new Date().toISOString(),
-            })
-            .eq('id', user.id);
-          if (!error) {
-            alert('✅ Solicitud enviada. El equipo revisará tu contenido.');
-          }
-        }}
-        className="w-full py-2.5 px-4 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 text-xs font-bold uppercase tracking-widest rounded-xl border border-yellow-500/30 transition-all"
-      >
-        🔄 Solicitar Revisión al Equipo
-      </button>
-      <p className="text-[9px] text-gray-600 mt-2 text-center">
-        El equipo revisará tu perfil y actualizará el estado si procede.
-      </p>
-    </div>
-  )}
-
-  <p className="text-[9px] text-gray-600 mt-3">
-    Estado asignado por el equipo de Bro7Vision tras revisión de contenido.
-  </p>
-</div>
-                  {/* SECTOR BROSHOP — Nova fijo */}
-                  <div className="bg-gradient-to-br from-cyan-950/30 to-fuchsia-950/20 backdrop-blur-xl border border-cyan-500/20 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
-                    <div className="flex items-center gap-3 mb-5">
-                      <span className="text-2xl">🛍️</span>
-                      <div>
-                        <p className="text-sm font-black text-cyan-300 tracking-wider">SECTOR BROSHOP</p>
-                        <p className="text-[10px] text-gray-500 mt-0.5">Gestión y atención de tu área comercial.</p>
-                      </div>
-                    </div>
-                    <div className="mt-2 max-w-[200px]">
-                      <div className="p-3 rounded-2xl border text-center bg-cyan-900/20 border-cyan-500/30 text-cyan-400 cursor-default shadow-inner">
-                        <img src="/emojis/nova.webp" alt="Nova" className="w-16 h-16 mx-auto mb-2 object-contain drop-shadow-lg" />
-                        <p className="text-xs font-black uppercase">Nova</p>
-                        <p className="text-[9px] opacity-70">La Comerciante</p>
-                        <div className="mt-3 text-[9px] font-bold bg-cyan-950/60 rounded-full py-1 px-2 border border-cyan-500/20 inline-block">🔒 PUESTO FIJO</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* SECTOR SERVICIOS */}
-                  <div className="bg-gradient-to-br from-cyan-950/30 to-fuchsia-950/20 backdrop-blur-xl border border-cyan-500/20 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
-                    <div className="flex items-center gap-3 mb-5">
-                      <span className="text-2xl">🛠️</span>
-                      <div>
-                        <p className="text-sm font-black text-cyan-300 tracking-wider">SECTOR DE SERVICIOS</p>
-                        <p className="text-[10px] text-gray-500 mt-0.5">Elige al experto que gestionará esta área.</p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 mt-2">
-                      {[
-                        { id: 'ISABELLA', img: '/emojis/isabella.webp', nombre: 'Isabella', desc: 'La Madre'    },
-                        { id: 'PROFESOR', img: '/emojis/prmaestro.webp',nombre: 'Profesor',  desc: 'El Filósofo' },
-                      ].map(p => (
-                        <button key={p.id}
-                          onClick={() => setFormData({ ...formData, servicios_id: p.id, servicios_personaje: p.nombre })}
-                          className={`p-3 rounded-2xl border text-center transition-all
-                            ${formData.servicios_id === p.id
-                              ? 'bg-cyan-900/40 border-cyan-500/60 text-cyan-300'
-                              : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20'}`}>
-                          <img src={p.img} alt={p.nombre} className="w-16 h-16 mx-auto mb-2 object-contain drop-shadow-lg" />
-                          <p className="text-xs font-black uppercase">{p.nombre}</p>
-                          <p className="text-[9px] opacity-70">{p.desc}</p>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* SECTOR AUDIO & LIVES */}
-                  <div className="bg-gradient-to-br from-cyan-950/30 to-fuchsia-950/20 backdrop-blur-xl border border-cyan-500/20 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
-                    <div className="flex items-center gap-3 mb-5">
-                      <span className="text-2xl">🎧</span>
-                      <div>
-                        <p className="text-sm font-black text-cyan-300 tracking-wider">SECTOR AUDIO & LIVES</p>
-                        <p className="text-[10px] text-gray-500 mt-0.5">Selecciona al host para tus transmisiones.</p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 mt-2">
-                      {[
-                        { id: 'MAPACHE', img: '/emojis/mapache.webp', nombre: 'Mapache', desc: 'El Gamer' },
-                        { id: 'AMI',     img: '/emojis/ami.webp',     nombre: 'Ami',     desc: 'La Tech'  },
-                      ].map(p => (
-                        <button key={p.id}
-                          onClick={() => setFormData({ ...formData, audio_id: p.id, audio_personaje: p.nombre })}
-                          className={`p-3 rounded-2xl border text-center transition-all
-                            ${formData.audio_id === p.id
-                              ? 'bg-cyan-900/40 border-cyan-500/60 text-cyan-300'
-                              : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20'}`}>
-                          <img src={p.img} alt={p.nombre} className="w-16 h-16 mx-auto mb-2 object-contain drop-shadow-lg" />
-                          <p className="text-xs font-black uppercase">{p.nombre}</p>
-                          <p className="text-[9px] opacity-70">{p.desc}</p>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* SECTOR ORÁCULO */}
-                  <div className="bg-gradient-to-br from-cyan-950/30 to-fuchsia-950/20 backdrop-blur-xl border border-cyan-500/20 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
-                    <div className="flex items-center gap-3 mb-5">
-                      <span className="text-2xl">🔮</span>
-                      <div>
-                        <p className="text-sm font-black text-cyan-300 tracking-wider">SECTOR DEL ORÁCULO</p>
-                        <p className="text-[10px] text-gray-500 mt-0.5">Conecta con la sabiduría ancestral.</p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2 mt-2">
-                      {[
-                        { id: 'ORUMAMA',  img: '/emojis/orumama.webp',  nombre: 'Orumama',  desc: 'La Experiencia' },
-                        { id: 'SMISTERIO',img: '/emojis/smisterio.webp',nombre: 'SMisterio',desc: 'El Misterio'    },
-                        { id: 'JAGUAR',   img: '/emojis/jaguar.webp',   nombre: 'Jaguar',   desc: 'La Redención'  },
-                      ].map(p => (
-                        <button key={p.id}
-                          onClick={() => setFormData({ ...formData, oraculo_id: p.id, oraculo_personaje: p.nombre })}
-                          className={`p-2 rounded-2xl border text-center transition-all
-                            ${formData.oraculo_id === p.id
-                              ? 'bg-cyan-900/40 border-cyan-500/60 text-cyan-300'
-                              : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20'}`}>
-                          <img src={p.img} alt={p.nombre} className="w-20 h-20 mx-auto mb-1 object-contain drop-shadow-lg" />
-                          <p className="text-[10px] font-black uppercase">{p.nombre}</p>
-                          <p className="text-[8px] opacity-70">{p.desc}</p>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* SECTOR AVISOS */}
-                  <div className="bg-gradient-to-br from-cyan-950/30 to-fuchsia-950/20 backdrop-blur-xl border border-cyan-500/20 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
-                    <div className="flex items-center gap-3 mb-5">
-                      <span className="text-2xl">📰</span>
-                      <div>
-                        <p className="text-sm font-black text-cyan-300 tracking-wider">SECTOR DE AVISOS</p>
-                        <p className="text-[10px] text-gray-500 mt-0.5">Tu especialista para anuncios.</p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 mt-2">
-                      {[
-                        { id: 'EVELYN', img: '/emojis/evelyn.webp', nombre: 'Evelyn', desc: 'La Financiera' },
-                        { id: 'LARRY',  img: '/emojis/larry.webp',  nombre: 'Larry',  desc: 'El Inversor'   },
-                      ].map(p => (
-                        <button key={p.id}
-                          onClick={() => setFormData({ ...formData, avisos_id: p.id, avisos_personaje: p.nombre })}
-                          className={`p-3 rounded-2xl border text-center transition-all
-                            ${formData.avisos_id === p.id
-                              ? 'bg-cyan-900/40 border-cyan-500/60 text-cyan-300'
-                              : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20'}`}>
-                          <img src={p.img} alt={p.nombre} className="w-16 h-16 mx-auto mb-2 object-contain drop-shadow-lg" />
-                          <p className="text-xs font-black uppercase">{p.nombre}</p>
-                          <p className="text-[9px] opacity-70">{p.desc}</p>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
                   {/* LISTADO DE REINOS — Rumores fijo */}
                   <div className="bg-gradient-to-br from-cyan-950/30 to-fuchsia-950/20 backdrop-blur-xl border border-cyan-500/20 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
                     <div className="flex items-center gap-3 mb-5">
@@ -754,51 +450,11 @@ const BoosterModal = ({ onClose }) => {
                     </button>
                   </div>
 
-                </div>
+</div>
               </div>
             )}
 
-            {/* ══ 🛰️ ÓRBITA & RADAR ══ */}
-            {tab === 'metrics' && (
-              <div className="space-y-8 animate-fadeIn max-w-5xl mx-auto">
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="w-12 h-12 rounded-full border border-orange-500/50 flex items-center justify-center bg-orange-500/10 shadow-[0_0_20px_rgba(249,115,22,0.3)] animate-[spin_10s_linear_infinite]">
-                    <span className="animate-[spin_10s_linear_infinite_reverse] text-2xl">☄️</span>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-black text-orange-400 tracking-widest uppercase">Radar de Sistema</h3>
-                    <p className="text-xs text-orange-200/50 font-bold tracking-widest">MONITOR DE TRÁFICO Y RETENCIÓN</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-black/20 backdrop-blur-md border border-white/5 p-6 rounded-3xl opacity-60 grayscale cursor-not-allowed">
-                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Total Visualización</p>
-                    <span className="bg-cyan-900/40 text-cyan-400 text-[10px] font-bold px-3 py-1 rounded-full border border-cyan-500/20 uppercase tracking-widest">🔒 Desbloqueo Fase 1</span>
-                    <p className="text-[10px] text-gray-600 mt-4 border-t border-white/5 pt-2">Requiere Motor de Video Nativo.</p>
-                  </div>
-                  <div className="bg-black/20 backdrop-blur-md border border-white/5 p-6 rounded-3xl opacity-60 grayscale cursor-not-allowed">
-                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2">Tráfico Hyper Zap</p>
-                    <span className="bg-fuchsia-900/40 text-fuchsia-400 text-[10px] font-bold px-3 py-1 rounded-full border border-fuchsia-500/20 uppercase tracking-widest">🔒 Desbloqueo Fase 1</span>
-                    <p className="text-[10px] text-gray-600 mt-4 border-t border-white/5 pt-2">Requiere Módulo de Tráfico.</p>
-                  </div>
-                  <div className="bg-black/20 backdrop-blur-md border border-orange-500/30 p-6 rounded-3xl relative overflow-hidden hover:border-orange-400 transition-colors shadow-[0_0_15px_rgba(249,115,22,0.1)]">
-                    <div className="absolute top-2 right-4 w-2 h-2 rounded-full bg-orange-500 animate-pulse shadow-[0_0_8px_rgba(249,115,22,1)]" />
-                    <p className="text-[10px] text-orange-400 font-bold uppercase tracking-widest mb-2">Naves en Órbita</p>
-                    <p className="text-4xl font-black text-white drop-shadow-[0_0_10px_rgba(249,115,22,0.5)]">{followerCount}</p>
-                    <p className="text-[10px] text-gray-300 mt-2 border-t border-white/10 pt-2">Usuarios en seguimiento (En vivo).</p>
-                  </div>
-                </div>
-                <div className="mt-8 bg-black/20 backdrop-blur-md border border-white/10 p-6 rounded-3xl">
-                  <h3 className="text-xs text-gray-300 font-bold uppercase tracking-widest mb-4 flex justify-between items-center border-b border-white/10 pb-4">
-                    <span>Constelación Activa (Seguidores)</span>
-                    <span className="bg-orange-500/20 text-orange-300 border border-orange-500/30 px-3 py-1 rounded-full text-[10px]">EN DIRECTO</span>
-                  </h3>
-                  <p className="text-xs text-gray-600 italic text-center py-8">Los datos reales de seguidores se cargarán aquí en Fase 1.</p>
-                </div>
-              </div>
-            )}
-
-             {/* ══ 👑 LINAJE ══ */}
+            {/* ══ 👑 LINAJE ══ */}
              {tab === 'linaje' && (() => {
                const REINOS = [
                 'Reino de Solaris','Reino de Lunaris','Reino de Polaris','Reino de Vega','Reino de Andrómeda',
@@ -1006,13 +662,10 @@ const BoosterModal = ({ onClose }) => {
              })()}
 
              {/* ══ 📇 SELECCION BROCARDS ══ */}
-             {tab === 'mis-brocards' && <BoosterBroCards />}
-
-             {/* ══ 🔗 ENLACES ══ */}
-             {tab === 'enlaces' && <BoosterEnlaces />}
+{tab === 'mis-brocards' && <BoosterBroCards />}
 
              {/* ══ 🎫 MIS CUPONES ══ */}
-             {tab === 'mis-cupones' && <BoosterMisCupones />}
+              {tab === 'mis-cupones' && <BoosterMisCupones />}
 
              {/* ══ 📋 CANJES RECIBIDOS ══ */}
              {tab === 'canjes-recibidos' && tieneComercioCupones && <BoosterCanjesRecibidos />}
