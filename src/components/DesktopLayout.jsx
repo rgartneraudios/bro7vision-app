@@ -2,33 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import RealityTuner from './RealityTuner';
-import ChannelEste from './Canales/ChannelEste';
-import ChannelEste169 from './Canales/ChannelEste169';
-import ChannelOeste from './Canales/ChannelOeste';
-import ChannelOeste169 from './Canales/ChannelOeste169';
-import SoloO169 from './Canales/SoloO169';
-import SoloE169 from './Canales/SoloE169';
-import ChannelMoon from './Canales/ChannelMoon';
+import DesktopRealityPlayer from './DesktopRealityPlayer';
 import BioForest from './Canales/BioForest';
 import WalletWidget from './WalletWidget';
 import MoonMatrixCircle from './MoonMatrixCircle';
-import BroLives3D from './BroLives3D';
 import BroTuner from './BroTuner';
 import NeuralButton from './NeuralButton';
 import NexusDashboard from './NexusDashboard';
-import HoloPrism from './HoloPrism';
 import CityLocationBanner from './CityLocationBanner';
 import SlideRail from './SlideRail';
 import SlideRailServicios from './SlideRailServicios';
 import SlideRailAvisos from './SlideRailAvisos';
-import SlideRailAudio from './SlideRailAudio';
 import NovaBanner  from './personajes/NovaBanner';
 import IsabellaBanner from './personajes/IsabellaBanner';
 import EvelynBanner from './personajes/EvelynBanner';
 import MapacheBanner from './personajes/MapacheBanner';
-import SmisterioBanner from "./personajes/SmisterioBanner";
-import JaguarBanner    from "./personajes/JaguarBanner";
-import OrumamaBanner   from "./personajes/OrumamaBanner";
 import TitoBanner  from "./personajes/TitoBanner";
 import LaraBanner  from "./personajes/LaraBanner";
 import PuffoBanner from "./personajes/PuffoBanner";
@@ -39,22 +27,20 @@ export default function DesktopLayout(props) {
   // Desestructuramos todas las props que le manda App.jsx
   const {
     step, setStep, intent, setIntent, realityMode, setRealityMode,
-    isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen, perfilSector, handleCentralHandoff,
-    balances, setBalances, session, showRadar, setShowRadar, radarQuery, setRadarQuery,
-    realItems, filteredItems, hubVideos, hubVideos169, selectedForestUser, setSelectedForestUser,    	savedUserIndex, audioUser, setAudioUser, activePrismUser, setActivePrismUser, projectingUser, 	setProjectingUser, broTunerRef, navItems, handleNavigation, handleReportIssue,
+    isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen, handleCentralHandoff,
+    balances, setBalances, session,
+    selectedForestUser, setSelectedForestUser,    	savedUserIndex, projectingUser, 	setProjectingUser, broTunerRef, navItems, handleNavigation, handleReportIssue,
     setShowWalletModal, setShowBooster, setShowStory, setShowLegal,
     scope, sessionCP, sessionCity, sessionRef, handleGameWin, handleGoToShop, abrirTienda,
-    setSelectedLog, setVlData, ososHandoffContext, setOsosHandoffContext,
-    perfilOso, stripVisible, stripCards, stripLabel, setHoloPrismaIndex, findChannelByAlias, checkIfNew,
+    setVlData, ososHandoffContext, setOsosHandoffContext,
+    perfilOso, stripVisible, stripCards, stripLabel, setHoloPrismaIndex,
     ososModo, setOsosModo, handleLogout, selectedCard,
-  rumoresMensaje, rumoresLoading, handleRumoresInput, onOpenMiniGuide,
-  oraculoPersonaje, userId, genesisBalance, onGenesisUpdate,
+  rumoresMensaje, rumoresLoading, handleRumoresInput,
+  userId, genesisBalance, onGenesisUpdate,
    iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA
   } = props;
   
 
-const [personajeOraculo, setPersonajeOraculo] = useState('orumama');
-const [oraculoEsHandoff, setOraculoEsHandoff] = useState(false);
 const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
 
 useEffect(() => {
@@ -63,33 +49,22 @@ useEffect(() => {
   return () => window.removeEventListener('resize', handleResize);
 }, []);
 
-useEffect(() => {
-  const personaje = perfilSector?.personaje_id || perfilOso?.oraculo_personaje;
-  if (personaje) setPersonajeOraculo(personaje.toLowerCase());
-}, [perfilOso?.oraculo_personaje, perfilSector?.personaje_id]);
-
-const handleHandoffPersonaje = (id) => {
-  setOraculoEsHandoff(true);
-  setPersonajeOraculo(id);
-};
-
-  const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'audios']);
+  const INTENTS_CON_UBICACION = new Set(['canjear', 'avisos']);
 
 
   return (
     <>
+
       {/* 1. FONDO DE VIDEOS */}
       <div className="absolute inset-0 z-0">
         {step === 0 && !projectingUser && !selectedCard && (
           !realityMode ? <RealityTuner onSelect={setRealityMode} /> :
-          realityMode === 'este'  ? <ChannelEste  videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => setProjectingUser(u)} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
-          realityMode === 'oeste' ? <ChannelOeste videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => setProjectingUser(u)} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
-          realityMode === 'este169'  ? <ChannelEste169  videoUsers={hubVideos169} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => setProjectingUser(u)} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
-          realityMode === 'oeste169' ? <ChannelOeste169 videoUsers={hubVideos169} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => setProjectingUser(u)} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
-          realityMode === 'solo_o169' ? <SoloO169 videoUsers={hubVideos169} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => setProjectingUser(u)} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
-          realityMode === 'solo_e169' ? <SoloE169 videoUsers={hubVideos169} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => setProjectingUser(u)} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
-          realityMode === 'moon'  ? <ChannelMoon  videoUsers={hubVideos169} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => setProjectingUser(u)} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} /> :
-          <BioForest videoUsers={hubVideos} balances={balances} setBalances={setBalances} session={session} realityMode={realityMode} onOpenProfile={(u) => setProjectingUser(u)} selectedForestUser={selectedForestUser} savedUserIndex={savedUserIndex} />
+          <DesktopRealityPlayer
+            realityMode={realityMode}
+            userId={userId}
+            genesisBalance={genesisBalance}
+            onGenesisUpdate={onGenesisUpdate}
+          />
         )}
           
         {(step === 1 || step === 2) && (
@@ -97,10 +72,8 @@ const handleHandoffPersonaje = (id) => {
             key={step === 1 ? (ososModo === 'retorno' ? 'ososia_recepcion2' : 'ososia_recepcion_v3') : intent}
             src={
               step === 1
-                ? ososModo === 'retorno' ? "https://media.bro7vision.com/ososia_recepcion8.mp4" : "https://media.bro7vision.com/ososia_recepcion8.mp4"
-                : intent === 'ai'              ? "https://media.bro7vision.com/oraculo0.mp4"
+                ? ososModo === 'retorno' ? "https://media.bro7vision.com/ososia_recepcion.mp4" : "https://media.bro7vision.com/ososia_recepcion.mp4"
                 : intent === 'game'            ? "https://media.bro7vision.com/game_bg.mp4"
-                : intent === 'audios'           ? "https://media.bro7vision.com/brolives1.mp4"
                 : intent === 'internal_search' ? "https://media.bro7vision.com/reinos.mp4"
                 : getVideoForLocation(scope)
             }
@@ -128,36 +101,7 @@ const handleHandoffPersonaje = (id) => {
 	/>
           
         </div>                  
-        <div className="flex flex-col gap-2 px-4 mt-4">
-          <button onClick={() => setShowRadar(!showRadar)} className={`flex items-center gap-4 p-4 border rounded-2xl transition-all ${showRadar ? 'bg-cyan-500 text-black border-cyan-400' : 'bg-white/5 border-yellow/10'}`}>
-            <span className="text-xl">🔍</span><span className="text-[10px] font-black uppercase">Scan Reality</span>
-          </button>
-          {showRadar && (
-            <div className="bg-black/90 border border-cyan-500/50 rounded-xl p-3">
-              <input autoFocus type="text" placeholder="BUSCAR..." value={radarQuery} onChange={(e) => setRadarQuery(e.target.value)} className="w-full bg-transparent border-b border-white/20 text-white text-[10px] p-2 outline-none mb-2" />
-              <div className="max-h-32 overflow-y-auto flex flex-col gap-1">
-                {realItems.filter(u => u.alias?.toLowerCase().includes(radarQuery.toLowerCase())).slice(0,5).map(u => (
-                  <button key={u.id} onClick={() => { setStep(0); setSelectedForestUser(u); setShowRadar(false); setIsLeftOpen(false); }} className="text-[10px] p-2 hover:bg-cyan-500/20 text-left rounded truncate font-bold uppercase">{u.alias}</button>
-                ))}
-              </div>
-            </div>
-          )}
-          {/* Subir Contenido — Página de ayuda */}
-<div className="px-4 mt-4">
-<button
-  onClick={() => onOpenMiniGuide()}
-  className="w-full flex justify-between items-center p-3 bg-amber-500/10 border border-amber-400/40 rounded-2xl hover:bg-amber-500 hover:text-black transition-all group"
->
-  <span
-    className="text-[10px] font-black uppercase group-hover:text-black"
-    style={{ fontFamily: "'Georgia', serif" }}
-  >
-    Subir Contenido
-  </span>
-  <span className="text-lg">⬡</span>
-</button>
-</div>
-        </div>
+        
         <div className="mt-auto flex flex-col w-full pb-10">
           <div className="w-full px-4 pt-4 border-t border-white/5"><BroTuner ref={broTunerRef} /></div>
         </div>
@@ -196,31 +140,26 @@ const handleHandoffPersonaje = (id) => {
         <div className="relative z-50 w-full h-full flex items-center justify-center pointer-events-none p-4">
           <div className="w-full max-w-6xl h-full md:h-auto pointer-events-auto overflow-y-auto">
             <NexusDashboard 
-              intent={intent} setIntent={setIntent} items={filteredItems} scope={scope} step={step} setStep={setStep} session={session} balances={balances} setBalances={setBalances} realItems={realItems} sessionCP={sessionCP} sessionCity={sessionCity} sessionRef={sessionRef} ososHandoffContext={ososHandoffContext}
-              onHoverCard={(u) => setActivePrismUser(u)} onBack={() => setStep(0)} onGameWin={handleGameWin} setProjectingUser={setProjectingUser} onOpenProjector={(u) => setProjectingUser(u)} onTuneIn={(u) => setAudioUser(u)} onOpenVideo={(u) => setProjectingUser(u)} handleGoToShop={handleGoToShop} onOpenLog={setSelectedLog} onVLChange={(vl) => setVlData(vl)} onHandoffConsumed={() => setOsosHandoffContext(null)}
+              intent={intent} setIntent={setIntent} scope={scope}
+              session={session} ososHandoffContext={ososHandoffContext}
+              onGameWin={handleGameWin} handleGoToShop={handleGoToShop}
+              onHandoffConsumed={() => setOsosHandoffContext(null)}
             />
           </div>
         </div>
       )}      
 
-      {/* HOLOPRISMA Y BANNERS */}
-      {step === 2 && ['productos', 'servicios', 'audios', 'avisos'].includes(intent) && (
-        <div className="hidden md:flex fixed right-[10%] top-[24%] -translate-x-1/2 -translate-y-1/2 z-[40] flex-col items-center animate-fadeIn pointer-events-none"><div className="scale-[1.1] origin-bottom-right relative z-20 transition-transform hover:scale-[1.15]"><HoloPrism user={activePrismUser} showNumbers={true} /></div></div>
-      )}
-      
       {step === 2 && INTENTS_CON_UBICACION.has(intent) && !selectedCard && <CityLocationBanner scope={scope} />}
-      {step === 2 && intent === 'productos' && <SlideRail />}
-      {step === 2 && intent === 'servicios' && <SlideRailServicios />}
+      {step === 2 && intent === 'canjear' && <SlideRail />}
+      {step === 2 && intent === 'canjear' && <SlideRailServicios />}
       {step === 2 && intent === 'avisos'    && <SlideRailAvisos />}
-      {step === 2 && intent === 'audios'     && <SlideRailAudio />}
       
       
-      {/* ── PRODUCTOS ───────────────────────────────────────────────────── */}     
-      {step === 2 && intent === 'productos' && (
+      {/* ── CANJEAR (Productos + Servicios) ──────────────────────────────── */}     
+      {step === 2 && intent === 'canjear' && (
         <NovaBanner
           sessionCity={sessionCity}
           sessionCP={sessionCP}
-          realItems={realItems}
           stripVisible={stripVisible}
           stripCards={stripCards}
           stripLabel={stripLabel}
@@ -239,13 +178,11 @@ const handleHandoffPersonaje = (id) => {
         />
       )}
       
-      {/* ── SERVICIOS ───────────────────────────────────────────────────── */}
-      {step === 2 && intent === 'servicios' && (
+      {step === 2 && intent === 'canjear' && (
         <IsabellaBanner
-          personaje={perfilSector?.personaje_id || 'isabella'}
+          personaje='isabella'
           sessionCity={sessionCity}
           sessionCP={sessionCP}
-          realItems={realItems}
           stripVisible={stripVisible}
           stripCards={stripCards}
           stripLabel={stripLabel}
@@ -267,12 +204,11 @@ const handleHandoffPersonaje = (id) => {
       {/* ── AVISOS ──────────────────────────────────────────────────────── */}
       {step === 2 && intent === 'avisos' && (
         <EvelynBanner
-          personaje={perfilSector?.personaje_id || 'evelyn'}
+          personaje='evelyn'
           sessionCity={sessionCity}
           genesis={balances.genesis}
           userId={session?.user?.id}
           autorAlias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'}
-          realItems={realItems}
           stripVisible={stripVisible}
           stripCards={stripCards}
           stripLabel={stripLabel}
@@ -284,73 +220,6 @@ const handleHandoffPersonaje = (id) => {
         />
       )}
 
-      {/* ── AUDIO ───────────────────────────────────────────────────────── */}
-      {step === 2 && intent === 'audios' && (
-        <MapacheBanner
-          personaje={perfilSector?.personaje_id || 'mapache'}
-          realItems={realItems}
-          stripVisible={stripVisible}
-          stripCards={stripCards}
-          stripLabel={stripLabel}
-          findChannelByAlias={findChannelByAlias}
-          checkIfNew={checkIfNew}
-          onHandoff={handleCentralHandoff}
-          onInvokeOsos={() => setStep(1)}
-          onInvokeNova={() => setIntent('productos')}
-          onOpenProfile={(u) => setProjectingUser(u)}
-          onTuneIn={(u) => { setAudioUser(u); setActivePrismUser(u); }}
-          onTuneTuner={(id) => broTunerRef.current?.playById(id)}
-          onStopTuner={() => broTunerRef.current?.stop()}
-          iaMode={iaMode}
-          isAdmin={isAdmin}
-          ciudad={sessionCity}
-          entidad={ososHandoffContext?.comercio_especifico}
-          hayTarjetas={stripVisible}
-        />
-      )}
-
-      {/* BROLIVES3D EN FOOTER - SOLO PRODUCTOS, SERVICIOS, AVISOS, AUDIO */}
-      {step === 2 && ['productos', 'servicios', 'avisos', 'audios'].includes(intent) && (
-        <div className="fixed right-[14%] bottom-4 z-[40]">
-          <BroLives3D playingCreator={audioUser} />
-        </div>
-      )}
-
-{/* ── ORÁCULO ─────────────────────────────────────────────────────── */}
-{step === 2 && intent === 'ai' && personajeOraculo === 'smisterio' && (
-  <SmisterioBanner
-    alias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'}
-    origenLlegada={oraculoEsHandoff ? 'handoff' : 'inicial'}
-    onHandoffPersonaje={handleHandoffPersonaje}
-    onInvokeOsos={() => { setOraculoEsHandoff(false); setStep(1); setOsosModo('entrada'); }}
-    iaMode={iaMode}
-    isAdmin={isAdmin}
-    isMobile={isMobile}
-  />
-)}
-{step === 2 && intent === 'ai' && personajeOraculo === 'jaguar' && (
-  <JaguarBanner
-    alias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'}
-    origenLlegada={oraculoEsHandoff ? 'handoff' : 'inicial'}
-    onHandoffPersonaje={handleHandoffPersonaje}
-    onInvokeOsos={() => { setOraculoEsHandoff(false); setStep(1); setOsosModo('entrada'); }}
-    iaMode={iaMode}
-    isAdmin={isAdmin}
-    isMobile={isMobile}
-  />
-)}
-{step === 2 && intent === 'ai' && personajeOraculo === 'orumama' && (
-  <OrumamaBanner
-    alias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'}
-    origenLlegada={oraculoEsHandoff ? 'handoff' : 'inicial'}
-    onHandoffPersonaje={handleHandoffPersonaje}
-    onInvokeOsos={() => { setOraculoEsHandoff(false); setStep(1); setOsosModo('entrada'); }}
-    iaMode={iaMode}
-    isAdmin={isAdmin}
-    isMobile={isMobile}
-  />
-)}
-      
       {/* 6. OSOS IA RECEPCION */}
 {step === 1 && (
   <>

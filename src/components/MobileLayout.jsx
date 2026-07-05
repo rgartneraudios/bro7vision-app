@@ -7,11 +7,10 @@ import BroCardStripPS from './BroCardStripPS';
 import BroTuner from '../components/BroTuner';
 import { getMoonSuffix } from '../utils/moonUtils';
 import { getVideoCandidates, resolveVideoFromCandidates, getTurno } from '../data/citycodes';
-import SmisterioBanner from './personajes/SmisterioBanner';
-import JaguarBanner from './personajes/JaguarBanner';
-import OrumamaBanner from './personajes/OrumamaBanner';
 import CuponModal from './CuponModal';
 import { useCanjearCupon } from '../hooks/useCanjearCupon';
+import { useHaloTrivia } from '../hooks/useHaloTrivia';
+import GenesisCounter from './GenesisCounter';
 
 // ─── ESTILOS NEÓN ───────────────────────────────────────────────────────────
 const MOBILE_STYLES = `
@@ -157,18 +156,21 @@ const MOBILE_STYLES = `
   @keyframes glowSwim {
     0%   { transform: translateY(0) scale(0.5); opacity: 0; }
     15%  { opacity: 1; transform: scale(1); }
-    100% { transform: translateY(-115vh) scale(3.5); opacity: 0; }
+    30%  { transform: translateY(-30vh) translateX(40px); }
+    60%  { transform: translateY(-60vh) translateX(-40px); }
+    85%  { opacity: 1; }
+    100% { transform: translateY(-115vh) translateX(0) scale(2.5); opacity: 0; }
   }
   .animate-glowSwim { animation: glowSwim 5.5s ease-in-out forwards; }
+  .animate-spin-slow { animation: spin 8s linear infinite; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 `;
 
 // ─── ACCENT POR SECTOR ──────────────────────────────────────────────────────
 const SECTOR_ACCENT = {
   gps:             '#d946ef',
-  productos:       '#facc15',
-  servicios:       '#f43f5e',
+  canjear:         '#facc15',
   avisos:          '#94a3b8',
-  audios:          '#22d3ee',
   internal_search: '#fb923c',
   ai:              '#a3e635',
   game:            '#ffffff',
@@ -176,41 +178,35 @@ const SECTOR_ACCENT = {
 
 // Tema BroCardStrip según sector
 const STRIP_THEME = {
-  productos: 'gold',
-  servicios: 'slate',
-  avisos:    'blue',
-  audios:    'cyan',
+  canjear: 'gold',
+  avisos:  'blue',
 };
 
 // HandOff de cierre según sector — claves = intent
 const CIERRE_AGENTE = {
-  productos: 'NOVA_CIERRE',
-  servicios: 'ISABELLA_CIERRE',
-  avisos:    'EVELYN_CIERRE',
-  audios:    'AUDIO_PLAY',
+  canjear: 'NOVA_CIERRE',
+  avisos:  'EVELYN_CIERRE',
 };
 
 const SECTOR_AVATARS = {
   gps:             { tito: '/emojis/tito.webp', lara: '/emojis/lara.webp', puffo: '/emojis/puffo.webp' },
-  productos:       { nova: '/emojis/nova.webp' },
-  servicios:       { isabella: '/emojis/isabella.webp', profesor: '/emojis/prmaestro.webp' },
+  canjear:         { nova: '/emojis/nova.webp', isabella: '/emojis/isabella.webp' },
   avisos:          { evelyn: '/emojis/evelyn.webp', larry: '/emojis/larry.webp' },
-  audios:          { mapache: '/emojis/mapache.webp', ami: '/emojis/ami.webp' },
   internal_search: { rumores: '/emojis/rumores.webp' },
   ai:              { orumama: '/emojis/orumama.webp', jaguar: '/emojis/jaguar.webp', smisterio: '/emojis/smisterio.webp' },
   game:            { default: '/emojis/emoji_5.webp' },
 };
 
 const REALITIES = [
-  { id: 'moon',         title: 'CANAL LUNA',   desc: 'Fase Luna',          icon: '🌕', color: '#ffffff', group: 'NEUTRAL' },
-  { id: 'solo_earth',   title: 'SOLO TERRA',   desc: 'Sincronía Vital',    icon: '🌍', color: '#34d399', group: 'SOLO' },
-  { id: 'solo_fantasy', title: 'SOLO FANTASÍA', desc: 'Exploración',        icon: '🏰', color: '#22d3ee', group: 'SOLO' },
-  { id: 'solo_cinema',  title: 'SOLO CINEMA',  desc: 'Viajero del Tiempo', icon: '🏛️', color: '#fbbf24', group: 'SOLO' },
-  { id: 'band_earth',   title: 'BANDA TERRA',   desc: 'Nexo Ciudadano',     icon: '🏙️', color: '#60a5fa', group: 'BAND' },
-  { id: 'band_fantasy', title: 'BANDA FANTASÍA', desc: 'Alien Lounge',       icon: '👾', color: '#e879f9', group: 'BAND' },
-  { id: 'band_cinema',  title: 'BANDA CINEMA',  desc: 'El Ágora',           icon: '🎭', color: '#fb923c', group: 'BAND' },
-  { id: 'este',         title: 'CANAL ESTE',   desc: 'Horizonte Levante',  icon: '📱', color: '#22d3ee', group: 'ESPACIO' },
-  { id: 'oeste',        title: 'CANAL OESTE',  desc: 'Horizonte Poniente', icon: '📱', color: '#e879f9', group: 'ESPACIO' },
+  { id: 'moon',         title: 'CANAL MOON',     desc: 'Fase Luna',          icon: '🌕', color: '#ffffff', group: 'NEUTRAL' },
+  { id: 'solo_earth',   title: 'CANAL TIERRA',   desc: 'Sincronía Vital',    icon: '🌍', color: '#34d399', group: 'SOLO' },
+  { id: 'solo_fantasy', title: 'CANAL JÚPITER',  desc: 'Exploración',        icon: '🏰', color: '#22d3ee', group: 'SOLO' },
+  { id: 'solo_cinema',  title: 'CANAL MARTE',    desc: 'Viajero del Tiempo', icon: '🏛️', color: '#fbbf24', group: 'SOLO' },
+  { id: 'band_earth',   title: 'CANAL SATURNO',  desc: 'Nexo Ciudadano',     icon: '🏙️', color: '#60a5fa', group: 'BAND' },
+  { id: 'band_fantasy', title: 'CANAL URANO',    desc: 'Alien Lounge',       icon: '👾', color: '#e879f9', group: 'BAND' },
+  { id: 'band_cinema',  title: 'CANAL NEPTUNO',  desc: 'El Ágora',           icon: '🎭', color: '#fb923c', group: 'BAND' },
+  { id: 'este',         title: 'CANAL VENUS',    desc: 'Horizonte Levante',  icon: '📱', color: '#22d3ee', group: 'ESPACIO' },
+  { id: 'oeste',        title: 'CANAL MERCURIO', desc: 'Horizonte Poniente', icon: '📱', color: '#e879f9', group: 'ESPACIO' },
 ];
 
 // ─── VIDEO REALITY — solo para el Reality Player ─────────────────────────────
@@ -243,7 +239,7 @@ const getMobileAudioUrl = (realityId) => {
 };
 
 // ─── WIDGET RELOJ + TEMPERATURA ──────────────────────────────────────────────
-const LockClockWidget = ({ accent }) => {
+const LockClockWidget = ({ accent, genesisBalance }) => {
   const [time, setTime] = useState('');
   const [date, setDate] = useState('');
   const [temp, setTemp] = useState(null);
@@ -279,15 +275,47 @@ const LockClockWidget = ({ accent }) => {
     }, () => {}, { timeout: 8000 });
   }, []);
 
+  const genesisColor =
+    (genesisBalance ?? 0) < 1000    ? '#f87171'
+    : (genesisBalance ?? 0) < 5000  ? '#60a5fa'
+    : (genesisBalance ?? 0) < 10000 ? '#34d399'
+    : (genesisBalance ?? 0) < 15000 ? '#facc15'
+    :                                '#d946ef';
+
+  const genesisNeon =
+    (genesisBalance ?? 0) < 1000    ? 'rgba(248,113,113,0.6)'
+    : (genesisBalance ?? 0) < 5000  ? 'rgba(96,165,250,0.6)'
+    : (genesisBalance ?? 0) < 10000 ? 'rgba(52,211,153,0.6)'
+    : (genesisBalance ?? 0) < 15000 ? 'rgba(250,204,21,0.6)'
+    :                                'rgba(217,70,239,0.6)';
+
+  const genesisLabelColor =
+    (genesisBalance ?? 0) < 1000    ? 'rgba(248,113,113,0.5)'
+    : (genesisBalance ?? 0) < 5000  ? 'rgba(96,165,250,0.5)'
+    : (genesisBalance ?? 0) < 10000 ? 'rgba(52,211,153,0.5)'
+    : (genesisBalance ?? 0) < 15000 ? 'rgba(250,204,21,0.5)'
+    :                                'rgba(217,70,239,0.5)';
+
   return (
     <div className="flex items-center justify-between w-full px-2 select-none">
+      {/* Izquierda: Hora + Fecha */}
       <div className="flex flex-col items-start">
-        <span className="lock-clock" style={{ fontSize: 'clamp(38px, 12vw, 62px)' }}>{time}</span>
+        <span className="lock-clock" style={{ fontSize: 'clamp(32px, 10vw, 52px)' }}>{time}</span>
         <span className="lock-date">{date}</span>
       </div>
+
+      {/* Centro: Génesis */}
+      <div className="flex flex-col items-center">
+        <span className="lock-temp" style={{ color: genesisColor, fontSize: 'clamp(22px, 7vw, 36px)', textShadow: `0 0 16px ${genesisNeon}` }}>
+          {genesisBalance ?? 0}
+        </span>
+        <span className="lock-date" style={{ color: genesisLabelColor }}>GÉNESIS</span>
+      </div>
+
+      {/* Derecha: Temperatura */}
       {temp !== null && (
         <div className="flex flex-col items-end">
-          <span className="lock-temp" style={{ fontSize: 'clamp(28px, 9vw, 44px)' }}>{temp}°</span>
+          <span className="lock-temp" style={{ fontSize: 'clamp(22px, 7vw, 36px)' }}>{temp}°</span>
           {city && <span className="lock-date" style={{ fontSize: 9 }}>{city}</span>}
         </div>
       )}
@@ -297,12 +325,11 @@ const LockClockWidget = ({ accent }) => {
 
 // ─── PUERTAS (reutilizadas en los 3 early returns) ──────────────────────────
 function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
-                   audioUser, onToggleAudio, broTunerRef,
+                   broTunerRef,
                    accent, balances, setBalances, navItems, handleNavigation, setMessages,
                    iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA,
                    setShowWalletModal, handleLogout, intent,
-                   setStep, setRealityMode, setScope,
-                   handleHalo, showHalo, isTipping, audmovilActual }) {
+                   setStep, setRealityMode, setScope }) {
 
   return (
     <>
@@ -339,33 +366,6 @@ function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
             onToggleAdmin={onToggleAdminIA} onTogglePublic={onTogglePublicIA}
             setShowWalletModal={setShowWalletModal} />
         </div>
-
-        {/* Botón Halo de Luz — solo si hay audio activo con creador identificado */}
-        {audmovilActual?.audmovil_user_id && (
-          <button
-            onClick={handleHalo}
-            disabled={isTipping}
-            className="w-full flex flex-col items-center gap-1 py-3 rounded-xl border transition-all active:scale-95"
-            style={{
-              borderColor: isTipping ? 'rgba(255,255,255,0.1)' : 'rgba(234,179,8,0.5)',
-              background:  isTipping ? 'rgba(0,0,0,0.3)' : 'rgba(234,179,8,0.08)',
-              opacity:     isTipping ? 0.5 : 1,
-            }}>
-            <div className="relative w-7 h-7">
-              <div className="absolute inset-0 bg-yellow-400/30 rounded-full blur-sm" />
-              <div className="absolute inset-1 bg-yellow-300/40 rounded-full blur-[2px]" />
-              <div className="absolute inset-2 bg-white/80 rounded-full shadow-[0_0_10px_gold]" />
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-yellow-400">
-              {isTipping ? 'Enviando...' : 'Halo de Luz [50G]'}
-            </span>
-            {audmovilActual.username && (
-              <span className="text-[9px] text-white/30 uppercase tracking-widest">
-                @{audmovilActual.username}
-              </span>
-            )}
-          </button>
-        )}
 
         <div className="flex flex-col w-full px-4 mt-4 gap-4">
           <div className="pt-4 border-t border-white/5">
@@ -477,7 +477,6 @@ function BurbujaDescripcion({ card, intent, accent, onHandoff, onClose }) {
 const MobileLayout = ({
   children,
   realityMode, setRealityMode,
-  hubAudios={hubAudios},
   audmovilList=[],
   scope, setScope,
   step, setStep,
@@ -486,7 +485,7 @@ const MobileLayout = ({
   navItems, handleNavigation,
   chatMobile,
   ososModo, setOsosModo,
-  perfilOso, perfilSector,
+  perfilOso,
   setShowBooster, setShowWalletModal,
   handleLogout,
   isLeftOpen,  setIsLeftOpen,
@@ -496,10 +495,7 @@ const MobileLayout = ({
   stripCards, stripVisible, stripLabel,
   onHandoff,
   broTunerRef,
-  audioUser,
-  onToggleAudio,
   selectedCard,
-  oraculoActivo,
   userId,
   genesisBalance,
   onGenesisUpdate,
@@ -511,21 +507,9 @@ const MobileLayout = ({
   const [burbujaOpen, setBurbujaOpen] = useState(false);
   const [bgVideoUrl, setBgVideoUrl] = useState('');
 
-  const audioRef = useRef(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [audmovilIndex, setAudmovilIndex] = useState(0);
-  const [progress, setProgress]   = useState(0);
-  const [duration, setDuration]   = useState(0);
-  const [showHalo, setShowHalo] = useState(false);
-  const [isTipping, setIsTipping] = useState(false);
-
   const { enviar, mensaje: chatMensaje, loading: chatLoading } = chatMobile || {};
   const inputRef     = useRef(null);
   const lastBotMsgId = useRef(null);
-  
-  const isOraculo = chatMobile?.tipo === 'ORACULO';
-  const oraculoPersonaje = chatMobile?.oraculo_personaje;
-  const oraculoEnviarRef = useRef(null);
   
   const accent = SECTOR_ACCENT[intent] || '#00ffff';
   
@@ -533,6 +517,18 @@ const MobileLayout = ({
   estado, cuponActivo, cardPendiente, errorMsg,
   iniciarCanje, cancelar, confirmar, cerrar,
 } = useCanjearCupon({ userId, onGenesisUpdate });
+
+  const {
+    preguntaActual, indice, total, resultado, cooldown,
+    loading: triviaLoading, completado,
+    burbujaOpen: triviaBurbujaOpen, setBurbujaOpen: setTriviaBurbujaOpen,
+    haloActivo, falloImg, proximoTurno,
+    cargarSet, responder,
+  } = useHaloTrivia({
+    escenarioId: realityMode,
+    userId,
+    onGenesisUpdate,
+  });
   
 
   useEffect(() => {
@@ -547,93 +543,15 @@ const MobileLayout = ({
 
   useEffect(() => { setBurbujaOpen(false); }, [stripCards]);
 
-  useEffect(() => { setAudmovilIndex(0); }, [realityMode]);
-
-  const currentAudioUrl = useMemo(() => {
-    if (step === 0 && realityMode) {
-      return audmovilList[audmovilIndex]?.audmovil_url || null;
-    }
-    if (step === 2 && intent === 'audios' && audioUser?.audio_url) {
-      return audioUser.audio_url;
-    }
-    return null;
-  }, [step, realityMode, audmovilIndex, audmovilList, intent, audioUser]);
-
-  const prevAudmovil = () => {
-    if (!audmovilList.length) return;
-    setAudmovilIndex(i => (i - 1 + audmovilList.length) % audmovilList.length);
-    setIsPlaying(true);
-  };
-  const nextAudmovil = () => {
-    if (!audmovilList.length) return;
-    setAudmovilIndex(i => (i + 1) % audmovilList.length);
-    setIsPlaying(true);
-  };
-
-  const handleHalo = async () => {
-    const audmovilActual = audmovilList[audmovilIndex];
-    if (!audmovilActual?.audmovil_user_id) return;
-    if (!balances || balances.genesis < 50) { alert('SUEÑAS CON GÉNESIS...'); return; }
-    if (isTipping) return;
-    setIsTipping(true);
-
-    try {
-      const { supabase } = await import('../supabaseClient');
-      const newBalance = balances.genesis - 50;
-      setBalances(prev => ({ ...prev, genesis: newBalance }));
-      await supabase.from('profiles').update({ genesis: newBalance }).eq('id', session.user.id);
-
-      const { data: autorData } = await supabase
-        .from('profiles').select('genesis').eq('id', audmovilActual.user_id).single();
-      if (autorData) {
-        await supabase.from('profiles')
-          .update({ genesis: autorData.genesis + 50 }).eq('id', audmovilActual.user_id);
-      }
-
-      setShowHalo(true);
-      setTimeout(() => { setShowHalo(false); setIsTipping(false); }, 5500);
-    } catch (err) {
-      console.error('[Halo móvil]', err);
-      setIsTipping(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!chatMensaje) return;
-    if (lastBotMsgId.current === chatMensaje) return;
-    lastBotMsgId.current = chatMensaje;
-    setMessages(prev => [...prev, { from: 'bot', text: chatMensaje, ts: Date.now() }]);
-  }, [chatMensaje, isOraculo]);
-
-  useEffect(() => {
-    lastBotMsgId.current = null;
-    setMessages([]);
-  }, [oraculoPersonaje, isOraculo]);
-
-  const handleSend = () => {
-    const txt = inputText.trim();
-    if (!txt || chatLoading) return;
-    setMessages(prev => [...prev, { from: 'user', text: txt, ts: Date.now() }]);
-    if (isOraculo && oraculoEnviarRef.current) {
-      oraculoEnviarRef.current(txt);
-    } else {
-      enviar?.(txt);
-    }
-    setInputText('');
-    setBurbujaOpen(false);
-  };
-
-  useEffect(() => {
-    if (!audioRef.current || !currentAudioUrl) return;
-    audioRef.current.load();
-    audioRef.current.play()
-      .then(() => setIsPlaying(true))
-      .catch(() => setIsPlaying(false));
-  }, [currentAudioUrl]);
-
   const activeSector = navItems?.find(n => n.id === intent);
   const sectorLabel  = step === 1 ? 'OSOS' : activeSector?.label || 'OSOS';
   const lastMessage  = messages.length > 0 ? messages[messages.length - 1] : null;
+
+  const handleSend = () => {
+    if (!inputText.trim() || chatLoading || !enviar) return;
+    enviar(inputText.trim());
+    setInputText('');
+  };
 
   if (!perfilOso) {
     return (
@@ -678,29 +596,21 @@ const MobileLayout = ({
   const getActiveAvatars = () => {
     if (step === 1 || !intent) {
       const oso = (perfilOso?.oso_id || 'tito').toLowerCase();
-      return { avatars: [SECTOR_AVATARS.gps[oso] || SECTOR_AVATARS.gps.tito], personajeActivo: null };
+      return { avatars: [SECTOR_AVATARS.gps[oso] || SECTOR_AVATARS.gps.tito] };
     }
     const sectorMap = SECTOR_AVATARS[intent];
-    if (!sectorMap) return { avatars: [], personajeActivo: null };
-    const personajeActivo = intent === 'ai'
-      ? (perfilSector?.personaje_id || oraculoActivo)
-      : perfilSector?.personaje_id;
-    if (personajeActivo && sectorMap[personajeActivo]) return { avatars: [sectorMap[personajeActivo]], personajeActivo };
-    return { avatars: [Object.values(sectorMap)[0]], personajeActivo };
+    if (!sectorMap) return { avatars: [] };
+    return { avatars: [Object.values(sectorMap)[0]] };
   };
-  const { avatars: activeAvatars, personajeActivo } = getActiveAvatars();
+  const { avatars: activeAvatars } = getActiveAvatars();
 
   const puertasProps = {
     isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
-    audioUser, onToggleAudio, broTunerRef,
+    broTunerRef,
     accent, balances, setBalances, navItems, handleNavigation, setMessages,
     iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA,
     setShowWalletModal, handleLogout, intent,
     setStep, setRealityMode, setScope,
-    handleHalo,
-    showHalo,
-    isTipping,
-    audmovilActual: audmovilList[audmovilIndex] || null,
   };
 
   // ── REALITY TUNER ─────────────────────────────────────────────────────────
@@ -749,28 +659,15 @@ const MobileLayout = ({
     );
   }
 
-  // ── REALITY PLAYER ────────────────────────────────────────────────────────
-if (step === 0 && realityMode) {
-  const escena = REALITIES.find(r => r.id === realityMode);
-  
-  const audmovilActual = audmovilList[audmovilIndex];
+  // ── REALITY MODE (step 0 con canal seleccionado) ─────────────────────────
+  if (step === 0 && realityMode) {
+    const escena = REALITIES.find(r => r.id === realityMode);
 
-  const togglePlay = async () => {
-    if (!audioRef.current) return;
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      await audioRef.current.play();
-      setIsPlaying(true);
-    }
-  };       
     return (
-      <>
       <div className="mobile-root fixed inset-0 overflow-hidden bg-black text-white select-none">
         <style>{MOBILE_STYLES}</style>
-        
-        {/* Video de fondo vertical — solo en Reality Player */}
+
+        {/* Video de fondo */}
         {bgVideoUrl && (
           <video key={bgVideoUrl} autoPlay loop muted playsInline
             className="absolute inset-0 w-full h-full object-cover z-0"
@@ -778,119 +675,185 @@ if (step === 0 && realityMode) {
             <source src={bgVideoUrl} type="video/mp4" />
           </video>
         )}
-        
+
+        {/* Overlay gradiente */}
         <div className="absolute inset-0 z-[1]"
-          style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0.6) 100%)' }} />
+          style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0.75) 100%)' }} />
+
         <div className="scanline z-[2]" />
         <Puertas {...puertasProps} />
 
-        <main className="relative z-10 flex flex-col h-full w-full">
-          {/* Header — Reloj */}
-          <header className="flex-shrink-0 px-4 pt-safe pt-4 pb-2">
-            <LockClockWidget accent={escena?.color} />
-          </header>
-
-          {/* Centro vacío — video protagonista */}
-          <div className="flex-1" />
-
-          {/* Footer — controles audio */}
-          {/* Footer — controles audio */}
-<footer className="flex-shrink-0 pb-safe pb-10 px-6 flex flex-col items-center gap-4"
-  style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)' }}>
-  <div className="text-white/30 text-[10px] uppercase tracking-[0.3em] font-mono">AUDIO DEL CANAL</div>
-  <div className="flex gap-5 items-center">
-    <button className="dpad-btn" onClick={prevAudmovil}>⏮</button>
-    <button 
-      className="dpad-btn" 
-      onClick={togglePlay}
-      style={{
-        background: `${escena?.color}22`, 
-        borderColor: `${escena?.color}88`,
-        color: escena?.color, 
-        width: 72, 
-        height: 72, 
-        fontSize: 28, 
-        borderRadius: '50%',
-      }}>
-      {isPlaying ? '⏸' : '▶'}
-    </button>
-    <button className="dpad-btn" onClick={nextAudmovil}>⏭</button>
-  </div>
-
-  {/* Barra de progreso */}
-  {duration > 0 && (
-    <input
-      type="range"
-      min={0}
-      max={duration}
-      step={0.1}
-      value={progress}
-      onChange={e => {
-        const val = parseFloat(e.target.value);
-        if (audioRef.current) audioRef.current.currentTime = val;
-        setProgress(val);
-      }}
-      style={{
-        width: '100%',
-        accentColor: escena?.color || '#00ffff',
-        cursor: 'pointer',
-        height: 3,
-      }}
-    />
-  )}
-
-  {/* Info del creador en reproducción */}
-  {audmovilActual && (
-    <div className="text-center mt-2">
-      <div className="text-cyan-400 text-[11px] font-black tracking-widest uppercase">
-        {audmovilActual.alias || 'Creador'}
-      </div>
-      <div className="text-white/30 text-[9px] uppercase tracking-widest mt-1">
-        {audmovilIndex + 1} / {audmovilList.length}
-      </div>
-    </div>
-  )}
-  {!audmovilActual && (
-    <div className="text-center mt-4">
-      <div className="text-white/20 text-[10px] uppercase tracking-widest">
-        Sin creadores con audio móvil
-      </div>
-    </div>
-  )}
-</footer>
-        </main>
-      </div>
-      {/* Animación Halo de Luz */}
-      {showHalo && (
-        <div className="fixed inset-0 pointer-events-none z-[500]">
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-glowSwim">
-            <div className="relative w-48 h-48 flex items-center justify-center">
-              <div className="absolute inset-0 bg-yellow-500/30 rounded-full blur-[60px] animate-pulse" />
-              <div className="absolute w-32 h-32 bg-white/20 rounded-full blur-[40px]" />
-              <div className="absolute w-14 h-14 bg-white rounded-full shadow-[0_0_50px_gold]" />
+        {/* HALO SUMA — esfera de energía */}
+        {haloActivo === 'suma' && (
+          <div className="fixed z-[300] pointer-events-none animate-glowSwim"
+            style={{ bottom: 80, left: '50%', transform: 'translateX(-50%)' }}>
+            <div className="relative w-32 h-32 flex items-center justify-center">
+              <div className="absolute inset-0 bg-cyan-400/30 rounded-full blur-[40px] animate-pulse" />
+              <div className="absolute w-20 h-20 bg-white/40 rounded-full blur-[20px]" />
+              <div className="absolute w-10 h-10 bg-white rounded-full blur-[5px] shadow-[0_0_30px_white]" />
+              <div className="absolute w-full h-full animate-spin-slow">
+                <div className="absolute top-0 left-1/2 w-4 h-4 bg-white/60 rounded-full blur-sm" />
+                <div className="absolute bottom-0 left-1/2 w-3 h-3 bg-white/40 rounded-full blur-sm" />
+                <div className="absolute left-0 top-1/2 w-5 h-5 bg-cyan-200/50 rounded-full blur-sm" />
+              </div>
             </div>
           </div>
-        </div>
-      )}
-      {currentAudioUrl && (
-        <audio
-          key={currentAudioUrl}
-          ref={audioRef}
-          src={currentAudioUrl}
-          loop
-          preload="auto"
-          onEnded={() => setIsPlaying(false)}
-          onTimeUpdate={() => {
-            if (!audioRef.current) return;
-            setProgress(audioRef.current.currentTime);
-          }}
-          onLoadedMetadata={() => {
-            if (!audioRef.current) return;
-            setDuration(audioRef.current.duration || 0);
-          }}
-        />
-      )}
-      </>
+        )}
+
+        {/* HALO RESTA — monstruo */}
+        {haloActivo === 'resta' && falloImg && (
+          <div className="fixed z-[300] pointer-events-none animate-glowSwim"
+            style={{ bottom: 80, left: '50%', transform: 'translateX(-50%)' }}>
+            <img src={falloImg} style={{ width: 80, height: 80, objectFit: 'contain' }} alt="fallo" />
+          </div>
+        )}
+
+        <main className="relative z-10 flex flex-col h-full w-full">
+
+          {/* HEADER: Reloj — Génesis — Temperatura */}
+          <header className="flex-shrink-0 px-4 pt-safe pt-3 pb-2">
+            <LockClockWidget accent={escena?.color} genesisBalance={genesisBalance} />
+          </header>
+
+          {/* CENTRO — Pregunta + Respuestas con emoji */}
+          {triviaBurbujaOpen && preguntaActual ? (
+            <div className="flex-1 flex items-center justify-center px-5">
+              <div className="burbuja-in w-full rounded-2xl px-5 py-6 flex flex-col gap-4"
+                style={{
+                  background: 'rgba(0,0,0,0.88)',
+                  backdropFilter: 'blur(16px)',
+                  border: `1px solid ${escena?.color}55`,
+                  boxShadow: `0 0 32px ${escena?.color}22`,
+                }}>
+
+                {/* Aviso publicidad ECO */}
+                {preguntaActual.esEco && (
+                  <div className="text-[9px] text-white/40 uppercase tracking-widest text-right">
+                    * PUBLICIDAD
+                  </div>
+                )}
+
+                {/* Pregunta */}
+                <p className="text-white font-black text-base uppercase tracking-wide leading-snug text-center"
+                  style={{ fontFamily: "'Courier New', monospace", textShadow: `0 0 8px ${escena?.color}` }}>
+                  {preguntaActual.pregunta}
+                </p>
+
+                {/* Respuestas con emoji vinculado */}
+                <div className="flex flex-col gap-2 mt-2">
+                  {preguntaActual.opciones.map((op) => {
+                    const textoDisplay = op.texto?.replace(/\(\*\)/g, '').trim();
+                    const tieneStar    = op.texto?.includes('(*)');
+                    const esCorrecta   = resultado === 'acierto' && (
+                      preguntaActual.esEco
+                        ? op.texto?.includes('(*)')
+                        : op.clave === preguntaActual.respuesta_correcta
+                    );
+                    const esFallo = resultado === 'fallo';
+
+                    return (
+                      <div key={op.clave}
+                        className="flex items-center gap-3 px-3 py-2 rounded-xl transition-all"
+                        style={{
+                          background: esCorrecta
+                            ? 'rgba(34,197,94,0.2)'
+                            : esFallo
+                              ? 'rgba(239,68,68,0.08)'
+                              : 'rgba(255,255,255,0.05)',
+                          border: esCorrecta
+                            ? '1px solid #22c55e'
+                            : esFallo
+                              ? '1px solid rgba(239,68,68,0.3)'
+                              : `1px solid ${escena?.color}33`,
+                        }}>
+                        <span className="text-2xl flex-shrink-0">{op.emoji}</span>
+                        <span className="text-white font-black text-sm uppercase leading-snug flex-1"
+                          style={{ fontFamily: "'Courier New', monospace" }}>
+                          {textoDisplay}
+                          {tieneStar && <span className="text-yellow-400 ml-1">★</span>}
+                        </span>
+                        {esCorrecta && <span className="text-green-400 text-lg">✓</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Contador set */}
+                <div className="text-center text-white/30 text-[9px] uppercase tracking-widest mt-1">
+                  {indice + 1} / {total}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1" />
+          )}
+
+          {/* FOOTER */}
+          <footer className="flex-shrink-0 pb-safe px-5 pb-6 flex flex-col items-center gap-3"
+            style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%)' }}>
+
+            {/* Botones GRANDES emoji — solo activos cuando burbuja abierta */}
+            <div className="flex gap-4 w-full justify-center">
+              {(triviaBurbujaOpen && preguntaActual
+                ? preguntaActual.opciones
+                : [
+                    { emoji: '🦈', clave: 'a' },
+                    { emoji: '🐘', clave: 'b' },
+                    { emoji: '🐞', clave: 'c' },
+                  ]
+              ).map((op) => (
+                <button key={op.clave}
+                  onClick={() => triviaBurbujaOpen && !cooldown && !resultado && responder(op.clave)}
+                  disabled={!triviaBurbujaOpen || cooldown || !!resultado}
+                  className="flex items-center justify-center rounded-2xl transition-all active:scale-90"
+                  style={{
+                    width: 72, height: 72,
+                    fontSize: 38,
+                    background: triviaBurbujaOpen && !resultado
+                      ? `${escena?.color}18`
+                      : 'rgba(0,0,0,0.4)',
+                    border: triviaBurbujaOpen && !resultado
+                      ? `2px solid ${escena?.color}88`
+                      : '2px solid rgba(255,255,255,0.1)',
+                    boxShadow: triviaBurbujaOpen && !resultado
+                      ? `0 0 20px ${escena?.color}44`
+                      : 'none',
+                    opacity: !triviaBurbujaOpen ? 0.3 : 1,
+                    cursor: triviaBurbujaOpen && !resultado ? 'pointer' : 'default',
+                  }}>
+                  {op.emoji}
+                </button>
+              ))}
+            </div>
+
+            {/* Botón CONTESTAR */}
+            <button
+              onClick={() => {
+                if (!completado && !triviaBurbujaOpen && !triviaLoading) cargarSet();
+              }}
+              disabled={completado || triviaBurbujaOpen || triviaLoading || cooldown}
+              className="w-full py-3 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-95"
+              style={{
+                background: completado
+                  ? 'rgba(255,255,255,0.05)'
+                  : `${escena?.color}22`,
+                border: `1px solid ${completado ? 'rgba(255,255,255,0.1)' : escena?.color + '88'}`,
+                color: completado ? 'rgba(255,255,255,0.25)' : escena?.color,
+                boxShadow: completado ? 'none' : `0 0 16px ${escena?.color}33`,
+                fontFamily: "'Courier New', monospace",
+              }}>
+              {triviaLoading
+                ? 'CARGANDO...'
+                : completado
+                  ? `PRÓXIMO TURNO: ${proximoTurno}`
+                  : triviaBurbujaOpen
+                    ? 'ELIGE TU RESPUESTA'
+                    : '⚡ CONTESTAR'}
+            </button>
+
+          </footer>
+        </main>
+      </div>
     );
   }
 
@@ -899,10 +862,28 @@ return (
       <div className="mobile-root fixed inset-0 overflow-hidden bg-black text-white select-none">
       <style>{MOBILE_STYLES}</style>
 
+      {/* GÉNESIS COUNTER — oculto en RealityTuner y AtlasGame */}
+      {!(step === 0 && !realityMode) && !(step === 2 && intent === 'game') && (
+        <GenesisCounter balances={balances} mobile />
+      )}
+
       {/* Fondo fijo — siempre mobile.webp en sectores */}
       <div className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url('/images/mobile.webp')" }} />
       <div className="absolute inset-0 bg-black/10 z-0 backdrop-blur-[2px]" />
+
+      {/* Video del canal seleccionado */}
+      {bgVideoUrl && (
+        <video
+          src={bgVideoUrl}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover z-0"
+        />
+      )}
+
       <div className="scanline z-[1]" />
 
       <Puertas {...puertasProps} />
@@ -936,27 +917,14 @@ return (
                   <img src={img} alt=""
                     className="w-20 h-20 rounded-full object-cover border-2"
                     style={{ borderColor: accent, boxShadow: `0 0 12px ${accent}` }} />
-                  {intent === 'ai' && personajeActivo && (
-                    <span style={{
-                      fontFamily: "'Courier New', monospace",
-                      fontSize: 9, fontWeight: 900,
-                      letterSpacing: '0.2em',
-                      textTransform: 'uppercase',
-                      color: accent,
-                      opacity: 0.8,
-                    }}>
-                      {personajeActivo === 'jaguar' ? '🐯 JAGUAR' :
-                       personajeActivo === 'orumama' ? '🌿 ORUMAMA' : '☎️ SR. MISTERIO'}
-                    </span>
-                  )}
                 </div>
               ))}
             </div>
           )}
           {/* BroCards — solo cuando hay resultados de búsqueda */}
-          {/* BroCardStripPS — Productos y Servicios */}
+          {/* BroCardStripPS — Canjear (Productos y Servicios) */}
           {stripVisible && stripCards?.length > 0 && 
-            (intent === 'productos' || intent === 'servicios') && (
+            intent === 'canjear' && (
           <div className="w-full px-2 pointer-events-auto overflow-y-auto"
      style={{ maxHeight: '45vh' }}>
   <BroCardStripPS
@@ -979,9 +947,9 @@ return (
   	onCerrar={cerrar}
 	/>
 
-          {/* BroCardStrip — Avisos y Audios */}
+          {/* BroCardStrip — Avisos */}
           {stripVisible && stripCards?.length > 0 && 
-            (intent === 'avisos' || intent === 'audios') && (
+            intent === 'avisos' && (
             <div className="w-full px-2 pointer-events-auto">
               <BroCardStrip
                 cards={stripCards}
@@ -994,8 +962,7 @@ return (
         </div>
 
         {/* Chat */}
-        {!isOraculo && (
-          <section
+        <section
             className="flex-1 min-h-0 overflow-y-auto bro-scroll px-6 py-4 flex flex-col cursor-text"
             onClick={() => {
               if (footerMode !== 'chat') setFooterMode('chat');
@@ -1039,113 +1006,13 @@ return (
                   </div>
                 </div>
               )}
-              {!isOraculo && messages.length === 0 && chatLoading && (
+              {messages.length === 0 && chatLoading && (
                 <div className="text-center text-white/60 text-sm uppercase tracking-widest">
                   ESPERANDO...
                 </div>
               )}
             </div>
           </section>
-        )}
-
-        {isOraculo && (
-          <section className="flex-1 min-h-0 overflow-y-auto bro-scroll px-6 py-4 flex flex-col cursor-text">
-            <div className="flex-1 flex flex-col items-center justify-center w-full">
-              {messages.length === 0 && !chatLoading && (
-                <div className="flex flex-col items-center text-center gap-6 animate-pulse">
-                  <div className="huge-neon-text"
-                    style={{ color: accent, textShadow: `0 0 12px ${accent}, 0 0 24px ${accent}` }}>
-                    {oraculoPersonaje === 'jaguar' ? '🐯 JAGUAR SIDÉREO' :
-                     oraculoPersonaje === 'orumama' ? '🌿 ORUMAMA' : '☎️ SR. MISTERIO'}
-                  </div>
-                  <p className="text-white/60 text-xl tracking-widest uppercase font-black">
-                    ESCRIBE PARA INICIAR
-                  </p>
-                </div>
-              )}
-              {lastMessage && !chatLoading && (
-                <div key={lastMessage.ts} className="msg-in flex flex-col items-center text-center w-full">
-                  <p className="huge-neon-text whitespace-pre-wrap break-words w-full"
-                    style={{
-                      color: lastMessage.from === 'bot' ? '#fff' : 'rgba(255,255,255,0.5)',
-                      textShadow: lastMessage.from === 'bot' ? `0 0 12px ${accent}, 0 0 24px ${accent}` : 'none',
-                    }}>
-                    {lastMessage.text}
-                  </p>
-                </div>
-              )}
-              {chatLoading && (
-                <div className="msg-in flex flex-col items-center justify-center w-full gap-6">
-                  <div className="text-2xl uppercase tracking-widest font-black"
-                    style={{ color: accent, textShadow: `0 0 16px ${accent}` }}>
-                    SINTONIZANDO...
-                  </div>
-                  <div className="flex gap-4 items-center">
-                    {[0,1,2].map(i => (
-                      <span key={i} className="block w-5 h-5 rounded-full animate-bounce"
-                        style={{ background: accent, animationDelay: `${i * 0.15}s`, boxShadow: `0 0 16px ${accent}` }} />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Banners — SIEMPRE montados para mantener el hook activo */}
-            <div className="flex-shrink-0">
-              {(() => {
-                const p = oraculoPersonaje;
-                const handoffWrapper = (destino) => {
-                  if (destino === 'jaguar' || destino === 'orumama' || destino === 'smisterio') {
-                    onHandoff({ agente: 'ORACULO_INTERNO', personaje_id: destino });
-                  } else {
-                    onHandoff(destino);
-                  }
-                };
-                const invokeOsos = () => { setStep(1); setOsosModo?.('entrada'); };
-                return (
-                  <>
-                    {(p === 'smisterio' || !p) &&
-                      <SmisterioBanner isMobile={true}
-                        mostrarAcordeon={footerMode === 'dpad'}
-                        onHandoffPersonaje={handoffWrapper}
-                        onInvokeOsos={invokeOsos}
-                        onMensaje={(msg) => {
-                          if (lastBotMsgId.current === msg) return;
-                          lastBotMsgId.current = msg;
-                          setMessages(prev => [...prev, { from: 'bot', text: msg, ts: Date.now() }]);
-                        }}
-                        onEnviarRef={oraculoEnviarRef}
-                      />}
-                    {p === 'jaguar' &&
-                      <JaguarBanner isMobile={true}
-                        mostrarAcordeon={footerMode === 'dpad'}
-                        onHandoffPersonaje={handoffWrapper}
-                        onInvokeOsos={invokeOsos}
-                        onMensaje={(msg) => {
-                          if (lastBotMsgId.current === msg) return;
-                          lastBotMsgId.current = msg;
-                          setMessages(prev => [...prev, { from: 'bot', text: msg, ts: Date.now() }]);
-                        }}
-                        onEnviarRef={oraculoEnviarRef}
-                      />}
-                    {p === 'orumama' &&
-                      <OrumamaBanner isMobile={true}
-                        mostrarAcordeon={footerMode === 'dpad'}
-                        onHandoffPersonaje={handoffWrapper}
-                        onInvokeOsos={invokeOsos}
-                        onMensaje={(msg) => {
-                          if (lastBotMsgId.current === msg) return;
-                          lastBotMsgId.current = msg;
-                          setMessages(prev => [...prev, { from: 'bot', text: msg, ts: Date.now() }]);
-                        }}
-                        onEnviarRef={oraculoEnviarRef}
-                      />}
-                  </>
-                );
-              })()}
-            </div>
-          </section>
-        )}
 
           {/* Footer */}
         <footer className="flex-shrink-0 border-t backdrop-blur-md pb-safe"
@@ -1213,16 +1080,6 @@ return (
       </main>
 
       {children}
-      {currentAudioUrl && (
-        <audio
-          key={currentAudioUrl}
-          ref={audioRef}
-          src={currentAudioUrl}
-          loop
-          preload="auto"
-          onEnded={() => setIsPlaying(false)}
-        />
-      )}
     </div>
   );
 };

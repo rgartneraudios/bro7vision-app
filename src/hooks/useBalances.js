@@ -28,11 +28,19 @@ export const useBalances = (perfilOso, session) => {
   }, [perfilOso]);
 
   const handleGameWin = async (amount) => {
-    const newTotal = balances.genesis + amount;
+    if (!session?.user?.id) return;
+    const { data: perfil } = await supabase
+      .from('profiles')
+      .select('genesis')
+      .eq('id', session.user.id)
+      .single();
+    const actual = perfil?.genesis ?? balances.genesis;
+    const newTotal = actual + amount;
     setBalances(prev => ({ ...prev, genesis: newTotal }));
-    if (session?.user?.id) {
-      await supabase.from('profiles').update({ genesis: newTotal }).eq('id', session.user.id);
-    }
+    await supabase
+      .from('profiles')
+      .update({ genesis: newTotal })
+      .eq('id', session.user.id);
   };
 
   return { balances, setBalances, handleGameWin };
