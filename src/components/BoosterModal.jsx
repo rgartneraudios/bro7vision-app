@@ -8,6 +8,7 @@ import BoosterMisCupones from './booster/BoosterMisCupones';
 import BoosterCanjesRecibidos from './booster/BoosterCanjesRecibidos';
 import BoosterMisDeseos from './booster/BoosterMisDeseos';
 import BoosterEnviarOferta from './booster/BoosterEnviarOferta';
+import BoosterPromoEco from './booster/BoosterPromoEco';
 import { CoordenadosBlock } from './CoordenadosBlock';
 
 function getCicloLunar() {
@@ -53,6 +54,7 @@ const BoosterModal = ({ onClose }) => {
 
   // ── CUPONES ──
   const [tieneComercioCupones, setTieneComercioCupones] = useState(false);
+  const [tienePromoEcoCreditos, setTienePromoEcoCreditos] = useState(false);
 
   // ── LINAJE ──
   const [reinoElegido,    setReinoElegido]    = useState('');
@@ -80,8 +82,8 @@ const BoosterModal = ({ onClose }) => {
   });
 
   // ── UI ──
-  const InputStyle = "w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all";
-  const LabelStyle = "text-xs font-bold text-gray-300 uppercase tracking-widest mb-2 block";
+  const InputStyle = "w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-2xl text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all";
+  const LabelStyle = "text-2xl font-bold text-gray-300 uppercase tracking-widest mb-4 block";
   const CardStyle  = "bg-blue-950/10 backdrop-blur-xl border border-white/10 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]";
 
   // ── LINAJE helpers ──
@@ -196,6 +198,7 @@ const BoosterModal = ({ onClose }) => {
            actividad_brostory: profile.actividad_brostory || false,
            actividad_reset_ciclo: profile.actividad_reset_ciclo || 0,
         });
+        setTienePromoEcoCreditos((profile.promo_eco_creditos || 0) > 0);
       } catch (e) {
         console.error("Error cargando perfil:", e);
       }
@@ -288,7 +291,7 @@ const BoosterModal = ({ onClose }) => {
         <div className="flex flex-col md:flex-row flex-1 overflow-hidden bg-transparent">
 
           {/* SIDEBAR */}
-          <div className="flex md:flex-col border-b md:border-b-0 md:border-r border-white/10 bg-black/10 p-3 gap-2 overflow-x-auto md:w-64 shrink-0 z-20">
+          <div className="flex md:flex-col border-b md:border-b-0 md:border-r border-white/10 bg-black/10 p-3 gap-2 overflow-x-auto md:w-96 shrink-0 z-20">
 {[
                 { id: 'identity', label: '👤 Identidad',      color: 'cyan'   },
                 // Linaje siempre visible — el rank vacío muestra estado pendiente
@@ -298,9 +301,10 @@ const BoosterModal = ({ onClose }) => {
                  { id: 'mis-deseos',     label: '🌠 Mis Deseos',     color: 'cyan'   },
                  { id: 'enviar-oferta',  label: '📨 Enviar Oferta',  color: 'fuchsia'  },
                  ...(tieneComercioCupones ? [{ id: 'canjes-recibidos', label: '📋 Canjes Recibidos', color: 'cyan' }] : []),
+                 ...(tienePromoEcoCreditos ? [{ id: 'promo-eco', label: '📡 PromoECO', color: 'green' }] : []),
               ].filter(Boolean).map((item) => (
               <button key={item.id} onClick={() => setTab(item.id)}
-                className={`text-left py-3 px-5 text-xs font-bold rounded-2xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap
+                className={`text-left py-3 px-5 text-2xl font-bold rounded-2xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap
                   ${tab === item.id
                     ? `bg-gradient-to-r from-${item.color}-500/20 to-transparent text-${item.color}-300 border border-${item.color}-500/30 shadow-[0_0_15px_rgba(0,0,0,0.3)] translate-x-1`
                     : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}>
@@ -314,7 +318,7 @@ const BoosterModal = ({ onClose }) => {
 
             {/* ══ 👤 IDENTIDAD ══ */}
             {tab === 'identity' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fadeIn">
+              <div className="grid grid-cols-1 gap-8 animate-fadeIn">
 
                 {/* ── COLUMNA IZQUIERDA ── */}
                 <div className="space-y-6">
@@ -346,8 +350,8 @@ const BoosterModal = ({ onClose }) => {
                     <div className="flex items-center gap-3 mb-5">
                       <span className="text-2xl">🐻</span>
                       <div>
-                        <p className="text-sm font-black text-cyan-300 tracking-wider">TU ASISTENTE OSO IA</p>
-                        <p className="text-[10px] text-gray-500 mt-0.5">Cuéntanos un poco y te atenderemos como mereces.</p>
+                        <p className="text-lg font-black text-cyan-300 tracking-wider">TU ASISTENTE OSO IA</p>
+                        <p className="text-lg text-gray-500 mt-0.5">Cuéntanos un poco y te atenderemos como mereces.</p>
                       </div>
                     </div>
                     <div className="space-y-5">
@@ -366,8 +370,8 @@ const BoosterModal = ({ onClose }) => {
                                   ? 'bg-cyan-900/40 border-cyan-500/60 text-cyan-300'
                                   : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20 hover:text-gray-300'}`}>
                               <img src={oso.img} alt={oso.nombre} className="w-16 h-16 mx-auto mb-2 object-contain drop-shadow-lg" />
-                              <p className="text-xs font-black">{oso.nombre}</p>
-                              <p className="text-[9px] opacity-70">{oso.desc}</p>
+                              <p className="text-base font-black">{oso.nombre}</p>
+                              <p className="text-base opacity-70">{oso.desc}</p>
                             </button>
                           ))}
                         </div>
@@ -384,7 +388,7 @@ const BoosterModal = ({ onClose }) => {
                         <div className="flex gap-2 flex-wrap">
                           {OSOS_TONOS.map(t => (
                             <button key={t.id} onClick={() => setFormData({ ...formData, osos_tono: t.id })}
-                              className={`px-4 py-2 rounded-full text-xs font-bold border transition-all
+                              className={`px-4 py-2 rounded-full text-base font-bold border transition-all
                                 ${formData.osos_tono === t.id
                                   ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300'
                                   : 'bg-white/5 border-white/10 text-gray-500'}`}>
@@ -398,7 +402,7 @@ const BoosterModal = ({ onClose }) => {
                         <div className="flex gap-2 flex-wrap">
                           {OSOS_INTERESES.map(i => (
                             <button key={i.id} onClick={() => toggleOsosInteres(i.id)}
-                              className={`px-4 py-2 rounded-full text-xs font-bold border transition-all
+                              className={`px-4 py-2 rounded-full text-base font-bold border transition-all
                                 ${ososInteresesArr.includes(i.id)
                                   ? 'bg-fuchsia-500/20 border-fuchsia-400 text-fuchsia-300'
                                   : 'bg-white/5 border-white/10 text-gray-500'}`}>
@@ -426,26 +430,26 @@ const BoosterModal = ({ onClose }) => {
                     <div className="flex items-center gap-3 mb-5">
                       <span className="text-2xl">📜</span>
                       <div>
-                        <p className="text-sm font-black text-cyan-300 tracking-wider">LISTADO DE REINOS</p>
-                        <p className="text-[10px] text-gray-500 mt-0.5">Encargado oficial de nombramientos.</p>
+                        <p className="text-lg font-black text-cyan-300 tracking-wider">LISTADO DE REINOS</p>
+                        <p className="text-lg text-gray-500 mt-0.5">Encargado oficial de nombramientos.</p>
                       </div>
                     </div>
                     <div className="mt-2 max-w-[200px]">
                       <div className="p-3 rounded-2xl border text-center bg-cyan-900/20 border-cyan-500/30 text-cyan-400 cursor-default shadow-inner">
                         <img src="/emojis/rumores.webp" alt="Rumores" className="w-16 h-16 mx-auto mb-2 object-contain drop-shadow-lg" />
-                        <p className="text-xs font-black uppercase">Rumores</p>
-                        <p className="text-[9px] opacity-70">La Elegancia</p>
-                        <div className="mt-3 text-[9px] font-bold bg-cyan-950/60 rounded-full py-1 px-2 border border-cyan-500/20 inline-block">🔒 PUESTO FIJO</div>
+                        <p className="text-base font-black uppercase">Rumores</p>
+                        <p className="text-base opacity-70">La Elegancia</p>
+                        <div className="mt-3 text-base font-bold bg-cyan-950/60 rounded-full py-1 px-2 border border-cyan-500/20 inline-block">🔒 PUESTO FIJO</div>
                       </div>
                     </div>
                   </div>
 
                   {/* ZONA DE RIESGO */}
                   <div className="bg-red-950/20 backdrop-blur-xl border border-red-500/30 p-6 rounded-3xl shadow-[0_0_20px_rgba(239,68,68,0.15)] mt-12">
-                    <h3 className="text-sm text-red-400 font-bold mb-2 flex items-center gap-2">🚨 ZONA DE RIESGO</h3>
-                    <p className="text-xs text-gray-400 mb-4">Desintegrar tu identidad borrará tus Puntos, Cupones y tu HoloPrisma de forma irreversible.</p>
+                    <h3 className="text-lg text-red-400 font-bold mb-2 flex items-center gap-2">🚨 ZONA DE RIESGO</h3>
+                    <p className="text-base text-gray-400 mb-4">Desintegrar tu identidad borrará tus Puntos, Cupones y tu HoloPrisma de forma irreversible.</p>
                     <button onClick={handleDeleteAccount}
-                      className="w-full py-3 px-4 bg-red-600/10 hover:bg-red-600/90 text-red-400 hover:text-white text-xs font-bold uppercase tracking-widest rounded-xl border border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.8)] transition-all duration-300 flex justify-center items-center gap-2">
+                      className="w-full py-3 px-4 bg-red-600/10 hover:bg-red-600/90 text-red-400 hover:text-white text-base font-bold uppercase tracking-widest rounded-xl border border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.8)] transition-all duration-300 flex justify-center items-center gap-2">
                       <span>☠️</span> Iniciar Autodestrucción
                     </button>
                   </div>
@@ -505,10 +509,10 @@ const BoosterModal = ({ onClose }) => {
                 return (
                   <div className="flex flex-col items-center justify-center h-64 gap-4 animate-fadeIn">
                     <span className="text-5xl">👑</span>
-                    <p className="text-gray-400 text-sm font-bold uppercase tracking-widest text-center">
+                    <p className="text-gray-400 text-lg font-bold uppercase tracking-widest text-center">
                       Tu título nobiliario está pendiente de asignación
                     </p>
-                    <p className="text-gray-600 text-xs text-center max-w-sm">
+                    <p className="text-gray-600 text-base text-center max-w-sm">
                       El equipo de Bro7Vision te asignará tu rango cuando completes el proceso de Fundador. Recibirás una notificación.
                     </p>
                   </div>
@@ -538,18 +542,18 @@ const BoosterModal = ({ onClose }) => {
                     <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage:'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize:'28px 28px' }} />
                     <div className="relative z-10">
                       <img src="/assets/corona_rey.png" alt="corona" className="w-24 h-24 mx-auto mb-3 object-contain drop-shadow-[0_0_15px_rgba(249,115,22,0.6)]" onError={e => e.target.style.display='none'} />
-                      <p className={`${c.text} text-[10px] uppercase tracking-[0.35em] mb-2`} style={{ fontFamily:"'Georgia', serif" }}>{titulo.subtitulo} · Bro7vision</p>
+                      <p className={`${c.text} text-lg uppercase tracking-[0.35em] mb-2`} style={{ fontFamily:"'Georgia', serif" }}>{titulo.subtitulo} · Bro7vision</p>
                       <div className="space-y-1">
                         {titulo.tratamiento && <p className={`${c.text} text-base font-bold uppercase tracking-[0.2em]`} style={{ fontFamily:"'Georgia', serif" }}>{titulo.tratamiento}</p>}
                         <p className={`${c.text} text-xl font-black uppercase tracking-[0.15em]`} style={{ fontFamily:"'Georgia', serif" }}>{titulo.rango}</p>
                         <p className="text-white text-3xl font-black" style={{ fontFamily:"'Georgia', 'Times New Roman', serif" }}>{formData.alias}</p>
                         {reinoElegido && (<>
-                          <p className="text-gray-500 text-xs uppercase tracking-[0.3em] mt-1">Proveniente del</p>
+                          <p className="text-gray-500 text-base uppercase tracking-[0.3em] mt-1">Proveniente del</p>
                           <p className={`${c.text} text-lg font-bold`} style={{ fontFamily:"'Georgia', serif" }}>{reinoElegido}</p>
                         </>)}
                       </div>
                       <div className={`h-px w-20 mx-auto mt-4 opacity-40 ${c.sel}`} />
-                      <p className="text-gray-600 text-xs uppercase tracking-widest mt-3">{gen.toLocaleString()} Génesis · mensual</p>
+                      <p className="text-gray-600 text-base uppercase tracking-widest mt-3">{gen.toLocaleString()} Génesis · mensual</p>
                     </div>
                   </div>
 
@@ -558,7 +562,7 @@ const BoosterModal = ({ onClose }) => {
                     <p className={`${c.text} font-black text-base uppercase tracking-widest mb-1`} style={{ fontFamily:"'Georgia', serif" }}>
                       {reinoElegido ? '✦ Tu Dominio' : '✦ Elige tu Dominio'}
                     </p>
-                    <p className="text-gray-500 text-xs mb-5 leading-relaxed">
+                    <p className="text-gray-500 text-base mb-5 leading-relaxed">
                       {reinoElegido
                         ? `Tu título completo: ${titulo.tratamiento ? titulo.tratamiento + ' ' : ''}${titulo.rango} ${formData.alias} del ${reinoElegido}`
                         : 'Selecciona el reino que gobernarás.'}
@@ -568,7 +572,7 @@ const BoosterModal = ({ onClose }) => {
                         const sel = reinoElegido === reino;
                         return (
                           <button key={reino} onClick={() => handleGuardarReino(reino)}
-                            className={`px-3 py-2.5 rounded-xl text-xs font-bold text-left transition-all border
+                            className={`px-3 py-2.5 rounded-xl text-base font-bold text-left transition-all border
                               ${sel ? `${c.sel} text-black border-transparent shadow-md` : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'}`}>
                             {sel && <span className="mr-1">✓</span>}{reino}
                           </button>
@@ -576,11 +580,11 @@ const BoosterModal = ({ onClose }) => {
                       })}
                     </div>
                     <div className="border-t border-white/10 pt-4">
-                      <p className="text-gray-500 text-xs uppercase tracking-widest mb-2">¿No encuentras el tuyo? Proponlo</p>
+                      <p className="text-gray-500 text-base uppercase tracking-widest mb-2">¿No encuentras el tuyo? Proponlo</p>
                       <div className="flex gap-2">
                         <input type="text" placeholder="Ej: Reino de Sirio..."
                           value={reinoPropuesto} onChange={(e) => setReinoPropuesto(e.target.value)}
-                          className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-orange-500 focus:outline-none placeholder-gray-700" />
+                          className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-lg focus:border-orange-500 focus:outline-none placeholder-gray-700" />
                         <button onClick={async () => {
                           if (!reinoPropuesto.trim()) return;
                           const { data: { user } } = await supabase.auth.getUser();
@@ -590,7 +594,7 @@ const BoosterModal = ({ onClose }) => {
                           }]);
                           alert('✅ Propuesta enviada.');
                           setReinoPropuesto('');
-                        }} className={`${c.sel} text-black font-black px-4 py-2.5 rounded-xl text-xs uppercase tracking-widest hover:brightness-110 transition-all`}>
+                        }} className={`${c.sel} text-black font-black px-4 py-2.5 rounded-xl text-base uppercase tracking-widest hover:brightness-110 transition-all`}>
                           Proponer
                         </button>
                       </div>
@@ -601,7 +605,7 @@ const BoosterModal = ({ onClose }) => {
                   <div className="rounded-2xl border border-white/10 p-6">
                     <div className="flex items-center justify-between mb-4">
                       <p className="text-white font-black text-base uppercase tracking-widest" style={{ fontFamily:"'Georgia', serif" }}>⚡ Actividad del Mes</p>
-                      <span className={`${doneColor} text-sm font-bold`}>{done}/4 {done === 4 ? '— ✅ Al día' : '— pendiente'}</span>
+                      <span className={`${doneColor} text-lg font-bold`}>{done}/4 {done === 4 ? '— ✅ Al día' : '— pendiente'}</span>
                     </div>
                     <div className="h-2 bg-white/10 rounded-full mb-5 overflow-hidden">
                       <div className={`h-full ${barColor} rounded-full transition-all duration-700`} style={{ width:`${(done/4)*100}%` }} />
@@ -611,12 +615,12 @@ const BoosterModal = ({ onClose }) => {
                         <div key={a.key} className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all
                           ${a.done ? 'bg-green-950/20 border-green-700/30' : 'bg-white/3 border-white/10'}`}>
                           <span className="text-xl">{a.emoji}</span>
-                          <p className={`text-xs font-bold flex-1 ${a.done ? 'text-green-300' : 'text-gray-500'}`}>{a.label}</p>
+                          <p className={`text-base font-bold flex-1 ${a.done ? 'text-green-300' : 'text-gray-500'}`}>{a.label}</p>
                           <span className={a.done ? 'text-green-400 font-bold' : 'text-gray-700'}>{a.done ? '✓' : '○'}</span>
                         </div>
                       ))}
                     </div>
-                    {done < 4 && <p className="text-yellow-700 text-xs uppercase tracking-widest mt-4 text-center">⚠️ Completa al menos una acción de cada tipo para recibir tus Génesis</p>}
+                    {done < 4 && <p className="text-yellow-700 text-base uppercase tracking-widest mt-4 text-center">⚠️ Completa al menos una acción de cada tipo para recibir tus Génesis</p>}
                   </div>
 
                   {/* JURAMENTO */}
@@ -626,10 +630,10 @@ const BoosterModal = ({ onClose }) => {
                       <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/55 to-black/85" />
                     </div>
                     <div className="relative z-10 p-8 text-center">
-                      <p className={`${c.text} text-[10px] uppercase tracking-[0.35em] mb-3`}>— Orden Real de Bro7vision —</p>
+                      <p className={`${c.text} text-lg uppercase tracking-[0.35em] mb-3`}>— Orden Real de Bro7vision —</p>
                       <h4 className="text-white text-2xl font-black mb-6" style={{ fontFamily:"'Georgia', 'Times New Roman', serif" }}>Juramento del Reino Interior</h4>
                       <div className="max-w-lg mx-auto mb-6 p-6 rounded-xl bg-black/50 border border-white/10">
-                        <p className="text-gray-300 text-sm leading-loose italic" style={{ fontFamily:"'Georgia', serif" }}>
+                        <p className="text-gray-300 text-lg leading-loose italic" style={{ fontFamily:"'Georgia', serif" }}>
                           "Por la luz del Reino Interior, juro mantener mi presencia, honrar mi dominio y servir con constancia. Que mis actos hablen por mí y que mi nombre permanezca en el Listado de Honor mientras mi voluntad sea firme."
                         </p>
                       </div>
@@ -637,17 +641,17 @@ const BoosterModal = ({ onClose }) => {
                         <div className="space-y-2">
                           <div className={`inline-flex items-center gap-2 px-5 py-2 rounded-full ${c.bg} border ${c.border}`}>
                             <span className="text-green-400">✓</span>
-                            <span className="text-gray-300 text-xs uppercase tracking-widest font-bold">Juramento sellado</span>
+                            <span className="text-gray-300 text-base uppercase tracking-widest font-bold">Juramento sellado</span>
                           </div>
                           {formData.juramento_fecha && (
-                            <p className="text-gray-600 text-xs mt-1">Firmado el {new Date(formData.juramento_fecha).toLocaleDateString('es-ES', { day:'numeric', month:'long', year:'numeric' })}</p>
+                            <p className="text-gray-600 text-base mt-1">Firmado el {new Date(formData.juramento_fecha).toLocaleDateString('es-ES', { day:'numeric', month:'long', year:'numeric' })}</p>
                           )}
                         </div>
                       ) : (
                         <div className="space-y-3">
-                          <p className="text-gray-500 text-xs leading-relaxed max-w-sm mx-auto">Al firmar aceptas el compromiso de actividad mensual y las condiciones del Reino Interior.</p>
+                          <p className="text-gray-500 text-base leading-relaxed max-w-sm mx-auto">Al firmar aceptas el compromiso de actividad mensual y las condiciones del Reino Interior.</p>
                           <button onClick={handleFirmarJuramento}
-                            className={`${c.sel} text-black font-black px-10 py-3 rounded-full text-sm uppercase tracking-widest hover:brightness-110 transition-all`}
+                            className={`${c.sel} text-black font-black px-10 py-3 rounded-full text-lg uppercase tracking-widest hover:brightness-110 transition-all`}
                             style={{ boxShadow: c.glow }}>
                             📜 Firmar Juramento
                           </button>
@@ -656,7 +660,7 @@ const BoosterModal = ({ onClose }) => {
                     </div>
                   </div>
 
-                  <p className="text-center text-xs text-gray-700 uppercase tracking-[0.3em]" style={{ fontFamily:"'Georgia', serif" }}>La grandeza se sostiene con presencia y dedicación.</p>
+                  <p className="text-center text-base text-gray-700 uppercase tracking-[0.3em]" style={{ fontFamily:"'Georgia', serif" }}>La grandeza se sostiene con presencia y dedicación.</p>
                 </div>
               );
              })()}
@@ -674,16 +678,18 @@ const BoosterModal = ({ onClose }) => {
 
               {tab === 'enviar-oferta' && <BoosterEnviarOferta userId={userId} />}
 
+              {tab === 'promo-eco' && <BoosterPromoEco userId={userId} />}
+
             </div>
         </div>
 
         {/* FOOTER */}
         <div className="p-5 border-t border-white/10 bg-black/10 backdrop-blur-3xl flex justify-end gap-4 shrink-0 relative z-20">
-          <button onClick={onClose} className="text-gray-300 text-xs px-6 py-3 font-bold uppercase hover:text-white transition-all hover:bg-white/5 rounded-full">
+          <button onClick={onClose} className="text-gray-300 text-base px-6 py-3 font-bold uppercase hover:text-white transition-all hover:bg-white/5 rounded-full">
             Desconectar
           </button>
           <button onClick={handleSave} disabled={loading}
-            className="bg-white/90 text-black font-bold uppercase text-xs px-8 py-3 rounded-full hover:bg-white hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+            className="bg-white/90 text-black font-bold uppercase text-base px-8 py-3 rounded-full hover:bg-white hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)]">
             {loading ? '🚀 INYECTANDO...' : 'ACTUALIZAR CAMBIOS'}
           </button>
         </div>
