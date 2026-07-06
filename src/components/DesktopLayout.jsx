@@ -10,12 +10,8 @@ import BroTuner from './BroTuner';
 import NeuralButton from './NeuralButton';
 import NexusDashboard from './NexusDashboard';
 import CityLocationBanner from './CityLocationBanner';
-import SlideRail from './SlideRail';
-import SlideRailServicios from './SlideRailServicios';
-import SlideRailAvisos from './SlideRailAvisos';
-import NovaBanner  from './personajes/NovaBanner';
-import IsabellaBanner from './personajes/IsabellaBanner';
-import EvelynBanner from './personajes/EvelynBanner';
+import SlideRailCanjear from './SlideRailCanjear';
+import SlideRailDeseos from './SlideRailDeseos';
 import MapacheBanner from './personajes/MapacheBanner';
 import TitoBanner  from "./personajes/TitoBanner";
 import LaraBanner  from "./personajes/LaraBanner";
@@ -30,7 +26,7 @@ export default function DesktopLayout(props) {
     isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen, handleCentralHandoff,
     balances, setBalances, session,
     selectedForestUser, setSelectedForestUser,    	savedUserIndex, projectingUser, 	setProjectingUser, broTunerRef, navItems, handleNavigation, handleReportIssue,
-    setShowWalletModal, setShowBooster, setShowStory, setShowLegal,
+    setShowWalletModal, setShowBooster, setShowLegal,
     scope, sessionCP, sessionCity, sessionRef, handleGameWin, handleGoToShop, abrirTienda,
     setVlData, ososHandoffContext, setOsosHandoffContext,
     perfilOso, stripVisible, stripCards, stripLabel, setHoloPrismaIndex,
@@ -49,7 +45,7 @@ useEffect(() => {
   return () => window.removeEventListener('resize', handleResize);
 }, []);
 
-  const INTENTS_CON_UBICACION = new Set(['canjear', 'avisos']);
+  const INTENTS_CON_UBICACION = new Set(['canjear', 'brodeseos']);
 
 
   return (
@@ -73,8 +69,8 @@ useEffect(() => {
             src={
               step === 1
                 ? ososModo === 'retorno' ? "https://media.bro7vision.com/ososia_recepcion.mp4" : "https://media.bro7vision.com/ososia_recepcion.mp4"
-                : intent === 'game'            ? "https://media.bro7vision.com/game_bg.mp4"
-                : intent === 'internal_search' ? "https://media.bro7vision.com/reinos.mp4"
+                : intent === 'games'  ? "https://media.bro7vision.com/game_bg.mp4"
+                : intent === 'reinos' ? "https://media.bro7vision.com/reinos.mp4"
                 : getVideoForLocation(scope)
             }
             autoPlay loop muted playsInline className="w-full h-full object-cover transition-opacity duration-1000 animate-fadeIn"
@@ -87,8 +83,8 @@ useEffect(() => {
         <div className="mt-8 w-full px-4"><WalletWidget balances={balances} onClick={() => setShowWalletModal(true)} /></div>
         <div className="w-full flex justify-center my-2"><MoonMatrixCircle /></div>
         <div className="px-4 mt-4">
-          <button onClick={() => { setStep(0); setRealityMode(null); setIsRightOpen(false); }} className="w-full flex justify-between items-center p-3 bg-fuchsia-500/10 border border-fuchsia-400/40 rounded-2xl hover:bg-cyan-500 hover:text-black transition-all group">
-            <span className="text-[10px] font-black uppercase group-hover:text-black">Cambiar Reality</span><span className="text-lg">🌐</span>
+          <button onClick={() => { setStep(0); setRealityMode(null); setIsRightOpen(false); }} className="w-full flex justify-between items-center p-3 bg-fuchsia-900/40 border border-fuchsia-500/40 rounded-2xl hover:bg-orange-400 hover:text-black transition-all group">
+            <span className="text-[10px] font-black uppercase group-hover:text-black">CAMBIAR CANALES</span><span className="text-lg">🌐</span>
           </button>
          <NeuralButton
   isAdmin={isAdmin}
@@ -99,9 +95,7 @@ useEffect(() => {
   onTogglePublic={onTogglePublicIA}
   setShowWalletModal={setShowWalletModal}
 	/>
-          
-        </div>                  
-        
+        </div> 
         <div className="mt-auto flex flex-col w-full pb-10">
           <div className="w-full px-4 pt-4 border-t border-white/5"><BroTuner ref={broTunerRef} /></div>
         </div>
@@ -112,23 +106,26 @@ useEffect(() => {
         <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest text-right mb-1 mt-6 font-mono">Navegación</p>
          <div className="w-full flex flex-col gap-2.5 flex-1 mt-2">
            {navItems.map((item) => (
-             <button key={item.id} onClick={() => handleNavigation(item.id)} className={`w-full flex justify-between items-center pl-2 pr-4 py-4 border rounded-2xl transition-all group hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-r from-amber-500/20 via-fuchsia-500/20 to-cyan-500/20 border-amber-400/30 hover:from-amber-500/40 hover:via-fuchsia-500/40 hover:to-cyan-500/40`}>
+             <button key={item.id} onClick={() => handleNavigation(item.id)} className={`w-full flex justify-between items-center pl-2 pr-4 py-4 min-h-[4.5rem] border rounded-2xl transition-all group hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-r from-amber-500/20 via-fuchsia-500/20 to-cyan-500/20 border-amber-400/30 hover:from-amber-500/40 hover:via-fuchsia-500/40 hover:to-cyan-500/40`}>
                <span className="text-xs font-black uppercase tracking-[0.2em] text-amber-200 transition-colors group-hover:text-white">{item.label}</span>
                <div className="flex -space-x-3">{item.images.map((imgSrc, idx) => <img key={idx} src={imgSrc} alt="" className="w-9 h-9 rounded-full border-2 border-black object-cover shadow-[0_0_10px_rgba(0,0,0,0.8)]" />)}</div>
              </button>
            ))}
-        </div>   
-               <div className="mt-2 border-t border-white/10 pt-3 flex flex-col gap-2">
-          <button onClick={() => setShowBooster(true)} className="w-full p-3 border border-cyan-500/30 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-xl text-cyan-400 font-mono text-[11px] hover:from-cyan-500/40 hover:to-blue-500/40 transition-all">[ BOOSTER STUDIO ]</button>
-          <button onClick={() => { setShowStory(true); setIsLeftOpen(false); }} className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-violet-500/30 to-fuchsia-500/30 border border-fuchsia-500/30 rounded-xl hover:from-violet-500/50 hover:to-fuchsia-500/50 transition-all">
-            <span className="text-sm">❄️</span><span className="text-[9px] font-black italic text-fuchsia-200">BRO STORIES</span>
-          </button>  
-          <div className="flex gap-2">
-            <button onClick={() => handleReportIssue()} className="flex-1 p-2 bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-red-500/30 rounded-xl hover:from-red-500/40 hover:to-orange-500/40 flex justify-center items-center group transition-all" title="Reportar Incidencia"><span className="text-sm">🚩</span></button>
-            <button onClick={() => setShowLegal(true)} className="flex-1 p-2 bg-gradient-to-br from-gray-500/20 to-gray-700/20 border border-gray-500/30 rounded-xl hover:from-gray-500/40 hover:to-gray-700/40 flex justify-center items-center group transition-all" title="Legal / Creador"><span className="text-sm text-gray-400 group-hover:text-cyan-400">⚖️</span></button>
-          </div>
         </div>
-        <button onClick={handleLogout} className="mt-2 text-red-500 font-mono text-[10px] underline text-right w-full">[ DISCONNECT ]</button>
+          <button onClick={() => setShowBooster(true)} className="w-full py-4 px-5 border-2 border-cyan-400/60 bg-gradient-to-r from-cyan-500/30 to-blue-500/30 rounded-xl text-cyan-300 font-black text-sm tracking-[0.25em] hover:from-cyan-500/50 hover:to-blue-500/50 hover:border-cyan-300/80 hover:scale-[1.02] transition-all shadow-[0_0_20px_rgba(6,182,212,0.2)]">⛭ BOOSTER STUDIO</button>
+               <div className="mt-3 border-t border-white/10 pt-3 flex flex-col gap-3">
+          <div className="flex gap-3">
+            <button onClick={() => handleReportIssue()} className="flex-1 py-3 px-3 bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-red-500/30 rounded-xl hover:from-red-500/40 hover:to-orange-500/40 flex flex-col items-center justify-center gap-1 transition-all group" title="Reportar Incidencia">
+              <span className="text-lg">🚩</span>
+              <span className="text-[9px] font-bold text-red-300 uppercase tracking-widest">Incidencia</span>
+            </button>
+            <button onClick={() => setShowLegal(true)} className="flex-1 py-3 px-3 bg-gradient-to-br from-gray-500/20 to-gray-700/20 border border-gray-500/30 rounded-xl hover:from-gray-500/40 hover:to-gray-700/40 flex flex-col items-center justify-center gap-1 transition-all group" title="Legal / Creador">
+              <span className="text-lg text-gray-400 group-hover:text-cyan-400">⚖️</span>
+              <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Legal</span>
+            </button>
+          </div>
+          <button onClick={handleLogout} className="w-full py-3 px-4 border border-red-500/30 bg-red-500/10 rounded-xl text-red-400 font-bold text-xs tracking-[0.2em] uppercase hover:bg-red-500/20 hover:border-red-400/50 transition-all">[ DESCONECTAR ]</button>
+        </div>
       </div>
           
       {/* 4. GATILLOS PUERTAS */}
@@ -150,87 +147,25 @@ useEffect(() => {
       )}      
 
       {step === 2 && INTENTS_CON_UBICACION.has(intent) && !selectedCard && <CityLocationBanner scope={scope} />}
-      {step === 2 && intent === 'canjear' && <SlideRail />}
-      {step === 2 && intent === 'canjear' && <SlideRailServicios />}
-      {step === 2 && intent === 'avisos'    && <SlideRailAvisos />}
+      {step === 2 && intent === 'canjear' && <SlideRailCanjear />}
+      {step === 2 && intent === 'brodeseos' && <SlideRailDeseos />}
       
       
-      {/* ── CANJEAR (Productos + Servicios) ──────────────────────────────── */}     
-      {step === 2 && intent === 'canjear' && (
-        <NovaBanner
-          sessionCity={sessionCity}
-          sessionCP={sessionCP}
-          stripVisible={stripVisible}
-          stripCards={stripCards}
-          stripLabel={stripLabel}
-          onHandoff={handleCentralHandoff}
-          iaMode={iaMode}
-          isAdmin={isAdmin}
-          entidad={ososHandoffContext?.comercio_especifico}
-          hayTarjetas={stripVisible}
-          onOpenTerminal={(c) => {}}
-          onSetActiveIndex={setHoloPrismaIndex}
-          onEntityFocus={(u) => setActivePrismUser(u)}
-          setIntent={setIntent}
-         userId={userId}
-          genesisBalance={genesisBalance}
-          onGenesisUpdate={onGenesisUpdate}
-        />
-      )}
-      
-      {step === 2 && intent === 'canjear' && (
-        <IsabellaBanner
-          personaje='isabella'
-          sessionCity={sessionCity}
-          sessionCP={sessionCP}
-          stripVisible={stripVisible}
-          stripCards={stripCards}
-          stripLabel={stripLabel}
-          onHandoff={handleCentralHandoff}
-          iaMode={iaMode}
-          isAdmin={isAdmin}
-          entidad={ososHandoffContext?.comercio_especifico}
-          hayTarjetas={stripVisible}
-          onOpenTerminal={(c) => {}}
-          onSetActiveIndex={setHoloPrismaIndex}
-          onEntityFocus={(u) => setActivePrismUser(u)}
-          setIntent={setIntent}
-         userId={userId}
-          genesisBalance={genesisBalance}
-          onGenesisUpdate={onGenesisUpdate}
-        />
-      )}
-
       {/* ── AVISOS ──────────────────────────────────────────────────────── */}
-      {step === 2 && intent === 'avisos' && (
-        <EvelynBanner
-          personaje='evelyn'
-          sessionCity={sessionCity}
-          genesis={balances.genesis}
-          userId={session?.user?.id}
-          autorAlias={perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano'}
-          stripVisible={stripVisible}
-          stripCards={stripCards}
-          stripLabel={stripLabel}
-          onHandoff={handleCentralHandoff}
-          onGenesisUpdate={onGenesisUpdate}
-          setProjectingUser={setProjectingUser}
-          iaMode={iaMode}
-          isAdmin={isAdmin}
-        />
-      )}
 
-      {/* 6. OSOS IA RECEPCION */}
-{step === 1 && (
-  <>
-    {(perfilOso?.oso_id || 'lara').toLowerCase() === 'tito' &&
-      <TitoBanner onHandoff={handleCentralHandoff} iaMode={iaMode} isAdmin={isAdmin} ciudad={sessionCity} />}
-    {(perfilOso?.oso_id || 'lara').toLowerCase() === 'lara' &&
-      <LaraBanner onHandoff={handleCentralHandoff} iaMode={iaMode} isAdmin={isAdmin} ciudad={sessionCity} />}
-    {(perfilOso?.oso_id || 'lara').toLowerCase() === 'puffo' &&
-      <PuffoBanner onHandoff={handleCentralHandoff} iaMode={iaMode} isAdmin={isAdmin} ciudad={sessionCity} />}
-  	</>
-	)}
+{/* 6. OSOS IA RECEPCION */}
+{step === 1 && (() => {
+  const osoId = (perfilOso?.oso_id || '').toLowerCase().trim();
+  const osoValido = ['tito', 'lara', 'puffo'].includes(osoId) ? osoId : 'lara';
+  switch (osoValido) {
+    case 'tito':
+      return <TitoBanner onHandoff={handleCentralHandoff} iaMode={iaMode} isAdmin={isAdmin} ciudad={sessionCity} />;
+    case 'puffo':
+      return <PuffoBanner onHandoff={handleCentralHandoff} iaMode={iaMode} isAdmin={isAdmin} ciudad={sessionCity} />;
+    default:
+      return <LaraBanner onHandoff={handleCentralHandoff} iaMode={iaMode} isAdmin={isAdmin} ciudad={sessionCity} />;
+  }
+})()}
 
       <style>{`
         .left-panel-scroll {

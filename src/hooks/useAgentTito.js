@@ -7,7 +7,7 @@ import { fetchContextoTito } from '../services/contexto/fetchContextoTito';
 import { detectarSectorPS, detectarCiudadPS } from '../services/agents/ososPS';
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
-const SECTORES_SIN_CIUDAD = ['ORACULO', 'REINOS', 'GAMES'];
+const SECTORES_SIN_CIUDAD = ['BRO7BAND', 'REINOS', 'GAMES'];
 const norm   = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const elegir = (arr) => arr[Math.floor(Math.random() * arr.length)];
 

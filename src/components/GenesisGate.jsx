@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
-import DirectorAccess from './DirectorAccess';
-import BusinessAccess from './BusinessAccess';
+
 
 // Aceptamos la prop 'onGuestAccess' para dejar pasar al visitante
-const GenesisGate = ({ onGuestAccess, onStudioAccess }) => {
+const GenesisGate = ({ onGuestAccess }) => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,18 +13,6 @@ const GenesisGate = ({ onGuestAccess, onStudioAccess }) => {
   const [legalAccepted, setLegalAccepted] = useState(false);
   
   // ... otros estados ...
-const [showDirector, setShowDirector] = useState(false);
-const [showBusiness, setShowBusiness] = useState(false);
-const [showStudioForm, setShowStudioForm]     = useState(false);
-const [studioEmail, setStudioEmail]           = useState('');
-const [studioPassword, setStudioPassword]     = useState('');
-const [studioLoading, setStudioLoading]       = useState(false);
-const [studioMessage, setStudioMessage]       = useState(null);
-const [showBusinessForm, setShowBusinessForm] = useState(false);
-const [businessEmail, setBusinessEmail]       = useState('');
-const [businessPassword, setBusinessPassword] = useState('');
-const [businessLoading, setBusinessLoading]   = useState(false);
-const [businessMessage, setBusinessMessage]   = useState(null);
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -59,46 +46,7 @@ const [businessMessage, setBusinessMessage]   = useState(null);
     }
   };
 
-  const handleStudioLogin = async (e) => {
-    e.preventDefault();
-    setStudioLoading(true);
-    setStudioMessage(null);
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: studioEmail,
-        password: studioPassword,
-      });
-      if (error) throw error;
-      onStudioAccess();
-    } catch (err) {
-      setStudioMessage(`❌ ${err.message}`);
-    } finally {
-      setStudioLoading(false);
-    }
-  };
 
-  const handleBusinessLogin = async (e) => {
-    e.preventDefault();
-    setBusinessLoading(true);
-    setBusinessMessage(null);
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: businessEmail,
-        password: businessPassword,
-      });
-      if (error) throw error;
-      onStudioAccess();
-    } catch (err) {
-      setBusinessMessage(`❌ ${err.message}`);
-    } finally {
-      setBusinessLoading(false);
-    }
-  };
-
-  const handleProAccess = (rol) => {
-  if (rol === 'DIRECTOR') setShowDirector(true);
-  if (rol === 'ANUNCIANTE') setShowBusiness(true);
-};
 
 
   return (
@@ -206,132 +154,7 @@ const [businessMessage, setBusinessMessage]   = useState(null);
             </button>
         </div>
 
-        {/* --- 4. NUEVA ZONA PROFESIONAL (Fase 0.9) --- */}
-        <div className="mt-4">
-            <p className="text-[8px] text-center text-gray-600 uppercase tracking-[0.2em] mb-3">
-                Acceso Partners & Creators
-            </p>
-            <div className="flex gap-3">
-                {/* Botón ANUNCIANTE (Estilo Negocio/Purple) */}
-                <button 
-                    onClick={() => handleProAccess('ANUNCIANTE')}
-                    className="flex-1 py-2 border border-purple-500/30 text-purple-400/80 hover:text-purple-300 hover:border-purple-400 hover:bg-purple-900/20 text-[9px] font-bold uppercase tracking-wider rounded transition-all flex items-center justify-center gap-2 group"
-                >
-                    <span className="group-hover:scale-110 transition-transform">💼</span> Soy Anunciante
-                </button>
-
-                {/* Botón DIRECTOR (Estilo Arte/Green) */}
-                <button 
-                    onClick={() => handleProAccess('DIRECTOR')}
-                    className="flex-1 py-2 border border-emerald-500/30 text-emerald-400/80 hover:text-emerald-300 hover:border-emerald-400 hover:bg-emerald-900/20 text-[9px] font-bold uppercase tracking-wider rounded transition-all flex items-center justify-center gap-2 group"
-                >
-                    <span className="group-hover:scale-110 transition-transform">🎬</span> Soy Director
-                </button>
-            </div>
         </div>
-
-      </div>
-      
-      {import.meta.env.VITE_SHOW_STUDIO === 'true' && (
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center px-4">
-
-          {/* Botones por defecto */}
-          {!showStudioForm && !showBusinessForm && (
-            <div className="flex items-center gap-5">
-              <button
-                onClick={() => setShowStudioForm(true)}
-                className="text-[8px] text-gray-700 hover:text-gray-400 uppercase tracking-widest transition-colors"
-              >
-                ▶ Studio
-              </button>
-              <button
-                onClick={() => setShowBusinessForm(true)}
-                className="text-[8px] text-purple-600 hover:text-purple-400 opacity-50 hover:opacity-100 uppercase tracking-widest transition-all"
-              >
-                ▶ Business
-              </button>
-            </div>
-          )}
-
-          {/* Form Studio */}
-          {showStudioForm && (
-            <form
-              onSubmit={handleStudioLogin}
-              className="w-full max-w-xs bg-black/80 border border-white/10 rounded-lg px-4 py-3 flex flex-col gap-2 backdrop-blur"
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[8px] text-gray-600 uppercase tracking-widest">Acceso Studio</span>
-                <button
-                  type="button"
-                  onClick={() => { setShowStudioForm(false); setStudioMessage(null); }}
-                  className="text-[9px] text-gray-700 hover:text-gray-400 transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-              {studioMessage && (
-                <p className="text-[9px] text-red-400 bg-red-900/20 border border-red-900/40 rounded px-2 py-1">{studioMessage}</p>
-              )}
-              <input
-                type="email" required placeholder="email"
-                value={studioEmail} onChange={e => setStudioEmail(e.target.value)}
-                className="w-full bg-black/50 border border-white/10 text-white text-xs px-3 py-2 rounded focus:border-white/30 focus:outline-none placeholder-gray-700 transition-colors"
-              />
-              <input
-                type="password" required placeholder="password"
-                value={studioPassword} onChange={e => setStudioPassword(e.target.value)}
-                className="w-full bg-black/50 border border-white/10 text-white text-xs px-3 py-2 rounded focus:border-white/30 focus:outline-none placeholder-gray-700 transition-colors"
-              />
-              <button type="submit" disabled={studioLoading}
-                className="w-full py-2 bg-white/10 hover:bg-white/20 text-white text-[9px] font-bold uppercase tracking-widest rounded transition-colors disabled:opacity-40"
-              >
-                {studioLoading ? '...' : 'Entrar'}
-              </button>
-            </form>
-          )}
-
-          {/* Form Business */}
-          {showBusinessForm && (
-            <form
-              onSubmit={handleBusinessLogin}
-              className="w-full max-w-xs bg-black/80 border border-purple-900/40 rounded-lg px-4 py-3 flex flex-col gap-2 backdrop-blur"
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[8px] text-purple-700 uppercase tracking-widest">Acceso Business</span>
-                <button
-                  type="button"
-                  onClick={() => { setShowBusinessForm(false); setBusinessMessage(null); }}
-                  className="text-[9px] text-gray-700 hover:text-gray-400 transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-              {businessMessage && (
-                <p className="text-[9px] text-red-400 bg-red-900/20 border border-red-900/40 rounded px-2 py-1">{businessMessage}</p>
-              )}
-              <input
-                type="email" required placeholder="email"
-                value={businessEmail} onChange={e => setBusinessEmail(e.target.value)}
-                className="w-full bg-black/50 border border-purple-900/30 text-white text-xs px-3 py-2 rounded focus:border-purple-700/60 focus:outline-none placeholder-gray-700 transition-colors"
-              />
-              <input
-                type="password" required placeholder="password"
-                value={businessPassword} onChange={e => setBusinessPassword(e.target.value)}
-                className="w-full bg-black/50 border border-purple-900/30 text-white text-xs px-3 py-2 rounded focus:border-purple-700/60 focus:outline-none placeholder-gray-700 transition-colors"
-              />
-              <button type="submit" disabled={businessLoading}
-                className="w-full py-2 bg-purple-900/30 hover:bg-purple-900/60 text-purple-300 text-[9px] font-bold uppercase tracking-widest rounded transition-colors disabled:opacity-40"
-              >
-                {businessLoading ? '...' : 'Entrar'}
-              </button>
-            </form>
-          )}
-
-        </div>
-      )}
-
-      {showDirector && <DirectorAccess onBack={() => setShowDirector(false)} />}
-      {showBusiness && <BusinessAccess onBack={() => setShowBusiness(false)} />}
       
     </div>
   );

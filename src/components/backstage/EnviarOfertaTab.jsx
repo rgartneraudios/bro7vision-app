@@ -15,7 +15,7 @@ const initForm = {
   link_web: '',
 };
 
-const BoosterEnviarOferta = ({ userId }) => {
+const EnviarOfertaTab = ({ userId }) => {
   const [form, setForm] = useState(initForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -174,4 +174,4 @@ const BoosterEnviarOferta = ({ userId }) => {
   );
 };
 
-export default BoosterEnviarOferta;
+export default EnviarOfertaTab;

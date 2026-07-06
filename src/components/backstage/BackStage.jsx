@@ -4,23 +4,14 @@ import MarketplaceTab from './MarketplaceTab';
 import MencionesTab from './MencionesTab';
 import SlideRailTab from './SlideRailTab';
 import GamesTab from './GamesTab';
-import AudioTab from './AudioTab';
 import EstudioMarketingTab from './EstudioMarketing';
 import BlogTab from './BlogTab';
 import MisCampanasTab from './MisCampanasTab';
+import PromoEcoTab from './PromoEcoTab';
+import TarjetasRegaloTab from './TarjetasRegaloTab';
+import EnviarOfertaTab from './EnviarOfertaTab';
 
 const SYNE = "'Exo 2', sans-serif";
-
-const PlaceholderTab = ({ icono, titulo, texto }) => (
-  <div className="flex flex-col items-center justify-center h-64 text-center px-6 gap-3">
-    <div className="text-3xl">{icono}</div>
-    <p className="text-white text-sm font-bold uppercase tracking-widest">{titulo}</p>
-    <p className="text-gray-600 text-xs max-w-xs leading-relaxed">{texto}</p>
-    <span className="text-[9px] text-gray-700 border border-white/5 px-3 py-1 rounded uppercase tracking-widest mt-1">
-      FASE 0 · PRÓXIMAMENTE
-    </span>
-  </div>
-);
 
 const BackStage = ({ session, onLogout }) => {
   const [profile, setProfile]     = useState(null);
@@ -268,36 +259,27 @@ const BackStage = ({ session, onLogout }) => {
 
   // ── BackStage principal ──────────────────────────────────────────────────
   const rolUsuario  = session?.user?.user_metadata?.role;
-  const isProductor = rolUsuario === 'advertiser';
 
-  const TABS_PRODUCTOR = [
-    { id: 'campanas',   label: 'MIS CAMPAÑAS',         soon: true  },
-    { id: 'menciones',  label: 'MENCIONES PERSONAJES',  soon: false },
-    { id: 'fondos',     label: 'FONDOS REALITY',        soon: false },
-    { id: 'slide_rail', label: 'SLIDE RAIL',            soon: false },
-    { id: 'games',      label: 'GAMES',                 soon: false },
-    { id: 'audio',      label: 'AUDIO',                 soon: false },
-    { id: 'comunidad',  label: 'COMUNIDAD',             soon: true  },
-    { id: 'estudio',    label: 'ESTUDIO MARKETING',     soon: false },
-    { id: 'blog',       label: 'BLOG',                  soon: false },
+  const TABS = [
+    { id: 'fondos',          label: 'FONDOS REALITY'       },
+    { id: 'promo_eco',       label: 'PROMO ECO'            },
+    { id: 'bro7band',        label: 'BRO7BAND'             },
+    { id: 'slide_rail',      label: 'SLIDE RAIL'           },
+    { id: 'games',           label: 'GAMES'                },
+    { id: 'tarjetas_regalo', label: 'TARJETAS REGALO'      },
+    { id: 'enviar_oferta',   label: 'ENVIAR OFERTA'        },
+    { id: 'campanas',        label: 'MIS CAMPAÑAS'         },
+    { id: 'estudio',         label: 'ESTUDIO MARKETING'    },
+    { id: 'blog',            label: 'BLOG / DOCS'          },
   ];
 
-  const TABS_DIRECTOR = [
-    { id: 'campanas',   label: 'MIS CAMPAÑAS',      soon: true  },
-    { id: 'fondos',     label: 'FONDOS REALITY',    soon: false },
-    { id: 'slide_rail', label: 'SLIDE RAIL',        soon: false },
-    { id: 'comunidad',  label: 'COMUNIDAD',         soon: true  },
-    { id: 'estudio',    label: 'ESTUDIO MARKETING', soon: false },
-    { id: 'blog',       label: 'BLOG',              soon: false },
-  ];
-
-  const tabs = isProductor ? TABS_PRODUCTOR : TABS_DIRECTOR;
+  const tabs = TABS;
 
   return (
     <div
       className="fixed inset-0 flex flex-col font-mono text-white overflow-hidden"
       style={{
-        background: `linear-gradient(rgba(0,0,0,0.78), rgba(0,0,0,0.78)), url('/images/${isProductor ? 'productor' : 'director'}.webp') center/cover no-repeat`,
+        background: `linear-gradient(rgba(0,0,0,0.78), rgba(0,0,0,0.78)), url('/images/productor.webp') center/cover no-repeat`,
       }}
     >
 
@@ -309,12 +291,7 @@ const BackStage = ({ session, onLogout }) => {
           <span style={{ fontFamily: SYNE }} className="text-2xl font-black tracking-tight">
             BRO7VISION <span className="text-purple-400">BACKSTAGE</span>
           </span>
-          {session?.user?.user_metadata?.role === 'director' ? (
-            <span className="hidden sm:inline text-base font-black uppercase tracking-[0.2em] px-3 py-1 rounded border"
-              style={{ color: '#00ff88', borderColor: 'rgba(0,255,136,0.3)', textShadow: '0 0 8px rgba(0,255,136,0.5)' }}>
-              DIRECTOR
-            </span>
-          ) : (
+          {session?.user?.user_metadata?.role && (
             <span className="hidden sm:inline text-base font-black uppercase tracking-[0.2em] px-3 py-1 rounded border"
               style={{ color: '#ff00ff', borderColor: 'rgba(255,0,255,0.3)', textShadow: '0 0 8px rgba(255,0,255,0.5)' }}>
               PRODUCTOR
@@ -364,10 +341,10 @@ const BackStage = ({ session, onLogout }) => {
         )}
 
         {activeTab === 'campanas' && (
-          <MisCampanasTab isProductor={isProductor} />
+          <MisCampanasTab />
         )}
 
-        {activeTab === 'menciones' && (
+        {activeTab === 'bro7band' && (
           <MencionesTab />
         )}
 
@@ -379,12 +356,16 @@ const BackStage = ({ session, onLogout }) => {
           <GamesTab />
         )}
 
-        {activeTab === 'audio' && (
-          <AudioTab />
+        {activeTab === 'promo_eco' && (
+          <PromoEcoTab userId={session?.user?.id} />
         )}
 
-        {activeTab === 'comunidad' && (
-          <PlaceholderTab icono="📢" titulo="COMUNIDAD" texto="Espacio de colaboración y noticias del ecosistema Bro7Vision." />
+        {activeTab === 'tarjetas_regalo' && (
+          <TarjetasRegaloTab userId={session?.user?.id} />
+        )}
+
+        {activeTab === 'enviar_oferta' && (
+          <EnviarOfertaTab userId={session?.user?.id} />
         )}
 
         {activeTab === 'estudio' && (

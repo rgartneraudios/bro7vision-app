@@ -64,14 +64,17 @@ const DR_STYLES = `
   }
 `;
 
-// Mapa PC IDs → escenario_id (igual que móvil para compartir trivia)
-const PC_ID_MAP = {
-  solo_o169:    'solo_earth',
-  solo_e169:    'solo_cinema',
-  oeste169:     'band_earth',
-  este169:      'band_cinema',
+const PC_ESCENARIO_MAP = {
+  moon:         '01',
+  oeste:        '02',
+  este:         '03',
+  solo_o169:    '04',
+  solo_e169:    '05',
+  solo_fantasy: '06',
+  oeste169:     '07',
+  band_fantasy: '08',
+  este169:      '09',
 };
-const normalizarId = (id) => PC_ID_MAP[id] || id;
 
 // Mapa canal → número para getVideoCandidates
 const CANAL_NUM = {
@@ -163,13 +166,13 @@ const HeaderWidget = ({ color, genesisBalance }) => {
         <span className="dr-label">{date}</span>
       </div>
 
-      {/* Centro: Génesis */}
+      {/* Centro: Lunas */}
       <div className="flex flex-col items-center px-6 py-2 rounded-2xl"
         style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}>
         <span className="dr-clock" style={{ color: genesisColor, textShadow: `0 0 20px ${genesisColor}` }}>
           {(genesisBalance ?? 0).toLocaleString()}
         </span>
-        <span className="dr-label" style={{ color: genesisColor }}>GÉNESIS</span>
+        <span className="dr-label" style={{ color: genesisColor }}>LUNAS </span>
       </div>
 
       {/* Derecha: Temperatura */}
@@ -214,7 +217,7 @@ const DesktopRealityPlayer = ({
     proximoTurno,
     cargarSet, responder,
   } = useHaloTrivia({
-    escenarioId: normalizarId(realityMode),
+    escenarioId: PC_ESCENARIO_MAP[realityMode] || realityMode,
     userId,
     onGenesisUpdate,
   });
@@ -412,7 +415,7 @@ const DesktopRealityPlayer = ({
                 ? `⏳ PRÓXIMO TURNO: ${proximoTurno}`
                 : burbujaOpen
                   ? 'ELIGE TU RESPUESTA'
-                  : '⚡ ENCIÉNDETE'}
+                  : '💡ACCIÓN💡'}
           </button>
 
         </footer>

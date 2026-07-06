@@ -54,7 +54,6 @@ const BoosterModal = ({ onClose }) => {
 
   // ── CUPONES ──
   const [tieneComercioCupones, setTieneComercioCupones] = useState(false);
-  const [tienePromoEcoCreditos, setTienePromoEcoCreditos] = useState(false);
 
   // ── LINAJE ──
   const [reinoElegido,    setReinoElegido]    = useState('');
@@ -198,7 +197,6 @@ const BoosterModal = ({ onClose }) => {
            actividad_brostory: profile.actividad_brostory || false,
            actividad_reset_ciclo: profile.actividad_reset_ciclo || 0,
         });
-        setTienePromoEcoCreditos((profile.promo_eco_creditos || 0) > 0);
       } catch (e) {
         console.error("Error cargando perfil:", e);
       }
@@ -301,7 +299,7 @@ const BoosterModal = ({ onClose }) => {
                  { id: 'mis-deseos',     label: '🌠 Mis Deseos',     color: 'cyan'   },
                  { id: 'enviar-oferta',  label: '📨 Enviar Oferta',  color: 'fuchsia'  },
                  ...(tieneComercioCupones ? [{ id: 'canjes-recibidos', label: '📋 Canjes Recibidos', color: 'cyan' }] : []),
-                 ...(tienePromoEcoCreditos ? [{ id: 'promo-eco', label: '📡 PromoECO', color: 'green' }] : []),
+                 { id: 'promo-eco', label: '📡 PromoECO', color: 'green' },
               ].filter(Boolean).map((item) => (
               <button key={item.id} onClick={() => setTab(item.id)}
                 className={`text-left py-3 px-5 text-2xl font-bold rounded-2xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap
@@ -318,7 +316,7 @@ const BoosterModal = ({ onClose }) => {
 
             {/* ══ 👤 IDENTIDAD ══ */}
             {tab === 'identity' && (
-              <div className="grid grid-cols-1 gap-8 animate-fadeIn">
+              <div className="grid grid-cols-1 gap-8 animate-fadeIn max-w-5xl mx-auto">
 
                 {/* ── COLUMNA IZQUIERDA ── */}
                 <div className="space-y-6">
@@ -535,7 +533,7 @@ const BoosterModal = ({ onClose }) => {
               const doneColor = done === 4 ? 'text-green-400' : done >= 2 ? 'text-yellow-400' : 'text-red-400';
 
               return (
-                <div className="space-y-6 animate-fadeIn max-w-3xl mx-auto pb-10">
+                <div className="space-y-6 animate-fadeIn max-w-6xl mx-auto pb-10">
 
                   {/* IDENTIDAD NOBLE */}
                   <div className={`rounded-2xl border ${c.border} p-8 text-center relative overflow-hidden`} style={{ boxShadow: c.glow }}>

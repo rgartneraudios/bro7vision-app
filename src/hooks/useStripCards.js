@@ -40,14 +40,12 @@ export const useStripCards = () => {
       // BROPRODUCTOS / BROSERVICIOS
       // Lee de comercio_cupones
       // ══════════════════════════════════════════════════════════════
-      if (agenteUpper === 'BROPRODUCTOS' || agenteUpper === 'BROERVICIOS') {
-        const sector          = agenteUpper === 'BROPRODUCTOS' ? 'PRODUCTOS' : 'SERVICIOS';
-
+      if (agenteUpper === 'BROPRODUCTOS' || agenteUpper === 'BROSERVICIOS') {
          let query = supabase
            .from('comercio_cupones')
            .select('*')
            .eq('activo', true)
-           .eq('sector', sector)
+           .in('sector', ['PRODUCTOS', 'SERVICIOS'])
            .order('created_at', { ascending: false });
 
          // Filtro geográfico según alcance de la card
@@ -107,89 +105,8 @@ export const useStripCards = () => {
         }).filter(Boolean);
 
         setStripCards(cards);
-        setStripLabel(agenteUpper === 'BROCUPONES_PRODUCTO' ? 'broshop_producto' : 'broshop_servicio');
+        setStripLabel('canjear');
         setStripVisible(true);
-        return;
-      }
-
-      // ══════════════════════════════════════════════════════════════
-      // AUDIO / MUSIC — sin cambios
-      // ══════════════════════════════════════════════════════════════
-      if (agenteUpper === 'AUDIO' || agenteUpper === 'MUSIC') {
-        const esPais = modalidad !== 'LOCAL' ||
-                       ciudad?.toLowerCase() === 'españa' ||
-                       ciudad?.toLowerCase() === 'spain';
-
-        const { data: perfiles, error } = await supabase
-          .from('profiles')
-          .select('id, bro_mus, bro_aud, banner_url, alias, city, country, description, audio_type, track_name, audio_description, role, nearby_ref')
-          .limit(300);
-
-        if (error) {
-          console.error('[useStripCards] Error audio:', error);
-        }
-
-        const userIds = (perfiles || []).map(p => p.id).filter(Boolean);
-        const { data: audioRows } = await supabase
-          .from('proyeccion_audio')
-          .select('user_id, url, circular_url')
-          .in('user_id', userIds);
-        const audioMap = {};
-        (audioRows || []).forEach(a => { audioMap[a.user_id] = a; });
-
-        const filtrados = (perfiles || []).filter(p => {
-          const tieneRolMusica = Array.isArray(p.role)
-            ? p.role.includes('music')
-            : p.role === 'music';
-          if (!tieneRolMusica) return false;
-
-          if (!esPais && ciudad) {
-            return p.city?.toLowerCase().includes(ciudad.toLowerCase());
-          }
-          if (esPais) {
-            const paisBuscado = (pais || ciudad || '').toLowerCase();
-            if (paisBuscado === 'españa' || paisBuscado === 'spain') {
-              return !p.country ||
-                     p.country.toLowerCase().includes('españa') ||
-                     p.country.toLowerCase().includes('spain') ||
-                     p.country.toLowerCase().includes('es');
-            }
-            return p.country?.toLowerCase().includes(paisBuscado);
-          }
-          return true;
-        });
-
-        const cards = filtrados.flatMap(p => {
-          if (!p.bro_mus && !p.bro_aud) return [];
-          const esPodcast = p.audio_type === 'podcast';
-          const codigo    = esPodcast ? p.bro_aud : p.bro_mus;
-          if (!codigo) return [];
-          const audioRow = audioMap[p.id] || {};
-          return [{
-            bro_pd:      codigo,
-            banner_url:  p.banner_url  || '',
-            circular_url: audioRow.circular_url || '',
-            audio_url:   audioRow.url  || '',
-            nombre:      p.alias       || '',
-            nearby_ref:  p.nearby_ref  || '',
-            categoria:   esPodcast ? 'Podcast' : 'Música',
-            ciudad:      p.city        || '',
-            descripcion: p.audio_description || p.description || '',
-            track_name:  p.track_name  || '',
-            audio_type:  p.audio_type  || 'music',
-            bro_mus:     p.bro_mus     || '',
-            bro_aud:     p.bro_aud     || '',
-          }];
-        });
-
-        if (!error && cards.length > 0) {
-          setStripCards(cards);
-          setStripLabel('audio');
-          setStripVisible(true);
-        } else {
-          setStripCards([]);
-          setStripVisible(false);
-        }
         return;
       }
 

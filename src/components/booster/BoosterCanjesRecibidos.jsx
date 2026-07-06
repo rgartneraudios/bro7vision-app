@@ -112,7 +112,7 @@ const BoosterCanjesRecibidos = () => {
         <span className="text-4xl">📋</span>
         <div>
           <h3 className="text-xl font-black text-cyan-400 tracking-widest uppercase">Canjes Recibidos</h3>
-          <p className="text-xs text-gray-500 font-bold tracking-widest mt-0.5">Cupones canjeados por tus clientes</p>
+          <p className="text-sm text-gray-500 font-bold tracking-widest mt-0.5">Cupones canjeados por tus clientes</p>
         </div>
       </div>
 
@@ -123,12 +123,12 @@ const BoosterCanjesRecibidos = () => {
           placeholder="🔍 Buscar por alias..."
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
-          className="bg-blue-950/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 outline-none focus:border-cyan-500/50 transition-colors flex-1 min-w-[200px]"
+          className="bg-blue-950/20 border border-white/10 rounded-xl px-4 py-3 text-base text-white placeholder-gray-500 outline-none focus:border-cyan-500/50 transition-colors flex-1 min-w-[200px]"
         />
         <select
           value={statusFilter}
           onChange={e => setStatusFilter(e.target.value)}
-          className="bg-blue-950/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-cyan-500/50 transition-colors"
+          className="bg-blue-950/20 border border-white/10 rounded-xl px-4 py-3 text-base text-white outline-none focus:border-cyan-500/50 transition-colors"
         >
           <option value="TODOS">Todos los estados</option>
           <option value="PENDIENTE">🟡 Pendiente</option>
@@ -136,7 +136,7 @@ const BoosterCanjesRecibidos = () => {
         </select>
         <button
           onClick={() => setShowHistorial(h => !h)}
-          className={`text-xs font-bold tracking-widest uppercase px-4 py-2.5 rounded-xl border transition-colors ${
+          className={`text-sm font-bold tracking-widest uppercase px-5 py-3 rounded-xl border transition-colors ${
             showHistorial
               ? 'text-cyan-400 border-cyan-500/30 bg-cyan-950/20'
               : 'text-gray-500 border-white/10 hover:border-white/20'
@@ -149,12 +149,12 @@ const BoosterCanjesRecibidos = () => {
       {filteredCanjes.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 gap-4 animate-fadeIn">
           <span className="text-5xl">📋</span>
-          <p className="text-gray-400 text-sm font-bold uppercase tracking-widest text-center">
+          <p className="text-gray-400 text-base font-bold uppercase tracking-widest text-center">
             {canjes.length === 0
               ? 'Aún no tienes canjes recibidos'
               : 'No hay resultados con esos filtros'}
           </p>
-          <p className="text-gray-600 text-xs text-center max-w-sm">
+          <p className="text-gray-600 text-sm text-center max-w-sm">
             {canjes.length === 0
               ? 'Cuando un cliente canjee un cupón en tu comercio, aparecerá aquí.'
               : 'Prueba a cambiar los filtros o el término de búsqueda.'}
@@ -164,7 +164,7 @@ const BoosterCanjesRecibidos = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-white/10 text-[10px] text-gray-500 uppercase tracking-widest">
+              <tr className="border-b border-white/10 text-xs text-gray-500 uppercase tracking-widest">
                 <th className="py-3 px-4 font-bold">Cliente</th>
                 <th className="py-3 px-4 font-bold">Palabras clave</th>
                 <th className="py-3 px-4 font-bold">Tipo Brocard</th>
@@ -177,14 +177,14 @@ const BoosterCanjesRecibidos = () => {
                 <tr key={canje.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                   <td className="py-3 px-4 text-sm text-white font-bold">@{canje.aliasUsuario}</td>
                   <td className="py-3 px-4">
-                    <span className="text-xs font-mono text-cyan-300">
+                    <span className="text-sm font-mono text-cyan-300">
                       {canje.palabra_clave_1 || '—'} · {canje.palabra_clave_2 || '—'} · {canje.palabra_clave_3 || '—'}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-xs text-gray-300">{canje.tipo_brocard || '—'}</td>
-                  <td className="py-3 px-4 text-xs text-gray-400">{formatDate(canje.created_at)}</td>
+                  <td className="py-3 px-4 text-sm text-gray-300">{canje.tipo_brocard || '—'}</td>
+                  <td className="py-3 px-4 text-sm text-gray-400">{formatDate(canje.created_at)}</td>
                   <td className="py-3 px-4">
-                    <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
+                    <span className={`text-sm font-bold px-3 py-1 rounded-full border ${
                       canje.estado === 'USADO'
                         ? 'text-green-400 border-green-500/30 bg-green-950/20'
                         : 'text-yellow-400 border-yellow-500/30 bg-yellow-950/20'

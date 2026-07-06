@@ -168,45 +168,44 @@ const MOBILE_STYLES = `
 
 // ─── ACCENT POR SECTOR ──────────────────────────────────────────────────────
 const SECTOR_ACCENT = {
-  gps:             '#d946ef',
-  canjear:         '#facc15',
-  avisos:          '#94a3b8',
-  internal_search: '#fb923c',
-  ai:              '#a3e635',
-  game:            '#ffffff',
+  destino:   '#d946ef',
+  canjear:   '#facc15',
+  brodeseos: '#94a3b8',
+  reinos:    '#fb923c',
+  ai:        '#a3e635',
+  games:     '#ffffff',
 };
 
 // Tema BroCardStrip según sector
 const STRIP_THEME = {
-  canjear: 'gold',
-  avisos:  'blue',
+  canjear:   'gold',
+  brodeseos: 'blue',
 };
 
 // HandOff de cierre según sector — claves = intent
 const CIERRE_AGENTE = {
-  canjear: 'NOVA_CIERRE',
-  avisos:  'EVELYN_CIERRE',
+  brodeseos: 'EVELYN_CIERRE',
 };
 
 const SECTOR_AVATARS = {
-  gps:             { tito: '/emojis/tito.webp', lara: '/emojis/lara.webp', puffo: '/emojis/puffo.webp' },
-  canjear:         { nova: '/emojis/nova.webp', isabella: '/emojis/isabella.webp' },
-  avisos:          { evelyn: '/emojis/evelyn.webp', larry: '/emojis/larry.webp' },
-  internal_search: { rumores: '/emojis/rumores.webp' },
-  ai:              { orumama: '/emojis/orumama.webp', jaguar: '/emojis/jaguar.webp', smisterio: '/emojis/smisterio.webp' },
-  game:            { default: '/emojis/emoji_5.webp' },
+  destino:   { tito: '/emojis/tito.webp', lara: '/emojis/lara.webp', puffo: '/emojis/puffo.webp' },
+  canjear:   {},
+  brodeseos: {},
+  reinos:    { rumores: '/emojis/rumores.webp' },
+  ai:        { orumama: '/emojis/orumama.webp', jaguar: '/emojis/jaguar.webp', smisterio: '/emojis/smisterio.webp' },
+  games:     { default: '/emojis/emoji_5.webp' },
 };
 
 const REALITIES = [
   { id: 'moon',         title: 'CANAL MOON',     desc: 'Fase Luna',          icon: '🌕', color: '#ffffff', group: 'NEUTRAL' },
   { id: 'solo_earth',   title: 'CANAL TIERRA',   desc: 'Sincronía Vital',    icon: '🌍', color: '#34d399', group: 'SOLO' },
-  { id: 'solo_fantasy', title: 'CANAL JÚPITER',  desc: 'Exploración',        icon: '🏰', color: '#22d3ee', group: 'SOLO' },
-  { id: 'solo_cinema',  title: 'CANAL MARTE',    desc: 'Viajero del Tiempo', icon: '🏛️', color: '#fbbf24', group: 'SOLO' },
-  { id: 'band_earth',   title: 'CANAL SATURNO',  desc: 'Nexo Ciudadano',     icon: '🏙️', color: '#60a5fa', group: 'BAND' },
-  { id: 'band_fantasy', title: 'CANAL URANO',    desc: 'Alien Lounge',       icon: '👾', color: '#e879f9', group: 'BAND' },
-  { id: 'band_cinema',  title: 'CANAL NEPTUNO',  desc: 'El Ágora',           icon: '🎭', color: '#fb923c', group: 'BAND' },
-  { id: 'este',         title: 'CANAL VENUS',    desc: 'Horizonte Levante',  icon: '📱', color: '#22d3ee', group: 'ESPACIO' },
-  { id: 'oeste',        title: 'CANAL MERCURIO', desc: 'Horizonte Poniente', icon: '📱', color: '#e879f9', group: 'ESPACIO' },
+  { id: 'solo_fantasy', title: 'CANAL JÚPITER',  desc: 'Exploración',        icon: '🥎', color: '#22d3ee', group: 'SOLO' },
+  { id: 'solo_cinema',  title: 'CANAL MARTE',    desc: 'Viajero del Tiempo', icon: '🏀', color: '#fbbf24', group: 'SOLO' },
+  { id: 'band_earth',   title: 'CANAL SATURNO',  desc: 'Nexo Ciudadano',     icon: '🪐', color: '#60a5fa', group: 'BAND' },
+  { id: 'band_fantasy', title: 'CANAL URANO',    desc: 'Alien Lounge',       icon: '🌐', color: '#e879f9', group: 'BAND' },
+  { id: 'band_cinema',  title: 'CANAL NEPTUNO',  desc: 'El Ágora',           icon: '🌩️', color: '#fb923c', group: 'BAND' },
+  { id: 'este',         title: 'CANAL VENUS',    desc: 'Horizonte Levante',  icon: '✨', color: '#22d3ee', group: 'ESPACIO' },
+  { id: 'oeste',        title: 'CANAL MERCURIO', desc: 'Horizonte Poniente', icon: '🔥', color: '#e879f9', group: 'ESPACIO' },
 ];
 
 // ─── VIDEO REALITY — solo para el Reality Player ─────────────────────────────
@@ -304,12 +303,12 @@ const LockClockWidget = ({ accent, genesisBalance }) => {
         <span className="lock-date">{date}</span>
       </div>
 
-      {/* Centro: Génesis */}
+      {/* Centro: Lunas */}
       <div className="flex flex-col items-center">
         <span className="lock-temp" style={{ color: genesisColor, fontSize: 'clamp(22px, 7vw, 36px)', textShadow: `0 0 16px ${genesisNeon}` }}>
           {genesisBalance ?? 0}
         </span>
-        <span className="lock-date" style={{ color: genesisLabelColor }}>GÉNESIS</span>
+        <span className="lock-date" style={{ color: genesisLabelColor }}>LUNAS</span>
       </div>
 
       {/* Derecha: Temperatura */}
@@ -358,7 +357,7 @@ function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
       >
         <div className="p-4 border-b border-white/10 flex flex-col gap-4">
           <div className="flex flex-col items-center justify-center py-4 px-2 rounded-xl bg-cyan-900/10 border border-cyan-500/40">
-            <span className="text-[12px] text-cyan-200/60 uppercase tracking-widest mb-1">Génesis Wallet</span>
+            <span className="text-[12px] text-cyan-200/60 uppercase tracking-widest mb-1">Lunas</span>
             <span className="text-cyan-400 font-black text-4xl">{balances?.genesis ?? 0}</span>
           </div>
           <NeuralButton isAdmin={isAdmin} iaMode={iaMode}
@@ -390,7 +389,7 @@ function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
           <div className="px-4 mt-4">
             <button onClick={() => { setStep(0); setRealityMode(null); setScope?.(null); setIsRightOpen(false); }}
               className="w-full flex justify-between items-center p-3 bg-fuchsia-500/10 border border-fuchsia-400/40 rounded-2xl transition-all">
-              <span className="text-[10px] font-black uppercase">Cambiar Reality</span>
+              <span className="text-[10px] font-black uppercase">CAMBIAR CANALES</span>
               <span className="text-lg">🌐</span>
             </button>
           </div>
@@ -400,7 +399,7 @@ function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
               return (
                 <button key={item.id}
                   onClick={() => { setMessages([]); handleNavigation(item.id); setIsRightOpen(false); }}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all active:scale-95"
+                  className="w-full flex items-center gap-3 px-4 py-3 min-h-[5.5rem] rounded-xl border text-left transition-all active:scale-95"
                   style={{
                     borderColor: isActive ? accent : 'rgba(255,255,255,0.1)',
                     background:  isActive ? `${accent}18` : 'rgba(0,0,0,0.4)',
@@ -518,6 +517,18 @@ const MobileLayout = ({
   iniciarCanje, cancelar, confirmar, cerrar,
 } = useCanjearCupon({ userId, onGenesisUpdate });
 
+  const MOBILE_ESCENARIO_MAP = {
+    moon:         '11',
+    oeste:        '12',
+    este:         '13',
+    solo_earth:   '14',
+    solo_cinema:  '15',
+    solo_fantasy: '16',
+    band_earth:   '17',
+    band_fantasy: '18',
+    band_cinema:  '19',
+  };
+
   const {
     preguntaActual, indice, total, resultado, cooldown,
     loading: triviaLoading, completado,
@@ -525,7 +536,7 @@ const MobileLayout = ({
     haloActivo, falloImg, proximoTurno,
     cargarSet, responder,
   } = useHaloTrivia({
-    escenarioId: realityMode,
+    escenarioId: MOBILE_ESCENARIO_MAP[realityMode] || realityMode,
     userId,
     onGenesisUpdate,
   });
@@ -596,7 +607,7 @@ const MobileLayout = ({
   const getActiveAvatars = () => {
     if (step === 1 || !intent) {
       const oso = (perfilOso?.oso_id || 'tito').toLowerCase();
-      return { avatars: [SECTOR_AVATARS.gps[oso] || SECTOR_AVATARS.gps.tito] };
+      return { avatars: [SECTOR_AVATARS.destino[oso] || SECTOR_AVATARS.destino.tito] };
     }
     const sectorMap = SECTOR_AVATARS[intent];
     if (!sectorMap) return { avatars: [] };
@@ -848,7 +859,7 @@ const MobileLayout = ({
                   ? `PRÓXIMO TURNO: ${proximoTurno}`
                   : triviaBurbujaOpen
                     ? 'ELIGE TU RESPUESTA'
-                    : '⚡ CONTESTAR'}
+                    : '💡ACCIÓN💡'}
             </button>
 
           </footer>
@@ -947,9 +958,9 @@ return (
   	onCerrar={cerrar}
 	/>
 
-          {/* BroCardStrip — Avisos */}
+          {/* BroCardStrip — BroDeseos */}
           {stripVisible && stripCards?.length > 0 && 
-            intent === 'avisos' && (
+            intent === 'brodeseos' && (
             <div className="w-full px-2 pointer-events-auto">
               <BroCardStrip
                 cards={stripCards}

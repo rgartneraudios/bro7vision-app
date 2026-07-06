@@ -1,22 +1,22 @@
-// SlideRail.jsx
+// SlideRailCanjear.jsx
 import { useState, useEffect } from "react";
 
 const SLIDES = [
-  "/images/slideraid_1.webp",
-  "/images/slideraid_2.webp",
-  "/images/slideraid_3.webp",
-  "/images/slideraid_4.webp",
-  "/images/slideraid_5.webp",
-  "/images/slideraid_6.webp",
-  "/images/slideraid_7.webp",
-  "/images/slideraid_8.webp",
+  "/images/slideraid_canjear_1.webp",
+  "/images/slideraid_canjear_2.webp",
+  "/images/slideraid_canjear_3.webp",
+  "/images/slideraid_canjear_4.webp",
+  "/images/slideraid_canjear_5.webp",
+  "/images/slideraid_canjear_6.webp",
+  "/images/slideraid_canjear_7.webp",
+  "/images/slideraid_canjear_8.webp",
 ];
 
 const SHOW_DURATION = 6000;   // 6s visible
 const PAUSE_DURATION = 8000;  // 8s invisible entre apariciones
 const FADE_DURATION = 800;    // ms del fade CSS
 
-export default function SlideRail() {
+export default function SlideRailCanjear() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [visible, setVisible] = useState(false);
   const [opacity, setOpacity] = useState(0);

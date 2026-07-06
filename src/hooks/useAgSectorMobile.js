@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAgentNovaExplora } from './useAgentNovaExplora';
-import { useAgentIsabella }    from './useAgentIsabella';
 import { useAgentEvelyn }      from './useAgentEvelyn';
-import { useAgentMapache }     from './useAgentMapache';
 import { useAgentRumores }     from './useAgentRumores';
 import { useSmisterioChat }    from './useSmisterioChat';
 import { useJaguarChat }       from './useJaguarChat';
@@ -47,12 +45,8 @@ export function useAgSectorMobile({
 
   // ── Hooks de sector ────────────────────────────────────────────────────────
   const nova     = useAgentNovaExplora({ iaMode, isAdmin, onHandoff, ciudad });
-  const isabella = useAgentIsabella   ({ iaMode, isAdmin, onHandoff, ciudad,
-                     personaje: perfilSector?.personaje_id || 'isabella' });
   const evelyn   = useAgentEvelyn     ({ iaMode, isAdmin, onHandoff, ciudad,
                      genesis, userId, autorAlias });
-  const mapache  = useAgentMapache    ({ iaMode, isAdmin, onHandoff, ciudad,
-                     personaje: perfilSector?.personaje_id || 'mapache' });
   const rumores  = useAgentRumores    ({ iaMode, isAdmin, onHandoff });
 
   // ── Hooks del Oráculo (usan el wrapper estable) ───────────────────────────
@@ -69,12 +63,10 @@ export function useAgSectorMobile({
     orumama;
 
   const active =
-    intent === 'productos'       ? nova     :
-    intent === 'servicios'       ? isabella :
-    intent === 'avisos'          ? evelyn   :
-    intent === 'audios'          ? mapache  :
-    intent === 'internal_search' ? rumores  :
-    intent === 'ai'              ? oraculo  :
+    intent === 'canjear'   ? nova     :
+    intent === 'brodeseos' ? evelyn   :
+    intent === 'reinos'    ? rumores  :
+    intent === 'ai'        ? oraculo  :
     { enviar: noop, mensaje: null, loading: false, reset: noop };
 
   // ── Ref al active actual ───────────────────────────────────────────────────

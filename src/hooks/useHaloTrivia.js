@@ -1,12 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 
-const PC_ID_MAP = {
-  solo_o169:  'solo_earth',
-  solo_e169:  'solo_cinema',
-  oeste169:   'band_earth',
-  este169:    'band_cinema',
-};
+
 
 const ANIMALES = ['🦈','🐘','🐞','🦊','🐬','🦁','🐸','🦋','🦅','🐺'];
 const GENESIS_ACIERTO = 5;
@@ -28,6 +23,8 @@ const getProximoTurnoHora = () => {
   return `${String(siguiente).padStart(2,'0')}:00`;
 };
 
+const getAlcance = () => 'LOCAL';
+
 function shuffle(arr) {
   return [...arr].sort(() => Math.random() - 0.5);
 }
@@ -35,7 +32,7 @@ function shuffle(arr) {
 const storageKey = (escenarioId, turno) => `haloTrivia_${escenarioId}_t${turno}`;
 
 export function useHaloTrivia({ escenarioId, userId, onGenesisUpdate }) {
-  const escenarioNormalizado = PC_ID_MAP[escenarioId] || escenarioId;
+  const escenarioNormalizado = escenarioId;
   const turno = getTurnoActual();
   const yaJugado = !!localStorage.getItem(storageKey(escenarioNormalizado, turno));
 
@@ -56,6 +53,28 @@ export function useHaloTrivia({ escenarioId, userId, onGenesisUpdate }) {
     setIndice(0);
     setResultado(null);
     setBurbujaOpen(true);
+
+    const turnoActual = getTurnoActual();
+    const alcance = getAlcance();
+
+    const { data: promos } = await supabase
+      .from('promo_eco')
+      .select('*')
+      .eq('escenario_id', escenarioNormalizado)
+      .eq('turno', turnoActual)
+      .eq('activo', true)
+      .in('alcance', ['INTERNACIONAL', 'NACIONAL', alcance])
+      .limit(1);
+
+    const promoPreguntas = (promos || []).map(p => {
+      const animales = shuffle(ANIMALES).slice(0, 3);
+      const opciones = shuffle([
+        { emoji: animales[0], texto: p.opcion_a, clave: 'a' },
+        { emoji: animales[1], texto: p.opcion_b, clave: 'b' },
+        { emoji: animales[2], texto: p.opcion_c, clave: 'c' },
+      ]);
+      return { ...p, opciones, esEco: true };
+    });
 
     let { data } = await supabase
       .from('escenarios_trivia')
@@ -85,7 +104,7 @@ export function useHaloTrivia({ escenarioId, userId, onGenesisUpdate }) {
       return { ...p, opciones, esEco };
     });
 
-    setPreguntas(set3);
+    setPreguntas([...promoPreguntas, ...set3]);
     setLoading(false);
     setBurbujaOpen(true);
   }, [escenarioNormalizado]);

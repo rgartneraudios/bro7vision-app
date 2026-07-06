@@ -15,20 +15,11 @@ const SALUDOS = {
 // SECTOR KEYWORDS
 // ─────────────────────────────────────────────────────────────────────
 const SECTOR_KEYWORDS = {
-  AUDIO:           ['audio', 'audios', 'música', 'musica', 'escuchar', 'canción', 'cancion', 
-  'podcast', 'streaming', 'stream', 'live', 'radio', 'artista', 'banda', 'dj', 
-  'beat', 'playlist', 'song', 'listen',
-  'mapache', 'ami'],
-  BROPRODUCTOS: ['producto', 'productos', 'artículo', 'articulo',
-  'nova', 'broproducto', 'broproductos'],
-  BROSERVICIOS: ['servicio', 'broservicio', 'servicios', 'broservicios', 'cupones servicios',
-  'clases', 'fontanero', 'electricista', 'médico', 'medico', 'abogado', 'asesor',
-  'isabella', 'profesor'],
-  BRODESEOS: ['aviso', 'avisos', 'deseo', 'deseos', 'brodeseos', 'bro deseos',
-  'quiero comprar', 'necesito comprar', 'busco comprador', 'anuncio', 'anuncios',
-  'oferta personal', 'larry', 'evelyn'],
+  CANJEAR: ['canje', 'canjear', 'luna', 'lunas',
+  'tarjetas', 'regalos', 'regalo'],
+  BRODESEOS: ['deseo', 'deseos', 'brodeseos', 'bro deseos', 'larry', 'evelyn'],
    REINOS:           ['reinos', 'reino', 'rumores', 'rumor', 'rey', 'reyes', 'reina', 'reinas', 'príncipe', 'principe', 'princesa', 'duque', 'duquesa', 'marqués', 'marques', 'marquesa', 'lord', 'lords', 'lady', 'ladies'],
-  ORACULO:          ['oráculo', 'oraculo', 'orumama', 'jaguar', 'horóscopo', 'horoscopo', 'sideral', 'ofiuco', 'carta astral', 'signo', 'ascendente', 'misterio', 'conspiraciones', 'piramides', 'pirámides', 'egipto', 'señor misterio', 'hierbas', 'hierbas', 'señormisterio', 'brebaje', 'remedio natural', 'planta medicinal', 'curandera', 'espiritual', 'espiritualidad', 'luna', 'fase lunar', 'meditación', 'meditacion', 'energía', 'energia', 'chakra', 'vela', 'velas', 'ritual'],
+  BRO7BAND:          ['bro7', 'bro7band', 'band', 'jaguar', 'personajes', 'orumama', 'misterio', 'audios', 'capitulos', 'historias', 'ascendente', 'misterio', 'conspiraciones', 'piramides', 'mapache', 'ami', 'señor misterio', 'profesor', 'isabella', 'señormisterio', 'elefantes', 'nova'],
   GAMES:            ['jugar', 'juego', 'juegos', '3iatlas', 'telecronos', 'games', 'game', 'arcade', 'partida', 'divertirse', 'divertirme', 'carrera', 'scalextric', 'neon', 'neonmemory', 'f1rookie', 'f1pro', 'cosmicportal', 'the7gates', 'therians'],
 };
 
@@ -237,7 +228,7 @@ ${datosInternos}
 # REGLAS — solo 5
 1. MÁXIMO 1 pregunta por turno. Una frase de personalidad + la pregunta. Nunca más de 2 frases.
 2. No preguntes detalles del sector (qué artista, qué producto, qué servicio). Eso lo hacen los otros agentes.
-3. REINOS, ORACULO y GAMES no necesitan ubicación. Si el ciudadano los pide → bolas Sí/No para confirmar → handoff.
+3. REINOS, GAMES y BRO7BAND no necesitan ubicación. Si el ciudadano los pide → bolas Sí/No para confirmar → handoff.
 4. Si tienes sector Y ubicación válida → handoff inmediato. Sin preguntar nada más.
 5. INMERSIÓN ABSOLUTA. Nunca menciones "sistema", "base de datos" ni "código".
 
@@ -248,6 +239,7 @@ Las bolas son SIEMPRE [{texto:"Sí"},{texto:"No"}] o [] (vacías). NUNCA otro co
 - REINOS detectado → "¿Quieres ir a Reinos?" + bolas Sí/No
 - ORACULO detectado → "¿Consulto al Oráculo?" + bolas Sí/No
 - GAMES detectado  → "¿Abrimos la sala de juegos?" + bolas Sí/No
+- BRO7BAND detectado → "¿Entramos a Bro7Band?" + bolas Sí/No
 En cualquier otro caso → bolas vacías [].
 
 # SALUDO INICIAL (solo primer turno)
@@ -262,14 +254,14 @@ En cualquier otro caso → bolas vacías [].
   "bolas": [] | [{"texto":"Sí"},{"texto":"No"}]
 }
 
-// Con handoff — sectores con ubicación (AUDIO, BROSHOP_*):
+// Con handoff — sectores con ubicación (CANJEAR, BRODESEOS):
 {
   "handoff": true,
-  "agente_destino": "AUDIO" | "BROPRODUCTOS" | "BROSERVICIOS" | "BRODESEOS",
+  "agente_destino": "CANJEAR" | "BRODESEOS",
   "mensaje_despedida": "frase corta con personalidad",
   "bolas": [],
   "contexto": {
-    "ciudad": "[ciudad o país confirmado]",
+    "ciudad": "[ciudad o pais confirmado]",
     "cp": null,
     "intencion": "[agente_destino]",
     "comercio_especifico": null,
@@ -277,10 +269,10 @@ En cualquier otro caso → bolas vacías [].
   }
 }
 
-// Con handoff — REINOS, ORACULO, GAMES (sin ubicación):
+// Con handoff — REINOS, GAMES, BRO7BAND (sin ubicación):
 {
   "handoff": true,
-  "agente_destino": "REINOS" | "ORACULO" | "GAMES",
+  "agente_destino": "REINOS" | "GAMES" | "BRO7BAND",
   "mensaje_despedida": "frase corta con personalidad",
   "bolas": [],
   "contexto": {

@@ -31,7 +31,7 @@ const FASES_LUNA = [
 const InputStyle = "w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition-all";
 const LabelStyle = "text-xs font-bold text-gray-300 uppercase tracking-widest mb-2 block";
 
-export default function BoosterPromoEco({ userId }) {
+export default function PromoEcoTab({ userId }) {
   const [creditos,   setCreditos]   = useState(0);
   const [promos,     setPromos]     = useState([]);
   const [loading,    setLoading]    = useState(true);
@@ -260,7 +260,7 @@ export default function BoosterPromoEco({ userId }) {
               </div>
               {p.activo && (
                 <button onClick={() => handleDesactivar(p.id)}
-                  className="text-xs text-red-400 border border-red-500/20 px-3 py-1.5 rounded-xl hover:bg-red-950/30 transition-all flex-shrink-0">
+                  className="text-xs text-red-400 border border-red-500/20 px-3 py-1.5 rounded-xl hover:bg-red-950/30 transition-all">
                   Desactivar
                 </button>
               )}
@@ -268,7 +268,6 @@ export default function BoosterPromoEco({ userId }) {
           </div>
         ))}
       </div>
-
     </div>
   );
 }

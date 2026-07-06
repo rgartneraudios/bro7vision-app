@@ -2,21 +2,21 @@
 import { useState, useEffect } from "react";
 
 const SLIDES = [
-  "/images/evelyn_1.webp",
-  "/images/evelyn_2.webp",
-  "/images/evelyn_3.webp",
-  "/images/evelyn_4.webp",
-  "/images/evelyn_5.webp",
-  "/images/evelyn_6.webp",
-  "/images/evelyn_7.webp",
-  "/images/evelyn_8.webp",
+  "/images/slideraid_deseos_1.webp",
+  "/images/slideraid_deseos_2.webp",
+  "/images/slideraid_deseos_3.webp",
+  "/images/slideraid_deseos_4.webp",
+  "/images/slideraid_deseos_5.webp",
+  "/images/slideraid_deseos_6.webp",
+  "/images/slideraid_deseos_7.webp",
+  "/images/slideraid_deseos_8.webp",
 ];
 
 const SHOW_DURATION  = 6000;
 const PAUSE_DURATION = 8000;
 const FADE_DURATION  = 800;
 
-export default function SlideRailAvisos() {
+export default function SlideRailDeseos() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [visible,      setVisible]      = useState(false);
   const [opacity,      setOpacity]      = useState(0);

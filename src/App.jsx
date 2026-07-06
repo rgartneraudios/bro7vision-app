@@ -4,14 +4,10 @@ import GenesisGate from './components/GenesisGate';
 import WalletWidget from './components/WalletWidget';
 import ConversionModal from './components/ConversionModal';
 import NexusDashboard from './components/NexusDashboard';
-import StoryPlayer from './components/StoryPlayer';
 import BroTuner from './components/BroTuner';
-import { MASTER_DB } from './data/database';
-import { getVideoForLocation } from './data/VideoMap';
-import BroLogViewer from './components/BroLogViewer';
 import BoosterModal from './components/BoosterModal';
 import LegalTerminal from './components/LegalTerminal';
-import HoloProjector from './components/HoloProjector';
+
 import BioForest from './components/Canales/BioForest';
 import ChannelEste from './components/Canales/ChannelEste';
 import ChannelEste169 from './components/Canales/ChannelEste169';
@@ -19,31 +15,27 @@ import ChannelOeste from './components/Canales/ChannelOeste';
 import ChannelOeste169 from './components/Canales/ChannelOeste169';
 import Reinos from './components/Reinos';
 import RealityTuner from './components/RealityTuner';
-import HoloPrism from './components/HoloPrism';
 import MoonMatrixCircle from './components/MoonMatrixCircle';
 import ChannelMoon from './components/Canales/ChannelMoon';
 import { getMoonSuffix } from './utils/moonUtils';
 import TitoBanner  from "./components/personajes/TitoBanner";
 import LaraBanner  from "./components/personajes/LaraBanner";
 import PuffoBanner from "./components/personajes/PuffoBanner";
-import SlideRail from './components/SlideRail';
-import { AudioProvider } from './context/AudioContext';
-import SlideRailAudio from './components/SlideRailAudio';
-import { useAudioData } from './hooks/useAudioData';
+import SlideRailCanjear from './components/SlideRailCanjear';
 import BroCardStrip from './components/BroCardStrip';
 import BroCardStripPS from './components/BroCardStripPS';
 import AgentChatInput from './components/AgentChatInput';
 import { useAgOsosMobile }    from './hooks/useAgOsosMobile';
 import { useAgentRumores }    from './hooks/useAgentRumores';
 import { useAgSectorMobile }  from './hooks/useAgSectorMobile';
-import SlideRailServicios from './components/SlideRailServicios';
-import SlideRailAvisos from './components/SlideRailAvisos';
+import SlideRailDeseos from './components/SlideRailDeseos';
 import CityLocationBanner from './components/CityLocationBanner';
 import NeuralButton from './components/NeuralButton';
 import DesktopLayout from './components/DesktopLayout';
+import DesktopRealityPlayer from './components/DesktopRealityPlayer';
 import MobileLayout from './components/MobileLayout';
 import BackStage from './components/backstage/BackStage';
-import MiniGuide from './components/MiniGuide';
+import Bro7Band from './components/Bro7Band';
 
 import { useSessionManager }  from './hooks/useSessionManager';
 import { useNavigationState } from './hooks/useNavigationState';
@@ -80,9 +72,6 @@ function App() {
   } = useNavigationState();
 
   const {
-    showRadar, setShowRadar,
-    radarQuery, setRadarQuery,
-    showStory, setShowStory,
     showLegal, setShowLegal,
     showWalletModal, setShowWalletModal,
     showBooster, setShowBooster,
@@ -103,18 +92,17 @@ function App() {
   // ESTADO LOCAL — interacciones UI
   // ══════════════════════════════════════════════════════
 
-  const [realItems, setRealItems]               = useState([]);
+  
   const [selectedForestUser, setSelectedForestUser] = useState(null);
   const [selectedCard, setSelectedCard]         = useState(null);
   const [isMobile, setIsMobile]                 = useState(() => window.innerWidth < 768);
   const [isFullscreen, setIsFullscreen]         = useState(false);
   const [showStudio, setShowStudio]             = useState(false);
+const [showBackstage, setShowBackstage]       = useState(false);
   const [isTeleporting, setIsTeleporting]       = useState(false);
   const [teleportCoords, setTeleportCoords]     = useState({ city: '' });
   const [projectingUser, setProjectingUser]     = useState(null);
   const [selectedLog, setSelectedLog]           = useState(null);
-  const [audioUser, setAudioUser]               = useState(null);
-  const [activePrismUser, setActivePrismUser]   = useState(null);
   const [activeUser, setActiveUser]             = useState(null);
   const [holoPrismaIndex, setHoloPrismaIndex]   = useState(0);
   const [ososFooterOpen, setOsosFooterOpen]     = useState(false);
@@ -122,7 +110,6 @@ function App() {
   const [vlData, setVlData]                     = useState(null);
   const [perfilSector, setPerfilSector]         = useState(null);
   const [avisoPendiente, setAvisoPendiente]     = useState(null);
-  const [showMiniGuide, setShowMiniGuide] = useState(false);
 
   // ════════════════════════════════════════════════════
   // EFECTO — Auto-montar BroLogViewer al abrir Teléfono Casa
@@ -170,109 +157,7 @@ function App() {
   const isPWA = window.matchMedia('(display-mode: fullscreen)').matches ||
                 window.matchMedia('(display-mode: standalone)').matches;
 
-useEffect(() => {
-  if (!session) return;
-  const fetchRealItems = async () => {
-    const { data: all } = await supabase.from('profiles').select('*');
-    if (!all) return;
 
-    const { data: proyecciones } = await supabase
-      .from('proyeccion_916')
-      .select('*');
-
-    const { data: proyecciones169 } = await supabase
-      .from('proyeccion_169')
-      .select('*');
-
-    const { data: meta } = await supabase
-      .from('mini_proyeccion')
-      .select('user_id, audio_url, audio_titulo, audio_descripcion, audio_tipo, audio_video_url, brotwit, holoprisma_1, holoprisma_2, holoprisma_3, holoprisma_4, editorial_title, editorial_text, editorial_img_url, banner_23_url');
-
-    const { data: proyeccionAudio } = await supabase
-      .from('proyeccion_audio')
-      .select('user_id, url, titulo, descripcion, tipo, circular_url');
-
-    const { data: proyeccionAudmovil } = await supabase
-      .from('proyeccion_audmovil')
-      .select('user_id, url, titulo, descripcion, tipo');
-
-    const proyMap = {};
-    if (proyecciones) {
-      proyecciones.forEach(p => { proyMap[p.user_id] = p; });
-    }
-
-    const proy169Map = {};
-    if (proyecciones169) {
-      proyecciones169.forEach(p => { proy169Map[p.user_id] = p; });
-    }
-
-    const metaMap = {};
-    if (meta) {
-      meta.forEach(m => { metaMap[m.user_id] = m; });
-    }
-
-    const audioMap = {};
-    if (proyeccionAudio) {
-      proyeccionAudio.forEach(a => { audioMap[a.user_id] = a; });
-    }
-
-    const audmovilMap = {};
-    if (proyeccionAudmovil) {
-      proyeccionAudmovil.forEach(a => { audmovilMap[a.user_id] = a; });
-    }
-
-    setRealItems(all.map(u => {
-      const proy = proyMap[u.id] || {};
-      const p169 = proy169Map[u.id] || {};
-      const metaRow = metaMap[u.id] || {};
-      const audioRow = audioMap[u.id] || {};
-      const audmovilRow = audmovilMap[u.id] || {};
-      return {
-        ...u,
-        // Contenido multimedia — vertical desde proyeccion_916
-        video_v_url:         proy.url         || null,
-        video_v_titulo:      proy.titulo       || null,
-        video_v_descripcion: proy.descripcion  || null,
-        // Contenido multimedia — horizontal desde proyeccion_169
-        video_h_url:         p169.url         || null,
-        video_h_titulo:      p169.titulo       || null,
-        video_h_descripcion: p169.descripcion  || null,
-        // Metadata restante desde mini_proyeccion
-        // Audio desde proyeccion_audio (prioridad) o mini_proyeccion (legado)
-        audio_url:           audioRow.url         || metaRow.audio_url            || null,
-        audio_titulo:        audioRow.titulo      || metaRow.audio_titulo         || null,
-        audio_descripcion:   audioRow.descripcion || metaRow.audio_descripcion    || null,
-        audio_tipo:          audioRow.tipo        || metaRow.audio_tipo           || null,
-        circular_url:        audioRow.circular_url                                 || null,
-        // Audio móvil desde proyeccion_audmovil
-        audmovil_url:        audmovilRow.url         || null,
-        audmovil_titulo:     audmovilRow.titulo      || null,
-        audmovil_descripcion: audmovilRow.descripcion || null,
-        audmovil_tipo:       audmovilRow.tipo        || null,
-        audmovil_user_id:    audmovilRow.user_id || u.id,
-        audio_video_url:     metaRow.audio_video_url      || null,
-        brotwit:             metaRow.brotwit              || null,
-        holoprisma_1:        metaRow.holoprisma_1         || null,
-        holoprisma_2:        metaRow.holoprisma_2         || null,
-        holoprisma_3:        metaRow.holoprisma_3         || null,
-        holoprisma_4:        metaRow.holoprisma_4         || null,
-        editorial_title:     metaRow.editorial_title      || null,
-        editorial_text:      metaRow.editorial_text       || null,
-        editorial_img_url:   metaRow.editorial_img_url    || null,
-        banner_23_url:       metaRow.banner_23_url        || null,
-        // Alias de compatibilidad para componentes existentes
-        shopName: u.alias,
-        name:     u.alias,
-        img:      u.avatar_url || u.banner_url,
-        type:     proy.url || p169.url ? ['shop', 'live'] : ['shop'],
-      };
-    }).filter(u =>
-      u.video_v_url || u.video_h_url || u.audio_url || u.audmovil_url ||
-      u.bro_ser || u.bro_mus || u.bro_aud || u.bro_avi || u.bro_pd
-    ));
-  };
-  fetchRealItems();
-}, [session, step]);
   // ══════════════════════════════════════════════════════
   // FUNCIONES SIMPLES
   // ══════════════════════════════════════════════════════
@@ -307,33 +192,13 @@ useEffect(() => {
       return;
     }
 
-    if (agente === 'AUDIO_STOP') {
-      setAudioUser(null);
-      return;
-    }
-
-    if (agente === 'AUDIO_PLAY') {
-      console.log('AUDIO_PLAY codigo:', codigo);
-      console.log('realItems bro_mus:', realItems?.map(c => ({ bro_mus: c.bro_mus, alias: c.alias })));
-      const itemCanal = canal || realItems.find(c =>
-        String(c.bro_mus) === String(codigo) ||
-        String(c.bro_aud) === String(codigo)
-      );
-      console.log('itemCanal:', itemCanal);
-      if (itemCanal) {
-        setAudioUser(itemCanal);
-        setActivePrismUser(itemCanal);
-      }
-      return;
-    }
-
-    if (['AUDIO_INTERNO', 'SERVICIO_INTERNO', 'AVISO_INTERNO', 'ORACULO_INTERNO'].includes(agente)) {
+    if (['AUDIO_INTERNO', 'SERVICIO_INTERNO', 'AVISO_INTERNO'].includes(agente)) {
       setPerfilSector(prev => ({ ...prev, personaje_id: personaje_id || per_solicitado }));
       return;
     }
 
     if (agente === 'OSOS') {
-      setIntent('gps');
+      setIntent('destino');
       setStep(1);
       setOsosModo('retorno');
       return;
@@ -353,7 +218,7 @@ useEffect(() => {
       const intentMap = {
         'BROPRODUCTOS': 'productos',
         'BROSERVICIOS': 'servicios',
-        'BRODESEOS':        'avisos',
+        'BRODESEOS':        'brodeseos',
         'AUDIO':            'audios',
       };
       cargarStripCards(intentActual, ciudadActual, 'LOCAL');
@@ -363,35 +228,19 @@ useEffect(() => {
     }
 
     const intentMap = {
-      'BROPRODUCTOS':  'productos',
-      'BROSERVICIOS':  'servicios',
-      'BRODESEOS':         'avisos',
-      'AUDIO':             'audios',
-      'REINOS':            'internal_search',
-      'ORACULO':           'ai',
-      'ORACULO_ORUMAMA':   'ai',
-      'ORACULO_SMISTERIO': 'ai',
-      'ORACULO_JAGUAR':    'ai',
-      'GAMES':             'game',
+      'CANJEAR':       'canjear',
+      'BRODESEOS':     'brodeseos',
+      'REINOS':        'reinos',
+      'GAMES':         'games',
+      'BRO7BAND':      'bro7band',
     };
 
-    const SIN_UBICACION = ['REINOS', 'ORACULO', 'ORACULO_ORUMAMA', 'ORACULO_SMISTERIO', 'ORACULO_JAGUAR', 'GAMES'];
+    const SIN_UBICACION = ['REINOS', 'GAMES', 'BRO7BAND'];
     if (SIN_UBICACION.includes(agente)) {
-      // Derivar personaje desde el agente si no viene per_solicitado
-      const personajeMap = {
-        'ORACULO_SMISTERIO': 'smisterio',
-        'ORACULO_JAGUAR':    'jaguar',
-        'ORACULO_ORUMAMA':   'orumama',
-        'ORACULO':           'smisterio', // default
-      };
-      const personajeFinal = per_solicitado?.toLowerCase() 
-        || personajeMap[agente] 
-        || 'smisterio';
-      setPerfilOso(prev => ({ ...prev, oraculo_personaje: personajeFinal }));
       setPerfilSector(null);
       setIntent(intentMap[agente] || 'ai');
       setOsosModo('retorno');
-      setStep(2);
+      setStep(agente === 'BRO7BAND' ? 0 : 2);
       return;
     }
 
@@ -447,24 +296,22 @@ useEffect(() => {
     setIntent(targetIntent);
     setIsLeftOpen(false);
     setIsRightOpen(false);
-    if (targetIntent === 'gps') {
+    if (targetIntent === 'destino') {
       setStep(1);
       resetOsos();
       setSessionCP('');
       setSessionCity('');
       setStripCards([]);
       setStripVisible(false);
-    } else if (['productos', 'servicios', 'avisos', 'audios'].includes(targetIntent) && !scope) {
+    } else if (['canjear', 'brodeseos'].includes(targetIntent) && !scope) {
       setStep(1);
       setOsosModo('entrada');
     } else {
       setStep(2);
       if (scope) {
         const agenteMap = {
-          productos: 'BROPRODUCTOS',
-          servicios: 'BROSERVICIOS',
-          avisos:    'BRODESEOS',
-          audios:    'AUDIO',
+          canjear: 'BROPRODUCTOS',
+          avisos:  'BRODESEOS',
         };
         const agente = agenteMap[targetIntent];
         if (agente) {
@@ -481,11 +328,7 @@ useEffect(() => {
   // ══════════════════════════════════════════════════════
 
   const handleGoToShop = (target) => {
-    if (target === 'nova') {
-      setIntent('productos');
-    } else if (target === 'isabella') {
-      setIntent('servicios');
-    }
+    setIntent('canjear');
     setStep(2);
   };
 
@@ -495,120 +338,36 @@ useEffect(() => {
 
   const chatMobile = useMemo(() => {
     if (step === 1) return { enviar: handleOsosInput, mensaje: ososMensaje, loading: ososLoading };
-    if (step === 2 && intent === 'ai') {
-      return {
-        tipo: 'ORACULO',
-        oraculo_personaje: perfilSector?.personaje_id || perfilOso?.oraculo_personaje,
-        enviar: handleSectorInput,
-        mensaje: sectorMensaje,
-        loading: sectorLoading,
-      };
-    }
     return { enviar: handleSectorInput, mensaje: sectorMensaje, loading: sectorLoading };
-  }, [step, intent, perfilOso, perfilSector, sectorMensaje, ososMensaje, sectorLoading, ososLoading]);
+  }, [step, perfilOso, perfilSector, sectorMensaje, ososMensaje, sectorLoading, ososLoading]);
 
-const filteredItems = useMemo(() => {
-  const supabaseItems = realItems.map(u => {
-    // Definimos el tipo según el archivo que contenga el registro
-    let itemType = ['shop'];
-    if (u.audio_url) {
-      itemType = ['live']; // Solo califica como audio
-    } else if (u.video_file) {
-      itemType = ['shop', 'live']; // Vídeo inmersivo / tienda
-    }
 
-    return { 
-      ...u, 
-      id: u.id, 
-      name: u.alias, 
-      img: u.avatar_url || u.banner_url || '/default.png', 
-      price: u.price || 0, 
-      type: itemType, 
-      source: 'supabase' 
-    };
-  });
-
-  const masterItems = MASTER_DB.map(m => ({ 
-    ...m, 
-    id: m.id, 
-    name: m.name, 
-    img: m.img || '/default.png', 
-    price: m.price || 15, 
-    type: m.type || ['shop'], 
-    source: 'master' 
-  }));
-
-  const ALL = [...supabaseItems, ...masterItems];
-
-  if (['productos', 'servicios', 'avisos'].includes(intent)) {
-    return ALL.filter(i => i.type?.includes('shop'));
-  }
-  if (intent === 'audios') {
-    return ALL.filter(i => i.type?.includes('live'));
-  }
-  
-  return ALL;
-}, [intent, realItems]);
-
-const hubVideos = useMemo(() => {
-  const supabaseVideos = realItems.filter(i => i.video_v_url)
-    .map(i => ({ ...i, video_file: i.video_v_url })); // alias de campo para canales verticales
-  return [{ alias: 'BRO MASTER', video_file: 'https://pub-a77d1f38b28849c1ad7e977150ecb53f.r2.dev/Mapache-habla8.mp4', id: 'bro_master' }, ...supabaseVideos];
-}, [realItems]);
-
-const hubVideos169 = useMemo(() => {
-  const supabaseVideos169 = realItems.filter(i => i.video_h_url)
-    .map(i => ({ ...i, video_file: i.video_h_url })); // alias de campo para canales horizontales
-  return [{ 
-  alias: 'BRO MASTER', 
-  video_file: 'https://pub-a77d1f38b28849c1ad7e977150ecb53f.r2.dev/Mapache-habla8H.mp4',
-  video_h_url: 'https://pub-a77d1f38b28849c1ad7e977150ecb53f.r2.dev/Mapache-habla8H.mp4',
-  video_v_url: 'https://pub-a77d1f38b28849c1ad7e977150ecb53f.r2.dev/Mapache-habla8.mp4.mp4',
-  id: 'bro_master' 
-}, ...supabaseVideos169];
-}, [realItems]);
-
-  const hubAudios = useMemo(() => {
-    const masterAudios   = MASTER_DB.filter(m => m.audio_video).map(m => ({ ...m, id: m.id, alias: m.name || m.alias, source: 'master' }));
-    const supabaseAudios = realItems.filter(i => i.audio_video).map(i => ({ ...i, alias: i.alias, id: i.id, source: 'supabase' }));
-    return [{ alias: 'BRO MASTER', audio_video: 'https://pub-a77d1f38b28849c1ad7e977150ecb53f.r2.dev/Mapache-habla8.mp3', id: 'bro_master' }, ...masterAudios, ...supabaseAudios];
-  }, [realItems]);
-
-  const audmovilList = useMemo(() => {
-    return (realItems || []).filter(i => i.audmovil_url);
-  }, [realItems]);
- 
 
   // ══════════════════════════════════════════════════════
   // DATOS ESTÁTICOS Y GUARDS
   // ══════════════════════════════════════════════════════
 
-  const { findChannelByAlias, checkIfNew } = useAudioData({ realItems });
-
-  if (!session && !isGuest && !showStudio) {
+  if (!session && !isGuest) {
     return <GenesisGate
       onGuestAccess={() => { setIsGuest(true); setStep(0); setRealityMode(null); setBalances({ genesis: 500, nova: 20 }); }}
-      onStudioAccess={() => setShowStudio(true)}
     />;
   }
 
   // Productores (advertiser) o acceso studio directo → BackStage exclusivo
-  if (showStudio || session?.user?.user_metadata?.role === 'advertiser') {
-    return <BackStage session={session} onLogout={showStudio ? () => setShowStudio(false) : handleLogout} />;
+  if (showBackstage) {
+    return <BackStage session={session} onLogout={() => setShowBackstage(false)} />;
   }
 
   const navItems = [
-    { id: 'gps',             label: 'DESTINO',      color: 'border-fuchsia-500/30 hover:border-fuchsia-400',  images: ['/emojis/lara.webp', '/emojis/tito.webp', '/emojis/puffo.webp'] },
-    { id: 'productos',       label: 'TARJETAS BROPRODUCTOS',  color: 'border-yellow-500/30 hover:border-yellow-400',    images: ['/emojis/nova.webp'] },
-    { id: 'servicios',       label: 'TARJETAS BROSERVICIOS',  color: 'border-rose-500/30 hover:border-rose-400',        images: ['/emojis/isabella.webp', '/emojis/prmaestro.webp'] },
-    { id: 'avisos',          label: 'BRODESEOS',     color: 'border-slate-500/30 hover:border-slate-400',      images: ['/emojis/evelyn.webp', '/emojis/larry.webp'] },
-    { id: 'audios',          label: 'AUDIOS',     color: 'border-cyan-500/30 hover:border-cyan-400',        images: ['/emojis/mapache.webp', '/emojis/ami.webp'] },
-    { id: 'internal_search', label: 'REINOS',     color: 'border-orange-500/30 hover:border-orange-400',    images: ['/emojis/rumores.webp'] },
-    { id: 'ai',              label: 'ORÁCULO',    color: 'border-lime-500/30 hover:border-lime-400',        images: ['/emojis/orumama.webp', '/emojis/smisterio.webp', '/emojis/jaguar.webp'] },
-    { id: 'game',            label: 'GAMES',      color: 'border-white/30 hover:border-white/60',           images: ['/emojis/emoji_5.webp', '/emojis/emoji_7.webp'] },
+    { id: 'destino',         label: 'DESTINO',           color: 'border-fuchsia-500/30 hover:border-fuchsia-400',  images: ['/emojis/lara.webp', '/emojis/tito.webp', '/emojis/puffo.webp'] },
+    { id: 'canjear',         label: 'CANJEAR LUNAS',  color: 'border-yellow-500/30 hover:border-yellow-400',    images: [] },
+    { id: 'brodeseos',       label: 'BRODESEOS',        color: 'border-slate-500/30 hover:border-slate-400',      images: [] },
+    { id: 'bro7band',        label: 'BRO7BAND',         color: 'border-cyan-500/30 hover:border-cyan-400',       images: ['/emojis/bro7band.webp'] },
+    { id: 'games',           label: 'GAMES',            color: 'border-white/30 hover:border-white/60',           images: ['/emojis/emoji_5.webp', '/emojis/emoji_7.webp'] },
+    { id: 'reinos',          label: 'REINOS',           color: 'border-orange-500/30 hover:border-orange-400',    images: ['/emojis/rumores.webp'] },
   ];
 
-  const INTENTS_CON_UBICACION = new Set(['productos', 'servicios', 'avisos', 'audios']);
+  const INTENTS_CON_UBICACION = new Set(['canjear', 'avisos']);
 
   // ══════════════════════════════════════════════════════
   // LAYOUTPROPS
@@ -618,32 +377,29 @@ const hubVideos169 = useMemo(() => {
     step, setStep, intent, setIntent, realityMode, setRealityMode,
     isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
     balances, setBalances, session, handleCentralHandoff,
-    showRadar, setShowRadar, radarQuery, setRadarQuery,
-    realItems, filteredItems, hubVideos, hubVideos169,
     selectedForestUser, setSelectedForestUser, savedUserIndex,
-    audioUser, setAudioUser, activePrismUser, setActivePrismUser,
     projectingUser, setProjectingUser, selectedCard,
     broTunerRef, navItems, handleNavigation, handleReportIssue,
-    setShowWalletModal, setShowBooster, setShowStory, setShowLegal,
+    setShowWalletModal, setShowBooster, setShowLegal,
     scope, sessionCP, sessionCity, sessionRef,
     handleGameWin,
-    setSelectedLog, setVlData,
+    setVlData,
     ososHandoffContext, setOsosHandoffContext,
     perfilOso, stripVisible, stripCards, stripLabel,
     onHandoff: handleCentralHandoff,
-    setHoloPrismaIndex, findChannelByAlias, checkIfNew,
-    chatMobile, perfilSector, oraculoActivo,
+    setHoloPrismaIndex,
+    chatMobile, perfilSector,
     handleOsosInput, ososMensaje, ososLoading, ososModo, setOsosModo,
     handleLogout,
     iaMode, isAdmin, userCredits,
     onToggleAdminIA:     handleToggleAdminIA,
     onTogglePublicIA:    handleTogglePublicIA,
     rumoresMensaje, rumoresLoading, handleRumoresInput,
-    onOpenMiniGuide: () => setShowMiniGuide(true),
     userId:         session?.user?.id || null,
   genesisBalance: balances.genesis  || 0,
   onGenesisUpdate: (nuevoBalance) => setBalances(prev => ({ ...prev, genesis: nuevoBalance })),
   handleGoToShop,
+  onOpenBackstage: () => setShowBackstage(true),
   };
 
   // ══════════════════════════════════════════════════════
@@ -656,11 +412,7 @@ const hubVideos169 = useMemo(() => {
         <MobileLayout
           realityMode={realityMode}
           broTunerRef={broTunerRef}
-          audioUser={audioUser}
-          onToggleAudio={() => setAudioUser(prev => prev ? null : audioUser)}
           setRealityMode={setRealityMode}
-          hubAudios={hubAudios}
-          audmovilList={audmovilList}
           {...layoutProps}
         />
       ) : (
@@ -682,23 +434,6 @@ const hubVideos169 = useMemo(() => {
         </div>
       )}
       
-      {showMiniGuide && (
-  <MiniGuide onClose={() => setShowMiniGuide(false)} />
-)}
-
-      {showStory && (
-        <div className="fixed inset-0 z-[200] bg-black">
-          <StoryPlayer
-            src="https://media.bro7vision.com/brostories_demo.mp4"
-            activePhase="nova"
-            balances={balances} setBalances={setBalances}
-            isAdsMode={true}
-            onClose={() => setShowStory(false)}
-            onComplete={(amount) => { setBalances(prev => ({ ...prev, genesis: prev.genesis + amount })); }}
-          />
-        </div>
-      )}
-
       {showWalletModal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-xl">
           <ConversionModal balances={balances} setBalances={setBalances} session={session} activePhase={getMoonSuffix()} onClose={() => setShowWalletModal(false)} />
@@ -711,17 +446,7 @@ const hubVideos169 = useMemo(() => {
         </div>
       )}
 
-      {projectingUser && (
-        <HoloProjector
-          user={projectingUser}
-          balances={balances} setBalances={setBalances}
-          session={session}
-          onOpenLog={setSelectedLog}
-          onClose={() => setProjectingUser(null)}
-        />
-      )}
-
-      {intent === 'internal_search' && step === 2 && (
+      {intent === 'reinos' && step === 2 && (
         <div className={`fixed inset-x-0 top-[10%] bottom-[16%] z-[90] mx-auto max-w-5xl px-4 ${
           window.innerWidth < 768 ? 'pointer-events-none' : 'pointer-events-auto'
         }`}>
@@ -729,22 +454,15 @@ const hubVideos169 = useMemo(() => {
             isMobile={window.innerWidth < 768}
             onClose={() => { setStep(0); setIntent(null); }}
             session={session} balances={balances} setBalances={setBalances}
-            onNavigateToSantuario={(targetUserId) => {
-              const targetUser = realItems.find(u => u.id === targetUserId);
-              if (targetUser) { setProjectingUser(targetUser); setIntent(null); }
-            }}
           />
         </div>
       )}
 
-      {selectedLog && (
-        <BroLogViewer
-          log={selectedLog}
-          onClose={() => { setSelectedLog(null); setProjectingUser(null); }}
+      {intent === 'bro7band' && (
+        <Bro7Band
+          iaMode={iaMode}
           balances={balances}
-          setBalances={setBalances}
-          session={session}
-          handleGoToShop={handleGoToShop}
+          onBack={() => { setStep(0); setIntent(null); }}
         />
       )}
 
