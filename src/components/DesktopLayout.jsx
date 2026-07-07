@@ -11,7 +11,7 @@ import NeuralButton from './NeuralButton';
 import NexusDashboard from './NexusDashboard';
 import CityLocationBanner from './CityLocationBanner';
 import SlideRailCanjear from './SlideRailCanjear';
-import SlideRailDeseos from './SlideRailDeseos';
+import SlideRailAmigos from './SlideRailAmigos';
 import MapacheBanner from './personajes/MapacheBanner';
 import TitoBanner  from "./personajes/TitoBanner";
 import LaraBanner  from "./personajes/LaraBanner";
@@ -45,7 +45,7 @@ useEffect(() => {
   return () => window.removeEventListener('resize', handleResize);
 }, []);
 
-  const INTENTS_CON_UBICACION = new Set(['canjear', 'brodeseos']);
+  const INTENTS_CON_UBICACION = new Set(['canjear', 'shopamigos']);
 
 
   return (
@@ -146,8 +146,9 @@ useEffect(() => {
         </div>
       )}      
 
-      {step === 2 && INTENTS_CON_UBICACION.has(intent) && !selectedCard && <CityLocationBanner scope={scope} />}
+      {step === 2 && intent === 'canjear' && !selectedCard && <CityLocationBanner scope={scope} />}
       {step === 2 && intent === 'canjear' && <SlideRailCanjear />}
+      {step === 2 && intent === 'shopamigos' && <SlideRailAmigos />}
       {step === 2 && intent === 'brodeseos' && <SlideRailDeseos />}
       
       

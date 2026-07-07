@@ -28,7 +28,8 @@ import AgentChatInput from './components/AgentChatInput';
 import { useAgOsosMobile }    from './hooks/useAgOsosMobile';
 import { useAgentRumores }    from './hooks/useAgentRumores';
 import { useAgSectorMobile }  from './hooks/useAgSectorMobile';
-import SlideRailDeseos from './components/SlideRailDeseos';
+import SlideRailAmigos from './components/SlideRailAmigos';
+import ShopAmigos from './components/ShopAmigos';
 import CityLocationBanner from './components/CityLocationBanner';
 import NeuralButton from './components/NeuralButton';
 import DesktopLayout from './components/DesktopLayout';
@@ -218,7 +219,7 @@ const [showBackstage, setShowBackstage]       = useState(false);
       const intentMap = {
         'BROPRODUCTOS': 'productos',
         'BROSERVICIOS': 'servicios',
-        'BRODESEOS':        'brodeseos',
+        'BRODESEOS':        'shopamigos',
         'AUDIO':            'audios',
       };
       cargarStripCards(intentActual, ciudadActual, 'LOCAL');
@@ -303,7 +304,7 @@ const [showBackstage, setShowBackstage]       = useState(false);
       setSessionCity('');
       setStripCards([]);
       setStripVisible(false);
-    } else if (['canjear', 'brodeseos'].includes(targetIntent) && !scope) {
+    } else if (['canjear', 'shopamigos'].includes(targetIntent) && !scope) {
       setStep(1);
       setOsosModo('entrada');
     } else {
@@ -361,7 +362,7 @@ const [showBackstage, setShowBackstage]       = useState(false);
   const navItems = [
     { id: 'destino',         label: 'DESTINO',           color: 'border-fuchsia-500/30 hover:border-fuchsia-400',  images: ['/emojis/lara.webp', '/emojis/tito.webp', '/emojis/puffo.webp'] },
     { id: 'canjear',         label: 'CANJEAR LUNAS',  color: 'border-yellow-500/30 hover:border-yellow-400',    images: [] },
-    { id: 'brodeseos',       label: 'BRODESEOS',        color: 'border-slate-500/30 hover:border-slate-400',      images: [] },
+    { id: 'shopamigos',       label: 'SHOP AMIGOS',        color: 'border-slate-500/30 hover:border-slate-400',      images: [] },
     { id: 'bro7band',        label: 'BRO7BAND',         color: 'border-cyan-500/30 hover:border-cyan-400',       images: ['/emojis/bro7band.webp'] },
     { id: 'games',           label: 'GAMES',            color: 'border-white/30 hover:border-white/60',           images: ['/emojis/emoji_5.webp', '/emojis/emoji_7.webp'] },
     { id: 'reinos',          label: 'REINOS',           color: 'border-orange-500/30 hover:border-orange-400',    images: ['/emojis/rumores.webp'] },
@@ -464,6 +465,12 @@ const [showBackstage, setShowBackstage]       = useState(false);
           balances={balances}
           onBack={() => { setStep(0); setIntent(null); }}
         />
+      )}
+
+      {intent === 'shopamigos' && (
+        <div className="fixed inset-0 z-[60]">
+          <ShopAmigos scope={scope} />
+        </div>
       )}
 
       {/* Botón fullscreen — solo visible en browser normal (no PWA, no fullscreen activo) */}
