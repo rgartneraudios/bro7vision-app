@@ -25,7 +25,7 @@ const NexusDashboard = ({
   const [gameDifficulty, setGameDifficulty] = useState('hard');
 
   // DETECCIÓN DE MODOS
-  const isGameMode = intent === 'game';
+  const isGameMode = intent === 'games';
   
   const cityName = scope?.city || "RED GLOBAL";
   const displayCity = cityName === "Detectando..." ? "SINTONIZANDO..." : cityName;

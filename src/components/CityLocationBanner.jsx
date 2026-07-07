@@ -6,7 +6,7 @@ const MENSAJES = [
   { etiqueta: 'UBICACIÓN ACTUAL', texto: 'Estás en {city} — Disfruta de tu estancia.' },
   { etiqueta: 'SISTEMA',          texto: 'Estate atento a las novedades de la nueva Fase 1.' },
   { etiqueta: 'RED BRO7VISION',   texto: 'Conectado a la red desde {city}. Bienvenido.' },
-  { etiqueta: 'AVISO',            texto: 'Nuevos comercios disponibles en tu zona. ¡Explóralos!' },
+  { etiqueta: 'AVISO',            texto: 'Nuevos descuentos disponibles en tu zona. ¡Explóralos!' },
 ];
 
 export default function CityLocationBanner({ scope, isMobile }) {
@@ -68,22 +68,26 @@ export default function CityLocationBanner({ scope, isMobile }) {
     <>
       <style>{`
   @keyframes neonPulse {
-    0%, 100% { text-shadow: 0 0 8px #00f0ff, 0 0 22px #00f0ff; }
-    50%       { text-shadow: 0 0 4px #00f0ff, 0 0 10px #00f0ff; }
+    0%, 100% { text-shadow: 0 0 12px #8b5cf6, 0 0 40px #8b5cf6, 0 0 80px #8b5cf6, 0 0 6px #c084fc, 0 0 20px #c084fc; }
+    50%       { text-shadow: 0 0 8px #8b5cf6, 0 0 24px #8b5cf6, 0 0 50px #8b5cf6, 0 0 3px #c084fc, 0 0 12px #c084fc; }
+  }
+  @keyframes borderGlow {
+    0%, 100% { border-color: rgba(0, 68, 255, 0.5); box-shadow: 0 0 20px rgba(0, 68, 255, 0.3), 0 0 60px rgba(0, 68, 255, 0.1); }
+    50%       { border-color: rgba(0, 68, 255, 0.7); box-shadow: 0 0 30px rgba(0, 68, 255, 0.5), 0 0 80px rgba(0, 68, 255, 0.2); }
   }
   .clb-wrap {
     background: rgba(0, 0, 0, 0.45);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(0, 240, 255, 0.25);
+    border: 1px solid rgba(0, 68, 255, 0.5);
     border-radius: 999px;
     padding: 10px 32px 12px 32px; 
-    box-shadow: 0 0 12px rgba(0, 240, 255, 0.1), inset 0 0 8px rgba(0,0,0,0.3);
+    animation: borderGlow 3s ease-in-out infinite;
   }
   .clb-label {
     display: block;
     /* REDUCIDO: de 5px a 2px */
     margin-bottom: 2px;
-    color: #7dd3fc;
+    color: #fde68a;
     font-family: 'Courier New', monospace;
     letter-spacing: 0.15em; /* Ligeramente menos espacio */
     /* REDUCIDO: bajamos el tamaño de fuente */
@@ -107,8 +111,8 @@ export default function CityLocationBanner({ scope, isMobile }) {
     height: 0.8em;
     margin-left: 3px;
     vertical-align: middle;
-    background: #00f0ff;
-    box-shadow: 0 0 6px #00f0ff;
+    background: #c084fc;
+    box-shadow: 0 0 10px #c084fc, 0 0 30px #c084fc;
   }
 `}</style>
       <div 
