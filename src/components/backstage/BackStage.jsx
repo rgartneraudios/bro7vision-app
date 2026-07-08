@@ -10,6 +10,7 @@ import MisCampanasTab from './MisCampanasTab';
 import PromoEcoTab from './PromoEcoTab';
 import TarjetasRegaloTab from './TarjetasRegaloTab';
 import EnviarOfertaTab from './EnviarOfertaTab';
+import ShopAmigosTab from './ShopAmigosTab';
 
 const SYNE = "'Exo 2', sans-serif";
 
@@ -265,6 +266,7 @@ const BackStage = ({ session, onLogout }) => {
     { id: 'promo_eco',       label: 'PROMO ECO'            },
     { id: 'bro7band',        label: 'BRO7BAND'             },
     { id: 'slide_rail',      label: 'SLIDE RAIL'           },
+    { id: 'shop_amigos',     label: 'SHOP AMIGOS'          },
     { id: 'games',           label: 'GAMES'                },
     { id: 'tarjetas_regalo', label: 'TARJETAS REGALO'      },
     { id: 'enviar_oferta',   label: 'ENVIAR OFERTA'        },
@@ -350,6 +352,10 @@ const BackStage = ({ session, onLogout }) => {
 
         {activeTab === 'slide_rail' && (
           <SlideRailTab role={rolUsuario} />
+        )}
+
+        {activeTab === 'shop_amigos' && (
+          <ShopAmigosTab />
         )}
 
         {activeTab === 'games' && (

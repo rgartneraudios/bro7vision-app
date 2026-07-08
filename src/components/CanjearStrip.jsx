@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import SlideRailAmigos from './SlideRailAmigos';
+import SlideRailCanjear from './SlideRailCanjear';
 import CityLocationBanner from './CityLocationBanner';
+import { getVideoForLocation } from '../data/VideoMap';
 
 const TAB_COLORS = {
   CERCANIAS: '#FF6B00',
@@ -74,7 +75,7 @@ function HeaderWidget() {
         {temp !== null ? (
           <>
             <span style={{
-fontFamily: "'Orbitron', sans-serif",
+              fontFamily: "'Orbitron', sans-serif",
               fontSize: 'clamp(32px, 4vw, 60px)',
               lineHeight: 1, letterSpacing: '0.04em',
               color: '#fff', textShadow: '0 0 20px rgba(255,255,255,0.4)',
@@ -99,8 +100,8 @@ fontFamily: "'Orbitron', sans-serif",
   );
 }
 
-function SlotWarningModal({ slot, onClose }) {
-  if (!slot) return null;
+function CuponModal({ cupon, onClose }) {
+  if (!cupon) return null;
   return (
     <div
       onClick={onClose}
@@ -113,38 +114,39 @@ function SlotWarningModal({ slot, onClose }) {
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: '#111', border: '1px solid rgba(0,255,255,0.3)',
+          background: '#111', border: '1px solid rgba(255,215,0,0.3)',
           borderRadius: 16, padding: '4rem', maxWidth: 960, width: '90%',
-          boxShadow: '0 0 40px rgba(0,255,255,0.15)',
+          boxShadow: '0 0 40px rgba(255,215,0,0.15)',
         }}
       >
-        <h2 style={{ color: '#00ffff', fontSize: 48, fontWeight: 900, textAlign: 'center', marginBottom: 16 }}>
-          SHOP AMIGOS
+        <h2 style={{ color: '#facc15', fontSize: 48, fontWeight: 900, textAlign: 'center', marginBottom: 16 }}>
+          CANJE DE LUNA
         </h2>
         <p style={{ color: '#ccc', fontSize: 24, textAlign: 'center', marginBottom: 32 }}>
-          {slot.nombre}
+          {cupon.comercio_nombre}
         </p>
-        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 18, lineHeight: 1.8, marginBottom: 32 }}>
-          Bro7Vision ofrece espacios ("Slots") alquilados a comercios externos denominados Amigos.
-          Estos comercios operan de forma independiente y Bro7Vision no participa en las transacciones,
-          pagos, envíos ni garantías.
-          Si experimentas alguna incidencia con este comercio Amigo, comunícanoslo a través de la
-          sección de Incidencias para su análisis.
+        {cupon.descuento_pct && (
+          <p style={{ color: '#39FF14', fontSize: 32, fontWeight: 900, textAlign: 'center', marginBottom: 16 }}>
+            {cupon.descuento_pct}% DESCUENTO
+          </p>
+        )}
+        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 18, textAlign: 'center', marginBottom: 16 }}>
+          Coste: {cupon.coste_genesis?.toLocaleString() || '—'} ✦ génesis
+        </p>
+        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14, textAlign: 'center', marginBottom: 32 }}>
+          Vence: {cupon.vencimiento || '—'}
         </p>
         <div style={{ display: 'flex', gap: 12 }}>
           <button
-            onClick={() => {
-              if (slot.url_destino) window.open(slot.url_destino, '_blank', 'noopener');
-              onClose();
-            }}
+            onClick={onClose}
             style={{
-              flex: 1, padding: '12px 0', background: '#00ffff', color: '#000',
+              flex: 1, padding: '12px 0', background: '#facc15', color: '#000',
               fontWeight: 900, fontSize: 14, border: 'none', borderRadius: 10,
               cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.1em',
-              boxShadow: '0 0 16px rgba(0,255,255,0.4)',
+              boxShadow: '0 0 16px rgba(250,204,21,0.4)',
             }}
           >
-            CONTINUAR →
+            CANJEAR →
           </button>
           <button
             onClick={onClose}
@@ -162,12 +164,13 @@ function SlotWarningModal({ slot, onClose }) {
   );
 }
 
-export default function ShopAmigos({ scope }) {
+export default function CanjearStrip({ scope }) {
   const [activeTab, setActiveTab] = useState('CERCANIAS');
-  const [slots, setSlots] = useState([]);
-  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [cupones, setCupones] = useState([]);
+  const [selectedCupon, setSelectedCupon] = useState(null);
   const [hoveredId, setHoveredId] = useState(null);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  const videoUrl = getVideoForLocation(scope);
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < 768);
@@ -176,36 +179,24 @@ export default function ShopAmigos({ scope }) {
   }, []);
 
   useEffect(() => {
-    const fetchSlots = async () => {
+    const fetchCupones = async () => {
       const { data } = await supabase
-        .from('shop_amigos_slots')
+        .from('comercio_cupones')
         .select('*')
         .eq('activo', true)
         .eq('alcance', activeTab);
-      setSlots(data || []);
+      setCupones(data || []);
     };
-    fetchSlots();
+    fetchCupones();
   }, [activeTab]);
 
-  const TEST_SLOT = {
-    id: 'test-001',
-    nombre: 'Taller Lunar Studio',
-    url_destino: 'https://bro7vision.com',
-    imagen_url: '/images/steel_5.png',
-    alcance: 'INTERNACIONAL',
-    activo: true,
-  };
-
-  // TEST_SLOT se mezcla con slots reales para que siempre haya contenido visible
-  const slotsConTest = [TEST_SLOT, ...slots];
-
-  const TOTAL_SLOTS = slotsConTest.length < 4 ? slotsConTest.length : 8;
+  const TOTAL_CARDS = cupones.length < 4 ? (cupones.length || 1) : 8;
 
   const placeholders = Array.from(
-    { length: Math.max(0, TOTAL_SLOTS - slotsConTest.length) },
+    { length: Math.max(0, TOTAL_CARDS - cupones.length) },
     (_, i) => ({ id: `placeholder-${i}`, _placeholder: true })
   );
-  const allSlots = TOTAL_SLOTS < 4 ? slotsConTest : [...slotsConTest, ...placeholders];
+  const allCards = TOTAL_CARDS < 4 ? cupones : [...cupones, ...placeholders];
 
   const neonColor = TAB_COLORS[activeTab];
 
@@ -213,23 +204,23 @@ export default function ShopAmigos({ scope }) {
     <div style={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden' }}>
       <style>{`
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,40,0.3); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb { background: #00FFFF; border-radius: 4px; box-shadow: 0 0 8px #00FFFF; }
-        ::-webkit-scrollbar-thumb:hover { background: #00E5E5; }
-        * { scrollbar-width: thin; scrollbar-color: #00FFFF rgba(0,0,40,0.3); }
+        ::-webkit-scrollbar-track { background: rgba(40,20,0,0.3); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #facc15; border-radius: 4px; box-shadow: 0 0 8px #facc15; }
+        ::-webkit-scrollbar-thumb:hover { background: #e6b800; }
+        * { scrollbar-width: thin; scrollbar-color: #facc15 rgba(40,20,0,0.3); }
       `}</style>
       <video
         autoPlay loop muted playsInline
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
       >
-        <source src="https://media.bro7vision.com/ShopAmigos2.mp4" type="video/mp4" />
+        <source src={videoUrl} type="video/mp4" />
       </video>
 
       <HeaderWidget />
 
       <CityLocationBanner scope={scope} />
 
-      <SlideRailAmigos />
+      <SlideRailCanjear />
 
       <div style={{
         position: 'relative', zIndex: 1,
@@ -245,7 +236,7 @@ export default function ShopAmigos({ scope }) {
             letterSpacing: '0.03em',
             lineHeight: 1,
           }}>
-            Shop Amigos
+            CANJES DE LUNAS
           </span>
           <div style={{ display: 'flex', gap: 4, background: 'rgba(0,0,0,0.5)', borderRadius: 12, padding: 4 }}>
             {['CERCANIAS', 'NACIONAL', 'INTERNACIONAL'].map(tab => {
@@ -290,19 +281,20 @@ export default function ShopAmigos({ scope }) {
             flexWrap: isMobile ? 'nowrap' : undefined,
             gridTemplateColumns: isMobile ? undefined : 'repeat(4, 1fr)',
             gap: 24,
-            background: 'rgba(0, 0, 40, 0.35)',
+            background: 'rgba(40, 20, 0, 0.35)',
             height: '100%',
             alignSelf: 'stretch',
           }}
         >
-          {allSlots.map(slot => {
-  const ocupado = !slot._placeholder && slot.imagen_url;
-  const esSlotReal = !slot._placeholder;
+          {allCards.map(cupon => {
+  const ocupado = !cupon._placeholder && (cupon.banner_11_url || cupon.banner_url);
+  const esReal = !cupon._placeholder;
+  const imgUrl = cupon.banner_11_url || cupon.banner_url;
   return (
     <div
-      key={slot.id}
-      onClick={() => esSlotReal && !slot._placeholder && setSelectedSlot(slot)}
-      onMouseEnter={() => setHoveredId(slot.id)}
+      key={cupon.id}
+      onClick={() => esReal && setSelectedCupon(cupon)}
+      onMouseEnter={() => setHoveredId(cupon.id)}
       onMouseLeave={() => setHoveredId(null)}
       style={{
         width: isMobile ? 333 : '100%',
@@ -311,15 +303,15 @@ export default function ShopAmigos({ scope }) {
         borderRadius: 12,
         position: 'relative',
         overflow: 'hidden',
-        cursor: esSlotReal ? 'pointer' : 'default',
+        cursor: esReal ? 'pointer' : 'default',
         background: ocupado
-          ? `url(${slot.imagen_url}) center/cover no-repeat`
+          ? `url(${imgUrl}) center/cover no-repeat`
           : 'rgba(0,0,0,0.6)',
         border: ocupado
-          ? `2px solid ${hoveredId === slot.id ? '#00FFFF' : 'rgba(255,255,255,0.15)'}`
-          : `2px dashed ${hoveredId === slot.id ? '#00FFFF' : 'rgba(0,255,255,0.5)'}`,
-        boxShadow: hoveredId === slot.id ? '0 0 24px rgba(0,255,255,0.4), inset 0 0 20px rgba(0,255,255,0.1)' : 'none',
-        transform: hoveredId === slot.id ? 'scale(1.03)' : 'scale(1)',
+          ? `2px solid ${hoveredId === cupon.id ? '#facc15' : 'rgba(255,255,255,0.15)'}`
+          : `2px dashed ${hoveredId === cupon.id ? '#facc15' : 'rgba(250,204,21,0.5)'}`,
+        boxShadow: hoveredId === cupon.id ? '0 0 24px rgba(250,204,21,0.4), inset 0 0 20px rgba(250,204,21,0.1)' : 'none',
+        transform: hoveredId === cupon.id ? 'scale(1.03)' : 'scale(1)',
         transition: 'all 0.25s ease',
         flexShrink: 0,
       }}
@@ -330,24 +322,37 @@ export default function ShopAmigos({ scope }) {
           background: 'linear-gradient(to top, rgba(0,0,0,0.85), transparent)',
           padding: '20px 16px 16px',
         }}>
-          <span style={{ color: '#fff', fontWeight: 700, fontSize: 16 }}>
-            {slot.nombre}
+          <span style={{ color: '#fff', fontWeight: 700, fontSize: 16, display: 'block', marginBottom: 4 }}>
+            {cupon.comercio_nombre}
+          </span>
+          {cupon.descuento_pct && (
+            <span style={{ color: '#facc15', fontWeight: 900, fontSize: 18 }}>
+              {cupon.descuento_pct}% DTO
+            </span>
+          )}
+          <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, display: 'block', marginTop: 4 }}>
+            {(cupon.coste_genesis || 0).toLocaleString()} ✦ génesis
           </span>
         </div>
-      ) : esSlotReal ? (
+      ) : esReal ? (
         <div style={{
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
           height: '100%', gap: 8, padding: 16, textAlign: 'center',
           cursor: 'pointer',
         }}
-          onClick={() => setSelectedSlot(slot)}
+          onClick={() => setSelectedCupon(cupon)}
         >
-          <span style={{ color: '#00FFFF', fontSize: 18, fontWeight: 700 }}>
-            {slot.nombre}
+          <span style={{ color: '#facc15', fontSize: 18, fontWeight: 700 }}>
+            {cupon.comercio_nombre}
           </span>
-          <span style={{ color: 'rgba(0,255,255,0.5)', fontSize: 11 }}>
-            Pulsa para visitar →
+          {cupon.descuento_pct && (
+            <span style={{ color: '#39FF14', fontSize: 24, fontWeight: 900 }}>
+              {cupon.descuento_pct}%
+            </span>
+          )}
+          <span style={{ color: 'rgba(250,204,21,0.5)', fontSize: 11 }}>
+            Pulsa para canjear →
           </span>
         </div>
       ) : (
@@ -356,11 +361,11 @@ export default function ShopAmigos({ scope }) {
           alignItems: 'center', justifyContent: 'center',
           height: '100%', gap: 8,
         }}>
-          <span style={{ color: '#00FFFF', fontSize: 18, fontWeight: 700, letterSpacing: '0.1em' }}>
-            ✦ Espacio disponible ✦
+          <span style={{ color: '#facc15', fontSize: 18, fontWeight: 700, letterSpacing: '0.1em' }}>
+            ✦ Cupón disponible ✦
           </span>
-          <span style={{ color: 'rgba(0,255,255,0.4)', fontSize: 11 }}>
-            Contacta con nosotros
+          <span style={{ color: 'rgba(250,204,21,0.4)', fontSize: 11 }}>
+            Pronto en tu ciudad
           </span>
         </div>
       )}
@@ -370,8 +375,8 @@ export default function ShopAmigos({ scope }) {
         </div>
       </div>
 
-      {selectedSlot && (
-        <SlotWarningModal slot={selectedSlot} onClose={() => setSelectedSlot(null)} />
+      {selectedCupon && (
+        <CuponModal cupon={selectedCupon} onClose={() => setSelectedCupon(null)} />
       )}
     </div>
   );

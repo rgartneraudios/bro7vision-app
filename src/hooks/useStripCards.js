@@ -1,19 +1,3 @@
-// src/hooks/useStripCards.js
-// ─────────────────────────────────────────────────────────────────────
-// Carga las cards para el cajón de cada sector.
-//
-// BROPRODUCTOS / BROSERVICIOS → leen de comercio_cupones
-//   Filtros aplicados:
-//     · activo = true
-//     · sector (PRODUCTOS o SERVICIOS)
-//     · alcance + geolocalización:
-//         LOCAL         → filtra por ciudad
-//         NACIONAL      → filtra por país
-//         INTERNACIONAL → sin filtro geográfico
-//
-// AVISOS / AUDIO → lógica propia sin cambios
-// ─────────────────────────────────────────────────────────────────────
-
 import { useState, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import { BROCARD_MODELOS } from '../components/booster/BoosterBroCards';
@@ -31,31 +15,24 @@ export const useStripCards = () => {
     modalidad = 'LOCAL',
     pais      = null,
   ) => {
-
     try {
-
       const agenteUpper = agente?.toUpperCase() || '';
 
-      // ══════════════════════════════════════════════════════════════
-      // BROPRODUCTOS / BROSERVICIOS
-      // Lee de comercio_cupones
-      // ══════════════════════════════════════════════════════════════
-      if (agenteUpper === 'BROPRODUCTOS' || agenteUpper === 'BROSERVICIOS') {
-         let query = supabase
-           .from('comercio_cupones')
-           .select('*')
-           .eq('activo', true)
-           .in('sector', ['PRODUCTOS', 'SERVICIOS'])
-           .order('created_at', { ascending: false });
+      if (agenteUpper === 'BROPRODUCTOS') {
+        let query = supabase
+          .from('comercio_cupones')
+          .select('*')
+          .eq('activo', true)
+          .order('created_at', { ascending: false });
 
-         // Filtro geográfico según alcance de la card
-         if (ciudad) {
-           query = query.or(
-             `alcance.eq.INTERNACIONAL,` +
-             `and(alcance.eq.NACIONAL,pais.ilike.%${pais || ''}%),` +
-             `and(alcance.eq.LOCAL,ciudad.ilike.%${ciudad}%)`
-           );
-         }
+        if (ciudad) {
+          query = query.or(
+            `alcance.cs.{INTERNACIONAL},` +
+            `and(alcance.cs.{NACIONAL},pais.ilike.%${pais || ''}%),` +
+            `and(alcance.cs.{CERCANIAS},ciudad.ilike.%${ciudad}%),` +
+            `and(alcance.cs.{LOCAL},ciudad.ilike.%${ciudad}%)`
+          );
+        }
 
         const { data: rows, error } = await query;
 
@@ -72,7 +49,6 @@ export const useStripCards = () => {
           return;
         }
 
-        // Traer datos de perfil (neighborhood, nearby_ref, etc.) de los user_id
         const userIds = [...new Set(rows.map(r => r.user_id).filter(Boolean))];
         const { data: perfiles } = await supabase
           .from('profiles')
@@ -82,7 +58,6 @@ export const useStripCards = () => {
         const perfilMap = {};
         (perfiles || []).forEach(p => { perfilMap[p.id] = p; });
 
-        // Mapear al shape que espera BroCardStripPS
         const cards = rows.map(r => {
           const key = r.modelo_key;
           const modelo = BROCARD_MODELOS[key] || BROCARD_MODELOS[Number(key)];
@@ -110,7 +85,6 @@ export const useStripCards = () => {
         return;
       }
 
-      // ── Fallback ─────────────────────────────────────────────────
       setStripCards([]);
       setStripVisible(false);
 
@@ -128,10 +102,6 @@ export const useStripCards = () => {
     cargarStripCards,
   };
 };
-
-// ── Helpers fase lunar ────────────────────────────────────────────────
-// Calcula la fase lunar aproximada y su fecha de vencimiento
-// basándose en el ciclo sinódico (29.53 días)
 
 function faseActual() {
   const LUNA_NUEVA_REF = new Date('2024-01-11T00:00:00Z');
@@ -153,7 +123,6 @@ function vencimientoFase() {
   const diasDesdeRef = (ahora - LUNA_NUEVA_REF) / (1000 * 60 * 60 * 24);
   const diaEnCiclo = ((diasDesdeRef % CICLO) + CICLO) % CICLO;
 
-  // Días restantes hasta el siguiente cambio de fase
   let diasRestantes;
   if (diaEnCiclo < 7.38)       diasRestantes = 7.38  - diaEnCiclo;
   else if (diaEnCiclo < 14.77) diasRestantes = 14.77 - diaEnCiclo;

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../supabaseClient';
-import BroCardStripPS from '../BroCardStripPS';
 import StickerCupon, { MODEL_COLORS } from './StickerCupon';
 
 // ── 10 MODELOS DE BROCARD ────────────────────────────────────────────────
@@ -388,7 +387,6 @@ const handleGuardar = async (cuponId) => {
     }
    };
    
-  // Mapea cupón de Supabase → card render-ready para BroCardStripPS
   const mapToCard = (c) => {
     const key = c.modelo_key;
     // Intentar como string primero, luego como número
@@ -655,8 +653,6 @@ const handleGuardar = async (cuponId) => {
             if (!c) return null;
             return (
               <div key={c.id} className="space-y-4">
-                <BroCardStripPS cards={[card]} columns={1} visible={true} />
-
                 <div className="bg-black/20 backdrop-blur-md border border-white/10 p-4 rounded-2xl space-y-3">
                   <h5 className="text-sm font-black text-fuchsia-300 uppercase tracking-widest">
                     {'\uD83D\uDCF7'} Creaci\u00f3n de Sticker

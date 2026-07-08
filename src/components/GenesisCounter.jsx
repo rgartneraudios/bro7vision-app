@@ -48,7 +48,7 @@ function GenesisCounter({ balances, className = '', mobile = false }) {
         {formatted}
       </span>
       <span className="text-white/50 text-[10px] font-bold uppercase tracking-[0.2em] leading-none">
-        PUNTOS<br />GÉNESIS
+        LUNAS
       </span>
     </div>
   );

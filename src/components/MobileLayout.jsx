@@ -2,8 +2,6 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import CityLocationBanner from './CityLocationBanner';
 import AgentChatInput from './AgentChatInput';
 import NeuralButton from './NeuralButton';
-import BroCardStrip from './BroCardStrip';
-import BroCardStripPS from './BroCardStripPS';
 import BroTuner from '../components/BroTuner';
 import { getMoonSuffix } from '../utils/moonUtils';
 import { getVideoCandidates, resolveVideoFromCandidates, getTurno } from '../data/citycodes';
@@ -170,42 +168,48 @@ const MOBILE_STYLES = `
 const SECTOR_ACCENT = {
   destino:   '#d946ef',
   canjear:   '#facc15',
-  brodeseos: '#94a3b8',
+  shopamigos: '#94a3b8',
   reinos:    '#fb923c',
   ai:        '#a3e635',
   games:     '#ffffff',
 };
 
-// Tema BroCardStrip según sector
-const STRIP_THEME = {
-  canjear:   'gold',
-  brodeseos: 'blue',
-};
-
 // HandOff de cierre según sector — claves = intent
 const CIERRE_AGENTE = {
-  brodeseos: 'EVELYN_CIERRE',
+  shopamigos: 'EVELYN_CIERRE',
 };
 
 const SECTOR_AVATARS = {
   destino:   { tito: '/emojis/tito.webp', lara: '/emojis/lara.webp', puffo: '/emojis/puffo.webp' },
   canjear:   {},
-  brodeseos: {},
+  shopamigos: {},
   reinos:    { rumores: '/emojis/rumores.webp' },
   ai:        { orumama: '/emojis/orumama.webp', jaguar: '/emojis/jaguar.webp', smisterio: '/emojis/smisterio.webp' },
   games:     { default: '/emojis/emoji_5.webp' },
 };
 
+const CANAL_IMAGES = {
+  'moon': '/emojis/canal-luna.webp',
+  'solo_earth': '/emojis/canal-tierra.webp',
+  'solo_fantasy': '/emojis/canal-jupiter.webp',
+  'solo_cinema': '/emojis/canal-marte.webp',
+  'band_earth': '/emojis/canal-saturno.webp',
+  'band_fantasy': '/emojis/canal-urano.webp',
+  'band_cinema': '/emojis/canal-neptuno.webp',
+  'este': '/emojis/canal-venus.webp',
+  'oeste': '/emojis/canal-mercurio.webp',
+};
+
 const REALITIES = [
-  { id: 'moon',         title: 'CANAL MOON',     desc: 'Fase Luna',          icon: '🌕', color: '#ffffff', group: 'NEUTRAL' },
-  { id: 'solo_earth',   title: 'CANAL TIERRA',   desc: 'Sincronía Vital',    icon: '🌍', color: '#34d399', group: 'SOLO' },
-  { id: 'solo_fantasy', title: 'CANAL JÚPITER',  desc: 'Exploración',        icon: '🥎', color: '#22d3ee', group: 'SOLO' },
-  { id: 'solo_cinema',  title: 'CANAL MARTE',    desc: 'Viajero del Tiempo', icon: '🏀', color: '#fbbf24', group: 'SOLO' },
-  { id: 'band_earth',   title: 'CANAL SATURNO',  desc: 'Nexo Ciudadano',     icon: '🪐', color: '#60a5fa', group: 'BAND' },
-  { id: 'band_fantasy', title: 'CANAL URANO',    desc: 'Alien Lounge',       icon: '🌐', color: '#e879f9', group: 'BAND' },
-  { id: 'band_cinema',  title: 'CANAL NEPTUNO',  desc: 'El Ágora',           icon: '🌩️', color: '#fb923c', group: 'BAND' },
-  { id: 'este',         title: 'CANAL VENUS',    desc: 'Horizonte Levante',  icon: '✨', color: '#22d3ee', group: 'ESPACIO' },
-  { id: 'oeste',        title: 'CANAL MERCURIO', desc: 'Horizonte Poniente', icon: '🔥', color: '#e879f9', group: 'ESPACIO' },
+  { id: 'moon',         title: 'CANAL LUNA',     desc: 'Fase Luna',          color: '#ffffff', group: 'NEUTRAL' },
+  { id: 'solo_earth',   title: 'CANAL TIERRA',   desc: 'Sincronía Vital',    color: '#34d399', group: 'SOLO' },
+  { id: 'solo_fantasy', title: 'CANAL JÚPITER',  desc: 'Exploración',        color: '#22d3ee', group: 'SOLO' },
+  { id: 'solo_cinema',  title: 'CANAL MARTE',    desc: 'Viajero del Tiempo', color: '#fbbf24', group: 'SOLO' },
+  { id: 'band_earth',   title: 'CANAL SATURNO',  desc: 'Nexo Ciudadano',     color: '#60a5fa', group: 'BAND' },
+  { id: 'band_fantasy', title: 'CANAL URANO',    desc: 'Alien Lounge',       color: '#e879f9', group: 'BAND' },
+  { id: 'band_cinema',  title: 'CANAL NEPTUNO',  desc: 'El Ágora',           color: '#fb923c', group: 'BAND' },
+  { id: 'este',         title: 'CANAL VENUS',    desc: 'Horizonte Levante',  color: '#22d3ee', group: 'ESPACIO' },
+  { id: 'oeste',        title: 'CANAL MERCURIO', desc: 'Horizonte Poniente', color: '#e879f9', group: 'ESPACIO' },
 ];
 
 // ─── VIDEO REALITY — solo para el Reality Player ─────────────────────────────
@@ -655,7 +659,11 @@ const MobileLayout = ({
                   <button key={r.id} onClick={() => setRealityMode(r.id)}
                     className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border-2 active:scale-95 transition-all"
                     style={{ borderColor: `${r.color}66`, background: `${r.color}11` }}>
-                    <span className="text-3xl">{r.icon}</span>
+                    <img
+                      src={CANAL_IMAGES[r.id]}
+                      alt={r.title}
+                      className="w-14 h-14 object-contain shrink-0 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+                    />
                     <div className="flex-1 text-left">
                       <div className="mobile-display-font text-2xl tracking-widest" style={{ color: r.color }}>{r.title}</div>
                       <div className="text-[10px] text-white/40 uppercase tracking-widest font-mono">{r.desc}</div>
@@ -932,20 +940,6 @@ return (
               ))}
             </div>
           )}
-          {/* BroCards — solo cuando hay resultados de búsqueda */}
-          {/* BroCardStripPS — Canjear (Productos y Servicios) */}
-          {stripVisible && stripCards?.length > 0 && 
-            intent === 'canjear' && (
-          <div className="w-full px-2 pointer-events-auto overflow-y-auto"
-     style={{ maxHeight: '45vh' }}>
-  <BroCardStripPS
-    cards={stripCards}
-    onSelectCard={iniciarCanje}
-    visible={true}
-    columns={1}
-  />
-</div>
-          )}
           
           <CuponModal
   	estado={estado}
@@ -957,19 +951,6 @@ return (
   	onCancelar={cancelar}
   	onCerrar={cerrar}
 	/>
-
-          {/* BroCardStrip — BroDeseos */}
-          {stripVisible && stripCards?.length > 0 && 
-            intent === 'brodeseos' && (
-            <div className="w-full px-2 pointer-events-auto">
-              <BroCardStrip
-                cards={stripCards}
-                onSelectCard={(card) => setBurbujaOpen(card)}
-                accentColor={STRIP_THEME[intent] || 'gold'}
-                visible={true}
-              />
-            </div>
-          )}
         </div>
 
         {/* Chat */}

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AgentChatInput from '../AgentChatInput';
 import { useAgentEvelyn } from '../../hooks/useAgentEvelyn';
-import BroDeseosPanel from './BroDeseosPanel';
 
 const GREETINGS_EVELYN = [
   "Soy Evelyn. ¿Quieres publicar algo que buscas o ver lo que la gente necesita?",
@@ -102,15 +101,6 @@ export default function EvelynBanner({
 
   return (
     <>
-      {panelAbierto && (
-        <BroDeseosPanel
-          modo="listado"
-          resultados={resultadosBroDeseos}
-          onClose={() => setPanelAbierto(false)}
-          isMobile={isMobile}
-        />
-      )}
-
       <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
       <style>{`
         @keyframes neonPulseAvisos {

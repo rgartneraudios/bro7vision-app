@@ -8,6 +8,7 @@ const EMPTY = {
   eco_p: 0, eco_gen: 0,
   halos_p: 0, halos_gen: 0,
   zap_p: 0, zap_gen: 0,
+  is_admin: false,
 };
 
 export const useBalances = (perfilOso, session) => {
@@ -17,13 +18,14 @@ export const useBalances = (perfilOso, session) => {
   useEffect(() => {
     if (!perfilOso) return;
     setBalances({
-      genesis: perfilOso.genesis || 0,
+      genesis: perfilOso.genesis ?? perfilOso.lunas ?? 0,
       eco_p:    perfilOso.eco_p    || 0,
       eco_gen:  perfilOso.eco_gen  || 0,
       halos_p:  perfilOso.halos_p  || 0,
       halos_gen: perfilOso.halos_gen || 0,
       zap_p:    perfilOso.zap_p    || 0,
       zap_gen:  perfilOso.zap_gen  || 0,
+      is_admin: perfilOso.is_admin === true,
     });
   }, [perfilOso]);
 

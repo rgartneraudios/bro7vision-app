@@ -15,10 +15,9 @@ const SALUDOS = {
 // SECTOR KEYWORDS
 // ─────────────────────────────────────────────────────────────────────
 const SECTOR_KEYWORDS = {
-  CANJEAR: ['canje', 'canjear', 'luna', 'lunas',
-  'tarjetas', 'regalos', 'regalo'],
-  BRODESEOS: ['deseo', 'deseos', 'brodeseos', 'bro deseos', 'larry', 'evelyn'],
-   REINOS:           ['reinos', 'reino', 'rumores', 'rumor', 'rey', 'reyes', 'reina', 'reinas', 'príncipe', 'principe', 'princesa', 'duque', 'duquesa', 'marqués', 'marques', 'marquesa', 'lord', 'lords', 'lady', 'ladies'],
+  CANJES: ['canje', 'canjes', 'canjear', 'luna', 'lunas', 'tarjetas', 'regalos', 'regalo', 'cupones', 'descuentos', 'stickers'],
+  'SHOP AMIGOS': ['amigos', 'shop', 'artículos', 'cosas', 'gadget', 'gadgets', 'shop_amigos', 'amigo', 'articulos'],
+  REINOS:           ['reinos', 'reino', 'rumores', 'rumor', 'rey', 'reyes', 'reina', 'reinas', 'príncipe', 'principe', 'princesa', 'duque', 'duquesa', 'marqués', 'marques', 'marquesa', 'lord', 'lords', 'lady', 'ladies'],
   BRO7BAND:          ['bro7', 'bro7band', 'band', 'jaguar', 'personajes', 'orumama', 'misterio', 'audios', 'capitulos', 'historias', 'ascendente', 'misterio', 'conspiraciones', 'piramides', 'mapache', 'ami', 'señor misterio', 'profesor', 'isabella', 'señormisterio', 'elefantes', 'nova'],
   GAMES:            ['jugar', 'juego', 'juegos', '3iatlas', 'telecronos', 'games', 'game', 'arcade', 'partida', 'divertirse', 'divertirme', 'carrera', 'scalextric', 'neon', 'neonmemory', 'f1rookie', 'f1pro', 'cosmicportal', 'the7gates', 'therians'],
 };

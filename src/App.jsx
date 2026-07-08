@@ -8,22 +8,14 @@ import BroTuner from './components/BroTuner';
 import BoosterModal from './components/BoosterModal';
 import LegalTerminal from './components/LegalTerminal';
 
-import BioForest from './components/Canales/BioForest';
-import ChannelEste from './components/Canales/ChannelEste';
-import ChannelEste169 from './components/Canales/ChannelEste169';
-import ChannelOeste from './components/Canales/ChannelOeste';
-import ChannelOeste169 from './components/Canales/ChannelOeste169';
 import Reinos from './components/Reinos';
 import RealityTuner from './components/RealityTuner';
 import MoonMatrixCircle from './components/MoonMatrixCircle';
-import ChannelMoon from './components/Canales/ChannelMoon';
 import { getMoonSuffix } from './utils/moonUtils';
 import TitoBanner  from "./components/personajes/TitoBanner";
 import LaraBanner  from "./components/personajes/LaraBanner";
 import PuffoBanner from "./components/personajes/PuffoBanner";
 import SlideRailCanjear from './components/SlideRailCanjear';
-import BroCardStrip from './components/BroCardStrip';
-import BroCardStripPS from './components/BroCardStripPS';
 import AgentChatInput from './components/AgentChatInput';
 import { useAgOsosMobile }    from './hooks/useAgOsosMobile';
 import { useAgentRumores }    from './hooks/useAgentRumores';
@@ -213,27 +205,13 @@ const [showBackstage, setShowBackstage]       = useState(false);
       return;
     }
 
-    if (agente === 'BUSCAR_STRIP') {
-      const ciudadActual = sessionCity || scope?.city || '';
-      const intentActual = intencion || 'BROPRODUCTOS';
-      const intentMap = {
-        'BROPRODUCTOS': 'productos',
-        'BROSERVICIOS': 'servicios',
-        'BRODESEOS':        'shopamigos',
-        'AUDIO':            'audios',
-      };
-      cargarStripCards(intentActual, ciudadActual, 'LOCAL');
-      const intentDestino = intentMap[intentActual];
-      if (intentDestino) { setIntent(intentDestino); setStep(2); }
-      return;
-    }
-
     const intentMap = {
-      'CANJEAR':       'canjear',
-      'BRODESEOS':     'brodeseos',
-      'REINOS':        'reinos',
-      'GAMES':         'games',
-      'BRO7BAND':      'bro7band',
+      'CANJEAR':        'canjear',
+      'CANJES':         'canjear',
+      'SHOP AMIGOS':    'shopamigos',
+      'REINOS':         'reinos',
+      'GAMES':          'games',
+      'BRO7BAND':       'bro7band',
     };
 
     const SIN_UBICACION = ['REINOS', 'GAMES', 'BRO7BAND'];
@@ -245,6 +223,8 @@ const [showBackstage, setShowBackstage]       = useState(false);
       return;
     }
 
+    const INTENTA_CARGAR_STRIPS = ['CANJEAR', 'CANJES'];
+
     setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
     const ciudadFinal = ciudad || perfilOso?.city || '';
     setScope({ city: String(ciudadFinal), type: 'teleport' });
@@ -253,7 +233,9 @@ const [showBackstage, setShowBackstage]       = useState(false);
     setIntent(intentMap[agente] || 'productos');
     setOsosModo('retorno');
     setStep(2);
-    cargarStripCards(agente, ciudadFinal, modalidad);
+    if (INTENTA_CARGAR_STRIPS.includes(agente)) {
+      cargarStripCards('BROPRODUCTOS', ciudadFinal, modalidad);
+    }
   };
 
   // ══════════════════════════════════════════════════════
@@ -309,17 +291,10 @@ const [showBackstage, setShowBackstage]       = useState(false);
       setOsosModo('entrada');
     } else {
       setStep(2);
-      if (scope) {
-        const agenteMap = {
-          canjear: 'BROPRODUCTOS',
-          avisos:  'BRODESEOS',
-        };
-        const agente = agenteMap[targetIntent];
-        if (agente) {
-          setStripCards([]);
-          setStripVisible(false);
-          cargarStripCards(agente, scope.city, 'LOCAL');
-        }
+      if (scope && targetIntent === 'canjear') {
+        setStripCards([]);
+        setStripVisible(false);
+        cargarStripCards('BROPRODUCTOS', scope.city, 'LOCAL');
       }
     }
   }, [scope, cargarStripCards, resetOsos]);
@@ -362,10 +337,10 @@ const [showBackstage, setShowBackstage]       = useState(false);
 
   const navItems = [
     { id: 'destino',         label: 'DESTINO',           color: 'border-fuchsia-500/30 hover:border-fuchsia-400',  images: ['/emojis/lara.webp', '/emojis/tito.webp', '/emojis/puffo.webp'] },
-    { id: 'canjear',         label: 'CANJES de LUNAS',  color: 'border-yellow-500/30 hover:border-yellow-400',    images: [] },
-    { id: 'shopamigos',       label: 'SHOP AMIGOS',        color: 'border-slate-500/30 hover:border-slate-400',      images: [] },
+    { id: 'canjear',         label: 'CANJES de LUNAS',  color: 'border-yellow-500/30 hover:border-yellow-400',    images: ['/emojis/emoji_1.webp'] },
+    { id: 'shopamigos',       label: 'SHOP AMIGOS',        color: 'border-slate-500/30 hover:border-slate-400',      images: ['/emojis/emoji_3.webp'] },
     { id: 'bro7band',        label: 'BRO7BAND',         color: 'border-cyan-500/30 hover:border-cyan-400',       images: ['/emojis/bro7band.webp'] },
-    { id: 'games',           label: 'GAMES',            color: 'border-white/30 hover:border-white/60',           images: ['/emojis/emoji_5.webp', '/emojis/emoji_7.webp'] },
+    { id: 'games',           label: 'GAMES',            color: 'border-white/30 hover:border-white/60',           images: ['/emojis/emoji8.webp', '/emojis/emoji9.webp'] },
     { id: 'reinos',          label: 'REINOS',           color: 'border-orange-500/30 hover:border-orange-400',    images: ['/emojis/rumores.webp'] },
   ];
 
@@ -468,7 +443,7 @@ const [showBackstage, setShowBackstage]       = useState(false);
         />
       )}
 
-      {intent === 'shopamigos' && (
+      {intent === 'shopamigos' && step === 2 && (
         <div className="fixed inset-0 z-[60]">
           <ShopAmigos scope={scope} />
         </div>

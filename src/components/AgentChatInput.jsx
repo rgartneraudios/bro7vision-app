@@ -72,15 +72,16 @@ blue: {
 const AGENT_PROFILES = {
   osos: {
     theme: 'violet',
-    text: '✦  Saluda a tu personaje favorito y elige Sector y ubicación. Ellos te llevarán. Ejemplos: Hola Lara · Pasame con Nova · BroProductos en España · BroDeseos · BroServicios · Dame con Mapache'
+    text: '✦  Saluda a tu personaje favorito y elige Sector y ubicación. Ellos te llevarán. Ejemplos: Hola Lara · Pasame con Nova · BroProductos en España · BroDeseos · BroServicios · Dame con Mapache',
+    bro7band: 'Habla con Tito, Lara o Puffo — escucha el audio grupal y encuentra la palabra clave'
   },
   nova: {
   theme: 'gold',
-  text: ` ✦ Hola! Dime el producto que necesitas! | Que buscas? | Pulsa en las BroCards para obtener una descripción y obtener las tarjetas de descuentos o tarjetas de regalo canjeando tus génesis`
+  text: ` ✦ Hola! Dime el producto que necesitas! | Que buscas? | Pulsa en las BroCards para obtener una descripción y obtener las tarjetas de descuentos o tarjetas de regalo canjeando tus Lunas`
 },
   isabella: {
     theme: 'pink',
-    text: '✦  Hola! Dime el servicio que necesitas! | Que buscas? | Pulsa en las BroCards para obtener una descripción y obtener las tarjetas de descuentos o tarjetas de regalo canjeando tus génesis'
+    text: '✦  Hola! Dime el servicio que necesitas! | Que buscas? | Pulsa en las BroCards para obtener una descripción y obtener las tarjetas de descuentos o tarjetas de regalo canjeando tus Lunas'
   },
   evelyn: {
     theme: 'blue',
@@ -173,29 +174,13 @@ export default function AgentChatInput({
 
       <textarea
         maxLength={maxLength}
-        rows={3}
+        rows={2}
         placeholder={finalPlaceholder}
         value={text}
         onChange={e => setText(e.target.value)}
         onKeyDown={handleKeyDown}
-        className={`agent-textarea w-full bg-black/70 backdrop-blur-sm border ${c.border} ${c.borderFocus} p-5 rounded-2xl outline-none font-mono text-base text-white ${c.placeholder} transition-colors resize-none leading-relaxed`}
+        className={`agent-textarea w-full bg-black/70 backdrop-blur-sm border ${c.border} ${c.borderFocus} px-4 py-3 rounded-2xl outline-none font-mono text-sm text-white ${c.placeholder} transition-colors resize-none leading-relaxed`}
       />
-
-      <div className="flex justify-between items-center px-1">
-        <span className={`text-[10px] ${c.counter} font-mono tracking-widest`}>
-          {text.length}/{maxLength}
-          {isLoading && (
-            <span className={`ml-3 ${c.pulse} animate-pulse`}>● procesando...</span>
-          )}
-        </span>
-        <button
-          onClick={handleSend}
-          disabled={isLoading || !text.trim()}
-          className={`${c.btn} border px-8 py-2.5 rounded-2xl font-black text-sm uppercase tracking-widest transition-all disabled:opacity-20 shadow-[0_0_16px_rgba(${c.rgb},0.2)] hover:shadow-[0_0_24px_rgba(${c.rgb},0.5)]`}
-        >
-          {isLoading ? '⏳' : '➤ ENVIAR'}
-        </button>
-      </div>
     </div>
   );
 }

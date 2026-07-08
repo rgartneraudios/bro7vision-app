@@ -6,8 +6,6 @@ import { marcarActividad } from '../hooks/useActividad';
 import BoosterBroCards from './booster/BoosterBroCards';
 import BoosterMisCupones from './booster/BoosterMisCupones';
 import BoosterCanjesRecibidos from './booster/BoosterCanjesRecibidos';
-import BoosterMisDeseos from './booster/BoosterMisDeseos';
-import BoosterEnviarOferta from './booster/BoosterEnviarOferta';
 import BoosterPromoEco from './booster/BoosterPromoEco';
 import { CoordenadosBlock } from './CoordenadosBlock';
 
@@ -296,8 +294,6 @@ const BoosterModal = ({ onClose }) => {
                  { id: 'linaje',   label: '👑 Linaje',         color: 'orange' },
                  { id: 'mis-brocards', label: '📇 Selección BroCards', color: 'emerald' },
                  { id: 'mis-cupones', label: '🎫 Mis Cupones', color: 'yellow' },
-                 { id: 'mis-deseos',     label: '🌠 Mis Deseos',     color: 'cyan'   },
-                 { id: 'enviar-oferta',  label: '📨 Enviar Oferta',  color: 'fuchsia'  },
                  ...(tieneComercioCupones ? [{ id: 'canjes-recibidos', label: '📋 Canjes Recibidos', color: 'cyan' }] : []),
                  { id: 'promo-eco', label: '📡 PromoECO', color: 'green' },
               ].filter(Boolean).map((item) => (
@@ -669,12 +665,8 @@ const BoosterModal = ({ onClose }) => {
              {/* ══ 🎫 MIS CUPONES ══ */}
               {tab === 'mis-cupones' && <BoosterMisCupones />}
 
-             {/* ══ 📋 CANJES RECIBIDOS ══ */}
-             {tab === 'canjes-recibidos' && tieneComercioCupones && <BoosterCanjesRecibidos />}
-
-              {tab === 'mis-deseos' && <BoosterMisDeseos userId={userId} />}
-
-              {tab === 'enviar-oferta' && <BoosterEnviarOferta userId={userId} />}
+              {/* ══ 📋 CANJES RECIBIDOS ══ */}
+              {tab === 'canjes-recibidos' && tieneComercioCupones && <BoosterCanjesRecibidos />}
 
               {tab === 'promo-eco' && <BoosterPromoEco userId={userId} />}
 

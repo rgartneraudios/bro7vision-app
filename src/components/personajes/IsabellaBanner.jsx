@@ -1,7 +1,6 @@
 // src/components/personajes/IsabellaBanner.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import AgentChatInput from '../AgentChatInput';
-import BroCardStripPS from '../BroCardStripPS';
 import CuponModal from '../CuponModal';
 import { useAgentIsabella } from '../../hooks/useAgentIsabella';
 import { useCanjearCupon } from '../../hooks/useCanjearCupon';
@@ -147,18 +146,6 @@ export default function IsabellaBanner({
         .sv-loading span:nth-child(3) { animation-delay: 0.4s; }
       `}</style>
 
-
-      {/* 1. CARRUSEL */}
-      {stripVisible && (
-        <div className="w-full max-w-4xl pointer-events-auto px-2 mb-3">
-          <BroCardStripPS
-            cards={stripCards}
-            onSelectCard={handleCardClick}
-            accentColor="slate"
-            visible={stripVisible}
-          />
-        </div>
-      )}
 
       {/* 2. BANNER */}
       <div className="w-full max-w-2xl mb-3 pointer-events-auto">

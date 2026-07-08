@@ -1,7 +1,6 @@
 // src/components/personajes/JaguarBanner.jsx
 
 import React, { useState, useEffect, useRef } from 'react'; 
-import OraculoAcordeon from '../OraculoAcordeon';
 import AgentChatInput from '../AgentChatInput';
 import { useJaguarChat } from '../../hooks/useJaguarChat';
 import * as JD from '../../data/jaguar/jaguarData';
@@ -168,15 +167,12 @@ export default function JaguarBanner({
   isMobile        = false,
   onMensaje,
   onEnviarRef,
-  mostrarAcordeon: mostrarAcordeonExterno = true,
-}) {
+  }) {
   const [display, setDisplay]                 = useState('');
   const [cursor, setCursor]                   = useState(true);
   const [currentMsg, setCurrentMsg]           = useState('');
   const [videoActual, setVideoActual]         = useState(null);
   const [videoFading, setVideoFading]         = useState(false);
-  const [mostrarAcordeon, setMostrarAcordeon] = useState(false);
-  const [acordeonData, setAcordeonData]       = useState({ titulo: '', texto: '' });
   const charIdx     = useRef(0);
   const fadeTimer   = useRef(null);
   const origenRef   = useRef(origenLlegada);
@@ -187,8 +183,6 @@ export default function JaguarBanner({
     onBotContent: (tema) => {
       const data = ACORDEON_DATA[tema];
       if (data) {
-        setAcordeonData({ titulo: tema, texto: data.texto });
-        setMostrarAcordeon(true);
         cambiarVideo(data.video);
       }
     },
@@ -261,10 +255,6 @@ export default function JaguarBanner({
     }, 300);
   };
 
-  const lanzarAcordeon = (texto, titulo) => {
-    // Método eliminado: OraculoAcordeon maneja internamente la animación.
-  };
-
   const handleUserInput = (texto) => {
     if (!texto.trim()) return;
     enviarHook(texto, {
@@ -280,24 +270,6 @@ export default function JaguarBanner({
     });
   };
 
-  if (isMobile) {
-    return (
-      <>
-        {mostrarAcordeonExterno && mostrarAcordeon && (
-          <OraculoAcordeon
-            titulo={acordeonData.titulo}
-            texto={acordeonData.texto}
-            onClose={() => setMostrarAcordeon(false)}
-            isMobile={true}
-            borderColor={BORDER_COLOR}
-            icono={ICONO}
-            nombre={NOMBRE}
-          />
-        )}
-      </>
-    );
-  }
-
   return (
     <div className="absolute inset-0 z-[50] pointer-events-none">
 
@@ -307,10 +279,6 @@ export default function JaguarBanner({
         @keyframes neonPulseOraculo {
           0%, 100% { text-shadow: none; }
           50%       { text-shadow: none; }
-        }
-        @keyframes cascadaAcordeon {
-          from { transform: translateY(-100%); opacity: 0; }
-          to   { transform: translateY(0);     opacity: 1; }
         }
         .or-wrap {
           background: rgba(0,0,0,0.55);
@@ -347,21 +315,7 @@ export default function JaguarBanner({
           letter-spacing: 0.2em;
           text-transform: uppercase;
         }
-        .or-acordeon {
-          position: fixed;
-          right: 0; top: 0;
-          width: 32%; height: 100vh;
-          background: rgba(0,0,0,0.88);
-          backdrop-filter: blur(12px);
-          overflow-y: auto; z-index: 2;
-          animation: cascadaAcordeon 1.1s cubic-bezier(0.22,1,0.36,1);
-          padding: 24px 20px 24px 24px;
-          pointer-events: auto;
-        }
-        .or-acordeon::-webkit-scrollbar { width: 4px; }
-        .or-acordeon::-webkit-scrollbar-track { background: transparent; }
-        .or-acordeon::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.30); border-radius: 99px; }
-      `}</style>
+        `}</style>
 
       {/* VIDEO OVERLAY */}
       {videoActual && (
@@ -376,19 +330,6 @@ export default function JaguarBanner({
             opacity: videoFading ? 0 : 1,
             transition: 'opacity 0.3s ease',
           }}
-        />
-      )}
-
-      {/* ACORDEÓN LATERAL */}
-      {mostrarAcordeon && (
-        <OraculoAcordeon
-          titulo={acordeonData.titulo}
-          texto={acordeonData.texto}
-          onClose={() => setMostrarAcordeon(false)}
-          isMobile={isMobile}
-          borderColor={BORDER_COLOR}
-          icono={ICONO}
-          nombre={NOMBRE}
         />
       )}
 

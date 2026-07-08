@@ -1,7 +1,6 @@
 // src/components/personajes/OrumamaBanner.jsx
 
 import React, { useState, useEffect, useRef } from 'react';
-import OraculoAcordeon from '../OraculoAcordeon';
 import AgentChatInput from '../AgentChatInput';
 import { useOrumamaChat } from '../../hooks/useOrumamaChat';
 import * as OD from '../../data/orumama/orumamaData';
@@ -130,15 +129,12 @@ export default function OrumamaBanner({
   isMobile = false,
   onMensaje,
   onEnviarRef,
-  mostrarAcordeon: mostrarAcordeonExterno = true,
-}) {
+  }) {
   const [display, setDisplay] = useState('');
   const [cursor, setCursor] = useState(true);
   const [currentMsg, setCurrentMsg] = useState('');
-  const [videoActual, setVideoActual] = useState(null);
-  const [videoFading, setVideoFading] = useState(false);
-  const [mostrarAcordeon, setMostrarAcordeon] = useState(false);
-  const [acordeonData, setAcordeonData] = useState({ titulo: '', texto: '' });
+const [videoActual, setVideoActual]         = useState(null);
+  const [videoFading, setVideoFading]         = useState(false);
   
   const charIdx = useRef(0);
   const fadeTimer = useRef(null);
@@ -150,8 +146,6 @@ export default function OrumamaBanner({
     onBotContent: (tema) => {
       const data = ACORDEON_DATA[tema];
       if (data) {
-        setAcordeonData({ titulo: tema, texto: data.texto });
-        setMostrarAcordeon(true);
         cambiarVideo(data.video);
       }
     },
@@ -235,24 +229,6 @@ export default function OrumamaBanner({
     });
   };
 
-  if (isMobile) {
-    return (
-      <>
-        {mostrarAcordeonExterno && mostrarAcordeon && (
-          <OraculoAcordeon
-            titulo={acordeonData.titulo}
-            texto={acordeonData.texto}
-            onClose={() => setMostrarAcordeon(false)}
-            isMobile={true}
-            borderColor={BORDER_COLOR}
-            icono={ICONO}
-            nombre={NOMBRE}
-          />
-        )}
-      </>
-    );
-  }
-
   return (
     <div className="absolute inset-0 z-[50] pointer-events-none">
 
@@ -290,14 +266,6 @@ export default function OrumamaBanner({
           background: ${slateColor};
           box-shadow: 0 0 8px ${slateColor};
         }
-        .or-cursor {
-          display: inline-block;
-          width: 3px; height: 0.8em;
-          margin-left: 3px;
-          vertical-align: middle;
-          background: ${slateColor};
-          box-shadow: 0 0 8px ${slateColor};
-        }
         .or-loading {
           display: inline-block;
           animation: neonPulseOraculo 1s ease-in-out infinite;
@@ -306,21 +274,7 @@ export default function OrumamaBanner({
           letter-spacing: 0.2em;
           text-transform: uppercase;
         }
-        .or-acordeon {
-          position: fixed;
-          right: 0; top: 0;
-          width: 32%; height: 100vh;
-          background: rgba(0,0,0,0.88);
-          backdrop-filter: blur(12px);
-          overflow-y: auto; z-index: 2;
-          animation: cascadaAcordeon 1.1s cubic-bezier(0.22,1,0.36,1);
-          padding: 24px 20px 24px 24px;
-          pointer-events: auto;
-        }
-        .or-acordeon::-webkit-scrollbar { width: 4px; }
-        .or-acordeon::-webkit-scrollbar-track { background: transparent; }
-        .or-acordeon::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.30); border-radius: 99px; }
-      `}</style>
+        `}</style>
 
       {/* VIDEO OVERLAY */}
       {videoActual && (
@@ -335,19 +289,6 @@ export default function OrumamaBanner({
             opacity: videoFading ? 0 : 1,
             transition: 'opacity 0.3s ease',
           }}
-        />
-      )}
-
-      {/* ACORDEÓN LATERAL */}
-      {mostrarAcordeon && (
-        <OraculoAcordeon
-          titulo={acordeonData.titulo}
-          texto={acordeonData.texto}
-          onClose={() => setMostrarAcordeon(false)}
-          isMobile={isMobile}
-          borderColor={BORDER_COLOR}
-          icono={ICONO}
-          nombre={NOMBRE}
         />
       )}
 

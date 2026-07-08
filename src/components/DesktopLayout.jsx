@@ -3,107 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import RealityTuner from './RealityTuner';
 import DesktopRealityPlayer from './DesktopRealityPlayer';
-import BioForest from './Canales/BioForest';
 import WalletWidget from './WalletWidget';
 import MoonMatrixCircle from './MoonMatrixCircle';
 import BroTuner from './BroTuner';
 import NeuralButton from './NeuralButton';
 import NexusDashboard from './NexusDashboard';
-import CityLocationBanner from './CityLocationBanner';
-import SlideRailCanjear from './SlideRailCanjear';
+import CanjearStrip from './CanjearStrip';
 import SlideRailAmigos from './SlideRailAmigos';
 import MapacheBanner from './personajes/MapacheBanner';
 import TitoBanner  from "./personajes/TitoBanner";
 import LaraBanner  from "./personajes/LaraBanner";
 import PuffoBanner from "./personajes/PuffoBanner";
 import { getVideoForLocation } from '../data/VideoMap';
-
-function CanjesHeader() {
-  const [time, setTime] = useState('');
-  const [date, setDate] = useState('');
-  const [temp, setTemp] = useState(null);
-  const [city, setCity] = useState('');
-
-  useEffect(() => {
-    const tick = () => {
-      const now = new Date();
-      const h = now.getHours().toString().padStart(2,'0');
-      const m = now.getMinutes().toString().padStart(2,'0');
-      setTime(`${h}:${m}`);
-      const dias  = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'];
-      const meses = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
-      setDate(`${dias[now.getDay()]} ${now.getDate()} ${meses[now.getMonth()]}`);
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  useEffect(() => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-      const { latitude: lat, longitude: lon } = pos.coords;
-      try {
-        const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
-        const d = await r.json();
-        setTemp(Math.round(d.current_weather?.temperature ?? null));
-        const g = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
-        const gd = await g.json();
-        setCity((gd.address?.city || gd.address?.town || '').toUpperCase());
-      } catch(_) {}
-    }, ()=>{}, { timeout: 8000 });
-  }, []);
-
-  const accent = '#facc15';
-
-  return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 99999,
-      display: 'flex', justifyContent: 'space-between',
-      padding: '12px 24px', pointerEvents: 'none',
-    }}>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-        <span style={{
-          fontFamily: "'Bebas Neue', sans-serif",
-          fontSize: 'clamp(32px, 4vw, 60px)',
-          lineHeight: 1, letterSpacing: '0.04em',
-          color: '#fff', textShadow: '0 0 20px rgba(255,255,255,0.4)',
-        }}>{time}</span>
-        <span style={{
-          fontFamily: "'Share Tech Mono', monospace",
-          fontSize: 14, letterSpacing: '0.25em',
-          textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)',
-        }}>{date}</span>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-        {temp !== null ? (
-          <>
-            <span style={{
-              fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: 'clamp(32px, 4vw, 60px)',
-              lineHeight: 1, letterSpacing: '0.04em',
-              color: '#fff', textShadow: '0 0 20px rgba(255,255,255,0.4)',
-            }}>{temp}°</span>
-            {city && (
-              <span style={{
-                fontFamily: "'Share Tech Mono', monospace",
-                fontSize: 14, letterSpacing: '0.25em',
-                textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)',
-              }}>{city}</span>
-            )}
-          </>
-        ) : (
-          <span style={{
-            fontFamily: "'Share Tech Mono', monospace",
-            fontSize: 14, letterSpacing: '0.25em',
-            textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)',
-          }}>...</span>
-        )}
-      </div>
-    </div>
-  );
-}
-
 
 export default function DesktopLayout(props) {
   // Desestructuramos todas las props que le manda App.jsx
@@ -232,13 +143,12 @@ useEffect(() => {
         </div>
       )}      
 
-      {intent === 'canjear' && (
-        <CanjesHeader />
+      {intent === 'canjear' && step === 2 && (
+        <div className="fixed inset-0 z-[60]">
+          <CanjearStrip scope={scope} />
+        </div>
       )}
-      {step === 2 && intent === 'canjear' && <CityLocationBanner scope={scope} />}
-      {step === 2 && intent === 'canjear' && <SlideRailCanjear />}
       {step === 2 && intent === 'shopamigos' && <SlideRailAmigos />}
-      {step === 2 && intent === 'brodeseos' && <SlideRailDeseos />}
       
       
       {/* ── AVISOS ──────────────────────────────────────────────────────── */}

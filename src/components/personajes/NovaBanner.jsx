@@ -1,7 +1,6 @@
 // src/components/personajes/NovaBanner.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import AgentChatInput from '../AgentChatInput';
-import BroCardStripPS from '../BroCardStripPS';
 import CuponModal from '../CuponModal';
 import { useAgentNovaExplora } from '../../hooks/useAgentNovaExplora';
 import { useCanjearCupon } from '../../hooks/useCanjearCupon';
@@ -104,18 +103,6 @@ export default function NovaBanner({
         onCerrar={cerrar}
       />
     <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
-
-      {/* 1. CARRUSEL */}
-      {stripVisible && (
-        <div className="w-full max-w-4xl pointer-events-auto px-2 mb-3">
-          <BroCardStripPS
-            cards={stripCards}
-            onSelectCard={handleCardClick}
-            accentColor="gold"
-            visible={stripVisible}
-          />
-        </div>
-      )}
 
       {/* 2. BANNER */}
       <div className="w-full max-w-2xl mb-3 pointer-events-auto">

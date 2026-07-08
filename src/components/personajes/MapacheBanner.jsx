@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import AgentChatInput from '../AgentChatInput';
-import BroCardStrip from '../BroCardStrip';
 import { useAgentMapache } from '../../hooks/useAgentMapache';
 
 const GREETINGS_MAPACHE = [
@@ -153,19 +152,6 @@ export default function MapacheBanner({
         .mp-loading span:nth-child(2) { animation-delay: 0.2s; }
         .mp-loading span:nth-child(3) { animation-delay: 0.4s; }
       `}</style>
-
-      {/* 1. CARRUSEL */}
-      {stripVisible && (
-        <div className="w-full max-w-2xl pointer-events-auto px-2 mb-3">
-          <BroCardStrip
-            cards={stripCards}
-            onSelectCard={handleCardClick}
-            accentColor="cyan"
-            label={stripLabel}
-            visible={stripVisible}
-          />
-        </div>
-      )}
 
       {/* 2. BANNER — descripción de card seleccionada O mensaje del bot */}
       <div className="w-full max-w-2xl mb-3 pointer-events-auto">
