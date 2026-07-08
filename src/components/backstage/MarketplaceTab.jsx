@@ -108,13 +108,10 @@ const MarketplaceTab = ({ session, profile }) => {
       <div className="sticky top-0 z-10 bg-zinc-950/95 backdrop-blur-sm border-b border-white/5 px-6 py-4">
         <div className="flex flex-col items-center gap-3">
           <div className="text-center">
-            <h2 style={{ fontFamily: SYNE }} className="text-xl font-black tracking-tight text-white">
+            <h2 style={{ fontFamily: SYNE }} className="text-3xl font-black tracking-tight text-white">
               CONTRATACIÓN PARA LA PRÓXIMA FASE LUNAR
             </h2>
-            <p style={{ fontFamily: SYNE, fontWeight: 700, color: '#facc15' }} className="text-xl mt-1">72 slots · 9 canales · 2 dispositivos</p>
-            <p style={{ fontFamily: SYNE }} className="text-sm text-white mt-2 max-w-xl leading-relaxed">
-              El sistema Semáforo es una escala de contexto de emisión. Todo lo que está en BRO7VISION es apto para todos, aunque hay creadores cuyo estilo encaja mejor en ciertos momentos del día. Igual que un monólogo de humor adulto en la tele — no es inapropiado, simplemente tiene su franja horaria óptima.
-            </p>
+            <p style={{ fontFamily: SYNE, fontWeight: 700, color: '#facc15' }} className="text-2xl mt-2">72 slots · 9 canales · 2 dispositivos</p>
           </div>
           <div className="flex items-center gap-3">
             {totalOcupadas > 0 && (
@@ -126,25 +123,6 @@ const MarketplaceTab = ({ session, profile }) => {
               FASE 0 · SIMULACIÓN
             </span>
           </div>
-        </div>
-      </div>
-
-      {/* Leyenda semáforo — centrada */}
-      <div className="flex justify-center px-6 pt-6 pb-2">
-        <div className="inline-flex flex-col gap-2 bg-white/5 border border-white/10 rounded-2xl px-8 py-4 backdrop-blur-sm">
-          {[
-            { emoji: '🟢', label: 'VERDE',    turnos: 'T1-T2-T3-T4', horario: '00:00 – 24:00', desc: 'Family Friendly universal',    color: '#4ade80' },
-            { emoji: '🟡', label: 'AMARILLO', turnos: 'T3-T4',        horario: '17:00 – 05:00', desc: 'Family Friendly con matices',  color: '#facc15' },
-            { emoji: '🔴', label: 'ROJO',     turnos: 'T4',           horario: '23:00 – 05:00', desc: 'Family Friendly adulto',       color: '#f87171' },
-          ].map(s => (
-            <div key={s.label} className="flex items-center gap-4">
-              <span className="text-lg">{s.emoji}</span>
-              <span style={{ fontFamily: SYNE, color: s.color, minWidth: 70 }} className="text-xs font-black uppercase tracking-widest">{s.label}</span>
-              <span style={{ fontFamily: SYNE }} className="text-[10px] text-gray-400 font-mono w-20">{s.turnos}</span>
-              <span style={{ fontFamily: SYNE }} className="text-[10px] text-gray-500 font-mono w-28">{s.horario}</span>
-              <span style={{ fontFamily: SYNE }} className="text-[10px] text-gray-400">{s.desc}</span>
-            </div>
-          ))}
         </div>
       </div>
 

@@ -9,7 +9,6 @@ import BlogTab from './BlogTab';
 import MisCampanasTab from './MisCampanasTab';
 import PromoEcoTab from './PromoEcoTab';
 import TarjetasRegaloTab from './TarjetasRegaloTab';
-import EnviarOfertaTab from './EnviarOfertaTab';
 import ShopAmigosTab from './ShopAmigosTab';
 
 const SYNE = "'Exo 2', sans-serif";
@@ -18,6 +17,7 @@ const BackStage = ({ session, onLogout }) => {
   const [profile, setProfile]     = useState(null);
   const [loading, setLoading]     = useState(true);
   const [activeTab, setActiveTab] = useState('fondos');
+  const [activeBlock, setActiveBlock] = useState('anuncios');
   const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024);
 
   useEffect(() => {
@@ -261,21 +261,23 @@ const BackStage = ({ session, onLogout }) => {
   // ── BackStage principal ──────────────────────────────────────────────────
   const rolUsuario  = session?.user?.user_metadata?.role;
 
-  const TABS = [
+  const TABS_ANUNCIOS = [
     { id: 'fondos',          label: 'FONDOS REALITY'       },
     { id: 'promo_eco',       label: 'PROMO ECO'            },
     { id: 'bro7band',        label: 'BRO7BAND'             },
     { id: 'slide_rail',      label: 'SLIDE RAIL'           },
-    { id: 'shop_amigos',     label: 'SHOP AMIGOS'          },
     { id: 'games',           label: 'GAMES'                },
-    { id: 'tarjetas_regalo', label: 'TARJETAS REGALO'      },
-    { id: 'enviar_oferta',   label: 'ENVIAR OFERTA'        },
     { id: 'campanas',        label: 'MIS CAMPAÑAS'         },
     { id: 'estudio',         label: 'ESTUDIO MARKETING'    },
     { id: 'blog',            label: 'BLOG / DOCS'          },
   ];
 
-  const tabs = TABS;
+  const TABS_COMERCIO = [
+    { id: 'tarjetas_regalo', label: 'TARJETAS REGALO'      },
+    { id: 'shop_amigos',     label: 'SHOP AMIGOS'          },
+  ];
+
+  const tabs = activeBlock === 'anuncios' ? TABS_ANUNCIOS : TABS_COMERCIO;
 
   return (
     <div
@@ -299,6 +301,28 @@ const BackStage = ({ session, onLogout }) => {
               PRODUCTOR
             </span>
           )}
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => { setActiveBlock('anuncios'); setActiveTab(TABS_ANUNCIOS[0].id); }}
+            className={`text-sm font-black uppercase tracking-[0.25em] px-6 py-2.5 rounded-lg border-2 transition-all shadow-lg ${
+              activeBlock === 'anuncios'
+                ? 'text-cyan-300 border-cyan-400 bg-cyan-900/30 shadow-cyan-400/30'
+                : 'text-gray-600 border-gray-700 hover:text-gray-300 hover:border-gray-500'
+            }`}
+          >
+            ANUNCIOS
+          </button>
+          <button
+            onClick={() => { setActiveBlock('comercio'); setActiveTab(TABS_COMERCIO[0].id); }}
+            className={`text-sm font-black uppercase tracking-[0.25em] px-6 py-2.5 rounded-lg border-2 transition-all shadow-lg ${
+              activeBlock === 'comercio'
+                ? 'text-pink-300 border-pink-400 bg-pink-900/30 shadow-pink-400/30'
+                : 'text-gray-600 border-gray-700 hover:text-gray-300 hover:border-gray-500'
+            }`}
+          >
+            COMERCIO
+          </button>
         </div>
         <div className="flex items-center gap-5">
           <span className="hidden sm:block text-sm text-gray-300 font-semibold truncate max-w-[240px]" style={{ fontFamily: SYNE }}>
@@ -368,10 +392,6 @@ const BackStage = ({ session, onLogout }) => {
 
         {activeTab === 'tarjetas_regalo' && (
           <TarjetasRegaloTab userId={session?.user?.id} />
-        )}
-
-        {activeTab === 'enviar_oferta' && (
-          <EnviarOfertaTab userId={session?.user?.id} />
         )}
 
         {activeTab === 'estudio' && (

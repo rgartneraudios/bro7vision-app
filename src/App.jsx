@@ -357,7 +357,7 @@ const [showBackstage, setShowBackstage]       = useState(false);
     selectedForestUser, setSelectedForestUser, savedUserIndex,
     projectingUser, setProjectingUser, selectedCard,
     broTunerRef, navItems, handleNavigation, handleReportIssue,
-    setShowWalletModal, setShowBooster, setShowLegal,
+    setShowWalletModal, setShowBooster, setShowLegal, setShowBackstage,
     scope, sessionCP, sessionCity, sessionRef,
     handleGameWin,
     setVlData,
@@ -376,7 +376,7 @@ const [showBackstage, setShowBackstage]       = useState(false);
   genesisBalance: balances.genesis  || 0,
   onGenesisUpdate: (nuevoBalance) => setBalances(prev => ({ ...prev, genesis: nuevoBalance })),
   handleGoToShop,
-  onOpenBackstage: () => setShowBackstage(true),
+  setShowBackstage,
   };
 
   // ══════════════════════════════════════════════════════

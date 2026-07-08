@@ -5,10 +5,8 @@ const SYNE  = "'Exo 2', sans-serif";
 const INTER = "'Inter', sans-serif";
 
 const SECTORES = [
-  { id: 'productos', label: 'PRODUCTOS', img: '/images/slideraid_1.webp' },
-  { id: 'servicios', label: 'SERVICIOS', img: '/images/isabella_1.webp'  },
-  { id: 'avisos',    label: 'AVISOS',    img: '/images/evelyn_5.webp'    },
-  { id: 'audios',    label: 'AUDIOS',    img: '/images/railaudio_1.webp' },
+  { id: 'servicios', label: 'SLIDE RAIL Canjes de Luna', img: '/images/isabella_1.webp'  },
+  { id: 'avisos',    label: 'SLIDE RAIL SHOP AMIGOS',    img: '/images/evelyn_5.webp'    },
 ];
 
 const TURNOS_LIST = [
@@ -273,12 +271,12 @@ const SlideRailTab = ({ role }) => {
           SLIDE RAIL
         </h2>
         <p style={{ fontFamily: SYNE, fontWeight: 700, color: '#facc15' }} className="text-xl mt-1">
-          4 sectores · {isDirector ? 'Estado de ocupación por turno' : 'Selecciona un sector para contratar un slot'}
+          2 sectores · {isDirector ? 'Estado de ocupación por turno' : 'Selecciona un sector para contratar un slot'}
         </p>
       </div>
 
       {/* Cuatro sectores centrados */}
-      <div className="grid grid-cols-4 gap-4 max-w-3xl w-full">
+      <div className="grid grid-cols-2 gap-4 max-w-3xl w-full">
         {SECTORES.map(sector => (
           <button
             key={sector.id}

@@ -23,7 +23,7 @@ export default function DesktopLayout(props) {
     isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen, handleCentralHandoff,
     balances, setBalances, session,
     selectedForestUser, setSelectedForestUser,    	savedUserIndex, projectingUser, 	setProjectingUser, broTunerRef, navItems, handleNavigation, handleReportIssue,
-    setShowWalletModal, setShowBooster, setShowLegal,
+    setShowWalletModal, setShowBooster, setShowLegal, setShowBackstage,
     scope, sessionCP, sessionCity, sessionRef, handleGameWin, handleGoToShop, abrirTienda,
     setVlData, ososHandoffContext, setOsosHandoffContext,
     perfilOso, stripVisible, stripCards, stripLabel, setHoloPrismaIndex,
@@ -83,6 +83,15 @@ useEffect(() => {
           <button onClick={() => { setStep(0); setRealityMode(null); setIsRightOpen(false); setIntent(null); }} className="w-full flex justify-between items-center p-3 bg-fuchsia-900/40 border border-fuchsia-500/40 rounded-2xl hover:bg-orange-400 hover:text-black transition-all group">
             <span className="text-[10px] font-black uppercase group-hover:text-black">CAMBIAR CANALES</span><span className="text-lg">🌐</span>
           </button>
+{isAdmin && (
+  <button
+    onClick={() => setShowBackstage(true)}
+    className="w-full flex justify-between items-center p-3 mt-2 bg-purple-900/40 border border-purple-500/40 rounded-2xl hover:bg-purple-600 hover:text-white transition-all group"
+  >
+    <span className="text-[10px] font-black uppercase tracking-widest group-hover:text-white">BACKSTAGE</span>
+    <span className="text-lg">🎬</span>
+  </button>
+)}
          <NeuralButton
   isAdmin={isAdmin}
   iaMode={iaMode}
