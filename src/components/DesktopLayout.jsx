@@ -18,6 +18,92 @@ import LaraBanner  from "./personajes/LaraBanner";
 import PuffoBanner from "./personajes/PuffoBanner";
 import { getVideoForLocation } from '../data/VideoMap';
 
+function CanjesHeader() {
+  const [time, setTime] = useState('');
+  const [date, setDate] = useState('');
+  const [temp, setTemp] = useState(null);
+  const [city, setCity] = useState('');
+
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      const h = now.getHours().toString().padStart(2,'0');
+      const m = now.getMinutes().toString().padStart(2,'0');
+      setTime(`${h}:${m}`);
+      const dias  = ['DOM','LUN','MAR','MIÉ','JUE','VIE','SÁB'];
+      const meses = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+      setDate(`${dias[now.getDay()]} ${now.getDate()} ${meses[now.getMonth()]}`);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const { latitude: lat, longitude: lon } = pos.coords;
+      try {
+        const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+        const d = await r.json();
+        setTemp(Math.round(d.current_weather?.temperature ?? null));
+        const g = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+        const gd = await g.json();
+        setCity((gd.address?.city || gd.address?.town || '').toUpperCase());
+      } catch(_) {}
+    }, ()=>{}, { timeout: 8000 });
+  }, []);
+
+  const accent = '#facc15';
+
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 99999,
+      display: 'flex', justifyContent: 'space-between',
+      padding: '12px 24px', pointerEvents: 'none',
+    }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+        <span style={{
+          fontFamily: "'Bebas Neue', sans-serif",
+          fontSize: 'clamp(32px, 4vw, 60px)',
+          lineHeight: 1, letterSpacing: '0.04em',
+          color: '#fff', textShadow: '0 0 20px rgba(255,255,255,0.4)',
+        }}>{time}</span>
+        <span style={{
+          fontFamily: "'Share Tech Mono', monospace",
+          fontSize: 14, letterSpacing: '0.25em',
+          textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)',
+        }}>{date}</span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+        {temp !== null ? (
+          <>
+            <span style={{
+              fontFamily: "'Bebas Neue', sans-serif",
+              fontSize: 'clamp(32px, 4vw, 60px)',
+              lineHeight: 1, letterSpacing: '0.04em',
+              color: '#fff', textShadow: '0 0 20px rgba(255,255,255,0.4)',
+            }}>{temp}°</span>
+            {city && (
+              <span style={{
+                fontFamily: "'Share Tech Mono', monospace",
+                fontSize: 14, letterSpacing: '0.25em',
+                textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)',
+              }}>{city}</span>
+            )}
+          </>
+        ) : (
+          <span style={{
+            fontFamily: "'Share Tech Mono', monospace",
+            fontSize: 14, letterSpacing: '0.25em',
+            textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)',
+          }}>...</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 
 export default function DesktopLayout(props) {
   // Desestructuramos todas las props que le manda App.jsx
@@ -83,7 +169,7 @@ useEffect(() => {
         <div className="mt-8 w-full px-4"><WalletWidget balances={balances} onClick={() => setShowWalletModal(true)} /></div>
         <div className="w-full flex justify-center my-2"><MoonMatrixCircle /></div>
         <div className="px-4 mt-4">
-          <button onClick={() => { setStep(0); setRealityMode(null); setIsRightOpen(false); }} className="w-full flex justify-between items-center p-3 bg-fuchsia-900/40 border border-fuchsia-500/40 rounded-2xl hover:bg-orange-400 hover:text-black transition-all group">
+          <button onClick={() => { setStep(0); setRealityMode(null); setIsRightOpen(false); setIntent(null); }} className="w-full flex justify-between items-center p-3 bg-fuchsia-900/40 border border-fuchsia-500/40 rounded-2xl hover:bg-orange-400 hover:text-black transition-all group">
             <span className="text-[10px] font-black uppercase group-hover:text-black">CAMBIAR CANALES</span><span className="text-lg">🌐</span>
           </button>
          <NeuralButton
@@ -146,7 +232,10 @@ useEffect(() => {
         </div>
       )}      
 
-      {step === 2 && intent === 'canjear' && !selectedCard && <CityLocationBanner scope={scope} />}
+      {intent === 'canjear' && (
+        <CanjesHeader />
+      )}
+      {step === 2 && intent === 'canjear' && <CityLocationBanner scope={scope} />}
       {step === 2 && intent === 'canjear' && <SlideRailCanjear />}
       {step === 2 && intent === 'shopamigos' && <SlideRailAmigos />}
       {step === 2 && intent === 'brodeseos' && <SlideRailDeseos />}

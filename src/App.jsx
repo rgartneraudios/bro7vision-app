@@ -331,6 +331,7 @@ const [showBackstage, setShowBackstage]       = useState(false);
   const handleGoToShop = (target) => {
     setIntent('canjear');
     setStep(2);
+    setSelectedCard(null);
   };
 
   // ══════════════════════════════════════════════════════
@@ -361,7 +362,7 @@ const [showBackstage, setShowBackstage]       = useState(false);
 
   const navItems = [
     { id: 'destino',         label: 'DESTINO',           color: 'border-fuchsia-500/30 hover:border-fuchsia-400',  images: ['/emojis/lara.webp', '/emojis/tito.webp', '/emojis/puffo.webp'] },
-    { id: 'canjear',         label: 'CANJEAR LUNAS',  color: 'border-yellow-500/30 hover:border-yellow-400',    images: [] },
+    { id: 'canjear',         label: 'CANJES de LUNAS',  color: 'border-yellow-500/30 hover:border-yellow-400',    images: [] },
     { id: 'shopamigos',       label: 'SHOP AMIGOS',        color: 'border-slate-500/30 hover:border-slate-400',      images: [] },
     { id: 'bro7band',        label: 'BRO7BAND',         color: 'border-cyan-500/30 hover:border-cyan-400',       images: ['/emojis/bro7band.webp'] },
     { id: 'games',           label: 'GAMES',            color: 'border-white/30 hover:border-white/60',           images: ['/emojis/emoji_5.webp', '/emojis/emoji_7.webp'] },
