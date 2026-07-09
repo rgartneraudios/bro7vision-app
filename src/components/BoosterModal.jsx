@@ -3,10 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { marcarActividad } from '../hooks/useActividad';
-import BoosterBroCards from './booster/BoosterBroCards';
 import BoosterMisCupones from './booster/BoosterMisCupones';
-import BoosterCanjesRecibidos from './booster/BoosterCanjesRecibidos';
-import BoosterPromoEco from './booster/BoosterPromoEco';
+import BoosterCanjesRecibidos from './backstage/BoosterCanjesRecibidos';
 import { CoordenadosBlock } from './CoordenadosBlock';
 
 function getCicloLunar() {
@@ -292,11 +290,9 @@ const BoosterModal = ({ onClose }) => {
                 { id: 'identity', label: '👤 Identidad',      color: 'cyan'   },
                 // Linaje siempre visible — el rank vacío muestra estado pendiente
                  { id: 'linaje',   label: '👑 Linaje',         color: 'orange' },
-                 { id: 'mis-brocards', label: '📇 Selección BroCards', color: 'emerald' },
                  { id: 'mis-cupones', label: '🎫 Mis Cupones', color: 'yellow' },
                  ...(tieneComercioCupones ? [{ id: 'canjes-recibidos', label: '📋 Canjes Recibidos', color: 'cyan' }] : []),
-                 { id: 'promo-eco', label: '📡 PromoECO', color: 'green' },
-              ].filter(Boolean).map((item) => (
+                 ].filter(Boolean).map((item) => (
               <button key={item.id} onClick={() => setTab(item.id)}
                 className={`text-left py-3 px-5 text-2xl font-bold rounded-2xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap
                   ${tab === item.id
@@ -659,16 +655,11 @@ const BoosterModal = ({ onClose }) => {
               );
              })()}
 
-             {/* ══ 📇 SELECCION BROCARDS ══ */}
-{tab === 'mis-brocards' && <BoosterBroCards />}
-
              {/* ══ 🎫 MIS CUPONES ══ */}
               {tab === 'mis-cupones' && <BoosterMisCupones />}
 
               {/* ══ 📋 CANJES RECIBIDOS ══ */}
-              {tab === 'canjes-recibidos' && tieneComercioCupones && <BoosterCanjesRecibidos />}
-
-              {tab === 'promo-eco' && <BoosterPromoEco userId={userId} />}
+{tab === 'canjes-recibidos' && tieneComercioCupones && <BoosterCanjesRecibidos />}
 
             </div>
         </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../supabaseClient';
-import StickerCupon, { MODEL_COLORS } from './StickerCupon';
+import StickerCupon, { MODEL_COLORS } from '../booster/StickerCupon';
 
 // ── 10 MODELOS DE BROCARD ────────────────────────────────────────────────
 export const BROCARD_MODELOS = {

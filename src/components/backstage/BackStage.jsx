@@ -5,11 +5,10 @@ import MencionesTab from './MencionesTab';
 import SlideRailTab from './SlideRailTab';
 import GamesTab from './GamesTab';
 import EstudioMarketingTab from './EstudioMarketing';
-import BlogTab from './BlogTab';
 import MisCampanasTab from './MisCampanasTab';
 import PromoEcoTab from './PromoEcoTab';
-import TarjetasRegaloTab from './TarjetasRegaloTab';
-import ShopAmigosTab from './ShopAmigosTab';
+import BoosterBroCards from './BoosterBroCards';
+import BoosterCanjesRecibidos from './BoosterCanjesRecibidos';
 
 const SYNE = "'Exo 2', sans-serif";
 
@@ -268,13 +267,12 @@ const BackStage = ({ session, onLogout }) => {
     { id: 'slide_rail',      label: 'SLIDE RAIL'           },
     { id: 'games',           label: 'GAMES'                },
     { id: 'campanas',        label: 'MIS CAMPAÑAS'         },
-    { id: 'estudio',         label: 'ESTUDIO MARKETING'    },
-    { id: 'blog',            label: 'BLOG / DOCS'          },
+    { id: 'estudio',         label: 'ESTUDIO & GUÍA'          },
   ];
 
   const TABS_COMERCIO = [
-    { id: 'tarjetas_regalo', label: 'TARJETAS REGALO'      },
-    { id: 'shop_amigos',     label: 'SHOP AMIGOS'          },
+    { id: 'tarjetas_diseno',  label: 'TARJETAS REGALO'  },
+    { id: 'canjes_recibidos', label: 'CANJES RECIBIDOS'  },
   ];
 
   const tabs = activeBlock === 'anuncios' ? TABS_ANUNCIOS : TABS_COMERCIO;
@@ -371,7 +369,7 @@ const BackStage = ({ session, onLogout }) => {
         )}
 
         {activeTab === 'bro7band' && (
-          <MencionesTab />
+          <MencionesTab session={session} />
         )}
 
         {activeTab === 'slide_rail' && (
@@ -390,16 +388,11 @@ const BackStage = ({ session, onLogout }) => {
           <PromoEcoTab userId={session?.user?.id} />
         )}
 
-        {activeTab === 'tarjetas_regalo' && (
-          <TarjetasRegaloTab userId={session?.user?.id} />
-        )}
+        {activeTab === 'tarjetas_diseno' && <BoosterBroCards />}
+        {activeTab === 'canjes_recibidos' && <BoosterCanjesRecibidos />}
 
         {activeTab === 'estudio' && (
           <EstudioMarketingTab />
-        )}
-
-        {activeTab === 'blog' && (
-          <BlogTab />
         )}
 
       </div>
