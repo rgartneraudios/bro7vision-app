@@ -3,12 +3,12 @@ import { supabase } from '../../supabaseClient';
 
 const DemoViewer = ({ titulo, subtitulo, videoUrl, vertical = false }) => (
   <div className="flex flex-col gap-2">
-    <div className="text-xs text-gray-400 uppercase tracking-widest font-bold"
+    <div className="text-2xl text-gray-400 uppercase tracking-widest font-bold"
       style={{ fontFamily: "'Exo 2', sans-serif" }}>
       {titulo}
     </div>
     <p style={{ fontFamily: "'Inter', sans-serif" }}
-      className="text-xs text-gray-600 mb-1">{subtitulo}</p>
+      className="text-xl text-gray-600 mb-1">{subtitulo}</p>
     <div
       className="rounded overflow-hidden border border-white/10 shadow-[0_0_20px_rgba(168,85,247,0.1)] bg-black mx-auto"
       style={{
@@ -104,14 +104,14 @@ const EstudioMarketingTab = () => {
         <div className="flex flex-col gap-10 px-2 py-4">
           <DemoViewer
             titulo="Demo Horizontal — PC / Tablet"
-            subtitulo="Publicidad muda integrada en escenario 16:9. Banner y texto aparecen y desaparecen sobre el fondo."
-            videoUrl="https://media.bro7vision.com/DEMOH.mp4"
+            subtitulo="Publicidad muda integrada en escenario 16:9. Banner y texto aparecen y desaparecen sobre el fondo. Puedes utilizar un video vertical o una imagen que debes proporcionar en el panel de reserva junto a instrucciones específicas que necesites comunicar. Al ser los videos cortos y en bucle, la aparición de tu anuncio rondará los 8 segundos promedio. Procura incluir textos con datos de contacto claros."
+            videoUrl="https://media.bro7vision.com/DEMOH1.mp4"
             vertical={false}
           />
           <DemoViewer
             titulo="Demo Vertical — Móvil"
-            subtitulo="Publicidad muda integrada en escenario 9:16. Formato afiche con llamada a la acción."
-            videoUrl="https://media.bro7vision.com/DEMOV.mp4"
+            subtitulo="Publicidad muda integrada en escenario 9:16. Formato afiche con llamada a la acción. Puedes utilizar un video o una imagen en formato cuadrado 1:1 que debes proporcionar en el panel de reserva junto a instrucciones específicas que necesites comunicar. Al ser los videos cortos y en bucle, la aparición de tu anuncio rondará los 8 segundos promedio. Procura incluir textos con datos de contacto claros."
+            videoUrl="https://media.bro7vision.com/DEMOV1.mp4"
             vertical={true}
           />
         </div>

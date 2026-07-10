@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../supabaseClient';
-import MencionesModal from './MencionesModal';
+import Bro7bandModal from './Bro7bandModal';
 
 const SYNE  = "'Exo 2', sans-serif";
 const INTER = "'Inter', sans-serif";
@@ -175,7 +175,7 @@ const MencionesTab = ({ session }) => {
       )}
 
       {showModal && (
-        <MencionesModal
+        <Bro7bandModal
           session={session}
           carrito={carrito}
           setCarrito={setCarrito}

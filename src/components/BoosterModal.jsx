@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { marcarActividad } from '../hooks/useActividad';
 import BoosterMisCupones from './booster/BoosterMisCupones';
-import BoosterCanjesRecibidos from './backstage/BoosterCanjesRecibidos';
+import TarjetasCanjesRecibidosTab from './backstage/TarjetasCanjesRecibidosTab';
 import BoosterAnunciante from './booster/BoosterAnunciante';
 import { CoordenadosBlock } from './CoordenadosBlock';
 
@@ -650,7 +650,7 @@ const BoosterModal = ({ onClose, initialTab, session }) => {
               {tab === 'mis-cupones' && <BoosterMisCupones />}
 
               {/* ══ 📋 CANJES RECIBIDOS ══ */}
-{tab === 'canjes-recibidos' && tieneComercioCupones && <BoosterCanjesRecibidos />}
+{tab === 'canjes-recibidos' && tieneComercioCupones && <TarjetasCanjesRecibidosTab />}
 
               {/* ══ 📢 ANUNCIANTE ══ */}
               {tab === 'ANUNCIANTE' && (

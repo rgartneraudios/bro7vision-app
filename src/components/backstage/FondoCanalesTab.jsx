@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../supabaseClient';
 import { CHANNELS, FASES, TURNOS } from '../../data/citycodes';
-import EscenarioCard from './EscenarioCard';
+import FondoCanales from './FondoCanales';
 import ReservaPanel from './ReservaPanel';
 
 // Canal Moon (2): Fase 0 = solo Luna Nueva (fase 1) con T1–T4.
@@ -112,7 +112,13 @@ const MarketplaceTab = ({ session, profile, role: roleProp }) => {
             <h2 style={{ fontFamily: SYNE }} className="text-3xl font-black tracking-tight text-white">
               CONTRATACIÓN PARA LA PRÓXIMA FASE LUNAR
             </h2>
-            <p style={{ fontFamily: SYNE, fontWeight: 700, color: '#facc15' }} className="text-2xl mt-2">72 slots · 9 canales · 2 dispositivos</p>
+            <p style={{ fontFamily: SYNE, fontWeight: 700, color: '#facc15' }} className="text-2xl mt-2">72 Turnos · 9 canales · 2 dispositivos PC y Móvil</p>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, color: '#f5e6c8' }} className="text-lg mt-4 w-full max-w-full text-center leading-relaxed px-4">
+              Bro7vision vive sincronizado con el ciclo Lunar. La contratación de los turnos tiene una durabilidad de una Fase Lunar, Luna Nueva-Luna Creciente-Luna Llena-Luna Menguante.
+            </p>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, color: '#f5e6c8' }} className="text-lg mt-2 w-full max-w-full text-center leading-relaxed px-4">
+              Los Fondos de Canales se renovarán en cada Ciclo Lunar y se publicarán durante la Luna Menguante del ciclo anterior.
+            </p>
           </div>
           <div className="flex items-center gap-3">
             {totalOcupadas > 0 && (
@@ -175,7 +181,7 @@ const MarketplaceTab = ({ session, profile, role: roleProp }) => {
                   </span>
                   <div className="grid grid-cols-4 gap-3 flex-1">
                     {pcSlots.map((slot, i) => (
-                      <EscenarioCard key={i} slot={slot} butacas={butacas} onSelectSlot={handleSelectSlot} role={role} />
+                      <FondoCanales key={i} slot={slot} butacas={butacas} onSelectSlot={handleSelectSlot} role={role} />
                     ))}
                   </div>
                 </div>
@@ -190,7 +196,7 @@ const MarketplaceTab = ({ session, profile, role: roleProp }) => {
                   </span>
                   <div className="grid grid-cols-4 gap-3 flex-1">
                     {mobSlots.map((slot, i) => (
-                      <EscenarioCard key={i} slot={slot} butacas={butacas} onSelectSlot={handleSelectSlot} role={role} />
+                      <FondoCanales key={i} slot={slot} butacas={butacas} onSelectSlot={handleSelectSlot} role={role} />
                     ))}
                   </div>
                 </div>

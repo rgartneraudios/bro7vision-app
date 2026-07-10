@@ -273,6 +273,12 @@ const SlideRailTab = ({ role }) => {
         <p style={{ fontFamily: SYNE, fontWeight: 700, color: '#facc15' }} className="text-xl mt-1">
           2 sectores · {isDirector ? 'Estado de ocupación por turno' : 'Selecciona un sector para contratar un slot'}
         </p>
+        <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, color: '#f5e6c8' }} className="text-lg mt-4 w-full max-w-full text-center leading-relaxed px-4">
+          Los Sectores de Canjes de Lunas y Shop Amigos utilizan el Slide Rail como espacio publicitario. Se trata de un banner vertical donde puedes colocar la imagen de tu empresa para comunicar novedades y actividad comercial.
+        </p>
+        <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, color: '#f5e6c8' }} className="text-lg mt-2 w-full max-w-full text-center leading-relaxed px-4">
+          Actualmente, el espacio se rellena con personajes o imágenes aleatorias. Es una zona donde los usuarios canjean sus tarjetas o buscan artículos especiales. Slide Rail hará que tu negocio sea aún más visible.
+        </p>
       </div>
 
       {/* Cuatro sectores centrados */}

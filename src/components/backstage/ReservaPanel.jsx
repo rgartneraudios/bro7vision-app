@@ -268,8 +268,8 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
           <div>
             <label style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}
               className="block text-xs text-gray-400 uppercase tracking-widest mb-1.5">
-              URL del Logo o Banner
-              <span className="ml-1 text-gray-600 normal-case font-normal">(PNG con fondo transparente recomendado)</span>
+              URL del Video, Banner o Logo
+              <span className="ml-1 text-gray-600 normal-case font-normal">(Para PC Video/imagen Vertical Para Móvil Video/imagen 1:1 Cuadrado)</span>
             </label>
             <input
               type="url"
@@ -284,15 +284,15 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
           {/* Guión */}
           <div>
             <label style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }} className="block text-xs text-gray-400 uppercase tracking-widest mb-1.5">
-              Guión del Anuncio
-              <span className="ml-1 text-gray-600 normal-case font-normal">(brief para el Montador)</span>
+              Descripción del Anuncio
+              <span className="ml-1 text-gray-600 normal-case font-normal">(Instrucciones para el Editor)</span>
             </label>
             <textarea
               value={guion}
               onChange={e => setGuion(e.target.value)}
               maxLength={500}
               rows={4}
-              placeholder="Describe tu anuncio: producto, tono, mensaje clave, referencias visuales, lo que el Montador debe saber..."
+              placeholder="Describe tu anuncio: producto, datos, tono, mensaje clave, referencias visuales, lo que el Editor debe saber..."
               style={{ fontFamily: "'Inter', sans-serif" }}
               className="w-full bg-zinc-900 border border-white/10 text-white text-sm px-3 py-2.5 rounded focus:border-purple-500 focus:outline-none transition-colors resize-none placeholder-gray-600"
             />

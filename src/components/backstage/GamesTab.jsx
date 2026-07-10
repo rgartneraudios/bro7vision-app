@@ -219,10 +219,10 @@ const GamesTab = () => {
 
       {/* Header */}
       <div className="mb-10">
-        <h2 style={{ fontFamily: SYNE, fontWeight: 800 }} className="text-xl font-black tracking-tight text-white">
+        <h2 style={{ fontFamily: SYNE, fontWeight: 800, color: '#f5e6c8' }} className="text-3xl font-black tracking-tight">
           GAMES
         </h2>
-        <p style={{ fontFamily: SYNE, fontWeight: 700, color: '#facc15' }} className="text-xl mt-1">
+        <p style={{ fontFamily: SYNE, fontWeight: 700, color: '#f5e6c8' }} className="text-2xl mt-1">
           2 juegos disponibles · Mención activa durante 1 fase lunar completa
         </p>
       </div>
@@ -246,10 +246,10 @@ const GamesTab = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-5">
-                  <p style={{ fontFamily: SYNE, fontWeight: 800, color: '#cc88ff', textShadow: '0 0 12px rgba(167,95,255,0.5)' }} className="text-lg uppercase tracking-widest">
+                  <p style={{ fontFamily: SYNE, fontWeight: 800, color: '#f5e6c8', textShadow: '0 0 12px rgba(167,95,255,0.5)' }} className="text-2xl uppercase tracking-widest">
                     {juego.label}
                   </p>
-                  <p style={{ fontFamily: INTER }} className="text-xs text-gray-400 mt-1 uppercase tracking-wider">
+                  <p style={{ fontFamily: INTER, color: '#f5e6c8' }} className="text-base mt-1 uppercase tracking-wider">
                     Mención · 1 fase lunar · desde 20€
                   </p>
                 </div>
@@ -262,7 +262,7 @@ const GamesTab = () => {
               </button>
 
               {/* Descripción debajo */}
-              <p style={{ fontFamily: INTER }} className="text-sm text-gray-400 leading-relaxed text-center px-2">
+              <p style={{ fontFamily: INTER, color: '#f5e6c8' }} className="text-lg leading-relaxed text-center px-2">
                 {juego.texto}
               </p>
 
@@ -271,7 +271,7 @@ const GamesTab = () => {
         </div>
       </div>
 
-      <p style={{ fontFamily: SYNE }} className="text-[9px] text-gray-700 mt-10 uppercase tracking-widest text-center">
+      <p style={{ fontFamily: SYNE, color: '#f5e6c8' }} className="text-base mt-10 uppercase tracking-widest text-center">
         FASE 0 · Simulación — No se realizará ningún cargo real
       </p>
 

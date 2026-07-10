@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../supabaseClient';
-import MarketplaceTab from './MarketplaceTab';
-import MencionesTab from './MencionesTab';
+import FondoCanalesTab from './FondoCanalesTab';
+import Bro7bandTab from './Bro7bandTab';
 import SlideRailTab from './SlideRailTab';
 import GamesTab from './GamesTab';
-import EstudioMarketingTab from './EstudioMarketing';
+import DemoBlogTab from './DemoBlogTab';
 import MisCampanasTab from './MisCampanasTab';
 import PromoEcoTab from './PromoEcoTab';
-import BoosterBroCards from './BoosterBroCards';
-import BoosterCanjesRecibidos from './BoosterCanjesRecibidos';
+import TarjetasRegalo from './TarjetasRegalo';
+import TarjetasCanjesRecibidosTab from './TarjetasCanjesRecibidosTab';
 
 const SYNE = "'Exo 2', sans-serif";
 
@@ -52,12 +52,12 @@ const BackStage = ({ session, onLogout }) => {
       <div className="fixed inset-0 bg-zinc-950 flex flex-col items-center justify-center font-mono text-white p-8">
         <div className="text-center max-w-xs">
           <div className="text-5xl mb-6">🖥️</div>
-          <h2 className="text-xl font-bold text-white mb-3 tracking-tight">BACKSTAGE SOLO EN PC</h2>
-          <p className="text-gray-500 text-sm leading-relaxed mb-8">
+          <h2 className="text-4xl font-bold text-white mb-3 tracking-tight">BACKSTAGE SOLO EN PC</h2>
+          <p className="text-gray-500 text-2xl leading-relaxed mb-8">
             El panel de producción requiere pantalla de escritorio.<br />
             Accede desde un ordenador para gestionar tus espacios.
           </p>
-          <button onClick={onLogout} className="text-[9px] text-gray-600 hover:text-white uppercase tracking-widest transition-colors">
+          <button onClick={onLogout} className="text-xl text-gray-600 hover:text-white uppercase tracking-widest transition-colors">
             Cerrar sesión
           </button>
         </div>
@@ -68,7 +68,7 @@ const BackStage = ({ session, onLogout }) => {
   if (loading) {
     return (
       <div className="fixed inset-0 bg-zinc-950 flex items-center justify-center font-mono">
-        <span className="text-gray-500 text-xs animate-pulse tracking-widest">CONECTANDO CON EL ESTUDIO...</span>
+        <span className="text-gray-500 text-2xl animate-pulse tracking-widest">CONECTANDO CON EL ESTUDIO...</span>
       </div>
     );
   }
@@ -245,11 +245,11 @@ const BackStage = ({ session, onLogout }) => {
       <div className="fixed inset-0 bg-zinc-950 flex flex-col items-center justify-center font-mono text-white p-8">
         <div className="text-center max-w-sm">
           <div className="text-4xl mb-5">🚫</div>
-          <h2 className="text-base font-bold text-red-400 mb-2">CUENTA SUSPENDIDA</h2>
-          <p className="text-gray-500 text-xs leading-relaxed mb-6">
+          <h2 className="text-3xl font-bold text-red-400 mb-2">CUENTA SUSPENDIDA</h2>
+          <p className="text-gray-500 text-2xl leading-relaxed mb-6">
             Tu cuenta ha sido suspendida. Contacta con el Estudio para más información.
           </p>
-          <button onClick={onLogout} className="text-[9px] text-gray-600 hover:text-white uppercase tracking-widest transition-colors">
+          <button onClick={onLogout} className="text-xl text-gray-600 hover:text-white uppercase tracking-widest transition-colors">
             Cerrar sesión
           </button>
         </div>
@@ -285,16 +285,22 @@ const BackStage = ({ session, onLogout }) => {
       }}
     >
 
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&display=swap');`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&display=swap');
+        .backstage-scroll::-webkit-scrollbar { width: 8px; }
+        .backstage-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+        .backstage-scroll::-webkit-scrollbar-thumb { background: linear-gradient(#a855f7, #22d3ee); border-radius: 4px; box-shadow: 0 0 10px rgba(168,85,247,0.5); }
+        .backstage-scroll::-webkit-scrollbar-thumb:hover { background: linear-gradient(#c084fc, #67e8f9); }
+        .backstage-scroll { scrollbar-color: #a855f7 rgba(0,0,0,0.3); scrollbar-width: thin; }
+      `}</style>
 
       {/* Topbar */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-black/40 shrink-0">
         <div className="flex items-center gap-4">
-          <span style={{ fontFamily: SYNE }} className="text-2xl font-black tracking-tight">
+          <span style={{ fontFamily: SYNE }} className="text-4xl font-black tracking-tight">
             BRO7VISION <span className="text-purple-400">BACKSTAGE</span>
           </span>
           {session?.user?.user_metadata?.role && (
-            <span className="hidden sm:inline text-base font-black uppercase tracking-[0.2em] px-3 py-1 rounded border"
+            <span className="hidden sm:inline text-2xl font-black uppercase tracking-[0.2em] px-3 py-1 rounded border"
               style={{ color: '#ff00ff', borderColor: 'rgba(255,0,255,0.3)', textShadow: '0 0 8px rgba(255,0,255,0.5)' }}>
               PRODUCTOR
             </span>
@@ -303,7 +309,7 @@ const BackStage = ({ session, onLogout }) => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => { setActiveBlock('anuncios'); setActiveTab(TABS_ANUNCIOS[0].id); }}
-            className={`text-sm font-black uppercase tracking-[0.25em] px-6 py-2.5 rounded-lg border-2 transition-all shadow-lg ${
+            className={`text-2xl font-black uppercase tracking-[0.25em] px-6 py-2.5 rounded-lg border-2 transition-all shadow-lg ${
               activeBlock === 'anuncios'
                 ? 'text-cyan-300 border-cyan-400 bg-cyan-900/30 shadow-cyan-400/30'
                 : 'text-gray-600 border-gray-700 hover:text-gray-300 hover:border-gray-500'
@@ -313,7 +319,7 @@ const BackStage = ({ session, onLogout }) => {
           </button>
           <button
             onClick={() => { setActiveBlock('comercio'); setActiveTab(TABS_COMERCIO[0].id); }}
-            className={`text-sm font-black uppercase tracking-[0.25em] px-6 py-2.5 rounded-lg border-2 transition-all shadow-lg ${
+            className={`text-2xl font-black uppercase tracking-[0.25em] px-6 py-2.5 rounded-lg border-2 transition-all shadow-lg ${
               activeBlock === 'comercio'
                 ? 'text-pink-300 border-pink-400 bg-pink-900/30 shadow-pink-400/30'
                 : 'text-gray-600 border-gray-700 hover:text-gray-300 hover:border-gray-500'
@@ -323,12 +329,12 @@ const BackStage = ({ session, onLogout }) => {
           </button>
         </div>
         <div className="flex items-center gap-5">
-          <span className="hidden sm:block text-sm text-gray-300 font-semibold truncate max-w-[240px]" style={{ fontFamily: SYNE }}>
+          <span className="hidden sm:block text-2xl text-gray-300 font-semibold truncate max-w-[240px]" style={{ fontFamily: SYNE }}>
             {profile.razon_social || profile.alias || session?.user?.email}
           </span>
           <button
             onClick={onLogout}
-            className="text-sm font-semibold text-gray-400 hover:text-white border border-white/10 hover:border-white/30 px-4 py-2 rounded transition-all uppercase tracking-wider"
+            className="text-2xl font-semibold text-gray-400 hover:text-white border border-white/10 hover:border-white/30 px-4 py-2 rounded transition-all uppercase tracking-wider"
             style={{ fontFamily: SYNE }}
           >
             Salir
@@ -343,7 +349,7 @@ const BackStage = ({ session, onLogout }) => {
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{ fontFamily: SYNE }}
-            className={`relative px-4 py-4 text-sm font-bold uppercase tracking-widest transition-all ${
+            className={`relative px-4 py-4 text-2xl font-bold uppercase tracking-widest transition-all ${
               activeTab === tab.id
                 ? 'text-white border-b-2 border-purple-500'
                 : 'text-gray-600 hover:text-gray-400'
@@ -358,10 +364,10 @@ const BackStage = ({ session, onLogout }) => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden backstage-scroll">
 
         {activeTab === 'fondos' && (
-          <MarketplaceTab session={session} profile={profile} role={rolUsuario} />
+          <FondoCanalesTab session={session} profile={profile} role={rolUsuario} />
         )}
 
         {activeTab === 'campanas' && (
@@ -369,7 +375,7 @@ const BackStage = ({ session, onLogout }) => {
         )}
 
         {activeTab === 'bro7band' && (
-          <MencionesTab session={session} />
+          <Bro7bandTab session={session} />
         )}
 
         {activeTab === 'slide_rail' && (
@@ -388,11 +394,11 @@ const BackStage = ({ session, onLogout }) => {
           <PromoEcoTab userId={session?.user?.id} />
         )}
 
-        {activeTab === 'tarjetas_diseno' && <BoosterBroCards />}
-        {activeTab === 'canjes_recibidos' && <BoosterCanjesRecibidos />}
+        {activeTab === 'tarjetas_diseno' && <TarjetasRegalo />}
+        {activeTab === 'canjes_recibidos' && <TarjetasCanjesRecibidosTab />}
 
         {activeTab === 'estudio' && (
-          <EstudioMarketingTab />
+          <DemoBlogTab />
         )}
 
       </div>
