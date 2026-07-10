@@ -359,80 +359,114 @@ async function handleCanjearCupon(request, env, corsHeaders) {
 
   const {
     user_id,
-    tipo_brocard,
     comercio_id,
-    descuento_pct,
+    tipo_tarjeta,
+    valor_euros,
     comercio_nombre,
     web_url,
     coste_genesis,
   } = payload;
 
-  if (!user_id || !comercio_id || !descuento_pct || !coste_genesis) {
+  if (!user_id || !comercio_id || !coste_genesis) {
     return json({ error: 'Faltan campos obligatorios' }, 400, corsHeaders);
   }
 
+  // Verificar comercio activo, estado_canje y emisión disponible
   const comercios = await sbGet(env,
-    `comercio_cupones?id=eq.${comercio_id}&activo=eq.true&select=id,comercio_nombre,web_url,palabra_clave_1,palabra_clave_2,palabra_clave_3&limit=1`
+    `comercio_cupones?id=eq.${comercio_id}&activo=eq.true&estado_canje=eq.ACTIVO&select=id,comercio_nombre,web_url,palabra_clave_1,palabra_clave_2,emision_total,emision_usada,tipo_tarjeta,valor_euros&limit=1`
   );
   if (!comercios || comercios.length === 0) {
-    return json({ error: 'Comercio no encontrado o inactivo' }, 404, corsHeaders);
+    return json({ error: 'Tarjeta no disponible o suspendida' }, 404, corsHeaders);
   }
 
+  const comercio = comercios[0];
+
+  // Verificar emisión limitada
+  if (
+    comercio.emision_total !== null &&
+    comercio.emision_usada >= comercio.emision_total
+  ) {
+    return json({ error: 'Tarjeta agotada' }, 409, corsHeaders);
+  }
+
+  // Verificar balance de Lunas
   const perfiles = await sbGet(env,
-    `profiles?id=eq.${user_id}&select=id,genesis,alias&limit=1`
+    `profiles?id=eq.${user_id}&select=id,lunas,alias&limit=1`
   );
   if (!perfiles || perfiles.length === 0) {
     return json({ error: 'Usuario no encontrado' }, 404, corsHeaders);
   }
 
-  const balanceActual = perfiles[0].genesis || 0;
-  const aliasUsuario  = perfiles[0].alias   || 'desconocido';
+  const balanceActual = perfiles[0].lunas || 0;
+  const aliasUsuario  = perfiles[0].alias  || 'desconocido';
 
   if (balanceActual < coste_genesis) {
     return json({
-      error:     'Génesis insuficientes',
+      error:     'Lunas insuficientes',
       balance:   balanceActual,
       necesario: coste_genesis,
     }, 400, corsHeaders);
   }
 
+  // Verificar si ya tiene un cupón activo de este comercio
   const yaExiste = await sbGet(env,
-    `cupones_generados?user_id=eq.${user_id}&comercio_id=eq.${comercio_id}&usado=eq.false&caduca_at=gt.${new Date().toISOString()}&select=id&limit=1`
+    `cupones_generados?user_id=eq.${user_id}&comercio_id=eq.${comercio_id}&usado=eq.false&caduca_at=gt.${new Date().toISOString()}&select=id,palabra_clave_2&limit=1`
   );
   if (yaExiste && yaExiste.length > 0) {
-    return json({ error: 'Ya tienes un cupón activo para este comercio' }, 409, corsHeaders);
+    return json({
+      error:          'Ya tienes un cupón activo para este comercio',
+      palabra_clave_2: yaExiste[0].palabra_clave_2 || null,
+    }, 409, corsHeaders);
   }
 
   const { faseCaduca } = getMoonPhase();
   const nuevoBalance   = balanceActual - coste_genesis;
 
+  // Restar Lunas
   const updateBalance = await sbPatch(env,
     `profiles?id=eq.${user_id}`,
-    { genesis: nuevoBalance }
+    { lunas: nuevoBalance }
   );
   if (!updateBalance) {
-    return json({ error: 'Error al restar génesis' }, 500, corsHeaders);
+    return json({ error: 'Error al restar Lunas' }, 500, corsHeaders);
   }
 
+  // Insertar en cupones_generados
   const cupon = await sbPost(env, 'cupones_generados', {
     user_id,
     comercio_id,
-    codigo:          null,
-    descuento_pct,
-    palabra_clave_1: comercios[0].palabra_clave_1 || null,
-    palabra_clave_2: comercios[0].palabra_clave_2 || null,
-    palabra_clave_3: comercios[0].palabra_clave_3 || null,
-    tipo_brocard:    tipo_brocard                 || null,
-    comercio_nombre: comercio_nombre || comercios[0].comercio_nombre,
-    web_url:         web_url         || comercios[0].web_url || '',
+    tipo_tarjeta:    comercio.tipo_tarjeta    || tipo_tarjeta || null,
+    valor_euros:     comercio.valor_euros     || valor_euros  || null,
+    lunas_gastadas:  coste_genesis,
+    palabra_clave_1: comercio.palabra_clave_1 || null,
+    palabra_clave_2: comercio.palabra_clave_2 || null,
+    comercio_nombre: comercio_nombre || comercio.comercio_nombre,
+    web_url:         web_url         || comercio.web_url || '',
     usado:           false,
     caduca_at:       faseCaduca,
     created_at:      new Date().toISOString(),
   });
 
   if (!cupon) {
-    await sbPatch(env, `profiles?id=eq.${user_id}`, { genesis: balanceActual });
-    return json({ error: 'Error al generar cupón. Génesis devueltos.' }, 500, corsHeaders);
+    // Rollback — devolver Lunas
+    await sbPatch(env, `profiles?id=eq.${user_id}`, { lunas: balanceActual });
+    return json({ error: 'Error al generar cupón. Lunas devueltas.' }, 500, corsHeaders);
+  }
+
+  // Incrementar emision_usada si la tarjeta tiene límite
+  if (comercio.emision_total !== null) {
+    await sbPatch(env,
+      `comercio_cupones?id=eq.${comercio_id}`,
+      { emision_usada: comercio.emision_usada + 1 }
+    );
+
+    // Si se agota con este canje — marcar AGOTADO
+    if (comercio.emision_usada + 1 >= comercio.emision_total) {
+      await sbPatch(env,
+        `comercio_cupones?id=eq.${comercio_id}`,
+        { estado_canje: 'AGOTADO', activo: false }
+      );
+    }
   }
 
   const fechaLegible = new Date(faseCaduca).toLocaleDateString('es-ES', {
@@ -440,17 +474,18 @@ async function handleCanjearCupon(request, env, corsHeaders) {
   });
 
   return json({
-    ok:               true,
-    alias:            aliasUsuario,
-    descuento_pct,
-    comercio_nombre:  comercio_nombre || comercios[0].comercio_nombre,
-    web_url:          web_url         || comercios[0].web_url || '',
-    palabra_clave_1:  comercios[0].palabra_clave_1 || null,
-    caduca_at:        faseCaduca,
-    caduca_legible:   fechaLegible,
-    genesis_restados: coste_genesis,
-    balance_nuevo:    nuevoBalance,
-    mensaje:          'Cupón canjeado! En tu Booster Studio en Mis Cupones te espera tu Sticker con la palabra Clave',
+    ok:              true,
+    alias:           aliasUsuario,
+    tipo_tarjeta:    comercio.tipo_tarjeta    || tipo_tarjeta,
+    valor_euros:     comercio.valor_euros     || valor_euros,
+    comercio_nombre: comercio_nombre          || comercio.comercio_nombre,
+    web_url:         web_url                  || comercio.web_url || '',
+    palabra_clave_2: comercio.palabra_clave_2 || null,
+    caduca_at:       faseCaduca,
+    caduca_legible:  fechaLegible,
+    lunas_restadas:  coste_genesis,
+    balance_nuevo:   nuevoBalance,
+    mensaje:         'Tarjeta canjeada. En tu Booster › Mis Cupones tienes tu Luna con la palabra clave secreta.',
   }, 200, corsHeaders);
 }
 

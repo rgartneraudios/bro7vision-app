@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient';
 import SlideRailCanjear from './SlideRailCanjear';
 import CityLocationBanner from './CityLocationBanner';
 import { getVideoForLocation } from '../data/VideoMap';
+import { useCanjearCupon } from '../hooks/useCanjearCupon';
 
 const TAB_COLORS = {
   CERCANIAS: '#FF6B00',
@@ -14,6 +15,13 @@ const TAB_TEXT_COLORS = {
   CERCANIAS: '#fff',
   NACIONAL: '#000',
   INTERNACIONAL: '#fff',
+};
+
+const LUNA_STYLES = {
+  PLATA:    { bg: 'linear-gradient(160deg,#1a1f2e,#0d1220,#1a2535)', border: '#7799bb', color: '#ddeeff', badge: 'Luna de Plata'    },
+  ORO:      { bg: 'linear-gradient(160deg,#1f1800,#0f0e00,#2a2000)', border: '#d4a83a', color: '#f5cc42', badge: 'Luna de Oro'      },
+  DIAMANTE: { bg: 'linear-gradient(160deg,#001f2a,#000f1a,#002030)', border: '#00e5d4', color: '#00e5d4', badge: 'Luna de Diamante' },
+  '100':    { bg: 'linear-gradient(160deg,#1f001f,#0f000f,#2a002a)', border: '#cc44ee', color: '#ee66ff', badge: 'Luna 100'         },
 };
 
 function HeaderWidget() {
@@ -100,62 +108,76 @@ function HeaderWidget() {
   );
 }
 
-function CuponModal({ cupon, onClose }) {
+function CuponModal({ cupon, onClose, onCanjear }) {
   if (!cupon) return null;
+  const estilo = LUNA_STYLES[cupon.tipo_tarjeta] || LUNA_STYLES['PLATA'];
   return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 9999,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)',
-      }}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          background: '#111', border: '1px solid rgba(255,215,0,0.3)',
-          borderRadius: 16, padding: '4rem', maxWidth: 960, width: '90%',
-          boxShadow: '0 0 40px rgba(255,215,0,0.15)',
-        }}
-      >
-        <h2 style={{ color: '#facc15', fontSize: 48, fontWeight: 900, textAlign: 'center', marginBottom: 16 }}>
-          CANJE DE LUNA
-        </h2>
-        <p style={{ color: '#ccc', fontSize: 24, textAlign: 'center', marginBottom: 32 }}>
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 9999,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)',
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: '#111',
+        border: `1px solid ${estilo.border}55`,
+        borderRadius: 16, padding: '3rem',
+        maxWidth: 480, width: '90%',
+        boxShadow: `0 0 40px ${estilo.border}33`,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
+        fontFamily: "'Exo 2', sans-serif",
+      }}>
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 3,
+          textTransform: 'uppercase', color: estilo.color,
+          border: `0.5px solid ${estilo.border}`, borderRadius: 20,
+          padding: '3px 14px', background: `${estilo.border}22`,
+        }}>
+          {estilo.badge}
+        </span>
+
+        <span style={{ fontSize: 56, fontWeight: 900, color: estilo.color,
+          textShadow: `0 0 30px ${estilo.border}88`, lineHeight: 1 }}>
+          {cupon.valor_euros != null ? `${cupon.valor_euros}€` : '—'}
+        </span>
+
+        <span style={{ color: '#fff', fontSize: 18, fontWeight: 700 }}>
           {cupon.comercio_nombre}
-        </p>
-        {cupon.descuento_pct && (
-          <p style={{ color: '#39FF14', fontSize: 32, fontWeight: 900, textAlign: 'center', marginBottom: 16 }}>
-            {cupon.descuento_pct}% DESCUENTO
-          </p>
+        </span>
+
+        {cupon.tipo_tarjeta === 'PLATA' && cupon.compra_minima && (
+          <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>
+            Compra mínima: {cupon.compra_minima}€
+          </span>
         )}
-        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 18, textAlign: 'center', marginBottom: 16 }}>
-          Coste: {cupon.coste_genesis?.toLocaleString() || '—'} ✦ génesis
-        </p>
-        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14, textAlign: 'center', marginBottom: 32 }}>
-          Vence: {cupon.vencimiento || '—'}
-        </p>
-        <div style={{ display: 'flex', gap: 12 }}>
-          <button
-            onClick={onClose}
-            style={{
-              flex: 1, padding: '12px 0', background: '#facc15', color: '#000',
-              fontWeight: 900, fontSize: 14, border: 'none', borderRadius: 10,
-              cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.1em',
-              boxShadow: '0 0 16px rgba(250,204,21,0.4)',
-            }}
-          >
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8,
+          background: `${estilo.border}22`, borderRadius: 20, padding: '6px 20px' }}>
+          <span>🌙</span>
+          <span style={{ color: estilo.color, fontWeight: 700, fontSize: 16 }}>
+            {(cupon.coste_genesis || 0).toLocaleString()} Lunas
+          </span>
+        </div>
+
+        {cupon.emision_total && (
+          <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>
+            Quedan {cupon.emision_total - cupon.emision_usada} unidades
+          </span>
+        )}
+
+        <div style={{ display: 'flex', gap: 12, width: '100%', marginTop: 8 }}>
+          <button onClick={() => { onClose(); onCanjear(cupon); }} style={{
+            flex: 1, padding: '12px 0',
+            background: estilo.color, color: '#000',
+            fontWeight: 900, fontSize: 13, border: 'none', borderRadius: 10,
+            cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.1em',
+            boxShadow: `0 0 16px ${estilo.border}66`,
+          }}>
             CANJEAR →
           </button>
-          <button
-            onClick={onClose}
-            style={{
-              flex: 1, padding: '12px 0', background: 'transparent', color: '#888',
-              fontSize: 14, border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10,
-              cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.1em',
-            }}
-          >
+          <button onClick={onClose} style={{
+            flex: 1, padding: '12px 0', background: 'transparent', color: '#888',
+            fontSize: 13, border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10,
+            cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.1em',
+          }}>
             Cancelar
           </button>
         </div>
@@ -178,17 +200,53 @@ export default function CanjearStrip({ scope }) {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
+  const [userCityCode, setUserCityCode] = useState(null);
+  const [userId, setUserId] = useState(null);
+
+  useEffect(() => {
+    const fetchCity = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      setUserId(user.id);
+      const { data: perfil } = await supabase
+        .from('profiles')
+        .select('city')
+        .eq('id', user.id)
+        .single();
+      if (perfil?.city) setUserCityCode(perfil.city.toUpperCase());
+    };
+    fetchCity();
+  }, []);
+
+  const { iniciarCanje, estado, cuponActivo, cardPendiente,
+    errorMsg, cancelar, confirmar, cerrar } = useCanjearCupon({
+    userId,
+    onGenesisUpdate: (nuevoBalance) => {},
+  });
+
   useEffect(() => {
     const fetchCupones = async () => {
-      const { data } = await supabase
+      let query = supabase
         .from('comercio_cupones')
         .select('*')
         .eq('activo', true)
-        .eq('alcance', activeTab);
+        .eq('estado_canje', 'ACTIVO')
+        .or('emision_total.is.null,emision_usada.lt.emision_total');
+
+      if (activeTab === 'CERCANIAS') {
+        if (!userCityCode) { setCupones([]); return; }
+        query = query.filter('ciudades_cobertura', 'cs', `{${userCityCode}}`);
+      } else if (activeTab === 'NACIONAL') {
+        query = query.filter('alcance', 'cs', '{GIRA_NACIONAL}');
+      } else if (activeTab === 'INTERNACIONAL') {
+        query = query.filter('alcance', 'cs', '{GIRA_MUNDIAL}');
+      }
+
+      const { data } = await query;
       setCupones(data || []);
     };
     fetchCupones();
-  }, [activeTab]);
+  }, [activeTab, userCityCode]);
 
   const TOTAL_CARDS = cupones.length < 4 ? (cupones.length || 1) : 8;
 
@@ -287,9 +345,10 @@ export default function CanjearStrip({ scope }) {
           }}
         >
           {allCards.map(cupon => {
-  const ocupado = !cupon._placeholder && (cupon.banner_11_url || cupon.banner_url);
   const esReal = !cupon._placeholder;
-  const imgUrl = cupon.banner_11_url || cupon.banner_url;
+  const estilo = LUNA_STYLES[cupon.tipo_tarjeta] || LUNA_STYLES['PLATA'];
+  const isHovered = hoveredId === cupon.id;
+
   return (
     <div
       key={cupon.id}
@@ -304,57 +363,89 @@ export default function CanjearStrip({ scope }) {
         position: 'relative',
         overflow: 'hidden',
         cursor: esReal ? 'pointer' : 'default',
-        background: ocupado
-          ? `url(${imgUrl}) center/cover no-repeat`
-          : 'rgba(0,0,0,0.6)',
-        border: ocupado
-          ? `2px solid ${hoveredId === cupon.id ? '#facc15' : 'rgba(255,255,255,0.15)'}`
-          : `2px dashed ${hoveredId === cupon.id ? '#facc15' : 'rgba(250,204,21,0.5)'}`,
-        boxShadow: hoveredId === cupon.id ? '0 0 24px rgba(250,204,21,0.4), inset 0 0 20px rgba(250,204,21,0.1)' : 'none',
-        transform: hoveredId === cupon.id ? 'scale(1.03)' : 'scale(1)',
+        background: esReal ? estilo.bg : 'rgba(0,0,0,0.4)',
+        border: `2px solid ${esReal ? (isHovered ? estilo.color : estilo.border) : 'rgba(250,204,21,0.3)'}`,
+        boxShadow: isHovered && esReal ? `0 0 24px ${estilo.border}66` : 'none',
+        transform: isHovered && esReal ? 'scale(1.03)' : 'scale(1)',
         transition: 'all 0.25s ease',
         flexShrink: 0,
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
-      {ocupado ? (
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0,
-          background: 'linear-gradient(to top, rgba(0,0,0,0.85), transparent)',
-          padding: '20px 16px 16px',
-        }}>
-          <span style={{ color: '#fff', fontWeight: 700, fontSize: 16, display: 'block', marginBottom: 4 }}>
-            {cupon.comercio_nombre}
-          </span>
-          {cupon.descuento_pct && (
-            <span style={{ color: '#facc15', fontWeight: 900, fontSize: 18 }}>
-              {cupon.descuento_pct}% DTO
+      {esReal ? (
+        <>
+          {/* Banner superior 1:1 */}
+          <div style={{
+            width: '100%', aspectRatio: '1/1', flexShrink: 0,
+            background: 'rgba(0,0,0,0.3)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 48,
+          }}>
+            {cupon.web_url ? (
+              <img src={cupon.web_url} alt={cupon.comercio_nombre}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : '🌙'}
+          </div>
+
+          {/* Body */}
+          <div style={{
+            flex: 1, display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'space-evenly',
+            padding: '8px 12px 12px',
+          }}>
+            <span style={{
+              fontSize: 9, fontWeight: 700, letterSpacing: 3,
+              textTransform: 'uppercase', color: estilo.color,
+              border: `0.5px solid ${estilo.border}`,
+              borderRadius: 20, padding: '2px 10px',
+              background: `${estilo.border}22`,
+            }}>
+              {estilo.badge}
             </span>
-          )}
-          <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, display: 'block', marginTop: 4 }}>
-            {(cupon.coste_genesis || 0).toLocaleString()} ✦ génesis
-          </span>
-        </div>
-      ) : esReal ? (
-        <div style={{
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          height: '100%', gap: 8, padding: 16, textAlign: 'center',
-          cursor: 'pointer',
-        }}
-          onClick={() => setSelectedCupon(cupon)}
-        >
-          <span style={{ color: '#facc15', fontSize: 18, fontWeight: 700 }}>
-            {cupon.comercio_nombre}
-          </span>
-          {cupon.descuento_pct && (
-            <span style={{ color: '#39FF14', fontSize: 24, fontWeight: 900 }}>
-              {cupon.descuento_pct}%
+
+            <span style={{
+              fontSize: 40, fontWeight: 900, color: estilo.color,
+              lineHeight: 1, textShadow: `0 0 20px ${estilo.border}66`,
+              fontFamily: "'Exo 2', sans-serif",
+            }}>
+              {cupon.valor_euros != null ? `${cupon.valor_euros}€` : '—'}
             </span>
-          )}
-          <span style={{ color: 'rgba(250,204,21,0.5)', fontSize: 11 }}>
-            Pulsa para canjear →
-          </span>
-        </div>
+
+            <div style={{
+              width: '70%', height: 0.5,
+              background: `linear-gradient(90deg,transparent,${estilo.border},transparent)`,
+            }} />
+
+            <span style={{
+              fontSize: 10, fontWeight: 700, color: estilo.color,
+              textAlign: 'center', opacity: 0.8, lineHeight: 1.4,
+            }}>
+              {cupon.tipo_tarjeta === 'PLATA' && cupon.compra_minima
+                ? `Compra mínima ${cupon.compra_minima}€`
+                : 'Sin condición'}
+            </span>
+
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 5,
+              background: `${estilo.border}22`,
+              border: `0.5px solid ${estilo.border}55`,
+              borderRadius: 20, padding: '4px 12px',
+            }}>
+              <span style={{ fontSize: 12 }}>🌙</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: estilo.color }}>
+                {(cupon.coste_genesis || 0).toLocaleString()} Lunas
+              </span>
+            </div>
+
+            <span style={{
+              fontSize: 9, fontWeight: 700, color: estilo.color,
+              opacity: 0.5, letterSpacing: 2, textTransform: 'uppercase',
+            }}>
+              {cupon.comercio_nombre}
+            </span>
+          </div>
+        </>
       ) : (
         <div style={{
           display: 'flex', flexDirection: 'column',
@@ -362,7 +453,7 @@ export default function CanjearStrip({ scope }) {
           height: '100%', gap: 8,
         }}>
           <span style={{ color: '#facc15', fontSize: 18, fontWeight: 700, letterSpacing: '0.1em' }}>
-            ✦ Cupón disponible ✦
+            ✦ Próximamente ✦
           </span>
           <span style={{ color: 'rgba(250,204,21,0.4)', fontSize: 11 }}>
             Pronto en tu ciudad
@@ -376,7 +467,161 @@ export default function CanjearStrip({ scope }) {
       </div>
 
       {selectedCupon && (
-        <CuponModal cupon={selectedCupon} onClose={() => setSelectedCupon(null)} />
+        <CuponModal cupon={selectedCupon} onClose={() => setSelectedCupon(null)} onCanjear={iniciarCanje} />
+      )}
+
+      {/* Confirmación */}
+      {estado === 'confirmando' && cardPendiente && (
+        <div onClick={cancelar} style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)',
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: '#111', border: '1px solid rgba(255,215,0,0.3)',
+            borderRadius: 16, padding: '2.5rem',
+            maxWidth: 400, width: '90%', textAlign: 'center',
+            fontFamily: "'Exo 2', sans-serif",
+            display: 'flex', flexDirection: 'column', gap: 16,
+          }}>
+            <span style={{ color: '#facc15', fontSize: 13, fontWeight: 700,
+              letterSpacing: 2, textTransform: 'uppercase' }}>
+              Confirmar canje
+            </span>
+            <span style={{ color: '#fff', fontSize: 32, fontWeight: 900 }}>
+              {cardPendiente.valor_euros}€
+            </span>
+            <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>
+              {cardPendiente.comercio_nombre}
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center',
+              justifyContent: 'center', gap: 6 }}>
+              <span>🌙</span>
+              <span style={{ color: '#facc15', fontWeight: 700, fontSize: 15 }}>
+                {(cardPendiente.coste_genesis || 0).toLocaleString()} Lunas
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+              <button onClick={confirmar} style={{
+                flex: 1, padding: '12px 0', background: '#facc15', color: '#000',
+                fontWeight: 900, fontSize: 13, border: 'none', borderRadius: 10,
+                cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.1em',
+              }}>
+                CONFIRMAR
+              </button>
+              <button onClick={cancelar} style={{
+                flex: 1, padding: '12px 0', background: 'transparent', color: '#888',
+                fontSize: 13, border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10,
+                cursor: 'pointer', textTransform: 'uppercase',
+              }}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cargando */}
+      {estado === 'cargando' && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(0,0,0,0.8)',
+        }}>
+          <span style={{ color: '#facc15', fontSize: 14, fontWeight: 700,
+            letterSpacing: 3, textTransform: 'uppercase',
+            fontFamily: "'Exo 2', sans-serif", animation: 'pulse 1s infinite' }}>
+            Procesando...
+          </span>
+        </div>
+      )}
+
+      {/* Éxito */}
+      {estado === 'exito' && cuponActivo && (
+        <div onClick={cerrar} style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)',
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: '#111', border: '1px solid rgba(0,255,140,0.3)',
+            borderRadius: 16, padding: '2.5rem',
+            maxWidth: 400, width: '90%', textAlign: 'center',
+            fontFamily: "'Exo 2', sans-serif",
+            display: 'flex', flexDirection: 'column', gap: 14,
+          }}>
+            <span style={{ fontSize: 40 }}>✅</span>
+            <span style={{ color: '#39FF14', fontSize: 13, fontWeight: 700,
+              letterSpacing: 2, textTransform: 'uppercase' }}>
+              {cuponActivo.ya_existia ? 'Cupón ya activo' : '¡Luna canjeada!'}
+            </span>
+            <span style={{ color: '#fff', fontSize: 28, fontWeight: 900 }}>
+              {cuponActivo.valor_euros}€ — {cuponActivo.comercio_nombre}
+            </span>
+            {cuponActivo.palabra_clave_2 && (
+              <div style={{ background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 10, padding: '12px 16px' }}>
+                <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11,
+                  display: 'block', marginBottom: 4, letterSpacing: 2 }}>
+                  PALABRA CLAVE SECRETA
+                </span>
+                <span style={{ color: '#facc15', fontSize: 20, fontWeight: 900,
+                  letterSpacing: 4 }}>
+                  {cuponActivo.palabra_clave_2}
+                </span>
+              </div>
+            )}
+            <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>
+              Caduca: {cuponActivo.caduca_legible}
+            </span>
+            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11 }}>
+              Encuéntrala también en Booster › Mis Cupones
+            </span>
+            <button onClick={cerrar} style={{
+              padding: '12px 0', background: '#39FF14', color: '#000',
+              fontWeight: 900, fontSize: 13, border: 'none', borderRadius: 10,
+              cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.1em',
+              marginTop: 8,
+            }}>
+              CERRAR
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Error */}
+      {estado === 'error' && (
+        <div onClick={cerrar} style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(0,0,0,0.85)',
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: '#111', border: '1px solid rgba(255,60,60,0.3)',
+            borderRadius: 16, padding: '2.5rem',
+            maxWidth: 380, width: '90%', textAlign: 'center',
+            fontFamily: "'Exo 2', sans-serif",
+            display: 'flex', flexDirection: 'column', gap: 14,
+          }}>
+            <span style={{ fontSize: 36 }}>⚠️</span>
+            <span style={{ color: '#ff4444', fontSize: 13, fontWeight: 700,
+              letterSpacing: 2, textTransform: 'uppercase' }}>
+              Error en el canje
+            </span>
+            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>
+              {errorMsg}
+            </span>
+            <button onClick={cerrar} style={{
+              padding: '12px 0', background: 'transparent', color: '#888',
+              fontSize: 13, border: '1px solid rgba(255,255,255,0.2)',
+              borderRadius: 10, cursor: 'pointer', textTransform: 'uppercase',
+              marginTop: 8,
+            }}>
+              CERRAR
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

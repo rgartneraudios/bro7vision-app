@@ -49,10 +49,10 @@ const iniciarCanje = useCallback((card) => {
         body: JSON.stringify({
           user_id:         userId,
           comercio_id:     cardPendiente.id,
-          descuento_pct:   cardPendiente.descuento_pct,
-         tipo_brocard:    cardPendiente.tipo_brocard || null,
-          comercio_nombre: cardPendiente.nombre,
-          web_url:        cardPendiente.web_url  || '',
+          tipo_tarjeta:    cardPendiente.tipo_tarjeta    || null,
+          valor_euros:     cardPendiente.valor_euros     || null,
+          comercio_nombre: cardPendiente.comercio_nombre || cardPendiente.nombre,
+          web_url:         cardPendiente.web_url         || '',
           coste_genesis:   cardPendiente.coste_genesis,
         }),
       });
@@ -66,10 +66,11 @@ const iniciarCanje = useCallback((card) => {
         // Cupón ya existente — mostrar el código que ya tenían
         if (res.status === 409) {
           setCuponActivo({
-            codigo:          data.codigo,
-            descuento_pct:   cardPendiente.descuento_pct,
-            comercio_nombre: cardPendiente.nombre,
-            web_url:        cardPendiente.web_url || '',
+            tipo_tarjeta:    cardPendiente.tipo_tarjeta,
+            valor_euros:     cardPendiente.valor_euros,
+            palabra_clave_2: data.palabra_clave_2 || null,
+            comercio_nombre: cardPendiente.nombre || cardPendiente.comercio_nombre,
+            web_url:         cardPendiente.web_url || '',
             caduca_legible:  '—',
             ya_existia:      true,
           });
@@ -83,8 +84,9 @@ const iniciarCanje = useCallback((card) => {
 
       // ── Éxito ─────────────────────────────────────────────────
       setCuponActivo({
-        codigo:          data.codigo,
-        descuento_pct:   data.descuento_pct,
+        tipo_tarjeta:    data.tipo_tarjeta,
+        valor_euros:     data.valor_euros,
+        palabra_clave_2: data.palabra_clave_2,
         comercio_nombre: data.comercio_nombre,
         web_url:        data.web_url,
         caduca_legible:  data.caduca_legible,
