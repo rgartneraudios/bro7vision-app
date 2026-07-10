@@ -46,7 +46,7 @@ const ColHeaders = ({ slots, prefix, hexColor }) => (
   </div>
 );
 
-const MarketplaceTab = ({ session, profile }) => {
+const MarketplaceTab = ({ session, profile, role: roleProp }) => {
   const [escenarios, setEscenarios] = useState([]);
   const [butacas,    setButacas]    = useState([]);
   const [tarifas,    setTarifas]    = useState([]);
@@ -56,7 +56,8 @@ const MarketplaceTab = ({ session, profile }) => {
   const [selectedSlot,     setSelectedSlot]    = useState(null);
   const [coberturaInicial, setCoberturaInicial] = useState(null);
 
-  const role     = session?.user?.user_metadata?.role ?? 'guest';
+  const role     = roleProp ?? session?.user?.user_metadata?.role
+    ?? (profile?.tipo ? 'director' : 'advertiser');
   const rolColor = role === 'director' ? COLOR_DIRECTOR : COLOR_PRODUCTOR;
 
   const fetchData = useCallback(async () => {

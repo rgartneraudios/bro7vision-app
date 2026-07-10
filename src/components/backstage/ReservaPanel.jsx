@@ -28,6 +28,9 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
   const [ciudad, setCiudad]         = useState('');
   const [moonTurno, setMoonTurno]   = useState(1);
   const [guion, setGuion]           = useState('');
+  const [textoLinea1, setTextoLinea1] = useState('');
+  const [textoLinea2, setTextoLinea2] = useState('');
+  const [logoUrl, setLogoUrl]         = useState('');
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState(null);
   const [success, setSuccess]       = useState(false);
@@ -83,6 +86,9 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
         ciudad_codigo: cityCode,
         productor_id:  session.user.id,
         guion:         guion.trim(),
+        texto_linea1:  textoLinea1.trim() || null,
+        texto_linea2:  textoLinea2.trim() || null,
+        logo_url:      logoUrl.trim()     || null,
         nombre_archivo,
         estado:        'EN_CASTING',
         precio,
@@ -219,6 +225,61 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
               </select>
             </div>
           )}
+
+          {/* Texto Línea 1 */}
+          <div>
+            <label style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}
+              className="block text-xs text-gray-400 uppercase tracking-widest mb-1.5">
+              Texto Línea 1
+              <span className="ml-1 text-gray-600 normal-case font-normal">(máx. 55 caracteres)</span>
+            </label>
+            <input
+              type="text"
+              value={textoLinea1}
+              onChange={e => setTextoLinea1(e.target.value)}
+              maxLength={55}
+              placeholder="¿Asistirás al concierto del Grupo X en Madrid?"
+              style={{ fontFamily: "'Inter', sans-serif" }}
+              className="w-full bg-zinc-900 border border-white/10 text-white text-sm px-3 py-2.5 rounded focus:border-purple-500 focus:outline-none transition-colors placeholder-gray-600"
+            />
+            <div className="text-right text-xs text-gray-600 mt-1">{textoLinea1.length}/55</div>
+          </div>
+
+          {/* Texto Línea 2 */}
+          <div>
+            <label style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}
+              className="block text-xs text-gray-400 uppercase tracking-widest mb-1.5">
+              Texto Línea 2
+              <span className="ml-1 text-gray-600 normal-case font-normal">(opcional · máx. 55 caracteres)</span>
+            </label>
+            <input
+              type="text"
+              value={textoLinea2}
+              onChange={e => setTextoLinea2(e.target.value)}
+              maxLength={55}
+              placeholder="¡Apresúrate, las entradas se agotan!"
+              style={{ fontFamily: "'Inter', sans-serif" }}
+              className="w-full bg-zinc-900 border border-white/10 text-white text-sm px-3 py-2.5 rounded focus:border-purple-500 focus:outline-none transition-colors placeholder-gray-600"
+            />
+            <div className="text-right text-xs text-gray-600 mt-1">{textoLinea2.length}/55</div>
+          </div>
+
+          {/* Logo URL */}
+          <div>
+            <label style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}
+              className="block text-xs text-gray-400 uppercase tracking-widest mb-1.5">
+              URL del Logo o Banner
+              <span className="ml-1 text-gray-600 normal-case font-normal">(PNG con fondo transparente recomendado)</span>
+            </label>
+            <input
+              type="url"
+              value={logoUrl}
+              onChange={e => setLogoUrl(e.target.value)}
+              placeholder="https://tudominio.com/logo.png"
+              style={{ fontFamily: "'Inter', sans-serif" }}
+              className="w-full bg-zinc-900 border border-white/10 text-white text-sm px-3 py-2.5 rounded focus:border-purple-500 focus:outline-none transition-colors placeholder-gray-600"
+            />
+          </div>
 
           {/* Guión */}
           <div>

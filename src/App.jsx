@@ -92,6 +92,7 @@ function App() {
   const [isFullscreen, setIsFullscreen]         = useState(false);
   const [showStudio, setShowStudio]             = useState(false);
 const [showBackstage, setShowBackstage]       = useState(false);
+const [boosterTab, setBoosterTab]           = useState(null);
   const [isTeleporting, setIsTeleporting]       = useState(false);
   const [teleportCoords, setTeleportCoords]     = useState({ city: '' });
   const [projectingUser, setProjectingUser]     = useState(null);
@@ -375,8 +376,9 @@ const [showBackstage, setShowBackstage]       = useState(false);
     userId:         session?.user?.id || null,
   genesisBalance: balances.genesis  || 0,
   onGenesisUpdate: (nuevoBalance) => setBalances(prev => ({ ...prev, genesis: nuevoBalance })),
-  handleGoToShop,
-  setShowBackstage,
+    handleGoToShop,
+    setShowBackstage,
+    boosterTab, setBoosterTab,
   };
 
   // ══════════════════════════════════════════════════════
@@ -419,7 +421,7 @@ const [showBackstage, setShowBackstage]       = useState(false);
 
       {showBooster && (
         <div className="fixed inset-0 z-[200] bg-black/80 flex items-center justify-center">
-          <BoosterModal onClose={() => setShowBooster(false)} />
+          <BoosterModal onClose={() => { setShowBooster(false); setBoosterTab(null); }} session={session} initialTab={boosterTab} />
         </div>
       )}
 

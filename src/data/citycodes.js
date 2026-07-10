@@ -54,15 +54,15 @@
 
 // ── Canales ─────────────────────────────────────────────────────
 export const CHANNELS = {
-  1: "ChannelOeste",
-  2: "ChannelMoon",
-  3: "ChannelEste",
-  4: "Solo Earth",
-  5: "Solo Fantasy",
-  6: "Solo Cinema",
-  7: "ChannelOeste169",
-  8: "Band Fantasy",
-  9: "ChannelEste169",
+  1: "Canal Mercurio",
+  2: "Canal Luna",
+  3: "Canal Venus",
+  4: "Canal Tierra",
+  5: "Canal Júpiter",
+  6: "Canal Marte",
+  7: "Canal Saturno",
+  8: "Canal Urano",
+  9: "Canal Neptuno",
 };
 
 // ── Fases lunares ───────────────────────────────────────────────
@@ -476,7 +476,7 @@ const normalizeKey = (str) =>
   str.toLowerCase().trim().replace(/ /g, "_")
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-/** Devuelve true si el canal es ChannelMoon */
+/** Devuelve true si el canal es Luna (canal 2) */
 export const isMoonChannel = (canal) => canal === 2;
 
 /** Ciudad → código (3 dígitos). Null si no existe. */

@@ -261,13 +261,13 @@ const BackStage = ({ session, onLogout }) => {
   const rolUsuario  = session?.user?.user_metadata?.role;
 
   const TABS_ANUNCIOS = [
-    { id: 'fondos',          label: 'FONDOS REALITY'       },
+    { id: 'fondos',          label: 'FONDOS CANALES'       },
     { id: 'promo_eco',       label: 'PROMO ECO'            },
     { id: 'bro7band',        label: 'BRO7BAND'             },
     { id: 'slide_rail',      label: 'SLIDE RAIL'           },
     { id: 'games',           label: 'GAMES'                },
+    { id: 'estudio',         label: 'DEMOS & BLOG'          },
     { id: 'campanas',        label: 'MIS CAMPAÑAS'         },
-    { id: 'estudio',         label: 'ESTUDIO & GUÍA'          },
   ];
 
   const TABS_COMERCIO = [
@@ -361,7 +361,7 @@ const BackStage = ({ session, onLogout }) => {
       <div className="flex-1 overflow-y-auto overflow-x-hidden">
 
         {activeTab === 'fondos' && (
-          <MarketplaceTab session={session} profile={profile} />
+          <MarketplaceTab session={session} profile={profile} role={rolUsuario} />
         )}
 
         {activeTab === 'campanas' && (

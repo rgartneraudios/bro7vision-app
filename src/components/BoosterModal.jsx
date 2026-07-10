@@ -5,6 +5,7 @@ import { supabase } from '../supabaseClient';
 import { marcarActividad } from '../hooks/useActividad';
 import BoosterMisCupones from './booster/BoosterMisCupones';
 import BoosterCanjesRecibidos from './backstage/BoosterCanjesRecibidos';
+import BoosterAnunciante from './booster/BoosterAnunciante';
 import { CoordenadosBlock } from './CoordenadosBlock';
 
 function getCicloLunar() {
@@ -28,11 +29,11 @@ const OSOS_INTERESES = [
   { id: 'ofertas',   label: 'Ofertas'   },
 ];
 
-const BoosterModal = ({ onClose }) => {
+const BoosterModal = ({ onClose, initialTab, session }) => {
 
   // ── ESTADOS PRINCIPALES ──
   const [loading, setLoading] = useState(false);
-  const [tab, setTab]         = useState('identity');
+  const [tab, setTab]         = useState(initialTab || 'identity');
 
   // ── ESTADOS DE PERFIL ──
   const [country,      setCountry]      = useState('');
@@ -61,11 +62,9 @@ const BoosterModal = ({ onClose }) => {
   // ── FORMDATA PRINCIPAL ──
   const [formData, setFormData] = useState({
     alias: '', avatar_url: '', banner_url: '',
-    bro_pd: '', bro_ser: '', bro_avi: '', bro_mus: '', bro_aud: '',
-    twit_message: '', role: [],
-    audio_file: '', video_file: '', audio_type: '', audio_description: '',
-    track_name: '', video_file_169: '',
-     editorial_title: '', editorial_content: '',
+    bro_pd: '', bro_ser: '', bro_avi: '',
+    audio_file: '', audio_type: '', audio_description: '',
+    track_name: '',
     description: '', genero: 'n',
     // OSOS IA
     osos_nombre: '', osos_tono: '', osos_intereses: '', osos_frase: '', oso_id: 'TITO',
@@ -162,18 +161,9 @@ const BoosterModal = ({ onClose }) => {
           alias:              profile.alias              || user.user_metadata?.alias || '',
           avatar_url:         profile.avatar_url         || '',
           banner_url:         profile.banner_url         || '',
-          role: Array.isArray(profile.role) ? profile.role : (profile.role ? [profile.role] : []),
           bro_pd:             profile.bro_pd             || '',
           bro_ser:            profile.bro_ser            || '',
           bro_avi:            profile.bro_avi            || '',
-          bro_mus:            profile.bro_mus            || '',
-          bro_aud:            profile.bro_aud            || '',
-          video_file:         profile.video_file         || '',
-          video_file_169:     profile.video_file_169     || '',
-
-           editorial_title:    profile.editorial_title    || '',
-          editorial_content:  profile.editorial_content  || '',
-          twit_message:       profile.twit_message       || '',
           description:        profile.description        || '',
           genero:             profile.genero             || 'n',
           // OSOS IA
@@ -292,6 +282,7 @@ const BoosterModal = ({ onClose }) => {
                  { id: 'linaje',   label: '👑 Linaje',         color: 'orange' },
                  { id: 'mis-cupones', label: '🎫 Mis Cupones', color: 'yellow' },
                  ...(tieneComercioCupones ? [{ id: 'canjes-recibidos', label: '📋 Canjes Recibidos', color: 'cyan' }] : []),
+                 { id: 'ANUNCIANTE', label: '📢 ANUNCIANTE', color: 'purple' },
                  ].filter(Boolean).map((item) => (
               <button key={item.id} onClick={() => setTab(item.id)}
                 className={`text-left py-3 px-5 text-2xl font-bold rounded-2xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap
@@ -660,6 +651,11 @@ const BoosterModal = ({ onClose }) => {
 
               {/* ══ 📋 CANJES RECIBIDOS ══ */}
 {tab === 'canjes-recibidos' && tieneComercioCupones && <BoosterCanjesRecibidos />}
+
+              {/* ══ 📢 ANUNCIANTE ══ */}
+              {tab === 'ANUNCIANTE' && (
+                <BoosterAnunciante session={session} />
+              )}
 
             </div>
         </div>
