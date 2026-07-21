@@ -6,7 +6,6 @@ import SlideRailTab from './SlideRailTab';
 import GamesTab from './GamesTab';
 import DemoBlogTab from './DemoBlogTab';
 import MisCampanasTab from './MisCampanasTab';
-import PromoEcoTab from './PromoEcoTab';
 import TarjetasRegalo from './TarjetasRegalo';
 import TarjetasCanjesRecibidosTab from './TarjetasCanjesRecibidosTab';
 
@@ -261,13 +260,12 @@ const BackStage = ({ session, onLogout }) => {
   const rolUsuario  = session?.user?.user_metadata?.role;
 
   const TABS_ANUNCIOS = [
-    { id: 'fondos',          label: 'FONDOS CANALES'       },
-    { id: 'promo_eco',       label: 'PROMO ECO'            },
-    { id: 'bro7band',        label: 'BRO7BAND'             },
-    { id: 'slide_rail',      label: 'SLIDE RAIL'           },
-    { id: 'games',           label: 'GAMES'                },
-    { id: 'estudio',         label: 'DEMOS & BLOG'          },
-    { id: 'campanas',        label: 'MIS CAMPAÑAS'         },
+    { id: 'fondos',     label: 'FONDOS CANALES TRIVIA' },
+    { id: 'bro7band',   label: 'BRO7BAND'              },
+    { id: 'slide_rail', label: 'SLIDE RAIL'             },
+    { id: 'games',      label: 'GAMES'                  },
+    { id: 'estudio',    label: 'DEMOS & BLOG'           },
+    { id: 'campanas',   label: 'MIS CAMPAÑAS'           },
   ];
 
   const TABS_COMERCIO = [
@@ -388,10 +386,6 @@ const BackStage = ({ session, onLogout }) => {
 
         {activeTab === 'games' && (
           <GamesTab />
-        )}
-
-        {activeTab === 'promo_eco' && (
-          <PromoEcoTab userId={session?.user?.id} />
         )}
 
         {activeTab === 'tarjetas_diseno' && <TarjetasRegalo />}

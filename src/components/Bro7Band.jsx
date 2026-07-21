@@ -1,6 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
 import GenesisCounter from './GenesisCounter';
 import AgentChatInput from './AgentChatInput';
+import { supabase } from '../supabaseClient';
+import { getAudioForOsos }      from '../data/audioMap_osos';
+import { getAudioForNova }      from '../data/audioMap_nova';
+import { getAudioForIsabella }  from '../data/audioMap_isabella';
+import { getAudioForMapache }   from '../data/audioMap_mapache';
+import { getAudioForSmisterio } from '../data/audioMap_smisterio';
+import { getAudioForOrumama }   from '../data/audioMap_orumama';
+import { getAudioForJaguar }    from '../data/audioMap_jaguar';
+import { getAudioForRumores }   from '../data/audioMap_rumores';
+import { getAudioForEvelyn }    from '../data/audioMap_evelyn';
+
+const AUDIO_RESOLVER_MAP = {
+  osos:              getAudioForOsos,
+  nova:              getAudioForNova,
+  isabella_profesor: getAudioForIsabella,
+  mapache_ami:       getAudioForMapache,
+  smisterio:         getAudioForSmisterio,
+  orumama:           getAudioForOrumama,
+  jaguar:            getAudioForJaguar,
+  rumores:           getAudioForRumores,
+  evelyn_larry:      getAudioForEvelyn,
+};
 
 const GROUPS = [
   { id: 1,  name: 'OSOS',               groupId:'osos',               members:['TITO','LARA','PUFFO'], hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['osos.webp'],             video: 'osos_default.mp4',              top: '8%',  left: '20%',   animDuration: '6s'   },
@@ -37,10 +59,15 @@ const FRASES_BIENVENIDA = {
 
 const elegir = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
+const normalizar = (str) =>
+  str.trim().toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
 const VIDEO_BASE = 'https://media.bro7vision.com/';
 const EMOJI_PATH = '/emojis/';
 
-function Bro7Band({ iaMode, onBack, balances }) {
+function Bro7Band({ iaMode, onBack, balances, setBalances }) {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [activeMember, setActiveMember] = useState(null);
   const [iaActive, setIaActive] = useState(false);
@@ -51,6 +78,11 @@ function Bro7Band({ iaMode, onBack, balances }) {
   const [mensajeBienvenida, setMensajeBienvenida] = useState('');
   const [footerOpen, setFooterOpen] = useState(false);
   const charIdx = useRef(0);
+  const [userLocation, setUserLocation] = useState(null);
+  const [audioUrl, setAudioUrl] = useState(null);
+  const [audioPlaying, setAudioPlaying] = useState(false);
+  const audioRef = useRef(null);
+  const [faseLunar, setFaseLunar] = useState(null);
 
   const group = GROUPS.find(g => g.id === selectedGroup);
 
@@ -87,16 +119,142 @@ function Bro7Band({ iaMode, onBack, balances }) {
     return () => clearInterval(t);
   }, [mensajeBienvenida]);
 
+  useEffect(() => {
+    const fetchLocation = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from('profiles')
+        .select('city, country')
+        .eq('id', user.id)
+        .single();
+      if (data) setUserLocation({ city: data.city, country: data.country });
+    };
+    fetchLocation();
+  }, []);
+
+  useEffect(() => {
+    const fetchFase = async () => {
+      const LUNA_REF = new Date('2000-01-06T18:14:00Z');
+      const CICLO = 29.53058867;
+      const ahora = new Date();
+      const diff = (ahora - LUNA_REF) / (1000 * 60 * 60 * 24);
+      const fase = Math.floor(diff / CICLO);
+      setFaseLunar(fase);
+    };
+    fetchFase();
+  }, []);
+
+  useEffect(() => {
+    if (!group || !group.hasAudio) { setAudioUrl(null); return; }
+    const resolver = AUDIO_RESOLVER_MAP[group.groupId];
+    if (!resolver) { setAudioUrl(null); return; }
+    const url = resolver(userLocation);
+    setAudioUrl(url);
+    setAudioPlaying(false);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+    }
+  }, [selectedGroup, userLocation]);
+
   const isAdmin = balances?.is_admin === true;
 
-  const handleClaim = (palabra, grp) => {
+  const handleClaim = async (palabra, grp) => {
     setClaimStatus(null);
-    console.log('claim', palabra, grp.groupId);
+    if (!palabra.trim()) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: audioData, error: audioError } = await supabase
+      .from('bro7band_audios')
+      .select('id, palabra_clave, lunas_recompensa')
+      .eq('personaje_id', grp.groupId)
+      .eq('activo', true)
+      .eq('fase_lunar', faseLunar)
+      .single();
+
+    if (audioError || !audioData) {
+      setClaimStatus('error');
+      return;
+    }
+
+    if (normalizar(palabra) !== normalizar(audioData.palabra_clave)) {
+      setClaimStatus('error');
+      return;
+    }
+
+    const { data: claimExistente } = await supabase
+      .from('bro7band_claims')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('audio_id', audioData.id)
+      .eq('fase_lunar', faseLunar)
+      .maybeSingle();
+
+    if (claimExistente) {
+      setClaimStatus('repetido');
+      return;
+    }
+
+    const { error: claimError } = await supabase
+      .from('bro7band_claims')
+      .insert({
+        user_id: user.id,
+        audio_id: audioData.id,
+        fase_lunar: faseLunar
+      });
+
+    if (claimError) {
+      setClaimStatus('error');
+      return;
+    }
+
+    const { error: lunasError } = await supabase.rpc('incrementar_lunas', {
+      uid: user.id,
+      delta: audioData.lunas_recompensa
+    });
+
+    if (lunasError) {
+      setClaimStatus('error');
+      return;
+    }
+
+    setClaimStatus('ok');
+
+    // Refrescar contador de Lunas
+    const { data: perfilActualizado } = await supabase
+      .from('profiles')
+      .select('lunas')
+      .eq('id', user.id)
+      .single();
+
+    if (perfilActualizado && setBalances) {
+      setBalances(prev => ({
+        ...prev,
+        genesis: perfilActualizado.lunas
+      }));
+    }
   };
 
   const handleAgentSend = (text) => {
     console.log('agent send', text, group?.groupId);
   };
+
+  const handleAudio = () => {
+    if (!audioUrl || !audioRef.current) return;
+    if (audioPlaying) {
+      audioRef.current.pause();
+      setAudioPlaying(false);
+    } else {
+      audioRef.current.src = audioUrl;
+      audioRef.current.play();
+      setAudioPlaying(true);
+    }
+  };
+
+  const handleAudioEnded = () => setAudioPlaying(false);
 
   if (selectedGroup && group) {
     const videoSrc = group.video.startsWith('http') ? group.video : `${VIDEO_BASE}${group.video}`;
@@ -114,6 +272,8 @@ function Bro7Band({ iaMode, onBack, balances }) {
           playsInline
           className="absolute inset-0 w-full h-full object-cover"
         />
+
+        <audio ref={audioRef} onEnded={handleAudioEnded} />
 
         <div className="absolute bottom-0 left-0 right-0 z-20">
           <div
@@ -175,8 +335,14 @@ function Bro7Band({ iaMode, onBack, balances }) {
               {group.hasPalabraClave && (
                 <div className="flex items-center gap-3 shrink-0 mr-[4%]">
                   {group.hasAudio && (
-                    <button className="px-6 py-3 rounded-full border-2 border-fuchsia-500/80 text-fuchsia-300 text-sm font-black uppercase tracking-widest hover:bg-fuchsia-500/20 hover:border-fuchsia-400 transition-all shadow-[0_0_30px_rgba(217,70,239,0.6)] backdrop-blur-md">
-                      AUDIO
+                    <button
+                      onClick={handleAudio}
+                      className={`px-6 py-3 rounded-full border-2 text-sm font-black uppercase tracking-widest backdrop-blur-md transition-all
+                        ${audioPlaying
+                          ? 'border-fuchsia-400 text-fuchsia-200 bg-fuchsia-500/20 shadow-[0_0_30px_rgba(217,70,239,0.8)]'
+                          : 'border-fuchsia-500/80 text-fuchsia-300 hover:bg-fuchsia-500/20 hover:border-fuchsia-400 shadow-[0_0_30px_rgba(217,70,239,0.6)]'}`}
+                    >
+                      {audioPlaying ? '⏸ AUDIO' : '▶ AUDIO'}
                     </button>
                   )}
                   <div className="w-64 rounded-2xl border border-amber-500/50 bg-black/60 backdrop-blur-md p-3 flex flex-col gap-2">
@@ -197,7 +363,7 @@ function Bro7Band({ iaMode, onBack, balances }) {
                     </div>
                     {claimStatus === 'ok'       && <span className="text-green-400 text-xs">+50 Lunas ✓</span>}
                     {claimStatus === 'error'    && <span className="text-red-400 text-xs">Palabra incorrecta</span>}
-                    {claimStatus === 'repetido' && <span className="text-cyan-400 text-xs">Ya canjeado esta semana ✓</span>}
+                    {claimStatus === 'repetido' && <span className="text-cyan-400 text-xs">Ya canjeado esta fase lunar ✓</span>}
                   </div>
                 </div>
               )}

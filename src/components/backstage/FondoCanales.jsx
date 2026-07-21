@@ -29,6 +29,15 @@ const EscenarioCard = ({ slot, butacas, onSelectSlot, role }) => {
   const ciudadesOcupadas = new Set(slotButacas.filter(b => b.ciudad_codigo).map(b => b.ciudad_codigo));
   const ciudadesLibres   = 158 - ciudadesOcupadas.size;
   const pocosCiudades    = ciudadesLibres > 0 && ciudadesLibres <= 20;
+  const semaforoColor = (() => {
+    if (ocupadoMundial || ocupadoNacional) return '#dc2626';
+    const ocupadoRegional = slotButacas.some(
+      b => b.cobertura === 'GIRA_REGIONAL' || b.cobertura === 'GIRA_GRAN_REGIONAL'
+    );
+    if (ocupadoRegional) return '#f97316';
+    if (ciudadesOcupadas.size > 0) return '#ca8a04';
+    return '#16a34a';
+  })();
 
   const isAdvertiser = role === 'advertiser';
 
@@ -112,12 +121,8 @@ const EscenarioCard = ({ slot, butacas, onSelectSlot, role }) => {
             />
           </div>
 
-          {/* Esferas semáforo — sin resplandor */}
-          <div className="flex flex-row items-center gap-[3px] shrink-0">
-            <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#16a34a' }} />
-            {slot.turno >= 3 && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ca8a04' }} />}
-            {slot.turno === 4 && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#dc2626' }} />}
-          </div>
+          {/* Semáforo geográfico — una esfera, 4 estados */}
+          <div style={{ width: 10, height: 10, borderRadius: '50%', background: semaforoColor, flexShrink: 0 }} />
         </div>
       )}
     </div>

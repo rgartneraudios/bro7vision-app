@@ -441,6 +441,7 @@ const [boosterTab, setBoosterTab]           = useState(null);
         <Bro7Band
           iaMode={iaMode}
           balances={balances}
+          setBalances={setBalances}
           onBack={() => { setStep(0); setIntent(null); }}
         />
       )}

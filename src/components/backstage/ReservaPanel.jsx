@@ -31,6 +31,11 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
   const [textoLinea1, setTextoLinea1] = useState('');
   const [textoLinea2, setTextoLinea2] = useState('');
   const [logoUrl, setLogoUrl]         = useState('');
+  const [promoPregunta,  setPromoPregunta]  = useState('');
+  const [promoOpcionA,   setPromoOpcionA]   = useState('');
+  const [promoOpcionB,   setPromoOpcionB]   = useState('');
+  const [promoOpcionC,   setPromoOpcionC]   = useState('');
+  const [promoCorrecta,  setPromoCorrecta]  = useState('a');
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState(null);
   const [success, setSuccess]       = useState(false);
@@ -51,6 +56,10 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
   const handleReservar = async () => {
     if (needsCiudad && !ciudad) { setError('Selecciona una ciudad para esta cobertura.'); return; }
     if (!guion.trim())          { setError('El guión es obligatorio — el Montador lo necesita.'); return; }
+    if (!promoPregunta.trim() || !promoOpcionA.trim() || !promoOpcionB.trim() || !promoOpcionC.trim()) {
+      setError('La pregunta PromoECO y sus 3 opciones son obligatorias.');
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -98,6 +107,23 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
 
       const { error: err } = await supabase.from('bs_butacas').insert([payload]);
       if (err) throw err;
+
+      const opcionConStar = (texto, clave) =>
+        clave === promoCorrecta ? `${texto} (*)` : texto;
+
+      const { error: promoErr } = await supabase.from('promo_eco').insert([{
+        comercio_id:  session.user.id,
+        pregunta:     promoPregunta.trim(),
+        opcion_a:     opcionConStar(promoOpcionA.trim(), 'a'),
+        opcion_b:     opcionConStar(promoOpcionB.trim(), 'b'),
+        opcion_c:     opcionConStar(promoOpcionC.trim(), 'c'),
+        escenario_id: String(escenarioId),
+        turno:        isMoon ? moonTurno : slot.turno,
+        alcance:      cobertura,
+        activo:       true,
+        vence_luna:   'Luna Llena',
+      }]);
+      if (promoErr) throw promoErr;
 
       setSuccess(true);
       setTimeout(() => onReserved(), 1500);
@@ -297,6 +323,61 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
               className="w-full bg-zinc-900 border border-white/10 text-white text-sm px-3 py-2.5 rounded focus:border-purple-500 focus:outline-none transition-colors resize-none placeholder-gray-600"
             />
             <div style={{ fontFamily: "'Inter', sans-serif" }} className="text-right text-xs text-gray-600 mt-1">{guion.length}/500</div>
+          </div>
+
+          {/* Separador PromoECO */}
+          <div className="border-t border-white/5 pt-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span style={{ fontFamily: "'Exo 2', sans-serif", fontWeight: 700 }} className="text-xs text-cyan-400 uppercase tracking-widest">📡 Pregunta PromoECO</span>
+              <span style={{ fontFamily: "'Inter', sans-serif" }} className="text-[10px] text-gray-600">· incluida en el pack · marcada como PUBLICIDAD</span>
+            </div>
+
+            {/* Pregunta */}
+            <div className="mb-3">
+              <label style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }} className="block text-xs text-gray-400 uppercase tracking-widest mb-1.5">Pregunta</label>
+              <input
+                type="text"
+                value={promoPregunta}
+                onChange={e => setPromoPregunta(e.target.value)}
+                maxLength={120}
+                placeholder="¿Dónde está la hamburguesería de Paco?"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+                className="w-full bg-zinc-900 border border-white/10 text-white text-sm px-3 py-2.5 rounded focus:border-cyan-500 focus:outline-none transition-colors placeholder-gray-600"
+              />
+            </div>
+
+            {/* Opciones */}
+            {[
+              { clave: 'a', val: promoOpcionA, set: setPromoOpcionA, placeholder: 'Opción A' },
+              { clave: 'b', val: promoOpcionB, set: setPromoOpcionB, placeholder: 'Opción B' },
+              { clave: 'c', val: promoOpcionC, set: setPromoOpcionC, placeholder: 'Opción C' },
+            ].map(({ clave, val, set, placeholder }) => (
+              <div key={clave} className="flex items-center gap-2 mb-2">
+                <button
+                  type="button"
+                  onClick={() => setPromoCorrecta(clave)}
+                  className={`w-7 h-7 rounded-full font-black text-xs flex-shrink-0 transition-all border ${
+                    promoCorrecta === clave
+                      ? 'bg-cyan-500 border-cyan-400 text-black'
+                      : 'bg-white/5 border-white/10 text-gray-400 hover:border-cyan-500/40'
+                  }`}
+                >
+                  {clave.toUpperCase()}
+                </button>
+                <input
+                  type="text"
+                  value={val}
+                  onChange={e => set(e.target.value)}
+                  maxLength={80}
+                  placeholder={`${placeholder}${promoCorrecta === clave ? ' ← correcta' : ''}`}
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                  className="flex-1 bg-zinc-900 border border-white/10 text-white text-sm px-3 py-2 rounded focus:border-cyan-500 focus:outline-none transition-colors placeholder-gray-600"
+                />
+              </div>
+            ))}
+            <p style={{ fontFamily: "'Inter', sans-serif" }} className="text-[10px] text-gray-600 mt-1">
+              Toca la letra para marcar la respuesta correcta. El sistema añade (*) automáticamente.
+            </p>
           </div>
 
           {error && (

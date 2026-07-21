@@ -119,6 +119,12 @@ const MarketplaceTab = ({ session, profile, role: roleProp }) => {
             <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, color: '#f5e6c8' }} className="text-lg mt-2 w-full max-w-full text-center leading-relaxed px-4">
               Los Fondos de Canales se renovarán en cada Ciclo Lunar y se publicarán durante la Luna Menguante del ciclo anterior.
             </p>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, color: '#a3a3a3' }} className="text-base mt-4 w-full max-w-full text-center leading-relaxed px-4">
+              <span className="text-red-400 font-bold">🔴 Rojo</span> → ocupado Mundial / Nacional &nbsp;·&nbsp;
+              <span className="text-orange-400 font-bold">🟠 Naranja</span> → Comunidades y Ciudades ocupadas &nbsp;·&nbsp;
+              <span className="text-yellow-400 font-bold">🟡 Amarillo</span> → Ciudades ocupadas &nbsp;·&nbsp;
+              <span className="text-green-400 font-bold">🟢 Verde</span> → slot Libre
+            </p>
           </div>
           <div className="flex items-center gap-3">
             {totalOcupadas > 0 && (

@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { marcarActividad } from '../hooks/useActividad';
 import BoosterMisCupones from './booster/BoosterMisCupones';
-import TarjetasCanjesRecibidosTab from './backstage/TarjetasCanjesRecibidosTab';
 import BoosterAnunciante from './booster/BoosterAnunciante';
 import { CoordenadosBlock } from './CoordenadosBlock';
 
@@ -48,9 +47,6 @@ const BoosterModal = ({ onClose, initialTab, session }) => {
 
   // ── OSOS IA ──
   const [ososInteresesArr, setOsosInteresesArr] = useState([]);
-
-  // ── CUPONES ──
-  const [tieneComercioCupones, setTieneComercioCupones] = useState(false);
 
   // ── LINAJE ──
   const [reinoElegido,    setReinoElegido]    = useState('');
@@ -190,20 +186,6 @@ const BoosterModal = ({ onClose, initialTab, session }) => {
     loadData();
   }, []);
 
-  // ── CARGAR comercio_cupones ──
-  useEffect(() => {
-    const checkComercioCupones = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { count } = await supabase
-        .from('comercio_cupones')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
-      setTieneComercioCupones((count || 0) > 0);
-    };
-    checkComercioCupones();
-  }, []);
-
   // ── GUARDAR ──
   const handleSave = async () => {
     try {
@@ -280,9 +262,8 @@ const BoosterModal = ({ onClose, initialTab, session }) => {
                 { id: 'identity', label: '👤 Identidad',      color: 'cyan'   },
                 // Linaje siempre visible — el rank vacío muestra estado pendiente
                  { id: 'linaje',   label: '👑 Linaje',         color: 'orange' },
-                 { id: 'mis-cupones', label: '🎫 Mis Cupones', color: 'yellow' },
-                 ...(tieneComercioCupones ? [{ id: 'canjes-recibidos', label: '📋 Canjes Recibidos', color: 'cyan' }] : []),
-                 { id: 'ANUNCIANTE', label: '📢 ANUNCIANTE', color: 'purple' },
+{ id: 'mis-cupones', label: '🌙 Lunas Canjeadas', color: 'yellow' },
+                  { id: 'ANUNCIANTE', label: '📢 ANUNCIANTE', color: 'purple' },
                  ].filter(Boolean).map((item) => (
               <button key={item.id} onClick={() => setTab(item.id)}
                 className={`text-left py-3 px-5 text-2xl font-bold rounded-2xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap
@@ -648,9 +629,6 @@ const BoosterModal = ({ onClose, initialTab, session }) => {
 
              {/* ══ 🎫 MIS CUPONES ══ */}
               {tab === 'mis-cupones' && <BoosterMisCupones />}
-
-              {/* ══ 📋 CANJES RECIBIDOS ══ */}
-{tab === 'canjes-recibidos' && tieneComercioCupones && <TarjetasCanjesRecibidosTab />}
 
               {/* ══ 📢 ANUNCIANTE ══ */}
               {tab === 'ANUNCIANTE' && (
