@@ -4,8 +4,10 @@ import { supabase } from '../supabaseClient';
 
 
 const ANIMALES = ['🦈','🐘','🐞','🦊','🐬','🦁','🐸','🦋','🦅','🐺'];
-const GENESIS_ACIERTO = 5;
-const GENESIS_FALLO   = 5;
+const GENESIS_ACIERTO       = 10;
+const GENESIS_FALLO         = 5;
+const GENESIS_PROMO_ACIERTO = 20;
+const GENESIS_PROMO_FALLO   = 5;
 const FALLOS = ['/assets/fallo1.webp', '/assets/fallo2.webp', '/assets/fallo3.webp'];
 
 const getTurnoActual = () => {
@@ -58,7 +60,7 @@ export function useHaloTrivia({ escenarioId, userId, onGenesisUpdate }) {
     const alcance = getAlcance();
 
     const { data: promos } = await supabase
-      .from('promo_eco')
+      .from('promo_trivia')
       .select('*')
       .eq('escenario_id', escenarioNormalizado)
       .eq('turno', turnoActual)
@@ -73,7 +75,7 @@ export function useHaloTrivia({ escenarioId, userId, onGenesisUpdate }) {
         { emoji: animales[1], texto: p.opcion_b, clave: 'b' },
         { emoji: animales[2], texto: p.opcion_c, clave: 'c' },
       ]);
-      return { ...p, opciones, esEco: true };
+      return { ...p, opciones, esPromo: true };
     });
 
     let { data } = await supabase
@@ -100,8 +102,8 @@ export function useHaloTrivia({ escenarioId, userId, onGenesisUpdate }) {
         { emoji: animales[1], texto: p.opcion_b, clave: 'b' },
         { emoji: animales[2], texto: p.opcion_c, clave: 'c' },
       ]);
-      const esEco = [p.opcion_a, p.opcion_b, p.opcion_c].some(o => o?.includes('(*)'));
-      return { ...p, opciones, esEco };
+      const esPromo = [p.opcion_a, p.opcion_b, p.opcion_c].some(o => o?.includes('(*)'));
+      return { ...p, opciones, esPromo };
     });
 
     setPreguntas([...promoPreguntas, ...set3]);
@@ -117,7 +119,7 @@ export function useHaloTrivia({ escenarioId, userId, onGenesisUpdate }) {
     const opcionElegida = pregunta.opciones.find(o => o.clave === clave);
     const textoElegido  = opcionElegida?.texto || '';
 
-    const esAcierto = pregunta.esEco
+    const esAcierto = pregunta.esPromo
       ? textoElegido.includes('(*)')
       : clave === pregunta.respuesta_correcta;
 
@@ -127,7 +129,9 @@ export function useHaloTrivia({ escenarioId, userId, onGenesisUpdate }) {
     if (!esAcierto) setFalloImg(FALLOS[Math.floor(Math.random() * FALLOS.length)]);
 
     if (userId) {
-      const delta = esAcierto ? GENESIS_ACIERTO : -GENESIS_FALLO;
+      const delta = esAcierto
+        ? (pregunta.esPromo ? GENESIS_PROMO_ACIERTO : GENESIS_ACIERTO)
+        : -GENESIS_FALLO;
       await supabase.rpc('incrementar_genesis', { uid: userId, delta });
       const { data: perfil } = await supabase
         .from('profiles')

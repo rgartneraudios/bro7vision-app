@@ -57,7 +57,7 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
     if (needsCiudad && !ciudad) { setError('Selecciona una ciudad para esta cobertura.'); return; }
     if (!guion.trim())          { setError('El guión es obligatorio — el Montador lo necesita.'); return; }
     if (!promoPregunta.trim() || !promoOpcionA.trim() || !promoOpcionB.trim() || !promoOpcionC.trim()) {
-      setError('La pregunta PromoECO y sus 3 opciones son obligatorias.');
+      setError('La pregunta PromoTrivia y sus 3 opciones son obligatorias.');
       return;
     }
 
@@ -111,7 +111,7 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
       const opcionConStar = (texto, clave) =>
         clave === promoCorrecta ? `${texto} (*)` : texto;
 
-      const { error: promoErr } = await supabase.from('promo_eco').insert([{
+      const { error: promoErr } = await supabase.from('promo_trivia').insert([{
         comercio_id:  session.user.id,
         pregunta:     promoPregunta.trim(),
         opcion_a:     opcionConStar(promoOpcionA.trim(), 'a'),
@@ -122,6 +122,7 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
         alcance:      cobertura,
         activo:       true,
         vence_luna:   'Luna Llena',
+        lunas_bonus:  20,
       }]);
       if (promoErr) throw promoErr;
 
@@ -328,7 +329,7 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
           {/* Separador PromoECO */}
           <div className="border-t border-white/5 pt-4">
             <div className="flex items-center gap-2 mb-3">
-              <span style={{ fontFamily: "'Exo 2', sans-serif", fontWeight: 700 }} className="text-xs text-cyan-400 uppercase tracking-widest">📡 Pregunta PromoECO</span>
+              <span style={{ fontFamily: "'Exo 2', sans-serif", fontWeight: 700 }} className="text-xs text-cyan-400 uppercase tracking-widest">📡 PromoTrivia</span>
               <span style={{ fontFamily: "'Inter', sans-serif" }} className="text-[10px] text-gray-600">· incluida en el pack · marcada como PUBLICIDAD</span>
             </div>
 

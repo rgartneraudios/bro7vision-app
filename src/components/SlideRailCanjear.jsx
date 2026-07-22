@@ -1,7 +1,8 @@
 // SlideRailCanjear.jsx
 import { useState, useEffect } from "react";
+import { supabase } from "../supabaseClient";
 
-const SLIDES = [
+const FALLBACKS = [
   "/images/slideraid_canjear_1.webp",
   "/images/slideraid_canjear_2.webp",
   "/images/slideraid_canjear_3.webp",
@@ -12,40 +13,51 @@ const SLIDES = [
   "/images/slideraid_canjear_8.webp",
 ];
 
-const SHOW_DURATION = 6000;   // 6s visible
-const PAUSE_DURATION = 8000;  // 8s invisible entre apariciones
-const FADE_DURATION = 800;    // ms del fade CSS
+const SHOW_DURATION = 6000;
+const PAUSE_DURATION = 8000;
+const FADE_DURATION = 800;
 
 export default function SlideRailCanjear() {
+  const [slides, setSlides] = useState(Array(8).fill(null));
   const [currentIndex, setCurrentIndex] = useState(0);
   const [visible, setVisible] = useState(false);
   const [opacity, setOpacity] = useState(0);
 
   useEffect(() => {
+    supabase
+      .from('trivia_rail')
+      .select('slot_numero, banner_url')
+      .eq('sector', 'CANJES')
+      .eq('activo', true)
+      .then(({ data }) => {
+        const arr = [...FALLBACKS];
+        (data || []).forEach(r => {
+          if (r.banner_url) arr[r.slot_numero - 1] = r.banner_url;
+        });
+        setSlides(arr);
+      });
+  }, []);
+
+  useEffect(() => {
     let timeout;
 
     const cycle = () => {
-      // Fade IN
       setVisible(true);
       setTimeout(() => setOpacity(1), 50);
 
-      // Fade OUT después de SHOW_DURATION
       timeout = setTimeout(() => {
         setOpacity(0);
         setTimeout(() => {
           setVisible(false);
-          // Siguiente imagen
-          setCurrentIndex(prev => (prev + 1) % SLIDES.length);
-          // Pausa antes del próximo ciclo
+          setCurrentIndex(prev => (prev + 1) % slides.length);
           timeout = setTimeout(cycle, PAUSE_DURATION);
         }, FADE_DURATION);
       }, SHOW_DURATION);
     };
 
-    // Arranca con una pausa inicial de 2s
     timeout = setTimeout(cycle, 2000);
     return () => clearTimeout(timeout);
-  }, []);
+  }, [slides.length]);
 
   if (!visible) return null;
 
@@ -58,15 +70,14 @@ export default function SlideRailCanjear() {
       width: "clamp(300px, 5vw, 1200px)",
     }}
   >
-  
         <img
-        src={SLIDES[currentIndex]}
+        src={slides[currentIndex]}
         alt="SlideRail Ad"
         className="w-full object-cover rounded-r-xl"
         style={{
           aspectRatio: "5 / 12",
           maxHeight: "80vh",
-          boxShadow: "0 0 20px rgba(251,201,0,0.3)",  // neon cyan sutil
+          boxShadow: "0 0 20px rgba(251,201,0,0.3)",
         }}
       />
     </div>

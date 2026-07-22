@@ -1,7 +1,8 @@
 // src/components/SlideRailAmigos.jsx
 import { useState, useEffect } from "react";
+import { supabase } from "../supabaseClient";
 
-const SLIDES = [
+const FALLBACKS = [
   "/images/slideraid_amigos_1.webp",
   "/images/slideraid_amigos_2.webp",
   "/images/slideraid_amigos_3.webp",
@@ -17,9 +18,25 @@ const PAUSE_DURATION = 8000;
 const FADE_DURATION  = 800;
 
 export default function SlideRailAmigos() {
+  const [slides, setSlides] = useState(Array(8).fill(null));
   const [currentIndex, setCurrentIndex] = useState(0);
   const [visible,      setVisible]      = useState(false);
   const [opacity,      setOpacity]      = useState(0);
+
+  useEffect(() => {
+    supabase
+      .from('trivia_rail')
+      .select('slot_numero, banner_url')
+      .eq('sector', 'SHOP_AMIGOS')
+      .eq('activo', true)
+      .then(({ data }) => {
+        const arr = [...FALLBACKS];
+        (data || []).forEach(r => {
+          if (r.banner_url) arr[r.slot_numero - 1] = r.banner_url;
+        });
+        setSlides(arr);
+      });
+  }, []);
 
   useEffect(() => {
     let timeout;
@@ -30,14 +47,14 @@ export default function SlideRailAmigos() {
         setOpacity(0);
         setTimeout(() => {
           setVisible(false);
-          setCurrentIndex(prev => (prev + 1) % SLIDES.length);
+          setCurrentIndex(prev => (prev + 1) % slides.length);
           timeout = setTimeout(cycle, PAUSE_DURATION);
         }, FADE_DURATION);
       }, SHOW_DURATION);
     };
     timeout = setTimeout(cycle, 2000);
     return () => clearTimeout(timeout);
-  }, []);
+  }, [slides.length]);
 
   if (!visible) return null;
 
@@ -51,13 +68,13 @@ export default function SlideRailAmigos() {
       }}
     >
       <img
-        src={SLIDES[currentIndex]}
+        src={slides[currentIndex]}
         alt="Avisos SlideRail"
         className="w-full object-cover rounded-r-xl"
         style={{
           aspectRatio: "5 / 12",
           maxHeight: "80vh",
-          boxShadow: "0 0 20px rgba(7,23,182,0.4)",  // naranja — color de Avisos
+          boxShadow: "0 0 20px rgba(7,23,182,0.4)",
         }}
       />
     </div>
