@@ -5,8 +5,6 @@ import { supabase } from '../supabaseClient';
 
 const EMPTY = {
   genesis: 0,
-  eco_p: 0, eco_gen: 0,
-  halos_p: 0, halos_gen: 0,
   zap_p: 0, zap_gen: 0,
   is_admin: false,
 };
@@ -19,10 +17,6 @@ export const useBalances = (perfilOso, session) => {
     if (!perfilOso) return;
     setBalances({
       genesis: perfilOso.genesis ?? perfilOso.lunas ?? 0,
-      eco_p:    perfilOso.eco_p    || 0,
-      eco_gen:  perfilOso.eco_gen  || 0,
-      halos_p:  perfilOso.halos_p  || 0,
-      halos_gen: perfilOso.halos_gen || 0,
       zap_p:    perfilOso.zap_p    || 0,
       zap_gen:  perfilOso.zap_gen  || 0,
       is_admin: perfilOso.is_admin === true,
