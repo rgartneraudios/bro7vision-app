@@ -16,6 +16,7 @@ import TitoBanner  from "./components/personajes/TitoBanner";
 import LaraBanner  from "./components/personajes/LaraBanner";
 import PuffoBanner from "./components/personajes/PuffoBanner";
 import SlideRailCanjear from './components/SlideRailCanjear';
+import TriviaRail from './components/TriviaRail';
 import AgentChatInput from './components/AgentChatInput';
 import { useAgOsosMobile }    from './hooks/useAgOsosMobile';
 import { useAgentRumores }    from './hooks/useAgentRumores';
@@ -449,6 +450,7 @@ const [boosterTab, setBoosterTab]           = useState(null);
       {intent === 'shopamigos' && step === 2 && (
         <div className="fixed inset-0 z-[60]">
           <ShopAmigos scope={scope} />
+          <TriviaRail sector="SHOP_AMIGOS" userId={session?.user?.id} />
         </div>
       )}
 

@@ -10,6 +10,7 @@ import NeuralButton from './NeuralButton';
 import NexusDashboard from './NexusDashboard';
 import CanjearStrip from './CanjearStrip';
 import SlideRailAmigos from './SlideRailAmigos';
+import TriviaRail from './TriviaRail';
 import MapacheBanner from './personajes/MapacheBanner';
 import TitoBanner  from "./personajes/TitoBanner";
 import LaraBanner  from "./personajes/LaraBanner";
@@ -162,9 +163,14 @@ useEffect(() => {
       {intent === 'canjear' && step === 2 && (
         <div className="fixed inset-0 z-[60]">
           <CanjearStrip scope={scope} />
+          <TriviaRail sector="CANJES" userId={userId} onGenesisUpdate={onGenesisUpdate} />
         </div>
       )}
-      {step === 2 && intent === 'shopamigos' && <SlideRailAmigos />}
+      {step === 2 && intent === 'shopamigos' && (
+        <div className="fixed inset-0 z-[60]">
+          <TriviaRail sector="SHOP_AMIGOS" userId={userId} onGenesisUpdate={onGenesisUpdate} />
+        </div>
+      )}
       
       
       {/* ── AVISOS ──────────────────────────────────────────────────────── */}

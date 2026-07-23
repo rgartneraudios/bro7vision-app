@@ -72,8 +72,10 @@ blue: {
 const AGENT_PROFILES = {
   osos: {
     theme: 'violet',
-    text: '✦  Saluda a tu personaje favorito y elige Sector y ubicación. Ellos te llevarán. Ejemplos: Hola Lara · Pasame con Nova · BroProductos en España · BroDeseos · BroServicios · Dame con Mapache',
-    bro7band: 'Habla con Tito, Lara o Puffo — escucha el audio grupal y encuentra la palabra clave'
+    text: '✦  Elige Sector y Ubicación por Ciudad o País. Ellos te llevarán. Ejemplos: Hola Lara o Tito o Puffo · Vamos a Shop Amigos · Vamos a Canjes · Games · Canjes de Lunas · Tarjetas · Sabadell · España',
+    bro7band: 'Habla con Tito, Lara o Puffo — escucha el audio grupal y encuentra la palabra clave',
+    rows: 3,
+    maxLength: 200,
   },
   nova: {
   theme: 'gold',
@@ -110,7 +112,7 @@ export default function AgentChatInput({
   isLoading,
   agent       = 'osos',
   placeholder, 
-  maxLength   = 120,
+  maxLength: maxLengthProp,
 }) {
   const [text, setText] = useState('');
   
@@ -122,6 +124,9 @@ export default function AgentChatInput({
   
   // Si le pasamos un placeholder por prop, lo usa. Si no, usa el del perfil.
   const finalPlaceholder = placeholder || profile.text;
+
+  const rows = profile.rows || 3;
+  const maxLength = maxLengthProp || profile.maxLength || 120;
 
   const handleSend = () => {
     if (!text.trim() || isLoading) return;
@@ -174,12 +179,12 @@ export default function AgentChatInput({
 
       <textarea
         maxLength={maxLength}
-        rows={2}
+        rows={rows}
         placeholder={finalPlaceholder}
         value={text}
         onChange={e => setText(e.target.value)}
         onKeyDown={handleKeyDown}
-        className={`agent-textarea w-full bg-black/70 backdrop-blur-sm border ${c.border} ${c.borderFocus} px-4 py-3 rounded-2xl outline-none font-mono text-sm text-white ${c.placeholder} transition-colors resize-none leading-relaxed`}
+        className={`agent-textarea w-full bg-black/70 backdrop-blur-sm border ${c.border} ${c.borderFocus} px-4 py-3 rounded-2xl outline-none font-mono text-base text-white ${c.placeholder} transition-colors resize-none leading-relaxed`}
       />
     </div>
   );

@@ -68,7 +68,7 @@ function HeaderWidget() {
     }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
         <span style={{
-          fontFamily: "'Bebas Neue', sans-serif",
+          fontFamily: "'Orbitron', sans-serif",
           fontSize: 'clamp(32px, 4vw, 60px)',
           lineHeight: 1, letterSpacing: '0.04em',
           color: '#fff', textShadow: '0 0 20px rgba(255,255,255,0.4)',
@@ -283,9 +283,9 @@ export default function CanjearStrip({ scope }) {
       <div style={{
         position: 'relative', zIndex: 1,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        height: '100%', paddingTop: 20, paddingLeft: 'clamp(420px, 28vw, 560px)', paddingRight: 'clamp(20px, 3vw, 60px)',
+        height: '100%', paddingTop: 20, paddingLeft: 'clamp(320px, 22vw, 420px)', paddingRight: 'clamp(320px, 22vw, 420px)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'clamp(20px, 4vw, 60px)', width: '100%', maxWidth: '82vw', marginBottom: 16, marginTop: 160 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, width: '100%', maxWidth: '82vw', marginBottom: 16, marginTop: 160 }}>
           <span style={{
             fontFamily: "'Orbitron', sans-serif",
             fontSize: 'clamp(28px, 3vw, 48px)',
@@ -333,13 +333,6 @@ export default function CanjearStrip({ scope }) {
             flex: 1, width: '100%', maxWidth: '82vw',
             padding: '16px 32px 32px',
             marginTop: 'clamp(40px, 6vh, 100px)',
-            overflowY: isMobile ? 'hidden' : 'auto',
-            overflowX: isMobile ? 'auto' : 'hidden',
-            display: isMobile ? 'flex' : 'grid',
-            flexWrap: isMobile ? 'nowrap' : undefined,
-            gridTemplateColumns: isMobile ? undefined : 'repeat(4, 1fr)',
-            gap: 24,
-            background: 'rgba(40, 20, 0, 0.35)',
             height: '100%',
             alignSelf: 'stretch',
           }}

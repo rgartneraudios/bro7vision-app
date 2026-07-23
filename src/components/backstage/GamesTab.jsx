@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { supabase } from '../../supabaseClient';
 import { getCitiesForCobertura } from '../../data/citycodes';
 
 const SYNE  = "'Exo 2', sans-serif";
@@ -35,7 +36,11 @@ const NEEDS_CIUDAD = ['SALA_CIUDAD', 'SALA_GRAN_CIUDAD', 'GIRA_REGIONAL', 'GIRA_
 const Panel = ({ juego, onClose }) => {
   const [cobertura, setCobertura] = useState('SALA_CIUDAD');
   const [ciudad,    setCiudad]    = useState('');
-  const [mencion,   setMencion]   = useState('');
+  const [pregunta,  setPregunta]  = useState('');
+  const [respuesta, setRespuesta] = useState('');
+  const [opcionB,   setOpcionB]   = useState('');
+  const [opcionC,   setOpcionC]   = useState('');
+  const [opcionD,   setOpcionD]   = useState('');
   const [error,     setError]     = useState('');
   const [done,      setDone]      = useState(false);
 
@@ -45,10 +50,27 @@ const Panel = ({ juego, onClose }) => {
 
   const handleCobertura = (id) => { setCobertura(id); setCiudad(''); };
 
-  const handleSolicitar = () => {
+  const handleSolicitar = async () => {
     setError('');
-    if (needsCiudad && !ciudad) { setError('Selecciona una ciudad para esta cobertura.'); return; }
-    if (!mencion.trim())        { setError('El texto de mención es obligatorio.'); return; }
+    if (needsCiudad && !ciudad) { setError('Selecciona una ciudad.'); return; }
+    if (!pregunta.trim() || !respuesta.trim() || !opcionB.trim() || !opcionC.trim() || !opcionD.trim()) {
+      setError('Todos los campos de la pregunta son obligatorios.'); return;
+    }
+    const { data: { user } } = await supabase.auth.getUser();
+    const { error: err } = await supabase.from('promo_games').insert([{
+      juego:            juego.id === 'the7gates' ? 'SEVEN_GATES' : 'COSMIC_QUIZ',
+      pregunta:         pregunta.trim(),
+      respuesta:        respuesta.trim(),
+      opcion_b:         opcionB.trim(),
+      opcion_c:         opcionC.trim(),
+      opcion_d:         opcionD.trim(),
+      es_brovision:     false,
+      comercio_id:      user.id,
+      lunas_bonus:      20,
+      fase_lunar_activa: 'LUNA_NUEVA',
+      activo:           true,
+    }]);
+    if (err) { setError(err.message); return; }
     setDone(true);
   };
 
@@ -156,18 +178,65 @@ const Panel = ({ juego, onClose }) => {
                 </div>
               )}
 
-              {/* Texto de mención */}
+              {/* Pregunta y opciones */}
               <div>
                 <label style={{ fontFamily: INTER, fontWeight: 600 }} className="block text-xs text-gray-400 uppercase tracking-widest mb-2">
-                  Texto de mención
+                  Pregunta
                 </label>
-                <textarea
-                  value={mencion}
-                  onChange={e => setMencion(e.target.value)}
-                  rows={4}
-                  placeholder="Nombre de marca, producto o mensaje que aparecerá en el juego..."
+                <input
+                  value={pregunta}
+                  onChange={e => setPregunta(e.target.value)}
+                  placeholder="Escribe la pregunta..."
                   style={{ fontFamily: INTER }}
-                  className="w-full bg-zinc-900 border border-white/10 text-gray-300 text-sm px-3 py-2.5 rounded resize-none focus:outline-none focus:border-violet-500/50 placeholder:text-gray-600"
+                  className="w-full bg-zinc-900 border border-white/10 text-gray-300 text-sm px-3 py-2.5 rounded focus:outline-none focus:border-violet-500/50 placeholder:text-gray-600"
+                />
+              </div>
+              <div>
+                <label style={{ fontFamily: INTER, fontWeight: 600 }} className="block text-xs text-gray-400 uppercase tracking-widest mb-2">
+                  Respuesta correcta
+                </label>
+                <input
+                  value={respuesta}
+                  onChange={e => setRespuesta(e.target.value)}
+                  placeholder="Respuesta correcta..."
+                  style={{ fontFamily: INTER }}
+                  className="w-full bg-zinc-900 border border-white/10 text-gray-300 text-sm px-3 py-2.5 rounded focus:outline-none focus:border-violet-500/50 placeholder:text-gray-600"
+                />
+              </div>
+              <div>
+                <label style={{ fontFamily: INTER, fontWeight: 600 }} className="block text-xs text-gray-400 uppercase tracking-widest mb-2">
+                  Opción B
+                </label>
+                <input
+                  value={opcionB}
+                  onChange={e => setOpcionB(e.target.value)}
+                  placeholder="Opción B..."
+                  style={{ fontFamily: INTER }}
+                  className="w-full bg-zinc-900 border border-white/10 text-gray-300 text-sm px-3 py-2.5 rounded focus:outline-none focus:border-violet-500/50 placeholder:text-gray-600"
+                />
+              </div>
+              <div>
+                <label style={{ fontFamily: INTER, fontWeight: 600 }} className="block text-xs text-gray-400 uppercase tracking-widest mb-2">
+                  Opción C
+                </label>
+                <input
+                  value={opcionC}
+                  onChange={e => setOpcionC(e.target.value)}
+                  placeholder="Opción C..."
+                  style={{ fontFamily: INTER }}
+                  className="w-full bg-zinc-900 border border-white/10 text-gray-300 text-sm px-3 py-2.5 rounded focus:outline-none focus:border-violet-500/50 placeholder:text-gray-600"
+                />
+              </div>
+              <div>
+                <label style={{ fontFamily: INTER, fontWeight: 600 }} className="block text-xs text-gray-400 uppercase tracking-widest mb-2">
+                  Opción D
+                </label>
+                <input
+                  value={opcionD}
+                  onChange={e => setOpcionD(e.target.value)}
+                  placeholder="Opción D..."
+                  style={{ fontFamily: INTER }}
+                  className="w-full bg-zinc-900 border border-white/10 text-gray-300 text-sm px-3 py-2.5 rounded focus:outline-none focus:border-violet-500/50 placeholder:text-gray-600"
                 />
               </div>
 

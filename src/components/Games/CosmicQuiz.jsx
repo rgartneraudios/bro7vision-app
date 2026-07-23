@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { supabase } from '../../supabaseClient';
 import { marcarActividad } from '../../hooks/useActividad';
 import { useAudioContext } from '../../context/AudioContext';
 
@@ -136,20 +137,6 @@ const QUESTIONS_DB = [
   { q: "¿Qué país es famoso por las pirámides de Giza?", a: "Egipto", opts: ["Egipto", "México", "Sudán"] },
   { q: "¿Qué empresa creó el lenguaje Swift?", a: "Apple", opts: ["Apple", "Google", "Microsoft"] },
   { q: "¿Cuál es el animal más venenoso del mundo?", a: "Medusa caja", opts: ["Cobra real", "Medusa caja", "Rana dardo"] },
-  { 
-    q: "¿Dónde podría aparecer tu Marca ahora mismo?", 
-    a: "Aquí", 
-    opts: ["Aquí", "En la TV", "En la Radio"],
-    sponsored: true,
-    brand: "TU EMPRESA (FASE 0)"
-  },
-  { 
-    q: "¿Qué producto revolucionario encaja en este slot?", 
-    a: "El tuyo", 
-    opts: ["El tuyo", "Ninguno", "Otro"],
-    sponsored: true,
-    brand: "ESPACIO PUBLICITARIO"
-  },
   ];
 
 const CosmicQuiz = ({ onWin }) => {
@@ -159,6 +146,7 @@ const CosmicQuiz = ({ onWin }) => {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [score, setScore] = useState(0);
   const [questionCount, setQuestionCount] = useState(0);
+  const [promoQuestion, setPromoQuestion] = useState(null);
   const { gamesMuted } = useAudioContext();
   
   // Mazo de preguntas barajado
@@ -168,6 +156,17 @@ const CosmicQuiz = ({ onWin }) => {
   const [bgImage, setBgImage] = useState(null);
   const [bubbleText, setBubbleText] = useState("");
   const [isHeaven, setIsHeaven] = useState(true);
+
+  // Cargar una pregunta promocionada activa
+  useEffect(() => {
+    supabase.from('promo_games')
+      .select('*')
+      .eq('juego', 'COSMIC_QUIZ')
+      .eq('activo', true)
+      .limit(1)
+      .single()
+      .then(({ data }) => { if (data) setPromoQuestion(data); });
+  }, []);
 
   // REFERENCIAS DE AUDIO
  const playSound = (type) => {
@@ -193,6 +192,17 @@ const CosmicQuiz = ({ onWin }) => {
     
     // 1. BARAJAR PREGUNTAS
     const shuffled = [...QUESTIONS_DB].sort(() => Math.random() - 0.5);
+    if (promoQuestion) {
+      const promo = {
+        q: promoQuestion.pregunta,
+        a: promoQuestion.respuesta,
+        opts: [promoQuestion.respuesta, promoQuestion.opcion_b, promoQuestion.opcion_c],
+        sponsored: true,
+        brand: '★ PUBLICIDAD',
+        lunas_bonus: promoQuestion.lunas_bonus,
+      };
+      shuffled.splice(4, 0, promo);
+    }
     setGameQuestions(shuffled);
 
     // 2. Arrancar
@@ -229,9 +239,10 @@ const CosmicQuiz = ({ onWin }) => {
 
     prepareScene(isCorrect);
 
-    // --- ECONOMÍA (+10 / -10) ---
+    // --- ECONOMÍA (+10 / -10, +bonus si es patrocinado) ---
     if (isCorrect) {
-        setScore(prev => prev + 10);
+        const bonus = currentQuestion.sponsored ? (currentQuestion.lunas_bonus || 20) : 0;
+        setScore(prev => prev + 10 + bonus);
         playSound('heaven'); // SONIDO ÁNGELES
     } else {
         setScore(prev => Math.max(0, prev - 10)); // Restamos 10 (Suelo 0)

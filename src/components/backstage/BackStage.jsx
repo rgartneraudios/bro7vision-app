@@ -8,6 +8,7 @@ import DemoBlogTab from './DemoBlogTab';
 import MisCampanasTab from './MisCampanasTab';
 import TarjetasRegalo from './TarjetasRegalo';
 import TarjetasCanjesRecibidosTab from './TarjetasCanjesRecibidosTab';
+import ShopAmigosTab from './ShopAmigosTab';
 
 const SYNE = "'Exo 2', sans-serif";
 
@@ -269,6 +270,7 @@ const BackStage = ({ session, onLogout }) => {
   ];
 
   const TABS_COMERCIO = [
+    { id: 'shop_amigos',      label: 'SHOP AMIGOS'       },
     { id: 'tarjetas_diseno',  label: 'TARJETAS REGALO'  },
     { id: 'canjes_recibidos', label: 'CANJES RECIBIDOS'  },
   ];

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { supabase } from '../../supabaseClient';
 import { marcarActividad } from '../../hooks/useActividad';
 import { useAudioContext } from '../../context/AudioContext';
 
@@ -20,7 +21,8 @@ const SevenGates = ({ onWin, onClose }) => {
   const [question, setQuestion] = useState("");
   const [doorState, setDoorState] = useState('closed'); 
   const [isAdLevel, setIsAdLevel] = useState(false);
-  const [hasAdRun, setHasAdRun] = useState(false); 
+  const [hasAdRun, setHasAdRun] = useState(false);
+  const [promoQuestion, setPromoQuestion] = useState(null); 
   
   // EXTRAEMOS LA VARIABLE MUTE UNA SOLA VEZ
   const { gamesMuted } = useAudioContext();
@@ -42,6 +44,17 @@ const SevenGates = ({ onWin, onClose }) => {
       entryAudio.current.volume = 0.5;
       exitAudio.current.volume = 0.6;
       return () => stopAllAudio();
+  }, []);
+
+  // Cargar una pregunta promocionada activa
+  useEffect(() => {
+    supabase.from('promo_games')
+      .select('*')
+      .eq('juego', 'SEVEN_GATES')
+      .eq('activo', true)
+      .limit(1)
+      .single()
+      .then(({ data }) => { if (data) setPromoQuestion(data); });
   }, []);
 
   // Manejo de música de fondo reaccionando al estado Muted y a la fase del juego
@@ -128,36 +141,24 @@ const SevenGates = ({ onWin, onClose }) => {
           { q: "DESIERTO MAS GRANDE", a: "SAHARA", w: ["GOBI", "ATACAMA", "ARABIA", "KALAHARI"], isAd: false },
           { q: "MONTE MAS ALTO", a: "EVEREST", w: ["K2", "BLANC", "KILIMANJARO", "FUJI"], isAd: false },
           { q: "CAPITAL DE ITALIA", a: "ROMA", w: ["MILAN", "NAPOLES", "TURIN", "VENECIA"], isAd: false },
-
-          // --- MARCAS (ADS) - TOTAL 10 ---
-          { q: "MARCA DEPORTIVA", a: "NIKE", w: ["PUMA", "ADIDAS", "REEBOK", "FILA"], isAd: true }, 
-          { q: "REFRESCO ROJO", a: "COLA", w: ["PEPSI", "FANTA", "SPRITE", "7UP"], isAd: true },
-          { q: "CONSOLA DE SONY", a: "PS5", w: ["XBOX", "WII", "SEGA", "SWITCH"], isAd: true },
-          { q: "COCHES ELECTRICOS", a: "TESLA", w: ["FORD", "BMW", "AUDI", "TOYOTA"], isAd: true },
-          { q: "STREAMING ROJO", a: "NETFLIX", w: ["HBO", "DISNEY", "PRIME", "HULU"], isAd: true },
-          { q: "HAMBURGUESA REY", a: "BURGERKING", w: ["MCDONALD", "KFC", "SUBWAY", "WENDYS"], isAd: true },
-          { q: "TELEFONO MANZANA", a: "IPHONE", w: ["GALAXY", "PIXEL", "XIAOMI", "NOKIA"], isAd: true },
-          { q: "RELOJ DE LUJO", a: "ROLEX", w: ["CASIO", "SEIKO", "OMEGA", "TAG"], isAd: true },
-          { q: "TIENDA DE TODO", a: "AMAZON", w: ["EBAY", "ALIEXPRESS", "TEMU", "WALMART"], isAd: true },
-          { q: "BUSCADOR GLOBAL", a: "GOOGLE", w: ["BING", "YAHOO", "DUCKDUCK", "BAIDU"], isAd: true }
       ];      
-      // FILTRADO: Si ya salió un Ad (hasAdRun), filtramos para que solo salgan preguntas normales
-      let availableQuestions = DB;
-      if (hasAdRun) {
-          availableQuestions = DB.filter(item => !item.isAd);
+      // Si es nivel 4 y hay promo, inyectar anuncio
+      let challenge;
+      if (currentLevel === 4 && promoQuestion && !hasAdRun) {
+        challenge = {
+          q: promoQuestion.pregunta,
+          a: promoQuestion.respuesta,
+          w: [promoQuestion.opcion_b, promoQuestion.opcion_c, promoQuestion.opcion_d],
+          isAd: true,
+        };
+        setHasAdRun(true);
+      } else {
+        const randomIndex = Math.floor(Math.random() * DB.length);
+        challenge = DB[randomIndex];
       }
 
-      // Elección aleatoria
-      const randomIndex = Math.floor(Math.random() * availableQuestions.length);
-      const challenge = availableQuestions[randomIndex];
-      
       setQuestion(challenge.q);
       setIsAdLevel(challenge.isAd);
-      
-      // Si elegimos una Ad, marcamos que ya salió para el futuro
-      if (challenge.isAd) {
-          setHasAdRun(true);
-      }
 
       const newCols = [];
       const colCount = 5; // AHORA SON 5 CARRILES

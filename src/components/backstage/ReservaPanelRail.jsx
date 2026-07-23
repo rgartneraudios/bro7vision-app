@@ -53,6 +53,8 @@ const ReservaPanelRail = ({ slot, session, onClose, onReserved, faseLunarActiva:
         banner_url:          bannerUrl.trim() || null,
         comercio_id:         session.user.id,
         fase_lunar_activa:   faseLunarActiva,
+        cobertura:           cobertura,
+        ciudad_codigo:       needsCiudad ? ciudad : null,
         activo:              true,
       }]);
       if (err) throw err;
@@ -162,7 +164,7 @@ const ReservaPanelRail = ({ slot, session, onClose, onReserved, faseLunarActiva:
             <label style={{ fontFamily: INTER, fontWeight: 600 }}
               className="block text-xs text-gray-400 uppercase tracking-widest mb-1.5">
               URL Banner
-              <span className="ml-1 text-gray-600 normal-case font-normal">(imagen cuadrada 1:1)</span>
+              <span className="ml-1 text-gray-600 normal-case font-normal">(imagen vertical 450 x 1080 px)</span>
             </label>
             <input
               type="url"
