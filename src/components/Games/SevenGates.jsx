@@ -13,7 +13,7 @@ const ASSETS = {
     vidWin: 'https://media.bro7vision.com/city_ambience.mp4' 
 };
 
-const SevenGates = ({ onWin, onClose }) => {
+const SevenGates = ({ onWin, onClose, scope }) => {
   const [phase, setPhase] = useState('intro');
   const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
@@ -48,14 +48,19 @@ const SevenGates = ({ onWin, onClose }) => {
 
   // Cargar una pregunta promocionada activa
   useEffect(() => {
-    supabase.from('promo_games')
+    const query = supabase.from('promo_games')
       .select('*')
       .eq('juego', 'SEVEN_GATES')
-      .eq('activo', true)
-      .limit(1)
-      .single()
-      .then(({ data }) => { if (data) setPromoQuestion(data); });
-  }, []);
+      .eq('activo', true);
+
+    if (scope?.city) {
+      query.or(`ciudad_codigo.eq.${scope.city},cobertura.eq.GIRA_NACIONAL,cobertura.eq.GIRA_MUNDIAL`);
+    }
+
+    query.limit(1).single().then(({ data }) => {
+      if (data) setPromoQuestion(data);
+    });
+  }, [scope]);
 
   // Manejo de música de fondo reaccionando al estado Muted y a la fase del juego
   useEffect(() => {

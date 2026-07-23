@@ -139,7 +139,7 @@ const QUESTIONS_DB = [
   { q: "¿Cuál es el animal más venenoso del mundo?", a: "Medusa caja", opts: ["Cobra real", "Medusa caja", "Rana dardo"] },
   ];
 
-const CosmicQuiz = ({ onWin }) => {
+const CosmicQuiz = ({ onWin, scope }) => {
   // ESTADOS
   const [gameState, setGameState] = useState('menu'); 
   const [doorState, setDoorState] = useState('closed'); 
@@ -159,14 +159,19 @@ const CosmicQuiz = ({ onWin }) => {
 
   // Cargar una pregunta promocionada activa
   useEffect(() => {
-    supabase.from('promo_games')
+    const query = supabase.from('promo_games')
       .select('*')
       .eq('juego', 'COSMIC_QUIZ')
-      .eq('activo', true)
-      .limit(1)
-      .single()
-      .then(({ data }) => { if (data) setPromoQuestion(data); });
-  }, []);
+      .eq('activo', true);
+
+    if (scope?.city) {
+      query.or(`ciudad_codigo.eq.${scope.city},cobertura.eq.GIRA_NACIONAL,cobertura.eq.GIRA_MUNDIAL`);
+    }
+
+    query.limit(1).single().then(({ data }) => {
+      if (data) setPromoQuestion(data);
+    });
+  }, [scope]);
 
   // REFERENCIAS DE AUDIO
  const playSound = (type) => {

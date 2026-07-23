@@ -7,7 +7,7 @@ import { fetchContextoPuffo } from '../services/contexto/fetchContextoPuffo';
 import { detectarSectorPS, detectarCiudadPS } from '../services/agents/ososPS';
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
-const SECTORES_SIN_CIUDAD = ['BRO7BAND', 'REINOS', 'GAMES'];
+const SECTORES_SIN_CIUDAD = ['BRO7BAND', 'REINOS'];
 const norm   = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const elegir = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
@@ -23,9 +23,9 @@ const FRASES_PEDIR_CIUDAD = [
   "¿Dónde buscas? Ciudad o país — lo que tengas sobre la mesa.",
 ];
 const FRASES_FALLBACK = [
-  "Ajá... no te sigo del todo. ¿BroCupones Productos, BroCupones Servicios, música o BroDeseos? Dame el titular.",
+  "Ajá... no te sigo del todo. ¿buscas Canjear Lunas, Shop Amigos, Games? Dame el titular.",
   "Interesante... pero necesito más contexto. ¿A qué sector quieres ir?",
-  "Te corto un segundo ahí. ¿BroCupones Productos, BroCupones Servicios, audio o BroDeseos? Eso primero.",
+  "Te corto un segundo ahí. ¿buscas Canjear Lunas, Shop Amigos, Games? Eso primero.",
 ];
 
 export function useAgentPuffo({ iaMode, isAdmin, onHandoff, ciudad = null }) {

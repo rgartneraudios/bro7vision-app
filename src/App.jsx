@@ -216,7 +216,7 @@ const [boosterTab, setBoosterTab]           = useState(null);
       'BRO7BAND':       'bro7band',
     };
 
-    const SIN_UBICACION = ['REINOS', 'GAMES', 'BRO7BAND'];
+    const SIN_UBICACION = ['REINOS', 'BRO7BAND'];
     if (SIN_UBICACION.includes(agente)) {
       setPerfilSector(null);
       setIntent(intentMap[agente] || 'ai');
@@ -288,7 +288,7 @@ const [boosterTab, setBoosterTab]           = useState(null);
       setSessionCity('');
       setStripCards([]);
       setStripVisible(false);
-    } else if (['canjear', 'shopamigos'].includes(targetIntent) && !scope) {
+    } else if (['canjear', 'shopamigos', 'games'].includes(targetIntent) && !scope) {
       setStep(1);
       setOsosModo('entrada');
     } else {

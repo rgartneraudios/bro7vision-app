@@ -115,7 +115,7 @@ const CANAL_NOMBRE = {
 };
 
 // Widget reloj + temperatura + génesis
-const HeaderWidget = ({ color, genesisBalance }) => {
+const HeaderWidget = ({ color, genesisBalance, onCityDetected }) => {
   const [time, setTime] = useState('');
   const [date, setDate] = useState('');
   const [temp, setTemp] = useState(null);
@@ -146,7 +146,9 @@ const HeaderWidget = ({ color, genesisBalance }) => {
         setTemp(Math.round(d.current_weather?.temperature ?? null));
         const g = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
         const gd = await g.json();
-        setCity((gd.address?.city || gd.address?.town || '').toUpperCase());
+        const cityName = gd.address?.city || gd.address?.town || '';
+        setCity(cityName.toUpperCase());
+        onCityDetected?.(cityName);
       } catch(_) {}
     }, ()=>{}, { timeout: 8000 });
   }, []);
@@ -195,6 +197,7 @@ const DesktopRealityPlayer = ({
   onGenesisUpdate,
 }) => {
   const [bgVideoUrl, setBgVideoUrl] = useState('');
+  const [userCity, setUserCity] = useState(null);
   const color  = CANAL_COLOR[realityMode]  || '#00ffff';
   const nombre = CANAL_NOMBRE[realityMode] || 'CANAL';
 
@@ -204,10 +207,10 @@ const DesktopRealityPlayer = ({
     if (!num) return;
     let active = true;
     resolveVideoFromCandidates(
-      getVideoCandidates(num, getMoonSuffix(), getTurno(), 0, null)
+      getVideoCandidates(num, getMoonSuffix(), getTurno(), 0, userCity)
     ).then(url => { if (active) setBgVideoUrl(url); });
     return () => { active = false; };
-  }, [realityMode]);
+  }, [realityMode, userCity]);
 
   const {
     preguntaActual, indice, total, resultado, cooldown,
@@ -286,7 +289,7 @@ const DesktopRealityPlayer = ({
       <main className="relative z-10 flex flex-col h-full w-full">
 
         {/* HEADER */}
-        <HeaderWidget color={color} genesisBalance={genesisBalance} />
+        <HeaderWidget color={color} genesisBalance={genesisBalance} onCityDetected={setUserCity} />
 
         {/* CUERPO — burbuja pregunta centrada */}
         {burbujaOpen && preguntaActual ? (

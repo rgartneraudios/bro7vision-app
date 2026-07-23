@@ -7,14 +7,14 @@ import { fetchContextoLara } from '../services/contexto/fetchContextoLara';
 import { detectarSectorPS, detectarCiudadPS } from '../services/agents/ososPS';
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
-const SECTORES_SIN_CIUDAD = ['BRO7BAND', 'REINOS', 'GAMES'];
+const SECTORES_SIN_CIUDAD = ['BRO7BAND', 'REINOS'];
 const norm   = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const elegir = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 const FRASES_BIENVENIDA = [
   "Hola, soy Lara 🐻 Fluye conmigo — ¿a dónde te llevo hoy?",
   "Lara aquí. Dime qué buscas y te oriento con consciencia.",
-  "¡Buenas! ¿Productos, servicios, música o avisos? Tú dime, total.",
+  "¡Buenas! ¿Canjear, Shop Amigos, Games? Tú dime, total.",
   "Aquí Lara 🌿 Mi energía me dice que buscas algo concreto… cuéntame.",
 ];
 const FRASES_PEDIR_CIUDAD = [
@@ -23,9 +23,9 @@ const FRASES_PEDIR_CIUDAD = [
   "¿Dónde estás buscando? Ciudad o país — lo que fluya.",
 ];
 const FRASES_FALLBACK = [
-  "No te pillo del todo, y eso que tengo el radar bien calibrado. ¿Buscas BroCupones productos, BroCupones servicios, Audios o BroDeseos?",
+  "No te pillo del todo, y eso que tengo el radar bien calibrado. ¿buscas Canjear Lunas, Shop Amigos, Games?",
   "Mmm, noto que hay más detrás de eso. ¿A qué sector quieres fluir hoy?",
-  "Cuéntame mejor. ¿Productos, servicios, audio o BroDeseos?",
+  "Cuéntame mejor. ¿Canjear Lunas, Shop Amigos, Games?",
 ];
 
 export function useAgentLara({ iaMode, isAdmin, onHandoff, ciudad = null }) {

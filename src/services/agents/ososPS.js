@@ -7,7 +7,7 @@ import { getPerfil, TABLA_PER, PREFIJOS_COMERCIO } from '../../data/system_profi
 // ─────────────────────────────────────────────────────────────────────
 const SALUDOS = {
   TITO:  { amigos: ["Tito al habla. ¿A qué zona del mundo te llevo hoy?", "Buenas. ¿Ciudad, país, o me dices directamente qué buscas?"], formal: ["Buenas tardes, soy Tito. ¿A qué ciudad o país le llevo?", "Tito a su disposición. ¿Dónde desea buscar?"] },
-  LARA:  { amigos: ["Lara aquí. ¿Ciudad o país? Directo.", "Hola, soy Lara. ¿Dónde buscamos hoy?"], formal: ["Buenas, soy Lara. ¿En qué ciudad o país busca usted?", "Lara a su servicio. ¿Dónde le sitúo?"] },
+  LARA:  { amigos: ["Lara aquí. ¿Ciudad o país? Directo.", "Hola, soy Lara. ¿Dónde buscamos hoy?"], formal: ["Buenas, soy Lara. ¿En qué ciudad o país buscas?", "Lara a tu servicio. ¿Dónde le sitúo?"] },
   PUFFO: { amigos: ["Puffo por aquí. ¿A qué rincón del mundo te llevo?", "Aquí Puffo. Dime dónde y te abro la puerta."], formal: ["Buenas, soy Puffo. ¿A qué ciudad o país le dirijo?", "Puffo a su disposición. ¿Cuál es su destino?"] },
 };
 
@@ -227,7 +227,7 @@ ${datosInternos}
 # REGLAS — solo 5
 1. MÁXIMO 1 pregunta por turno. Una frase de personalidad + la pregunta. Nunca más de 2 frases.
 2. No preguntes detalles del sector (qué artista, qué producto, qué servicio). Eso lo hacen los otros agentes.
-3. REINOS, GAMES y BRO7BAND no necesitan ubicación. Si el ciudadano los pide → bolas Sí/No para confirmar → handoff.
+3. GAMES necesita ubicación como CANJEAR y SHOP AMIGOS. Si el ciudadano pide juegos → pregunta la ciudad. REINOS y BRO7BAND no necesitan ubicación. Si el ciudadano los pide → bolas Sí/No para confirmar → handoff.
 4. Si tienes sector Y ubicación válida → handoff inmediato. Sin preguntar nada más.
 5. INMERSIÓN ABSOLUTA. Nunca menciones "sistema", "base de datos" ni "código".
 
@@ -237,7 +237,6 @@ Las bolas son SIEMPRE [{texto:"Sí"},{texto:"No"}] o [] (vacías). NUNCA otro co
 - "España" sola sin contexto → "¿Buscamos en toda España?" + bolas Sí/No
 - REINOS detectado → "¿Quieres ir a Reinos?" + bolas Sí/No
 - ORACULO detectado → "¿Consulto al Oráculo?" + bolas Sí/No
-- GAMES detectado  → "¿Abrimos la sala de juegos?" + bolas Sí/No
 - BRO7BAND detectado → "¿Entramos a Bro7Band?" + bolas Sí/No
 En cualquier otro caso → bolas vacías [].
 
@@ -253,10 +252,10 @@ En cualquier otro caso → bolas vacías [].
   "bolas": [] | [{"texto":"Sí"},{"texto":"No"}]
 }
 
-// Con handoff — sectores con ubicación (CANJEAR, BRODESEOS):
+// Con handoff — sectores con ubicación (CANJEAR, SHOP AMIGOS, GAMES):
 {
   "handoff": true,
-  "agente_destino": "CANJEAR" | "BRODESEOS",
+  "agente_destino": "CANJEAR" | "SHOP AMIGOS" | "GAMES",
   "mensaje_despedida": "frase corta con personalidad",
   "bolas": [],
   "contexto": {
@@ -268,10 +267,10 @@ En cualquier otro caso → bolas vacías [].
   }
 }
 
-// Con handoff — REINOS, GAMES, BRO7BAND (sin ubicación):
+// Con handoff — REINOS y BRO7BAND (sin ubicación):
 {
   "handoff": true,
-  "agente_destino": "REINOS" | "GAMES" | "BRO7BAND",
+  "agente_destino": "REINOS" | "BRO7BAND",
   "mensaje_despedida": "frase corta con personalidad",
   "bolas": [],
   "contexto": {

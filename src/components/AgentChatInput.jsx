@@ -72,7 +72,7 @@ blue: {
 const AGENT_PROFILES = {
   osos: {
     theme: 'violet',
-    text: '✦  Elige Sector y Ubicación por Ciudad o País. Ellos te llevarán. Ejemplos: Hola Lara o Tito o Puffo · Vamos a Shop Amigos · Vamos a Canjes · Games · Canjes de Lunas · Tarjetas · Sabadell · España',
+    text: '✦  Elige Sector y ubicación deseada por Ciudad o País. Ejemplos: Hola Lara o Tito o Puffo · Vamos a Shop Amigos · Vamos a Canjes · Games · Canjes de Lunas · Tarjetas · Sabadell · España',
     bro7band: 'Habla con Tito, Lara o Puffo — escucha el audio grupal y encuentra la palabra clave',
     rows: 3,
     maxLength: 200,

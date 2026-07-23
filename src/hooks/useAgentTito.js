@@ -7,14 +7,14 @@ import { fetchContextoTito } from '../services/contexto/fetchContextoTito';
 import { detectarSectorPS, detectarCiudadPS } from '../services/agents/ososPS';
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
-const SECTORES_SIN_CIUDAD = ['BRO7BAND', 'REINOS', 'GAMES'];
+const SECTORES_SIN_CIUDAD = ['BRO7BAND', 'REINOS'];
 const norm   = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const elegir = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 const FRASES_BIENVENIDA = [
   "Tito aquí 🐻 Oye, ¿qué necesitas hoy? Yo te ayudo con lo que pueda.",
   "Fíjate que estaba pensando... y apareciste tú. ¿A dónde te llevo?",
-  "Ey. ¿Productos, servicios, avisos? Es curioso, ¿verdad? que siempre se busca algo.",
+  "Ey. ¿Canjear, Shop Amigos, Games? Es curioso, ¿verdad? que siempre se busca algo.",
   "Aquí Tito, acabo de levantar la vista del cuaderno 📓 ¿Qué buscas?",
 ];
 const FRASES_PEDIR_CIUDAD = [
@@ -23,7 +23,7 @@ const FRASES_PEDIR_CIUDAD = [
   "Necesito la ciudad para anotarlo bien. Qué complicado sería todo sin direcciones, ¿verdad?",
 ];
 const FRASES_FALLBACK = [
-  "Mmm, oye, una preguntita... ¿buscas BroCupones productos, BroCupones servicios, audio o BroDeseos?",
+  "Mmm, oye, una preguntita... ¿buscas Canjear Lunas, Shop Amigos, Games?",
   "Yo solo decía... que si me dices el sector te llevo directo. ¿Cuál es?",
   "Es curioso, ¿verdad? que a veces cuesta decir lo que se busca. ¿A qué sector quieres ir?",
 ];
