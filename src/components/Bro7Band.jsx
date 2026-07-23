@@ -33,7 +33,7 @@ const GROUPS = [
   { id: 6,  name: 'ORUMAMA',            groupId:'orumama',            members:[],                      hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['orumama.webp'],         video: 'orumamaDefaults.mp4',           top: '80%', left: '32%',  animDuration: '8.5s' },
   { id: 7,  name: 'SEÑOR MISTERIO',     groupId:'smisterio',          members:[],                      hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['smisterio.webp'],       video: 'smisterioDefaults.mp4',         top: '72%', left: '8%',   animDuration: '7.5s' },
   { id: 8,  name: 'JAGUAR',             groupId:'jaguar',             members:[],                      hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['jaguar.webp'],          video: 'jaguarSignos.mp4',              top: '42%', left: '18%',   animDuration: '9.5s' },
-  { id: 9,  name: 'RUMORES',            groupId:'rumores',            members:[],                      hasIA:false, hasAudio:true, hasPalabraClave:true,  hasChat:false, images: ['rumores.webp'],         video: 'reinos.mp4',                    top: '78%', left: '55%',  animDuration: '11s'  },
+  { id: 9,  name: 'RUMORES',            groupId:'rumores',            members:[],                      hasIA:false, hasAudio:true, hasPalabraClave:true,  hasChat:false, images: ['rumores.webp'],         video: 'rumoresdefaults.mp4',                    top: '78%', left: '55%',  animDuration: '11s'  },
   { id: 10, name: 'BRO7BAND',           groupId:'bro7band',           members:[],                      hasIA:false, hasAudio:false,hasPalabraClave:false, hasChat:false, images: ['bro7band.webp'],        video: 'https://pub-a77d1f38b28849c1ad7e977150ecb53f.r2.dev/Bro7Band%20Insectos.mp4', top: '45%', left: '44%', animDuration: '10s'  },
 ];
 
@@ -264,6 +264,12 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
     return (
       <div className="fixed inset-0 z-[90] bg-black overflow-hidden">
         <GenesisCounter balances={balances} />
+        <button
+          onClick={() => { setSelectedGroup(null); setIaActive(false); setClaimStatus(null); setPalabraClave(''); setMensajeBienvenida(''); }}
+          className="fixed top-4 left-4 z-[110] px-6 py-3 rounded-full border-2 border-cyan-400/80 text-cyan-300 text-sm font-black uppercase tracking-widest hover:bg-cyan-400/20 hover:border-cyan-300 transition-all shadow-[0_0_25px_rgba(34,211,238,0.5)] backdrop-blur-md"
+        >
+          VOLVER
+        </button>
         <video
           src={videoSrc}
           autoPlay
@@ -287,12 +293,6 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
           {footerOpen && (
             <div className="flex items-center justify-between px-6 py-4 bg-black/80 backdrop-blur-xl border-t border-white/5">
               <div className="flex gap-3 shrink-0">
-                <button
-                  onClick={() => { setSelectedGroup(null); setIaActive(false); setClaimStatus(null); setPalabraClave(''); setMensajeBienvenida(''); }}
-                  className="px-8 py-4 rounded-full border-2 border-cyan-400/80 text-cyan-300 text-sm font-black uppercase tracking-widest hover:bg-cyan-400/20 hover:border-cyan-300 transition-all shadow-[0_0_25px_rgba(34,211,238,0.5)] backdrop-blur-md"
-                >
-                  VOLVER
-                </button>
                 {group.hasIA && (
                   <button
                     onClick={() => {

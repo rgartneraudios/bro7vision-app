@@ -9,6 +9,7 @@ import BroTuner from './BroTuner';
 import NeuralButton from './NeuralButton';
 import NexusDashboard from './NexusDashboard';
 import CanjearStrip from './CanjearStrip';
+import CityLocationBanner from './CityLocationBanner';
 import SlideRailAmigos from './SlideRailAmigos';
 import TriviaRail from './TriviaRail';
 import MapacheBanner from './personajes/MapacheBanner';
@@ -158,6 +159,10 @@ useEffect(() => {
             />
           </div>
         </div>
+      )}
+
+      {step === 2 && intent === 'games' && (
+        <CityLocationBanner scope={scope} />
       )}      
 
       {intent === 'canjear' && step === 2 && (

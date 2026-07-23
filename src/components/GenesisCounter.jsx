@@ -37,7 +37,7 @@ function GenesisCounter({ balances, className = '', mobile = false }) {
 
   return (
     <div
-      className={`fixed top-4 left-1/2 -translate-x-1/2 z-[110] flex items-center gap-3 px-5 py-3 bg-black/60 border backdrop-blur-md rounded-full select-none ${className}`}
+      className={`fixed top-4 right-4 z-[110] flex items-center gap-3 px-5 py-3 bg-black/60 border backdrop-blur-md rounded-full select-none ${className}`}
       style={{
         borderColor: neonColor,
         boxShadow: `0 0 20px ${neonColor}`,
