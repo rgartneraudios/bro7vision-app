@@ -4,7 +4,7 @@ import AgentChatInput from './AgentChatInput';
 import NeuralButton from './NeuralButton';
 import BroTuner from '../components/BroTuner';
 import { getMoonSuffix } from '../utils/moonUtils';
-import { getVideoCandidates, resolveVideoFromCandidates, getTurno } from '../data/citycodes';
+import { buildBgVideoName, getTurno } from '../data/citycodes';
 import CuponModal from './CuponModal';
 import { useCanjearCupon } from '../hooks/useCanjearCupon';
 import { useHaloTrivia } from '../hooks/useHaloTrivia';
@@ -189,27 +189,27 @@ const SECTOR_AVATARS = {
 };
 
 const CANAL_IMAGES = {
-  'moon': '/emojis/canal-luna.webp',
-  'solo_earth': '/emojis/canal-tierra.webp',
-  'solo_fantasy': '/emojis/canal-jupiter.webp',
-  'solo_cinema': '/emojis/canal-marte.webp',
-  'band_earth': '/emojis/canal-saturno.webp',
-  'band_fantasy': '/emojis/canal-urano.webp',
-  'band_cinema': '/emojis/canal-neptuno.webp',
-  'este': '/emojis/canal-venus.webp',
-  'oeste': '/emojis/canal-mercurio.webp',
+  'luna':     '/emojis/canal-luna.webp',
+  'tierra':   '/emojis/canal-tierra.webp',
+  'jupiter':  '/emojis/canal-jupiter.webp',
+  'marte':    '/emojis/canal-marte.webp',
+  'saturno':  '/emojis/canal-saturno.webp',
+  'urano':    '/emojis/canal-urano.webp',
+  'neptuno':  '/emojis/canal-neptuno.webp',
+  'venus':    '/emojis/canal-venus.webp',
+  'mercurio': '/emojis/canal-mercurio.webp',
 };
 
 const REALITIES = [
-  { id: 'moon',         title: 'CANAL LUNA',     desc: 'Fase Luna',          color: '#ffffff', group: 'NEUTRAL' },
-  { id: 'solo_earth',   title: 'CANAL TIERRA',   desc: 'Sincronía Vital',    color: '#34d399', group: 'SOLO' },
-  { id: 'solo_fantasy', title: 'CANAL JÚPITER',  desc: 'Exploración',        color: '#22d3ee', group: 'SOLO' },
-  { id: 'solo_cinema',  title: 'CANAL MARTE',    desc: 'Viajero del Tiempo', color: '#fbbf24', group: 'SOLO' },
-  { id: 'band_earth',   title: 'CANAL SATURNO',  desc: 'Nexo Ciudadano',     color: '#60a5fa', group: 'BAND' },
-  { id: 'band_fantasy', title: 'CANAL URANO',    desc: 'Alien Lounge',       color: '#e879f9', group: 'BAND' },
-  { id: 'band_cinema',  title: 'CANAL NEPTUNO',  desc: 'El Ágora',           color: '#fb923c', group: 'BAND' },
-  { id: 'este',         title: 'CANAL VENUS',    desc: 'Horizonte Levante',  color: '#22d3ee', group: 'ESPACIO' },
-  { id: 'oeste',        title: 'CANAL MERCURIO', desc: 'Horizonte Poniente', color: '#e879f9', group: 'ESPACIO' },
+  { id: 'luna',     title: 'CANAL LUNA',     desc: 'Fase Luna',          color: '#ffffff', group: 'NEUTRAL' },
+  { id: 'tierra',   title: 'CANAL TIERRA',   desc: 'Sincronía Vital',    color: '#34d399', group: 'SOLO' },
+  { id: 'jupiter',  title: 'CANAL JÚPITER',  desc: 'Exploración',        color: '#22d3ee', group: 'SOLO' },
+  { id: 'marte',    title: 'CANAL MARTE',    desc: 'Viajero del Tiempo', color: '#fbbf24', group: 'SOLO' },
+  { id: 'saturno',  title: 'CANAL SATURNO',  desc: 'Nexo Ciudadano',     color: '#60a5fa', group: 'BAND' },
+  { id: 'urano',    title: 'CANAL URANO',    desc: 'Alien Lounge',       color: '#e879f9', group: 'BAND' },
+  { id: 'neptuno',  title: 'CANAL NEPTUNO',  desc: 'El Ágora',           color: '#fb923c', group: 'BAND' },
+  { id: 'venus',    title: 'CANAL VENUS',    desc: 'Horizonte Levante',  color: '#22d3ee', group: 'ESPACIO' },
+  { id: 'mercurio', title: 'CANAL MERCURIO', desc: 'Horizonte Poniente', color: '#e879f9', group: 'ESPACIO' },
 ];
 
 // ─── VIDEO REALITY — solo para el Reality Player ─────────────────────────────
@@ -226,18 +226,16 @@ const getMobileAudioUrl = (realityId) => {
   const t = getTimeSuffix();
   const base = 'https://media.bro7vision.com';
   switch (realityId) {
-    case 'solo_earth':   return `${base}/solo_earth_${t}.mp3`;
-    case 'solo_fantasy': return `${base}/solo_fantasy_${t}.mp3`;
-    case 'solo_cinema':  return `${base}/solo_cinema_${t}.mp3`;
-    case 'band_fantasy': return `${base}/band_fantasy_${t}.mp3`;
-    case 'este':         return `${base}/este_bg_${t}.mp3`;
-    case 'oeste':        return `${base}/oeste_bg_${t}.mp3`;
-    case 'moon':         return `${base}/moon_bg_${getMoonSuffix()}.mp3`;
-    case 'este169':  return `${base}/este_bg_${t}.mp3`;
-    case 'oeste169': return `${base}/oeste_bg_${t}.mp3`;
-    case 'solo_o169': return `${base}/solo_earth_${t}.mp3`;
-    case 'solo_e169': return `${base}/solo_cinema_${t}.mp3`;
-    default:             return null;
+    case 'tierra':   return `${base}/tierra_${t}.mp3`;
+    case 'jupiter':  return `${base}/jupiter_${t}.mp3`;
+    case 'marte':    return `${base}/marte_${t}.mp3`;
+    case 'urano':    return `${base}/urano_${t}.mp3`;
+    case 'venus':    return `${base}/venus_bg_${t}.mp3`;
+    case 'mercurio': return `${base}/mercurio_bg_${t}.mp3`;
+    case 'luna':     return `${base}/luna_bg_${getMoonSuffix()}.mp3`;
+    case 'saturno':  return `${base}/saturno_${t}.mp3`;
+    case 'neptuno':  return `${base}/neptuno_${t}.mp3`;
+    default:         return null;
   }
 };
 
@@ -546,15 +544,16 @@ const MobileLayout = ({
   });
   
 
+  const turnoActual = getTurno();
+
   useEffect(() => {
-    const MOBILE_CANAL = { solo_earth:4, solo_fantasy:5, solo_cinema:6, band_earth:7, band_fantasy:8, band_cinema:9, este:3, oeste:1, moon:2 };
+    const MOBILE_CANAL = { luna:2, tierra:4, jupiter:5, marte:6, saturno:7, urano:8, neptuno:9, venus:3, mercurio:1 };
     const canal = realityMode ? MOBILE_CANAL[realityMode] : null;
     if (!canal) { setBgVideoUrl(''); return; }
-    let active = true;
-    resolveVideoFromCandidates(getVideoCandidates(canal, getMoonSuffix(), getTurno(), 1, null))
-      .then(url => { if (active) setBgVideoUrl(url); });
-    return () => { active = false; };
-  }, [realityMode]);
+    const fase = canal === 2 ? getMoonSuffix() : '0';
+    const url = `https://media.bro7vision.com/${buildBgVideoName(canal, fase, turnoActual, 1)}`;
+    setBgVideoUrl(url);
+  }, [realityMode, turnoActual]);
 
   useEffect(() => { setBurbujaOpen(false); }, [stripCards]);
 

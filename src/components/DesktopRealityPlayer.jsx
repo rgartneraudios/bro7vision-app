@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { getVideoCandidates, resolveVideoFromCandidates, getTurno } from '../data/citycodes';
+import { buildBgVideoName, getTurno } from '../data/citycodes';
 import { getMoonSuffix } from '../utils/moonUtils';
+import { useAdOverlay } from '../hooks/useAdOverlay';
 import { useHaloTrivia } from '../hooks/useHaloTrivia';
 
 const DR_STYLES = `
@@ -65,53 +66,53 @@ const DR_STYLES = `
 `;
 
 const PC_ESCENARIO_MAP = {
-  moon:         '01',
-  oeste:        '02',
-  este:         '03',
-  solo_o169:    '04',
-  solo_e169:    '05',
-  solo_fantasy: '06',
-  oeste169:     '07',
-  band_fantasy: '08',
-  este169:      '09',
+  luna:     '01',
+  mercurio: '02',
+  venus:    '03',
+  tierra:   '04',
+  marte:    '05',
+  jupiter:  '06',
+  saturno:  '07',
+  urano:    '08',
+  neptuno:  '09',
 };
 
 // Mapa canal → número para getVideoCandidates
 const CANAL_NUM = {
-  moon:         2,
-  solo_o169:    4,
-  solo_fantasy: 5,
-  solo_e169:    6,
-  oeste169:     7,
-  band_fantasy: 8,
-  este169:      9,
-  este:         3,
-  oeste:        1,
+  luna:     2,
+  tierra:   4,
+  jupiter:  5,
+  marte:    6,
+  saturno:  7,
+  urano:    8,
+  neptuno:  9,
+  venus:    3,
+  mercurio: 1,
 };
 
 // Colores por canal
 const CANAL_COLOR = {
-  moon:         '#e2e8f0',
-  solo_o169:    '#34d399',
-  solo_fantasy: '#22d3ee',
-  solo_e169:    '#fbbf24',
-  oeste169:     '#60a5fa',
-  band_fantasy: '#e879f9',
-  este169:      '#fb923c',
-  este:         '#22d3ee',
-  oeste:        '#e879f9',
+  luna:     '#e2e8f0',
+  tierra:   '#34d399',
+  jupiter:  '#22d3ee',
+  marte:    '#fbbf24',
+  saturno:  '#60a5fa',
+  urano:    '#e879f9',
+  neptuno:  '#fb923c',
+  venus:    '#22d3ee',
+  mercurio: '#e879f9',
 };
 
 const CANAL_NOMBRE = {
-  moon:         'CANAL MOON',
-  solo_o169:    'CANAL TIERRA',
-  solo_fantasy: 'CANAL JÚPITER',
-  solo_e169:    'CANAL MARTE',
-  oeste169:     'CANAL SATURNO',
-  band_fantasy: 'CANAL URANO',
-  este169:      'CANAL NEPTUNO',
-  este:         'CANAL VENUS',
-  oeste:        'CANAL MERCURIO',
+  luna:     'CANAL LUNA',
+  tierra:   'CANAL TIERRA',
+  jupiter:  'CANAL JÚPITER',
+  marte:    'CANAL MARTE',
+  saturno:  'CANAL SATURNO',
+  urano:    'CANAL URANO',
+  neptuno:  'CANAL NEPTUNO',
+  venus:    'CANAL VENUS',
+  mercurio: 'CANAL MERCURIO',
 };
 
 // Widget reloj + temperatura + génesis
@@ -201,16 +202,22 @@ const DesktopRealityPlayer = ({
   const color  = CANAL_COLOR[realityMode]  || '#00ffff';
   const nombre = CANAL_NOMBRE[realityMode] || 'CANAL';
 
+  const turnoActual = getTurno();
+
   useEffect(() => {
     if (!realityMode) return;
     const num = CANAL_NUM[realityMode];
     if (!num) return;
-    let active = true;
-    resolveVideoFromCandidates(
-      getVideoCandidates(num, getMoonSuffix(), getTurno(), 0, userCity)
-    ).then(url => { if (active) setBgVideoUrl(url); });
-    return () => { active = false; };
-  }, [realityMode, userCity]);
+    const fase = num === 2 ? getMoonSuffix() : '0';
+    const url = `https://media.bro7vision.com/${buildBgVideoName(num, fase, turnoActual)}`;
+    setBgVideoUrl(url);
+  }, [realityMode, turnoActual]);
+
+  const adVideoUrl = useAdOverlay({
+    escenarioId: realityMode,
+    turno: turnoActual,
+    cityKey: userCity,
+  });
 
   const {
     preguntaActual, indice, total, resultado, cooldown,
@@ -234,6 +241,22 @@ const DesktopRealityPlayer = ({
         <video key={bgVideoUrl} autoPlay loop muted playsInline
           className="absolute inset-0 w-full h-full object-cover z-0">
           <source src={bgVideoUrl} type="video/mp4" />
+        </video>
+      )}
+
+      {/* Video publicitario del anunciante — overlay mudo vertical */}
+      {adVideoUrl && (
+        <video key={adVideoUrl} autoPlay loop muted playsInline
+          className="absolute z-10 pointer-events-none"
+          style={{
+            bottom: '5%',
+            right:  '2%',
+            height: '35%',
+            width:  'auto',
+            borderRadius: '12px',
+            opacity: 0.92,
+          }}>
+          <source src={adVideoUrl} type="video/mp4" />
         </video>
       )}
 
