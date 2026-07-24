@@ -208,16 +208,31 @@ const DesktopRealityPlayer = ({
     if (!realityMode) return;
     const num = CANAL_NUM[realityMode];
     if (!num) return;
-    const fase = num === 2 ? getMoonSuffix() : '0';
-    const url = `https://media.bro7vision.com/${buildBgVideoName(num, fase, turnoActual)}`;
+const fase  = num === 2 ? getMoonSuffix() : '0';
+    const turno = num === 2 ? '0' : turnoActual;
+    const url   = `https://media.bro7vision.com/${buildBgVideoName(num, fase, turno)}`;
     setBgVideoUrl(url);
   }, [realityMode, turnoActual]);
 
   const adVideoUrl = useAdOverlay({
     escenarioId: realityMode,
     turno: turnoActual,
+    faseLunar: getMoonSuffix(),
     cityKey: userCity,
+    dispositivo: 0,
   });
+
+  const [adVisible, setAdVisible] = useState(true);
+
+  useEffect(() => {
+    if (!adVideoUrl) return;
+    setAdVisible(true);
+    const cycle = setInterval(() => {
+      setAdVisible(false);
+      setTimeout(() => setAdVisible(true), 8000);
+    }, 20000);
+    return () => clearInterval(cycle);
+  }, [adVideoUrl]);
 
   const {
     preguntaActual, indice, total, resultado, cooldown,
@@ -245,16 +260,17 @@ const DesktopRealityPlayer = ({
       )}
 
       {/* Video publicitario del anunciante — overlay mudo vertical */}
-      {adVideoUrl && (
+      {adVideoUrl && adVisible && (
         <video key={adVideoUrl} autoPlay loop muted playsInline
-          className="absolute z-10 pointer-events-none"
+          className="absolute z-10 pointer-events-none transition-opacity duration-1000"
           style={{
-            bottom: '5%',
-            right:  '2%',
-            height: '35%',
+            bottom: '50%',
+            right:  '12%',
+            transform: 'translateY(50%)',
+            height: '55%',
             width:  'auto',
-            borderRadius: '12px',
-            opacity: 0.92,
+            borderRadius: '16px',
+            opacity: 0.95,
           }}>
           <source src={adVideoUrl} type="video/mp4" />
         </video>
