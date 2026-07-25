@@ -60,7 +60,7 @@ const RealityTuner = ({ onSelect }) => {
   </button>
 );
  return (
-    <div className="absolute inset-0 z-[100] bg-black flex flex-col items-center justify-center animate-fadeIn overflow-y-auto">
+    <div className="absolute inset-0 z-[100] bg-black flex flex-col items-center justify-center animate-fadeIn overflow-y-auto pb-16">
         
         {/* FONDO: VIDEO DEEP SPACE TRASLADADO AQUÍ */}
         <video
@@ -73,12 +73,14 @@ const RealityTuner = ({ onSelect }) => {
           <source src="https://media.bro7vision.com/entrada_nova.mp4" type="video/mp4" />
         </video>
               
+      <div className="relative z-10 w-full flex flex-col items-center">
+              
       {/* TITULO SUPERIOR */}
       <div className="text-center mb-8">
         <h2 className="text-5xl md:text-6xl font-black tracking-[0.5em] text-white">
             BRO<span className="text-cyan-400">7</span>VISION
         </h2>
-        <p className="text-[10px] text-gray-500 uppercase tracking-[0.4em] mt-3 font-bold opacity-60">SINTONIZA TU FRECUENCIA DE REALIDAD</p>
+        <p className="text-[10px] text-gray-500 uppercase tracking-[0.4em] mt-3 font-bold opacity-60">SINTONIZA TU CANAL FAVORITO</p>
 
       </div>
 
@@ -105,7 +107,7 @@ const RealityTuner = ({ onSelect }) => {
         <div className="space-y-4">
             <div className="flex items-center gap-4 opacity-40">
                 <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-emerald-500"></div>
-                <p className="text-[9px] text-emerald-500 font-black tracking-[0.5em]">CONTIGO MISMO (SOLO)</p>
+                <p className="text-[9px] text-emerald-500 font-black tracking-[0.5em]"></p>
                 <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-emerald-500"></div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -117,7 +119,7 @@ const RealityTuner = ({ onSelect }) => {
         <div className="space-y-4">
             <div className="flex items-center gap-4 opacity-40">
                 <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-blue-500"></div>
-                <p className="text-[9px] text-blue-500 font-black tracking-[0.5em]">EN COMPAÑÍA (BAND)</p>
+                <p className="text-[9px] text-blue-500 font-black tracking-[0.5em]"></p>
                 <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-blue-500"></div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -128,12 +130,13 @@ const RealityTuner = ({ onSelect }) => {
       </div>
 
       {/* FOOTER */}
-      <div className="mt-12 text-center">
-          <p className="text-[8px] text-gray-600 font-mono tracking-[0.3em] uppercase animate-pulse">
-            Sincronía Circadiana v1.0 | Motor de Video Activo
+      <div className="mt-8 text-center shrink-0 relative z-10">
+          <p className="text-base text-white font-mono tracking-wide px-4">
+            Puedes repetir las partidas las veces que quieras — las Lunas solo se suman en la primera partida de cada turno.
           </p>
       </div>
 
+      </div>
     </div>
   );
 };

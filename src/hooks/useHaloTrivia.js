@@ -44,7 +44,9 @@ export function useHaloTrivia({ escenarioId, canalId, userId, onGenesisUpdate })
   const [completado,    setCompletado]    = useState(yaJugado);
   const [burbujaOpen,   setBurbujaOpen]   = useState(false);
   const [haloActivo,    setHaloActivo]    = useState(null);
-  const [falloImg,      setFalloImg]      = useState('');
+  const [falloImg,      setFalloImg]          = useState('');
+  const [partidaYaCompletada, setPartidaYaCompletada] = useState(false);
+  const [lunasBloqueadas,     setLunasBloqueadas]     = useState(false);
 
   const cargarSet = useCallback(async () => {
     if (!escenarioId) return;
@@ -108,6 +110,21 @@ export function useHaloTrivia({ escenarioId, canalId, userId, onGenesisUpdate })
     });
 
     setPreguntas([...promoPreguntas, ...set3]);
+
+    if (userId) {
+      const hoy = new Date().toISOString().split('T')[0];
+      const { data: partida } = await supabase
+        .from('escenarios_trivia_respuestas')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('escenario_id', canalId || escenarioNormalizado)
+        .eq('turno', turnoActual)
+        .eq('fecha', hoy)
+        .limit(1);
+      setPartidaYaCompletada(!!partida?.length);
+      setLunasBloqueadas(!!partida?.length); // si ya jugó, bloquea desde el inicio
+    }
+
     setLoading(false);
     setBurbujaOpen(true);
   }, [escenarioNormalizado]);
@@ -130,19 +147,34 @@ export function useHaloTrivia({ escenarioId, canalId, userId, onGenesisUpdate })
     if (!esAcierto) setFalloImg(FALLOS[Math.floor(Math.random() * FALLOS.length)]);
 
     if (userId) {
-      const delta = esAcierto
-        ? (pregunta.esPromo ? GENESIS_PROMO_ACIERTO : GENESIS_ACIERTO)
-        : -GENESIS_FALLO;
-      await supabase.rpc('incrementar_lunas', { uid: userId, delta });
-      const { data: perfil } = await supabase
-        .from('profiles')
-        .select('lunas')
-        .eq('id', userId)
-        .single();
-      if (perfil?.lunas !== undefined) {
-        onGenesisUpdate?.(perfil.lunas);
+      const delta = lunasBloqueadas ? 0 : (
+        esAcierto
+          ? (pregunta.esPromo ? GENESIS_PROMO_ACIERTO : GENESIS_ACIERTO)
+          : -GENESIS_FALLO
+      );
+
+      if (delta !== 0) {
+        await supabase.rpc('incrementar_lunas', { uid: userId, delta });
+        const { data: perfil } = await supabase
+          .from('profiles')
+          .select('lunas')
+          .eq('id', userId)
+          .single();
+        if (perfil?.lunas !== undefined) {
+          onGenesisUpdate?.(perfil.lunas);
+        }
       }
-    }
+
+      const hoy = new Date().toISOString().split('T')[0];
+      await supabase.from('escenarios_trivia_respuestas').insert({
+        user_id:      userId,
+        trivia_id:    pregunta.id,
+        acierto:      esAcierto,
+        escenario_id: canalId || escenarioNormalizado,
+        turno:        turno,
+        fecha:        hoy,
+      });
+      }
 
     setTimeout(() => setHaloActivo(null), 6000);
 
@@ -150,6 +182,8 @@ export function useHaloTrivia({ escenarioId, canalId, userId, onGenesisUpdate })
       setResultado(null);
       setCooldown(false);
       if (indice + 1 >= preguntas.length) {
+        setLunasBloqueadas(true);
+        setPartidaYaCompletada(true);
         localStorage.setItem(storageKey(escenarioNormalizado, turno), '1');
         setCompletado(true);
         setBurbujaOpen(false);
@@ -157,7 +191,7 @@ export function useHaloTrivia({ escenarioId, canalId, userId, onGenesisUpdate })
         setIndice(i => i + 1);
       }
     }, 3000);
-  }, [cooldown, resultado, preguntas, indice, userId, escenarioNormalizado, turno, onGenesisUpdate]);
+  }, [cooldown, resultado, preguntas, indice, userId, escenarioNormalizado, turno, onGenesisUpdate, lunasBloqueadas]);
 
   return {
     preguntaActual: preguntas[indice] || null,
@@ -169,6 +203,7 @@ export function useHaloTrivia({ escenarioId, canalId, userId, onGenesisUpdate })
     completado,
     burbujaOpen, setBurbujaOpen,
     haloActivo,  falloImg,
+    partidaYaCompletada, lunasBloqueadas,
     proximoTurno: getProximoTurnoHora(),
     cargarSet,
     responder,
