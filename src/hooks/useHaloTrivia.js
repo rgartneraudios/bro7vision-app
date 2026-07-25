@@ -25,15 +25,13 @@ const getProximoTurnoHora = () => {
   return `${String(siguiente).padStart(2,'0')}:00`;
 };
 
-const getAlcance = () => 'LOCAL';
-
 function shuffle(arr) {
   return [...arr].sort(() => Math.random() - 0.5);
 }
 
 const storageKey = (escenarioId, turno) => `haloTrivia_${escenarioId}_t${turno}`;
 
-export function useHaloTrivia({ escenarioId, userId, onGenesisUpdate }) {
+export function useHaloTrivia({ escenarioId, canalId, userId, onGenesisUpdate }) {
   const escenarioNormalizado = escenarioId;
   const turno = getTurnoActual();
   const yaJugado = !!localStorage.getItem(storageKey(escenarioNormalizado, turno));
@@ -57,15 +55,18 @@ export function useHaloTrivia({ escenarioId, userId, onGenesisUpdate }) {
     setBurbujaOpen(true);
 
     const turnoActual = getTurnoActual();
-    const alcance = getAlcance();
 
     const { data: promos } = await supabase
       .from('promo_trivia')
       .select('*')
-      .eq('escenario_id', escenarioNormalizado)
+      .eq('escenario_id', canalId || escenarioNormalizado)
       .eq('turno', turnoActual)
       .eq('activo', true)
-      .in('alcance', ['INTERNACIONAL', 'NACIONAL', alcance])
+      .in('alcance', [
+        'GIRA_MUNDIAL', 'GIRA_NACIONAL', 'GIRA_REGIONAL',
+        'GIRA_GRAN_REGIONAL', 'METROPOLIS',
+        'SALA_CIUDAD', 'SALA_GRAN_CIUDAD'
+      ])
       .limit(1);
 
     const promoPreguntas = (promos || []).map(p => {
@@ -132,14 +133,14 @@ export function useHaloTrivia({ escenarioId, userId, onGenesisUpdate }) {
       const delta = esAcierto
         ? (pregunta.esPromo ? GENESIS_PROMO_ACIERTO : GENESIS_ACIERTO)
         : -GENESIS_FALLO;
-      await supabase.rpc('incrementar_genesis', { uid: userId, delta });
+      await supabase.rpc('incrementar_lunas', { uid: userId, delta });
       const { data: perfil } = await supabase
         .from('profiles')
-        .select('genesis')
+        .select('lunas')
         .eq('id', userId)
         .single();
-      if (perfil?.genesis !== undefined) {
-        onGenesisUpdate?.(perfil.genesis);
+      if (perfil?.lunas !== undefined) {
+        onGenesisUpdate?.(perfil.lunas);
       }
     }
 

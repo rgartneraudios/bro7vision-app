@@ -508,6 +508,23 @@ const MobileLayout = ({
   const [messages,   setMessages]   = useState([]);
   const [burbujaOpen, setBurbujaOpen] = useState(false);
   const [bgVideoUrl, setBgVideoUrl] = useState('');
+  const [userCity, setUserCity] = useState(null);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      try {
+        const { latitude, longitude } = pos.coords;
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+          { headers: { 'Accept-Language': 'es' } }
+        );
+        const gd = await res.json();
+        const cityName = gd.address?.city || gd.address?.town || '';
+        if (cityName) setUserCity(cityName);
+      } catch { /* silencioso */ }
+    });
+  }, []);
 
   const { enviar, mensaje: chatMensaje, loading: chatLoading } = chatMobile || {};
   const inputRef     = useRef(null);
@@ -521,15 +538,15 @@ const MobileLayout = ({
 } = useCanjearCupon({ userId, onGenesisUpdate });
 
   const MOBILE_ESCENARIO_MAP = {
-    moon:         '11',
-    oeste:        '12',
-    este:         '13',
-    solo_earth:   '14',
-    solo_cinema:  '15',
-    solo_fantasy: '16',
-    band_earth:   '17',
-    band_fantasy: '18',
-    band_cinema:  '19',
+    luna:     '11',
+    mercurio: '12',
+    venus:    '13',
+    tierra:   '14',
+    marte:    '15',
+    jupiter:  '16',
+    saturno:  '17',
+    urano:    '18',
+    neptuno:  '19',
   };
 
   const {
@@ -540,6 +557,7 @@ const MobileLayout = ({
     cargarSet, responder,
   } = useHaloTrivia({
     escenarioId: MOBILE_ESCENARIO_MAP[realityMode] || realityMode,
+    canalId: realityMode,
     userId,
     onGenesisUpdate,
   });
@@ -568,7 +586,7 @@ const MobileLayout = ({
     escenarioId: realityMode,
     turno: turnoActual,
     faseLunar: getMoonSuffix(),
-    cityKey: scope?.city,
+    cityKey: userCity || scope?.city,
     dispositivo: 1,
   });
 
@@ -731,20 +749,22 @@ const MobileLayout = ({
 
         {/* Visor publicitario móvil — cuadrado 1:1 */}
         {adVideoUrl && adVisible && (
-          <video key={adVideoUrl} autoPlay loop muted playsInline
-            className="absolute z-10 pointer-events-none"
-            style={{
-              top: '12%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '64vw',
-              height: '64vw',
-              borderRadius: '16px',
-              objectFit: 'cover',
-              opacity: 0.95,
-            }}>
-            <source src={adVideoUrl} type="video/mp4" />
-          </video>
+          <div className="absolute z-10 pointer-events-none"
+            style={{ top: '12%', left: '50%', transform: 'translateX(-50%)', width: '64vw', height: '64vw' }}>
+            <div className="text-[8px] text-white/30 uppercase tracking-widest text-center mb-1 font-mono">
+              PUBLI
+            </div>
+            <video key={adVideoUrl} autoPlay loop muted playsInline
+              style={{
+                width: '100%',
+                height: '100%',
+                borderRadius: '16px',
+                objectFit: 'cover',
+                opacity: 0.95,
+              }}>
+              <source src={adVideoUrl} type="video/mp4" />
+            </video>
+          </div>
         )}
 
         {/* Overlay gradiente */}

@@ -23,6 +23,11 @@ const MOON_TURNOS = [
   { value: 4, label: 'MT4 — Cuarto cuarto' },
 ];
 
+const CANAL_STRING = {
+  1:'mercurio', 2:'luna', 3:'venus', 4:'tierra',
+  5:'jupiter',  6:'marte', 7:'saturno', 8:'urano', 9:'neptuno'
+};
+
 const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, profile, onClose, onReserved }) => {
   const [cobertura, setCobertura]   = useState(coberturaInicial || 'SALA_CIUDAD');
   const [ciudad, setCiudad]         = useState('');
@@ -112,7 +117,7 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
         opcion_a:     opcionConStar(promoOpcionA.trim(), 'a'),
         opcion_b:     opcionConStar(promoOpcionB.trim(), 'b'),
         opcion_c:     opcionConStar(promoOpcionC.trim(), 'c'),
-        escenario_id: String(escenarioId),
+        escenario_id: CANAL_STRING[slot.canal],
         turno:        isMoon ? moonTurno : slot.turno,
         alcance:      cobertura,
         activo:       true,

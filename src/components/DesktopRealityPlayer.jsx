@@ -256,6 +256,7 @@ const fase  = num === 2 ? getMoonSuffix() : '0';
     cargarSet, responder,
   } = useHaloTrivia({
     escenarioId: PC_ESCENARIO_MAP[realityMode] || realityMode,
+    canalId: realityMode,
     userId,
     onGenesisUpdate,
   });
@@ -274,19 +275,16 @@ const fase  = num === 2 ? getMoonSuffix() : '0';
 
       {/* Video publicitario del anunciante — overlay mudo vertical */}
       {adVideoUrl && adVisible && (
-        <video key={adVideoUrl} autoPlay loop muted playsInline
-          className="absolute z-10 pointer-events-none transition-opacity duration-1000"
-          style={{
-            bottom: '50%',
-            right:  '12%',
-            transform: 'translateY(50%)',
-            height: '55%',
-            width:  'auto',
-            borderRadius: '16px',
-            opacity: 0.95,
-          }}>
-          <source src={adVideoUrl} type="video/mp4" />
-        </video>
+        <div className="absolute z-10 pointer-events-none"
+          style={{ bottom: '50%', right: '3%', transform: 'translateY(50%)' }}>
+          <div className="text-[8px] text-white/30 uppercase tracking-widest text-center mb-1 font-mono">
+            PUBLI
+          </div>
+          <video key={adVideoUrl} autoPlay loop muted playsInline
+            style={{ height: '55%', width: 'auto', borderRadius: '16px', opacity: 0.95 }}>
+            <source src={adVideoUrl} type="video/mp4" />
+          </video>
+        </div>
       )}
 
       {/* Scanline */}
@@ -354,9 +352,9 @@ const fase  = num === 2 ? getMoonSuffix() : '0';
                 boxShadow: `0 0 60px ${color}18`,
               }}>
 
-              {preguntaActual.esEco && (
-                <div className="text-[10px] text-white/35 uppercase tracking-widest text-right">
-                  * PUBLICIDAD
+              {preguntaActual.esPromo && (
+                <div className="text-[10px] text-cyan-400/70 uppercase tracking-widest text-right font-bold">
+                  📡 PATROCINADO
                 </div>
               )}
 
@@ -375,7 +373,7 @@ const fase  = num === 2 ? getMoonSuffix() : '0';
                   const textoDisplay = op.texto?.replace(/\(\*\)/g, '').trim();
                   const tieneStar   = op.texto?.includes('(*)');
                   const esCorrecta  = resultado === 'acierto' && (
-                    preguntaActual.esEco
+                    preguntaActual.esPromo
                       ? op.texto?.includes('(*)')
                       : op.clave === preguntaActual.respuesta_correcta
                   );
