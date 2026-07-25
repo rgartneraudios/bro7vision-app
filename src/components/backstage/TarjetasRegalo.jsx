@@ -1,776 +1,492 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../supabaseClient';
-import StickerCupon, { MODEL_COLORS } from '../booster/StickerCupon';
 
-// ── 10 MODELOS DE BROCARD ────────────────────────────────────────────────
-export const BROCARD_MODELOS = {
-  // DESCUENTO — esquina triángulo con % oblicuo
-   10: {
-     tipo: 'descuento', descuento_pct: 10, condicion: 1, cornerStyle: 'triangle',
-     bg: 'linear-gradient(160deg,#1a1a1a,#3a3a3a,#6a6a6a)',
-     border: 'linear-gradient(160deg,#888,#ccc,#888)',
-     cornerBg: 'linear-gradient(135deg,#888,#ddd)',
-     cornerText: '#000',
-     shimmer: 'linear-gradient(105deg, transparent 35%, rgba(200,200,200,0.4) 50%, transparent 65%)',
-     glow: 'rgba(180,180,180,0.3)',
-     label: '10%',
-     coste_genesis: 500,
-   },
-    15: {
-      tipo: 'descuento', descuento_pct: 15, condicion: 1, cornerStyle: 'triangle',
-     bg: 'linear-gradient(160deg, #2a2a2e 0%, #4a4a52 30%, #8a8a96 55%, #5a5a64 75%, #1e1e22 100%)',
-     border: 'linear-gradient(160deg, #c8ccd8, #f0f2f8, #9ca0b0, #e8eaf0, #7a7e8a)',
-     cornerBg: 'linear-gradient(135deg, #9ca0b0 0%, #f0f2f8 40%, #b0b4c4 70%, #787c8c 100%)',
-     cornerText: '#000252',
-     shimmer: 'linear-gradient(105deg, transparent 35%, rgba(210,215,230,0.55) 50%, transparent 65%)',
-     glow: 'rgba(200,205,225,0.35)',
-     label: '15%',
-     coste_genesis: 1000,
-   },
-   20: {
-     sector: 'descuento', descuento_pct: 20, condicion: 1, cornerStyle: 'triangle',
-     bg: 'linear-gradient(160deg, #0a0f2e 0%, #0d1f5c 25%, #1a3a9e 50%, #0d2070 70%, #060b20 100%)',
-     border: 'linear-gradient(160deg, #2a4fcc, #6a9fff, #1a35aa, #5080ee, #0f2580)',
-     cornerBg: 'linear-gradient(135deg, #1a3acc 0%, #6a9fff 40%, #2a50dd 70%, #0f2299 100%)',
-     cornerText: '#ffffff',
-     shimmer: 'linear-gradient(105deg, transparent 35%, rgba(120,180,255,0.6) 50%, transparent 65%)',
-     glow: 'rgba(80,130,255,0.4)',
-     label: '20%',
-     coste_genesis: 1500,
-   },
-   25: {
-     sector: 'descuento', descuento_pct: 25, condicion: 2, cornerStyle: 'triangle',
-     bg: 'linear-gradient(160deg, #1a1200 0%, #3d2a00 25%, #8a6200 50%, #5a4000 70%, #120d00 100%)',
-     border: 'linear-gradient(160deg, #c8960a, #ffe066, #a07808, #ffd040, #7a5c06)',
-     cornerBg: 'linear-gradient(135deg, #c8960a 0%, #ffe566 40%, #d4a010 70%, #9a7008 100%)',
-     cornerText: '#01053D',
-     shimmer: 'linear-gradient(105deg, transparent 35%, rgba(255,220,80,0.65) 50%, transparent 65%)',
-     glow: 'rgba(255,200,50,0.4)',
-     label: '25%',
-     coste_genesis: 2000,
-   },
-   30: {
-     sector: 'descuento', descuento_pct: 30, condicion: 1, cornerStyle: 'triangle',
-     bg: 'linear-gradient(160deg,#1a0a2e,#3d1a6e,#7a35c8)',
-     border: 'linear-gradient(160deg,#7a35c8,#c87aff,#5a20a8)',
-     cornerBg: 'linear-gradient(135deg,#7a35c8,#d4a0ff)',
-     cornerText: '#fff',
-     shimmer: 'linear-gradient(105deg, transparent 35%, rgba(180,100,255,0.5) 50%, transparent 65%)',
-     glow: 'rgba(150,80,255,0.4)',
-     label: '30%',
-     coste_genesis: 2500,
-   },
-   40: {
-     sector: 'descuento', descuento_pct: 40, condicion: 1, cornerStyle: 'triangle',
-     bg: 'linear-gradient(160deg,#1a0000,#5a0a0a,#c01a1a)',
-     border: 'linear-gradient(160deg,#c01a1a,#ff6060,#a01010)',
-     cornerBg: 'linear-gradient(135deg,#c01a1a,#ff8080)',
-     cornerText: '#fff',
-     shimmer: 'linear-gradient(105deg, transparent 35%, rgba(255,100,100,0.5) 50%, transparent 65%)',
-     glow: 'rgba(255,60,60,0.4)',
-     label: '40%',
-     coste_genesis: 3500,
-   },
-  // ENVÍO GRATIS — esquina círculo
-   'envio1': {
-     sector: 'envio', descuento_pct: 0, condicion: 1, cornerStyle: 'circle',
-     bg: 'linear-gradient(160deg,#001a0a,#004d20,#009940)',
-     border: 'linear-gradient(160deg,#009940,#40ff90,#007730)',
-     cornerBg: 'linear-gradient(135deg,#009940,#40ff90)',
-     cornerText: '#fff',
-     shimmer: 'linear-gradient(105deg, transparent 35%, rgba(60,255,140,0.4) 50%, transparent 65%)',
-     glow: 'rgba(40,200,100,0.4)',
-     label: 'ENVÍO\nGRATIS',
-     coste_genesis: 800,
-   },
-   'envio2': {
-     sector: 'envio', descuento_pct: 0, condicion: 2, cornerStyle: 'circle',
-     bg: 'linear-gradient(160deg,#001a0a,#004d20,#009940)',
-     border: 'linear-gradient(160deg,#009940,#40ff90,#007730)',
-     cornerBg: 'linear-gradient(135deg,#009940,#40ff90)',
-     cornerText: '#fff',
-     shimmer: 'linear-gradient(105deg, transparent 35%, rgba(60,255,140,0.4) 50%, transparent 65%)',
-     glow: 'rgba(40,200,100,0.4)',
-     label: 'ENVÍO\nGRATIS',
-     coste_genesis: 600,
-   },
-   'envio3': {
-     sector: 'envio', descuento_pct: 0, condicion: 3, cornerStyle: 'circle',
-     bg: 'linear-gradient(160deg,#001a0a,#004d20,#009940)',
-     border: 'linear-gradient(160deg,#009940,#40ff90,#007730)',
-     cornerBg: 'linear-gradient(135deg,#009940,#40ff90)',
-     cornerText: '#fff',
-     shimmer: 'linear-gradient(105deg, transparent 35%, rgba(60,255,140,0.4) 50%, transparent 65%)',
-     glow: 'rgba(40,200,100,0.4)',
-     label: 'ENVÍO\nGRATIS',
-     coste_genesis: 400,
-   },
-  // REGALO 100% — esquina círculo
-   100: {
-     sector: 'regalo', descuento_pct: 100, condicion: 1, cornerStyle: 'circle',
-     bg: 'linear-gradient(160deg,#0a001a,#2a0050,#6600cc)',
-     border: 'linear-gradient(160deg,#6600cc,#cc88ff,#4400aa)',
-     cornerBg: 'linear-gradient(135deg,#6600cc,#dd99ff)',
-     cornerText: '#fff',
-     shimmer: 'linear-gradient(105deg, transparent 35%, rgba(180,80,255,0.5) 50%, transparent 65%)',
-     glow: 'rgba(140,60,255,0.4)',
-     label: '100%\nREGALO',
-     coste_genesis: 5000,
-   },
-  // TARJETA REGALO 5€ — naranja
-   'regalo5': {
-     sector: 'regalo', descuento_pct: 0, condicion: 1, cornerStyle: 'circle',
-     bg: 'linear-gradient(160deg,#1a0a00,#4a2000,#cc6600)',
-     border: 'linear-gradient(160deg,#cc6600,#ffaa44,#aa5500)',
-     cornerBg: 'linear-gradient(135deg,#cc6600,#ffcc88)',
-     cornerText: '#fff',
-     shimmer: 'linear-gradient(105deg, transparent 35%, rgba(255,170,68,0.5) 50%, transparent 65%)',
-     glow: 'rgba(255,150,50,0.4)',
-     label: 'REGALO\n5€',
-     coste_genesis: 10000,
-   },
-  // TARJETA REGALO 10€ — rosa mármol
-   'regalo10': {
-     sector: 'regalo', descuento_pct: 0, condicion: 1, cornerStyle: 'circle',
-     bg: 'linear-gradient(160deg,#1a0a14,#4a2030,#cc6688)',
-     border: 'linear-gradient(160deg,#cc6688,#ffaacc,#aa5577)',
-     cornerBg: 'linear-gradient(135deg,#cc6688,#ffccee)',
-     cornerText: '#fff',
-     shimmer: 'linear-gradient(105deg, transparent 35%, rgba(255,170,204,0.5) 50%, transparent 65%)',
-     glow: 'rgba(255,100,150,0.4)',
-     label: 'REGALO\n10€',
-     coste_genesis: 15000,
-   },
+const SYNE = "'Exo 2', sans-serif";
+
+const COSTE_LUNAS = {
+  PLATA:    { ENVIO_GRATIS: 25000, '3': 30000, '5': 35000, '10': 40000, '20': 45000, '40': 50000, '60': 55000, '100': 60000, '200': 70000 },
+  ORO:      { '5': 50000, '10': 60000, '20': 70000, '40': 80000, '60': 90000, '100': 100000, '200': 150000 },
+  DIAMANTE: { '200': 200000, '500': 250000, '1000': 300000 },
+  LUNA100:  { '100pct': 10000 },
 };
 
-const MODELO_KEYS = Object.keys(BROCARD_MODELOS);
+const VALORES_POR_TIER = {
+  PLATA:    ['ENVIO_GRATIS','3','5','10','20','40','60','100','200'],
+  ORO:      ['5','10','20','40','60','100','200'],
+  DIAMANTE: ['200','500','1000'],
+  LUNA100:  ['100pct'],
+};
 
-// Ciclo lunar real: 29.53058867 días
-// Referencia conocida: Luna Nueva el 06/01/2000 a las 18:14 UTC
-const LUNA_REF = new Date('2000-01-06T18:14:00Z').getTime();
-const CICLO_LUNAR = 29.53058867 * 24 * 60 * 60 * 1000;
+const LABEL_VALOR = {
+  ENVIO_GRATIS: 'Envío Gratis', '3': '3 €', '5': '5 €', '10': '10 €',
+  '20': '20 €', '40': '40 €', '60': '60 €', '100': '100 €',
+  '200': '200 €', '500': '500 €', '1000': '1.000 €', '100pct': '100% Descuento',
+};
 
-function getLunaActual() {
-  const edad = ((Date.now() - LUNA_REF) % CICLO_LUNAR + CICLO_LUNAR) % CICLO_LUNAR;
-  const dias = edad / (24 * 60 * 60 * 1000);
-  if (dias < 1.85)  return { fase: 'Luna Nueva',  emoji: '🌑', indice: 1 };
-  if (dias < 14.77) return { fase: 'Creciente',   emoji: '🌙', indice: 2 };
-  if (dias < 16.61) return { fase: 'Luna Llena',  emoji: '🌕', indice: 3 };
-  return              { fase: 'Menguante',     emoji: '🌗', indice: 4 };
-}
+const TIER_STYLES = {
+  PLATA:   { color: '#ddeeff', border: '#7799bb', label: 'Luna de Plata'    },
+  ORO:     { color: '#f5cc42', border: '#d4a83a', label: 'Luna de Oro'      },
+  DIAMANTE:{ color: '#00e5d4', border: '#00e5d4', label: 'Luna de Diamante' },
+  LUNA100: { color: '#ee66ff', border: '#cc44ee', label: 'Luna 100'         },
+};
 
-function getVencimiento() {
-  const edad = ((Date.now() - LUNA_REF) % CICLO_LUNAR + CICLO_LUNAR) % CICLO_LUNAR;
-  const diasRestantes = (() => {
-    const d = edad / (24 * 60 * 60 * 1000);
-    if (d < 1.85)  return 1.85 - d;
-    if (d < 14.77) return 14.77 - d;
-    if (d < 16.61) return 16.61 - d;
-    return 29.53 - d;
-  })();
-  const venc = new Date(Date.now() + diasRestantes * 24 * 60 * 60 * 1000);
-  return venc.toISOString().split('T')[0];
-}
+const ALCANCE_OPCIONES = [
+  { value: 'CIUDAD',         label: 'Ciudad'         },
+  { value: 'GRAN_CIUDAD',    label: 'Gran Ciudad'    },
+  { value: 'REGION',         label: 'Región'         },
+  { value: 'GRAN_REGION',    label: 'Gran Región'    },
+  { value: 'GIRA_NACIONAL',  label: 'Nacional'       },
+  { value: 'GIRA_MUNDIAL',   label: 'Internacional'  },
+];
 
-function getFaseLunar() {
-  return getLunaActual().indice;
-}
+const SUPABASE_STORAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/comercio-banners`;
 
-function getFaseLabel(indice) {
-  const labels = { 1:'Luna Nueva', 2:'Creciente', 3:'Luna Llena', 4:'Menguante' };
-  return labels[indice] || getLunaActual().fase;
-}
+export default function TarjetasRegalo() {
+  const [userId, setUserId]         = useState(null);
+  const [tarjetas, setTarjetas]     = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [saving, setSaving]         = useState(false);
+  const [uploading, setUploading]   = useState(false);
+  const [msg, setMsg]               = useState('');
+  const [editando, setEditando]     = useState(null); // null = nueva, id = editar
 
-// ── COMPONENTE PRINCIPAL ──────────────────────────────────────────────────
-const BoosterBroCards = () => {
-  const [cupones, setCupones] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [descriptions, setDescripciones] = useState({});
-  const [palabrasClave1, setPalabrasClave1] = useState({});
-  const [palabrasClave2, setPalabrasClave2] = useState({});
-  const [palabrasClave3, setPalabrasClave3] = useState({});
-  const [tiposBrocard, setTiposBrocard] = useState({});
-  const [bannersUrl, setBannersUrl] = useState({});
-  const [guardando, setGuardando] = useState({});
+  const [tier, setTier]               = useState('PLATA');
+  const [valor, setValor]             = useState('');
+  const [compraMinima, setCompraMinima] = useState('');
+  const [descripcion, setDescripcion] = useState('');
+  const [bannerUrl, setBannerUrl]     = useState('');
+  const [alcance, setAlcance]         = useState([]);
+  const [palabraClave1, setPalabraClave1] = useState('');
+  const [palabraClave2, setPalabraClave2] = useState('');
 
-  // Estado para crear nuevo cupón
-  const [selectedModelKey, setSelectedModelKey] = useState(null);
-  const [alcance, setAlcance] = useState('LOCAL');
-  const [sectorComercio, setSectorComercio] = useState('PRODUCTO');
-  const [nuevaDescripcion, setNuevaDescripcion] = useState('');
-  const [nuevoBannerUrl, setNuevoBannerUrl] = useState('');
-  const [creando, setCreando] = useState(false);
-
-  const [aliasUsuario, setAliasUsuario] = useState('');
-
-  const cargarCupones = useCallback(async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('USER ID:', user?.id);
-      if (!user) return;
-
-      const { data: perfil } = await supabase
-        .from('profiles')
-        .select('alias')
-        .eq('id', user.id)
-        .single();
-      if (perfil?.alias) setAliasUsuario(perfil.alias);
-
-      const { data, error } = await supabase
-        .from('comercio_cupones')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      console.log('DATA:', data);
-      console.log('ERROR:', error);
-      console.log('ROWS:', data?.length);
-
-      if (error) throw error;
-
-      if (data) {
-        console.log('Columnas de comercio_cupones:', data.length > 0 ? Object.keys(data[0]) : 'sin datos');
-        console.log('Ejemplo banner_11_url:', data.length > 0 ? data[0].banner_11_url : 'N/A');
-        setCupones(data);
-        const descMap = {};
-        const pc1Map = {};
-        const pc2Map = {};
-        const pc3Map = {};
-        const tbMap = {};
-        const bannMap = {};
-        data.forEach(c => {
-          descMap[c.id] = c.descripcion || c.description || '';
-          pc1Map[c.id] = c.palabra_clave_1 || '';
-          pc2Map[c.id] = c.palabra_clave_2 || '';
-          pc3Map[c.id] = c.palabra_clave_3 || '';
-          tbMap[c.id] = c.tipo_brocard || '';
-          bannMap[c.id] = c.banner_11_url || '';
-        });
-        setDescripciones(descMap);
-        setPalabrasClave1(pc1Map);
-        setPalabrasClave2(pc2Map);
-        setPalabrasClave3(pc3Map);
-        setTiposBrocard(tbMap);
-        setBannersUrl(bannMap);
-      }
-    } catch (err) {
-      console.error('Error cargando cupones:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const costeLunas = valor ? (COSTE_LUNAS[tier]?.[valor] || 0) : 0;
+  const valorEuros = (valor && valor !== 'ENVIO_GRATIS' && valor !== '100pct')
+    ? parseFloat(valor) : null;
 
   useEffect(() => {
-    cargarCupones();
-  }, [cargarCupones]);
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserId(user.id);
+    });
+  }, []);
 
-  const handleDescripcionChange = (id, value) => {
-    setDescripciones(prev => ({ ...prev, [id]: value }));
-  };
-
-  const handlePalabraClave1Change = (id, value) => {
-    setPalabrasClave1(prev => ({ ...prev, [id]: value }));
-  };
-
-  const handlePalabraClave2Change = (id, value) => {
-    setPalabrasClave2(prev => ({ ...prev, [id]: value }));
-  };
-
-  const handlePalabraClave3Change = (id, value) => {
-    setPalabrasClave3(prev => ({ ...prev, [id]: value }));
-  };
-
-  const handleTipoBrocardChange = (id, value) => {
-    setTiposBrocard(prev => ({ ...prev, [id]: value }));
-  };
-
-  const handleBannerUrlChange = (id, value) => {
-    setBannersUrl(prev => ({ ...prev, [id]: value }));
-  };
-
-const handleGuardar = async (cuponId) => {
-  setGuardando(prev => ({ ...prev, [cuponId]: true }));
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { error } = await supabase
+  const loadTarjetas = useCallback(async () => {
+    if (!userId) return;
+    const { data } = await supabase
       .from('comercio_cupones')
-      .update({
-        descripcion:     descriptions[cuponId],
-        palabra_clave_1: palabrasClave1[cuponId] || null,
-        palabra_clave_2: palabrasClave2[cuponId] || null,
-        palabra_clave_3: palabrasClave3[cuponId] || null,
-        tipo_brocard:    tiposBrocard[cuponId]   || null,
-        banner_11_url:   bannersUrl[cuponId]     || null,
-      })
-      .eq('id', cuponId)
-      .eq('user_id', user.id);
-      
-      if (error) throw error;
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    setTarjetas(data || []);
+    setLoading(false);
+  }, [userId]);
 
-      setCupones(prev =>
-        prev.map(c => c.id === cuponId ? {
-          ...c,
-          descripcion: descriptions[cuponId],
-          palabra_clave_1: palabrasClave1[cuponId] || null,
-          palabra_clave_2: palabrasClave2[cuponId] || null,
-          palabra_clave_3: palabrasClave3[cuponId] || null,
-          tipo_brocard: tiposBrocard[cuponId] || null,
-          banner_11_url: bannersUrl[cuponId] || null,
-        } : c)
-      );
-    } catch (err) {
-      console.error('Error guardando cupón:', err);
-      alert('Error al guardar: ' + err.message);
-    } finally {
-      setGuardando(prev => ({ ...prev, [cuponId]: false }));
-    }
+  useEffect(() => { loadTarjetas(); }, [loadTarjetas]);
+
+  const resetForm = () => {
+    setEditando(null);
+    setTier('PLATA'); setValor(''); setCompraMinima('');
+    setDescripcion(''); setBannerUrl(''); setAlcance([]);
+    setPalabraClave1(''); setPalabraClave2('');
+    setMsg('');
   };
 
-  const handleCrearCupon = async () => {
-    if (!selectedModelKey) return;
-    const modelo = BROCARD_MODELOS[selectedModelKey];
-    if (!modelo) return;
+  const handleUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !userId) return;
+    setUploading(true);
+    const ext  = file.name.split('.').pop();
+    const path = `${userId}/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage
+      .from('comercio-banners')
+      .upload(path, file, { upsert: true });
+    if (error) { setMsg('Error subiendo imagen'); setUploading(false); return; }
+    setBannerUrl(`${SUPABASE_STORAGE_URL}/${path}`);
+    setUploading(false);
+  };
 
-    setCreando(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No autenticado');
+  const toggleAlcance = (val) => {
+    setAlcance(prev => prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val]);
+  };
 
-      const { data: perfil } = await supabase
-        .from('profiles')
-        .select('alias, city, country')
-        .eq('id', user.id)
-        .single();
-
-      const nombreComercio = perfil?.alias || 'COMERCIO';
-
-      const fase_lunar = getFaseLunar();
-      const vencimiento = getVencimiento();
-
-      const { data, error } = await supabase
-        .from('comercio_cupones')
-        .insert({
-          user_id: user.id,
-          comercio_nombre: perfil?.alias || 'COMERCIO',
-          ciudad: perfil?.city || '',
-          pais: perfil?.country || '',
-          modelo_key: String(selectedModelKey),
-          tipo: modelo.tipo,
-          sector: sectorComercio,
-          descuento_pct: modelo.descuento_pct,
-          condicion: modelo.condicion,
-          alcance,
-          descripcion: nuevaDescripcion,
-          banner_11_url: nuevoBannerUrl,
-          fase_lunar,
-          vencimiento,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setCupones(prev => [data, ...prev]);
-      setDescripciones(prev => ({ ...prev, [data.id]: nuevaDescripcion }));
-      setBannersUrl(prev => ({ ...prev, [data.id]: nuevoBannerUrl }));
-      setSelectedModelKey(null);
-      setAlcance('Local');
-      setNuevaDescripcion('');
-      setNuevoBannerUrl('');
-    } catch (err) {
-      console.error('Error creando cupón:', err);
-      alert('Error al crear cupón: ' + err.message);
-    } finally {
-      setCreando(false);
+  const handleSave = async () => {
+    if (!userId || !tier || !valor || alcance.length === 0) {
+      setMsg('Completa tier, valor y al menos un alcance.'); return;
     }
-   };
-   
-  const mapToCard = (c) => {
-    const key = c.modelo_key;
-    // Intentar como string primero, luego como número
-    const modelo = BROCARD_MODELOS[key] || BROCARD_MODELOS[Number(key)];
-
-    if (!modelo) {
-      console.warn('modelo_key no encontrado:', key);
-      return null;
-    }
-
-    return {
-      ...c,           // datos de Supabase primero
-      ...modelo,      // estilos del modelo encima
-      // estos SIEMPRE al final — nunca pisados
-      nombre: c.comercio_nombre || 'COMERCIO',
-      banner_url: c.banner_11_url || '/images/brocard.webp',
-      fase_lunar: getFaseLabel(Number(c.fase_lunar)) || getLunaActual().fase,
-      vencimiento: c.vencimiento || getVencimiento(),
-      coste_genesis: modelo.coste_genesis,
+    setSaving(true);
+    setMsg('');
+    const payload = {
+      user_id:        userId,
+      tipo_tarjeta:   tier === 'LUNA100' ? '100' : tier,
+      valor_euros:    valorEuros,
+      coste_lunas:    costeLunas,
+      compra_minima:  tier === 'PLATA' ? compraMinima || null : null,
+      descripcion:    descripcion || null,
+      banner_url:     bannerUrl  || null,
+      alcance:        alcance,
+      palabra_clave_1: palabraClave1 || null,
+      palabra_clave_2: palabraClave2 || null,
+      activo:         true,
+      estado_canje:   'ACTIVO',
+      emision_usada:  0,
     };
+
+    let error;
+    if (editando) {
+      ({ error } = await supabase.from('comercio_cupones').update(payload).eq('id', editando));
+    } else {
+      ({ error } = await supabase.from('comercio_cupones').insert(payload));
+    }
+
+    setSaving(false);
+    if (error) { setMsg(`Error: ${error.message}`); return; }
+    setMsg(editando ? '✅ Tarjeta actualizada.' : '✅ Tarjeta creada.');
+    resetForm();
+    loadTarjetas();
   };
 
-  const renderCards = cupones.map(c => mapToCard(c)).filter(Boolean);
-  console.log('renderCards:', JSON.stringify(renderCards[0], null, 2));
+  const handleEditar = (t) => {
+    setEditando(t.id);
+    const tierKey = t.tipo_tarjeta === '100' ? 'LUNA100' : t.tipo_tarjeta;
+    setTier(tierKey);
+    const valorKey = t.valor_euros != null ? String(t.valor_euros) : (t.tipo_tarjeta === '100' ? '100pct' : 'ENVIO_GRATIS');
+    setValor(valorKey);
+    setCompraMinima(t.compra_minima || '');
+    setDescripcion(t.descripcion || '');
+    setBannerUrl(t.banner_url || '');
+    setAlcance(t.alcance || []);
+    setPalabraClave1(t.palabra_clave_1 || '');
+    setPalabraClave2(t.palabra_clave_2 || '');
+    setMsg('');
+  };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-gray-600 text-xs uppercase tracking-widest animate-pulse">
-          Cargando tus BroCards...
-        </p>
-      </div>
-    );
-  }
+  const handleToggleActivo = async (t) => {
+    await supabase.from('comercio_cupones')
+      .update({ activo: !t.activo, estado_canje: !t.activo ? 'ACTIVO' : 'PAUSADO' })
+      .eq('id', t.id);
+    loadTarjetas();
+  };
+
+  const inputStyle = {
+    width: '100%', background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.12)',
+    borderRadius: 10, padding: '10px 14px',
+    color: '#fff', fontSize: 13, fontFamily: SYNE,
+    outline: 'none',
+  };
+
+  const labelStyle = {
+    fontSize: 10, fontWeight: 700, letterSpacing: 2,
+    textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)',
+    marginBottom: 6, display: 'block',
+  };
 
   return (
-    <div className="space-y-10 animate-fadeIn max-w-5xl mx-auto pb-10">
-      {/* ── HEADER ─────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-4 mb-2">
-        <span className="text-4xl">📇</span>
+    <div style={{ padding: '32px 40px', maxWidth: 1100, margin: '0 auto', fontFamily: SYNE }}>
+
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 32 }}>
+        <span style={{ fontSize: 36 }}>🎁</span>
         <div>
-          <h3 className="text-xl font-black text-emerald-400 tracking-widest uppercase">
-            Selección BroCards
-          </h3>
-          <p className="text-xs text-gray-500 font-bold tracking-widest mt-0.5">
-            {cupones.length} {cupones.length === 1 ? 'cupón' : 'cupones'} en tu inventario
+          <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: 3, textTransform: 'uppercase', margin: 0 }}>
+            Tarjetas de Regalo
+          </h2>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: '4px 0 0', letterSpacing: 1 }}>
+            Crea y gestiona tus tarjetas de descuento para los jugadores de Brovision
           </p>
         </div>
       </div>
 
-      {/* ── CATÁLOGO 10 MODELOS ────────────────────────────────────── */}
-      <div className="space-y-4">
-        <h4 className="text-sm font-black text-cyan-400 tracking-widest uppercase">
-          Catálogo de modelos
-        </h4>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          {MODELO_KEYS.map(key => {
-            const m = BROCARD_MODELOS[key];
-            const isSelected = selectedModelKey === key;
-            return (
-              <button
-                key={key}
-                onClick={() => {
-                  setSelectedModelKey(isSelected ? null : key);
-                  setNuevaDescripcion('');
-                }}
-                style={{
-                  background: m.bg,
-                  border: isSelected ? '2px solid #00ffcc' : '2px solid transparent',
-                  borderRadius: '12px',
-                  padding: '12px 8px',
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                  boxShadow: isSelected ? '0 0 20px rgba(0,255,200,0.4)' : '0 2px 8px rgba(0,0,0,0.5)',
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                <div style={{
-                  fontFamily: "'Orbitron',monospace",
-                  fontSize: '11px', fontWeight: 900,
-                  color: m.cornerText,
-                  whiteSpace: 'pre-line',
-                  lineHeight: 1.2,
-                }}>
-                  {m.label}
-                </div>
-                <div style={{
-                  fontSize: '9px', color: '#aaa', marginTop: '4px',
-                  textTransform: 'uppercase', letterSpacing: '0.5px',
-                }}>
-                  min {m.condicion} {m.tipo === 'descuento' ? 'art' : 'cond'}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32, alignItems: 'start' }}>
 
-      {/* ── CONFIGURAR MODELO SELECCIONADO ─────────────────────────── */}
-      {selectedModelKey && (() => {
-        const m = BROCARD_MODELOS[selectedModelKey];
-        const fase = getFaseLunar();
-        const venc = getVencimiento();
-        return (
-          <div className="bg-black/30 backdrop-blur-md border border-cyan-500/20 p-5 rounded-2xl space-y-4">
-            <h4 className="text-xs font-bold text-cyan-300 uppercase tracking-widest">
-              Configurar cupón — {m.label}
-            </h4>
+        {/* ── FORMULARIO ── */}
+        <div style={{
+          background: 'rgba(255,255,255,0.03)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: 20, padding: 28,
+        }}>
+          <h3 style={{ fontSize: 13, fontWeight: 700, color: '#a78bfa', letterSpacing: 3,
+            textTransform: 'uppercase', margin: '0 0 24px' }}>
+            {editando ? '✏️ Editar Tarjeta' : '+ Nueva Tarjeta'}
+          </h3>
 
-            {/* Alcance */}
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block">
-                Alcance
-              </label>
-              <div className="flex gap-2">
-                {['LOCAL', 'NACIONAL', 'INTERNACIONAL'].map(a => (
-                  <button
-                    key={a}
-                    onClick={() => setAlcance(a)}
+          {/* TIER */}
+          <div style={{ marginBottom: 20 }}>
+            <span style={labelStyle}>Tier</span>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {Object.keys(TIER_STYLES).map(t => {
+                const s = TIER_STYLES[t];
+                const active = tier === t;
+                return (
+                  <button key={t} onClick={() => { setTier(t); setValor(''); }}
                     style={{
-                      padding: '6px 16px',
-                      borderRadius: '999px',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      fontFamily: "'Orbitron',monospace",
-                      letterSpacing: '1px',
-                      textTransform: 'uppercase',
-                      background: alcance === a ? 'rgba(0,255,200,0.15)' : 'rgba(255,255,255,0.05)',
-                      color: alcance === a ? '#00ffcc' : '#888',
-                      border: alcance === a ? '1px solid #00ffcc' : '1px solid rgba(255,255,255,0.1)',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease',
-                    }}
-                  >
-                    {a}
+                      padding: '8px 16px', borderRadius: 20, fontSize: 11,
+                      fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase',
+                      cursor: 'pointer', fontFamily: SYNE, transition: 'all 0.2s',
+                      background: active ? `${s.border}33` : 'rgba(255,255,255,0.04)',
+                      border: `1px solid ${active ? s.border : 'rgba(255,255,255,0.1)'}`,
+                      color: active ? s.color : 'rgba(255,255,255,0.4)',
+                      boxShadow: active ? `0 0 16px ${s.border}44` : 'none',
+                    }}>
+                    {s.label}
                   </button>
-                ))}
-              </div>
-             </div>
-
-             {/* Sector */}
-             <div className="space-y-1">
-               <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block">
-                 Sector
-               </label>
-               <div className="flex gap-2">
-                 {['PRODUCTO', 'SERVICIO'].map(s => (
-                   <button
-                     key={s}
-                     onClick={() => setSectorComercio(s)}
-                     style={{
-                       padding: '6px 16px',
-                       borderRadius: '999px',
-                       fontSize: '11px',
-                       fontWeight: 700,
-                       fontFamily: "'Orbitron',monospace",
-                       letterSpacing: '1px',
-                       textTransform: 'uppercase',
-                       background: sectorComercio === s ? 'rgba(0,255,200,0.15)' : 'rgba(255,255,255,0.05)',
-                       color: sectorComercio === s ? '#00ffcc' : '#888',
-                       border: sectorComercio === s ? '1px solid #00ffcc' : '1px solid rgba(255,255,255,0.1)',
-                       cursor: 'pointer',
-                       transition: 'all 0.15s ease',
-                     }}
-                   >
-                     {s}
-                   </button>
-                 ))}
-               </div>
-             </div>
-
-             {/* Condición mínima (fija, no editable) */}
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block">
-                Condición mínima
-              </label>
-              <div className="text-sm text-white font-mono">
-                {m.min} {m.tipo === 'descuento' ? 'artículo(s)' : 'condición(s)'}
-                <span className="text-xs text-gray-500 ml-2">(fijo por modelo)</span>
-              </div>
-            </div>
-
-            {/* Fase lunar y vencimiento (auto) */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block">
-                  Fase lunar activa
-                </label>
-                <div className="text-sm text-white font-mono">
-                  {getFaseLabel(fase)} (Fase {fase})
-                </div>
-              </div>
-              <div>
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block">
-                  Vencimiento
-                </label>
-                <div className="text-sm text-white font-mono">{venc}</div>
-              </div>
-            </div>
-
-            {/* Descripción */}
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-gray-300 uppercase tracking-widest block">
-                Descripción del cupón
-              </label>
-              <textarea
-                value={nuevaDescripcion}
-                onChange={e => setNuevaDescripcion(e.target.value)}
-                placeholder="Describe tu oferta para el Montador..."
-                rows={3}
-                className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all resize-none"
-              />
-            </div>
-
-            {/* banner_11_url */}
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-gray-300 uppercase tracking-widest block">
-                Banner cuadrado 160 x 160 px
-              </label>
-              <input type="text" value={nuevoBannerUrl}
-                onChange={e => setNuevoBannerUrl(e.target.value)}
-                placeholder="https://media.bro7vision.com/..."
-                className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all"
-              />
-            </div>
-
-            {/* Crear */}
-            <div className="flex justify-end">
-              <button
-                onClick={handleCrearCupon}
-                disabled={creando}
-                style={{
-                  background: 'linear-gradient(160deg,#009940,#40ff90)',
-                  color: '#000',
-                  fontWeight: 900,
-                  fontSize: '11px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '1.5px',
-                  fontFamily: "'Orbitron',monospace",
-                  padding: '10px 28px',
-                  borderRadius: '999px',
-                  border: 'none',
-                  cursor: creando ? 'not-allowed' : 'pointer',
-                  opacity: creando ? 0.5 : 1,
-                  boxShadow: '0 0 20px rgba(0,255,140,0.3)',
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                {creando ? '⏳ CREANDO...' : '🎴 CREAR CUPÓN'}
-              </button>
+                );
+              })}
             </div>
           </div>
-        );
-      })()}
 
-      {/* ── CUPONES EXISTENTES ─────────────────────────────────────── */}
-      {renderCards.length > 0 && (
-        <div className="space-y-8">
-          <h4 className="text-sm font-black text-emerald-400 tracking-widest uppercase">
-            Cupones creados
-          </h4>
-          {renderCards.map((card, i) => {
-            const c = cupones[i];
-            if (!c) return null;
-            return (
-              <div key={c.id} className="space-y-4">
-                <div className="bg-black/20 backdrop-blur-md border border-white/10 p-4 rounded-2xl space-y-3">
-                  <h5 className="text-sm font-black text-fuchsia-300 uppercase tracking-widest">
-                    {'\uD83D\uDCF7'} Creaci\u00f3n de Sticker
-                  </h5>
+          {/* VALOR */}
+          <div style={{ marginBottom: 20 }}>
+            <span style={labelStyle}>Valor</span>
+            <select value={valor} onChange={e => setValor(e.target.value)} style={inputStyle}>
+              <option value="">— Selecciona valor —</option>
+              {(VALORES_POR_TIER[tier] || []).map(v => (
+                <option key={v} value={v}>{LABEL_VALOR[v] || v}</option>
+              ))}
+            </select>
+          </div>
 
-                  <label className="text-xs font-bold text-gray-300 uppercase tracking-widest block">
-                    Tipo BroCard
-                  </label>
-                  <select value={tiposBrocard[c.id] || ''}
-                    onChange={e => handleTipoBrocardChange(c.id, e.target.value)}
-                    className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-cyan-400 transition-all">
-                    <option value="" style={{ background: '#1a1a2e', color: '#888' }}>Seleccionar...</option>
-                    {MODELO_KEYS.map(key => {
-                      const m = BROCARD_MODELOS[key];
-                      return (
-                        <option key={key} value={key} style={{ background: '#1a1a2e', color: '#fff' }}>
-                          {m.label.replace('\n', ' ')} — {m.coste_genesis} G
-                        </option>
-                      );
-                    })}
-                  </select>
+          {/* LUNAS — solo lectura */}
+          {valor && (
+            <div style={{
+              marginBottom: 20, padding: '14px 18px',
+              background: 'rgba(250,204,21,0.07)',
+              border: '1px solid rgba(250,204,21,0.2)',
+              borderRadius: 12, display: 'flex', alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', letterSpacing: 2, textTransform: 'uppercase' }}>
+                Coste en Lunas
+              </span>
+              <span style={{ fontSize: 22, fontWeight: 900, color: '#facc15', letterSpacing: 1 }}>
+                🌙 {costeLunas.toLocaleString()}
+              </span>
+            </div>
+          )}
 
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block">
-                        Palabra clave 1
-                      </label>
-                      <input type="text" value={palabrasClave1[c.id] || ''}
-                        onChange={e => handlePalabraClave1Change(c.id, e.target.value)}
-                        maxLength={30}
-                        placeholder="Ej: DESCUENTO"
-                        className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition-all" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block">
-                        Palabra clave 2
-                      </label>
-                      <input type="text" value={palabrasClave2[c.id] || ''}
-                        onChange={e => handlePalabraClave2Change(c.id, e.target.value)}
-                        maxLength={30}
-                        placeholder="Ej: BIENVENIDO"
-                        className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition-all" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block">
-                        Palabra clave 3
-                      </label>
-                      <input type="text" value={palabrasClave3[c.id] || ''}
-                        onChange={e => handlePalabraClave3Change(c.id, e.target.value)}
-                        maxLength={30}
-                        placeholder="Ej: INTERNO_001"
-                        className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition-all" />
-                    </div>
-                  </div>
+          {/* COMPRA MÍNIMA — solo PLATA */}
+          {tier === 'PLATA' && (
+            <div style={{ marginBottom: 20 }}>
+              <span style={labelStyle}>Compra mínima (libre)</span>
+              <input
+                type="text"
+                placeholder="Ej: 50 €, 1 producto, etc."
+                value={compraMinima}
+                onChange={e => setCompraMinima(e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+          )}
 
-                  <label className="text-xs font-bold text-gray-300 uppercase tracking-widest block">
-                    Descripción del cupón
-                  </label>
-                  <textarea
-                    value={descriptions[c.id] || ''}
-                    onChange={e => handleDescripcionChange(c.id, e.target.value)}
-                    placeholder="Describe tu oferta para el Montador..."
-                    rows={3}
-                    className="w-full bg-black/60 border border-cyan-500/20 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all resize-none"
-                  />
-                  <div className="flex justify-end">
-                    <button
-                      onClick={() => handleGuardar(c.id)}
-                      disabled={guardando[c.id]}
-                      className="bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-400 text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-full border border-emerald-500/30 transition-all disabled:opacity-50"
-                    >
-                      {guardando[c.id] ? '⏳ GUARDANDO...' : '💾 GUARDAR'}
-                    </button>
-                  </div>
-                  {palabrasClave1[c.id]?.trim() && tiposBrocard[c.id] && (() => {
-                    const mSticker = BROCARD_MODELOS[tiposBrocard[c.id]];
-                    if (!mSticker) return null;
-                    const vencSticker = getVencimiento();
-                    const faseSticker = getFaseLabel(getFaseLunar());
-                    return (
-                      <div className="mt-4 pt-4 border-t border-fuchsia-500/20">
-                        <h5 className="text-xs font-bold text-fuchsia-300 uppercase tracking-widest mb-3">
-                          {'\uD83D\uDCF7'} Vista previa del sticker
-                        </h5>
-                        <div className="flex justify-center">
-                          <StickerCupon
-                            comercioNombre={aliasUsuario || 'COMERCIO'}
-                            tipoBrocard={mSticker.label.replace('\n', ' ')}
-                            colorBorde={MODEL_COLORS[tiposBrocard[c.id]] || '#888888'}
-                            palabraClave1={palabrasClave1[c.id]?.trim() || ''}
-                            aliasUsuario={aliasUsuario}
-                            fechaCaduca={`${faseSticker} - ${vencSticker}`}
-                            banner_11_url={bannersUrl[c.id] || c.banner_11_url || ''}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
+          {/* DESCRIPCIÓN */}
+          <div style={{ marginBottom: 20 }}>
+            <span style={labelStyle}>Descripción (aparece al girar la tarjeta)</span>
+            <textarea
+              rows={3}
+              placeholder="Describe tu oferta, condiciones o mensaje para el usuario..."
+              value={descripcion}
+              onChange={e => setDescripcion(e.target.value)}
+              style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5 }}
+            />
+          </div>
+
+          {/* PALABRAS CLAVE */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
+            <div>
+              <span style={labelStyle}>Palabra clave 1</span>
+              <input type="text" placeholder="Pública" value={palabraClave1}
+                onChange={e => setPalabraClave1(e.target.value.toUpperCase())} style={inputStyle} />
+            </div>
+            <div>
+              <span style={labelStyle}>Palabra clave 2 (secreta)</span>
+              <input type="text" placeholder="Secreta" value={palabraClave2}
+                onChange={e => setPalabraClave2(e.target.value.toUpperCase())} style={inputStyle} />
+            </div>
+          </div>
+
+          {/* BANNER */}
+          <div style={{ marginBottom: 20 }}>
+            <span style={labelStyle}>Banner de la tarjeta</span>
+            <input type="file" accept="image/*" onChange={handleUpload}
+              style={{ ...inputStyle, padding: '8px 14px', cursor: 'pointer' }} />
+            {uploading && <span style={{ fontSize: 11, color: '#facc15', marginTop: 6, display: 'block' }}>Subiendo imagen...</span>}
+            {bannerUrl && !uploading && (
+              <div style={{ marginTop: 10, borderRadius: 10, overflow: 'hidden', height: 80 }}>
+                <img src={bannerUrl} alt="banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
-            );
-          })}
-        </div>
-      )}
+            )}
+          </div>
 
-      {!loading && cupones.length === 0 && !selectedModelKey && (
-        <div className="flex flex-col items-center justify-center h-64 gap-4 border border-white/5 rounded-3xl bg-white/2">
-          <span className="text-5xl opacity-30">📇</span>
-          <p className="text-gray-600 text-xs uppercase tracking-widest text-center">
-            Aún no tienes cupones creados
-          </p>
+          {/* ALCANCE */}
+          <div style={{ marginBottom: 24 }}>
+            <span style={labelStyle}>Alcance geográfico</span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {ALCANCE_OPCIONES.map(op => {
+                const active = alcance.includes(op.value);
+                return (
+                  <button key={op.value} onClick={() => toggleAlcance(op.value)}
+                    style={{
+                      padding: '7px 14px', borderRadius: 20, fontSize: 11,
+                      fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase',
+                      cursor: 'pointer', fontFamily: SYNE, transition: 'all 0.2s',
+                      background: active ? 'rgba(0,229,212,0.12)' : 'rgba(255,255,255,0.04)',
+                      border: `1px solid ${active ? '#00e5d4' : 'rgba(255,255,255,0.1)'}`,
+                      color: active ? '#00e5d4' : 'rgba(255,255,255,0.4)',
+                    }}>
+                    {op.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ACCIONES */}
+          {msg && (
+            <div style={{
+              marginBottom: 16, padding: '10px 14px', borderRadius: 10,
+              background: msg.startsWith('✅') ? 'rgba(74,222,128,0.1)' : 'rgba(248,113,113,0.1)',
+              border: `1px solid ${msg.startsWith('✅') ? 'rgba(74,222,128,0.3)' : 'rgba(248,113,113,0.3)'}`,
+              color: msg.startsWith('✅') ? '#4ade80' : '#f87171',
+              fontSize: 12, fontWeight: 700,
+            }}>
+              {msg}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={handleSave} disabled={saving}
+              style={{
+                flex: 1, padding: '13px 0',
+                background: saving ? 'rgba(168,85,247,0.1)' : 'rgba(168,85,247,0.2)',
+                border: '1px solid rgba(168,85,247,0.5)',
+                borderRadius: 12, color: '#c084fc',
+                fontSize: 12, fontWeight: 900, letterSpacing: 2,
+                textTransform: 'uppercase', cursor: saving ? 'not-allowed' : 'pointer',
+                fontFamily: SYNE,
+              }}>
+              {saving ? 'GUARDANDO...' : editando ? 'ACTUALIZAR' : 'CREAR TARJETA'}
+            </button>
+            {editando && (
+              <button onClick={resetForm}
+                style={{
+                  padding: '13px 20px', background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12,
+                  color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: 700,
+                  cursor: 'pointer', fontFamily: SYNE, letterSpacing: 1,
+                }}>
+                CANCELAR
+              </button>
+            )}
+          </div>
         </div>
-      )}
+
+        {/* ── LISTADO DE TARJETAS ── */}
+        <div>
+          <h3 style={{ fontSize: 13, fontWeight: 700, color: '#67e8f9', letterSpacing: 3,
+            textTransform: 'uppercase', margin: '0 0 20px' }}>
+            Mis Tarjetas ({tarjetas.length})
+          </h3>
+
+          {loading ? (
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12 }}>Cargando...</p>
+          ) : tarjetas.length === 0 ? (
+            <div style={{
+              padding: 40, textAlign: 'center',
+              border: '1px dashed rgba(255,255,255,0.1)', borderRadius: 16,
+            }}>
+              <span style={{ fontSize: 32 }}>🌙</span>
+              <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, marginTop: 12 }}>
+                Aún no tienes tarjetas creadas.
+              </p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {tarjetas.map(t => {
+                const ts = TIER_STYLES[t.tipo_tarjeta === '100' ? 'LUNA100' : t.tipo_tarjeta] || TIER_STYLES.PLATA;
+                return (
+                  <div key={t.id} style={{
+                    background: 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${t.activo ? ts.border + '55' : 'rgba(255,255,255,0.06)'}`,
+                    borderRadius: 14, padding: '16px 20px',
+                    display: 'flex', alignItems: 'center', gap: 16,
+                    opacity: t.activo ? 1 : 0.5,
+                  }}>
+                    {/* Banner mini */}
+                    <div style={{
+                      width: 56, height: 56, borderRadius: 10, flexShrink: 0,
+                      background: 'rgba(0,0,0,0.4)',
+                      overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 24,
+                    }}>
+                      {t.banner_url
+                        ? <img src={t.banner_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : '🌙'}
+                    </div>
+
+                    {/* Info */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span style={{
+                          fontSize: 8, fontWeight: 700, letterSpacing: 2,
+                          textTransform: 'uppercase', color: ts.color,
+                          border: `0.5px solid ${ts.border}`,
+                          borderRadius: 20, padding: '1px 8px',
+                          background: `${ts.border}22`,
+                        }}>
+                          {ts.label}
+                        </span>
+                        <span style={{ fontSize: 18, fontWeight: 900, color: ts.color, fontFamily: SYNE }}>
+                          {t.valor_euros != null ? `${t.valor_euros}€` : LABEL_VALOR[t.tipo_tarjeta === '100' ? '100pct' : 'ENVIO_GRATIS']}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>
+                          🌙 {(t.coste_lunas || 0).toLocaleString()} Lunas
+                        </span>
+                        {t.emision_total && (
+                          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>
+                            · {t.emision_total - (t.emision_usada || 0)} restantes
+                          </span>
+                        )}
+                        <span style={{
+                          fontSize: 10, fontWeight: 700,
+                          color: t.activo ? '#4ade80' : 'rgba(255,255,255,0.3)',
+                        }}>
+                          · {t.activo ? 'ACTIVA' : 'PAUSADA'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Acciones */}
+                    <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                      <button onClick={() => handleEditar(t)}
+                        style={{
+                          padding: '7px 14px', borderRadius: 8, fontSize: 11,
+                          fontWeight: 700, cursor: 'pointer', fontFamily: SYNE,
+                          background: 'rgba(255,255,255,0.06)',
+                          border: '1px solid rgba(255,255,255,0.12)',
+                          color: 'rgba(255,255,255,0.6)', letterSpacing: 1,
+                        }}>
+                        EDITAR
+                      </button>
+                      <button onClick={() => handleToggleActivo(t)}
+                        style={{
+                          padding: '7px 14px', borderRadius: 8, fontSize: 11,
+                          fontWeight: 700, cursor: 'pointer', fontFamily: SYNE,
+                          background: t.activo ? 'rgba(248,113,113,0.1)' : 'rgba(74,222,128,0.1)',
+                          border: `1px solid ${t.activo ? 'rgba(248,113,113,0.3)' : 'rgba(74,222,128,0.3)'}`,
+                          color: t.activo ? '#f87171' : '#4ade80', letterSpacing: 1,
+                        }}>
+                        {t.activo ? 'PAUSAR' : 'ACTIVAR'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+      </div>
     </div>
   );
-};
-
-export default BoosterBroCards;
-
-
-
+}

@@ -153,7 +153,7 @@ function CuponModal({ cupon, onClose, onCanjear }) {
           background: `${estilo.border}22`, borderRadius: 20, padding: '6px 20px' }}>
           <span>🌙</span>
           <span style={{ color: estilo.color, fontWeight: 700, fontSize: 16 }}>
-            {(cupon.coste_genesis || 0).toLocaleString()} Lunas
+            {(cupon.coste_lunas || 0).toLocaleString()} Lunas
           </span>
         </div>
 
@@ -191,6 +191,7 @@ export default function CanjearStrip({ scope }) {
   const [cupones, setCupones] = useState([]);
   const [selectedCupon, setSelectedCupon] = useState(null);
   const [hoveredId, setHoveredId] = useState(null);
+  const [flippedId, setFlippedId] = useState(null);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const videoUrl = getVideoForLocation(scope);
 
@@ -221,7 +222,7 @@ export default function CanjearStrip({ scope }) {
   const { iniciarCanje, estado, cuponActivo, cardPendiente,
     errorMsg, cancelar, confirmar, cerrar } = useCanjearCupon({
     userId,
-    onGenesisUpdate: (nuevoBalance) => {},
+    onLunasUpdate: (nuevoBalance) => {},
   });
 
   useEffect(() => {
@@ -266,6 +267,25 @@ export default function CanjearStrip({ scope }) {
         ::-webkit-scrollbar-thumb { background: #facc15; border-radius: 4px; box-shadow: 0 0 8px #facc15; }
         ::-webkit-scrollbar-thumb:hover { background: #e6b800; }
         * { scrollbar-width: thin; scrollbar-color: #facc15 rgba(40,20,0,0.3); }
+        .flip-card-inner {
+          transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
+          transform-style: preserve-3d;
+          position: relative;
+          width: 100%; height: 100%;
+        }
+        .flip-card-inner.flipped {
+          transform: rotateY(180deg);
+        }
+        .flip-face {
+          position: absolute; inset: 0;
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+          border-radius: 12px;
+          overflow: hidden;
+        }
+        .flip-face-back {
+          transform: rotateY(180deg);
+        }
       `}</style>
       <video
         autoPlay loop muted playsInline
@@ -340,119 +360,234 @@ export default function CanjearStrip({ scope }) {
           {allCards.map(cupon => {
   const esReal = !cupon._placeholder;
   const estilo = LUNA_STYLES[cupon.tipo_tarjeta] || LUNA_STYLES['PLATA'];
-  const isHovered = hoveredId === cupon.id;
 
   return (
     <div
       key={cupon.id}
-      onClick={() => esReal && setSelectedCupon(cupon)}
-      onMouseEnter={() => setHoveredId(cupon.id)}
-      onMouseLeave={() => setHoveredId(null)}
+      onMouseEnter={() => !isMobile && esReal && setHoveredId(cupon.id)}
+      onMouseLeave={() => !isMobile && setHoveredId(null)}
+      onClick={() => {
+        if (!esReal) return;
+        if (isMobile) {
+          setFlippedId(flippedId === cupon.id ? null : cupon.id);
+        }
+      }}
       style={{
         width: isMobile ? 333 : '100%',
         minWidth: isMobile ? 333 : undefined,
         height: 500,
         borderRadius: 12,
         position: 'relative',
-        overflow: 'hidden',
         cursor: esReal ? 'pointer' : 'default',
-        background: esReal ? estilo.bg : 'rgba(0,0,0,0.4)',
-        border: `2px solid ${esReal ? (isHovered ? estilo.color : estilo.border) : 'rgba(250,204,21,0.3)'}`,
-        boxShadow: isHovered && esReal ? `0 0 24px ${estilo.border}66` : 'none',
-        transform: isHovered && esReal ? 'scale(1.03)' : 'scale(1)',
-        transition: 'all 0.25s ease',
+        perspective: '1000px',
         flexShrink: 0,
-        display: 'flex',
-        flexDirection: 'column',
       }}
     >
-      {esReal ? (
-        <>
-          {/* Banner superior 1:1 */}
-          <div style={{
-            width: '100%', aspectRatio: '1/1', flexShrink: 0,
-            background: 'rgba(0,0,0,0.3)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 48,
-          }}>
-            {cupon.web_url ? (
-              <img src={cupon.web_url} alt={cupon.comercio_nombre}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : '🌙'}
-          </div>
+      <div className={`flip-card-inner${
+        (isMobile ? flippedId === cupon.id : hoveredId === cupon.id) && esReal
+          ? ' flipped' : ''
+      }`}>
 
-          {/* Body */}
-          <div style={{
-            flex: 1, display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'space-evenly',
-            padding: '8px 12px 12px',
-          }}>
-            <span style={{
-              fontSize: 9, fontWeight: 700, letterSpacing: 3,
-              textTransform: 'uppercase', color: estilo.color,
-              border: `0.5px solid ${estilo.border}`,
-              borderRadius: 20, padding: '2px 10px',
-              background: `${estilo.border}22`,
-            }}>
-              {estilo.badge}
-            </span>
+        {/* ── CARA A (frontal) ── */}
+        <div
+          className="flip-face"
+          style={{
+            background: esReal ? estilo.bg : 'rgba(0,0,0,0.4)',
+            border: `2px solid ${esReal ? estilo.border : 'rgba(250,204,21,0.3)'}`,
+            boxShadow: esReal ? `0 0 24px ${estilo.border}44` : 'none',
+            display: 'flex', flexDirection: 'column',
+          }}
+        >
+          {esReal ? (
+            <>
+              {/* Banner superior */}
+              <div style={{
+                width: '100%', aspectRatio: '1/1', flexShrink: 0,
+                background: 'rgba(0,0,0,0.3)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 48,
+              }}>
+                {cupon.banner_url ? (
+                  <img src={cupon.banner_url} alt={cupon.comercio_nombre}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : '🌙'}
+              </div>
 
-            <span style={{
-              fontSize: 40, fontWeight: 900, color: estilo.color,
-              lineHeight: 1, textShadow: `0 0 20px ${estilo.border}66`,
-              fontFamily: "'Exo 2', sans-serif",
-            }}>
-              {cupon.valor_euros != null ? `${cupon.valor_euros}€` : '—'}
-            </span>
+              {/* Body cara A */}
+              <div style={{
+                flex: 1, display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'space-evenly',
+                padding: '8px 12px 12px',
+              }}>
+                <span style={{
+                  fontSize: 9, fontWeight: 700, letterSpacing: 3,
+                  textTransform: 'uppercase', color: estilo.color,
+                  border: `0.5px solid ${estilo.border}`,
+                  borderRadius: 20, padding: '2px 10px',
+                  background: `${estilo.border}22`,
+                }}>
+                  {estilo.badge}
+                </span>
 
+                <span style={{
+                  fontSize: 40, fontWeight: 900, color: estilo.color,
+                  lineHeight: 1, textShadow: `0 0 20px ${estilo.border}66`,
+                  fontFamily: "'Exo 2', sans-serif",
+                }}>
+                  {cupon.valor_euros != null ? `${cupon.valor_euros}€` : '—'}
+                </span>
+
+                <div style={{
+                  width: '70%', height: 0.5,
+                  background: `linear-gradient(90deg,transparent,${estilo.border},transparent)`,
+                }} />
+
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  background: `${estilo.border}22`,
+                  border: `0.5px solid ${estilo.border}55`,
+                  borderRadius: 20, padding: '4px 12px',
+                }}>
+                  <span style={{ fontSize: 12 }}>🌙</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: estilo.color }}>
+                    {(cupon.coste_lunas || 0).toLocaleString()} Lunas
+                  </span>
+                </div>
+
+                <span style={{
+                  fontSize: 9, fontWeight: 700, color: estilo.color,
+                  opacity: 0.5, letterSpacing: 2, textTransform: 'uppercase',
+                }}>
+                  {cupon.comercio_nombre}
+                </span>
+
+                {isMobile && (
+                  <span style={{
+                    fontSize: 8, color: estilo.color, opacity: 0.4,
+                    letterSpacing: 1, textTransform: 'uppercase', marginTop: 4,
+                  }}>
+                    Toca para ver más
+                  </span>
+                )}
+              </div>
+            </>
+          ) : (
             <div style={{
-              width: '70%', height: 0.5,
-              background: `linear-gradient(90deg,transparent,${estilo.border},transparent)`,
-            }} />
-
-            <span style={{
-              fontSize: 10, fontWeight: 700, color: estilo.color,
-              textAlign: 'center', opacity: 0.8, lineHeight: 1.4,
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              height: '100%', gap: 8,
             }}>
-              {cupon.tipo_tarjeta === 'PLATA' && cupon.compra_minima
-                ? `Compra mínima ${cupon.compra_minima}€`
-                : 'Sin condición'}
-            </span>
+              <span style={{ color: '#facc15', fontSize: 18, fontWeight: 700, letterSpacing: '0.1em' }}>
+                ✦ Próximamente ✦
+              </span>
+              <span style={{ color: 'rgba(250,204,21,0.4)', fontSize: 11 }}>
+                Pronto en tu ciudad
+              </span>
+            </div>
+          )}
+        </div>
 
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 5,
-              background: `${estilo.border}22`,
-              border: `0.5px solid ${estilo.border}55`,
-              borderRadius: 20, padding: '4px 12px',
-            }}>
-              <span style={{ fontSize: 12 }}>🌙</span>
-              <span style={{ fontSize: 11, fontWeight: 700, color: estilo.color }}>
-                {(cupon.coste_genesis || 0).toLocaleString()} Lunas
+        {/* ── CARA B (reverso — descripción) ── */}
+        {esReal && (
+          <div
+            className="flip-face flip-face-back"
+            style={{
+              background: `linear-gradient(160deg, #0a0a0f 0%, #0d0d18 40%, #111120 100%)`,
+              border: `2px solid ${estilo.color}`,
+              boxShadow: `0 0 32px ${estilo.border}66, inset 0 0 40px ${estilo.border}11`,
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'space-between',
+              padding: '24px 20px 20px',
+            }}
+          >
+            {/* Tier grande */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <span style={{
+                fontSize: 11, fontWeight: 700, letterSpacing: 4,
+                textTransform: 'uppercase', color: estilo.color,
+                border: `0.5px solid ${estilo.border}`,
+                borderRadius: 20, padding: '3px 14px',
+                background: `${estilo.border}22`,
+              }}>
+                {estilo.badge}
+              </span>
+              <span style={{
+                fontSize: 52, fontWeight: 900, color: estilo.color,
+                lineHeight: 1, textShadow: `0 0 30px ${estilo.border}88`,
+                fontFamily: "'Exo 2', sans-serif",
+              }}>
+                {cupon.valor_euros != null ? `${cupon.valor_euros}€` : '—'}
               </span>
             </div>
 
-            <span style={{
-              fontSize: 9, fontWeight: 700, color: estilo.color,
-              opacity: 0.5, letterSpacing: 2, textTransform: 'uppercase',
+            {/* Separador */}
+            <div style={{
+              width: '80%', height: 0.5,
+              background: `linear-gradient(90deg,transparent,${estilo.border},transparent)`,
+            }} />
+
+            {/* Descripción */}
+            <div style={{
+              flex: 1, display: 'flex', alignItems: 'center',
+              padding: '12px 4px',
             }}>
-              {cupon.comercio_nombre}
-            </span>
+              <span style={{
+                fontSize: 12, color: 'rgba(255,255,255,0.75)',
+                textAlign: 'center', lineHeight: 1.6, fontWeight: 500,
+              }}>
+                {cupon.descripcion || 'Tarjeta de descuento exclusiva. Consulta condiciones con el comercio.'}
+              </span>
+            </div>
+
+            {/* Compra mínima si es PLATA */}
+            {cupon.tipo_tarjeta === 'PLATA' && cupon.compra_minima && (
+              <div style={{
+                background: `${estilo.border}18`,
+                border: `0.5px solid ${estilo.border}44`,
+                borderRadius: 10, padding: '6px 16px',
+                fontSize: 11, color: estilo.color, fontWeight: 700,
+                letterSpacing: 1,
+              }}>
+                Compra mínima: {cupon.compra_minima}
+              </div>
+            )}
+
+            {/* Lunas */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              background: `${estilo.border}22`,
+              border: `0.5px solid ${estilo.border}55`,
+              borderRadius: 20, padding: '5px 16px',
+            }}>
+              <span style={{ fontSize: 14 }}>🌙</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: estilo.color }}>
+                {(cupon.coste_lunas || 0).toLocaleString()} Lunas
+              </span>
+            </div>
+
+            {/* Botón canjear */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setFlippedId(null);
+                setHoveredId(null);
+                setSelectedCupon(cupon);
+              }}
+              style={{
+                width: '100%', padding: '13px 0',
+                background: estilo.color, color: '#000',
+                fontWeight: 900, fontSize: 13, border: 'none',
+                borderRadius: 10, cursor: 'pointer',
+                textTransform: 'uppercase', letterSpacing: '0.12em',
+                boxShadow: `0 0 20px ${estilo.border}88`,
+                fontFamily: "'Exo 2', sans-serif",
+              }}
+            >
+              CANJEAR →
+            </button>
           </div>
-        </>
-      ) : (
-        <div style={{
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          height: '100%', gap: 8,
-        }}>
-          <span style={{ color: '#facc15', fontSize: 18, fontWeight: 700, letterSpacing: '0.1em' }}>
-            ✦ Próximamente ✦
-          </span>
-          <span style={{ color: 'rgba(250,204,21,0.4)', fontSize: 11 }}>
-            Pronto en tu ciudad
-          </span>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 })}
@@ -491,7 +626,7 @@ export default function CanjearStrip({ scope }) {
               justifyContent: 'center', gap: 6 }}>
               <span>🌙</span>
               <span style={{ color: '#facc15', fontWeight: 700, fontSize: 15 }}>
-                {(cardPendiente.coste_genesis || 0).toLocaleString()} Lunas
+                {(cardPendiente.coste_lunas || 0).toLocaleString()} Lunas
               </span>
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>

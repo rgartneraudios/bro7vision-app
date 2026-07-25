@@ -11,7 +11,7 @@ import { useState, useCallback } from 'react';
 
 const WORKER_URL = 'https://cupones.bro7vision.workers.dev';
 
-export function useCanjearCupon({ userId, onGenesisUpdate }) {
+export function useCanjearCupon({ userId, onLunasUpdate }) {
 
   const [estado,   setEstado]   = useState('idle');
   // idle | confirmando | cargando | exito | error
@@ -53,14 +53,14 @@ const iniciarCanje = useCallback((card) => {
           valor_euros:     cardPendiente.valor_euros     || null,
           comercio_nombre: cardPendiente.comercio_nombre || cardPendiente.nombre,
           web_url:         cardPendiente.web_url         || '',
-          coste_genesis:   cardPendiente.coste_genesis,
+          coste_lunas:   cardPendiente.coste_lunas,
         }),
       });
       
 
       const data = await res.json();
       
-      onGenesisUpdate?.(data.balance_nuevo);
+      onLunasUpdate?.(data.balance_nuevo);
 
       if (!res.ok || !data.ok) {
         // Cupón ya existente — mostrar el código que ya tenían
@@ -94,7 +94,7 @@ const iniciarCanje = useCallback((card) => {
       });
 
       // Notificar al padre para actualizar el balance visible
-      onGenesisUpdate?.(data.balance_nuevo);
+      onLunasUpdate?.(data.balance_nuevo);
 
       setEstado('exito');
 
@@ -105,7 +105,7 @@ const iniciarCanje = useCallback((card) => {
     } finally {
       setCardPendiente(null);
     }
-  }, [cardPendiente, userId, onGenesisUpdate]);
+  }, [cardPendiente, userId, onLunasUpdate]);
 
   // ── Cerrar resultado ──────────────────────────────────────────────
 const cerrar = useCallback(() => {
