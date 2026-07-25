@@ -105,13 +105,13 @@ const EstudioMarketingTab = () => {
           <DemoViewer
             titulo="Demo Horizontal — PC / Tablet"
             subtitulo="Publicidad muda integrada en escenario 16:9. Banner y texto aparecen y desaparecen sobre el fondo. Puedes utilizar un video vertical o una imagen que debes proporcionar en el panel de reserva junto a instrucciones específicas que necesites comunicar. Al ser los videos cortos y en bucle, la aparición de tu anuncio rondará los 8 segundos promedio. Procura incluir textos con datos de contacto claros."
-            videoUrl="https://media.bro7vision.com/DEMOH1.mp4"
+            videoUrl="https://media.bro7vision.com/HorizontalDemo.mp4"
             vertical={false}
           />
           <DemoViewer
             titulo="Demo Vertical — Móvil"
             subtitulo="Publicidad muda integrada en escenario 9:16. Formato afiche con llamada a la acción. Puedes utilizar un video o una imagen en formato cuadrado 1:1 que debes proporcionar en el panel de reserva junto a instrucciones específicas que necesites comunicar. Al ser los videos cortos y en bucle, la aparición de tu anuncio rondará los 8 segundos promedio. Procura incluir textos con datos de contacto claros."
-            videoUrl="https://media.bro7vision.com/DEMOV1.mp4"
+            videoUrl="https://media.bro7vision.com/VerticalDemo.mp4"
             vertical={true}
           />
         </div>

@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { supabase } from '../../supabaseClient';
 import {
   CHANNELS, FASES, TURNOS,
-  buildVideoName, cityList, getCodeForCity,
+  getMiniCities, getMegaCities, getCodeForCity, buildAdVideoName, COBERTURAS as COB_DATA,
 } from '../../data/citycodes';
 
 const COBERTURAS = [
@@ -27,10 +27,8 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
   const [cobertura, setCobertura]   = useState(coberturaInicial || 'SALA_CIUDAD');
   const [ciudad, setCiudad]         = useState('');
   const [moonTurno, setMoonTurno]   = useState(1);
-  const [guion, setGuion]           = useState('');
-  const [textoLinea1, setTextoLinea1] = useState('');
-  const [textoLinea2, setTextoLinea2] = useState('');
-  const [logoUrl, setLogoUrl]         = useState('');
+  const [videoLink, setVideoLink] = useState('');
+  const [campana,   setCampana]   = useState('01');
   const [promoPregunta,  setPromoPregunta]  = useState('');
   const [promoOpcionA,   setPromoOpcionA]   = useState('');
   const [promoOpcionB,   setPromoOpcionB]   = useState('');
@@ -55,7 +53,6 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
 
   const handleReservar = async () => {
     if (needsCiudad && !ciudad) { setError('Selecciona una ciudad para esta cobertura.'); return; }
-    if (!guion.trim())          { setError('El guión es obligatorio — el Montador lo necesita.'); return; }
     if (!promoPregunta.trim() || !promoOpcionA.trim() || !promoOpcionB.trim() || !promoOpcionC.trim()) {
       setError('La pregunta PromoTrivia y sus 3 opciones son obligatorias.');
       return;
@@ -80,7 +77,7 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
       // For Phase 0: fase_lunar=1 for non-Moon, MT=moonTurno for Moon
       const fase_lunar     = isMoon ? slot.fase : 1;
       const funcion        = isMoon ? moonTurno : slot.turno;
-      const nombre_archivo = buildVideoName(slot.canal, fase_lunar, funcion, slot.dispositivo, codigoCsv);
+      const nombre_archivo = buildAdVideoName(campana, slot.canal, funcion, slot.dispositivo, codigoCsv);
 
       const today    = new Date();
       const fechaFin = new Date(today.getTime() + 7 * 86_400_000);
@@ -94,11 +91,9 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
         cobertura,
         ciudad_codigo: cityCode,
         productor_id:  session.user.id,
-        guion:         guion.trim(),
-        texto_linea1:  textoLinea1.trim() || null,
-        texto_linea2:  textoLinea2.trim() || null,
-        logo_url:      logoUrl.trim()     || null,
+        guion:         videoLink.trim() || null,
         nombre_archivo,
+        campana,
         estado:        'EN_CASTING',
         precio,
         fecha_inicio:  today.toISOString().split('T')[0],
@@ -246,84 +241,30 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
                 className="w-full bg-zinc-900 border border-white/10 text-white text-sm px-3 py-2.5 rounded focus:border-purple-500 focus:outline-none transition-colors"
               >
                 <option value="">Selecciona ciudad...</option>
-                {cityList.map(c => (
+                {(['SALA_GRAN_CIUDAD', 'METROPOLIS'].includes(cobertura) ? getMegaCities() : getMiniCities()).map(c => (
                   <option key={c.key} value={c.key}>{c.label}</option>
                 ))}
               </select>
             </div>
           )}
 
-          {/* Texto Línea 1 */}
+          {/* Link del Video del Anunciante */}
           <div>
             <label style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}
               className="block text-xs text-gray-400 uppercase tracking-widest mb-1.5">
-              Texto Línea 1
-              <span className="ml-1 text-gray-600 normal-case font-normal">(máx. 55 caracteres)</span>
-            </label>
-            <input
-              type="text"
-              value={textoLinea1}
-              onChange={e => setTextoLinea1(e.target.value)}
-              maxLength={55}
-              placeholder="¿Asistirás al concierto del Grupo X en Madrid?"
-              style={{ fontFamily: "'Inter', sans-serif" }}
-              className="w-full bg-zinc-900 border border-white/10 text-white text-sm px-3 py-2.5 rounded focus:border-purple-500 focus:outline-none transition-colors placeholder-gray-600"
-            />
-            <div className="text-right text-xs text-gray-600 mt-1">{textoLinea1.length}/55</div>
-          </div>
-
-          {/* Texto Línea 2 */}
-          <div>
-            <label style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}
-              className="block text-xs text-gray-400 uppercase tracking-widest mb-1.5">
-              Texto Línea 2
-              <span className="ml-1 text-gray-600 normal-case font-normal">(opcional · máx. 55 caracteres)</span>
-            </label>
-            <input
-              type="text"
-              value={textoLinea2}
-              onChange={e => setTextoLinea2(e.target.value)}
-              maxLength={55}
-              placeholder="¡Apresúrate, las entradas se agotan!"
-              style={{ fontFamily: "'Inter', sans-serif" }}
-              className="w-full bg-zinc-900 border border-white/10 text-white text-sm px-3 py-2.5 rounded focus:border-purple-500 focus:outline-none transition-colors placeholder-gray-600"
-            />
-            <div className="text-right text-xs text-gray-600 mt-1">{textoLinea2.length}/55</div>
-          </div>
-
-          {/* Logo URL */}
-          <div>
-            <label style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}
-              className="block text-xs text-gray-400 uppercase tracking-widest mb-1.5">
-              URL del Video, Banner o Logo
-              <span className="ml-1 text-gray-600 normal-case font-normal">(Para PC Video/imagen Vertical Para Móvil Video/imagen 1:1 Cuadrado)</span>
+              Link del Video
+              <span className="ml-1 text-gray-600 normal-case font-normal">
+                (PC: vertical · Móvil: cuadrado 1:1)
+              </span>
             </label>
             <input
               type="url"
-              value={logoUrl}
-              onChange={e => setLogoUrl(e.target.value)}
-              placeholder="https://tudominio.com/logo.png"
+              value={videoLink}
+              onChange={e => setVideoLink(e.target.value)}
+              placeholder="https://tudominio.com/mi-video.mp4"
               style={{ fontFamily: "'Inter', sans-serif" }}
               className="w-full bg-zinc-900 border border-white/10 text-white text-sm px-3 py-2.5 rounded focus:border-purple-500 focus:outline-none transition-colors placeholder-gray-600"
             />
-          </div>
-
-          {/* Guión */}
-          <div>
-            <label style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }} className="block text-xs text-gray-400 uppercase tracking-widest mb-1.5">
-              Descripción del Anuncio
-              <span className="ml-1 text-gray-600 normal-case font-normal">(Instrucciones para el Editor)</span>
-            </label>
-            <textarea
-              value={guion}
-              onChange={e => setGuion(e.target.value)}
-              maxLength={500}
-              rows={4}
-              placeholder="Describe tu anuncio: producto, datos, tono, mensaje clave, referencias visuales, lo que el Editor debe saber..."
-              style={{ fontFamily: "'Inter', sans-serif" }}
-              className="w-full bg-zinc-900 border border-white/10 text-white text-sm px-3 py-2.5 rounded focus:border-purple-500 focus:outline-none transition-colors resize-none placeholder-gray-600"
-            />
-            <div style={{ fontFamily: "'Inter', sans-serif" }} className="text-right text-xs text-gray-600 mt-1">{guion.length}/500</div>
           </div>
 
           {/* Separador PromoECO */}

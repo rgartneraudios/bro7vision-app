@@ -202,7 +202,14 @@ const DesktopRealityPlayer = ({
   const color  = CANAL_COLOR[realityMode]  || '#00ffff';
   const nombre = CANAL_NOMBRE[realityMode] || 'CANAL';
 
-  const turnoActual = getTurno();
+  const [turnoActual, setTurnoActual] = useState(getTurno());
+
+  useEffect(() => {
+    const intervalo = setInterval(() => {
+      setTurnoActual(getTurno());
+    }, 60000);
+    return () => clearInterval(intervalo);
+  }, []);
 
   useEffect(() => {
     if (!realityMode) return;
@@ -227,11 +234,17 @@ const fase  = num === 2 ? getMoonSuffix() : '0';
   useEffect(() => {
     if (!adVideoUrl) return;
     setAdVisible(true);
-    const cycle = setInterval(() => {
+    let timeout;
+    const mostrar = () => {
+      setAdVisible(true);
+      timeout = setTimeout(ocultar, 40000);
+    };
+    const ocultar = () => {
       setAdVisible(false);
-      setTimeout(() => setAdVisible(true), 8000);
-    }, 20000);
-    return () => clearInterval(cycle);
+      timeout = setTimeout(mostrar, 20000);
+    };
+    timeout = setTimeout(ocultar, 40000);
+    return () => clearTimeout(timeout);
   }, [adVideoUrl]);
 
   const {
@@ -440,7 +453,7 @@ const fase  = num === 2 ? getMoonSuffix() : '0';
           {/* Botón ENCIÉNDETE */}
           <button
             onClick={() => {
-              if (!completado && !burbujaOpen && !triviaLoading) cargarSet();
+              if (!completado && !burbujaOpen && !triviaLoading) { setAdVisible(true); cargarSet(); }
             }}
             disabled={completado || burbujaOpen || triviaLoading || cooldown}
             className="px-16 py-4 rounded-2xl font-black text-base uppercase tracking-widest transition-all active:scale-95 hover:scale-105"

@@ -5,6 +5,7 @@ import NeuralButton from './NeuralButton';
 import BroTuner from '../components/BroTuner';
 import { getMoonSuffix } from '../utils/moonUtils';
 import { buildBgVideoName, getTurno } from '../data/citycodes';
+import { useAdOverlay } from '../hooks/useAdOverlay';
 import CuponModal from './CuponModal';
 import { useCanjearCupon } from '../hooks/useCanjearCupon';
 import { useHaloTrivia } from '../hooks/useHaloTrivia';
@@ -544,16 +545,50 @@ const MobileLayout = ({
   });
   
 
-  const turnoActual = getTurno();
+  const [turnoActual, setTurnoActual] = useState(getTurno());
+
+  useEffect(() => {
+    const intervalo = setInterval(() => {
+      setTurnoActual(getTurno());
+    }, 60000);
+    return () => clearInterval(intervalo);
+  }, []);
 
   useEffect(() => {
     const MOBILE_CANAL = { luna:2, tierra:4, jupiter:5, marte:6, saturno:7, urano:8, neptuno:9, venus:3, mercurio:1 };
     const canal = realityMode ? MOBILE_CANAL[realityMode] : null;
     if (!canal) { setBgVideoUrl(''); return; }
     const fase = canal === 2 ? getMoonSuffix() : '0';
-    const url = `https://media.bro7vision.com/${buildBgVideoName(canal, fase, turnoActual, 1)}`;
+    const turno = canal === 2 ? '0' : turnoActual;
+    const url = `https://media.bro7vision.com/${buildBgVideoName(canal, fase, turno, 1)}`;
     setBgVideoUrl(url);
   }, [realityMode, turnoActual]);
+
+  const adVideoUrl = useAdOverlay({
+    escenarioId: realityMode,
+    turno: turnoActual,
+    faseLunar: getMoonSuffix(),
+    cityKey: scope?.city,
+    dispositivo: 1,
+  });
+
+  const [adVisible, setAdVisible] = useState(true);
+
+  useEffect(() => {
+    if (!adVideoUrl) return;
+    setAdVisible(true);
+    let timeout;
+    const mostrar = () => {
+      setAdVisible(true);
+      timeout = setTimeout(ocultar, 40000);
+    };
+    const ocultar = () => {
+      setAdVisible(false);
+      timeout = setTimeout(mostrar, 20000);
+    };
+    timeout = setTimeout(ocultar, 40000);
+    return () => clearTimeout(timeout);
+  }, [adVideoUrl]);
 
   useEffect(() => { setBurbujaOpen(false); }, [stripCards]);
 
@@ -691,6 +726,24 @@ const MobileLayout = ({
             className="absolute inset-0 w-full h-full object-cover z-0"
             style={{ opacity: 0.75 }}>
             <source src={bgVideoUrl} type="video/mp4" />
+          </video>
+        )}
+
+        {/* Visor publicitario móvil — cuadrado 1:1 */}
+        {adVideoUrl && adVisible && (
+          <video key={adVideoUrl} autoPlay loop muted playsInline
+            className="absolute z-10 pointer-events-none"
+            style={{
+              top: '12%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: '64vw',
+              height: '64vw',
+              borderRadius: '16px',
+              objectFit: 'cover',
+              opacity: 0.95,
+            }}>
+            <source src={adVideoUrl} type="video/mp4" />
           </video>
         )}
 
@@ -847,7 +900,7 @@ const MobileLayout = ({
             {/* Botón CONTESTAR */}
             <button
               onClick={() => {
-                if (!completado && !triviaBurbujaOpen && !triviaLoading) cargarSet();
+                if (!completado && !triviaBurbujaOpen && !triviaLoading) { setAdVisible(true); cargarSet(); }
               }}
               disabled={completado || triviaBurbujaOpen || triviaLoading || cooldown}
               className="w-full py-3 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-95"

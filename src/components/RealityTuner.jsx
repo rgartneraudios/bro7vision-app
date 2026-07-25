@@ -3,36 +3,36 @@
 import React from 'react';
 
 const CANAL_IMAGES = {
-  'moon': '/emojis/canal-luna.webp',
-  'solo_o169': '/emojis/canal-tierra.webp',
-  'solo_fantasy': '/emojis/canal-jupiter.webp',
-  'solo_e169': '/emojis/canal-marte.webp',
-  'oeste169': '/emojis/canal-saturno.webp',
-  'band_fantasy': '/emojis/canal-urano.webp',
-  'este169': '/emojis/canal-neptuno.webp',
-  'este': '/emojis/canal-venus.webp',
-  'oeste': '/emojis/canal-mercurio.webp',
+  'luna':      '/emojis/canal-luna.webp',
+  'tierra':    '/emojis/canal-tierra.webp',
+  'jupiter':   '/emojis/canal-jupiter.webp',
+  'marte':     '/emojis/canal-marte.webp',
+  'saturno':   '/emojis/canal-saturno.webp',
+  'urano':     '/emojis/canal-urano.webp',
+  'neptuno':   '/emojis/canal-neptuno.webp',
+  'venus':     '/emojis/canal-venus.webp',
+  'mercurio':  '/emojis/canal-mercurio.webp',
 };
 
 const RealityTuner = ({ onSelect }) => {
 
   const REALITIES = [
     // EL ESTADO BASE / NEUTRAL
-{ id: 'moon', title: 'CANAL LUNA', desc: 'Sincronicidad con la Fase Luna', color: 'border-cyan-900/20', text: 'text-cyan-300', glow: 'shadow-gray-400/30', group: 'NEUTRAL' },
+{ id: 'luna', title: 'CANAL LUNA', desc: 'Sincronicidad con la Fase Luna', color: 'border-cyan-900/20', text: 'text-cyan-300', glow: 'shadow-gray-400/30', group: 'NEUTRAL' },
 
     // GRUPO SOLO
-    { id: 'solo_o169', title: 'CANAL TIERRA', desc: 'Sincronía Vital Horizontal', color: 'border-cyan-900/20', text: 'text-cyan-300', glow: 'shadow-blue-700/30', group: 'SOLO' },
-    { id: 'solo_fantasy', title: 'CANAL JÚPITER', desc: 'Exploración Estelar', color: 'border-cyan-900/20',    text: 'text-cyan-300',    glow: 'shadow-violet-700/30', group: 'SOLO' },
-    { id: 'solo_e169', title: 'CANAL MARTE', desc: 'Viajero del Tiempo Horizontal', color: 'border-cyan-900/20', text: 'text-cyan-300', glow: 'shadow-orange-700/30', group: 'SOLO' },
+    { id: 'tierra', title: 'CANAL TIERRA', desc: 'Sincronía Vital Horizontal', color: 'border-cyan-900/20', text: 'text-cyan-300', glow: 'shadow-blue-700/30', group: 'SOLO' },
+    { id: 'jupiter', title: 'CANAL JÚPITER', desc: 'Exploración Estelar', color: 'border-cyan-900/20',    text: 'text-cyan-300',    glow: 'shadow-violet-700/30', group: 'SOLO' },
+    { id: 'marte', title: 'CANAL MARTE', desc: 'Viajero del Tiempo Horizontal', color: 'border-cyan-900/20', text: 'text-cyan-300', glow: 'shadow-orange-700/30', group: 'SOLO' },
 
     // GRUPO BAND
-    { id: 'oeste169',     title: 'CANAL SATURNO',   desc: 'Nexo Ciudadano', color: 'border-cyan-900/20',    text: 'text-cyan-300',    glow: 'shadow-green-300/30',    group: 'BAND' },
-    { id: 'band_fantasy', title: 'CANAL URANO', desc: 'Alien Lounge', color: 'border-cyan-900/20', text: 'text-cyan-300', glow: 'shadow-pink-700/30', group: 'BAND' },
-    { id: 'este169',      title: 'CANAL NEPTUNO', desc: 'El Ágora', color: 'border-cyan-900/20',  text: 'text-cyan-300',  glow: 'shadow-yellow-500/30',  group: 'BAND' },
+    { id: 'saturno',     title: 'CANAL SATURNO',   desc: 'Nexo Ciudadano', color: 'border-cyan-900/20',    text: 'text-cyan-300',    glow: 'shadow-green-300/30',    group: 'BAND' },
+    { id: 'urano', title: 'CANAL URANO', desc: 'Alien Lounge', color: 'border-cyan-900/20', text: 'text-cyan-300', glow: 'shadow-pink-700/30', group: 'BAND' },
+    { id: 'neptuno',      title: 'CANAL NEPTUNO', desc: 'El Ágora', color: 'border-cyan-900/20',  text: 'text-cyan-300',  glow: 'shadow-yellow-500/30',  group: 'BAND' },
 
     // GRUPO ESPACIO — nuevos canales ESTE y OESTE
-    { id: 'este',  title: 'CANAL VENUS',  desc: 'Horizonte Levante', color: 'border-cyan-900/20', text: 'text-cyan-300',    glow: 'shadow-cyan-700/30',    group: 'ESPACIO' },
-    { id: 'oeste', title: 'CANAL MERCURIO', desc: 'Horizonte Poniente', color: 'border-cyan-900/20', text: 'text-cyan-300', glow: 'shadow-fuchsia-700/30', group: 'ESPACIO' },
+    { id: 'venus',  title: 'CANAL VENUS',  desc: 'Horizonte Levante', color: 'border-cyan-900/20', text: 'text-cyan-300',    glow: 'shadow-cyan-700/30',    group: 'ESPACIO' },
+    { id: 'mercurio', title: 'CANAL MERCURIO', desc: 'Horizonte Poniente', color: 'border-cyan-900/20', text: 'text-cyan-300', glow: 'shadow-fuchsia-700/30', group: 'ESPACIO' },
   ];
 
   const renderCard = (mode) => (
@@ -88,15 +88,15 @@ const RealityTuner = ({ onSelect }) => {
 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl mx-auto">
   
   <div className="w-full">
-    {renderCard(REALITIES.find(r => r.id === 'oeste'))}
+    {renderCard(REALITIES.find(r => r.id === 'mercurio'))}
   </div>
 
   <div className="w-full">
-    {renderCard(REALITIES.find(r => r.id === 'moon'))}
+    {renderCard(REALITIES.find(r => r.id === 'luna'))}
   </div>
 
   <div className="w-full">
-    {renderCard(REALITIES.find(r => r.id === 'este'))}
+    {renderCard(REALITIES.find(r => r.id === 'venus'))}
   </div>
 
 </div>
