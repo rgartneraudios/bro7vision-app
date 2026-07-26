@@ -54,7 +54,7 @@ export default {
     const corsHeaders = {
       'Access-Control-Allow-Origin':  '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, x-file-name, x-file-type',
     };
 
     if (request.method === 'OPTIONS') {
@@ -80,6 +80,11 @@ export default {
       if (url.pathname === '/proyectar-audio')    return await handleProyectarAudio(request, env, corsHeaders);
       if (url.pathname === '/proyectar-audmovil') return await handleProyectarAudmovil(request, env, corsHeaders);
       if (url.pathname === '/upload-presigned') return await handleUploadPresigned(request, env, corsHeaders);
+
+      // GET /banners/* → sirve imagen desde R2 (bucket privado)
+      if (request.method === 'GET' && url.pathname.startsWith('/banners/')) {
+        return await handleGetBanner(request, env, corsHeaders);
+      }
 
       return json({ error: 'Ruta no encontrada' }, 404, corsHeaders);
 
@@ -517,7 +522,56 @@ async function handleCarruselAudmovil(env, corsHeaders) {
 }
 
 // ================================================================
-// ENDPOINT: /upload-presigned → genera URL firmada para subir a R2
+// HELPER S3 — firma y ejecuta request contra R2
+// ================================================================
+async function s3Fetch(env, method, key, contentType, body) {
+  const endpoint  = env.R2_ENDPOINT;
+  const accessKey = env.R2_ACCESS_KEY_ID;
+  const secretKey = env.R2_SECRET_ACCESS_KEY;
+  const bucket    = 'brovision-assets';
+  const region    = 'auto';
+
+  const now       = new Date();
+  const dateStamp = now.toISOString().slice(0,10).replace(/-/g,'');
+  const amzDate   = now.toISOString().replace(/[:\-]|\.\d{3}/g,'').slice(0,15) + 'Z';
+
+  const host     = new URL(endpoint).host;
+  const fullPath = `/${bucket}/${key}`;
+
+  const emptyHash = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
+  const payloadHash = body ? await sha256Hex(body) : emptyHash;
+
+  const canonicalHeaders = `content-type:${contentType}\nhost:${host}\nx-amz-date:${amzDate}\n`;
+  const signedHeaders    = 'content-type;host;x-amz-date';
+
+  const canonicalRequest = [
+    method, fullPath, '',
+    canonicalHeaders, signedHeaders,
+    payloadHash,
+  ].join('\n');
+
+  const credScope    = `${dateStamp}/${region}/s3/aws4_request`;
+  const stringToSign = [
+    'AWS4-HMAC-SHA256', amzDate, credScope,
+    await sha256(canonicalRequest),
+  ].join('\n');
+
+  const signingKey   = await getSigningKey(secretKey, dateStamp, region, 's3');
+  const signature    = await hmacHex(signingKey, stringToSign);
+  const authorization = `AWS4-HMAC-SHA256 Credential=${accessKey}/${credScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+
+  const headers = {
+    'Content-Type':  contentType,
+    'x-amz-date':    amzDate,
+    'Authorization': authorization,
+  };
+  if (body) headers['x-amz-content-sha256'] = payloadHash;
+
+  return fetch(`${endpoint}${fullPath}`, { method, headers, body: body || null });
+}
+
+// ================================================================
+// ENDPOINT: /upload-presigned → sube imagen a R2
 // ================================================================
 async function handleUploadPresigned(request, env, corsHeaders) {
   try {
@@ -529,57 +583,7 @@ async function handleUploadPresigned(request, env, corsHeaders) {
     }
 
     const fileData = await request.arrayBuffer();
-
-    const endpoint  = env.R2_ENDPOINT;
-    const accessKey = env.R2_ACCESS_KEY_ID;
-    const secretKey = env.R2_SECRET_ACCESS_KEY;
-    const bucket    = 'brovision-assets';
-    const region    = 'auto';
-
-    const now       = new Date();
-    const dateStamp = now.toISOString().slice(0,10).replace(/-/g,'');
-    const amzDate   = now.toISOString().replace(/[:\-]|\.\d{3}/g,'').slice(0,15) + 'Z';
-
-    const host      = new URL(endpoint).host;
-    const path      = `/${bucket}/${fileName}`;
-
-    const payloadHash = await sha256Hex(fileData);
-
-    const canonicalHeaders = `content-type:${contentType}\nhost:${host}\nx-amz-date:${amzDate}\n`;
-    const signedHeaders    = 'content-type;host;x-amz-date';
-
-    const canonicalRequest = [
-      'PUT',
-      path,
-      '',
-      canonicalHeaders,
-      signedHeaders,
-      payloadHash,
-    ].join('\n');
-
-    const credScope    = `${dateStamp}/${region}/s3/aws4_request`;
-    const stringToSign = [
-      'AWS4-HMAC-SHA256',
-      amzDate,
-      credScope,
-      await sha256(canonicalRequest),
-    ].join('\n');
-
-    const signingKey = await getSigningKey(secretKey, dateStamp, region, 's3');
-    const signature  = await hmacHex(signingKey, stringToSign);
-
-    const authorization = `AWS4-HMAC-SHA256 Credential=${accessKey}/${credScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
-
-    const r2Res = await fetch(`${endpoint}${path}`, {
-      method:  'PUT',
-      headers: {
-        'Content-Type':  contentType,
-        'x-amz-date':    amzDate,
-        'Authorization': authorization,
-        'x-amz-content-sha256': payloadHash,
-      },
-      body: fileData,
-    });
+    const r2Res = await s3Fetch(env, 'PUT', fileName, contentType, fileData);
 
     if (!r2Res.ok) {
       const errText = await r2Res.text();
@@ -587,8 +591,8 @@ async function handleUploadPresigned(request, env, corsHeaders) {
       return json({ error: `R2 rechazó el archivo: ${r2Res.status}` }, 500, corsHeaders);
     }
 
-    const publicUrl = `https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/${fileName}`;
-    return json({ ok: true, url: publicUrl }, 200, corsHeaders);
+    const url = `https://cupones.bro7vision.workers.dev/${fileName}`;
+    return json({ ok: true, url }, 200, corsHeaders);
 
   } catch (err) {
     console.error('[upload-presigned]', err);
@@ -596,9 +600,35 @@ async function handleUploadPresigned(request, env, corsHeaders) {
   }
 }
 
-async function sha256Hex(data) {
-  const buf = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+// ================================================================
+// ENDPOINT: GET /banners/* → sirve imagen desde R2
+// ================================================================
+async function handleGetBanner(request, env, corsHeaders) {
+  try {
+    const key = new URL(request.url).pathname.replace(/^\//, '');
+    if (!key) return json({ error: 'Falta key' }, 400, corsHeaders);
+
+    const r2Res = await s3Fetch(env, 'GET', key, 'application/octet-stream', null);
+
+    if (!r2Res.ok) {
+      return json({ error: 'Imagen no encontrada' }, 404, corsHeaders);
+    }
+
+    const contentType = r2Res.headers.get('content-type') || 'image/png';
+    const r2Body = await r2Res.arrayBuffer();
+
+    return new Response(r2Body, {
+      status: 200,
+      headers: {
+        'Content-Type':  contentType,
+        'Cache-Control': 'public, max-age=86400',
+        ...corsHeaders,
+      },
+    });
+  } catch (err) {
+    console.error('[handleGetBanner]', err);
+    return json({ error: err.message }, 500, corsHeaders);
+  }
 }
 
 // ── Helpers de firma AWS4 ─────────────────────────────────────────
@@ -643,6 +673,11 @@ async function sha256(text) {
   return Array.from(new Uint8Array(buf))
     .map(b => b.toString(16).padStart(2, '0'))
     .join('');
+}
+
+async function sha256Hex(data) {
+  const buf = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
 function getMoonPhase() {

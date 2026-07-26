@@ -41,7 +41,7 @@ const ALCANCE_OPCIONES = [
 
 const SUPABASE_STORAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/comercio-banners`;
 
-export default function TarjetasRegalo() {
+export default function TarjetasRegalo({ profile }) {
   const [userId, setUserId]         = useState(null);
   const [tarjetas, setTarjetas]     = useState([]);
   const [loading, setLoading]       = useState(true);
@@ -137,12 +137,14 @@ export default function TarjetasRegalo() {
     }
     setSaving(true);
     setMsg('');
+    const comercioNombre = profile?.razon_social || profile?.alias || 'Comercio';
     const payload = {
       user_id:        userId,
       tipo_tarjeta:   tier === 'LUNA100' ? '100' : tier,
       valor_euros:    valorEuros,
       coste_lunas:    costeLunas,
       compra_minima:  tier === 'PLATA' ? compraMinima || null : null,
+      comercio_nombre: comercioNombre,
       descripcion:    descripcion || null,
       banner_url:     bannerUrl  || null,
       alcance:        alcance,
