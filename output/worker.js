@@ -15,9 +15,6 @@
  * ================================================================
  */
 
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-
 // ================================================================
 // DOMINIOS BLOQUEADOS — solo contenido soberano del creador
 // ================================================================
@@ -523,41 +520,108 @@ async function handleCarruselAudmovil(env, corsHeaders) {
 // ENDPOINT: /upload-presigned → genera URL firmada para subir a R2
 // ================================================================
 async function handleUploadPresigned(request, env, corsHeaders) {
-  let payload;
-  try { payload = await request.json(); }
-  catch { return json({ error: 'JSON inválido' }, 400, corsHeaders); }
-
-  const { fileName, fileType } = payload;
-  if (!fileName || !fileType) {
-    return json({ error: 'fileName y fileType son obligatorios' }, 400, corsHeaders);
-  }
-
-  const { R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY } = env;
-
   try {
-    const s3 = new S3Client({
-      region: 'auto',
-      endpoint: R2_ENDPOINT,
-      credentials: {
-        accessKeyId:     R2_ACCESS_KEY_ID,
-        secretAccessKey: R2_SECRET_ACCESS_KEY,
+    const contentType = request.headers.get('x-file-type') || 'application/octet-stream';
+    const fileName    = request.headers.get('x-file-name');
+
+    if (!fileName) {
+      return json({ error: 'x-file-name header obligatorio' }, 400, corsHeaders);
+    }
+
+    const fileData = await request.arrayBuffer();
+
+    const endpoint  = env.R2_ENDPOINT;
+    const accessKey = env.R2_ACCESS_KEY_ID;
+    const secretKey = env.R2_SECRET_ACCESS_KEY;
+    const bucket    = 'brovision-assets';
+    const region    = 'auto';
+
+    const now       = new Date();
+    const dateStamp = now.toISOString().slice(0,10).replace(/-/g,'');
+    const amzDate   = now.toISOString().replace(/[:\-]|\.\d{3}/g,'').slice(0,15) + 'Z';
+
+    const host      = new URL(endpoint).host;
+    const path      = `/${bucket}/${fileName}`;
+
+    const payloadHash = await sha256Hex(fileData);
+
+    const canonicalHeaders = `content-type:${contentType}\nhost:${host}\nx-amz-date:${amzDate}\n`;
+    const signedHeaders    = 'content-type;host;x-amz-date';
+
+    const canonicalRequest = [
+      'PUT',
+      path,
+      '',
+      canonicalHeaders,
+      signedHeaders,
+      payloadHash,
+    ].join('\n');
+
+    const credScope    = `${dateStamp}/${region}/s3/aws4_request`;
+    const stringToSign = [
+      'AWS4-HMAC-SHA256',
+      amzDate,
+      credScope,
+      await sha256(canonicalRequest),
+    ].join('\n');
+
+    const signingKey = await getSigningKey(secretKey, dateStamp, region, 's3');
+    const signature  = await hmacHex(signingKey, stringToSign);
+
+    const authorization = `AWS4-HMAC-SHA256 Credential=${accessKey}/${credScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+
+    const r2Res = await fetch(`${endpoint}${path}`, {
+      method:  'PUT',
+      headers: {
+        'Content-Type':  contentType,
+        'x-amz-date':    amzDate,
+        'Authorization': authorization,
+        'x-amz-content-sha256': payloadHash,
       },
+      body: fileData,
     });
 
-    const command = new PutObjectCommand({
-      Bucket:      'brovision-assets',
-      Key:         fileName,
-      ContentType: fileType,
-    });
+    if (!r2Res.ok) {
+      const errText = await r2Res.text();
+      console.error('[upload-presigned R2 error]', r2Res.status, errText);
+      return json({ error: `R2 rechazó el archivo: ${r2Res.status}` }, 500, corsHeaders);
+    }
 
-    const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
-
-    return json({ uploadUrl }, 200, corsHeaders);
+    const publicUrl = `https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/${fileName}`;
+    return json({ ok: true, url: publicUrl }, 200, corsHeaders);
 
   } catch (err) {
     console.error('[upload-presigned]', err);
     return json({ error: err.message }, 500, corsHeaders);
   }
+}
+
+async function sha256Hex(data) {
+  const buf = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ── Helpers de firma AWS4 ─────────────────────────────────────────
+async function hmac(key, data) {
+  const k = typeof key === 'string'
+    ? new TextEncoder().encode(key)
+    : key;
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw', k, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  return crypto.subtle.sign('HMAC', cryptoKey, new TextEncoder().encode(data));
+}
+
+async function hmacHex(key, data) {
+  const buf = await hmac(key, data);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function getSigningKey(secret, date, region, service) {
+  const kDate    = await hmac('AWS4' + secret, date);
+  const kRegion  = await hmac(kDate,           region);
+  const kService = await hmac(kRegion,         service);
+  return hmac(kService, 'aws4_request');
 }
 
 // ================================================================

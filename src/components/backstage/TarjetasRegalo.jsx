@@ -100,28 +100,30 @@ export default function TarjetasRegalo() {
       return;
     }
     setUploading(true);
-    setUploadProgress('Preparando subida...');
+    setUploadProgress('Subiendo imagen...');
     try {
       const safeFileName = `banners/${userId}/${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
       const res = await fetch('https://cupones.bro7vision.workers.dev/upload-presigned', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileName: safeFileName, fileType: file.type }),
+        headers: {
+          'x-file-name': safeFileName,
+          'x-file-type': file.type,
+        },
+        body: file,
       });
-      const { uploadUrl } = await res.json();
-      if (!uploadUrl) throw new Error('No se obtuvo URL de subida.');
-      setUploadProgress('Subiendo imagen...');
-      await fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
-      const publicUrl = `https://pub-57f2bfe6389542fe895a61b50b727921.r2.dev/${safeFileName}`;
-      setBannerUrl(publicUrl);
-      setUploadProgress('');
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setMsg('❌ Error subiendo imagen: ' + (data.error || 'desconocido'));
+        return;
+      }
+      setBannerUrl(data.url);
       setMsg('✅ Imagen subida correctamente.');
     } catch (err) {
       console.error('[handleUploadBanner]', err);
       setMsg('❌ Error subiendo imagen: ' + err.message);
-      setUploadProgress('');
     } finally {
       setUploading(false);
+      setUploadProgress('');
     }
   };
 
