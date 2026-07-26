@@ -103,7 +103,7 @@ export default function TarjetasRegalo() {
     setUploadProgress('Preparando subida...');
     try {
       const safeFileName = `banners/${userId}/${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
-      const res = await fetch('/upload', {
+      const res = await fetch('https://cupones.bro7vision.workers.dev/upload-presigned', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fileName: safeFileName, fileType: file.type }),

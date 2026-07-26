@@ -15,6 +15,9 @@
  * ================================================================
  */
 
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
 // ================================================================
 // DOMINIOS BLOQUEADOS — solo contenido soberano del creador
 // ================================================================
@@ -79,6 +82,7 @@ export default {
       if (url.pathname === '/proyectar-916')      return await handleProyectar916(request, env, corsHeaders);
       if (url.pathname === '/proyectar-audio')    return await handleProyectarAudio(request, env, corsHeaders);
       if (url.pathname === '/proyectar-audmovil') return await handleProyectarAudmovil(request, env, corsHeaders);
+      if (url.pathname === '/upload-presigned') return await handleUploadPresigned(request, env, corsHeaders);
 
       return json({ error: 'Ruta no encontrada' }, 404, corsHeaders);
 
@@ -513,6 +517,47 @@ async function handleCarruselAudmovil(env, corsHeaders) {
   }));
 
   return json({ ok: true, carrusel }, 200, corsHeaders);
+}
+
+// ================================================================
+// ENDPOINT: /upload-presigned → genera URL firmada para subir a R2
+// ================================================================
+async function handleUploadPresigned(request, env, corsHeaders) {
+  let payload;
+  try { payload = await request.json(); }
+  catch { return json({ error: 'JSON inválido' }, 400, corsHeaders); }
+
+  const { fileName, fileType } = payload;
+  if (!fileName || !fileType) {
+    return json({ error: 'fileName y fileType son obligatorios' }, 400, corsHeaders);
+  }
+
+  const { R2_ENDPOINT, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY } = env;
+
+  try {
+    const s3 = new S3Client({
+      region: 'auto',
+      endpoint: R2_ENDPOINT,
+      credentials: {
+        accessKeyId:     R2_ACCESS_KEY_ID,
+        secretAccessKey: R2_SECRET_ACCESS_KEY,
+      },
+    });
+
+    const command = new PutObjectCommand({
+      Bucket:      'brovision-assets',
+      Key:         fileName,
+      ContentType: fileType,
+    });
+
+    const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
+
+    return json({ uploadUrl }, 200, corsHeaders);
+
+  } catch (err) {
+    console.error('[upload-presigned]', err);
+    return json({ error: err.message }, 500, corsHeaders);
+  }
 }
 
 // ================================================================
