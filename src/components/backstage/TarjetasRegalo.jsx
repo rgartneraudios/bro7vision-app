@@ -23,11 +23,51 @@ const LABEL_VALOR = {
   '200': '200 €', '500': '500 €', '1000': '1.000 €', '100pct': '100% Descuento',
 };
 
-const TIER_STYLES = {
-  PLATA:   { color: '#ddeeff', border: '#7799bb', label: 'Luna de Plata'    },
-  ORO:     { color: '#f5cc42', border: '#d4a83a', label: 'Luna de Oro'      },
-  DIAMANTE:{ color: '#00e5d4', border: '#00e5d4', label: 'Luna de Diamante' },
-  LUNA100: { color: '#ee66ff', border: '#cc44ee', label: 'Luna 100'         },
+const LUNA_STYLES = {
+  PLATA: {
+    bgCard:    'linear-gradient(170deg, #e8eaf0 0%, #f8f9fc 40%, #d0d4e0 70%, #c8ccd8 100%)',
+    border:    'linear-gradient(135deg, #a0a8b8, #e0e4f0, #8090a8)',
+    color:     '#4a5068',
+    colorText: '#2a3048',
+    badge:     'Luna de Plata',
+    tierGrad:  'linear-gradient(135deg, #8090a8 0%, #d0d8e8 40%, #f0f4ff 60%, #9098b0 100%)',
+    lunasBg:   'rgba(160,168,184,0.15)',
+    lunasBorder: 'rgba(160,168,184,0.4)',
+    shimmer:   'linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.7) 50%, transparent 65%)',
+  },
+  ORO: {
+    bgCard:    'linear-gradient(170deg, #f5e6b0 0%, #fdf5d0 40%, #e8c870 70%, #d4a830 100%)',
+    border:    'linear-gradient(135deg, #c8960a, #ffe566, #a07808)',
+    color:     '#7a5800',
+    colorText: '#4a3400',
+    badge:     'Luna de Oro',
+    tierGrad:  'linear-gradient(135deg, #c8960a 0%, #ffe566 40%, #ffd040 60%, #c89010 100%)',
+    lunasBg:   'rgba(200,150,10,0.12)',
+    lunasBorder: 'rgba(200,150,10,0.35)',
+    shimmer:   'linear-gradient(105deg, transparent 35%, rgba(255,240,150,0.7) 50%, transparent 65%)',
+  },
+  DIAMANTE: {
+    bgCard:    'linear-gradient(170deg, #1a0a2e 0%, #2d1050 40%, #4a1878 70%, #1a0838 100%)',
+    border:    'linear-gradient(135deg, #9040e0, #d090ff, #6020b0)',
+    color:     '#d090ff',
+    colorText: '#f0d0ff',
+    badge:     'Luna de Diamante',
+    tierGrad:  'linear-gradient(135deg, #9040e0 0%, #d090ff 40%, #ff90f0 60%, #8030d0 100%)',
+    lunasBg:   'rgba(180,80,255,0.15)',
+    lunasBorder: 'rgba(180,80,255,0.4)',
+    shimmer:   'linear-gradient(105deg, transparent 35%, rgba(220,150,255,0.5) 50%, transparent 65%)',
+  },
+  '100': {
+    bgCard:    'linear-gradient(170deg, #ffffff 0%, #f8f0ff 30%, #fff0f8 60%, #f0f8ff 100%)',
+    border:    'linear-gradient(135deg, #ff80c0, #c080ff, #80c0ff)',
+    color:     '#8040a0',
+    colorText: '#4a2060',
+    badge:     'Luna 100',
+    tierGrad:  'linear-gradient(135deg, #ff60a0 0%, #c060ff 33%, #60c0ff 66%, #ff60c0 100%)',
+    lunasBg:   'rgba(180,80,220,0.08)',
+    lunasBorder: 'rgba(180,80,220,0.3)',
+    shimmer:   'linear-gradient(105deg, transparent 35%, rgba(220,180,255,0.6) 50%, transparent 65%)',
+  },
 };
 
 const ALCANCE_OPCIONES = [
@@ -220,6 +260,10 @@ export default function TarjetasRegalo({ profile }) {
         .flip-card-inner.flipped { transform: rotateY(180deg); }
         .flip-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 16px; }
         .flip-face-back { transform: rotateY(180deg); }
+        @keyframes shimmerCard {
+          0%   { background-position: 200% center; }
+          100% { background-position: -200% center; }
+        }
       `}</style>
       <div style={{ padding: '32px 40px', maxWidth: 1100, margin: '0 auto', fontFamily: SYNE }}>
 
@@ -256,21 +300,22 @@ export default function TarjetasRegalo({ profile }) {
             <div style={{ marginBottom: 20 }}>
               <span style={labelStyle}>Tier</span>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {Object.keys(TIER_STYLES).map(t => {
-                  const s = TIER_STYLES[t];
-                  const active = tier === t;
+                {Object.keys(LUNA_STYLES).map(t => {
+                  const s = LUNA_STYLES[t];
+                  const stateTier = t === '100' ? 'LUNA100' : t;
+                  const active = tier === stateTier;
                   return (
-                    <button key={t} onClick={() => { setTier(t); setValor(''); }}
+                    <button key={t} onClick={() => { setTier(stateTier); setValor(''); }}
                       style={{
                         padding: '8px 16px', borderRadius: 20, fontSize: 11,
                         fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase',
                         cursor: 'pointer', fontFamily: SYNE, transition: 'all 0.2s',
-                        background: active ? `${s.border}33` : 'rgba(255,255,255,0.04)',
-                        border: `1px solid ${active ? s.border : 'rgba(255,255,255,0.1)'}`,
+                        background: active ? `${s.color}33` : 'rgba(255,255,255,0.04)',
+                        border: `1px solid ${active ? s.color : 'rgba(255,255,255,0.1)'}`,
                         color: active ? s.color : 'rgba(255,255,255,0.4)',
-                        boxShadow: active ? `0 0 16px ${s.border}44` : 'none',
+                        boxShadow: active ? `0 0 16px ${s.color}44` : 'none',
                       }}>
-                      {s.label}
+                      {s.badge}
                     </button>
                   );
                 })}
@@ -446,71 +491,118 @@ export default function TarjetasRegalo({ profile }) {
           <div style={{ position: 'sticky', top: 20 }}>
             <span style={{ ...labelStyle, marginBottom: 16, display: 'block' }}>Vista previa</span>
             {(() => {
-              const estilo = TIER_STYLES[tier] || TIER_STYLES.PLATA;
-              const valorEurosPreview = (valor && valor !== 'ENVIO_GRATIS' && valor !== '100pct')
-                ? `${valor}€` : (valor === 'ENVIO_GRATIS' ? 'Envío' : valor === '100pct' ? '100%' : '—');
+              const estilo = LUNA_STYLES[tier === 'LUNA100' ? '100' : tier] || LUNA_STYLES.PLATA;
+              const valorDisplay = (valor && valor !== 'ENVIO_GRATIS' && valor !== '100pct')
+                ? parseFloat(valor) : null;
+              const comercioNombrePreview = profile?.razon_social || profile?.alias || 'Comercio';
               return (
                 <div style={{ height: 460, perspective: '1000px', cursor: 'pointer' }}
                   onClick={() => setFlippedId(flippedId === 'preview' ? null : 'preview')}>
                   <div className={`flip-card-inner${flippedId === 'preview' ? ' flipped' : ''}`}>
 
-                    {/* CARA A */}
+                    {/* ── CARA A ── */}
                     <div className="flip-face" style={{
-                      background: estilo.bg || 'linear-gradient(160deg,#1a1f2e,#0d1220)',
-                      border: `2px solid ${estilo.border}`,
-                      boxShadow: `0 0 24px ${estilo.border}44`,
+                      background: estilo.bgCard,
+                      border: '2px solid transparent',
+                      backgroundClip: 'padding-box',
+                      boxShadow: `0 4px 24px rgba(0,0,0,0.18), inset 0 0 0 1px rgba(255,255,255,0.6)`,
                       display: 'flex', flexDirection: 'column',
+                      position: 'relative', overflow: 'hidden',
                     }}>
+                      {/* Shimmer overlay */}
                       <div style={{
-                        width: '100%', height: 160, flexShrink: 0,
-                        background: 'rgba(0,0,0,0.4)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 48,
+                        position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1,
+                        background: estilo.shimmer,
+                        backgroundSize: '200% 100%',
+                        animation: 'shimmerCard 3s ease-in-out infinite',
+                      }} />
+
+                      {/* Banner 16:9 */}
+                      <div style={{
+                        width: '100%', aspectRatio: '16/9', flexShrink: 0,
+                        background: 'rgba(0,0,0,0.08)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 40, position: 'relative', zIndex: 2, overflow: 'hidden',
                       }}>
                         {bannerUrl
                           ? <img src={bannerUrl} alt="banner"
                               style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           : '🌙'}
                       </div>
+
+                      {/* Body */}
                       <div style={{
                         flex: 1, display: 'flex', flexDirection: 'column',
-                        alignItems: 'center', justifyContent: 'space-evenly', padding: '10px 14px',
+                        alignItems: 'center', justifyContent: 'space-evenly',
+                        padding: '10px 14px 12px', position: 'relative', zIndex: 2,
                       }}>
+                        {/* Tier con gradiente */}
                         <span style={{
-                          fontSize: 9, fontWeight: 700, letterSpacing: 3,
-                          textTransform: 'uppercase', color: estilo.color,
-                          border: `0.5px solid ${estilo.border}`,
-                          borderRadius: 20, padding: '2px 10px', background: `${estilo.border}22`,
+                          fontSize: 10, fontWeight: 900, letterSpacing: 3,
+                          textTransform: 'uppercase',
+                          background: estilo.tierGrad,
+                          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                          backgroundClip: 'text',
                         }}>
-                          {estilo.label}
+                          {estilo.badge}
                         </span>
+
+                        {/* Valor */}
                         <span style={{
-                          fontSize: 44, fontWeight: 900, color: estilo.color,
-                          lineHeight: 1, textShadow: `0 0 20px ${estilo.border}66`,
+                          fontSize: 42, fontWeight: 900,
+                          color: estilo.colorText,
+                          lineHeight: 1,
                           fontFamily: "'Exo 2', sans-serif",
+                          letterSpacing: -1,
                         }}>
-                          {valorEurosPreview}
+                          {valorDisplay != null ? `${valorDisplay}€` : '—'}
                         </span>
+
+                        {/* Separador */}
+                        <div style={{
+                          width: '60%', height: 1,
+                          background: `linear-gradient(90deg, transparent, ${estilo.color}66, transparent)`,
+                        }} />
+
+                        {/* Badge Lunas */}
                         <div style={{
                           display: 'flex', alignItems: 'center', gap: 5,
-                          background: `${estilo.border}22`, border: `0.5px solid ${estilo.border}55`,
-                          borderRadius: 20, padding: '4px 12px',
+                          background: estilo.lunasBg,
+                          border: `1px solid ${estilo.lunasBorder}`,
+                          borderRadius: 20, padding: '5px 14px',
                         }}>
-                          <span style={{ fontSize: 12 }}>🌙</span>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: estilo.color }}>
-                            {costeLunas.toLocaleString()} Lunas
+                          <span style={{ fontSize: 13 }}>🌙</span>
+                          <span style={{
+                            fontSize: 12, fontWeight: 800,
+                            color: estilo.colorText,
+                            fontFamily: "'Exo 2', sans-serif",
+                          }}>
+                            {(costeLunas || 0).toLocaleString()} Lunas
                           </span>
                         </div>
-                        <span style={{ fontSize: 8, color: estilo.color, opacity: 0.4, letterSpacing: 1 }}>
-                          Toca para ver reverso
+
+                        {/* Nombre comercio */}
+                        <span style={{
+                          fontSize: 9, fontWeight: 700, color: estilo.color,
+                          letterSpacing: 2, textTransform: 'uppercase', opacity: 0.7,
+                        }}>
+                          {comercioNombrePreview}
+                        </span>
+
+                        <span style={{
+                          fontSize: 8, color: estilo.color, opacity: 0.4,
+                          letterSpacing: 1, textTransform: 'uppercase',
+                        }}>
+                          Toca para ver más
                         </span>
                       </div>
                     </div>
 
-                    {/* CARA B */}
+                    {/* ── CARA B ── */}
                     <div className="flip-face flip-face-back" style={{
                       background: 'linear-gradient(160deg,#0a0a0f,#0d0d18,#111120)',
                       border: `2px solid ${estilo.color}`,
-                      boxShadow: `0 0 32px ${estilo.border}66`,
+                      boxShadow: `0 0 32px ${estilo.color}66`,
                       display: 'flex', flexDirection: 'column',
                       alignItems: 'center', justifyContent: 'space-between',
                       padding: '24px 20px 20px',
@@ -519,21 +611,21 @@ export default function TarjetasRegalo({ profile }) {
                         <span style={{
                           fontSize: 9, fontWeight: 700, letterSpacing: 3,
                           textTransform: 'uppercase', color: estilo.color,
-                          border: `0.5px solid ${estilo.border}`,
-                          borderRadius: 20, padding: '2px 10px', background: `${estilo.border}22`,
+                          border: `0.5px solid ${estilo.color}`,
+                          borderRadius: 20, padding: '2px 10px', background: `${estilo.color}22`,
                         }}>
-                          {estilo.label}
+                          {estilo.badge}
                         </span>
                         <span style={{
                           fontSize: 48, fontWeight: 900, color: estilo.color,
                           lineHeight: 1, fontFamily: "'Exo 2', sans-serif",
                         }}>
-                          {valorEurosPreview}
+                          {valorDisplay != null ? `${valorDisplay}€` : '—'}
                         </span>
                       </div>
                       <div style={{
                         width: '80%', height: 0.5,
-                        background: `linear-gradient(90deg,transparent,${estilo.border},transparent)`,
+                        background: `linear-gradient(90deg,transparent,${estilo.color},transparent)`,
                       }} />
                       <span style={{
                         fontSize: 12, color: 'rgba(255,255,255,0.7)',
@@ -545,8 +637,8 @@ export default function TarjetasRegalo({ profile }) {
                       {tier === 'PLATA' && compraMinima && (
                         <div style={{
                           fontSize: 11, color: estilo.color, fontWeight: 700,
-                          background: `${estilo.border}18`, borderRadius: 8,
-                          border: `0.5px solid ${estilo.border}44`,
+                          background: `${estilo.color}18`, borderRadius: 8,
+                          border: `0.5px solid ${estilo.color}44`,
                           padding: '4px 12px', letterSpacing: 1,
                         }}>
                           Compra mínima: {compraMinima}
@@ -598,11 +690,11 @@ export default function TarjetasRegalo({ profile }) {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {tarjetas.map(t => {
-                const ts = TIER_STYLES[t.tipo_tarjeta === '100' ? 'LUNA100' : t.tipo_tarjeta] || TIER_STYLES.PLATA;
+                const ts = LUNA_STYLES[t.tipo_tarjeta] || LUNA_STYLES.PLATA;
                 return (
                   <div key={t.id} style={{
                     background: 'rgba(255,255,255,0.03)',
-                    border: `1px solid ${t.activo ? ts.border + '55' : 'rgba(255,255,255,0.06)'}`,
+                    border: `1px solid ${t.activo ? ts.color + '55' : 'rgba(255,255,255,0.06)'}`,
                     borderRadius: 14, padding: '16px 20px',
                     display: 'flex', alignItems: 'center', gap: 16,
                     opacity: t.activo ? 1 : 0.5,
@@ -623,11 +715,11 @@ export default function TarjetasRegalo({ profile }) {
                         <span style={{
                           fontSize: 8, fontWeight: 700, letterSpacing: 2,
                           textTransform: 'uppercase', color: ts.color,
-                          border: `0.5px solid ${ts.border}`,
+                          border: `0.5px solid ${ts.color}`,
                           borderRadius: 20, padding: '1px 8px',
-                          background: `${ts.border}22`,
+                          background: `${ts.color}22`,
                         }}>
-                          {ts.label}
+                          {ts.badge}
                         </span>
                         <span style={{ fontSize: 18, fontWeight: 900, color: ts.color, fontFamily: SYNE }}>
                           {t.valor_euros != null ? `${t.valor_euros}€` : LABEL_VALOR[t.tipo_tarjeta === '100' ? '100pct' : 'ENVIO_GRATIS']}

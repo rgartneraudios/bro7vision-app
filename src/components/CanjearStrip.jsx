@@ -18,10 +18,50 @@ const TAB_TEXT_COLORS = {
 };
 
 const LUNA_STYLES = {
-  PLATA:    { bg: 'linear-gradient(160deg,#1a1f2e,#0d1220,#1a2535)', border: '#7799bb', color: '#ddeeff', badge: 'Luna de Plata'    },
-  ORO:      { bg: 'linear-gradient(160deg,#1f1800,#0f0e00,#2a2000)', border: '#d4a83a', color: '#f5cc42', badge: 'Luna de Oro'      },
-  DIAMANTE: { bg: 'linear-gradient(160deg,#001f2a,#000f1a,#002030)', border: '#00e5d4', color: '#00e5d4', badge: 'Luna de Diamante' },
-  '100':    { bg: 'linear-gradient(160deg,#1f001f,#0f000f,#2a002a)', border: '#cc44ee', color: '#ee66ff', badge: 'Luna 100'         },
+  PLATA: {
+    bgCard:    'linear-gradient(170deg, #e8eaf0 0%, #f8f9fc 40%, #d0d4e0 70%, #c8ccd8 100%)',
+    border:    'linear-gradient(135deg, #a0a8b8, #e0e4f0, #8090a8)',
+    color:     '#4a5068',
+    colorText: '#2a3048',
+    badge:     'Luna de Plata',
+    tierGrad:  'linear-gradient(135deg, #8090a8 0%, #d0d8e8 40%, #f0f4ff 60%, #9098b0 100%)',
+    lunasBg:   'rgba(160,168,184,0.15)',
+    lunasBorder: 'rgba(160,168,184,0.4)',
+    shimmer:   'linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.7) 50%, transparent 65%)',
+  },
+  ORO: {
+    bgCard:    'linear-gradient(170deg, #f5e6b0 0%, #fdf5d0 40%, #e8c870 70%, #d4a830 100%)',
+    border:    'linear-gradient(135deg, #c8960a, #ffe566, #a07808)',
+    color:     '#7a5800',
+    colorText: '#4a3400',
+    badge:     'Luna de Oro',
+    tierGrad:  'linear-gradient(135deg, #c8960a 0%, #ffe566 40%, #ffd040 60%, #c89010 100%)',
+    lunasBg:   'rgba(200,150,10,0.12)',
+    lunasBorder: 'rgba(200,150,10,0.35)',
+    shimmer:   'linear-gradient(105deg, transparent 35%, rgba(255,240,150,0.7) 50%, transparent 65%)',
+  },
+  DIAMANTE: {
+    bgCard:    'linear-gradient(170deg, #1a0a2e 0%, #2d1050 40%, #4a1878 70%, #1a0838 100%)',
+    border:    'linear-gradient(135deg, #9040e0, #d090ff, #6020b0)',
+    color:     '#d090ff',
+    colorText: '#f0d0ff',
+    badge:     'Luna de Diamante',
+    tierGrad:  'linear-gradient(135deg, #9040e0 0%, #d090ff 40%, #ff90f0 60%, #8030d0 100%)',
+    lunasBg:   'rgba(180,80,255,0.15)',
+    lunasBorder: 'rgba(180,80,255,0.4)',
+    shimmer:   'linear-gradient(105deg, transparent 35%, rgba(220,150,255,0.5) 50%, transparent 65%)',
+  },
+  '100': {
+    bgCard:    'linear-gradient(170deg, #ffffff 0%, #f8f0ff 30%, #fff0f8 60%, #f0f8ff 100%)',
+    border:    'linear-gradient(135deg, #ff80c0, #c080ff, #80c0ff)',
+    color:     '#8040a0',
+    colorText: '#4a2060',
+    badge:     'Luna 100',
+    tierGrad:  'linear-gradient(135deg, #ff60a0 0%, #c060ff 33%, #60c0ff 66%, #ff60c0 100%)',
+    lunasBg:   'rgba(180,80,220,0.08)',
+    lunasBorder: 'rgba(180,80,220,0.3)',
+    shimmer:   'linear-gradient(105deg, transparent 35%, rgba(220,180,255,0.6) 50%, transparent 65%)',
+  },
 };
 
 function HeaderWidget() {
@@ -286,6 +326,10 @@ export default function CanjearStrip({ scope }) {
         .flip-face-back {
           transform: rotateY(180deg);
         }
+        @keyframes shimmerCard {
+          0%   { background-position: 200% center; }
+          100% { background-position: -200% center; }
+        }
       `}</style>
       <video
         autoPlay loop muted playsInline
@@ -392,71 +436,94 @@ export default function CanjearStrip({ scope }) {
         <div
           className="flip-face"
           style={{
-            background: esReal ? estilo.bg : 'rgba(0,0,0,0.4)',
-            border: `2px solid ${esReal ? estilo.border : 'rgba(250,204,21,0.3)'}`,
-            boxShadow: esReal ? `0 0 24px ${estilo.border}44` : 'none',
+            background: esReal ? estilo.bgCard : 'rgba(0,0,0,0.4)',
+            border: '2px solid transparent',
+            backgroundClip: 'padding-box',
+            boxShadow: esReal
+              ? `0 4px 24px rgba(0,0,0,0.18), inset 0 0 0 1px rgba(255,255,255,0.6)`
+              : 'none',
             display: 'flex', flexDirection: 'column',
+            position: 'relative', overflow: 'hidden',
           }}
         >
           {esReal ? (
             <>
-              {/* Banner superior */}
+              {/* Shimmer overlay */}
               <div style={{
-                width: '100%', aspectRatio: '1/1', flexShrink: 0,
-                background: 'rgba(0,0,0,0.3)',
+                position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1,
+                background: estilo.shimmer,
+                backgroundSize: '200% 100%',
+                animation: 'shimmerCard 3s ease-in-out infinite',
+              }} />
+
+              {/* Banner 16:9 */}
+              <div style={{
+                width: '100%', aspectRatio: '16/9', flexShrink: 0,
+                background: 'rgba(0,0,0,0.08)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 48,
+                fontSize: 40, position: 'relative', zIndex: 2, overflow: 'hidden',
               }}>
-                {cupon.banner_url ? (
-                  <img src={cupon.banner_url} alt={cupon.comercio_nombre}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : '🌙'}
+                {cupon.banner_url
+                  ? <img src={cupon.banner_url} alt={cupon.comercio_nombre}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : '🌙'}
               </div>
 
-              {/* Body cara A */}
+              {/* Body */}
               <div style={{
                 flex: 1, display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'space-evenly',
-                padding: '8px 12px 12px',
+                padding: '10px 14px 12px', position: 'relative', zIndex: 2,
               }}>
+                {/* Tier con gradiente */}
                 <span style={{
-                  fontSize: 9, fontWeight: 700, letterSpacing: 3,
-                  textTransform: 'uppercase', color: estilo.color,
-                  border: `0.5px solid ${estilo.border}`,
-                  borderRadius: 20, padding: '2px 10px',
-                  background: `${estilo.border}22`,
+                  fontSize: 10, fontWeight: 900, letterSpacing: 3,
+                  textTransform: 'uppercase',
+                  background: estilo.tierGrad,
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
                 }}>
                   {estilo.badge}
                 </span>
 
+                {/* Valor */}
                 <span style={{
-                  fontSize: 40, fontWeight: 900, color: estilo.color,
-                  lineHeight: 1, textShadow: `0 0 20px ${estilo.border}66`,
+                  fontSize: 42, fontWeight: 900,
+                  color: estilo.colorText,
+                  lineHeight: 1,
                   fontFamily: "'Exo 2', sans-serif",
+                  letterSpacing: -1,
                 }}>
                   {cupon.valor_euros != null ? `${cupon.valor_euros}€` : '—'}
                 </span>
 
+                {/* Separador */}
                 <div style={{
-                  width: '70%', height: 0.5,
-                  background: `linear-gradient(90deg,transparent,${estilo.border},transparent)`,
+                  width: '60%', height: 1,
+                  background: `linear-gradient(90deg, transparent, ${estilo.color}66, transparent)`,
                 }} />
 
+                {/* Badge Lunas */}
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: 5,
-                  background: `${estilo.border}22`,
-                  border: `0.5px solid ${estilo.border}55`,
-                  borderRadius: 20, padding: '4px 12px',
+                  background: estilo.lunasBg,
+                  border: `1px solid ${estilo.lunasBorder}`,
+                  borderRadius: 20, padding: '5px 14px',
                 }}>
-                  <span style={{ fontSize: 12 }}>🌙</span>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: estilo.color }}>
+                  <span style={{ fontSize: 13 }}>🌙</span>
+                  <span style={{
+                    fontSize: 12, fontWeight: 800,
+                    color: estilo.colorText,
+                    fontFamily: "'Exo 2', sans-serif",
+                  }}>
                     {(cupon.coste_lunas || 0).toLocaleString()} Lunas
                   </span>
                 </div>
 
+                {/* Nombre comercio */}
                 <span style={{
                   fontSize: 9, fontWeight: 700, color: estilo.color,
-                  opacity: 0.5, letterSpacing: 2, textTransform: 'uppercase',
+                  letterSpacing: 2, textTransform: 'uppercase', opacity: 0.7,
                 }}>
                   {cupon.comercio_nombre}
                 </span>
