@@ -64,6 +64,13 @@ const LUNA_STYLES = {
   },
 };
 
+const CARD_ASSETS = {
+  PLATA:    { 'ENVIO_GRATIS':'plata-envio','3':'plata-3','5':'plata-5','10':'plata-10','20':'plata-20','40':'plata-40','60':'plata-60','100':'plata-100','200':'plata-200' },
+  ORO:      { '5':'oro-5','10':'oro-10','20':'oro-20','40':'oro-40','60':'oro-60','100':'oro-100','200':'oro-200' },
+  DIAMANTE: { '200':'diamante-200','500':'diamante-500','1000':'diamante-1000' },
+  '100':    { '100pct':'luna100' },
+};
+
 function HeaderWidget() {
   const [time, setTime] = useState('');
   const [date, setDate] = useState('');
@@ -436,108 +443,46 @@ export default function CanjearStrip({ scope }) {
         <div
           className="flip-face"
           style={{
-            background: esReal ? estilo.bgCard : 'rgba(0,0,0,0.4)',
-            border: '2px solid transparent',
-            backgroundClip: 'padding-box',
-            boxShadow: esReal
-              ? `0 4px 24px rgba(0,0,0,0.18), inset 0 0 0 1px rgba(255,255,255,0.6)`
-              : 'none',
-            display: 'flex', flexDirection: 'column',
-            position: 'relative', overflow: 'hidden',
+            borderRadius: 16, overflow: 'hidden',
           }}
         >
           {esReal ? (
             <>
-              {/* Shimmer overlay */}
-              <div style={{
-                position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1,
-                background: estilo.shimmer,
-                backgroundSize: '200% 100%',
-                animation: 'shimmerCard 3s ease-in-out infinite',
-              }} />
+              {/* Imagen fondo del comercio */}
+              {cupon.banner_url && (
+                <img src={cupon.banner_url} alt="fondo"
+                  style={{
+                    position: 'absolute', inset: 0,
+                    width: '100%', height: '100%',
+                    objectFit: 'cover', zIndex: 0,
+                  }} />
+              )}
 
-              {/* Banner 16:9 */}
-              <div style={{
-                width: '100%', aspectRatio: '16/9', flexShrink: 0,
-                background: 'rgba(0,0,0,0.08)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 40, position: 'relative', zIndex: 2, overflow: 'hidden',
-              }}>
-                {cupon.banner_url
-                  ? <img src={cupon.banner_url} alt={cupon.comercio_nombre}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : '🌙'}
-              </div>
-
-              {/* Body */}
-              <div style={{
-                flex: 1, display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'space-evenly',
-                padding: '10px 14px 12px', position: 'relative', zIndex: 2,
-              }}>
-                {/* Tier con gradiente */}
-                <span style={{
-                  fontSize: 10, fontWeight: 900, letterSpacing: 3,
-                  textTransform: 'uppercase', display: 'inline-block',
-                  background: estilo.tierGrad,
-                  color: 'transparent',
-                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}>
-                  {estilo.badge}
-                </span>
-
-                {/* Valor */}
-                <span style={{
-                  fontSize: 42, fontWeight: 900,
-                  color: estilo.colorText,
-                  lineHeight: 1,
-                  fontFamily: "'Exo 2', sans-serif",
-                  letterSpacing: -1,
-                }}>
-                  {cupon.valor_euros != null ? `${cupon.valor_euros}€` : '—'}
-                </span>
-
-                {/* Separador */}
-                <div style={{
-                  width: '60%', height: 1,
-                  background: `linear-gradient(90deg, transparent, ${estilo.color}66, transparent)`,
-                }} />
-
-                {/* Badge Lunas */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 5,
-                  background: estilo.lunasBg,
-                  border: `1px solid ${estilo.lunasBorder}`,
-                  borderRadius: 20, padding: '5px 14px',
-                }}>
-                  <span style={{ fontSize: 13 }}>🌙</span>
-                  <span style={{
-                    fontSize: 12, fontWeight: 800,
-                    color: estilo.colorText,
-                    fontFamily: "'Exo 2', sans-serif",
-                  }}>
-                    {(cupon.coste_lunas || 0).toLocaleString()} Lunas
-                  </span>
-                </div>
-
-                {/* Nombre comercio */}
-                <span style={{
-                  fontSize: 9, fontWeight: 700, color: estilo.color,
-                  letterSpacing: 2, textTransform: 'uppercase', opacity: 0.7,
-                }}>
-                  {cupon.comercio_nombre}
-                </span>
-
-                {isMobile && (
-                  <span style={{
-                    fontSize: 8, color: estilo.color, opacity: 0.4,
-                    letterSpacing: 1, textTransform: 'uppercase', marginTop: 4,
-                  }}>
-                    Toca para ver más
-                  </span>
-                )}
-              </div>
+              {/* Overlay asset PNG transparente */}
+              {(() => {
+                const tierKey = cupon.tipo_tarjeta;
+                const valorKey = cupon.valor_euros != null
+                  ? String(cupon.valor_euros)
+                  : (tierKey === '100' ? '100pct' : 'ENVIO_GRATIS');
+                const assetName = CARD_ASSETS[tierKey]?.[valorKey];
+                return assetName ? (
+                  <img
+                    src={`/images/cards/${assetName}.webp`}
+                    alt={estilo.badge}
+                    style={{
+                      position: 'absolute', inset: 0,
+                      width: '100%', height: '100%',
+                      objectFit: 'cover', zIndex: 1,
+                    }}
+                  />
+                ) : (
+                  <div style={{
+                    position: 'absolute', inset: 0, zIndex: 1,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: estilo.bgCard, fontSize: 48,
+                  }}>🌙</div>
+                );
+              })()}
             </>
           ) : (
             <div style={{

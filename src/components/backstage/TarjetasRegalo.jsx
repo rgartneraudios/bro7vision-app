@@ -6,8 +6,15 @@ const SYNE = "'Exo 2', sans-serif";
 const COSTE_LUNAS = {
   PLATA:    { ENVIO_GRATIS: 25000, '3': 30000, '5': 35000, '10': 40000, '20': 45000, '40': 50000, '60': 55000, '100': 60000, '200': 70000 },
   ORO:      { '5': 50000, '10': 60000, '20': 70000, '40': 80000, '60': 90000, '100': 100000, '200': 150000 },
-  DIAMANTE: { '200': 200000, '500': 250000, '1000': 300000 },
+  DIAMANTE: { '200': 200000, '500': 300000, '1000': 400000 },
   LUNA100:  { '100pct': 10000 },
+};
+
+const CARD_ASSETS = {
+  PLATA:    { 'ENVIO_GRATIS':'plata-envio','3':'plata-3','5':'plata-5','10':'plata-10','20':'plata-20','40':'plata-40','60':'plata-60','100':'plata-100','200':'plata-200' },
+  ORO:      { '5':'oro-5','10':'oro-10','20':'oro-20','40':'oro-40','60':'oro-60','100':'oro-100','200':'oro-200' },
+  DIAMANTE: { '200':'diamante-200','500':'diamante-500','1000':'diamante-1000' },
+  '100':    { '100pct':'luna100' },
 };
 
 const VALORES_POR_TIER = {
@@ -283,7 +290,7 @@ export default function TarjetasRegalo({ profile }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
 
         {/* Fila superior: formulario + preview */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 32, alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 32, alignItems: 'start' }}>
 
           {/* ── FORMULARIO ── */}
           <div style={{
@@ -393,7 +400,7 @@ export default function TarjetasRegalo({ profile }) {
 
             {/* BANNER */}
             <div style={{ marginBottom: 20 }}>
-              <span style={labelStyle}>Banner de la tarjeta (cuadrado recomendado)</span>
+              <span style={labelStyle}>Imagen de fondo (300×450px · formato 2:3)</span>
               <input
                 type="file"
                 accept="image/*"
@@ -496,121 +503,67 @@ export default function TarjetasRegalo({ profile }) {
                 ? parseFloat(valor) : null;
               const comercioNombrePreview = profile?.razon_social || profile?.alias || 'Comercio';
               return (
-                <div style={{ height: 460, perspective: '1000px', cursor: 'pointer' }}
-                  onClick={() => setFlippedId(flippedId === 'preview' ? null : 'preview')}>
-                  <div className={`flip-card-inner${flippedId === 'preview' ? ' flipped' : ''}`}>
+<div style={{
+  height: 460, width: '100%',
+  perspective: '1000px', cursor: 'pointer',
+  overflow: 'hidden', borderRadius: 16,
+}}
+  onClick={() => setFlippedId(flippedId === 'preview' ? null : 'preview')}>
+  <div className={`flip-card-inner${flippedId === 'preview' ? ' flipped' : ''}`}
+    style={{ height: '100%' }}>
 
-                    {/* ── CARA A ── */}
-                    <div className="flip-face" style={{
-                      background: estilo.bgCard,
-                      border: '2px solid transparent',
-                      backgroundClip: 'padding-box',
-                      boxShadow: `0 4px 24px rgba(0,0,0,0.18), inset 0 0 0 1px rgba(255,255,255,0.6)`,
-                      display: 'flex', flexDirection: 'column',
-                      position: 'relative', overflow: 'hidden',
-                    }}>
-                      {/* Shimmer overlay */}
-                      <div style={{
-                        position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1,
-                        background: estilo.shimmer,
-                        backgroundSize: '200% 100%',
-                        animation: 'shimmerCard 3s ease-in-out infinite',
-                      }} />
+    {/* ── CARA A ── */}
+    <div className="flip-face" style={{
+      borderRadius: 16, overflow: 'hidden',
+      position: 'relative', width: '100%', height: '100%',
+    }}>
+      {/* Imagen fondo del comercio */}
+      {bannerUrl && (
+        <img src={bannerUrl} alt="fondo"
+          style={{
+            position: 'absolute', inset: 0,
+            width: '100%', height: '100%',
+            objectFit: 'cover', zIndex: 0,
+          }} />
+      )}
 
-                      {/* Banner 16:9 */}
-                      <div style={{
-                        width: '100%', aspectRatio: '16/9', flexShrink: 0,
-                        background: 'rgba(0,0,0,0.08)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 40, position: 'relative', zIndex: 2, overflow: 'hidden',
-                      }}>
-                        {bannerUrl
-                          ? <img src={bannerUrl} alt="banner"
-                              style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          : '🌙'}
-                      </div>
+      {/* Overlay asset PNG transparente */}
+      {(() => {
+        const valorKey = valor || (tier === 'LUNA100' ? '100pct' : 'ENVIO_GRATIS');
+        const tierAssetKey = tier === 'LUNA100' ? '100' : tier;
+        const assetName = CARD_ASSETS[tierAssetKey]?.[valorKey];
+        return assetName ? (
+          <img
+            src={`/images/cards/${assetName}.webp`}
+            alt={estilo.badge}
+            style={{
+              position: 'absolute', inset: 0,
+              width: '100%', height: '100%',
+              objectFit: 'cover', zIndex: 1,
+            }}
+          />
+        ) : (
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 1,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: estilo.bgCard, fontSize: 48,
+          }}>🌙</div>
+        );
+      })()}
+    </div>
 
-                      {/* Body */}
-                      <div style={{
-                        flex: 1, display: 'flex', flexDirection: 'column',
-                        alignItems: 'center', justifyContent: 'space-evenly',
-                        padding: '10px 14px 12px', position: 'relative', zIndex: 2,
-                      }}>
-                        {/* Tier con gradiente */}
-<span style={{
-  fontSize: 10, fontWeight: 900, letterSpacing: 3,
-  textTransform: 'uppercase', display: 'inline-block',
-  background: estilo.tierGrad,
-  color: 'transparent',
-  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-  backgroundClip: 'text',
-}}>
-  {estilo.badge}
-</span>
-
-                        {/* Valor */}
-                        <span style={{
-                          fontSize: 42, fontWeight: 900,
-                          color: estilo.colorText,
-                          lineHeight: 1,
-                          fontFamily: "'Exo 2', sans-serif",
-                          letterSpacing: -1,
-                        }}>
-                          {valorDisplay != null ? `${valorDisplay}€` : '—'}
-                        </span>
-
-                        {/* Separador */}
-                        <div style={{
-                          width: '60%', height: 1,
-                          background: `linear-gradient(90deg, transparent, ${estilo.color}66, transparent)`,
-                        }} />
-
-                        {/* Badge Lunas */}
-                        <div style={{
-                          display: 'flex', alignItems: 'center', gap: 5,
-                          background: estilo.lunasBg,
-                          border: `1px solid ${estilo.lunasBorder}`,
-                          borderRadius: 20, padding: '5px 14px',
-                        }}>
-                          <span style={{ fontSize: 13 }}>🌙</span>
-                          <span style={{
-                            fontSize: 12, fontWeight: 800,
-                            color: estilo.colorText,
-                            fontFamily: "'Exo 2', sans-serif",
-                          }}>
-                            {(costeLunas || 0).toLocaleString()} Lunas
-                          </span>
-                        </div>
-
-                        {/* Nombre comercio */}
-                        <span style={{
-                          fontSize: 9, fontWeight: 700, color: estilo.color,
-                          letterSpacing: 2, textTransform: 'uppercase', opacity: 0.7,
-                        }}>
-                          {comercioNombrePreview}
-                        </span>
-
-                        <span style={{
-                          fontSize: 8, color: estilo.color, opacity: 0.4,
-                          letterSpacing: 1, textTransform: 'uppercase',
-                        }}>
-                          Toca para ver más
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* ── CARA B ── */}
+    {/* ── CARA B ── */}
                     <div className="flip-face flip-face-back" style={{
                       background: 'linear-gradient(160deg,#0a0a0f,#0d0d18,#111120)',
                       border: `2px solid ${estilo.color}`,
                       boxShadow: `0 0 32px ${estilo.color}66`,
                       display: 'flex', flexDirection: 'column',
                       alignItems: 'center', justifyContent: 'space-between',
-                      padding: '24px 20px 20px',
+                      padding: '24px 20px 20px', height: '100%',
                     }}>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
                         <span style={{
-                          fontSize: 9, fontWeight: 700, letterSpacing: 3,
+                          fontSize: 27, fontWeight: 700, letterSpacing: 3,
                           textTransform: 'uppercase', color: estilo.color,
                           border: `0.5px solid ${estilo.color}`,
                           borderRadius: 20, padding: '2px 10px', background: `${estilo.color}22`,
@@ -618,7 +571,7 @@ export default function TarjetasRegalo({ profile }) {
                           {estilo.badge}
                         </span>
                         <span style={{
-                          fontSize: 48, fontWeight: 900, color: estilo.color,
+                          fontSize: 144, fontWeight: 900, color: estilo.color,
                           lineHeight: 1, fontFamily: "'Exo 2', sans-serif",
                         }}>
                           {valorDisplay != null ? `${valorDisplay}€` : '—'}
@@ -629,7 +582,7 @@ export default function TarjetasRegalo({ profile }) {
                         background: `linear-gradient(90deg,transparent,${estilo.color},transparent)`,
                       }} />
                       <span style={{
-                        fontSize: 12, color: 'rgba(255,255,255,0.7)',
+                        fontSize: 36, color: 'rgba(255,255,255,0.7)',
                         textAlign: 'center', lineHeight: 1.6, flex: 1,
                         display: 'flex', alignItems: 'center', padding: '12px 4px',
                       }}>
@@ -637,7 +590,7 @@ export default function TarjetasRegalo({ profile }) {
                       </span>
                       {tier === 'PLATA' && compraMinima && (
                         <div style={{
-                          fontSize: 11, color: estilo.color, fontWeight: 700,
+                          fontSize: 33, color: estilo.color, fontWeight: 700,
                           background: `${estilo.color}18`, borderRadius: 8,
                           border: `0.5px solid ${estilo.color}44`,
                           padding: '4px 12px', letterSpacing: 1,
