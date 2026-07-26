@@ -349,7 +349,7 @@ async function handleProyectarAudmovil(request, env, corsHeaders) {
 }
 
 // ================================================================
-// ENDPOINT: /canjear-cupon — sin cambios
+// ENDPOINT: /canjear-cupon
 // ================================================================
 async function handleCanjearCupon(request, env, corsHeaders) {
 
@@ -364,7 +364,7 @@ async function handleCanjearCupon(request, env, corsHeaders) {
     valor_euros,
     comercio_nombre,
     web_url,
-    coste_genesis,
+    coste_lunas: coste_genesis,
   } = payload;
 
   if (!user_id || !comercio_id || !coste_genesis) {

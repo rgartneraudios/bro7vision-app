@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
-import { BROCARD_MODELOS } from '../components/backstage/TarjetasRegalo';
+import { BROCARD_MODELOS } from '../data/brocardModelos';
 
 const FASE_LABELS = { 1:'Luna Nueva', 2:'Creciente', 3:'Luna Llena', 4:'Menguante' };
 
