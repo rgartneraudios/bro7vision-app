@@ -537,15 +537,16 @@ export default function TarjetasRegalo({ profile }) {
                         padding: '10px 14px 12px', position: 'relative', zIndex: 2,
                       }}>
                         {/* Tier con gradiente */}
-                        <span style={{
-                          fontSize: 10, fontWeight: 900, letterSpacing: 3,
-                          textTransform: 'uppercase',
-                          background: estilo.tierGrad,
-                          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                          backgroundClip: 'text',
-                        }}>
-                          {estilo.badge}
-                        </span>
+<span style={{
+  fontSize: 10, fontWeight: 900, letterSpacing: 3,
+  textTransform: 'uppercase', display: 'inline-block',
+  background: estilo.tierGrad,
+  color: 'transparent',
+  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+  backgroundClip: 'text',
+}}>
+  {estilo.badge}
+</span>
 
                         {/* Valor */}
                         <span style={{

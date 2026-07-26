@@ -478,8 +478,9 @@ export default function CanjearStrip({ scope }) {
                 {/* Tier con gradiente */}
                 <span style={{
                   fontSize: 10, fontWeight: 900, letterSpacing: 3,
-                  textTransform: 'uppercase',
+                  textTransform: 'uppercase', display: 'inline-block',
                   background: estilo.tierGrad,
+                  color: 'transparent',
                   WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
                 }}>
