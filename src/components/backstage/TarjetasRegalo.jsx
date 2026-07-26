@@ -515,7 +515,6 @@ export default function TarjetasRegalo({ profile }) {
     {/* ── CARA A ── */}
     <div className="flip-face" style={{
       borderRadius: 16, overflow: 'hidden',
-      position: 'relative', width: '100%', height: '100%',
     }}>
       {/* Imagen fondo del comercio */}
       {bannerUrl && (
