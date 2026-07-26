@@ -591,7 +591,7 @@ async function handleUploadPresigned(request, env, corsHeaders) {
       return json({ error: `R2 rechazó el archivo: ${r2Res.status}` }, 500, corsHeaders);
     }
 
-    const url = `https://cupones.bro7vision.workers.dev/${fileName}`;
+    const url = `https://media.bro7vision.com/${fileName}`;
     return json({ ok: true, url }, 200, corsHeaders);
 
   } catch (err) {
