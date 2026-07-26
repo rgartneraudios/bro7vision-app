@@ -505,7 +505,7 @@ export default function CanjearStrip({ scope }) {
           <div
             className="flip-face flip-face-back"
             style={{
-              background: `linear-gradient(160deg, #0a0a0f 0%, #0d0d18 40%, #111120 100%)`,
+              background: `linear-gradient(160deg, #0a0a0f 0%, #0d0d18 40%, #111120 100%), url(/images/cards/card-back.webp) center/cover no-repeat`,
               border: `2px solid ${estilo.color}`,
               boxShadow: `0 0 32px ${estilo.border}66, inset 0 0 40px ${estilo.border}11`,
               display: 'flex', flexDirection: 'column',

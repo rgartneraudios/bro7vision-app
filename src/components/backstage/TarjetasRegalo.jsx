@@ -553,7 +553,7 @@ export default function TarjetasRegalo({ profile }) {
 
     {/* ── CARA B ── */}
                     <div className="flip-face flip-face-back" style={{
-                      background: 'linear-gradient(160deg,#0a0a0f,#0d0d18,#111120)',
+                      background: `linear-gradient(160deg,#0a0a0f,#0d0d18,#111120), url(/images/cards/card-back.webp) center/cover no-repeat`,
                       border: `2px solid ${estilo.color}`,
                       boxShadow: `0 0 32px ${estilo.color}66`,
                       display: 'flex', flexDirection: 'column',
