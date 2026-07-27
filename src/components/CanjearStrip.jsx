@@ -71,6 +71,13 @@ const CARD_ASSETS = {
   '100':    { '100pct':'luna100' },
 };
 
+const REVERSO_INTRO = {
+  PLATA:    (valor) => `Descuento de ${valor}€ en compras con importe mínimo establecido por el comercio.`,
+  ORO:      (valor) => `Vale de ${valor}€ de descuento en compra de igual o superior monto. Si el total es mayor pagas la diferencia.`,
+  DIAMANTE: (valor) => `Obsequio sorpresa por valor de ${valor}€ o superior. Brovision selecciona y envía el regalo.`,
+  '100':    ()      => `Tarjeta con un 100% de descuento en el producto o servicio descrito a continuación.`,
+};
+
 function HeaderWidget() {
   const [time, setTime] = useState('');
   const [date, setDate] = useState('');
@@ -192,7 +199,7 @@ function CuponModal({ cupon, onClose, onCanjear }) {
 
         {cupon.tipo_tarjeta === 'PLATA' && cupon.compra_minima && (
           <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>
-            Compra mínima: {cupon.compra_minima}€
+            Compra mínima: {cupon.compra_minima}
           </span>
         )}
 
@@ -282,16 +289,32 @@ export default function CanjearStrip({ scope }) {
         .or('emision_total.is.null,emision_usada.lt.emision_total');
 
       if (activeTab === 'CERCANIAS') {
-        if (!userCityCode) { setCupones([]); return; }
-        query = query.filter('ciudades_cobertura', 'cs', `{${userCityCode}}`);
+        query = query.filter('alcance', 'cs', '{LOCAL}');
       } else if (activeTab === 'NACIONAL') {
-        query = query.filter('alcance', 'cs', '{GIRA_NACIONAL}');
+        query = query.filter('alcance', 'cs', '{NACIONAL}');
       } else if (activeTab === 'INTERNACIONAL') {
-        query = query.filter('alcance', 'cs', '{GIRA_MUNDIAL}');
+        query = query.filter('alcance', 'cs', '{INTERNACIONAL}');
       }
 
-      const { data } = await query;
-      setCupones(data || []);
+      const { data: rows } = await query;
+      if (!rows || rows.length === 0) { setCupones([]); return; }
+
+      const userIds = [...new Set(rows.map(r => r.user_id).filter(Boolean))];
+      const { data: solicitudes } = await supabase
+        .from('bs_solicitudes')
+        .select('user_id, razon_social, email, telefono, web_url')
+        .in('user_id', userIds);
+
+      const solMap = {};
+      if (solicitudes) solicitudes.forEach(s => { solMap[s.user_id] = s; });
+
+      setCupones(rows.map(r => ({
+        ...r,
+        bs_razon_social: solMap[r.user_id]?.razon_social || r.comercio_nombre || '',
+        bs_email:        solMap[r.user_id]?.email        || '',
+        bs_telefono:     solMap[r.user_id]?.telefono     || '',
+        bs_web:          solMap[r.user_id]?.web_url      || r.web_url         || '',
+      })));
     };
     fetchCupones();
   }, [activeTab, userCityCode]);
@@ -504,100 +527,120 @@ export default function CanjearStrip({ scope }) {
         {esReal && (
           <div
             className="flip-face flip-face-back"
-            style={{
-              background: `linear-gradient(160deg, #0a0a0f 0%, #0d0d18 40%, #111120 100%), url(/images/cards/card-back.webp) center/cover no-repeat`,
-              border: `2px solid ${estilo.color}`,
-              boxShadow: `0 0 32px ${estilo.border}66, inset 0 0 40px ${estilo.border}11`,
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'space-between',
-              padding: '24px 20px 20px',
-            }}
+            style={{ borderRadius: 16, overflow: 'hidden' }}
           >
-            {/* Tier grande */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-              <span style={{
-                fontSize: 11, fontWeight: 700, letterSpacing: 4,
-                textTransform: 'uppercase', color: estilo.color,
-                border: `0.5px solid ${estilo.border}`,
-                borderRadius: 20, padding: '3px 14px',
-                background: `${estilo.border}22`,
-              }}>
-                {estilo.badge}
-              </span>
-              <span style={{
-                fontSize: 52, fontWeight: 900, color: estilo.color,
-                lineHeight: 1, textShadow: `0 0 30px ${estilo.border}88`,
-                fontFamily: "'Exo 2', sans-serif",
-              }}>
-                {cupon.valor_euros != null ? `${cupon.valor_euros}€` : '—'}
-              </span>
-            </div>
+            {/* Fondo */}
+            <img src="/images/cards/card-back.webp" alt="reverso"
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }} />
 
-            {/* Separador */}
+            {/* Overlay */}
             <div style={{
-              width: '80%', height: 0.5,
-              background: `linear-gradient(90deg,transparent,${estilo.border},transparent)`,
+              position: 'absolute', inset: 0, zIndex: 1,
+              background: 'linear-gradient(170deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.75) 100%)',
             }} />
 
-            {/* Descripción */}
+            {/* Contenido */}
             <div style={{
-              flex: 1, display: 'flex', alignItems: 'center',
-              padding: '12px 4px',
+              position: 'absolute', inset: 0, zIndex: 2,
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'space-between',
+              padding: '18px 14px 14px',
             }}>
-              <span style={{
-                fontSize: 12, color: 'rgba(255,255,255,0.75)',
-                textAlign: 'center', lineHeight: 1.6, fontWeight: 500,
-              }}>
-                {cupon.descripcion || 'Tarjeta de descuento exclusiva. Consulta condiciones con el comercio.'}
-              </span>
-            </div>
 
-            {/* Compra mínima si es PLATA */}
-            {cupon.tipo_tarjeta === 'PLATA' && cupon.compra_minima && (
-              <div style={{
-                background: `${estilo.border}18`,
-                border: `0.5px solid ${estilo.border}44`,
-                borderRadius: 10, padding: '6px 16px',
-                fontSize: 11, color: estilo.color, fontWeight: 700,
-                letterSpacing: 1,
+              {/* Texto intro por tier */}
+              <p style={{
+                fontSize: 10, color: 'rgba(255,255,255,0.9)',
+                textAlign: 'center', lineHeight: 1.6, fontWeight: 600,
+                letterSpacing: 0.3, margin: 0,
               }}>
-                Compra mínima: {cupon.compra_minima}
+                {typeof REVERSO_INTRO[cupon.tipo_tarjeta] === 'function'
+                  ? REVERSO_INTRO[cupon.tipo_tarjeta](cupon.valor_euros ?? '—')
+                  : REVERSO_INTRO[cupon.tipo_tarjeta] || ''}
+              </p>
+
+              <div style={{ width: '80%', height: 0.5,
+                background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent)' }} />
+
+              {/* Datos comercio */}
+              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                <span style={{ fontSize: 12, fontWeight: 900, color: '#fff',
+                  textAlign: 'center', letterSpacing: 1, textTransform: 'uppercase' }}>
+                  {cupon.bs_razon_social}
+                </span>
+                {cupon.bs_web && (
+                  <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.6)', letterSpacing: 0.5 }}>
+                    🌐 {cupon.bs_web.replace(/^https?:\/\//, '')}
+                  </span>
+                )}
+                {cupon.bs_telefono && (
+                  <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.6)', letterSpacing: 0.5 }}>
+                    📞 {cupon.bs_telefono}
+                  </span>
+                )}
+                {cupon.bs_email && (
+                  <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', letterSpacing: 0.5 }}>
+                    ✉️ {cupon.bs_email}
+                  </span>
+                )}
               </div>
-            )}
 
-            {/* Lunas */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              background: `${estilo.border}22`,
-              border: `0.5px solid ${estilo.border}55`,
-              borderRadius: 20, padding: '5px 16px',
-            }}>
-              <span style={{ fontSize: 14 }}>🌙</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: estilo.color }}>
-                {(cupon.coste_lunas || 0).toLocaleString()} Lunas
-              </span>
+              <div style={{ width: '80%', height: 0.5,
+                background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent)' }} />
+
+              {/* Descripción libre */}
+              {cupon.descripcion && (
+                <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.75)',
+                  textAlign: 'center', lineHeight: 1.5, fontStyle: 'italic', margin: 0 }}>
+                  {cupon.descripcion}
+                </p>
+              )}
+
+              {/* Compra mínima — solo PLATA */}
+              {cupon.tipo_tarjeta === 'PLATA' && cupon.compra_minima && (
+                <div style={{ background: 'rgba(255,255,255,0.1)',
+                  border: '0.5px solid rgba(255,255,255,0.2)',
+                  borderRadius: 8, padding: '3px 10px',
+                  fontSize: 9, color: '#fff', fontWeight: 700, letterSpacing: 1 }}>
+                  Compra mínima: {cupon.compra_minima}
+                </div>
+              )}
+
+              {/* Palabra clave pública */}
+              {cupon.palabra_clave_1 && (
+                <div style={{ background: 'rgba(255,255,255,0.08)',
+                  border: '0.5px solid rgba(255,255,255,0.2)',
+                  borderRadius: 8, padding: '3px 10px', textAlign: 'center' }}>
+                  <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.4)',
+                    display: 'block', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 2 }}>
+                    Presenta esta palabra
+                  </span>
+                  <span style={{ fontSize: 13, fontWeight: 900, color: '#fff', letterSpacing: 3 }}>
+                    {cupon.palabra_clave_1}
+                  </span>
+                </div>
+              )}
+
+              {/* Botón canjear */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setFlippedId(null);
+                  setHoveredId(null);
+                  setSelectedCupon(cupon);
+                }}
+                style={{
+                  width: '100%', padding: '11px 0',
+                  background: estilo.color, color: '#000',
+                  fontWeight: 900, fontSize: 11, border: 'none',
+                  borderRadius: 10, cursor: 'pointer',
+                  textTransform: 'uppercase', letterSpacing: '0.12em',
+                  fontFamily: "'Exo 2', sans-serif",
+                }}
+              >
+                CANJEAR →
+              </button>
+
             </div>
-
-            {/* Botón canjear */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setFlippedId(null);
-                setHoveredId(null);
-                setSelectedCupon(cupon);
-              }}
-              style={{
-                width: '100%', padding: '13px 0',
-                background: estilo.color, color: '#000',
-                fontWeight: 900, fontSize: 13, border: 'none',
-                borderRadius: 10, cursor: 'pointer',
-                textTransform: 'uppercase', letterSpacing: '0.12em',
-                boxShadow: `0 0 20px ${estilo.border}88`,
-                fontFamily: "'Exo 2', sans-serif",
-              }}
-            >
-              CANJEAR →
-            </button>
           </div>
         )}
       </div>

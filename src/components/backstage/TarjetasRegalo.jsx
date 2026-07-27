@@ -77,13 +77,18 @@ const LUNA_STYLES = {
   },
 };
 
+const REVERSO_INTRO = {
+  PLATA:    (valor) => `Descuento de ${valor}€ en compras con importe mínimo establecido por el comercio.`,
+  ORO:      (valor) => `Vale de ${valor}€ de descuento en compra de igual o superior monto. Si el total es mayor pagas la diferencia.`,
+  DIAMANTE: (valor) => `Obsequio sorpresa por valor de ${valor}€ o superior. Brovision selecciona y envía el regalo.`,
+  '100':    ()      => `Tarjeta con un 100% de descuento en el producto o servicio descrito a continuación.`,
+};
+
 const ALCANCE_OPCIONES = [
-  { value: 'CIUDAD',         label: 'Ciudad'         },
-  { value: 'GRAN_CIUDAD',    label: 'Gran Ciudad'    },
-  { value: 'REGION',         label: 'Región'         },
-  { value: 'GRAN_REGION',    label: 'Gran Región'    },
-  { value: 'GIRA_NACIONAL',  label: 'Nacional'       },
-  { value: 'GIRA_MUNDIAL',   label: 'Internacional'  },
+  { value: 'LOCAL',          label: 'Local'          },
+  { value: 'CERCANIAS',      label: 'Cercanías'      },
+  { value: 'NACIONAL',       label: 'Nacional'       },
+  { value: 'INTERNACIONAL',  label: 'Internacional'  },
 ];
 
 const SUPABASE_STORAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/comercio-banners`;
@@ -130,6 +135,18 @@ export default function TarjetasRegalo({ profile }) {
   }, [userId]);
 
   useEffect(() => { loadTarjetas(); }, [loadTarjetas]);
+
+  const [bsSolicitud, setBsSolicitud] = useState(null);
+
+  useEffect(() => {
+    if (!userId) return;
+    supabase
+      .from('bs_solicitudes')
+      .select('razon_social, email, telefono, web_url')
+      .eq('user_id', userId)
+      .maybeSingle()
+      .then(({ data }) => { if (data) setBsSolicitud(data); });
+  }, [userId]);
 
   const resetForm = () => {
     setEditando(null);
@@ -184,6 +201,7 @@ export default function TarjetasRegalo({ profile }) {
     }
     setSaving(true);
     setMsg('');
+    console.log('payload valor_euros:', valorEuros, 'compra_minima:', compraMinima);
     const comercioNombre = profile?.razon_social || profile?.alias || 'Comercio';
     const payload = {
       user_id:        userId,
@@ -193,6 +211,7 @@ export default function TarjetasRegalo({ profile }) {
       compra_minima:  tier === 'PLATA' ? compraMinima || null : null,
       comercio_nombre: comercioNombre,
       descripcion:    descripcion || null,
+      sector:         'PRODUCTO',
       banner_url:     bannerUrl  || null,
       alcance:        alcance,
       palabra_clave_1: palabraClave1 || null,
@@ -364,7 +383,7 @@ export default function TarjetasRegalo({ profile }) {
                 <span style={labelStyle}>Compra mínima (libre)</span>
                 <input
                   type="text"
-                  placeholder="Ej: 50 €, 1 producto, etc."
+                  placeholder="Ej: 10€, 50 euros, 1 artículo mínimo..."
                   value={compraMinima}
                   onChange={e => setCompraMinima(e.target.value)}
                   style={inputStyle}
@@ -552,62 +571,109 @@ export default function TarjetasRegalo({ profile }) {
     </div>
 
     {/* ── CARA B ── */}
-                    <div className="flip-face flip-face-back" style={{
-                      background: `linear-gradient(160deg,#0a0a0f,#0d0d18,#111120), url(/images/cards/card-back.webp) center/cover no-repeat`,
-                      border: `2px solid ${estilo.color}`,
-                      boxShadow: `0 0 32px ${estilo.color}66`,
-                      display: 'flex', flexDirection: 'column',
-                      alignItems: 'center', justifyContent: 'space-between',
-                      padding: '24px 20px 20px', height: '100%',
-                    }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                        <span style={{
-                          fontSize: 27, fontWeight: 700, letterSpacing: 3,
-                          textTransform: 'uppercase', color: estilo.color,
-                          border: `0.5px solid ${estilo.color}`,
-                          borderRadius: 20, padding: '2px 10px', background: `${estilo.color}22`,
-                        }}>
-                          {estilo.badge}
-                        </span>
-                        <span style={{
-                          fontSize: 144, fontWeight: 900, color: estilo.color,
-                          lineHeight: 1, fontFamily: "'Exo 2', sans-serif",
-                        }}>
-                          {valorDisplay != null ? `${valorDisplay}€` : '—'}
-                        </span>
-                      </div>
+                    <div
+                      className="flip-face flip-face-back"
+                      style={{ borderRadius: 16, overflow: 'hidden' }}
+                    >
+                      <img src="/images/cards/card-back.webp" alt="reverso"
+                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }} />
+
                       <div style={{
-                        width: '80%', height: 0.5,
-                        background: `linear-gradient(90deg,transparent,${estilo.color},transparent)`,
+                        position: 'absolute', inset: 0, zIndex: 1,
+                        background: 'linear-gradient(170deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.75) 100%)',
                       }} />
-                      <span style={{
-                        fontSize: 36, color: 'rgba(255,255,255,0.7)',
-                        textAlign: 'center', lineHeight: 1.6, flex: 1,
-                        display: 'flex', alignItems: 'center', padding: '12px 4px',
+
+                      <div style={{
+                        position: 'absolute', inset: 0, zIndex: 2,
+                        display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', justifyContent: 'space-between',
+                        padding: '18px 14px 14px',
                       }}>
-                        {descripcion || 'Aquí aparecerá tu descripción...'}
-                      </span>
-                      {tier === 'PLATA' && compraMinima && (
-                        <div style={{
-                          fontSize: 33, color: estilo.color, fontWeight: 700,
-                          background: `${estilo.color}18`, borderRadius: 8,
-                          border: `0.5px solid ${estilo.color}44`,
-                          padding: '4px 12px', letterSpacing: 1,
-                        }}>
-                          Compra mínima: {compraMinima}
+                        <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.9)',
+                          textAlign: 'center', lineHeight: 1.6, fontWeight: 600, margin: 0 }}>
+                          {(() => {
+                            const tierKey = tier === 'LUNA100' ? '100' : tier;
+                            const fn = REVERSO_INTRO[tierKey];
+                            return typeof fn === 'function'
+                              ? fn(valor !== 'ENVIO_GRATIS' && valor !== '100pct' ? valor : '—')
+                              : fn || '';
+                          })()}
+                        </p>
+
+                        <div style={{ width: '80%', height: 0.5,
+                          background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent)' }} />
+
+                        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                          <span style={{ fontSize: 12, fontWeight: 900, color: '#fff',
+                            textTransform: 'uppercase', letterSpacing: 1 }}>
+                            {bsSolicitud?.razon_social || 'Nombre del comercio'}
+                          </span>
+                          {bsSolicitud?.web_url && (
+                            <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.6)' }}>
+                              🌐 {bsSolicitud.web_url.replace(/^https?:\/\//, '')}
+                            </span>
+                          )}
+                          {bsSolicitud?.telefono && (
+                            <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.6)' }}>
+                              📞 {bsSolicitud.telefono}
+                            </span>
+                          )}
+                          {bsSolicitud?.email && (
+                            <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)' }}>
+                              ✉️ {bsSolicitud.email}
+                            </span>
+                          )}
                         </div>
-                      )}
-                      <button style={{
-                        width: '100%', padding: '12px 0',
-                        background: estilo.color, color: '#000',
-                        fontWeight: 900, fontSize: 12, border: 'none',
-                        borderRadius: 10, cursor: 'default',
-                        textTransform: 'uppercase', letterSpacing: '0.12em',
-                        fontFamily: "'Exo 2', sans-serif",
-                        opacity: 0.8,
-                      }}>
-                        CANJEAR →
-                      </button>
+
+                        <div style={{ width: '80%', height: 0.5,
+                          background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent)' }} />
+
+                        {descripcion ? (
+                          <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.75)',
+                            textAlign: 'center', lineHeight: 1.5, fontStyle: 'italic', margin: 0 }}>
+                            {descripcion}
+                          </p>
+                        ) : (
+                          <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)',
+                            textAlign: 'center', fontStyle: 'italic', margin: 0 }}>
+                            Tu descripción aparecerá aquí...
+                          </p>
+                        )}
+
+                        {tier === 'PLATA' && compraMinima && (
+                          <div style={{ background: 'rgba(255,255,255,0.1)',
+                            border: '0.5px solid rgba(255,255,255,0.2)',
+                            borderRadius: 8, padding: '3px 10px',
+                            fontSize: 9, color: '#fff', fontWeight: 700 }}>
+                            Compra mínima: {compraMinima}
+                          </div>
+                        )}
+
+                        {palabraClave1 && (
+                          <div style={{ background: 'rgba(255,255,255,0.08)',
+                            border: '0.5px solid rgba(255,255,255,0.2)',
+                            borderRadius: 8, padding: '3px 10px', textAlign: 'center' }}>
+                            <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.4)',
+                              display: 'block', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 2 }}>
+                              Presenta esta palabra
+                            </span>
+                            <span style={{ fontSize: 13, fontWeight: 900, color: '#fff', letterSpacing: 3 }}>
+                              {palabraClave1}
+                            </span>
+                          </div>
+                        )}
+
+                        <button style={{
+                          width: '100%', padding: '11px 0',
+                          background: (LUNA_STYLES[tier === 'LUNA100' ? '100' : tier] || LUNA_STYLES.PLATA).color,
+                          color: '#000', fontWeight: 900, fontSize: 11,
+                          border: 'none', borderRadius: 10, cursor: 'default',
+                          textTransform: 'uppercase', letterSpacing: '0.12em',
+                          fontFamily: "'Exo 2', sans-serif", opacity: 0.8,
+                        }}>
+                          CANJEAR →
+                        </button>
+                      </div>
                     </div>
 
                   </div>
