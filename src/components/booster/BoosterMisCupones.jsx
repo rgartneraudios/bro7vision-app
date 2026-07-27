@@ -121,11 +121,11 @@ const BoosterMisCupones = () => {
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-400 font-bold">Estado:</span>
                 <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
-                  cupon.estado === 'USADO'
+                  cupon.usado === true
                     ? 'text-green-400 border-green-500/30 bg-green-950/20'
                     : 'text-yellow-400 border-yellow-500/30 bg-yellow-950/20'
                 }`}>
-                  {cupon.estado === 'USADO' ? '✅ Usado' : '🟡 Pendiente'}
+                  {cupon.usado === true ? '✅ Usado' : '🟡 Pendiente'}
                 </span>
               </div>
             </div>

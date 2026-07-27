@@ -4,6 +4,7 @@ import SlideRailCanjear from './SlideRailCanjear';
 import CityLocationBanner from './CityLocationBanner';
 import { getVideoForLocation } from '../data/VideoMap';
 import { useCanjearCupon } from '../hooks/useCanjearCupon';
+import CuponModal from './CuponModal';
 
 const TAB_COLORS = {
   CERCANIAS: '#FF6B00',
@@ -162,88 +163,9 @@ function HeaderWidget() {
   );
 }
 
-function CuponModal({ cupon, onClose, onCanjear }) {
-  if (!cupon) return null;
-  const estilo = LUNA_STYLES[cupon.tipo_tarjeta] || LUNA_STYLES['PLATA'];
-  return (
-    <div onClick={onClose} style={{
-      position: 'fixed', inset: 0, zIndex: 9999,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)',
-    }}>
-      <div onClick={e => e.stopPropagation()} style={{
-        background: '#111',
-        border: `1px solid ${estilo.border}55`,
-        borderRadius: 16, padding: '3rem',
-        maxWidth: 480, width: '90%',
-        boxShadow: `0 0 40px ${estilo.border}33`,
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
-        fontFamily: "'Exo 2', sans-serif",
-      }}>
-        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 3,
-          textTransform: 'uppercase', color: estilo.color,
-          border: `0.5px solid ${estilo.border}`, borderRadius: 20,
-          padding: '3px 14px', background: `${estilo.border}22`,
-        }}>
-          {estilo.badge}
-        </span>
-
-        <span style={{ fontSize: 56, fontWeight: 900, color: estilo.color,
-          textShadow: `0 0 30px ${estilo.border}88`, lineHeight: 1 }}>
-          {cupon.valor_euros != null ? `${cupon.valor_euros}€` : '—'}
-        </span>
-
-        <span style={{ color: '#fff', fontSize: 18, fontWeight: 700 }}>
-          {cupon.comercio_nombre}
-        </span>
-
-        {cupon.tipo_tarjeta === 'PLATA' && cupon.compra_minima && (
-          <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>
-            Compra mínima: {cupon.compra_minima}
-          </span>
-        )}
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8,
-          background: `${estilo.border}22`, borderRadius: 20, padding: '6px 20px' }}>
-          <span>🌙</span>
-          <span style={{ color: estilo.color, fontWeight: 700, fontSize: 16 }}>
-            {(cupon.coste_lunas || 0).toLocaleString()} Lunas
-          </span>
-        </div>
-
-        {cupon.emision_total && (
-          <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>
-            Quedan {cupon.emision_total - cupon.emision_usada} unidades
-          </span>
-        )}
-
-        <div style={{ display: 'flex', gap: 12, width: '100%', marginTop: 8 }}>
-          <button onClick={() => { onClose(); onCanjear(cupon); }} style={{
-            flex: 1, padding: '12px 0',
-            background: estilo.color, color: '#000',
-            fontWeight: 900, fontSize: 13, border: 'none', borderRadius: 10,
-            cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.1em',
-            boxShadow: `0 0 16px ${estilo.border}66`,
-          }}>
-            CANJEAR →
-          </button>
-          <button onClick={onClose} style={{
-            flex: 1, padding: '12px 0', background: 'transparent', color: '#888',
-            fontSize: 13, border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10,
-            cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.1em',
-          }}>
-            Cancelar
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function CanjearStrip({ scope }) {
   const [activeTab, setActiveTab] = useState('CERCANIAS');
   const [cupones, setCupones] = useState([]);
-  const [selectedCupon, setSelectedCupon] = useState(null);
   const [hoveredId, setHoveredId] = useState(null);
   const [flippedId, setFlippedId] = useState(null);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
@@ -257,6 +179,7 @@ export default function CanjearStrip({ scope }) {
 
   const [userCityCode, setUserCityCode] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [lunasBalance, setLunasBalance] = useState(null);
 
   useEffect(() => {
     const fetchCity = async () => {
@@ -265,10 +188,11 @@ export default function CanjearStrip({ scope }) {
       setUserId(user.id);
       const { data: perfil } = await supabase
         .from('profiles')
-        .select('city')
+        .select('city, lunas')
         .eq('id', user.id)
         .single();
       if (perfil?.city) setUserCityCode(perfil.city.toUpperCase());
+      if (perfil?.lunas != null) setLunasBalance(perfil.lunas);
     };
     fetchCity();
   }, []);
@@ -276,7 +200,7 @@ export default function CanjearStrip({ scope }) {
   const { iniciarCanje, estado, cuponActivo, cardPendiente,
     errorMsg, cancelar, confirmar, cerrar } = useCanjearCupon({
     userId,
-    onLunasUpdate: (nuevoBalance) => {},
+    onLunasUpdate: (nuevoBalance) => setLunasBalance(nuevoBalance),
   });
 
   useEffect(() => {
@@ -507,7 +431,7 @@ export default function CanjearStrip({ scope }) {
         <div
           className="flip-face"
           style={{
-            borderRadius: 16, overflow: 'hidden',
+            borderRadius: 16, overflow: 'hidden', pointerEvents: 'none',
           }}
         >
           {esReal ? (
@@ -667,7 +591,7 @@ export default function CanjearStrip({ scope }) {
                   e.stopPropagation();
                   setFlippedId(null);
                   setHoveredId(null);
-                  setSelectedCupon(cupon);
+                  iniciarCanje(cupon);
                 }}
                 style={{
                   width: '100%', padding: '11px 0',
@@ -691,163 +615,16 @@ export default function CanjearStrip({ scope }) {
         </div>
       </div>
 
-      {selectedCupon && (
-        <CuponModal cupon={selectedCupon} onClose={() => setSelectedCupon(null)} onCanjear={iniciarCanje} />
-      )}
-
-      {/* Confirmación */}
-      {estado === 'confirmando' && cardPendiente && (
-        <div onClick={cancelar} style={{
-          position: 'fixed', inset: 0, zIndex: 9999,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)',
-        }}>
-          <div onClick={e => e.stopPropagation()} style={{
-            background: '#111', border: '1px solid rgba(255,215,0,0.3)',
-            borderRadius: 16, padding: '2.5rem',
-            maxWidth: 400, width: '90%', textAlign: 'center',
-            fontFamily: "'Exo 2', sans-serif",
-            display: 'flex', flexDirection: 'column', gap: 16,
-          }}>
-            <span style={{ color: '#facc15', fontSize: 13, fontWeight: 700,
-              letterSpacing: 2, textTransform: 'uppercase' }}>
-              Confirmar canje
-            </span>
-            <span style={{ color: '#fff', fontSize: 32, fontWeight: 900 }}>
-              {cardPendiente.valor_euros}€
-            </span>
-            <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>
-              {cardPendiente.comercio_nombre}
-            </span>
-            <div style={{ display: 'flex', alignItems: 'center',
-              justifyContent: 'center', gap: 6 }}>
-              <span>🌙</span>
-              <span style={{ color: '#facc15', fontWeight: 700, fontSize: 15 }}>
-                {(cardPendiente.coste_lunas || 0).toLocaleString()} Lunas
-              </span>
-            </div>
-            <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-              <button onClick={confirmar} style={{
-                flex: 1, padding: '12px 0', background: '#facc15', color: '#000',
-                fontWeight: 900, fontSize: 13, border: 'none', borderRadius: 10,
-                cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.1em',
-              }}>
-                CONFIRMAR
-              </button>
-              <button onClick={cancelar} style={{
-                flex: 1, padding: '12px 0', background: 'transparent', color: '#888',
-                fontSize: 13, border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10,
-                cursor: 'pointer', textTransform: 'uppercase',
-              }}>
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Cargando */}
-      {estado === 'cargando' && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 9999,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'rgba(0,0,0,0.8)',
-        }}>
-          <span style={{ color: '#facc15', fontSize: 14, fontWeight: 700,
-            letterSpacing: 3, textTransform: 'uppercase',
-            fontFamily: "'Exo 2', sans-serif", animation: 'pulse 1s infinite' }}>
-            Procesando...
-          </span>
-        </div>
-      )}
-
-      {/* Éxito */}
-      {estado === 'exito' && cuponActivo && (
-        <div onClick={cerrar} style={{
-          position: 'fixed', inset: 0, zIndex: 9999,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)',
-        }}>
-          <div onClick={e => e.stopPropagation()} style={{
-            background: '#111', border: '1px solid rgba(0,255,140,0.3)',
-            borderRadius: 16, padding: '2.5rem',
-            maxWidth: 400, width: '90%', textAlign: 'center',
-            fontFamily: "'Exo 2', sans-serif",
-            display: 'flex', flexDirection: 'column', gap: 14,
-          }}>
-            <span style={{ fontSize: 40 }}>✅</span>
-            <span style={{ color: '#39FF14', fontSize: 13, fontWeight: 700,
-              letterSpacing: 2, textTransform: 'uppercase' }}>
-              {cuponActivo.ya_existia ? 'Cupón ya activo' : '¡Luna canjeada!'}
-            </span>
-            <span style={{ color: '#fff', fontSize: 28, fontWeight: 900 }}>
-              {cuponActivo.valor_euros}€ — {cuponActivo.comercio_nombre}
-            </span>
-            {cuponActivo.palabra_clave_2 && (
-              <div style={{ background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: 10, padding: '12px 16px' }}>
-                <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11,
-                  display: 'block', marginBottom: 4, letterSpacing: 2 }}>
-                  PALABRA CLAVE SECRETA
-                </span>
-                <span style={{ color: '#facc15', fontSize: 20, fontWeight: 900,
-                  letterSpacing: 4 }}>
-                  {cuponActivo.palabra_clave_2}
-                </span>
-              </div>
-            )}
-            <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>
-              Caduca: {cuponActivo.caduca_legible}
-            </span>
-            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11 }}>
-              Encuéntrala también en Booster › Mis Cupones
-            </span>
-            <button onClick={cerrar} style={{
-              padding: '12px 0', background: '#39FF14', color: '#000',
-              fontWeight: 900, fontSize: 13, border: 'none', borderRadius: 10,
-              cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.1em',
-              marginTop: 8,
-            }}>
-              CERRAR
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Error */}
-      {estado === 'error' && (
-        <div onClick={cerrar} style={{
-          position: 'fixed', inset: 0, zIndex: 9999,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'rgba(0,0,0,0.85)',
-        }}>
-          <div onClick={e => e.stopPropagation()} style={{
-            background: '#111', border: '1px solid rgba(255,60,60,0.3)',
-            borderRadius: 16, padding: '2.5rem',
-            maxWidth: 380, width: '90%', textAlign: 'center',
-            fontFamily: "'Exo 2', sans-serif",
-            display: 'flex', flexDirection: 'column', gap: 14,
-          }}>
-            <span style={{ fontSize: 36 }}>⚠️</span>
-            <span style={{ color: '#ff4444', fontSize: 13, fontWeight: 700,
-              letterSpacing: 2, textTransform: 'uppercase' }}>
-              Error en el canje
-            </span>
-            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>
-              {errorMsg}
-            </span>
-            <button onClick={cerrar} style={{
-              padding: '12px 0', background: 'transparent', color: '#888',
-              fontSize: 13, border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: 10, cursor: 'pointer', textTransform: 'uppercase',
-              marginTop: 8,
-            }}>
-              CERRAR
-            </button>
-          </div>
-        </div>
-      )}
+<CuponModal
+        estado={estado}
+        cardPendiente={cardPendiente}
+        cuponActivo={cuponActivo}
+        errorMsg={errorMsg}
+        lunasBalance={lunasBalance}
+        onConfirmar={confirmar}
+        onCancelar={cancelar}
+        onCerrar={cerrar}
+      />
     </div>
   );
 }

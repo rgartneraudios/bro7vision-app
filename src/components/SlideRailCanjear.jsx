@@ -63,8 +63,10 @@ export default function SlideRailCanjear() {
 
   return (
   <div
-    className="hidden lg:block fixed left-[6%] top-[55%] -translate-y-1/2 z-[9999] pointer-events-none"
+    className="hidden lg:block fixed left-[6%] top-[55%] -translate-y-1/2"
     style={{
+      zIndex: 0,
+      pointerEvents: 'none',
       opacity,
       transition: `opacity ${FADE_DURATION}ms ease-in-out`,
       width: "clamp(300px, 5vw, 1200px)",

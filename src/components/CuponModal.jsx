@@ -1,133 +1,125 @@
 // src/components/CuponModal.jsx
-// ─────────────────────────────────────────────────────────────────────
-// Popup de 3 estados:
-//   confirmando → "¿Canjear X génesis por Y% en Z?"
-//   cargando    → spinner
-//   exito       → código generado + botón ir al Mini
-//   error       → mensaje de error
-// ─────────────────────────────────────────────────────────────────────
-
-const RAREZA_COLOR = {
-  15: { color: '#d0d4e8', glow: 'rgba(200,205,225,0.6)', label: 'PLATA'  },
-  20: { color: '#7aacff', glow: 'rgba(80,130,255,0.6)',  label: 'ZAFIRO' },
-  25: { color: '#ffd060', glow: 'rgba(255,200,50,0.6)',  label: 'GOLD'   },
+const TIER_STYLE = {
+  PLATA:    { color: '#c8ccd8', glow: 'rgba(200,205,220,0.6)', label: 'LUNA DE PLATA'    },
+  ORO:      { color: '#ffd060', glow: 'rgba(255,200,50,0.6)',  label: 'LUNA DE ORO'      },
+  DIAMANTE: { color: '#d090ff', glow: 'rgba(180,80,255,0.6)', label: 'LUNA DE DIAMANTE' },
+  '100':    { color: '#ff80c0', glow: 'rgba(255,100,180,0.6)','label': 'LUNA 100'        },
 };
+
+const LABEL_VALOR = {
+  ENVIO_GRATIS: 'Envío Gratis',
+  '100pct':     '100% Descuento',
+};
+
+function valorDisplay(c) {
+  if (!c) return '—';
+  if (c.valor_euros != null) return `${c.valor_euros} €`;
+  return LABEL_VALOR[c.tipo_tarjeta] || '—';
+}
 
 export default function CuponModal({
   estado,
   cardPendiente,
   cuponActivo,
   errorMsg,
-  genesisBalance,
+  lunasBalance,
   onConfirmar,
   onCancelar,
   onCerrar,
 }) {
-
   if (estado === 'idle') return null;
 
-  const r = RAREZA_COLOR[cardPendiente?.descuento_pct || cuponActivo?.descuento_pct] || RAREZA_COLOR[15];
+  const tier = cardPendiente?.tipo_tarjeta || cuponActivo?.tipo_tarjeta || 'PLATA';
+  const r    = TIER_STYLE[tier] || TIER_STYLE.PLATA;
+  const costeLunas = cardPendiente?.coste_lunas || 0;
+  const saldoTras  = (lunasBalance || 0) - costeLunas;
 
   return (
     <>
-      {/* Overlay */}
       <div
         onClick={estado === 'confirmando' ? onCancelar : onCerrar}
         style={{
           position: 'fixed', inset: 0,
-          background: 'rgba(0,0,0,0.75)',
-          backdropFilter: 'blur(6px)',
+          background: 'rgba(0,0,0,0.85)',
+          backdropFilter: 'blur(8px)',
           zIndex: 200,
         }}
       />
 
-      {/* Modal */}
       <div style={{
         position: 'fixed',
         top: '50%', left: '50%',
         transform: 'translate(-50%, -50%)',
         zIndex: 201,
-        width: '640px',
-        borderRadius: '20px',
-        background: 'rgba(28,28,32,0.97)',
-        border: `1px solid ${r.color}55`,
-        boxShadow: `0 0 40px ${r.glow}, 0 8px 32px rgba(0,0,0,0.9)`,
+        width: 'min(600px, 92vw)',
+        borderRadius: 20,
+        background: 'linear-gradient(145deg, rgba(20,20,24,0.55) 0%, rgba(26,22,32,0.55) 50%, rgba(18,18,20,0.55) 100%), url(/images/galaxy_bg.webp)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        border: `1px solid rgba(212,165,165,0.25)`,
+        boxShadow: '0 0 30px rgba(212,165,165,0.15), 0 0 60px rgba(212,165,165,0.05), 0 8px 32px rgba(0,0,0,0.9)',
         padding: '28px 24px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '16px',
-        fontFamily: "'Orbitron', monospace",
+        gap: 16,
+        fontFamily: "'Exo 2', sans-serif",
       }}>
 
         {/* ── CONFIRMANDO ── */}
         {estado === 'confirmando' && cardPendiente && (
           <>
-            <div style={{ fontSize: '28px' }}>
-              {cardPendiente.descuento_pct === 25 ? '🥇' : cardPendiente.descuento_pct === 20 ? '💎' : '🥈'}
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#d4a5a5',
+              letterSpacing: 2, textTransform: 'uppercase',
+              textShadow: '0 0 12px rgba(212,165,165,0.5)' }}>
+              {r.label}
             </div>
 
-            <div style={{
-              fontSize: '11px', fontWeight: 700,
-              color: r.color, letterSpacing: '2px',
-              textTransform: 'uppercase',
-              textShadow: `0 0 12px ${r.glow}`,
-            }}>
-              {r.label} · {cardPendiente.descuento_pct}% descuento
+            <div style={{ fontSize: 36, fontWeight: 900, color: '#d4a5a5',
+              textShadow: '0 0 20px rgba(212,165,165,0.4), 0 0 40px rgba(212,165,165,0.15)' }}>
+              {valorDisplay(cardPendiente)}
             </div>
 
-            <div style={{
-              fontSize: '13px', fontWeight: 700,
-              color: '#e8f4ff', letterSpacing: '1px',
-              textAlign: 'center', lineHeight: 1.4,
-            }}>
-              {cardPendiente.nombre}
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#94a3b8',
+              letterSpacing: 1, textAlign: 'center', lineHeight: 1.4 }}>
+              {cardPendiente.comercio_nombre}
             </div>
 
             <div style={{
               width: '100%',
-              background: 'linear-gradient(135deg, #E8B7C9, #d49bb0)',
-              borderRadius: '16px',
-              padding: '32px 36px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-              boxShadow: '0 4px 20px rgba(232,183,201,0.4)',
+              background: 'linear-gradient(135deg, #1c1e26 0%, #2a2430 40%, #3a2a30 70%, #1e2028 100%)',
+              borderRadius: 16, padding: '28px 32px',
+              display: 'flex', flexDirection: 'column', gap: 14,
+              boxShadow: 'inset 0 0 30px rgba(212,165,165,0.06), 0 4px 24px rgba(0,0,0,0.4)',
+              border: '1px solid rgba(212,165,165,0.1)',
             }}>
-              <Row label="Descuento" value={`${cardPendiente.descuento_pct}%`} color="#2a2a2e" labelColor="#2a2a2e" />
-              <Row label="Condición" value={cardPendiente.condicion || '1 producto'} color="#2a2a2e" labelColor="#2a2a2e" />
-              <Row label="Coste"     value={`${cardPendiente.coste_genesis?.toLocaleString()} ✦`} color="#003b99" labelColor="#2a2a2e" />
-              <Row label="Tu saldo"  value={`${genesisBalance?.toLocaleString()} ✦`} color="#2a2a2e" labelColor="#2a2a2e" />
+              <Row label="Descuento"    value={valorDisplay(cardPendiente)} />
+              {cardPendiente.compra_minima && (
+                <Row label="Compra mín."  value={cardPendiente.compra_minima} />
+              )}
+              <Row label="Coste"        value={`🌙 ${costeLunas.toLocaleString()} Lunas`} color="#fbbf24" />
+              <Row label="Tu saldo"     value={`🌙 ${(lunasBalance||0).toLocaleString()}`} />
               <Row
                 label="Tras canje"
-                value={`${((genesisBalance || 0) - cardPendiente.coste_genesis).toLocaleString()} ✦`}
-                color={(genesisBalance || 0) - cardPendiente.coste_genesis < 0 ? '#cc2222' : '#2a2a2e'}
-                labelColor="#2a2a2e"
+                value={`🌙 ${saldoTras.toLocaleString()}`}
+                color={saldoTras < 0 ? '#ff4444' : '#d4a5a5'}
               />
             </div>
 
-            <div style={{
-              fontSize: '9px', color: 'rgba(232,244,255,0.4)',
-              letterSpacing: '0.5px', textAlign: 'center',
-            }}>
-              Válido hasta cambio de fase lunar
-            </div>
+            {saldoTras < 0 && (
+              <div style={{ fontSize: 11, color: '#ff4444', letterSpacing: 1,
+                textShadow: '0 0 8px rgba(255,68,68,0.4)' }}>
+                Lunas insuficientes
+              </div>
+            )}
 
-            <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
-              <button
-                onClick={onCancelar}
-                style={btnStyle('rgba(255,255,255,0.06)', 'rgba(255,255,255,0.2)', '#9094a8')}
-              >
+            <div style={{ display: 'flex', gap: 10, width: '100%' }}>
+              <button onClick={onCancelar}
+                style={btnStyle('rgba(212,165,165,0.04)', 'rgba(212,165,165,0.2)', '#d4a5a5')}>
                 CANCELAR
               </button>
-              <button
-                onClick={onConfirmar}
-                disabled={(genesisBalance || 0) < cardPendiente.coste_genesis}
-                style={btnStyle(
-                  `${r.color}22`, r.color, r.color,
-                  (genesisBalance || 0) < cardPendiente.coste_genesis
-                )}
-              >
+              <button onClick={onConfirmar} disabled={saldoTras < 0}
+                style={btnStyle('rgba(212,165,165,0.12)', '#d4a5a5', '#0a0a0e', saldoTras < 0)}>
                 CANJEAR
               </button>
             </div>
@@ -137,88 +129,64 @@ export default function CuponModal({
         {/* ── CARGANDO ── */}
         {estado === 'cargando' && (
           <>
-            <div style={{ fontSize: '32px', animation: 'spinCupon 1s linear infinite' }}>✦</div>
-            <div style={{ fontSize: '11px', color: '#9094a8', letterSpacing: '2px' }}>
-              GENERANDO CUPÓN...
+            <div style={{ fontSize: 32, animation: 'spinCupon 1s linear infinite',
+              filter: 'drop-shadow(0 0 8px rgba(212,165,165,0.6))' }}>🌙</div>
+            <div style={{ fontSize: 11, color: '#d4a5a5', letterSpacing: 2,
+              textShadow: '0 0 8px rgba(212,165,165,0.4)' }}>
+              PROCESANDO CANJE...
             </div>
-            <style>{`
-              @keyframes spinCupon {
-                from { transform: rotate(0deg); }
-                to   { transform: rotate(360deg); }
-              }
-            `}</style>
+            <style>{`@keyframes spinCupon { to { transform: rotate(360deg); } }`}</style>
           </>
         )}
 
         {/* ── ÉXITO ── */}
         {estado === 'exito' && cuponActivo && (
           <>
-            <div style={{ fontSize: '28px' }}>
+            <div style={{ fontSize: 28, filter: 'drop-shadow(0 0 10px rgba(212,165,165,0.5))' }}>
               {cuponActivo.ya_existia ? '📋' : '✅'}
             </div>
-
-            <div style={{
-              fontSize: '11px', fontWeight: 700,
-              color: r.color, letterSpacing: '2px',
-              textTransform: 'uppercase',
-              textShadow: `0 0 12px ${r.glow}`,
-            }}>
-              {cuponActivo.ya_existia ? 'YA TENÍAS ESTE CUPÓN' : '¡CUPÓN GENERADO!'}
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#d4a5a5',
+              letterSpacing: 2, textTransform: 'uppercase',
+              textShadow: '0 0 12px rgba(212,165,165,0.5)' }}>
+              {cuponActivo.ya_existia ? 'YA TENÍAS ESTE CUPÓN' : '¡LUNA CANJEADA!'}
             </div>
-
-            <div style={{
-              fontSize: '12px', color: '#e8f4ff',
-              letterSpacing: '1px', textAlign: 'center',
-            }}>
+            <div style={{ fontSize: 12, color: '#94a3b8', letterSpacing: 1, textAlign: 'center' }}>
               {cuponActivo.comercio_nombre}
             </div>
 
-            {/* Mensaje éxito — Cupón Rosa Mármol */}
             <div style={{
-              fontSize: '22px', color: '#2a2a2e',
-              letterSpacing: '1px', textAlign: 'center',
-              lineHeight: 1.6, padding: '24px 20px',
-              width: '100%',
-              background: 'linear-gradient(135deg, #E8B7C9, #d49bb0)',
-              borderRadius: '16px',
-              boxShadow: '0 4px 20px rgba(232,183,201,0.4)',
+              fontSize: 15, color: '#f0e6e6',
+              textAlign: 'center', lineHeight: 1.7,
+              padding: '24px 20px', width: '100%',
+              background: 'linear-gradient(135deg, #1c1e26 0%, #2a2430 40%, #3a2a30 70%, #1e2028 100%)',
+              borderRadius: 16,
+              boxShadow: 'inset 0 0 30px rgba(212,165,165,0.06), 0 4px 24px rgba(0,0,0,0.4)',
+              border: '1px solid rgba(212,165,165,0.1)',
               fontWeight: 700,
+              textShadow: '0 0 10px rgba(212,165,165,0.3)',
             }}>
-              Operación realizada con éxito, en Mis Cupones de tu Booster Studio te espera tu Sticker y la palabra Clave
+              Operación realizada con éxito.<br />
+              En <strong style={{ color: '#d4a5a5' }}>Booster Studio › Mis Cupones</strong><br />
+              te espera tu Sticker y la Palabra Clave secreta.
             </div>
 
-            {cuponActivo.palabra_clave_1 && (
-              <div style={{
-                fontSize: '14px', fontWeight: 900,
-                color: r.color, letterSpacing: '2px',
-                textShadow: `0 0 12px ${r.glow}`,
-              }}>
-                🔑 {cuponActivo.palabra_clave_1}
-              </div>
-            )}
-
-            <div style={{
-              fontSize: '9px', color: 'rgba(232,244,255,0.4)',
-              letterSpacing: '0.5px', textAlign: 'center',
-            }}>
+            <div style={{ fontSize: 9, color: 'rgba(212,165,165,0.35)',
+              letterSpacing: 0.5, textAlign: 'center',
+              textShadow: '0 0 6px rgba(212,165,165,0.15)' }}>
               {cuponActivo.caduca_legible !== '—'
                 ? `Válido hasta el ${cuponActivo.caduca_legible}`
                 : 'Válido hasta cambio de fase lunar'}
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
-              <button
-                onClick={onCerrar}
-                style={btnStyle('rgba(255,255,255,0.06)', 'rgba(255,255,255,0.2)', '#9094a8')}
-              >
+            <div style={{ display: 'flex', gap: 10, width: '100%' }}>
+              <button onClick={onCerrar}
+                style={btnStyle('rgba(212,165,165,0.04)', 'rgba(212,165,165,0.2)', '#d4a5a5')}>
                 CERRAR
               </button>
               {cuponActivo.web_url && (
-                <button
-                  onClick={() => { window.open(cuponActivo.web_url, '_blank'); onCerrar(); }}
-                  style={btnStyle(`${r.color}22`, r.color, r.color)}
-                >
-                  IR AL MINI ➤
+                <button onClick={() => { window.open(cuponActivo.web_url, '_blank'); onCerrar(); }}
+                  style={btnStyle('rgba(212,165,165,0.12)', '#d4a5a5', '#0a0a0e')}>
+                  IR AL COMERCIO ➤
                 </button>
               )}
             </div>
@@ -228,17 +196,14 @@ export default function CuponModal({
         {/* ── ERROR ── */}
         {estado === 'error' && (
           <>
-            <div style={{ fontSize: '28px' }}>⚠️</div>
-            <div style={{
-              fontSize: '11px', color: '#ff6060',
-              letterSpacing: '1px', textAlign: 'center', lineHeight: 1.5,
-            }}>
+            <div style={{ fontSize: 28 }}>⚠️</div>
+            <div style={{ fontSize: 11, color: '#ff6060',
+              letterSpacing: 1, textAlign: 'center', lineHeight: 1.5,
+              textShadow: '0 0 8px rgba(255,96,96,0.3)' }}>
               {errorMsg}
             </div>
-            <button
-              onClick={onCerrar}
-              style={btnStyle('rgba(255,255,255,0.06)', 'rgba(255,255,255,0.2)', '#9094a8')}
-            >
+            <button onClick={onCerrar}
+              style={btnStyle('rgba(212,165,165,0.04)', 'rgba(212,165,165,0.2)', '#d4a5a5')}>
               CERRAR
             </button>
           </>
@@ -249,14 +214,16 @@ export default function CuponModal({
   );
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────
-function Row({ label, value, color = '#2a2a2e', labelColor = '#2a2a2e' }) {
+function Row({ label, value, color = '#d4a5a5' }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <span style={{ fontSize: '18px', color: labelColor, letterSpacing: '0.5px', textTransform: 'uppercase', fontWeight: 700 }}>
+      <span style={{ fontSize: 14, color: '#64748b', fontWeight: 700,
+        textTransform: 'uppercase', letterSpacing: 0.5,
+        textShadow: '0 0 6px rgba(100,116,139,0.2)' }}>
         {label}
       </span>
-      <span style={{ fontSize: '22px', fontWeight: 700, color, letterSpacing: '0.5px' }}>
+      <span style={{ fontSize: 18, fontWeight: 700, color, letterSpacing: 0.5,
+        textShadow: `0 0 10px ${color === '#fbbf24' ? 'rgba(251,191,36,0.4)' : 'rgba(212,165,165,0.4)'}` }}>
         {value}
       </span>
     </div>
@@ -266,13 +233,12 @@ function Row({ label, value, color = '#2a2a2e', labelColor = '#2a2a2e' }) {
 function btnStyle(bg, border, color, disabled = false) {
   return {
     flex: 1, padding: '10px 0',
-    background: disabled ? 'rgba(255,255,255,0.03)' : bg,
-    border: `1px solid ${disabled ? 'rgba(255,255,255,0.1)' : border}`,
-    borderRadius: '10px',
-    color: disabled ? 'rgba(255,255,255,0.2)' : color,
-    fontFamily: "'Orbitron', monospace",
-    fontSize: '10px', fontWeight: 700,
-    letterSpacing: '2px', textTransform: 'uppercase',
+    background: disabled ? 'rgba(212,165,165,0.02)' : bg,
+    border: `1px solid ${disabled ? 'rgba(212,165,165,0.08)' : border}`,
+    borderRadius: 10, color: disabled ? 'rgba(212,165,165,0.15)' : color,
+    fontFamily: "'Exo 2', sans-serif",
+    fontSize: 11, fontWeight: 700,
+    letterSpacing: 2, textTransform: 'uppercase',
     cursor: disabled ? 'not-allowed' : 'pointer',
     transition: 'all 0.2s',
   };
