@@ -34,7 +34,6 @@ import Bro7Band from './components/Bro7Band';
 import { useSessionManager }  from './hooks/useSessionManager';
 import { useNavigationState } from './hooks/useNavigationState';
 import { useUIModals }        from './hooks/useUIModals';
-import { useStripCards }      from './hooks/useStripCards';
 import { useBalances }        from './hooks/useBalances';
 
 function App() {
@@ -72,13 +71,6 @@ function App() {
     isLeftOpen, setIsLeftOpen,
     isRightOpen, setIsRightOpen,
   } = useUIModals();
-
-  const {
-    stripCards, setStripCards,
-    stripLabel, setStripLabel,
-    stripVisible, setStripVisible,
-    cargarStripCards,
-  } = useStripCards();
 
   const { balances, setBalances, handleGameWin } = useBalances(perfilOso, session);
 
@@ -225,9 +217,7 @@ const [boosterTab, setBoosterTab]           = useState(null);
       return;
     }
 
-    const INTENTA_CARGAR_STRIPS = ['CANJEAR', 'CANJES'];
-
-    setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
+setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
     const ciudadFinal = ciudad || perfilOso?.city || '';
     setScope({ city: String(ciudadFinal), type: 'teleport' });
     setSessionCity(ciudadFinal);
@@ -235,9 +225,6 @@ const [boosterTab, setBoosterTab]           = useState(null);
     setIntent(intentMap[agente] || 'productos');
     setOsosModo('retorno');
     setStep(2);
-    if (INTENTA_CARGAR_STRIPS.includes(agente)) {
-      cargarStripCards('BROPRODUCTOS', ciudadFinal, modalidad);
-    }
   };
 
   // ══════════════════════════════════════════════════════
@@ -286,20 +273,13 @@ const [boosterTab, setBoosterTab]           = useState(null);
       resetOsos();
       setSessionCP('');
       setSessionCity('');
-      setStripCards([]);
-      setStripVisible(false);
     } else if (['canjear', 'shopamigos', 'games'].includes(targetIntent) && !scope) {
       setStep(1);
       setOsosModo('entrada');
     } else {
       setStep(2);
-      if (scope && targetIntent === 'canjear') {
-        setStripCards([]);
-        setStripVisible(false);
-        cargarStripCards('BROPRODUCTOS', scope.city, 'LOCAL');
-      }
     }
-  }, [scope, cargarStripCards, resetOsos]);
+  }, [scope, resetOsos]);
 
   // ════════════════════════════════════════════════════
   // FUNCIÓN handleGoToShop
@@ -364,7 +344,7 @@ const [boosterTab, setBoosterTab]           = useState(null);
     handleGameWin,
     setVlData,
     ososHandoffContext, setOsosHandoffContext,
-    perfilOso, stripVisible, stripCards, stripLabel,
+    perfilOso,
     onHandoff: handleCentralHandoff,
     setHoloPrismaIndex,
     chatMobile, perfilSector,

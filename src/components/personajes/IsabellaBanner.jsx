@@ -27,7 +27,6 @@ const INFO = {
 export default function IsabellaBanner({
   personaje    = 'isabella',
   sessionCity, sessionCP, realItems,
-  stripVisible, stripCards, stripLabel,
   onEntityFocus, onOpenTerminal, onSetActiveIndex,
   onInvokeOsos, onInvokeMapache, setIntent,
   onHandoff,

@@ -281,51 +281,67 @@ export default function CanjearStrip({ scope }) {
 
   useEffect(() => {
     const fetchCupones = async () => {
-      let query = supabase
-        .from('comercio_cupones')
-        .select('*')
-        .eq('activo', true)
-        .eq('estado_canje', 'ACTIVO')
-        .or('emision_total.is.null,emision_usada.lt.emision_total');
+      try {
+        let query = supabase
+          .from('comercio_cupones')
+          .select('*')
+          .limit(50);
 
-      if (activeTab === 'CERCANIAS') {
-        query = query.filter('alcance', 'cs', '{LOCAL}');
-      } else if (activeTab === 'NACIONAL') {
-        query = query.filter('alcance', 'cs', '{NACIONAL}');
-      } else if (activeTab === 'INTERNACIONAL') {
-        query = query.filter('alcance', 'cs', '{INTERNACIONAL}');
+        const { data: rows, error } = await query;
+
+        if (error) {
+          console.error('[CanjearStrip] Error:', error.message);
+          setCupones([]);
+          return;
+        }
+
+        if (!rows || rows.length === 0) { setCupones([]); return; }
+
+        // Filtrar solo tarjetas del sistema nuevo (con tipo_tarjeta) y filtrar por alcance
+        const filtradas = rows.filter(r => {
+          if (!r.tipo_tarjeta) return false;
+          const a = Array.isArray(r.alcance) ? r.alcance : [];
+          if (activeTab === 'CERCANIAS') {
+            return a.includes('LOCAL') || a.includes('CERCANIAS');
+          }
+          if (activeTab === 'NACIONAL') return a.includes('NACIONAL');
+          if (activeTab === 'INTERNACIONAL') return a.includes('INTERNACIONAL');
+          return false;
+        });
+
+        if (filtradas.length === 0) { setCupones([]); return; }
+
+        const userIds = [...new Set(filtradas.map(r => r.user_id).filter(Boolean))];
+        const { data: solicitudes } = await supabase
+          .from('bs_solicitudes')
+          .select('user_id, razon_social, email, telefono, web_url')
+          .in('user_id', userIds);
+
+        const solMap = {};
+        if (solicitudes) solicitudes.forEach(s => { solMap[s.user_id] = s; });
+
+        setCupones(filtradas.map(r => ({
+          ...r,
+          bs_razon_social: solMap[r.user_id]?.razon_social || r.comercio_nombre || '',
+          bs_email:        solMap[r.user_id]?.email        || '',
+          bs_telefono:     solMap[r.user_id]?.telefono     || '',
+          bs_web:          solMap[r.user_id]?.web_url      || r.web_url         || '',
+        })));
+      } catch (err) {
+        console.error('[CanjearStrip] fetchCupones error:', err);
+        setCupones([]);
       }
-
-      const { data: rows } = await query;
-      if (!rows || rows.length === 0) { setCupones([]); return; }
-
-      const userIds = [...new Set(rows.map(r => r.user_id).filter(Boolean))];
-      const { data: solicitudes } = await supabase
-        .from('bs_solicitudes')
-        .select('user_id, razon_social, email, telefono, web_url')
-        .in('user_id', userIds);
-
-      const solMap = {};
-      if (solicitudes) solicitudes.forEach(s => { solMap[s.user_id] = s; });
-
-      setCupones(rows.map(r => ({
-        ...r,
-        bs_razon_social: solMap[r.user_id]?.razon_social || r.comercio_nombre || '',
-        bs_email:        solMap[r.user_id]?.email        || '',
-        bs_telefono:     solMap[r.user_id]?.telefono     || '',
-        bs_web:          solMap[r.user_id]?.web_url      || r.web_url         || '',
-      })));
     };
     fetchCupones();
-  }, [activeTab, userCityCode]);
+  }, [activeTab]);
 
-  const TOTAL_CARDS = cupones.length < 4 ? (cupones.length || 1) : 8;
+  const TOTAL_CARDS = cupones.length < 4 ? Math.max(cupones.length, 1) : 8;
 
   const placeholders = Array.from(
     { length: Math.max(0, TOTAL_CARDS - cupones.length) },
     (_, i) => ({ id: `placeholder-${i}`, _placeholder: true })
   );
-  const allCards = TOTAL_CARDS < 4 ? cupones : [...cupones, ...placeholders];
+  const allCards = TOTAL_CARDS <= cupones.length ? cupones : [...cupones, ...placeholders];
 
   const neonColor = TAB_COLORS[activeTab];
 
@@ -359,6 +375,10 @@ export default function CanjearStrip({ scope }) {
         @keyframes shimmerCard {
           0%   { background-position: 200% center; }
           100% { background-position: -200% center; }
+        }
+        .cards-scroll {
+          display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;
+          align-content: flex-start;
         }
       `}</style>
       <video
@@ -423,15 +443,36 @@ export default function CanjearStrip({ scope }) {
         </div>
 
         <div
+          className="cards-scroll"
           style={{
             flex: 1, width: '100%', maxWidth: '82vw',
             padding: '16px 32px 32px',
             marginTop: 'clamp(40px, 6vh, 100px)',
-            height: '100%',
+            height: '100%', minHeight: 0,
             alignSelf: 'stretch',
+            overflowY: 'auto',
           }}
         >
-          {allCards.map(cupon => {
+          {cupones.length === 0 ? (
+            <div style={{
+              width: '100%', textAlign: 'center', paddingTop: 80,
+              fontFamily: "'Exo 2', sans-serif",
+            }}>
+              <span style={{ fontSize: 48, display: 'block', marginBottom: 16 }}>🌙</span>
+              <span style={{
+                color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: 700,
+                letterSpacing: 2, textTransform: 'uppercase',
+              }}>
+                No hay tarjetas disponibles en {activeTab === 'CERCANIAS' ? 'CERCANÍAS' : activeTab}
+              </span>
+              <p style={{
+                color: 'rgba(255,255,255,0.3)', fontSize: 12, marginTop: 8,
+                letterSpacing: 1,
+              }}>
+                Los comercios aún no han publicado tarjetas para esta zona
+              </p>
+            </div>
+          ) : allCards.map(cupon => {
   const esReal = !cupon._placeholder;
   const estilo = LUNA_STYLES[cupon.tipo_tarjeta] || LUNA_STYLES['PLATA'];
 
@@ -447,8 +488,8 @@ export default function CanjearStrip({ scope }) {
         }
       }}
       style={{
-        width: isMobile ? 333 : '100%',
-        minWidth: isMobile ? 333 : undefined,
+        width: isMobile ? 333 : 'clamp(250px, 20vw, 320px)',
+        minWidth: isMobile ? 333 : 250,
         height: 500,
         borderRadius: 12,
         position: 'relative',

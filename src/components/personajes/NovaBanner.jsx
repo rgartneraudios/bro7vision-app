@@ -14,7 +14,6 @@ const NOVA_GREETINGS = [
 
 export default function NovaBanner({
   sessionCity, sessionCP, realItems = [],
-  stripVisible, stripCards, stripLabel,
   onEntityFocus, onOpenTerminal, onSetActiveIndex,
   onInvokeOsos, onInvokeMapache, setIntent,
   onHandoff,

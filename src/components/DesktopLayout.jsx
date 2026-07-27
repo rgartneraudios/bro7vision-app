@@ -29,7 +29,7 @@ export default function DesktopLayout(props) {
     boosterTab, setBoosterTab,
     scope, sessionCP, sessionCity, sessionRef, handleGameWin, handleGoToShop, abrirTienda,
     setVlData, ososHandoffContext, setOsosHandoffContext,
-    perfilOso, stripVisible, stripCards, stripLabel, setHoloPrismaIndex,
+    perfilOso, setHoloPrismaIndex,
     ososModo, setOsosModo, handleLogout, selectedCard,
   rumoresMensaje, rumoresLoading, handleRumoresInput,
   userId, genesisBalance, onGenesisUpdate,

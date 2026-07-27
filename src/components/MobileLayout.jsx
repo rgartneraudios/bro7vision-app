@@ -494,7 +494,6 @@ const MobileLayout = ({
   isRightOpen, setIsRightOpen,
   iaMode, isAdmin, userCredits,
   onToggleAdminIA, onTogglePublicIA,
-  stripCards, stripVisible, stripLabel,
   onHandoff,
   broTunerRef,
   selectedCard,
@@ -607,8 +606,6 @@ const MobileLayout = ({
     timeout = setTimeout(ocultar, 40000);
     return () => clearTimeout(timeout);
   }, [adVideoUrl]);
-
-  useEffect(() => { setBurbujaOpen(false); }, [stripCards]);
 
   const activeSector = navItems?.find(n => n.id === intent);
   const sectorLabel  = step === 1 ? 'OSOS' : activeSector?.label || 'OSOS';
