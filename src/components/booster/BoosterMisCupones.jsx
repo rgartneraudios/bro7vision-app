@@ -29,10 +29,10 @@ const BoosterMisCupones = () => {
       if (comercioIds.length > 0) {
         const { data: comercios } = await supabase
           .from('comercio_cupones')
-          .select('id, banner_11_url')
+          .select('id, banner_url')
           .in('id', comercioIds);
         if (comercios) {
-          comercios.forEach(c => { bannerMap[c.id] = c.banner_11_url || ''; });
+          comercios.forEach(c => { bannerMap[c.id] = c.banner_url || ''; });
         }
       }
 
