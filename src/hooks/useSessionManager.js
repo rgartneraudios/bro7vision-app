@@ -28,6 +28,7 @@ export const useSessionManager = () => {
       const { data: prof } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
       if (prof) {
         setPerfilOso(prof);
+        setSessionCity(prof.city || '');
         setIsAdmin(prof.is_admin === true);
         setUserCredits({ tokensRestantes: prof.genesis || 0, tokensTotales: 1000000 });
       }

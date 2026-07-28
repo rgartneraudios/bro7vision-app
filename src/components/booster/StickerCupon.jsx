@@ -16,7 +16,7 @@ export const MODEL_COLORS = {
   'regalo10': '#cc6688',
 };
 
-const StickerCupon = ({ comercioNombre, tipoBrocard, colorBorde, palabraClave1, aliasUsuario, fechaCaduca, banner_11_url }) => {
+const StickerCupon = ({ comercioNombre, tipoBrocard, colorBorde, palabraClave1, aliasUsuario, fechaCaduca, banner_11_url, tipoTarjeta, valorEuros, costeLunas }) => {
   const stickerRef = useRef(null);
 
   const toProxyUrl = (url) => {
@@ -126,17 +126,18 @@ const StickerCupon = ({ comercioNombre, tipoBrocard, colorBorde, palabraClave1, 
           </div>
         </div>
 
-        <div data-banner style={{
+<div data-banner style={{
           width: '35%',
           height: '100%',
           overflow: 'hidden',
+          position: 'relative',
           background: banner_11_url ? `#1a1a2e url(${banner_11_url}) center / cover no-repeat` : '#1a1a2e',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}>
           {!banner_11_url && (
-<div style={{
+            <div style={{
               fontFamily: "'Exo 2', sans-serif",
               fontSize: 11,
               color: '#444',
@@ -144,6 +145,39 @@ const StickerCupon = ({ comercioNombre, tipoBrocard, colorBorde, palabraClave1, 
               padding: 8,
             }}>
               Sin imagen
+            </div>
+          )}
+
+          {(tipoTarjeta || valorEuros != null || costeLunas != null) && (
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.1) 45%, rgba(0,0,0,0.65) 100%)',
+              display: 'flex', flexDirection: 'column',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '10px 6px 8px',
+            }}>
+              <div style={{ textAlign: 'center' }}>
+                {valorEuros != null && (
+                  <div style={{ fontSize: 16, fontWeight: 900, color: '#fff',
+                    textShadow: '0 0 8px rgba(255,255,255,0.6)', lineHeight: 1.1 }}>
+                    {valorEuros} €
+                  </div>
+                )}
+                {tipoTarjeta && (
+                  <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.85)',
+                    letterSpacing: 2, textTransform: 'uppercase',
+                    textShadow: '0 0 6px rgba(255,255,255,0.5)' }}>
+                    {tipoTarjeta}
+                  </div>
+                )}
+              </div>
+              {costeLunas != null && (
+                <div style={{ fontSize: 10, fontWeight: 700, color: '#fff',
+                  textShadow: '0 0 6px rgba(255,255,255,0.5)', textAlign: 'center' }}>
+                  🌙 {costeLunas.toLocaleString()} Lunas
+                </div>
+              )}
             </div>
           )}
         </div>

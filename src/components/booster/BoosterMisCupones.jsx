@@ -111,6 +111,9 @@ const BoosterMisCupones = () => {
               aliasUsuario={cupon.aliasUsuario}
               fechaCaduca={formatDate(cupon.caduca_at)}
               banner_11_url={cupon.banner_11_url}
+              tipoTarjeta={cupon.tipo_tarjeta || ''}
+              valorEuros={cupon.valor_euros ?? null}
+              costeLunas={cupon.lunas_gastadas ?? null}
             />
 
             <div className="mt-4 space-y-2 border-t border-white/10 pt-4">

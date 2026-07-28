@@ -345,8 +345,8 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
                       {audioPlaying ? '⏸ AUDIO' : '▶ AUDIO'}
                     </button>
                   )}
-                  <div className="w-64 rounded-2xl border border-amber-500/50 bg-black/60 backdrop-blur-md p-3 flex flex-col gap-2">
-                    <span className="text-amber-400/80 text-[10px] uppercase tracking-widest font-mono">
+                  <div className="w-64 rounded-2xl border border-cyan-400/60 bg-black/60 backdrop-blur-md p-3 flex flex-col gap-2 shadow-[0_0_20px_rgba(34,211,238,0.25)]">
+                    <span className="text-cyan-400/80 text-[10px] uppercase tracking-widest font-mono">
                       🔑 {hasMembers ? group.name : group.name.split(' ')[0]}
                     </span>
                     <div className="flex gap-2">
@@ -354,10 +354,10 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
                         value={palabraClave}
                         onChange={e => setPalabraClave(e.target.value)}
                         placeholder="Palabra clave del audio..."
-                        className="flex-1 bg-transparent border border-amber-500/40 rounded-lg px-3 py-1 text-white text-sm outline-none"
+                        className="flex-1 bg-transparent border border-cyan-500/40 rounded-lg px-3 py-1 text-white text-sm outline-none"
                       />
                       <button onClick={() => handleClaim(palabraClave, group)}
-                        className="px-3 py-1 rounded-lg border border-amber-400/60 text-amber-300 text-sm hover:bg-amber-400/20 transition-all">
+                        className="px-3 py-1 rounded-lg border border-cyan-400/60 text-cyan-300 text-sm hover:bg-cyan-400/20 transition-all">
                         →
                       </button>
                     </div>
@@ -425,6 +425,44 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
           </div>
         );
       })}
+
+      <div
+        style={{
+          position: 'absolute',
+          top: '22%',
+          left: '85%',
+          animation: 'floatPlanet 7s ease-in-out infinite',
+          animationDelay: '1.2s',
+          width: '190px',
+          height: '190px',
+          pointerEvents: 'none',
+        }}
+      >
+        <div className="rounded-full border border-fuchsia-500/30 bg-black/30 backdrop-blur-md w-full h-full flex flex-col items-center justify-center px-4">
+          <p className="text-fuchsia-300 text-sm font-bold uppercase tracking-wide leading-relaxed text-center">
+            🎵<br />Gana Lunas<br />Pulsa un grupo<br />y descubre la<br />palabra clave<br />que hay en<br />sus audios
+          </p>
+        </div>
+      </div>
+
+      <div
+        style={{
+          position: 'absolute',
+          top: '22%',
+          left: '5%',
+          animation: 'floatPlanet 9s ease-in-out infinite',
+          animationDelay: '3.5s',
+          width: '190px',
+          height: '190px',
+          pointerEvents: 'none',
+        }}
+      >
+        <div className="rounded-full border border-cyan-500/30 bg-black/30 backdrop-blur-md w-full h-full flex flex-col items-center justify-center px-4">
+          <p className="text-cyan-300 text-sm font-bold uppercase tracking-wide leading-relaxed text-center">
+            🤖<br />¡Los personajes<br />tienen modo IA!<br />Chatea con ellos<br />y descubre<br />sus historias.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

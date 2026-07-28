@@ -86,8 +86,6 @@ function App() {
   const [showStudio, setShowStudio]             = useState(false);
 const [showBackstage, setShowBackstage]       = useState(false);
 const [boosterTab, setBoosterTab]           = useState(null);
-  const [isTeleporting, setIsTeleporting]       = useState(false);
-  const [teleportCoords, setTeleportCoords]     = useState({ city: '' });
   const [projectingUser, setProjectingUser]     = useState(null);
   const [selectedLog, setSelectedLog]           = useState(null);
   const [activeUser, setActiveUser]             = useState(null);
@@ -184,13 +182,6 @@ const [boosterTab, setBoosterTab]           = useState(null);
       return;
     }
 
-    if (agente === 'OSOS') {
-      setIntent('destino');
-      setStep(1);
-      setOsosModo('retorno');
-      return;
-    }
-
     if (agente === 'REALITY') {
       setStep(0);
       setIntent(null);
@@ -268,18 +259,11 @@ setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
     setIntent(targetIntent);
     setIsLeftOpen(false);
     setIsRightOpen(false);
-    if (targetIntent === 'destino') {
-      setStep(1);
-      resetOsos();
-      setSessionCP('');
-      setSessionCity('');
-    } else if (['canjear', 'shopamigos', 'games'].includes(targetIntent) && !scope) {
-      setStep(1);
-      setOsosModo('entrada');
-    } else {
-      setStep(2);
+    if (['canjear', 'shopamigos', 'games'].includes(targetIntent)) {
+      setScope({ city: sessionCity || '', type: 'auto' });
     }
-  }, [scope, resetOsos]);
+    setStep(2);
+  }, [sessionCity]);
 
   // ════════════════════════════════════════════════════
   // FUNCIÓN handleGoToShop
@@ -318,15 +302,12 @@ setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
   }
 
   const navItems = [
-    { id: 'destino',         label: 'DESTINO',           color: 'border-fuchsia-500/30 hover:border-fuchsia-400',  images: ['/emojis/lara.webp', '/emojis/tito.webp', '/emojis/puffo.webp'] },
     { id: 'canjear',         label: 'CANJES de LUNAS',  color: 'border-yellow-500/30 hover:border-yellow-400',    images: ['/emojis/emoji_1.webp'] },
     { id: 'shopamigos',       label: 'SHOP AMIGOS',        color: 'border-slate-500/30 hover:border-slate-400',      images: ['/emojis/emoji_3.webp'] },
     { id: 'bro7band',        label: 'BRO7BAND',         color: 'border-cyan-500/30 hover:border-cyan-400',       images: ['/emojis/bro7band.webp'] },
     { id: 'games',           label: 'GAMES',            color: 'border-white/30 hover:border-white/60',           images: ['/emojis/emoji8.webp', '/emojis/emoji9.webp'] },
     { id: 'reinos',          label: 'REINOS',           color: 'border-orange-500/30 hover:border-orange-400',    images: ['/emojis/rumores.webp'] },
   ];
-
-  const INTENTS_CON_UBICACION = new Set(['canjear', 'avisos']);
 
   // ══════════════════════════════════════════════════════
   // LAYOUTPROPS
