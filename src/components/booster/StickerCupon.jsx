@@ -68,8 +68,8 @@ const StickerCupon = ({ comercioNombre, tipoBrocard, colorBorde, palabraClave1, 
         style={{
           width: 500,
           height: 220,
-          background: 'linear-gradient(145deg, #EDC7D3 0%, #F5F0E8 35%, #D4D9A0 65%, #B8CC6E 100%)',
-          boxShadow: 'inset 0 0 80px rgba(184,204,110,0.12), 0 0 25px rgba(237,199,211,0.15)',
+          background: 'url(/images/cards/sticker_bg.webp) center / cover no-repeat',
+          boxShadow: 'inset 0 0 80px rgba(0,0,0,0.4), 0 0 25px rgba(255,255,255,0.05)',
           borderRadius: 16,
           display: 'flex',
           overflow: 'hidden',
@@ -106,22 +106,46 @@ const StickerCupon = ({ comercioNombre, tipoBrocard, colorBorde, palabraClave1, 
           textAlign: 'center',
           gap: 4,
         }}>
-          <div style={{ fontSize: 22, fontWeight: 700, color: '#1a1a2e', lineHeight: 1.15 }}>
+          <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1.15,
+            color: 'transparent',
+            background: 'linear-gradient(180deg, #FFFFFF 30%, #B0B0B0 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            textShadow: '0 2px 4px rgba(0,0,0,0.5), 0 1px 1px rgba(0,0,0,0.3)',
+          }}>
             {comercioNombre}
           </div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#cc6688' }}>
+          <div style={{ fontSize: 16, fontWeight: 700,
+            color: 'transparent',
+            background: 'linear-gradient(180deg, #FFFFFF 30%, #B0B0B0 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            textShadow: '0 2px 4px rgba(0,0,0,0.5), 0 1px 1px rgba(0,0,0,0.3)',
+          }}>
             {tipoBrocard}
           </div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: '#cc6688', letterSpacing: '0.5px' }}>
+          <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: '0.5px',
+            color: 'transparent',
+            background: 'linear-gradient(180deg, #FFFFFF 30%, #B0B0B0 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            textShadow: '0 2px 4px rgba(0,0,0,0.5), 0 1px 1px rgba(0,0,0,0.3)',
+          }}>
             {'\uD83D\uDD11'} {palabraClave1}
           </div>
-          <div style={{ fontSize: 14, color: '#333333' }}>
+          <div style={{ fontSize: 14,
+            color: 'transparent',
+            background: 'linear-gradient(180deg, #FFFFFF 30%, #B0B0B0 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            textShadow: '0 2px 4px rgba(0,0,0,0.5), 0 1px 1px rgba(0,0,0,0.3)',
+          }}>
             @{aliasUsuario}
           </div>
-          <div style={{ fontSize: 12, color: '#444444' }}>
+          <div style={{ fontSize: 12, color: '#C0C0C0', textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>
             Caduca: {fechaCaduca}
           </div>
-          <div style={{ fontSize: 11, color: '#555555' }}>
+          <div style={{ fontSize: 11, color: '#909090', textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>
             bro7vision.com
           </div>
         </div>

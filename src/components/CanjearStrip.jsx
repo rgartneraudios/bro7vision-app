@@ -301,7 +301,10 @@ export default function CanjearStrip({ scope }) {
           100% { background-position: -200% center; }
         }
         .cards-scroll {
-          display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;
+          display: grid;
+          grid-template-columns: repeat(3, 280px);
+          gap: 16px;
+          justify-content: center;
           align-content: flex-start;
         }
       `}</style>
@@ -321,7 +324,7 @@ export default function CanjearStrip({ scope }) {
       <div style={{
         position: 'relative', zIndex: 1,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        height: '100%', paddingTop: 20, paddingLeft: 'clamp(320px, 22vw, 420px)', paddingRight: 'clamp(320px, 22vw, 420px)',
+        height: '100%', paddingTop: 20, paddingLeft: 'clamp(20px, 4vw, 100px)', paddingRight: 'clamp(20px, 4vw, 100px)',
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, width: '100%', maxWidth: '82vw', marginBottom: 16, marginTop: 160 }}>
           <span style={{
@@ -412,9 +415,10 @@ export default function CanjearStrip({ scope }) {
         }
       }}
       style={{
-        width: isMobile ? 333 : 'clamp(250px, 20vw, 320px)',
-        minWidth: isMobile ? 333 : 250,
-        height: 500,
+        width: isMobile ? 333 : 280,
+        minWidth: isMobile ? 333 : 280,
+        maxWidth: isMobile ? 333 : 280,
+        height: isMobile ? 500 : 440,
         borderRadius: 12,
         position: 'relative',
         cursor: esReal ? 'pointer' : 'default',

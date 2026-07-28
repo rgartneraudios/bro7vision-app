@@ -234,7 +234,7 @@ export default function ShopAmigos({ scope }) {
       <div style={{
         position: 'relative', zIndex: 1,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        height: '100%', paddingTop: 20, paddingLeft: 'clamp(320px, 22vw, 420px)', paddingRight: 'clamp(320px, 22vw, 420px)',
+        height: '100%', paddingTop: 20, paddingLeft: 'clamp(20px, 4vw, 80px)', paddingRight: 'clamp(20px, 4vw, 80px)',
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, width: '100%', maxWidth: '82vw', marginBottom: 16, marginTop: 160 }}>
           <span style={{
@@ -281,15 +281,15 @@ export default function ShopAmigos({ scope }) {
 
         <div
           style={{
-            flex: 1, width: '100%', maxWidth: '82vw',
+            flex: 1, width: '100%',
             padding: '16px 32px 32px',
             marginTop: 'clamp(40px, 6vh, 100px)',
-            overflowY: isMobile ? 'hidden' : 'auto',
-            overflowX: isMobile ? 'auto' : 'hidden',
-            display: isMobile ? 'flex' : 'grid',
-            flexWrap: isMobile ? 'nowrap' : undefined,
-            gridTemplateColumns: isMobile ? undefined : 'repeat(4, 1fr)',
-            gap: 24,
+            overflowY: 'auto',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 280px)',
+            gap: 16,
+            justifyContent: 'center',
+            alignContent: 'flex-start',
             height: '100%',
             alignSelf: 'stretch',
           }}
@@ -304,9 +304,9 @@ export default function ShopAmigos({ scope }) {
       onMouseEnter={() => setHoveredId(slot.id)}
       onMouseLeave={() => setHoveredId(null)}
       style={{
-        width: isMobile ? 333 : '100%',
-        minWidth: isMobile ? 333 : undefined,
-        height: 500,
+        width: isMobile ? 333 : 280,
+        minWidth: isMobile ? 333 : 280,
+        height: isMobile ? 500 : 440,
         borderRadius: 12,
         position: 'relative',
         overflow: 'hidden',
