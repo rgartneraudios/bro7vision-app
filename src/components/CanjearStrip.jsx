@@ -324,7 +324,7 @@ export default function CanjearStrip({ scope }) {
       <div style={{
         position: 'relative', zIndex: 1,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        height: '100%', paddingTop: 20, paddingLeft: 'clamp(20px, 4vw, 100px)', paddingRight: 'clamp(20px, 4vw, 100px)',
+        height: '100%', paddingTop: 20, paddingLeft: 0, paddingRight: 0,
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, width: '100%', maxWidth: '82vw', marginBottom: 16, marginTop: 160 }}>
           <span style={{
@@ -373,8 +373,10 @@ export default function CanjearStrip({ scope }) {
           className="cards-scroll"
           style={{
             flex: 1, width: '100%', maxWidth: '82vw',
-            padding: '16px 32px 32px',
+            padding: '16px 0 32px',
             marginTop: 'clamp(40px, 6vh, 100px)',
+            marginLeft: 'auto',
+            marginRight: 'auto',
             height: '100%', minHeight: 0,
             alignSelf: 'stretch',
             overflowY: 'auto',

@@ -11,7 +11,7 @@ const CANAL_NUM = {
 
 const COBERTURA_CODIGO = {
   GIRA_MUNDIAL: '404', METROPOLIS: '307',
-  GIRA_GRAN_REGIONAL: '309', GIRA_REGIONAL: '305', GIRA_NACIONAL: '300',
+  GIRA_GRAN_REGIONAL: 'GREG', GIRA_REGIONAL: 'REG', GIRA_NACIONAL: '300',
 };
 
 export function useAdOverlay({ escenarioId, canal, turno, faseLunar, cityKey, dispositivo = 0 }) {
@@ -25,7 +25,7 @@ export function useAdOverlay({ escenarioId, canal, turno, faseLunar, cityKey, di
     const load = async () => {
       let query = supabase
         .from('bs_butacas')
-        .select('campana, cobertura, ciudad_codigo')
+        .select('campana, cobertura, ciudad_codigo, ciudad_codigos')
         .eq('canal', canalNum)
         .eq('funcion', turno)
         .eq('dispositivo', dispositivo)
@@ -46,6 +46,14 @@ export function useAdOverlay({ escenarioId, canal, turno, faseLunar, cityKey, di
         data.find(r => r.cobertura === 'GIRA_MUNDIAL') ||
         data.find(r => r.cobertura === 'METROPOLIS' && cityTipo === 'mega') ||
         data.find(r => r.cobertura === 'GIRA_NACIONAL') ||
+        (cityCode && data.find(r =>
+          r.cobertura === 'GIRA_GRAN_REGIONAL' &&
+          Array.isArray(r.ciudad_codigos) && r.ciudad_codigos.includes(cityCode)
+        )) ||
+        (cityCode && data.find(r =>
+          r.cobertura === 'GIRA_REGIONAL' &&
+          Array.isArray(r.ciudad_codigos) && r.ciudad_codigos.includes(cityCode)
+        )) ||
         (cityCode && data.find(r =>
           (r.cobertura === 'SALA_CIUDAD' || r.cobertura === 'SALA_GRAN_CIUDAD') &&
           r.ciudad_codigo === cityCode

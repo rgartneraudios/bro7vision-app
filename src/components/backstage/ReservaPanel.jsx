@@ -16,6 +16,13 @@ const COBERTURAS = [
 
 const CIUDAD_COBERTURAS = ['SALA_CIUDAD', 'SALA_GRAN_CIUDAD', 'GIRA_REGIONAL', 'GIRA_GRAN_REGIONAL'];
 
+const LIMITE_CIUDADES = {
+  SALA_CIUDAD:        1,
+  SALA_GRAN_CIUDAD:   1,
+  GIRA_REGIONAL:      3,
+  GIRA_GRAN_REGIONAL: 7,
+};
+
 const MOON_TURNOS = [
   { value: 1, label: 'MT1 — Primer cuarto' },
   { value: 2, label: 'MT2 — Segundo cuarto' },
@@ -30,7 +37,7 @@ const CANAL_STRING = {
 
 const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, profile, onClose, onReserved }) => {
   const [cobertura, setCobertura]   = useState(coberturaInicial || 'SALA_CIUDAD');
-  const [ciudad, setCiudad]         = useState('');
+  const [ciudades, setCiudades]         = useState([]);
   const [moonTurno, setMoonTurno]   = useState(1);
   const [videoLink, setVideoLink] = useState('');
   const [campana,   setCampana]   = useState('01');
@@ -46,6 +53,15 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
   const isMoon      = slot.canal === 2;
   const needsCiudad = CIUDAD_COBERTURAS.includes(cobertura);
 
+  const toggleCiudad = (key) => {
+    setCiudades(prev => {
+      if (prev.includes(key)) return prev.filter(c => c !== key);
+      const limite = LIMITE_CIUDADES[cobertura] ?? 1;
+      if (prev.length >= limite) return prev;
+      return [...prev, key];
+    });
+  };
+
   const precio = useMemo(() => {
     const tarifa = tarifas.find(t => t.cobertura === cobertura);
     if (tarifa) return Number(tarifa.precio);
@@ -57,7 +73,7 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
     : `${CHANNELS[slot.canal]} · ${TURNOS[slot.turno]}`;
 
   const handleReservar = async () => {
-    if (needsCiudad && !ciudad) { setError('Selecciona una ciudad para esta cobertura.'); return; }
+    if (needsCiudad && ciudades.length === 0) { setError('Selecciona al menos una ciudad para esta cobertura.'); return; }
     if (!promoPregunta.trim() || !promoOpcionA.trim() || !promoOpcionB.trim() || !promoOpcionC.trim()) {
       setError('La pregunta PromoTrivia y sus 3 opciones son obligatorias.');
       return;
@@ -67,15 +83,15 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
     setError(null);
 
     try {
-      let cityCode  = null;
+      let cityCode = null;
       let codigoCsv = '000';
 
-      if (cobertura === 'GIRA_MUNDIAL') {
-        codigoCsv = '404';
-      } else if (cobertura === 'GIRA_NACIONAL') {
-        codigoCsv = '300';
-      } else if (needsCiudad && ciudad) {
-        cityCode  = getCodeForCity(ciudad);
+      if (cobertura === 'GIRA_REGIONAL')           codigoCsv = 'REG';
+      else if (cobertura === 'GIRA_GRAN_REGIONAL') codigoCsv = 'GREG';
+      else if (cobertura === 'GIRA_MUNDIAL')       codigoCsv = '404';
+      else if (cobertura === 'GIRA_NACIONAL')      codigoCsv = '300';
+      else if (needsCiudad && ciudades[0]) {
+        cityCode  = getCodeForCity(ciudades[0]);
         codigoCsv = cityCode || '000';
       }
 
@@ -94,7 +110,9 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
         funcion,
         dispositivo:   slot.dispositivo,
         cobertura,
-        ciudad_codigo: cityCode,
+        ciudad_codigos: ciudades.length > 0
+          ? ciudades.map(k => getCodeForCity(k)).filter(Boolean)
+          : null,
         productor_id:  session.user.id,
         guion:         videoLink.trim() || null,
         nombre_archivo,
@@ -223,7 +241,7 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
                         name="cobertura"
                         value={c.id}
                         checked={cobertura === c.id}
-                        onChange={() => { setCobertura(c.id); setCiudad(''); }}
+                        onChange={() => { setCobertura(c.id); setCiudades([]); }}
                         className="accent-purple-500"
                       />
                       <span className="text-sm font-medium">{c.label}</span>
@@ -235,21 +253,44 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
             </div>
           </div>
 
-          {/* Ciudad */}
+          {/* Ciudades */}
           {needsCiudad && (
             <div>
-              <label style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }} className="block text-xs text-gray-400 uppercase tracking-widest mb-1.5">Ciudad</label>
-              <select
-                value={ciudad}
-                onChange={e => setCiudad(e.target.value)}
-                style={{ fontFamily: "'Inter', sans-serif" }}
-                className="w-full bg-zinc-900 border border-white/10 text-white text-sm px-3 py-2.5 rounded focus:border-purple-500 focus:outline-none transition-colors"
-              >
-                <option value="">Selecciona ciudad...</option>
-                {(['SALA_GRAN_CIUDAD', 'METROPOLIS'].includes(cobertura) ? getMegaCities() : getMiniCities()).map(c => (
-                  <option key={c.key} value={c.key}>{c.label}</option>
-                ))}
-              </select>
+              <label style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}
+                className="block text-xs text-gray-400 uppercase tracking-widest mb-1.5">
+                Ciudades
+                <span className="ml-2 text-purple-400 font-mono">
+                  {ciudades.length}/{LIMITE_CIUDADES[cobertura]}
+                </span>
+              </label>
+              <div className="max-h-48 overflow-y-auto space-y-1 pr-1">
+                {(cobertura === 'SALA_GRAN_CIUDAD' ? getMegaCities() : getMiniCities()).map(c => {
+                  const seleccionada = ciudades.includes(c.key);
+                  const lleno = ciudades.length >= (LIMITE_CIUDADES[cobertura] ?? 1);
+                  const bloqueada = !seleccionada && lleno;
+                  return (
+                    <label
+                      key={c.key}
+                      className={`flex items-center gap-3 px-3 py-2 rounded border cursor-pointer transition-all
+                        ${seleccionada
+                          ? 'border-purple-500/60 bg-purple-950/30 text-white'
+                          : bloqueada
+                            ? 'border-white/5 text-gray-600 opacity-30 cursor-not-allowed'
+                            : 'border-white/5 text-gray-400 hover:border-white/15 hover:text-gray-200'
+                        }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={seleccionada}
+                        disabled={bloqueada}
+                        onChange={() => toggleCiudad(c.key)}
+                        className="accent-purple-500"
+                      />
+                      <span className="text-sm">{c.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
             </div>
           )}
 

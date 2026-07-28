@@ -383,7 +383,7 @@ const BackStage = ({ session, onLogout }) => {
         )}
 
         {activeTab === 'shop_amigos' && (
-          <ShopAmigosTab />
+          <ShopAmigosTab session={session} profile={profile} />
         )}
 
         {activeTab === 'games' && (
