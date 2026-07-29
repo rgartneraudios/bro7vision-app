@@ -79,11 +79,11 @@ const AGENT_PROFILES = {
   },
   nova: {
   theme: 'gold',
-  text: ` ✦ Hola! Dime el producto que necesitas! | Que buscas? | Pulsa en las BroCards para obtener una descripción y obtener las tarjetas de descuentos o tarjetas de regalo canjeando tus Lunas`
+  text: ` ✦ Hola amigos! Que hermoso día!`
 },
   isabella: {
     theme: 'pink',
-    text: '✦  Hola! Dime el servicio que necesitas! | Que buscas? | Pulsa en las BroCards para obtener una descripción y obtener las tarjetas de descuentos o tarjetas de regalo canjeando tus Lunas'
+    text: '✦  Hola queridos!, vienen por consulta o por curiosidad? '
   },
   evelyn: {
     theme: 'blue',

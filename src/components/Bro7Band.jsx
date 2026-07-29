@@ -11,6 +11,9 @@ import { getAudioForOrumama }   from '../data/audioMap_orumama';
 import { getAudioForJaguar }    from '../data/audioMap_jaguar';
 import { getAudioForRumores }   from '../data/audioMap_rumores';
 import { getAudioForEvelyn }    from '../data/audioMap_evelyn';
+import ChapterGrid from './ChapterGrid';
+import ChapterPlayer from './ChapterPlayer';
+import { getMoonSuffix } from '../utils/moonUtils';
 
 const AUDIO_RESOLVER_MAP = {
   osos:              getAudioForOsos,
@@ -50,7 +53,7 @@ const GROUP_AGENT_MAP = {
 
 const FRASES_BIENVENIDA = {
   osos: ["Tito aquí 🐻 ¿Qué necesitas hoy?", "Aquí Tito, ¿a dónde te llevo?", "Oye, ¿qué buscas? Yo te ayudo."],
-  nova: ["Nova ✨ ¿Qué producto necesitas?", "Dime qué buscas y te encuentro lo mejor."],
+  nova: ["Nova ✨ Hola amigos", "Dime qué buscas y te encuentro lo mejor."],
   isabella: ["Isabella aquí 💫 ¿Qué servicio necesitas?", "Cuéntame qué buscas, te guío."],
   evelyn: ["Evelyn 🌙 ¿Publicas algo hoy?", "Cuéntame tu deseo, lo hacemos realidad."],
   mapache: ["Mapache 🦝 ¿Buscas música o podcast?", "Ponme ritmo, yo te pongo la banda."],
@@ -82,7 +85,9 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
   const [audioUrl, setAudioUrl] = useState(null);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const audioRef = useRef(null);
-  const [faseLunar, setFaseLunar] = useState(null);
+  const faseLunar = getMoonSuffix();
+  const [selectedChapter, setSelectedChapter] = useState(null);
+  const [userId, setUserId] = useState(null);
 
   const group = GROUPS.find(g => g.id === selectedGroup);
 
@@ -134,15 +139,9 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
   }, []);
 
   useEffect(() => {
-    const fetchFase = async () => {
-      const LUNA_REF = new Date('2000-01-06T18:14:00Z');
-      const CICLO = 29.53058867;
-      const ahora = new Date();
-      const diff = (ahora - LUNA_REF) / (1000 * 60 * 60 * 24);
-      const fase = Math.floor(diff / CICLO);
-      setFaseLunar(fase);
-    };
-    fetchFase();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserId(user.id);
+    });
   }, []);
 
   useEffect(() => {
@@ -256,7 +255,8 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
 
   const handleAudioEnded = () => setAudioPlaying(false);
 
-  if (selectedGroup && group) {
+  if (selectedGroup && group && group.id !== 10) {
+
     const videoSrc = group.video.startsWith('http') ? group.video : `${VIDEO_BASE}${group.video}`;
     const hasMembers = group.members.length > 0;
     const agentKey = GROUP_AGENT_MAP[group.groupId];
@@ -463,6 +463,27 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
           </p>
         </div>
       </div>
+
+      {selectedGroup === 10 && !selectedChapter && (
+        <ChapterGrid
+          faseLunar={faseLunar}
+          userId={userId}
+          onSelectChapter={setSelectedChapter}
+          onClose={() => setSelectedGroup(null)}
+        />
+      )}
+
+      {selectedChapter && (
+        <ChapterPlayer
+          chapter={selectedChapter}
+          faseLunar={faseLunar}
+          userId={userId}
+          onClose={() => setSelectedChapter(null)}
+          onReward={(lunas) => {
+            setBalances(prev => ({ ...prev, lunas: (prev.lunas || 0) + lunas }));
+          }}
+        />
+      )}
     </div>
   );
 }
