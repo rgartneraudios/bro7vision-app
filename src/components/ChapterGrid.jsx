@@ -73,18 +73,16 @@ function ChapterGrid({ faseLunar, userId, onSelectChapter, onClose }) {
                 return (
                   <div key={cap.id} className="w-full flex flex-col items-center gap-1">
                     
-                    {yaVisto ? (
-                      <span className="text-xl md:text-3xl font-black uppercase tracking-[0.15em] text-white/20 text-center">
-                        {cap.titulo}
-                      </span>
-                    ) : (
-                      <button
+                    <button
                         onClick={() => onSelectChapter(cap)}
-                        className="text-xl md:text-3xl font-black uppercase tracking-[0.15em] text-white hover:text-cyan-300 transition-all hover:drop-shadow-[0_0_30px_rgba(34,211,238,0.8)] text-center"
+                        className={`text-xl md:text-3xl font-black uppercase tracking-[0.15em] text-center transition-all ${
+                          yaVisto
+                            ? 'text-white/20 hover:text-cyan-300 hover:drop-shadow-[0_0_30px_rgba(34,211,238,0.8)]'
+                            : 'text-white hover:text-cyan-300 hover:drop-shadow-[0_0_30px_rgba(34,211,238,0.8)]'
+                        }`}
                       >
                         {cap.titulo}
                       </button>
-                    )}
 
                     <div className="flex items-center gap-4 text-white/20 text-[10px] font-mono uppercase tracking-widest">
                       {cap.duracion_seg && (

@@ -22,12 +22,11 @@ function ChapterPlayer({ chapter, faseLunar, userId, onClose, onReward }) {
         .select('id')
         .eq('user_id', userId)
         .eq('chapter_id', chapter.id)
-        .eq('fase_lunar', faseLunar)
-        .single();
+        .eq('fase_lunar', parseInt(faseLunar))
+        .maybeSingle();
       if (vista) {
         rewardGivenRef.current = true;
-        setIsRewarded(true);
-        setCountdown(0);
+        handleReward();
       }
     };
     checkExisting();
@@ -40,29 +39,31 @@ function ChapterPlayer({ chapter, faseLunar, userId, onClose, onReward }) {
         .select('id')
         .eq('user_id', userId)
         .eq('chapter_id', chapter.id)
-        .eq('fase_lunar', faseLunar)
-        .single();
+        .eq('fase_lunar', parseInt(faseLunar))
+        .maybeSingle();
 
-      if (vista) {
-        setIsRewarded(true);
-        return;
-      }
+      if (vista) { setIsRewarded(true); return; }
 
-      await supabase.from('bro7band_vistas').insert({
-        user_id: userId,
-        chapter_id: chapter.id,
-        fase_lunar: faseLunar,
-      });
+      const { error: insertError } = await supabase
+        .from('bro7band_vistas')
+        .insert({
+          user_id: userId,
+          chapter_id: chapter.id,
+          fase_lunar: parseInt(faseLunar),
+        });
 
-      await supabase.rpc('incrementar_lunas', {
+      if (insertError) { setIsRewarded(true); return; }
+
+      const { error: rpcError } = await supabase.rpc('incrementar_lunas', {
         uid: userId,
         delta: chapter.lunas_reward,
       });
 
       setIsRewarded(true);
       onReward(chapter.lunas_reward);
+
     } catch (err) {
-      console.error('handleReward error:', err);
+      console.error(err);
     }
   };
 
