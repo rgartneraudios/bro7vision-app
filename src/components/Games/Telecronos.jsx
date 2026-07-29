@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { marcarActividad } from '../../hooks/useActividad';
 import { useAudioContext } from '../../context/AudioContext';
 
 const TILE_SIZE = 100;
@@ -569,21 +568,6 @@ const Telecronos = ({ onWin, onClose }) => {
 
   // Manejo de Audio Game Over
   useEffect(() => { if (gameOver && assets.current.audios.loop) assets.current.audios.loop.pause(); }, [gameOver]);
-
-  // --- REGISTRO DE ACTIVIDAD FUE MOVIDO AFUERA DEL HANDLE CLOSE PARA NO DAR ERROR DE REACT ---
-  useEffect(() => {
-    if (gameOver) {
-      const registrarActividad = async () => {
-        try {
-          await marcarActividad('games'); 
-          console.log("Actividad de juego guardada con éxito");
-        } catch (error) {
-          console.error("Error al marcar actividad del juego:", error);
-        }
-      };
-      registrarActividad();
-    }
-  }, [gameOver]);
 
   const handleClose = () => {
     const hasWonAll = gameState.current.cubes.every(c => c.status.startsWith('captured'));

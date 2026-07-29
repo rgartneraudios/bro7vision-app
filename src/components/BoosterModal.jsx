@@ -2,31 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { marcarActividad } from '../hooks/useActividad';
 import BoosterMisCupones from './booster/BoosterMisCupones';
 import BoosterAnunciante from './booster/BoosterAnunciante';
-import { CoordenadosBlock } from './CoordenadosBlock';
-
-function getCicloLunar() {
-  const known = new Date('2000-01-06T18:14:00Z');
-  const now = new Date();
-  const elapsed = (now - known) / 86400000;
-  return Math.floor(elapsed / 29.53058867);
-}
-
-const OSOS_TONOS = [
-  { id: 'formal',  label: 'Formal'      },
-  { id: 'detu',    label: 'De tú'       },
-  { id: 'amigos',  label: 'Como amigos' },
-];
-
-const OSOS_INTERESES = [
-  { id: 'productos', label: 'Productos' },
-  { id: 'servicios', label: 'Servicios' },
-  { id: 'musica',    label: 'Música'    },
-  { id: 'avisos',    label: 'Avisos'    },
-  { id: 'ofertas',   label: 'Ofertas'   },
-];
 
 const BoosterModal = ({ onClose, initialTab, session }) => {
 
@@ -35,18 +12,8 @@ const BoosterModal = ({ onClose, initialTab, session }) => {
   const [tab, setTab]         = useState(initialTab || 'identity');
 
   // ── ESTADOS DE PERFIL ──
-  const [country,      setCountry]      = useState('');
-  const [city,         setCity]         = useState('');
-  const [zipCode,      setZipCode]      = useState('');
-  const [address,      setAddress]      = useState('');
-  const [neighborhood, setNeighborhood] = useState('');
-  const [nearbyRef,    setNearbyRef]    = useState('');
-  const [bizCategory,  setBizCategory]  = useState('');
-  const [bizProfession,setBizProfession]= useState('');
-  const [description,  setDescription]  = useState('');
-
-  // ── OSOS IA ──
-  const [ososInteresesArr, setOsosInteresesArr] = useState([]);
+  const [country, setCountry] = useState('');
+  const [city,    setCity]    = useState('');
 
   // ── LINAJE ──
   const [reinoElegido,    setReinoElegido]    = useState('');
@@ -58,17 +25,12 @@ const BoosterModal = ({ onClose, initialTab, session }) => {
   // ── FORMDATA PRINCIPAL ──
   const [formData, setFormData] = useState({
     alias: '', avatar_url: '', banner_url: '',
-    bro_pd: '', bro_ser: '', bro_avi: '',
     audio_file: '', audio_type: '', audio_description: '',
     track_name: '',
-    description: '', genero: 'n',
-    // OSOS IA
-    osos_nombre: '', osos_tono: '', osos_intereses: '', osos_frase: '', oso_id: 'TITO',
+    genero: 'n',
     // LINAJE
     rank: '', reino: '',
     juramento_firmado: false, juramento_fecha: null,
-    actividad_video: false, actividad_activo: false,
-    actividad_games: false, actividad_brostory: false,
   });
 
   // ── UI ──
@@ -93,15 +55,6 @@ const BoosterModal = ({ onClose, initialTab, session }) => {
     if (!error) setJuramentoFirmado(true);
   };
 
-  // ── OSOS intereses ──
-  const toggleOsosInteres = (id) => {
-    setOsosInteresesArr(prev => {
-      const next = prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id];
-      setFormData(fd => ({ ...fd, osos_intereses: next.join(',') }));
-      return next;
-    });
-  };
-
   // ── CARGAR PERFIL ──
   useEffect(() => {
     const loadData = async () => {
@@ -113,42 +66,8 @@ const BoosterModal = ({ onClose, initialTab, session }) => {
           .from('profiles').select('*').eq('id', user.id).single();
         if (!profile) return;
 
-        const cicloActual = getCicloLunar();
-        const cicloGuardado = profile.actividad_reset_ciclo || 0;
-
-        if (cicloActual > cicloGuardado) {
-          await supabase
-            .from('profiles')
-            .update({
-              actividad_video:       false,
-              actividad_activo:      false,
-              actividad_games:       false,
-              actividad_brostory:    false,
-              actividad_reset_ciclo: cicloActual,
-            })
-            .eq('id', user.id);
-
-          profile.actividad_video       = false;
-          profile.actividad_activo      = false;
-          profile.actividad_games       = false;
-          profile.actividad_brostory    = false;
-          profile.actividad_reset_ciclo = cicloActual;
-        }
-
-        setCountry(profile.country          || '');
-        setCity(profile.city                || '');
-        setZipCode(profile.zip_code         || '');
-        setAddress(profile.address          || '');
-        setNeighborhood(profile.neighborhood || '');
-        setNearbyRef(profile.nearby_ref      || '');
-        setBizCategory(profile.biz_category  || '');
-        setBizProfession(profile.biz_profession || '');
-        setDescription(profile.description  || '');
-
-        const interesesGuardados = profile.osos_intereses
-          ? profile.osos_intereses.split(',').filter(Boolean)
-          : [];
-        setOsosInteresesArr(interesesGuardados);
+        setCountry(profile.country || '');
+        setCity(profile.city    || '');
 
         setReinoElegido(profile.reino            || '');
         setJuramentoFirmado(profile.juramento_firmado || false);
@@ -157,27 +76,12 @@ const BoosterModal = ({ onClose, initialTab, session }) => {
           alias:              profile.alias              || user.user_metadata?.alias || '',
           avatar_url:         profile.avatar_url         || '',
           banner_url:         profile.banner_url         || '',
-          bro_pd:             profile.bro_pd             || '',
-          bro_ser:            profile.bro_ser            || '',
-          bro_avi:            profile.bro_avi            || '',
-          description:        profile.description        || '',
           genero:             profile.genero             || 'n',
-          // OSOS IA
-          osos_nombre:        profile.osos_nombre        || '',
-          osos_tono:          profile.osos_tono          || '',
-          osos_intereses:     profile.osos_intereses     || '',
-          osos_frase:         profile.osos_frase         || '',
-          oso_id:             profile.oso_id             || 'TITO',
           // LINAJE
           rank:               profile.rank               || '',
           reino:              profile.reino              || '',
           juramento_firmado:  profile.juramento_firmado  || false,
           juramento_fecha:    profile.juramento_fecha    || null,
-           actividad_video:    profile.actividad_video    || false,
-           actividad_activo:   profile.actividad_activo   || false,
-           actividad_games:    profile.actividad_games    || false,
-           actividad_brostory: profile.actividad_brostory || false,
-           actividad_reset_ciclo: profile.actividad_reset_ciclo || 0,
         });
       } catch (e) {
         console.error("Error cargando perfil:", e);
@@ -194,9 +98,7 @@ const BoosterModal = ({ onClose, initialTab, session }) => {
       if (!user) throw new Error("No user");
       const updates = {
         ...formData,
-        country, city, zip_code: zipCode,
-        address, neighborhood, nearby_ref: nearbyRef,
-        biz_category: bizCategory, biz_profession: bizProfession,
+        country, city,
         updated_at: new Date(),
       };
       const { error } = await supabase.from('profiles').update(updates).eq('id', user.id);
@@ -292,99 +194,26 @@ const BoosterModal = ({ onClose, initialTab, session }) => {
                         onChange={e => setFormData({ ...formData, alias: e.target.value })}
                         className={`${InputStyle} text-lg font-bold text-center tracking-widest border-cyan-500/40`} />
 
-                    {/* COORDENADAS */}
-                    <CoordenadosBlock
-                      country={country} setCountry={setCountry}
-                      city={city} setCity={setCity}
-                      zipCode={zipCode} setZipCode={setZipCode}
-                      address={address} setAddress={setAddress}
-                      neighborhood={neighborhood} setNeighborhood={setNeighborhood}
-                      nearbyRef={nearbyRef} setNearbyRef={setNearbyRef}
-                      bizCategory={bizCategory} setBizCategory={setBizCategory}
-                      bizProfession={bizProfession} setBizProfession={setBizProfession}
-                      description={description} setDescription={setDescription}
-                      formData={formData} InputStyle={InputStyle} LabelStyle={LabelStyle}
-                    />
-                  </div>
-
-                  {/* OSOS IA */}
-                  <div className="bg-gradient-to-br from-cyan-950/30 to-fuchsia-950/20 backdrop-blur-xl border border-cyan-500/20 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
-                    <div className="flex items-center gap-3 mb-5">
-                      <span className="text-2xl">🐻</span>
-                      <div>
-                        <p className="text-lg font-black text-cyan-300 tracking-wider">TU ASISTENTE OSO IA</p>
-                        <p className="text-lg text-gray-500 mt-0.5">Cuéntanos un poco y te atenderemos como mereces.</p>
-                      </div>
-                    </div>
-                    <div className="space-y-5">
-                      <div>
-                        <label className={LabelStyle}>¿Quién quieres que te atienda?</label>
-                        <div className="grid grid-cols-3 gap-3 mt-2">
-                          {[
-                            { id: 'LARA',  img: '/emojis/lara.webp',  nombre: 'Lara',  desc: 'La Analítica'  },
-                            { id: 'TITO',  img: '/emojis/tito.webp',  nombre: 'Tito',  desc: 'El Experto'    },
-                            { id: 'PUFFO', img: '/emojis/puffo.webp', nombre: 'Puffo', desc: 'La Experiencia' },
-                          ].map(oso => (
-                            <button key={oso.id}
-                              onClick={() => setFormData({ ...formData, oso_id: oso.id })}
-                              className={`p-3 rounded-2xl border text-center transition-all
-                                ${formData.oso_id === oso.id
-                                  ? 'bg-cyan-900/40 border-cyan-500/60 text-cyan-300'
-                                  : 'bg-black/30 border-white/10 text-gray-500 hover:border-white/20 hover:text-gray-300'}`}>
-                              <img src={oso.img} alt={oso.nombre} className="w-16 h-16 mx-auto mb-2 object-contain drop-shadow-lg" />
-                              <p className="text-base font-black">{oso.nombre}</p>
-                              <p className="text-base opacity-70">{oso.desc}</p>
-                            </button>
-                          ))}
+{/* COORDENADAS */}
+                    <div className="mt-6 p-5 bg-black/20 rounded-2xl border border-white/5 space-y-5">
+                      <h3 className="text-xs font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-2">
+                        📍 COORDENADAS
+                      </h3>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className={LabelStyle}>País</label>
+                          <input type="text" value={country} onChange={e => setCountry(e.target.value)}
+                            className={InputStyle} placeholder="España" />
                         </div>
-                      </div>
-                      <div>
-                        <label className={LabelStyle}>¿Cómo quieres que te llamemos?</label>
-                        <input type="text" maxLength={30} placeholder="Ej: Profe, maestro..."
-                          value={formData.osos_nombre}
-                          onChange={e => setFormData({ ...formData, osos_nombre: e.target.value })}
-                          className={InputStyle} />
-                      </div>
-                      <div>
-                        <label className={LabelStyle}>¿Cómo prefieres que te hablemos?</label>
-                        <div className="flex gap-2 flex-wrap">
-                          {OSOS_TONOS.map(t => (
-                            <button key={t.id} onClick={() => setFormData({ ...formData, osos_tono: t.id })}
-                              className={`px-4 py-2 rounded-full text-base font-bold border transition-all
-                                ${formData.osos_tono === t.id
-                                  ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300'
-                                  : 'bg-white/5 border-white/10 text-gray-500'}`}>
-                              {formData.osos_tono === t.id ? '✓ ' : ''}{t.label}
-                            </button>
-                          ))}
+                        <div>
+                          <label className={LabelStyle}>Ciudad</label>
+                          <input type="text" value={city} onChange={e => setCity(e.target.value)}
+                            className={InputStyle} placeholder="Oviedo" />
                         </div>
-                      </div>
-                      <div>
-                        <label className={LabelStyle}>¿Qué sueles buscar en BRO7VISION?</label>
-                        <div className="flex gap-2 flex-wrap">
-                          {OSOS_INTERESES.map(i => (
-                            <button key={i.id} onClick={() => toggleOsosInteres(i.id)}
-                              className={`px-4 py-2 rounded-full text-base font-bold border transition-all
-                                ${ososInteresesArr.includes(i.id)
-                                  ? 'bg-fuchsia-500/20 border-fuchsia-400 text-fuchsia-300'
-                                  : 'bg-white/5 border-white/10 text-gray-500'}`}>
-                              {ososInteresesArr.includes(i.id) ? '✓ ' : ''}{i.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <div>
-                        <label className={LabelStyle}>Algo sobre ti (opcional)</label>
-                        <input type="text" maxLength={100} placeholder="Diseñador en Oviedo..."
-                          value={formData.osos_frase}
-                          onChange={e => setFormData({ ...formData, osos_frase: e.target.value })}
-                          className={InputStyle} />
                       </div>
                     </div>
                   </div>
                 </div>
-
-                {/* ── COLUMNA DERECHA ── */}
                 <div className="space-y-6">
 
                   {/* LISTADO DE REINOS — Rumores fijo */}
@@ -486,16 +315,6 @@ const BoosterModal = ({ onClose, initialTab, session }) => {
               const c      = COLORES[rank]  || COLORES.rey;
               const gen    = GENESIS[rank]  || 0;
 
-              const actividad = [
-                { key:'video',    label:'Proyectar contenido',  done: formData.actividad_video,    emoji:'📡' },
-                { key:'activo',   label:'Halo · Eco · Zap', done: formData.actividad_activo,   emoji:'⚡' },
-                { key:'games',    label:'Jugar en Games',   done: formData.actividad_games,    emoji:'🎮' },
-                { key:'brostory', label:'Ver BroStory',     done: formData.actividad_brostory, emoji:'👁️' },
-              ];
-              const done      = actividad.filter(a => a.done).length;
-              const barColor  = done === 4 ? 'bg-green-500' : done >= 2 ? 'bg-yellow-500' : 'bg-red-500';
-              const doneColor = done === 4 ? 'text-green-400' : done >= 2 ? 'text-yellow-400' : 'text-red-400';
-
               return (
                 <div className="space-y-6 animate-fadeIn max-w-6xl mx-auto pb-10">
 
@@ -515,7 +334,7 @@ const BoosterModal = ({ onClose, initialTab, session }) => {
                         </>)}
                       </div>
                       <div className={`h-px w-20 mx-auto mt-4 opacity-40 ${c.sel}`} />
-                      <p className="text-gray-600 text-base uppercase tracking-widest mt-3">{gen.toLocaleString()} Génesis · mensual</p>
+                      <p className="text-gray-600 text-base uppercase tracking-widest mt-3">{gen.toLocaleString()} Lunas · mensual</p>
                     </div>
                   </div>
 
@@ -561,28 +380,6 @@ const BoosterModal = ({ onClose, initialTab, session }) => {
                         </button>
                       </div>
                     </div>
-                  </div>
-
-                  {/* ACTIVIDAD */}
-                  <div className="rounded-2xl border border-white/10 p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <p className="text-white font-black text-base uppercase tracking-widest" style={{ fontFamily:"'Georgia', serif" }}>⚡ Actividad del Mes</p>
-                      <span className={`${doneColor} text-lg font-bold`}>{done}/4 {done === 4 ? '— ✅ Al día' : '— pendiente'}</span>
-                    </div>
-                    <div className="h-2 bg-white/10 rounded-full mb-5 overflow-hidden">
-                      <div className={`h-full ${barColor} rounded-full transition-all duration-700`} style={{ width:`${(done/4)*100}%` }} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      {actividad.map((a) => (
-                        <div key={a.key} className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all
-                          ${a.done ? 'bg-green-950/20 border-green-700/30' : 'bg-white/3 border-white/10'}`}>
-                          <span className="text-xl">{a.emoji}</span>
-                          <p className={`text-base font-bold flex-1 ${a.done ? 'text-green-300' : 'text-gray-500'}`}>{a.label}</p>
-                          <span className={a.done ? 'text-green-400 font-bold' : 'text-gray-700'}>{a.done ? '✓' : '○'}</span>
-                        </div>
-                      ))}
-                    </div>
-                    {done < 4 && <p className="text-yellow-700 text-base uppercase tracking-widest mt-4 text-center">⚠️ Completa al menos una acción de cada tipo para recibir tus Génesis</p>}
                   </div>
 
                   {/* JURAMENTO */}

@@ -99,8 +99,8 @@ function mapacheBot({ textoUser = '', intencion = null, entidad = null, hayTarje
   if (entidad?.accion === 'PLAY')
     return { handoff: 'AUDIO_PLAY', codigo: entidad.codigo, mensaje: elegir(MP_PLAY), bolas: [] };
   if (entidad) {
-    if (intent === 'play') return { handoff: 'AUDIO_PLAY', codigo: entidad.bro_pd, mensaje: elegir(MP_PLAY), bolas: [] };
-    return { handoff: false, mensaje: `${elegir(MP_DESCRIPCION)} ${entidad.nombre || entidad.bro_pd} — ${entidad.description || entidad.categoria || 'sin descripción disponible'}.`, bolas: [] };
+    if (intent === 'play') return { handoff: 'AUDIO_PLAY', codigo: entidad.bro_mus || entidad.bro_aud, mensaje: elegir(MP_PLAY), bolas: [] };
+    return { handoff: false, mensaje: `${elegir(MP_DESCRIPCION)} ${entidad.nombre} — ${entidad.description || entidad.categoria || 'sin descripción disponible'}.`, bolas: [] };
   }
   if (!hayTarjetas) return { handoff: false, mensaje: elegir(MP_SIN_RES), bolas: [] };
   const esSaludo = ['hola', 'hey', 'buenas', 'ey', 'hi', 'buenos'].some(s => t.startsWith(s));
@@ -134,8 +134,8 @@ function amiBot({ textoUser = '', intencion = null, entidad = null, hayTarjetas 
   if (entidad?.accion === 'PLAY')
     return { handoff: 'AUDIO_PLAY', codigo: entidad.codigo, mensaje: elegir(AMI_PLAY), bolas: [] };
   if (entidad) {
-    if (intent === 'play') return { handoff: 'AUDIO_PLAY', codigo: entidad.bro_pd, mensaje: elegir(AMI_PLAY), bolas: [] };
-    return { handoff: false, mensaje: `${elegir(AMI_DESCRIPCION)} ${entidad.nombre || entidad.bro_pd} — ${entidad.description || entidad.categoria || 'sin descripción disponible'}.`, bolas: [] };
+    if (intent === 'play') return { handoff: 'AUDIO_PLAY', codigo: entidad.bro_mus || entidad.bro_aud, mensaje: elegir(AMI_PLAY), bolas: [] };
+    return { handoff: false, mensaje: `${elegir(AMI_DESCRIPCION)} ${entidad.nombre} — ${entidad.description || entidad.categoria || 'sin descripción disponible'}.`, bolas: [] };
   }
   if (!hayTarjetas) return { handoff: false, mensaje: elegir(AMI_SIN_RES), bolas: [] };
   const esSaludo = ['hola', 'hey', 'buenas', 'ey', 'hi', 'buenos'].some(s => t.startsWith(s));
@@ -311,7 +311,7 @@ export function useAgentMapache({
       const tLower = textoUsuario.trim().toLowerCase();
       const esConfirmacion = /^(play|pon|ponlo|dale|si|sí|ok|yes|poner|reproduce)$/.test(tLower);
       if (esConfirmacion) {
-        const codigo = cardActiva.bro_mus || cardActiva.bro_aud || cardActiva.bro_pd;
+        const codigo = cardActiva.bro_mus || cardActiva.bro_aud;
         if (codigo) {
           setMensaje('Dale. 🎵');
           onHandoff?.({ agente: 'AUDIO_PLAY', codigo, canal: cardActiva });

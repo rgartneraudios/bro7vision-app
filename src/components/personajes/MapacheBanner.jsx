@@ -90,7 +90,7 @@ export default function MapacheBanner({
 
   // ── Clic en BroCard ──────────────────────────────────────────────────────
   const handleCardClick = (card) => {
-    setSelectedCard(prev => prev?.bro_pd === card.bro_pd ? null : card);
+    setSelectedCard(prev => (prev?.bro_mus || prev?.bro_aud) === (card.bro_mus || card.bro_aud) ? null : card);
   };
 
   // ── Enviar desde input → pasa card activa antes de limpiarla ─────────────
@@ -105,7 +105,7 @@ export default function MapacheBanner({
     if (!selectedCard || !onHandoff) return;
     onHandoff({
       agente: 'AUDIO_PLAY',
-      codigo: selectedCard.bro_mus || selectedCard.bro_aud || selectedCard.bro_pd,
+      codigo: selectedCard.bro_mus || selectedCard.bro_aud,
       canal:  selectedCard,
     });
     setSelectedCard(null);

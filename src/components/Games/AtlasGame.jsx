@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom'; // <--- IMPORTANTE: Necesario para el Portal
-import { marcarActividad } from '../../hooks/useActividad';
 import { useAudioContext } from '../../context/AudioContext';
 
 
@@ -63,24 +62,6 @@ useEffect(() => {
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, [onClose]);
-  
-  // --- REGISTRO DE ACTIVIDAD (SUPABASE) ---
-useEffect(() => {
-  // Solo disparamos cuando el juego termina (gameOver pasa a ser TRUE)
-  if (gameOver) {
-    const registrarActividad = async () => {
-      try {
-        // CAMBIA '3iatlas' por el nombre de cada juego en sus respectivos archivos
-        await marcarActividad('games'); 
-        console.log("Actividad de juego guardada con éxito");
-      } catch (error) {
-        console.error("Error al marcar actividad del juego:", error);
-      }
-    };
-    
-    registrarActividad();
-  }
-}, [gameOver]); // <--- Importante: Se activa cuando cambia el estado de la partida
 
   // --- BUCLE DEL JUEGO ---
   useEffect(() => {

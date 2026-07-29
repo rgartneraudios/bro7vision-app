@@ -1,7 +1,6 @@
 // src/components/NeonReact.jsx (VERSIÓN FINAL ECONOMÍA 10 PTS)
 
 import React, { useState, useEffect, useRef } from 'react';
-import { marcarActividad } from '../../hooks/useActividad';
 import { useAudioContext } from '../../context/AudioContext';
 
 export default function NeonReact({ onWin }) {
@@ -26,21 +25,6 @@ export default function NeonReact({ onWin }) {
     { id: 2, name: 'BLUE', bg: 'bg-blue-600', glow: 'shadow-[0_0_30px_blue] border-blue-400', freq: 392.00 },
     { id: 3, name: 'YELLOW', bg: 'bg-yellow-500', glow: 'shadow-[0_0_30px_yellow] border-yellow-300', freq: 523.25 }
   ];
-
-  // --- REGISTRO DE ACTIVIDAD ARREGLADO (No puede ir flotando fuera del componente) ---
-  useEffect(() => {
-    if (gameOver) {
-      const registrarActividad = async () => {
-        try {
-          await marcarActividad('games');
-          console.log("Actividad de NeonReact guardada con éxito");
-        } catch (error) {
-          console.error("Error al marcar actividad:", error);
-        }
-      };
-      registrarActividad();
-    }
-  }, [gameOver]);
 
   // Inicialización y limpieza del AudioContext
   useEffect(() => {

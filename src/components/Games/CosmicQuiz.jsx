@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../supabaseClient';
-import { marcarActividad } from '../../hooks/useActividad';
 import { useAudioContext } from '../../context/AudioContext';
 
 // --- BASE DE DATOS DE FRASES ---
@@ -291,22 +290,6 @@ const CosmicQuiz = ({ onWin, scope }) => {
     }
   };
   
- // --- REGISTRO DE ACTIVIDAD (SUPABASE) ---
-  useEffect(() => {
-    // En este juego usamos gameState === 'finished' en lugar de gameOver
-    if (gameState === 'finished') {
-      const registrarActividad = async () => {
-        try {
-          await marcarActividad('games'); 
-          console.log("Actividad de juego guardada con éxito");
-        } catch (error) {
-          console.error("Error al marcar actividad del juego:", error);
-        }
-      };
-      registrarActividad();
-    }
-  }, [gameState]); // Vigilamos el estado del juego
-
   return (
     <div className="w-full h-full relative overflow-hidden bg-black border-2 border-white/20 rounded-3xl shadow-2xl font-mono select-none flex flex-col items-center justify-center">
       

@@ -2,7 +2,6 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import PhaserGame from './PhaserGame';
 import ScalextricScene from '../../game/ScalextricScene';
 import Phaser from 'phaser';
-import { marcarActividad } from '../../hooks/useActividad';
 import { useAudioContext } from '../../context/AudioContext';
 
 const ScalextricPhaser = ({ onWin, difficulty }) => {
@@ -152,22 +151,6 @@ const ScalextricPhaser = ({ onWin, difficulty }) => {
         }
     }
   }), [difficulty]); 
-  
-  // --- REGISTRO DE ACTIVIDAD (SUPABASE) CORREGIDO ---
-  useEffect(() => {
-    // CORRECCIÓN DEL ERROR ROJO: Aquí usamos 'mode' que es la variable real, no 'gameState'
-    if (mode === 'finished') {
-      const registrarActividad = async () => {
-        try {
-          await marcarActividad('games'); 
-          console.log("Actividad de juego guardada con éxito");
-        } catch (error) {
-          console.error("Error al marcar actividad del juego:", error);
-        }
-      };
-      registrarActividad();
-    }
-  }, [mode]); 
   
   return (
     <div className="w-full h-full flex items-center justify-center bg-black/90 rounded-xl overflow-hidden border-2 border-cyan-500/50 shadow-lg relative">

@@ -437,9 +437,7 @@ function BurbujaDescripcion({ card, intent, accent, onHandoff, onClose }) {
     if (!agente) return;
     // Audio usa codigo, el resto usa comercio
     if (agente === 'AUDIO_PLAY') {
-      onHandoff({ agente, codigo: card.bro_mus || card.bro_aud || card.bro_pd });
-    } else {
-      onHandoff({ agente, comercio: card.bro_pd || card.bro_ser });
+      onHandoff({ agente, codigo: card.bro_mus || card.bro_aud });
     }
     onClose();
   };

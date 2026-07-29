@@ -36,7 +36,7 @@ const GROUPS = [
   { id: 6,  name: 'ORUMAMA',            groupId:'orumama',            members:[],                      hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['orumama.webp'],         video: 'orumamaDefaults.mp4',           top: '80%', left: '32%',  animDuration: '8.5s' },
   { id: 7,  name: 'SEÑOR MISTERIO',     groupId:'smisterio',          members:[],                      hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['smisterio.webp'],       video: 'smisterioDefaults.mp4',         top: '72%', left: '8%',   animDuration: '7.5s' },
   { id: 8,  name: 'JAGUAR',             groupId:'jaguar',             members:[],                      hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['jaguar.webp'],          video: 'jaguarSignos.mp4',              top: '42%', left: '18%',   animDuration: '9.5s' },
-  { id: 9,  name: 'RUMORES',            groupId:'rumores',            members:[],                      hasIA:false, hasAudio:true, hasPalabraClave:true,  hasChat:false, images: ['rumores.webp'],         video: 'rumoresdefaults.mp4',                    top: '78%', left: '55%',  animDuration: '11s'  },
+  { id: 9,  name: 'RUMORES',            groupId:'rumores',            members:[],                      hasIA:false, hasAudio:true, hasPalabraClave:true,  hasChat:false, images: ['rumores.webp'],         video: 'rumoresdefaults1.mp4',                    top: '78%', left: '55%',  animDuration: '11s'  },
   { id: 10, name: 'BRO7BAND',           groupId:'bro7band',           members:[],                      hasIA:false, hasAudio:false,hasPalabraClave:false, hasChat:false, images: ['bro7band.webp'],        video: 'https://pub-a77d1f38b28849c1ad7e977150ecb53f.r2.dev/Bro7Band%20Insectos.mp4', top: '45%', left: '44%', animDuration: '10s'  },
 ];
 
@@ -441,6 +441,25 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
         <div className="rounded-full border border-fuchsia-500/30 bg-black/30 backdrop-blur-md w-full h-full flex flex-col items-center justify-center px-4">
           <p className="text-fuchsia-300 text-sm font-bold uppercase tracking-wide leading-relaxed text-center">
             🎵<br />Gana Lunas<br />Pulsa un grupo<br />y descubre la<br />palabra clave<br />que hay en<br />sus audios
+          </p>
+        </div>
+      </div>
+
+      <div
+        style={{
+          position: 'absolute',
+          top: '46%',
+          left: '84%',
+          animation: 'floatPlanet 8s ease-in-out infinite',
+          animationDelay: '2.4s',
+          width: '220px',
+          height: '220px',
+          pointerEvents: 'none',
+        }}
+      >
+        <div className="rounded-full border border-lime-500/30 bg-black/30 backdrop-blur-md w-full h-full flex flex-col items-center justify-center px-4">
+          <p className="text-lime-300 text-sm font-bold uppercase tracking-wide leading-relaxed text-center">
+            💚<br />Gana 100 Lunas<br />viendo los capítulos<br />de Bro7band!<br />en cada Fase Lunar
           </p>
         </div>
       </div>

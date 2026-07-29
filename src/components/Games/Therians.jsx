@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SCENARIOS, EMOTIONAL_MATRIX } from '../../data/CruceDeCaminosData';
-import { marcarActividad } from '../../hooks/useActividad';
 import { useAudioContext } from '../../context/AudioContext';
 
 const BUTTON_SETS = {
@@ -155,22 +154,6 @@ const Therians = ({ onWin, onClose }) => {
         }
         setGameState('END');
     };
-    
-    // --- REGISTRO DE ACTIVIDAD (SUPABASE) ---
-    useEffect(() => {
-        // Corrección: El estado final de este juego es 'END', no 'finished'
-        if (gameState === 'END') {
-            const registrarActividad = async () => {
-                try {
-                    await marcarActividad('games'); 
-                    console.log("Actividad de juego guardada con éxito");
-                } catch (error) {
-                    console.error("Error al marcar actividad del juego:", error);
-                }
-            };
-            registrarActividad();
-        }
-    }, [gameState]); 
 
     // --- RENDERS ---
 

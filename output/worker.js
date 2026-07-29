@@ -111,16 +111,6 @@ async function resolverUsuario(env, token) {
 }
 
 // ================================================================
-// HELPER COMPARTIDO — marca actividad en profiles
-// ================================================================
-async function marcarActividad(env, user_id) {
-  await sbPatch(env,
-    `profiles?id=eq.${user_id}`,
-    { actividad_video: true, updated_at: new Date().toISOString() }
-  );
-}
-
-// ================================================================
 // ENDPOINT: /proyectar → brotwit, blog, holoprisma → mini_proyeccion
 // ================================================================
 async function handleProyectar(request, env, corsHeaders) {
@@ -206,8 +196,6 @@ async function handleProyectar169(request, env, corsHeaders) {
     await sbPost(env, 'proyeccion_169', registro);
   }
 
-  await marcarActividad(env, user_id);
-
   return json({ ok: true, mensaje: '¡Video 16:9 proyectado! Ya aparece en los canales horizontales de Brovision.' }, 200, corsHeaders);
 }
 
@@ -252,8 +240,6 @@ async function handleProyectar916(request, env, corsHeaders) {
     registro.created_at = new Date().toISOString();
     await sbPost(env, 'proyeccion_916', registro);
   }
-
-  await marcarActividad(env, user_id);
 
   return json({ ok: true, mensaje: '¡Video 9:16 proyectado! Ya aparece en los canales verticales de Brovision.' }, 200, corsHeaders);
 }
@@ -302,8 +288,6 @@ async function handleProyectarAudio(request, env, corsHeaders) {
     await sbPost(env, 'proyeccion_audio', registro);
   }
 
-  await marcarActividad(env, user_id);
-
   return json({ ok: true, mensaje: '¡Audio proyectado! Ya suena en BroLives de Brovision.' }, 200, corsHeaders);
 }
 
@@ -348,8 +332,6 @@ async function handleProyectarAudmovil(request, env, corsHeaders) {
     registro.created_at = new Date().toISOString();
     await sbPost(env, 'proyeccion_audmovil', registro);
   }
-
-  await marcarActividad(env, user_id);
 
   return json({ ok: true, mensaje: '¡Audio móvil proyectado! Ya disponible en el reproductor central de Brovision.' }, 200, corsHeaders);
 }

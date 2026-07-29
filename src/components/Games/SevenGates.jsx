@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../supabaseClient';
-import { marcarActividad } from '../../hooks/useActividad';
 import { useAudioContext } from '../../context/AudioContext';
 
 // --- CONFIGURACIÓN DE MEDIOS ---
@@ -259,22 +258,6 @@ const SevenGates = ({ onWin, onClose, scope }) => {
       }, 4000);
   };
   
-  // --- REGISTRO DE ACTIVIDAD (SUPABASE) ARREGLADO ---
-  useEffect(() => {
-    // En The 7 Gates, el estado del juego se maneja con 'phase'
-    if (phase === 'win' || phase === 'fail') {
-      const registrarActividad = async () => {
-        try {
-          await marcarActividad('games'); 
-          console.log("Actividad de juego guardada con éxito");
-        } catch (error) {
-          console.error("Error al marcar actividad del juego:", error);
-        }
-      };
-      registrarActividad();
-    }
-  }, [phase]);
-
   return (
     // CAMBIO COLOR: Todo el borde y sombra ahora es CYAN siempre
     <div className={`relative w-full h-full max-w-6xl mx-auto bg-black font-mono overflow-hidden flex flex-col items-center justify-center select-none text-white rounded-xl border-2 border-cyan-500 shadow-[0_0_30px_cyan]`}>
