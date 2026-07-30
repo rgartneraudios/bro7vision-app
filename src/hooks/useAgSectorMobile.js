@@ -2,9 +2,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAgentNova } from './useAgentNova';
 import { useAgentEvelyn }      from './useAgentEvelyn';
 import { useAgentRumores }     from './useAgentRumores';
-import { useSmisterioChat }    from './useSmisterioChat';
-import { useJaguarChat }       from './useJaguarChat';
-import { useOrumamaChat }      from './useOrumamaChat';
+import { useAgentSMisterio } from './useAgentSMisterio';
+import { useAgentJaguar }    from './useAgentJaguar';
+import { useAgentOrumama }   from './useAgentOrumama';
 
 const noop = () => {};
 
@@ -50,11 +50,11 @@ export function useAgSectorMobile({
   const rumores  = useAgentRumores    ({ iaMode, isAdmin, onHandoff });
 
   // ── Hooks del Oráculo (usan el wrapper estable) ───────────────────────────
-  const smisterio = useSmisterioChat({ iaMode, isAdmin, onHandoff: onHandoffOraculo,
-                      onBotContent: noop, onBotContentIA: noop });
-  const jaguar    = useJaguarChat   ({ iaMode, isAdmin, onHandoff: onHandoffOraculo,
+  const smisterio = useAgentSMisterio({ iaMode, isAdmin, onHandoff: onHandoffOraculo,
                       onBotContent: noop });
-  const orumama   = useOrumamaChat  ({ iaMode, isAdmin, onHandoff: onHandoffOraculo,
+  const jaguar    = useAgentJaguar   ({ iaMode, isAdmin, onHandoff: onHandoffOraculo,
+                      onBotContent: noop });
+  const orumama   = useAgentOrumama  ({ iaMode, isAdmin, onHandoff: onHandoffOraculo,
                       onBotContent: noop });
 
   const oraculo =
@@ -76,7 +76,7 @@ export function useAgSectorMobile({
   // puedan mostrar respuestas en bot-mode sin el Banner de escritorio
   const enviar = useCallback((texto) => {
     setMensajeBot(null);
-    activeRef.current.enviar(texto, { setCurrentMsg: setMensajeBot, elegir });
+    activeRef.current.enviar(texto);
   }, []);
 
   const reset = useCallback(() => {

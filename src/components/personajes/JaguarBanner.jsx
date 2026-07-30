@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react'; 
 import AgentChatInput from '../AgentChatInput';
-import { useJaguarChat } from '../../hooks/useJaguarChat';
+import { useAgentJaguar } from '../../hooks/useAgentJaguar';
 import * as JD from '../../data/jaguar/jaguarData';
 
 // ─── CONSTANTES ──────────────────────────────────────────────────────────────
@@ -21,22 +21,6 @@ const FRASES_LLEGADA = [
 
 const buildTextoSigno = (s) =>
   `${s.simbolo} ${s.frase.trim()}\n\n${s.esencia.trim()}\n\n${s.consejo}`;
-
-const FRASES_CONFIRMO = {
-  aries:       `🐯Aries sideral — entre 19 abr y 13 may. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
-  tauro:       `🐯 Tauro sideral — entre 14 may y 19 jun. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
-  geminis:     `🐯 Géminis sideral — entre 20 jun y 20 jul. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
-  cancer:      `🐯 Cáncer sideral — entre 21 jul y 9 ago. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
-  leo:         `🐯 Leo sideral — entre 10 ago y 15 sep. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
-  virgo:       `🐯 Virgo sideral — entre 16 sep y 30 oct. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
-  libra:       `🐯 Libra sideral — entre 31 oct y 22 nov. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
-  escorpio:    `🐯 Escorpio sideral — entre 23 nov y 29 nov. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
-  ofiuco:      `🐯 Ofiuco sideral — entre 30 nov y 17 dic. El signo trece. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
-  sagitario:   `🐯 Sagitario sideral — entre 18 dic y 18 ene. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
-  capricornio: `🐯 Capricornio sideral — entre 19 ene y 15 feb. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
-  acuario:     `🐯 Acuario sideral — entre 16 feb y 11 mar. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
-  piscis:      `🐯 Piscis sideral — entre 12 mar y 18 abr. Escribe CONFIRMO y revelo la frecuencia aquí al costado. En modo móvil lo tendrás en la pestaña mando.`,
-};
 
 const ACORDEON_DATA = {
   aries:       { texto: buildTextoSigno(JD.aries),       video: 'https://media.bro7vision.com/jaguarSignos.mp4'       },
@@ -69,17 +53,6 @@ const ACORDEON_DATA = {
   amazonas_2:       { texto: JD.amazonas2.data,        video: 'https://media.bro7vision.com/jaguarDefaults.mp4' },
 };
 
-const FRASES_EXPLORAR = [
-  "El cosmos tiene muchas puertas, hermano. ¿Buscas tu signo, la fase lunar, o algo más profundo?",
-  "Estoy aquí. ¿Quieres saber de tu signo? ¿De la luna? Habla. 🐯",
-  "Las estrellas escuchan todo. Cuéntame qué necesitas. 🐯",
-];
-
-const FRASES_FECHA = [
-  (signo) => `Hermano... las estrellas lo revelaron. Tu signo sideral es ${signo.toUpperCase()}. Escribe CONFIRMO y te cuento la frecuencia. 🐯`,
-  (signo) => `El cosmos me lo confirma — naciste bajo ${signo.toUpperCase()} sideral. Escribe CONFIRMO. 🐯`,
-];
-
 const FRASES_HANDOFF_OSOS = [
   "Los osos operan en otra dimensión, hermano. Te paso con ellos.",
   "Eso no es cósmico — es terrenal. Ve con recepción. 🐯",
@@ -106,55 +79,6 @@ const slateColor    = '#94a3b8';
 const norm   = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const elegir = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-const KEYWORDS_TEMAS = {
-  // mitos y amazonas PRIMERO: 'aries mito' contiene 'aries' como substring
-  aries_mito:       ['aries mito'],
-  tauro_mito:       ['tauro mito'],
-  geminis_mito:     ['geminis mito', 'géminis mito'],
-  cancer_mito:      ['cancer mito', 'cáncer mito'],
-  leo_mito:         ['leo mito'],
-  virgo_mito:       ['virgo mito'],
-  libra_mito:       ['libra mito'],
-  escorpio_mito:    ['escorpio mito'],
-  ofiuco_mito:      ['ofiuco mito'],
-  sagitario_mito:   ['sagitario mito'],
-  capricornio_mito: ['capricornio mito'],
-  acuario_mito:     ['acuario mito'],
-  piscis_mito:      ['piscis mito'],
-  amazonas:         ['cuentos del amazonas', 'amazonas'],
-  // signos
-  aries:       ['aries'],
-  tauro:       ['tauro'],
-  geminis:     ['geminis', 'géminis'],
-  cancer:      ['cancer', 'cáncer'],
-  leo:         ['leo'],
-  virgo:       ['virgo'],
-  libra:       ['libra'],
-  ofiuco:      ['ofiuco'],
-  escorpio:    ['escorpio'],
-  sagitario:   ['sagitario'],
-  capricornio: ['capricornio'],
-  acuario:     ['acuario'],
-  piscis:      ['piscis'],
-};
-const KEYWORDS_SALIDA     = ['salir', 'volver', 'osos', 'inicio', 'recepción', 'recepcion'];
-const KEYWORDS_SMISTERIO  = ['misterio', 'señor misterio', 'smisterio'];
-const KEYWORDS_ORUMAMA    = ['orumama', 'la orumama'];
-const KEYWORDS_HIERBAS    = ['hierba', 'planta', 'remedio', 'brebaje'];
-
-function detectarTema(texto) {
-  const t = norm(texto);
-  for (const [tema, keys] of Object.entries(KEYWORDS_TEMAS)) {
-    if (keys.some(k => t.includes(k))) return tema;
-  }
-  return null;
-}
-
-function detectarFecha(texto) {
-  const m = texto.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})|(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
-  return m ? m[0] : null;
-}
-
 // ─── COMPONENTE ───────────────────────────────────────────────────────────────
 
 export default function JaguarBanner({
@@ -167,6 +91,7 @@ export default function JaguarBanner({
   isMobile        = false,
   onMensaje,
   onEnviarRef,
+  tienePrepago    = false,
   }) {
   const [display, setDisplay]                 = useState('');
   const [cursor, setCursor]                   = useState(true);
@@ -177,7 +102,7 @@ export default function JaguarBanner({
   const fadeTimer   = useRef(null);
   const origenRef   = useRef(origenLlegada);
 
-  const { mensaje: iaMensaje, loading, enviar: enviarHook, iaActiva } = useJaguarChat({
+  const { mensaje: iaMensaje, loading, enviar: enviarHook, iaActiva } = useAgentJaguar({
     iaMode,
     isAdmin,
     onBotContent: (tema) => {
@@ -230,20 +155,8 @@ export default function JaguarBanner({
 
   useEffect(() => {
     if (!onEnviarRef) return;
-    onEnviarRef.current = (texto) => {
-      enviarHook(texto, {
-        calcularSignoSideral: JD.calcularSignoSideral,
-        FRASES_CONFIRMO,
-        FRASES_HANDOFF: {
-          smisterio: FRASES_HANDOFF_SMISTERIO,
-          orumama:   FRASES_HANDOFF_ORUMAMA,
-          osos:      FRASES_HANDOFF_OSOS,
-        },
-        setCurrentMsg: (msg) => onMensaje?.(msg),
-        elegir,
-      });
-    };
-  }, [enviarHook, onMensaje]);
+    onEnviarRef.current = (texto) => enviarHook(texto);
+  }, [enviarHook]);
 
   const cambiarVideo = (url) => {
     if (url === videoActual) return;
@@ -257,18 +170,10 @@ export default function JaguarBanner({
 
   const handleUserInput = (texto) => {
     if (!texto.trim()) return;
-    enviarHook(texto, {
-      calcularSignoSideral: JD.calcularSignoSideral,
-      FRASES_CONFIRMO,
-      FRASES_HANDOFF: {
-        smisterio: FRASES_HANDOFF_SMISTERIO,
-        orumama:   FRASES_HANDOFF_ORUMAMA,
-        osos:      FRASES_HANDOFF_OSOS,
-      },
-      setCurrentMsg,
-      elegir,
-    });
+    enviarHook(texto);
   };
+
+  const chatDesbloqueado = isAdmin || tienePrepago;
 
   return (
     <div className="absolute inset-0 z-[50] pointer-events-none">
@@ -361,7 +266,25 @@ export default function JaguarBanner({
           </div>
         </div>
         <div className="w-full max-w-2xl pointer-events-auto mb-4">
-          <AgentChatInput agent="oraculo" onSend={handleUserInput} isLoading={loading} />
+          {chatDesbloqueado ? (
+            <AgentChatInput agent="oraculo" onSend={handleUserInput} isLoading={loading} />
+          ) : (
+            <div style={{
+              background: 'rgba(0,0,0,0.55)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(148,163,184,0.20)',
+              borderRadius: '2rem',
+              padding: '12px 24px',
+              textAlign: 'center',
+              color: '#94a3b8',
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: '0.2em',
+              textTransform: 'uppercase',
+            }}>
+              🔒 Necesitas <span style={{color:'#fff'}}>Prepago IA</span> para chatear con {NOMBRE}
+            </div>
+          )}
         </div>
       </div>
     </div>

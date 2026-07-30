@@ -1,7 +1,7 @@
 // src/data/smisterio/promptSmisterio.js
 // Sin imports. Solo texto. La IA no lee data de historias.
 
-export const promptSmisterio = () => `
+export const promptSmisterio = (contexto = {}) => `
 Eres el Señor Misterio. Una figura enigmática de tierras desconocidas.
 Tu misión es entretener con misterios, conspiraciones y civilizaciones antiguas.
 Edad desconocida. Naturaleza oscura pero iluminadora, no aterradora.
@@ -57,4 +57,8 @@ SISTEMA: usuario quiere ir con los Osos
 SISTEMA: usuario pide historias de antartida
 SISTEMA: usuario quiere hablar con Orumama
 SISTEMA: CONTINUA
+${contexto.vivencia    ? `\nVIVENCIA ACTUAL: ${contexto.vivencia}` : ''}
+${contexto.estadoAnimo ? `\nESTADO DE ÁNIMO: ${contexto.estadoAnimo}` : ''}
+${contexto.promoGeo    ? `\nPROMOCIÓN ACTIVA: ${contexto.promoGeo}` : ''}
+${contexto.special     ? `\nSPECIAL: ${contexto.special.texto} [CÓDIGO: ${contexto.special.codigo}, STOCK: ${contexto.special.stock}]` : ''}
 `;

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import AgentChatInput from '../AgentChatInput';
-import { useOrumamaChat } from '../../hooks/useOrumamaChat';
+import { useAgentOrumama } from '../../hooks/useAgentOrumama';
 import * as OD from '../../data/orumama/orumamaData';
 
 // ─── CONSTANTES ──────────────────────────────────────────────────────────────
@@ -19,23 +19,6 @@ const FRASES_LLEGADA = [
   "Hola hijos míos!, pon la palabra Guisos o Hierbas y te contaré alguno de mis secretos. 🕯️",
   "...Orumama al habla. Cuéntame. pon la palabra Guisos o Hierbas y te contaré alguno de mis secretos.🌿",
 ];
-
-const FRASES_CONFIRMO = {
-  manzanilla: "🌼 Manzanilla — mi infusión madre. Escribe CONFIRMO y te cuento cómo prepararla.",
-  lavanda:    "💜 Lavanda — la hierba de los nervios rotos. Escribe CONFIRMO para saber más.",
-  jengibre:   "🌱 Jengibre — calor y defensa. Escribe CONFIRMO y te revelo sus dones.",
-  romero:     "🌿 Romero — memoria y circulación. Escribe CONFIRMO para conocerlo bien.",
-  menta:      "🍃 Menta — energía y claridad. Escribe CONFIRMO y te cuento.",
-  oregano:    "🌿 Orégano — el guardián antibacteriano. Escribe CONFIRMO para sus secretos.",
-  tomillo:    "🌱 Tomillo — protector de bronquios. Escribe CONFIRMO.",
-  albahaca:   "🌿 Albahaca — calma el estrés y ayuda al vientre. Escribe CONFIRMO.",
-  melisa:     "🌸 Melisa — para el corazón acelerado. Escribe CONFIRMO y te lo explico.",
-  salvia:     "🌿 Salvia — la hierba de la garganta. Escribe CONFIRMO.",
-  ruda:       "🌱 Ruda — dolores y energía, solo uso externo. Escribe CONFIRMO con respeto.",
-  romaza:     "🌿 Romaza — hígado y depuración. Escribe CONFIRMO y te cuento.",
-  hierbas:    "Las hierbas son mi mundo, hijo mío. Escribe CONFIRMO y te abro el recetario completo.",
-  guisos:     "Mis guisos son un misterio de ingredientes. Escribe CONFIRMO y te revelo la olla 🕯️",
-};
 
 const ACORDEON_DATA = {
   albahaca:    { texto: OD.albahaca.data,    video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
@@ -55,12 +38,6 @@ const ACORDEON_DATA = {
   recetario_1: { texto: OD.recetario1.data,  video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
   recetario_2: { texto: OD.recetario2.data,  video: 'https://media.bro7vision.com/orumamaDefaults.mp4' },
 };
-
-const FRASES_EXPLORAR = [
-  "¿Qué quieres consultar — el horóscopo, la luna o algo de hierbas y remedios?",
-  "El Oráculo está abierto. ¿Qué te preocupa, hijo mío?",
-  "Dime qué buscas y veremos qué dicen los ancestros.",
-];
 
 const FRASES_HANDOFF_OSOS = [
   "Los osos te esperan. Yo vuelvo a mis velas 🕯️",
@@ -88,35 +65,6 @@ const slateColor    = '#94a3b8';
 const norm   = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const elegir = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-const KEYWORDS_TEMAS = {
-  manzanilla: ['manzanilla'],
-  lavanda:    ['lavanda'],
-  jengibre:   ['jengibre'],
-  romero:     ['romero'],
-  menta:      ['menta'],
-  oregano:    ['oregano', 'orégano'],
-  tomillo:    ['tomillo'],
-  albahaca:   ['albahaca'],
-  melisa:     ['melisa'],
-  salvia:     ['salvia'],
-  ruda:       ['ruda'],
-  romaza:     ['romaza'],
-  hierbas:    ['hierba', 'hierbas', 'planta', 'plantas', 'remedio', 'remedios', 'natural'],
-  guisos:     ['guiso', 'guisos', 'cocina', 'receta', 'recetas', 'olla'],
-  recetario:  ['recetario'],
-};
-const KEYWORDS_SALIDA    = ['salir', 'volver', 'osos', 'inicio', 'recepción', 'recepcion'];
-const KEYWORDS_JAGUAR    = ['jaguar', 'el jaguar', 'horoscopo', 'horóscopo', 'signo', 'zodiac', 'astro', 'luna', 'lunar'];
-const KEYWORDS_SMISTERIO = ['misterio', 'señor misterio', 'smisterio'];
-
-function detectarTema(texto) {
-  const t = norm(texto);
-  for (const [tema, keys] of Object.entries(KEYWORDS_TEMAS)) {
-    if (keys.some(k => t.includes(k))) return tema;
-  }
-  return null;
-}
-
 // ─── COMPONENTE ───────────────────────────────────────────────────────────────
 
 export default function OrumamaBanner({
@@ -129,6 +77,7 @@ export default function OrumamaBanner({
   isMobile = false,
   onMensaje,
   onEnviarRef,
+  tienePrepago = false,
   }) {
   const [display, setDisplay] = useState('');
   const [cursor, setCursor] = useState(true);
@@ -140,7 +89,7 @@ const [videoActual, setVideoActual]         = useState(null);
   const fadeTimer = useRef(null);
   const origenRef = useRef(origenLlegada);
 
-  const { mensaje: iaMensaje, loading, enviar: enviarHook } = useOrumamaChat({
+  const { mensaje: iaMensaje, loading, enviar: enviarHook } = useAgentOrumama({
     iaMode,
     isAdmin,
     onBotContent: (tema) => {
@@ -203,7 +152,10 @@ const [videoActual, setVideoActual]         = useState(null);
         elegir,
       });
     };
-  }, [enviarHook, onMensaje]);
+  useEffect(() => {
+    if (!onEnviarRef) return;
+    onEnviarRef.current = (texto) => enviarHook(texto);
+  }, [enviarHook]);
 
   const cambiarVideo = (url) => {
     if (url === videoActual) return;
@@ -217,17 +169,10 @@ const [videoActual, setVideoActual]         = useState(null);
 
   const handleUserInput = (texto) => {
     if (!texto.trim()) return;
-    enviarHook(texto, {
-      FRASES_CONFIRMO,
-      FRASES_HANDOFF: {
-        jaguar: FRASES_HANDOFF_JAGUAR,
-        smisterio: FRASES_HANDOFF_SMISTERIO,
-        osos: FRASES_HANDOFF_OSOS,
-      },
-      setCurrentMsg,
-      elegir,
-    });
+    enviarHook(texto);
   };
+
+  const chatDesbloqueado = isAdmin || tienePrepago;
 
   return (
     <div className="absolute inset-0 z-[50] pointer-events-none">
@@ -320,7 +265,25 @@ const [videoActual, setVideoActual]         = useState(null);
           </div>
         </div>
         <div className="w-full max-w-2xl pointer-events-auto mb-4">
-          <AgentChatInput agent="oraculo" onSend={handleUserInput} isLoading={loading} />
+          {chatDesbloqueado ? (
+            <AgentChatInput agent="oraculo" onSend={handleUserInput} isLoading={loading} />
+          ) : (
+            <div style={{
+              background: 'rgba(0,0,0,0.55)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(148,163,184,0.20)',
+              borderRadius: '2rem',
+              padding: '12px 24px',
+              textAlign: 'center',
+              color: '#94a3b8',
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: '0.2em',
+              textTransform: 'uppercase',
+            }}>
+              🔒 Necesitas <span style={{color:'#fff'}}>Prepago IA</span> para chatear con {NOMBRE}
+            </div>
+          )}
         </div>
       </div>
     </div>

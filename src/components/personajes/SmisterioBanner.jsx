@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react'; 
 import AgentChatInput from '../AgentChatInput';
-import { useSmisterioChat } from '../../hooks/useSmisterioChat';
+import { useAgentSMisterio } from '../../hooks/useAgentSMisterio';
 import * as SD from '../../data/smisterio/smisterioData';
 
 // ─── CONSTANTES ──────────────────────────────────────────────────────────────
@@ -18,13 +18,6 @@ const FRASES_LLEGADA = [
   "...Aquí el Señor Misterio. ¿Qué enigma buscas? ☎️",
 ];
 
-const FRASES_CONFIRMO = {
-  antartida: "☎️ La Antártida guarda secretos que no aparecen en los mapas. Escribe CONFIRMO y te los revelo aquí al costado. En modo móvil lo tendrás en la pestaña mando.",
-  egipto:    "☎️ Egipto. Miles de años de verdades ocultas. Escribe CONFIRMO y empezamos aquí al costado. En modo móvil lo tendrás en la pestaña mando.",
-  bucegi:    "☎️ Bucegi. Rumanía esconde más de lo que parece. Escribe CONFIRMO si quieres saber. Te lo revelo aquí al costado. En modo móvil lo tendrás en la pestaña mando.",
-  tartaria:  "☎️ Tartaria. El imperio que borraron de la historia. Escribe CONFIRMO para conocerlo aquí al costado. En modo móvil lo tendrás en la pestaña mando.",
-};
-
 const ACORDEON_DATA = {
   antartida: { texto: SD.antartidabot.bot, video: 'https://media.bro7vision.com/smantartidas.mp4' },
   egipto:    { texto: SD.egiptobot.bot,    video: 'https://media.bro7vision.com/smegipto.mp4'     },
@@ -39,12 +32,6 @@ const ACORDEON_DATA_IA = {
   egipto:    [SD.elTeDeLMercader, SD.lanocheEnLaPiramide, SD.losSecretosDelDesierto, SD.memphisYElMisissipi],
   tartaria:  [SD.elImperioPerdido, SD.lasCatedralosHundidas, SD.artePerdido, SD.elTransiberiano],
 };
-
-const FRASES_EXPLORAR = [
-  "¿Qué misterio te trajo aquí? ☎️",
-  "Pregunta. Aunque quizás... no quieras saber la respuesta.",
-  "¿Qué pieza del rompecabezas buscas?",
-];
 
 const FRASES_HANDOFF_OSOS = [
   "☎️ Corto comunicación. Los osos te esperan en la superficie.",
@@ -72,24 +59,6 @@ const slateColor     = '#94a3b8';
 const norm   = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const elegir = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-const KEYWORDS_TEMAS = {
-  antartida: ['antartida', 'antártida', 'polo sur', 'highjump'],
-  egipto:    ['egipto', 'pirámide', 'piramide', 'faraón', 'faraon'],
-  bucegi:    ['bucegi', 'rumanía', 'rumania'],
-  tartaria:  ['tartaria', 'imperio perdido', 'barroco'],
-};
-const KEYWORDS_SALIDA  = ['salir', 'volver', 'osos', 'inicio', 'recepción', 'recepcion'];
-const KEYWORDS_JAGUAR  = ['jaguar', 'el jaguar'];
-const KEYWORDS_ORUMAMA = ['orumama', 'la orumama'];
-
-function detectarTema(texto) {
-  const t = norm(texto);
-  for (const [tema, keys] of Object.entries(KEYWORDS_TEMAS)) {
-    if (keys.some(k => t.includes(k))) return tema;
-  }
-  return null;
-}
-
 // ─── COMPONENTE ───────────────────────────────────────────────────────────────
 
 export default function SmisterioBanner({
@@ -102,6 +71,7 @@ export default function SmisterioBanner({
   isMobile        = false,
   onMensaje,
   onEnviarRef,
+  tienePrepago    = false,
   }) {
   const [display, setDisplay]                 = useState('');
   const [cursor, setCursor]                   = useState(true);
@@ -112,20 +82,13 @@ export default function SmisterioBanner({
   const fadeTimer   = useRef(null);
   const origenRef   = useRef(origenLlegada);
 
-  const { mensaje: iaMensaje, loading, enviar: enviarHook, iaActiva } = useSmisterioChat({
+  const { mensaje: iaMensaje, loading, enviar: enviarHook, iaActiva } = useAgentSMisterio({
     iaMode,
     isAdmin,
     onBotContent: (tema) => {
       const data = ACORDEON_DATA[tema];
       if (data) {
         cambiarVideo(data.video);
-      }
-    },
-    onBotContentIA: (tema, yaContadas) => {
-      const historias = ACORDEON_DATA_IA[tema];
-      if (historias) {
-        const indice = Math.min(yaContadas, historias.length - 1);
-        cambiarVideo(ACORDEON_DATA[tema].video);
       }
     },
     onHandoff: (destino) => {
@@ -184,7 +147,10 @@ useEffect(() => {
         elegir,
       });
     };
-  }, [enviarHook, onMensaje]);
+  useEffect(() => {
+    if (!onEnviarRef) return;
+    onEnviarRef.current = (texto) => enviarHook(texto);
+  }, [enviarHook]);
 
   const cambiarVideo = (url) => {
     if (url === videoActual) return;
@@ -198,17 +164,10 @@ useEffect(() => {
 
   const handleUserInput = (texto) => {
     if (!texto.trim()) return;
-    enviarHook(texto, {
-      FRASES_CONFIRMO,
-      FRASES_HANDOFF: {
-        jaguar:    FRASES_HANDOFF_JAGUAR,
-        orumama:   FRASES_HANDOFF_ORUMAMA,
-        osos:      FRASES_HANDOFF_OSOS,
-      },
-      setCurrentMsg,
-      elegir,
-    });
+    enviarHook(texto);
   };
+
+  const chatDesbloqueado = isAdmin || tienePrepago;
 
   return (
     <div className="absolute inset-0 z-[50] pointer-events-none">
@@ -303,7 +262,25 @@ useEffect(() => {
           </div>
         </div>
         <div className="w-full max-w-2xl pointer-events-auto mb-4">
-          <AgentChatInput agent="oraculo" onSend={handleUserInput} isLoading={loading} />
+          {chatDesbloqueado ? (
+            <AgentChatInput agent="oraculo" onSend={handleUserInput} isLoading={loading} />
+          ) : (
+            <div style={{
+              background: 'rgba(0,0,0,0.55)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(148,163,184,0.20)',
+              borderRadius: '2rem',
+              padding: '12px 24px',
+              textAlign: 'center',
+              color: '#94a3b8',
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: '0.2em',
+              textTransform: 'uppercase',
+            }}>
+              🔒 Necesitas <span style={{color:'#fff'}}>Prepago IA</span> para chatear con {NOMBRE}
+            </div>
+          )}
         </div>
       </div>
     </div>
