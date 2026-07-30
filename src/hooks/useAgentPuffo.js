@@ -4,24 +4,12 @@
 import { useState } from 'react';
 import { promptPuffo }       from '../data/puffo/promptPuffo';
 import { fetchContextoPuffo } from '../services/contexto/fetchContextoPuffo';
-import { detectarSectorPS, detectarCiudadPS } from '../services/agents/ososPS';
+
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
-const SECTORES_SIN_CIUDAD = ['BRO7BAND', 'REINOS'];
 const norm   = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const elegir = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-const FRASES_BIENVENIDA = [
-  "Puffo aquí 🎙️ Dime, ¿a dónde te llevo hoy?",
-  "¡Okey! Micrófono abierto — ¿qué buscas?",
-  "¡Hola! ¿Tienes algo en mente o abrimos el debate juntos?",
-  "Aquí Puffo. He escuchado de todo en esta vida. ¿A dónde vamos?",
-];
-const FRASES_PEDIR_CIUDAD = [
-  "Fíjate, necesito un dato clave — ¿en qué ciudad buscas?",
-  "Dime la ciudad. Sin eso no tengo contexto para llevarte allí.",
-  "¿Dónde buscas? Ciudad o país — lo que tengas sobre la mesa.",
-];
 const FRASES_FALLBACK = [
   "Ajá... no te sigo del todo. ¿buscas Canjear Lunas, Shop Amigos, Games? Dame el titular.",
   "Interesante... pero necesito más contexto. ¿A qué sector quieres ir?",
@@ -32,8 +20,6 @@ export function useAgentPuffo({ iaMode, isAdmin, onHandoff, ciudad = null }) {
   const [mensaje, setMensaje]             = useState(null);
   const [loading, setLoading]             = useState(false);
   const [chatHistory, setChatHistory]     = useState([]);
-  const [sectorMemoria, setSectorMemoria] = useState(null);
-  const [ciudadMemoria, setCiudadMemoria] = useState(null);
 
   const iaActiva = (iaMode === 'admin' && isAdmin) || (iaMode === 'public' && !isAdmin);
 
@@ -71,7 +57,7 @@ export function useAgentPuffo({ iaMode, isAdmin, onHandoff, ciudad = null }) {
         const detalle = partes[1] || null;
         onHandoff?.({
           agente,
-          ciudad: ciudadMemoria || ciudad,
+          ciudad,
           ...(detalle && agente === 'OSOS_INTERNO' && { oso_id: detalle }),
           ...(detalle && agente !== 'OSOS_INTERNO' && { ciudad: detalle }),
         });
@@ -107,32 +93,6 @@ export function useAgentPuffo({ iaMode, isAdmin, onHandoff, ciudad = null }) {
     if (t.includes('tito')) { setTimeout(() => onHandoff?.({ agente: 'OSOS_INTERNO', oso_id: 'tito' }), 1200); return; }
     if (t.includes('lara')) { setTimeout(() => onHandoff?.({ agente: 'OSOS_INTERNO', oso_id: 'lara' }), 1200); return; }
 
-    // 2. Detección temprana sector + ciudad
-    const sectorDetect = detectarSectorPS(textoUsuario);
-    const ciudadDetect = detectarCiudadPS(textoUsuario);
-    const sectorFinal  = sectorDetect || sectorMemoria;
-    const ciudadFinal  = ciudadDetect?.valor || ciudadMemoria;
-
-    if (sectorDetect)        setSectorMemoria(sectorDetect);
-    if (ciudadDetect?.valor) setCiudadMemoria(ciudadDetect.valor);
-
-    if (sectorFinal && !SECTORES_SIN_CIUDAD.includes(sectorFinal) && ciudadFinal) {
-      setMensaje(elegir(FRASES_BIENVENIDA));
-      setSectorMemoria(null); setCiudadMemoria(null);
-      setTimeout(() => onHandoff?.({ agente: sectorFinal, ciudad: ciudadFinal }), 1200);
-      return;
-    }
-    if (sectorFinal && SECTORES_SIN_CIUDAD.includes(sectorFinal)) {
-      setMensaje(elegir(FRASES_BIENVENIDA));
-      setSectorMemoria(null);
-      setTimeout(() => onHandoff?.({ agente: sectorFinal, ciudad: null }), 1200);
-      return;
-    }
-    if (sectorFinal && !ciudadFinal) {
-      setMensaje(elegir(FRASES_PEDIR_CIUDAD));
-      return;
-    }
-
     // 3. Modo IA
     if (iaActiva) { enviarIA(textoUsuario); return; }
 
@@ -143,8 +103,6 @@ export function useAgentPuffo({ iaMode, isAdmin, onHandoff, ciudad = null }) {
   const reset = () => {
     setMensaje(null);
     setChatHistory([]);
-    setSectorMemoria(null);
-    setCiudadMemoria(null);
   };
 
   return { mensaje, loading, enviar, reset, iaActiva };

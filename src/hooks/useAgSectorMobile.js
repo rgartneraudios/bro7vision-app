@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useAgentNovaExplora } from './useAgentNovaExplora';
+import { useAgentNova } from './useAgentNova';
 import { useAgentEvelyn }      from './useAgentEvelyn';
 import { useAgentRumores }     from './useAgentRumores';
 import { useSmisterioChat }    from './useSmisterioChat';
@@ -44,7 +44,7 @@ export function useAgSectorMobile({
   }, []);
 
   // ── Hooks de sector ────────────────────────────────────────────────────────
-  const nova     = useAgentNovaExplora({ iaMode, isAdmin, onHandoff, ciudad });
+  const nova     = useAgentNova({ iaMode, isAdmin, onHandoff, ciudad });
   const evelyn   = useAgentEvelyn     ({ iaMode, isAdmin, onHandoff, ciudad,
                      genesis, userId, autorAlias });
   const rumores  = useAgentRumores    ({ iaMode, isAdmin, onHandoff });

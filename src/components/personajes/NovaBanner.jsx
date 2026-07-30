@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AgentChatInput from '../AgentChatInput';
 import CuponModal from '../CuponModal';
-import { useAgentNovaExplora } from '../../hooks/useAgentNovaExplora';
+import { useAgentNova } from '../../hooks/useAgentNova';
 import { useCanjearCupon } from '../../hooks/useCanjearCupon';
 
 const NOVA_GREETINGS = [
@@ -32,7 +32,7 @@ export default function NovaBanner({
   const charIdx = useRef(0);
 
   const { mensaje: novaMensaje, loading: novaLoading, enviar: novaEnviar,
-          esPatrocinado } = useAgentNovaExplora({
+          esPatrocinado } = useAgentNova({
     iaMode, isAdmin, onHandoff, ciudad: sessionCity,
   });
 

@@ -6,15 +6,22 @@ const SYNE  = "'Exo 2', sans-serif";
 const INTER = "'Inter', sans-serif";
 
 const GRUPOS = [
-  { grupo_id: 'osos',      imagen: '/emojis/osos.webp',      nombre: 'OSOS',      texto: 'Los Osos Tito, Lara y Puffo te mencionarán dentro de sus audios' },
-  { grupo_id: 'nova',      imagen: '/emojis/nova.webp',      nombre: 'NOVA',      texto: 'Nova te mencionará dentro de sus audios' },
-  { grupo_id: 'elefantes', imagen: '/emojis/elefantes.webp', nombre: 'ELEFANTES', texto: 'Los Elefantes Isabella y Profesor te mencionarán dentro de sus audios' },
-  { grupo_id: 'economy',   imagen: '/emojis/larry_evelyn.webp', nombre: 'ECONOMY', texto: 'La economista Evelyn y el Inversor Larry te mencionarán dentro de sus audios' },
-  { grupo_id: 'jovenes',   imagen: '/emojis/mapache_ami.webp',  nombre: 'JÓVENES', texto: 'Los Jóvenes Mapache y Ami te mencionarán dentro de sus audios' },
-  { grupo_id: 'esoterico', imagen: '/emojis/jaguar.webp',    nombre: 'ESOTÉRICO', texto: 'Jaguar espiritual te mencionará dentro de sus audios' },
-  { grupo_id: 'misterio',  imagen: '/emojis/smisterio.webp', nombre: 'MISTERIO',  texto: 'Señor Misterio te mencionará dentro de sus audios' },
-  { grupo_id: 'herbolario',imagen: '/emojis/orumama.webp',   nombre: 'HERBOLARIO',texto: 'Orumama te mencionará dentro de sus audios' },
-  { grupo_id: 'rumores',   imagen: '/emojis/rumores.webp',   nombre: 'RUMORES',   texto: 'Rumores te mencionará dentro de sus audios' },
+  {
+    grupo_id: 'bro7band',
+    imagen:   '/emojis/bro7band.webp',
+    nombre:   'BRO7BAND',
+    texto:    'Dedica un capítulo de la saga Bro7Band o un episodio del Podcast Osos IA a tu comercio o proyecto. Todos los personajes participan.',
+    precio:   50,
+  },
+  { grupo_id: 'osos',       imagen: '/emojis/osos.webp',          nombre: 'OSOS',       texto: 'Los Osos Tito, Lara y Puffo te mencionarán dentro de sus audios',                             precio: 20 },
+  { grupo_id: 'nova',       imagen: '/emojis/nova.webp',          nombre: 'NOVA',       texto: 'Nova te mencionará dentro de sus audios',                                                      precio: 20 },
+  { grupo_id: 'elefantes',  imagen: '/emojis/elefantes.webp',     nombre: 'ELEFANTES',  texto: 'Los Elefantes Isabella y Profesor te mencionarán dentro de sus audios',                        precio: 20 },
+  { grupo_id: 'economy',    imagen: '/emojis/larry_evelyn.webp',  nombre: 'ECONOMY',    texto: 'La economista Evelyn y el Inversor Larry te mencionarán dentro de sus audios',                 precio: 20 },
+  { grupo_id: 'jovenes',    imagen: '/emojis/mapache_ami.webp',   nombre: 'JÓVENES',    texto: 'Los Jóvenes Mapache y Ami te mencionarán dentro de sus audios',                               precio: 20 },
+  { grupo_id: 'esoterico',  imagen: '/emojis/jaguar.webp',        nombre: 'ESOTÉRICO',  texto: 'Jaguar espiritual te mencionará dentro de sus audios',                                        precio: 20 },
+  { grupo_id: 'misterio',   imagen: '/emojis/smisterio.webp',     nombre: 'MISTERIO',   texto: 'Señor Misterio te mencionará dentro de sus audios',                                           precio: 20 },
+  { grupo_id: 'herbolario', imagen: '/emojis/orumama.webp',       nombre: 'HERBOLARIO', texto: 'Orumama te mencionará dentro de sus audios',                                                  precio: 20 },
+  { grupo_id: 'rumores',    imagen: '/emojis/rumores.webp',       nombre: 'RUMORES',    texto: 'Rumores te mencionará dentro de sus audios',                                                  precio: 20 },
 ];
 
 const IDIOMAS = ['ES', 'EN', 'DE', 'PT', 'FR'];
@@ -27,6 +34,7 @@ const MencionesTab = ({ session }) => {
   const [carrito, setCarrito]     = useState([]);
   const [ocupados, setOcupados]   = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [tiposBro7Band, setTiposBro7Band] = useState('capitulo_saga');
   const [idiomas, setIdiomas]     = useState(() =>
     Object.fromEntries(GRUPOS.map(g => [g.grupo_id, 'ES']))
   );
@@ -63,10 +71,11 @@ const MencionesTab = ({ session }) => {
   const handleAdd = (grupoId, idioma) => {
     if (isOcupado(grupoId, idioma) || isEnCarrito(grupoId, idioma)) return;
     const grupo = GRUPOS.find(g => g.grupo_id === grupoId);
-    setCarrito(prev => [...prev, { ...grupo, idioma }]);
+    const tipo_contenido = grupoId === 'bro7band' ? tiposBro7Band : null;
+    setCarrito(prev => [...prev, { ...grupo, idioma, tipo_contenido }]);
   };
 
-  const total = carrito.length * PRECIO_MENCION;
+  const total = carrito.reduce((sum, item) => sum + (item.precio ?? 20), 0);
 
   return (
     <div className="p-6 flex flex-col items-center">
@@ -117,6 +126,28 @@ const MencionesTab = ({ session }) => {
                 {grupo.texto}
               </p>
 
+              {grupo.grupo_id === 'bro7band' && (
+                <div className="flex gap-2 w-full">
+                  {[
+                    { value: 'capitulo_saga',  label: 'CAPÍTULO SAGA' },
+                    { value: 'podcast_osos',   label: 'PODCAST OSOS IA' },
+                  ].map(op => (
+                    <button
+                      key={op.value}
+                      onClick={() => setTiposBro7Band(op.value)}
+                      style={{ fontFamily: INTER, fontWeight: 600 }}
+                      className={`flex-1 text-[10px] px-2 py-1.5 rounded border transition-all uppercase tracking-wider ${
+                        tiposBro7Band === op.value
+                          ? 'border-amber-500/60 bg-amber-950/30 text-amber-300'
+                          : 'border-white/10 text-gray-500 hover:border-white/25 hover:text-gray-300'
+                      }`}
+                    >
+                      {op.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <div className="flex gap-1.5">
                 {IDIOMAS.map(idi => (
                   <button
@@ -153,7 +184,7 @@ const MencionesTab = ({ session }) => {
                     style={{ fontFamily: SYNE, fontWeight: 700 }}
                     className="w-full text-[11px] bg-fuchsia-600 hover:bg-fuchsia-500 text-white uppercase tracking-widest py-2 rounded transition-all"
                   >
-                    + AÑADIR · {PRECIO_MENCION}€
+                    + AÑADIR · {grupo.precio}€
                   </button>
                 )}
               </div>

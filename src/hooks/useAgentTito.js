@@ -4,24 +4,12 @@
 import { useState, useRef } from 'react';
 import { promptTito }        from '../data/tito/promptTito';
 import { fetchContextoTito } from '../services/contexto/fetchContextoTito';
-import { detectarSectorPS, detectarCiudadPS } from '../services/agents/ososPS';
+
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
-const SECTORES_SIN_CIUDAD = ['BRO7BAND', 'REINOS'];
 const norm   = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const elegir = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-const FRASES_BIENVENIDA = [
-  "Tito aquí 🐻 Oye, ¿qué necesitas hoy? Yo te ayudo con lo que pueda.",
-  "Fíjate que estaba pensando... y apareciste tú. ¿A dónde te llevo?",
-  "Ey. ¿Canjear, Shop Amigos, Games? Es curioso, ¿verdad? que siempre se busca algo.",
-  "Aquí Tito, acabo de levantar la vista del cuaderno 📓 ¿Qué buscas?",
-];
-const FRASES_PEDIR_CIUDAD = [
-  "¿Ciudad o país? Así lo anoto bien y te busco lo mejor que haya por ahí.",
-  "Oye, ¿dónde buscas? Dime la ciudad — el mundo es grande pero empezamos por ahí.",
-  "Necesito la ciudad para anotarlo bien. Qué complicado sería todo sin direcciones, ¿verdad?",
-];
 const FRASES_FALLBACK = [
   "Mmm, oye, una preguntita... ¿buscas Canjear Lunas, Shop Amigos, Games?",
   "Yo solo decía... que si me dices el sector te llevo directo. ¿Cuál es?",
@@ -32,8 +20,6 @@ export function useAgentTito({ iaMode, isAdmin, onHandoff, ciudad = null }) {
   const [mensaje, setMensaje]             = useState(null);
   const [loading, setLoading]             = useState(false);
   const [chatHistory, setChatHistory]     = useState([]);
-  const [sectorMemoria, setSectorMemoria] = useState(null);
-  const [ciudadMemoria, setCiudadMemoria] = useState(null);
 
   const iaActiva = (iaMode === 'admin' && isAdmin) || (iaMode === 'public' && !isAdmin);
 
@@ -71,7 +57,7 @@ export function useAgentTito({ iaMode, isAdmin, onHandoff, ciudad = null }) {
         const detalle = partes[1] || null;
         onHandoff?.({
           agente,
-          ciudad: ciudadMemoria || ciudad,
+          ciudad,
           ...(detalle && agente === 'OSOS_INTERNO' && { oso_id: detalle }),
           ...(detalle && agente !== 'OSOS_INTERNO' && { ciudad: detalle }),
         });
@@ -107,32 +93,6 @@ export function useAgentTito({ iaMode, isAdmin, onHandoff, ciudad = null }) {
     if (t.includes('lara'))  { setTimeout(() => onHandoff?.({ agente: 'OSOS_INTERNO', oso_id: 'lara'  }), 1200); return; }
     if (t.includes('puffo')) { setTimeout(() => onHandoff?.({ agente: 'OSOS_INTERNO', oso_id: 'puffo' }), 1200); return; }
 
-    // 2. Detección temprana sector + ciudad
-    const sectorDetect = detectarSectorPS(textoUsuario);
-    const ciudadDetect = detectarCiudadPS(textoUsuario);
-    const sectorFinal  = sectorDetect || sectorMemoria;
-    const ciudadFinal  = ciudadDetect?.valor || ciudadMemoria;
-
-    if (sectorDetect)        setSectorMemoria(sectorDetect);
-    if (ciudadDetect?.valor) setCiudadMemoria(ciudadDetect.valor);
-
-    if (sectorFinal && !SECTORES_SIN_CIUDAD.includes(sectorFinal) && ciudadFinal) {
-      setMensaje(elegir(FRASES_BIENVENIDA));
-      setSectorMemoria(null); setCiudadMemoria(null);
-      setTimeout(() => onHandoff?.({ agente: sectorFinal, ciudad: ciudadFinal }), 1200);
-      return;
-    }
-    if (sectorFinal && SECTORES_SIN_CIUDAD.includes(sectorFinal)) {
-      setMensaje(elegir(FRASES_BIENVENIDA));
-      setSectorMemoria(null);
-      setTimeout(() => onHandoff?.({ agente: sectorFinal, ciudad: null }), 1200);
-      return;
-    }
-    if (sectorFinal && !ciudadFinal) {
-      setMensaje(elegir(FRASES_PEDIR_CIUDAD));
-      return;
-    }
-
     // 3. Modo IA
     if (iaActiva) { enviarIA(textoUsuario); return; }
 
@@ -143,8 +103,6 @@ export function useAgentTito({ iaMode, isAdmin, onHandoff, ciudad = null }) {
   const reset = () => {
     setMensaje(null);
     setChatHistory([]);
-    setSectorMemoria(null);
-    setCiudadMemoria(null);
   };
 
   return { mensaje, loading, enviar, reset, iaActiva };

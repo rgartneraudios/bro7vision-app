@@ -2,11 +2,6 @@ import { useState, useRef, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import { fetchContextoEvelyn } from '../services/contexto/fetchContextoEvelyn';
 import { fetchContextoLarry }  from '../services/contexto/fetchContextoLarry';
-import {
-  detectarIntencionBroDeseos,
-  buildEvelynBroDeseosPrompt,
-  armarSobreBroDeseos,
-} from '../services/agents/evelynExploraPS';
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
 
@@ -53,6 +48,116 @@ const detectarInternoAviso = (texto, personajeActivo) => {
   }
   return null;
 };
+
+// ── detectarIntencionBroDeseos inlined (ex evelynExploraPS) ────────
+
+function detectarIntencionBroDeseos(texto) {
+  const lower = texto.toLowerCase();
+
+  const KEYWORDS_PUBLICAR = [
+    'quiero comprar', 'ponme que quiero', 'publícame', 'publicame',
+    'necesito comprar', 'quiero publicar', 'publicar deseo',
+    'quiero anunciar', 'pon que busco',
+  ];
+
+  if (KEYWORDS_PUBLICAR.some(kw => lower.includes(kw))) return 'publicar';
+
+  return 'buscar';
+}
+
+// ── buildEvelynBroDeseosPrompt inlined (ex evelynExploraPS) ─────────
+
+function buildEvelynBroDeseosPrompt({ personaje = 'evelyn', sobre }) {
+  const esLarry = personaje === 'larry';
+
+  const identidad = esLarry
+    ? `Eres Larry, un perro empresario con olfato para los negocios y amor profundo por la ciudad.
+Gestionas los deseos de compra de los ciudadanos. Ayudas a los empresarios a encontrar oportunidades
+en la lista de deseos ciudadanos para conectar oferta y demanda.
+Hablas con calma y seguridad. Contextualizas la información como si fueran movimientos del mercado urbano.
+Humor seco y criterio afilado. A veces haces una referencia al barrio o al precio del café.`
+    : `Eres Evelyn, una loba del sector bancario reconvertida en gestora de deseos ciudadanos.
+Gestionas los deseos de compra de los ciudadanos. Ayudas a publicar lo que buscan y a encontrar
+lo que necesitan.
+Eficiente, amable, directa. Cuando tienes datos los presentas sin rodeos.
+A veces comentas que llevas horas sin comer pero igual te pones con el listado.`;
+
+  const tono = esLarry
+    ? `Presenta los resultados como un observador urbano. Máximo 1 frase introductoria, luego los datos.`
+    : `Presenta los resultados directo, con una frase de contexto breve. Sin floreos.`;
+
+  const sobreTexto = sobre
+    ? `\n\n══ DATOS BRODESEOS ══\n${sobre}\n══════════════════`
+    : '';
+
+  return `${identidad}
+
+${tono}
+
+REGLAS ABSOLUTAS:
+- Nunca menciones que tienes una base de datos detrás. Inmersión total.
+- NUNCA uses listas con bullets ni opciones numeradas en tu frase introductoria.
+- NUNCA hagas más de UNA pregunta por respuesta.
+- Los datos del listado los presenta el sistema — tú solo introduces y comentas.
+- Si no hay resultados, dilo con naturalidad y sugiere reformular la búsqueda.
+- Si es una publicación nueva, confirma los datos con el usuario antes de finalizar.
+- Todo en frases naturales conversacionales.
+
+FORMATO DE SALIDA — SIEMPRE JSON ESTRICTO:
+
+Respuesta con resultados:
+{"handoff": false, "mensaje": "tu frase introductoria", "resultados": [], "bolas": []}
+
+Sin resultados:
+{"handoff": false, "mensaje": "frase natural explicando que no hay datos", "resultados": [], "bolas": []}
+
+Handoff a Osos:
+{"handoff": "HANDOFF_OSOS", "mensaje": "frase de despedida", "bolas": []}
+${sobreTexto}`;
+}
+
+// ── armarSobreBroDeseos inlined (ex evelynExploraPS) ────────────────
+
+function armarSobreBroDeseos({
+  alias,
+  intencion,
+  descripcion  = null,
+  ubicacion    = null,
+  resultados   = [],
+}) {
+  const lines = [
+    `Usuario: ${alias}`,
+    `Intención: ${intencion}`,
+  ];
+
+  if (descripcion) lines.push(`Descripción: ${descripcion}`);
+  if (ubicacion)   lines.push(`Ubicación: ${ubicacion}`);
+
+  if (intencion === 'publicar') {
+    lines.push(descripcion
+      ? `PROCESO DE PUBLICACIÓN: Confirmar descripción y ubicación con el usuario. Coste: 500 Génesis.`
+      : `NUEVO DESEO: Extraer descripción del mensaje del usuario.`);
+    return lines.join('\n');
+  }
+
+  if (resultados.length === 0) {
+    lines.push('\nNo se encontraron deseos para esta búsqueda.');
+    return lines.join('\n');
+  }
+
+  lines.push(`\nDeseos encontrados (${resultados.length}):`);
+  resultados.forEach((r, i) => {
+    const badge = r.categoria ? `[${r.categoria}]` : '[Sin categoría]';
+    const partes = [
+      `#${i + 1} ${badge} ${r.descripcion || 'Sin descripción'}`,
+      r.alcance    ? `Alcance: ${r.alcance}`          : null,
+      r.caduca_en  ? `Caduca: ${r.caduca_en}`         : null,
+    ].filter(Boolean);
+    lines.push(partes.join(' · '));
+  });
+
+  return lines.join('\n');
+}
 
 export function useAgentEvelyn({
   personaje    = 'evelyn',

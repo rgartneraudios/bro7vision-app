@@ -10,7 +10,7 @@ const MencionesModal = ({ session, carrito, setCarrito, onClose, onReserved, fas
   const [error, setError]       = useState(null);
   const [done, setDone]         = useState(false);
 
-  const total = carrito.length * 20;
+  const total = carrito.reduce((sum, item) => sum + (item.precio ?? 20), 0);
 
   const handleContratar = async () => {
     if (!brief.trim()) {
@@ -30,6 +30,7 @@ const MencionesModal = ({ session, carrito, setCarrito, onClose, onReserved, fas
         anunciante_id:   session.user.id,
         estado:          'PENDIENTE',
         precio:          20,
+        tipo_contenido:  item.tipo_contenido ?? null,
       }));
 
       const { error: err } = await supabase.from('bro7band_menciones').insert(rows);
@@ -109,8 +110,13 @@ const MencionesModal = ({ session, carrito, setCarrito, onClose, onReserved, fas
                           <p style={{ fontFamily: INTER }} className="text-[10px] text-gray-500">
                             {item.idioma} · {faseLunarTexto}
                           </p>
+                          {item.tipo_contenido && (
+                            <span style={{ fontFamily: INTER }} className="text-[9px] text-amber-400 uppercase tracking-widest">
+                              {item.tipo_contenido === 'capitulo_saga' ? '🎬 Capítulo Saga' : '🎙️ Podcast Osos IA'}
+                            </span>
+                          )}
                         </div>
-                        <span style={{ fontFamily: INTER, fontWeight: 600 }} className="text-xs text-fuchsia-400 shrink-0">20€</span>
+                        <span style={{ fontFamily: INTER, fontWeight: 600 }} className="text-xs text-fuchsia-400 shrink-0">{item.precio ?? 20}€</span>
                         <button
                           onClick={() => setCarrito(prev => prev.filter((_, i) => i !== idx))}
                           className="text-gray-600 hover:text-red-400 text-sm leading-none transition-colors shrink-0"
@@ -154,7 +160,7 @@ const MencionesModal = ({ session, carrito, setCarrito, onClose, onReserved, fas
           <div className="px-6 py-4 border-t border-white/5 bg-black/20 shrink-0">
             <div className="flex items-center justify-between mb-3">
               <span style={{ fontFamily: INTER, fontWeight: 500 }} className="text-sm text-gray-400 uppercase tracking-widest">
-                {carrito.length} grupo{carrito.length !== 1 ? 's' : ''} × 20€
+                {carrito.length} grupo{carrito.length !== 1 ? 's' : ''}
               </span>
               <span style={{ fontFamily: INTER, fontWeight: 700 }} className="text-3xl text-white">{total}€</span>
             </div>
