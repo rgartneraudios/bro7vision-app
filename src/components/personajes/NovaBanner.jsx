@@ -22,8 +22,8 @@ export default function NovaBanner({
   entidad       = null,
   hayTarjetas   = false,
   userId        = null,
-  genesisBalance = 0,
-  onGenesisUpdate,
+  lunasBalance = 0,
+  onLunasUpdate,
 }) {
   const [display, setDisplay]           = useState('');
   const [cursor, setCursor]             = useState(true);
@@ -39,7 +39,7 @@ export default function NovaBanner({
   const {
     estado, cuponActivo, cardPendiente, errorMsg,
     iniciarCanje, cancelar, confirmar, cerrar,
-  } = useCanjearCupon({ userId, onGenesisUpdate });
+  } = useCanjearCupon({ userId, onLunasUpdate });
 
   // ── Cursor parpadeante ─────────────────────────────────────────────
   useEffect(() => {
@@ -96,7 +96,7 @@ export default function NovaBanner({
         cardPendiente={cardPendiente}
         cuponActivo={cuponActivo}
         errorMsg={errorMsg}
-        genesisBalance={genesisBalance}
+        lunasBalance={lunasBalance}
         onConfirmar={confirmar}
         onCancelar={cancelar}
         onCerrar={cerrar}

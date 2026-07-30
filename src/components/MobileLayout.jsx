@@ -9,7 +9,7 @@ import { useAdOverlay } from '../hooks/useAdOverlay';
 import CuponModal from './CuponModal';
 import { useCanjearCupon } from '../hooks/useCanjearCupon';
 import { useHaloTrivia } from '../hooks/useHaloTrivia';
-import GenesisCounter from './GenesisCounter';
+import LunasCounter from './LunasCounter';
 
 // ─── ESTILOS NEÓN ───────────────────────────────────────────────────────────
 const MOBILE_STYLES = `
@@ -241,7 +241,7 @@ const getMobileAudioUrl = (realityId) => {
 };
 
 // ─── WIDGET RELOJ + TEMPERATURA ──────────────────────────────────────────────
-const LockClockWidget = ({ accent, genesisBalance }) => {
+const LockClockWidget = ({ accent, lunasBalance }) => {
   const [time, setTime] = useState('');
   const [date, setDate] = useState('');
   const [temp, setTemp] = useState(null);
@@ -277,25 +277,25 @@ const LockClockWidget = ({ accent, genesisBalance }) => {
     }, () => {}, { timeout: 8000 });
   }, []);
 
-  const genesisColor =
-    (genesisBalance ?? 0) < 1000    ? '#f87171'
-    : (genesisBalance ?? 0) < 5000  ? '#60a5fa'
-    : (genesisBalance ?? 0) < 10000 ? '#34d399'
-    : (genesisBalance ?? 0) < 15000 ? '#facc15'
+  const lunasColor =
+    (lunasBalance ?? 0) < 1000    ? '#f87171'
+    : (lunasBalance ?? 0) < 5000  ? '#60a5fa'
+    : (lunasBalance ?? 0) < 10000 ? '#34d399'
+    : (lunasBalance ?? 0) < 15000 ? '#facc15'
     :                                '#d946ef';
 
-  const genesisNeon =
-    (genesisBalance ?? 0) < 1000    ? 'rgba(248,113,113,0.6)'
-    : (genesisBalance ?? 0) < 5000  ? 'rgba(96,165,250,0.6)'
-    : (genesisBalance ?? 0) < 10000 ? 'rgba(52,211,153,0.6)'
-    : (genesisBalance ?? 0) < 15000 ? 'rgba(250,204,21,0.6)'
+  const lunasNeon =
+    (lunasBalance ?? 0) < 1000    ? 'rgba(248,113,113,0.6)'
+    : (lunasBalance ?? 0) < 5000  ? 'rgba(96,165,250,0.6)'
+    : (lunasBalance ?? 0) < 10000 ? 'rgba(52,211,153,0.6)'
+    : (lunasBalance ?? 0) < 15000 ? 'rgba(250,204,21,0.6)'
     :                                'rgba(217,70,239,0.6)';
 
-  const genesisLabelColor =
-    (genesisBalance ?? 0) < 1000    ? 'rgba(248,113,113,0.5)'
-    : (genesisBalance ?? 0) < 5000  ? 'rgba(96,165,250,0.5)'
-    : (genesisBalance ?? 0) < 10000 ? 'rgba(52,211,153,0.5)'
-    : (genesisBalance ?? 0) < 15000 ? 'rgba(250,204,21,0.5)'
+  const lunasLabelColor =
+    (lunasBalance ?? 0) < 1000    ? 'rgba(248,113,113,0.5)'
+    : (lunasBalance ?? 0) < 5000  ? 'rgba(96,165,250,0.5)'
+    : (lunasBalance ?? 0) < 10000 ? 'rgba(52,211,153,0.5)'
+    : (lunasBalance ?? 0) < 15000 ? 'rgba(250,204,21,0.5)'
     :                                'rgba(217,70,239,0.5)';
 
   return (
@@ -308,10 +308,10 @@ const LockClockWidget = ({ accent, genesisBalance }) => {
 
       {/* Centro: Lunas */}
       <div className="flex flex-col items-center">
-        <span className="lock-temp" style={{ color: genesisColor, fontSize: 'clamp(22px, 7vw, 36px)', textShadow: `0 0 16px ${genesisNeon}` }}>
-          {genesisBalance ?? 0}
+        <span className="lock-temp" style={{ color: lunasColor, fontSize: 'clamp(22px, 7vw, 36px)', textShadow: `0 0 16px ${lunasNeon}` }}>
+          {lunasBalance ?? 0}
         </span>
-        <span className="lock-date" style={{ color: genesisLabelColor }}>LUNAS</span>
+        <span className="lock-date" style={{ color: lunasLabelColor }}>LUNAS</span>
       </div>
 
       {/* Derecha: Temperatura */}
@@ -361,7 +361,7 @@ function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
         <div className="p-4 border-b border-white/10 flex flex-col gap-4">
           <div className="flex flex-col items-center justify-center py-4 px-2 rounded-xl bg-cyan-900/10 border border-cyan-500/40">
             <span className="text-[12px] text-cyan-200/60 uppercase tracking-widest mb-1">Lunas</span>
-            <span className="text-cyan-400 font-black text-4xl">{balances?.genesis ?? 0}</span>
+            <span className="text-cyan-400 font-black text-4xl">{balances?.lunas ?? 0}</span>
           </div>
           <NeuralButton isAdmin={isAdmin} iaMode={iaMode}
             tokensRestantes={userCredits?.tokensRestantes} tokensTotales={userCredits?.tokensTotales}
@@ -495,8 +495,8 @@ const MobileLayout = ({
   broTunerRef,
   selectedCard,
   userId,
-  genesisBalance,
-  onGenesisUpdate,
+  lunasBalance,
+  onLunasUpdate,
   ...props
 }) => {
   const [footerMode, setFooterMode] = useState('chat');
@@ -531,7 +531,7 @@ const MobileLayout = ({
   const {
   estado, cuponActivo, cardPendiente, errorMsg,
   iniciarCanje, cancelar, confirmar, cerrar,
-} = useCanjearCupon({ userId, onGenesisUpdate });
+} = useCanjearCupon({ userId, onLunasUpdate });
 
   const MOBILE_ESCENARIO_MAP = {
     luna:     '11',
@@ -555,7 +555,7 @@ const MobileLayout = ({
     escenarioId: MOBILE_ESCENARIO_MAP[realityMode] || realityMode,
     canalId: realityMode,
     userId,
-    onGenesisUpdate,
+    onLunasUpdate,
   });
   
 
@@ -795,9 +795,9 @@ const MobileLayout = ({
 
         <main className="relative z-10 flex flex-col h-full w-full">
 
-          {/* HEADER: Reloj — Génesis — Temperatura */}
+          {/* HEADER: Reloj — Lunas — Temperatura */}
           <header className="flex-shrink-0 px-4 pt-safe pt-3 pb-2">
-            <LockClockWidget accent={escena?.color} genesisBalance={genesisBalance} />
+            <LockClockWidget accent={escena?.color} lunasBalance={lunasBalance} />
           </header>
 
           {/* CENTRO — Pregunta + Respuestas con emoji */}
@@ -949,7 +949,7 @@ return (
 
       {/* GÉNESIS COUNTER — oculto en RealityTuner y AtlasGame */}
       {!(step === 0 && !realityMode) && !(step === 2 && intent === 'game') && (
-        <GenesisCounter balances={balances} mobile />
+        <LunasCounter balances={balances} mobile />
       )}
 
       {/* Fondo fijo — siempre mobile.webp en sectores */}
@@ -1012,7 +1012,7 @@ return (
   	cardPendiente={cardPendiente}
   	cuponActivo={cuponActivo}
   	errorMsg={errorMsg}
-  	genesisBalance={genesisBalance}
+  	lunasBalance={lunasBalance}
   	onConfirmar={confirmar}
   	onCancelar={cancelar}
   	onCerrar={cerrar}

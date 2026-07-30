@@ -135,7 +135,7 @@ function armarSobreBroDeseos({
 
   if (intencion === 'publicar') {
     lines.push(descripcion
-      ? `PROCESO DE PUBLICACIÓN: Confirmar descripción y ubicación con el usuario. Coste: 500 Génesis.`
+      ? `PROCESO DE PUBLICACIÓN: Confirmar descripción y ubicación con el usuario. Coste: 500 Lunas.`
       : `NUEVO DESEO: Extraer descripción del mensaje del usuario.`);
     return lines.join('\n');
   }
@@ -165,8 +165,8 @@ export function useAgentEvelyn({
   isAdmin      = false,
   onHandoff,
   ciudad       = null,
-  genesis      = 0,
-  onGenesisUpdate,
+  lunas      = 0,
+  onLunasUpdate,
   userId       = null,
   autorAlias   = 'Ciudadano',
 }) {
@@ -273,7 +273,7 @@ export function useAgentEvelyn({
     if (flujoActivo === 'descripcion') {
       setBorrador(prev => ({ ...prev, descripcion: textoUsuario }));
       setFlujoActivo('confirmar');
-      setMensaje('Escribe CONFIRMO en mayúsculas para publicarlo. El coste es 500 Génesis.');
+      setMensaje('Escribe CONFIRMO en mayúsculas para publicarlo. El coste es 500 Lunas.');
       return;
     }
 
@@ -283,8 +283,8 @@ export function useAgentEvelyn({
         return;
       }
 
-      if (!genesis || genesis < 500) {
-        setMensaje('No tienes suficientes Génesis.');
+      if (!lunas || lunas < 500) {
+        setMensaje('No tienes suficientes Lunas.');
         return;
       }
 
@@ -304,14 +304,14 @@ export function useAgentEvelyn({
         return;
       }
 
-      onGenesisUpdate?.(genesis - 500);
+      onLunasUpdate?.(lunas - 500);
 
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ genesis: genesis - 500 })
+        .update({ lunas: lunas - 500 })
         .eq('id', userId);
 
-      if (updateError) console.error('Error al actualizar Génesis:', updateError);
+      if (updateError) console.error('Error al actualizar Lunas:', updateError);
 
       setFlujoActivo(null);
       setBorrador({ ubicacion: null, descripcion: null });

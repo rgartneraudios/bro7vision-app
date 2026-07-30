@@ -224,7 +224,7 @@ const ScalextricPhaser = ({ onWin, difficulty }) => {
               <h2 className={`text-9xl font-black mb-6 ${finalRank === 1 ? 'text-yellow-400' : 'text-white'}`}>{finalRank}º</h2>
               <div className="bg-[#111] p-6 rounded-xl border border-white/10 mb-8 text-center min-w-[200px]">
                   <p className="text-xs text-gray-500 uppercase">RECOMPENSA</p>
-                  <p className="text-4xl text-fuchsia-500 font-bold font-mono">{(6 - finalRank) * 10} GENESIS</p>
+                  <p className="text-4xl text-fuchsia-500 font-bold font-mono">{(6 - finalRank) * 10} LUNAS</p>
               </div>
               <button onClick={() => { setMode('menu'); setQuestion(null); }} className="px-8 py-3 bg-white text-black font-black uppercase rounded-full hover:scale-110 transition-transform">
                   VOLVER AL PADDOCK

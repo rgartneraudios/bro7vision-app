@@ -3,7 +3,7 @@ import { supabase } from '../supabaseClient';
 
 
 // Aceptamos la prop 'onGuestAccess' para dejar pasar al visitante
-const GenesisGate = ({ onGuestAccess }) => {
+const LunasGate = ({ onGuestAccess }) => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -71,7 +71,7 @@ const GenesisGate = ({ onGuestAccess }) => {
             <h1 className="text-5xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-fuchsia-500 drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">
                 BRO7VISION
             </h1>
-            <p className="text-[10px] text-gray-300 uppercase tracking-[0.5em] mt-2 font-bold">Genesis Access Point</p>
+            <p className="text-[10px] text-gray-300 uppercase tracking-[0.5em] mt-2 font-bold">Lunas Access Point</p>
         </div>
 
         {message && (
@@ -160,4 +160,4 @@ const GenesisGate = ({ onGuestAccess }) => {
   );
 };
 
-export default GenesisGate;
+export default LunasGate;

@@ -79,7 +79,7 @@ const LegalTerminal = ({ onClose }) => {
            <div className="overflow-y-auto custom-scrollbar pr-4 space-y-6 text-gray-400 text-xs font-mono leading-relaxed text-justify">
               <section>
   <h4 className="text-cyan-300 font-bold mb-2">1. NATURALEZA DEL ECOSISTEMA</h4>
-  <p>BRO7VISION es una plataforma experimental de gamificación social en fase Beta privada. La Fase 0 (Génesis) es un entorno de simulación diseñado para el entrenamiento de usuarios y validación técnica, exento de transacciones financieras con moneda fiduciaria.</p>
+  <p>BRO7VISION es una plataforma experimental de gamificación social en fase Beta privada. La Fase 0 (Lunas) es un entorno de simulación diseñado para el entrenamiento de usuarios y validación técnica, exento de transacciones financieras con moneda fiduciaria.</p>
 </section>
 
 <section>
@@ -89,7 +89,7 @@ const LegalTerminal = ({ onClose }) => {
 
 <section>
   <h4 className="text-cyan-300 font-bold mb-2">3. ECONOMÍA DIGITAL</h4>
-  <p>Los "Puntos Génesis", "Moon Cupones" y "Moon Packs" constituyen un sistema cerrado de lealtad y gamificación interna. No representan criptomonedas, activos financieros, ni valores regulables bajo la normativa de la CNMV o MiCA en su estado actual de simulación.</p>
+  <p>Los "Puntos Lunas", "Moon Cupones" y "Moon Packs" constituyen un sistema cerrado de lealtad y gamificación interna. No representan criptomonedas, activos financieros, ni valores regulables bajo la normativa de la CNMV o MiCA en su estado actual de simulación.</p>
 </section>
 
 <section>

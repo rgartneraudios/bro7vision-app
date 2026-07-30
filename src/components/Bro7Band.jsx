@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import GenesisCounter from './GenesisCounter';
+import LunasCounter from './LunasCounter';
 import AgentChatInput from './AgentChatInput';
 import { supabase } from '../supabaseClient';
 import { getAudioForOsos }      from '../data/audioMap_osos';
@@ -232,7 +232,7 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
     if (perfilActualizado && setBalances) {
       setBalances(prev => ({
         ...prev,
-        genesis: perfilActualizado.lunas
+        lunas: perfilActualizado.lunas
       }));
     }
   };
@@ -263,7 +263,7 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
 
     return (
       <div className="fixed inset-0 z-[90] bg-black overflow-hidden">
-        <GenesisCounter balances={balances} />
+        <LunasCounter balances={balances} />
         <button
           onClick={() => { setSelectedGroup(null); setIaActive(false); setClaimStatus(null); setPalabraClave(''); setMensajeBienvenida(''); }}
           className="fixed top-4 left-4 z-[110] px-6 py-3 rounded-full border-2 border-cyan-400/80 text-cyan-300 text-sm font-black uppercase tracking-widest hover:bg-cyan-400/20 hover:border-cyan-300 transition-all shadow-[0_0_25px_rgba(34,211,238,0.5)] backdrop-blur-md"
@@ -376,7 +376,7 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
 
   return (
     <div className="fixed inset-0 z-[90] bg-black overflow-hidden">
-      <GenesisCounter balances={balances} />
+      <LunasCounter balances={balances} />
       <video
         src="https://media.bro7vision.com/default1_bro7band.mp4"
         autoPlay

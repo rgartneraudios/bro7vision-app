@@ -117,7 +117,7 @@ const BoosterModal = ({ onClose, initialTab, session }) => {
   const handleDeleteAccount = async () => {
     const alert1 = window.confirm("🚨 ¡ALERTA ROJA! 🚨\n¿Estás absolutamente seguro de que quieres desintegrar tu identidad de BRO7VISION?");
     if (!alert1) return;
-    const alert2 = window.confirm("Esta acción NO se puede deshacer. Perderás tus Puntos Génesis, Halos de Luz, Moon Cupones y tu HoloPrisma desaparecerá del ciberespacio. ¿Proceder?");
+    const alert2 = window.confirm("Esta acción NO se puede deshacer. Perderás tus Puntos Lunas, Halos de Luz, Moon Cupones y tu HoloPrisma desaparecerá del ciberespacio. ¿Proceder?");
     if (!alert2) return;
     try {
       setLoading(true);
@@ -285,7 +285,7 @@ const BoosterModal = ({ onClose, initialTab, session }) => {
                 conde:    { m:{ rango:'Conde',      tratamiento:'Noble',         subtitulo:'Nobleza'         }, f:{ rango:'Condesa', tratamiento:'Noble',         subtitulo:'Nobleza'         }, n:{ rango:'Condes',   tratamiento:'Nobles',        subtitulo:'Nobleza'         } },
                 lord:     { m:{ rango:'Lord',       tratamiento:'',              subtitulo:'Honor del Reino' }, f:{ rango:'Lady',    tratamiento:'',              subtitulo:'Honor del Reino' }, n:{ rango:'Lords',    tratamiento:'',              subtitulo:'Honor del Reino' } },
               };
-              const GENESIS = { rey:2000, principe:1000, duque:500, marques:300, conde:200, lord:100 };
+              const LUNAS = { rey:2000, principe:1000, duque:500, marques:300, conde:200, lord:100 };
               const COLORES  = {
                 rey:      { text:'text-orange-400', border:'border-orange-500/40', bg:'bg-orange-950/30', sel:'bg-orange-600', glow:'0 0 25px rgba(249,115,22,0.25)'  },
                 principe: { text:'text-blue-400',   border:'border-blue-500/40',   bg:'bg-blue-950/30',   sel:'bg-blue-600',   glow:'0 0 25px rgba(59,130,246,0.25)'  },
@@ -313,7 +313,7 @@ const BoosterModal = ({ onClose, initialTab, session }) => {
               const rank   = formData.rank || 'rey';
               const titulo = (TITULOS[rank] || TITULOS.rey)[g];
               const c      = COLORES[rank]  || COLORES.rey;
-              const gen    = GENESIS[rank]  || 0;
+              const gen    = LUNAS[rank]  || 0;
 
               return (
                 <div className="space-y-6 animate-fadeIn max-w-6xl mx-auto pb-10">

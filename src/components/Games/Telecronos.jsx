@@ -630,9 +630,9 @@ const Telecronos = ({ onWin, onClose }) => {
         </h2> 
         <div className="text-gray-300 text-[10px] md:text-[12.5px] leading-relaxed max-h-[60vh] overflow-y-auto cronos-scroll pr-3 flex flex-col gap-3 font-mono">
             <p><span className="text-yellow-400 font-bold block mb-0.5">INFO:</span> Telecronos es un modelo beta. Si gusta, lanzaremos versión premium con más niveles.</p>
-            <p><span className="text-cyan-400 font-bold block mb-0.5">OBJETIVO:</span> Activa los cubos para obtener 9 gemas <span className="text-fuchsia-400">(20 Génesis c/u)</span>. Entra rápido al portal antes que el enemigo.</p>
+            <p><span className="text-cyan-400 font-bold block mb-0.5">OBJETIVO:</span> Activa los cubos para obtener 9 gemas <span className="text-fuchsia-400">(20 Lunas c/u)</span>. Entra rápido al portal antes que el enemigo.</p>
             <p><span className="text-red-500 font-bold block mb-0.5">PELIGRO:</span> Los enemigos rojos te matan al contacto.</p>
-            <p><span className="text-purple-400 font-bold block mb-0.5">MECÁNICA:</span> Los portales absorben enemigos y los hacen fantasmas. Los fantasmas te quitan 10 Génesis al cruzarlos.</p>
+            <p><span className="text-purple-400 font-bold block mb-0.5">MECÁNICA:</span> Los portales absorben enemigos y los hacen fantasmas. Los fantasmas te quitan 10 Lunas al cruzarlos.</p>
             <p><span className="text-green-400 font-bold block mb-0.5">ESTRATEGIA:</span> Abre portales, transforma enemigos y sobrevive. Usa las flechas para moverte.</p>
         </div>
       </div>

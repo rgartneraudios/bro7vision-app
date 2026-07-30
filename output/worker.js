@@ -2,7 +2,7 @@
  * CUPONES WORKER — Bro7Vision
  * ================================================================
  * Endpoints:
- *   POST /canjear-cupon     → genera cupón, resta génesis
+ *   POST /canjear-cupon     → genera cupón, resta lunas
  *   POST /upload-presigned  → subida firmada a R2
  *
  * Secrets requeridos en Cloudflare (Settings → Variables):
@@ -82,10 +82,10 @@ async function handleCanjearCupon(request, env, corsHeaders) {
     valor_euros,
     comercio_nombre,
     web_url,
-    coste_lunas: coste_genesis,
+    coste_lunas,
   } = payload;
 
-  if (!user_id || !comercio_id || !coste_genesis) {
+  if (!user_id || !comercio_id || !coste_lunas) {
     return json({ error: 'Faltan campos obligatorios' }, 400, corsHeaders);
   }
 
@@ -118,11 +118,11 @@ async function handleCanjearCupon(request, env, corsHeaders) {
   const balanceActual = perfiles[0].lunas || 0;
   const aliasUsuario  = perfiles[0].alias  || 'desconocido';
 
-  if (balanceActual < coste_genesis) {
+  if (balanceActual < coste_lunas) {
     return json({
       error:     'Lunas insuficientes',
       balance:   balanceActual,
-      necesario: coste_genesis,
+      necesario: coste_lunas,
     }, 400, corsHeaders);
   }
 
@@ -138,7 +138,7 @@ async function handleCanjearCupon(request, env, corsHeaders) {
   }
 
   const { faseCaduca } = getMoonPhase();
-  const nuevoBalance   = balanceActual - coste_genesis;
+  const nuevoBalance   = balanceActual - coste_lunas;
 
   // Restar Lunas
   const updateBalance = await sbPatch(env,
@@ -155,7 +155,7 @@ async function handleCanjearCupon(request, env, corsHeaders) {
     comercio_id,
     tipo_tarjeta:    comercio.tipo_tarjeta    || tipo_tarjeta || null,
     valor_euros:     comercio.valor_euros     || valor_euros  || null,
-    lunas_gastadas:  coste_genesis,
+    lunas_gastadas:  coste_lunas,
     palabra_clave_1: comercio.palabra_clave_1 || null,
     palabra_clave_2: comercio.palabra_clave_2 || null,
     comercio_nombre: comercio_nombre || comercio.comercio_nombre,
@@ -201,7 +201,7 @@ async function handleCanjearCupon(request, env, corsHeaders) {
     palabra_clave_2: comercio.palabra_clave_2 || null,
     caduca_at:       faseCaduca,
     caduca_legible:  fechaLegible,
-    lunas_restadas:  coste_genesis,
+    lunas_restadas:  coste_lunas,
     balance_nuevo:   nuevoBalance,
     mensaje:         'Tarjeta canjeada. En tu Booster › Mis Cupones tienes tu Luna con la palabra clave secreta.',
   }, 200, corsHeaders);

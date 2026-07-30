@@ -35,8 +35,8 @@ export default function IsabellaBanner({
   entidad        = null,
   hayTarjetas    = false,
   userId         = null,
-  genesisBalance = 0,
-  onGenesisUpdate,
+  lunasBalance = 0,
+  onLunasUpdate,
 }) {
   const { mensaje, loading, enviar, esPatrocinado } = useAgentIsabella({
     personaje, iaMode, isAdmin, onHandoff,
@@ -46,7 +46,7 @@ export default function IsabellaBanner({
   const {
     estado, cuponActivo, cardPendiente, errorMsg,
     iniciarCanje, cancelar, confirmar, cerrar,
-  } = useCanjearCupon({ userId, onGenesisUpdate });
+  } = useCanjearCupon({ userId, onLunasUpdate });
 
   const [display, setDisplay]           = useState('');
   const [cursor, setCursor]             = useState(true);
@@ -101,7 +101,7 @@ export default function IsabellaBanner({
         cardPendiente={cardPendiente}
         cuponActivo={cuponActivo}
         errorMsg={errorMsg}
-        genesisBalance={genesisBalance}
+        lunasBalance={lunasBalance}
         onConfirmar={confirmar}
         onCancelar={cancelar}
         onCerrar={cerrar}

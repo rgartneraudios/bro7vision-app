@@ -5,7 +5,7 @@ export const economia_lunar = {
   data: `
 Ajá. El sistema está alineado con las fases reales de la luna. Jaguar te puede dar contexto sideral.
 La idea es esta: con cada fase aparecen Cupones de descuento entre el 20% y el 30%,
-que consigues canjeando Puntos Génesis. Esos Génesis los ganas jugando o viendo BroStories.
+que consigues canjeando Puntos Lunas. Esas Lunas las ganas jugando o viendo BroStories.
 Y luego están los Packs lunares, para comprar Halos de Luz, Ecos que son los comentarios de pago,
 y Zaps para promocionar canales. Interesante...
 El desglose completo de precios y condiciones está en el apartado legal.

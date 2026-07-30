@@ -32,7 +32,7 @@ export default function DesktopLayout(props) {
     perfilOso, setHoloPrismaIndex,
     ososModo, setOsosModo, handleLogout, selectedCard,
   rumoresMensaje, rumoresLoading, handleRumoresInput,
-  userId, genesisBalance, onGenesisUpdate,
+  userId, lunasBalance, onLunasUpdate,
    iaMode, isAdmin, userCredits, onToggleAdminIA, onTogglePublicIA
   } = props;
   
@@ -58,8 +58,8 @@ useEffect(() => {
           <DesktopRealityPlayer
             realityMode={realityMode}
             userId={userId}
-            genesisBalance={genesisBalance}
-            onGenesisUpdate={onGenesisUpdate}
+            lunasBalance={lunasBalance}
+            onLunasUpdate={onLunasUpdate}
           />
         )}
           
@@ -168,12 +168,12 @@ useEffect(() => {
       {intent === 'canjear' && step === 2 && (
         <div className="fixed inset-0 z-[60]">
           <CanjearStrip scope={scope} />
-          <TriviaRail sector="CANJES" userId={userId} onGenesisUpdate={onGenesisUpdate} />
+          <TriviaRail sector="CANJES" userId={userId} onLunasUpdate={onLunasUpdate} />
         </div>
       )}
       {step === 2 && intent === 'shopamigos' && (
         <div className="fixed inset-0 z-[60]">
-          <TriviaRail sector="SHOP_AMIGOS" userId={userId} onGenesisUpdate={onGenesisUpdate} />
+          <TriviaRail sector="SHOP_AMIGOS" userId={userId} onLunasUpdate={onLunasUpdate} />
         </div>
       )}
       

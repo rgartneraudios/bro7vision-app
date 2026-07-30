@@ -63,7 +63,7 @@ const ConversionModal = ({ balances, setBalances, session, activePhase, onClose 
 
             <div className="bg-gradient-to-br from-indigo-900/40 to-black border border-indigo-500/30 p-4 rounded-2xl mb-4 md:mb-6 text-center shadow-inner">
                 <p className="text-xs md:text-sm text-indigo-300 uppercase tracking-widest mb-1">Saldo Lunas</p>
-                 <div className="text-3xl md:text-4xl font-black text-white">{balances?.genesis || 0}</div>
+                 <div className="text-3xl md:text-4xl font-black text-white">{balances?.lunas || 0}</div>
             </div>
 
             {/* BOTÓN PREPAGO IA PERSONAJES */}

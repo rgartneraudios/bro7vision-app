@@ -7,7 +7,7 @@ const NEON_CYAN = "#00f2ff";
 const NEON_GREEN = "#00ff64";
 const NEON_RED = "#ff0044";
 
-export default function TriviaRail({ sector, userId, onGenesisUpdate }) {
+export default function TriviaRail({ sector, userId, onLunasUpdate }) {
   const [preguntas, setPreguntas] = useState([]);
   const [pestanhaActiva, setPestanhaActiva] = useState(null);
   const [respondidas, setRespondidas] = useState(new Set());
@@ -61,7 +61,7 @@ export default function TriviaRail({ sector, userId, onGenesisUpdate }) {
           .select('lunas')
           .eq('id', userId)
           .single();
-        if (perfil?.lunas !== undefined) onGenesisUpdate?.(perfil.lunas);
+        if (perfil?.lunas !== undefined) onLunasUpdate?.(perfil.lunas);
       }
 
       setTimeout(() => {
@@ -74,7 +74,7 @@ export default function TriviaRail({ sector, userId, onGenesisUpdate }) {
         setPestanhaActiva(null);
       }, 3000);
     },
-    [cooldown, resultado, pestanhaActiva, getPreguntaForSlot, userId, respondidas, storageKey, onGenesisUpdate]
+    [cooldown, resultado, pestanhaActiva, getPreguntaForSlot, userId, respondidas, storageKey, onLunasUpdate]
   );
 
   const slotCount = 8;

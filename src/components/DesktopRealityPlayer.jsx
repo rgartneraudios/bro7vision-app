@@ -124,8 +124,8 @@ const CANAL_NOMBRE = {
   mercurio: 'CANAL MERCURIO',
 };
 
-// Widget reloj + temperatura + génesis
-const HeaderWidget = ({ color, genesisBalance, onCityDetected }) => {
+// Widget reloj + temperatura + lunas
+const HeaderWidget = ({ color, lunasBalance, onCityDetected }) => {
   const [time, setTime] = useState('');
   const [date, setDate] = useState('');
   const [temp, setTemp] = useState(null);
@@ -163,10 +163,10 @@ const HeaderWidget = ({ color, genesisBalance, onCityDetected }) => {
     }, ()=>{}, { timeout: 8000 });
   }, []);
 
-  const genesisColor = genesisBalance > 500000 ? '#fbbf24'
-    : genesisBalance > 100000 ? '#e879f9'
-    : genesisBalance > 10000  ? '#34d399'
-    : genesisBalance > 1000   ? '#22d3ee'
+  const lunasColor = lunasBalance > 500000 ? '#fbbf24'
+    : lunasBalance > 100000 ? '#e879f9'
+    : lunasBalance > 10000  ? '#34d399'
+    : lunasBalance > 1000   ? '#22d3ee'
     : '#94a3b8';
 
   return (
@@ -181,10 +181,10 @@ const HeaderWidget = ({ color, genesisBalance, onCityDetected }) => {
       {/* Centro: Lunas */}
       <div className="flex flex-col items-center px-6 py-2 rounded-2xl"
         style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}>
-        <span className="dr-clock" style={{ color: genesisColor, textShadow: `0 0 20px ${genesisColor}` }}>
-          {(genesisBalance ?? 0).toLocaleString()}
+        <span className="dr-clock" style={{ color: lunasColor, textShadow: `0 0 20px ${lunasColor}` }}>
+          {(lunasBalance ?? 0).toLocaleString()}
         </span>
-        <span className="dr-label" style={{ color: genesisColor }}>LUNAS </span>
+        <span className="dr-label" style={{ color: lunasColor }}>LUNAS </span>
       </div>
 
       {/* Derecha: Temperatura */}
@@ -203,8 +203,8 @@ const HeaderWidget = ({ color, genesisBalance, onCityDetected }) => {
 const DesktopRealityPlayer = ({
   realityMode,
   userId,
-  genesisBalance,
-  onGenesisUpdate,
+  lunasBalance,
+  onLunasUpdate,
 }) => {
   const [bgVideoUrl, setBgVideoUrl] = useState('');
   const [userCity, setUserCity] = useState(null);
@@ -267,7 +267,7 @@ const fase  = num === 2 ? getMoonSuffix() : '0';
     escenarioId: PC_ESCENARIO_MAP[realityMode] || realityMode,
     canalId: realityMode,
     userId,
-    onGenesisUpdate,
+    onLunasUpdate,
   });
 
   return (
@@ -348,7 +348,7 @@ const fase  = num === 2 ? getMoonSuffix() : '0';
       <main className="relative z-10 flex flex-col h-full w-full">
 
         {/* HEADER */}
-        <HeaderWidget color={color} genesisBalance={genesisBalance} onCityDetected={setUserCity} />
+        <HeaderWidget color={color} lunasBalance={lunasBalance} onCityDetected={setUserCity} />
 
         {/* CUERPO — burbuja pregunta centrada */}
         {burbujaOpen && preguntaActual ? (

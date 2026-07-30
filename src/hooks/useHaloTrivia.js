@@ -4,10 +4,10 @@ import { supabase } from '../supabaseClient';
 
 
 const ANIMALES = ['🦈','🐘','🐞','🦊','🐬','🦁','🐸','🦋','🦅','🐺'];
-const GENESIS_ACIERTO       = 10;
-const GENESIS_FALLO         = 5;
-const GENESIS_PROMO_ACIERTO = 20;
-const GENESIS_PROMO_FALLO   = 5;
+const LUNAS_ACIERTO       = 10;
+const LUNAS_FALLO         = 5;
+const LUNAS_PROMO_ACIERTO = 20;
+const LUNAS_PROMO_FALLO   = 5;
 const FALLOS = ['/assets/fallo1.webp', '/assets/fallo2.webp', '/assets/fallo3.webp'];
 
 const getTurnoActual = () => {
@@ -31,7 +31,7 @@ function shuffle(arr) {
 
 const storageKey = (escenarioId, turno) => `haloTrivia_${escenarioId}_t${turno}`;
 
-export function useHaloTrivia({ escenarioId, canalId, userId, onGenesisUpdate }) {
+export function useHaloTrivia({ escenarioId, canalId, userId, onLunasUpdate }) {
   const escenarioNormalizado = escenarioId;
   const turno = getTurnoActual();
   const yaJugado = !!localStorage.getItem(storageKey(escenarioNormalizado, turno));
@@ -122,7 +122,7 @@ export function useHaloTrivia({ escenarioId, canalId, userId, onGenesisUpdate })
         .eq('fecha', hoy)
         .limit(1);
       setPartidaYaCompletada(!!partida?.length);
-      setLunasBloqueadas(!!partida?.length); // si ya jugó, bloquea desde el inicio
+      setLunasBloqueadas(!!partida?.length);
     }
 
     setLoading(false);
@@ -149,8 +149,8 @@ export function useHaloTrivia({ escenarioId, canalId, userId, onGenesisUpdate })
     if (userId) {
       const delta = lunasBloqueadas ? 0 : (
         esAcierto
-          ? (pregunta.esPromo ? GENESIS_PROMO_ACIERTO : GENESIS_ACIERTO)
-          : -GENESIS_FALLO
+          ? (pregunta.esPromo ? LUNAS_PROMO_ACIERTO : LUNAS_ACIERTO)
+          : -LUNAS_FALLO
       );
 
       if (delta !== 0) {
@@ -161,7 +161,7 @@ export function useHaloTrivia({ escenarioId, canalId, userId, onGenesisUpdate })
           .eq('id', userId)
           .single();
         if (perfil?.lunas !== undefined) {
-          onGenesisUpdate?.(perfil.lunas);
+          onLunasUpdate?.(perfil.lunas);
         }
       }
 
@@ -191,7 +191,7 @@ export function useHaloTrivia({ escenarioId, canalId, userId, onGenesisUpdate })
         setIndice(i => i + 1);
       }
     }, 3000);
-  }, [cooldown, resultado, preguntas, indice, userId, escenarioNormalizado, turno, onGenesisUpdate, lunasBloqueadas]);
+  }, [cooldown, resultado, preguntas, indice, userId, escenarioNormalizado, turno, onLunasUpdate, lunasBloqueadas]);
 
   return {
     preguntaActual: preguntas[indice] || null,

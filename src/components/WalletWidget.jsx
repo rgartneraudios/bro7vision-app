@@ -6,7 +6,7 @@ const WalletWidget = ({ balances, onClick }) => {
       {/* HEADER: Ajustado a tamaño compacto */}
       <div className="flex flex-col items-center text-center mb-3">
         <span className="text-[9px] text-cyan-500 font-black tracking-[0.2em] mb-1">CANTIDAD LUNAS</span>
-        <div className="text-3xl font-black text-white">{balances.genesis?.toLocaleString() || 0}</div>
+        <div className="text-3xl font-black text-white">{balances.lunas?.toLocaleString() || 0}</div>
       </div>
       
       {/* BOTÓN GESTIONAR: Con relleno para resaltar */}

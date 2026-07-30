@@ -16,7 +16,7 @@ const elegir = (arr) =>
 
 export function useAgSectorMobile({
   intent, iaMode, isAdmin, onHandoff, ciudad, perfilSector,
-  genesis = 0, userId = null, autorAlias = 'Ciudadano',
+  lunas = 0, userId = null, autorAlias = 'Ciudadano',
   perfilOso,
 }) {
   // ── Personaje activo del Oráculo (derivado de perfilOso) ───────────────────
@@ -46,7 +46,7 @@ export function useAgSectorMobile({
   // ── Hooks de sector ────────────────────────────────────────────────────────
   const nova     = useAgentNova({ iaMode, isAdmin, onHandoff, ciudad });
   const evelyn   = useAgentEvelyn     ({ iaMode, isAdmin, onHandoff, ciudad,
-                     genesis, userId, autorAlias });
+                     lunas, userId, autorAlias });
   const rumores  = useAgentRumores    ({ iaMode, isAdmin, onHandoff });
 
   // ── Hooks del Oráculo (usan el wrapper estable) ───────────────────────────

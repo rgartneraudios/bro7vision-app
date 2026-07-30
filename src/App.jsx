@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { supabase } from './supabaseClient';
-import GenesisGate from './components/GenesisGate';
+import LunasGate from './components/LunasGate';
 import WalletWidget from './components/WalletWidget';
 import ConversionModal from './components/ConversionModal';
 import NexusDashboard from './components/NexusDashboard';
@@ -246,7 +246,7 @@ setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
     ciudad:      sessionCity,
     perfilSector,
     perfilOso,
-    genesis:     balances?.genesis || 0,
+    lunas:     balances?.lunas || 0,
     userId:      session?.user?.id,
     autorAlias:  perfilOso?.osos_nombre || session?.user?.user_metadata?.alias || 'Ciudadano',
   });
@@ -291,8 +291,8 @@ setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
   // ══════════════════════════════════════════════════════
 
   if (!session && !isGuest) {
-    return <GenesisGate
-      onGuestAccess={() => { setIsGuest(true); setStep(0); setRealityMode(null); setBalances({ genesis: 500, nova: 20 }); }}
+    return <LunasGate
+      onGuestAccess={() => { setIsGuest(true); setStep(0); setRealityMode(null); setBalances({ lunas: 500, nova: 20 }); }}
     />;
   }
 
@@ -336,8 +336,8 @@ setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
     onTogglePublicIA:    handleTogglePublicIA,
     rumoresMensaje, rumoresLoading, handleRumoresInput,
     userId:         session?.user?.id || null,
-  genesisBalance: balances.genesis  || 0,
-  onGenesisUpdate: (nuevoBalance) => setBalances(prev => ({ ...prev, genesis: nuevoBalance })),
+  lunasBalance: balances.lunas  || 0,
+  onLunasUpdate: (nuevoBalance) => setBalances(prev => ({ ...prev, lunas: nuevoBalance })),
     handleGoToShop,
     setShowBackstage,
     boosterTab, setBoosterTab,

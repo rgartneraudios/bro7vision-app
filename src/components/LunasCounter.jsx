@@ -1,21 +1,21 @@
 import React from 'react';
 
-function GenesisCounter({ balances, className = '', mobile = false }) {
-  const genesis = balances?.genesis ?? 0;
-  const formatted = genesis.toLocaleString('es-ES');
+function LunasCounter({ balances, className = '', mobile = false }) {
+  const lunas = balances?.lunas ?? 0;
+  const formatted = lunas.toLocaleString('es-ES');
 
   const colorClass =
-    genesis < 1000      ? 'text-red-400'
-    : genesis < 5000    ? 'text-blue-400'
-    : genesis < 10000   ? 'text-emerald-400'
-    : genesis < 15000   ? 'text-yellow-400'
+    lunas < 1000      ? 'text-red-400'
+    : lunas < 5000    ? 'text-blue-400'
+    : lunas < 10000   ? 'text-emerald-400'
+    : lunas < 15000   ? 'text-yellow-400'
     :                     'text-fuchsia-400';
 
   const neonColor =
-    genesis < 1000      ? 'rgba(248,113,113,0.6)'
-    : genesis < 5000    ? 'rgba(96,165,250,0.6)'
-    : genesis < 10000   ? 'rgba(52,211,153,0.6)'
-    : genesis < 15000   ? 'rgba(250,204,21,0.6)'
+    lunas < 1000      ? 'rgba(248,113,113,0.6)'
+    : lunas < 5000    ? 'rgba(96,165,250,0.6)'
+    : lunas < 10000   ? 'rgba(52,211,153,0.6)'
+    : lunas < 15000   ? 'rgba(250,204,21,0.6)'
     :                     'rgba(217,70,239,0.6)';
 
   if (mobile) {
@@ -54,4 +54,4 @@ function GenesisCounter({ balances, className = '', mobile = false }) {
   );
 }
 
-export default GenesisCounter;
+export default LunasCounter;

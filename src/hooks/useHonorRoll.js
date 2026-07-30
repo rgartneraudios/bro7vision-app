@@ -5,8 +5,8 @@ import { supabase } from '../supabaseClient';
 // Orden jerárquico del reino
 export const RANK_ORDER = ['rey', 'principe', 'duque', 'marques', 'conde', 'lord'];
 
-// Génesis mensuales por rango
-export const GENESIS_POR_RANK = {
+// Lunas mensuales por rango
+export const LUNAS_POR_RANK = {
   rey:      2000,
   principe: 1000,
   duque:    500,

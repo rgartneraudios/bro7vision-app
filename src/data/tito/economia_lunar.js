@@ -5,7 +5,7 @@ export const economia_lunar = {
   data: `
 Pues sí, BRO7VISION está sincronizado con las fases reales de la luna. Jaguar sabe mucho de eso.
 Con cada fase lunar aparecen Cupones de descuento, entre un 20% y un 30%, que puedes conseguir
-canjeando los Puntos Génesis que ganas jugando o viendo BroStories. ¡Gratis!
+canjeando los Puntos Lunas que ganas jugando o viendo BroStories. ¡Gratis!
 Y también puedes comprar Packs según la fase... para enviar Halos de Luz a tus creadores favoritos,
 escribir Ecos que son los comentarios de pago, o lanzar Zaps para promocionar tu canal.
 Los detalles exactos de cada vale y pack están en el apartado legal.
