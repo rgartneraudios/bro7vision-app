@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 
 const SYNE  = "'Exo 2', sans-serif";
@@ -9,8 +9,26 @@ const MencionesModal = ({ session, carrito, setCarrito, onClose, onReserved, fas
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState(null);
   const [done, setDone]         = useState(false);
+  const [descuento, setDescuento] = useState(0);
 
-  const total = carrito.reduce((sum, item) => sum + (item.precio ?? 20), 0);
+  useEffect(() => {
+    const fetchDescuento = async () => {
+      const { data } = await supabase
+        .from('b_advertiser_profiles')
+        .select('descuento_publicitario')
+        .eq('id', session.user.id)
+        .maybeSingle();
+      setDescuento(data?.descuento_publicitario ?? 0);
+    };
+    fetchDescuento();
+  }, [session]);
+
+  const precioFinal = (precio) =>
+    descuento > 0
+      ? Math.round(precio * (1 - descuento / 100) * 100) / 100
+      : precio;
+
+  const total = carrito.reduce((sum, item) => sum + precioFinal(item.precio ?? 20), 0);
 
   const handleContratar = async () => {
     if (!brief.trim()) {
@@ -164,6 +182,22 @@ const MencionesModal = ({ session, carrito, setCarrito, onClose, onReserved, fas
               </span>
               <span style={{ fontFamily: INTER, fontWeight: 700 }} className="text-3xl text-white">{total}€</span>
             </div>
+            {descuento > 0 && (
+              <>
+                <div style={{ fontFamily: INTER }}
+                     className="flex items-center justify-between text-xs mb-2 px-1">
+                  <span className="text-gray-500">Precio base</span>
+                  <span className="text-gray-500 line-through">{carrito.reduce((sum, item) => sum + (item.precio ?? 20), 0)}€</span>
+                </div>
+                <div style={{ fontFamily: SYNE, fontWeight: 700 }}
+                     className="flex items-center justify-between text-xs mb-3 px-1">
+                  <span className="text-emerald-400 uppercase tracking-widest">
+                    ✦ Descuento activo · -{descuento}%
+                  </span>
+                  <span className="text-emerald-400">{total}€</span>
+                </div>
+              </>
+            )}
             <button
               onClick={handleContratar}
               disabled={loading || carrito.length === 0}

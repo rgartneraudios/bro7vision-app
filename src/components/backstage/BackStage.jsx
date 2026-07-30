@@ -9,6 +9,7 @@ import MisCampanasTab from './MisCampanasTab';
 import TarjetasRegalo from './TarjetasRegalo';
 import TarjetasCanjesRecibidosTab from './TarjetasCanjesRecibidosTab';
 import ShopAmigosTab from './ShopAmigosTab';
+import DiamantePanelAdmin from './DiamantePanelAdmin';
 
 const SYNE = "'Exo 2', sans-serif";
 
@@ -18,6 +19,7 @@ const BackStage = ({ session, onLogout }) => {
   const [activeTab, setActiveTab] = useState('fondos');
   const [activeBlock, setActiveBlock] = useState('anuncios');
   const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
@@ -35,6 +37,12 @@ const BackStage = ({ session, onLogout }) => {
       .eq('id', session.user.id)
       .maybeSingle();
     setProfile(data);
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', session.user.id)
+      .maybeSingle();
+    setIsAdmin(profileData?.is_admin === true);
     setLoading(false);
   }, [session]);
 
@@ -267,6 +275,7 @@ const BackStage = ({ session, onLogout }) => {
     { id: 'games',      label: 'GAMES'                  },
     { id: 'estudio',    label: 'DEMOS & BLOG'           },
     { id: 'campanas',   label: 'MIS CAMPAÑAS'           },
+    ...(isAdmin ? [{ id: 'diamante_admin', label: '💎 DIAMANTE ADMIN' }] : []),
   ];
 
   const TABS_COMERCIO = [
@@ -379,7 +388,7 @@ const BackStage = ({ session, onLogout }) => {
         )}
 
         {activeTab === 'slide_rail' && (
-          <SlideRailTab role={rolUsuario} />
+          <SlideRailTab session={session} role={rolUsuario} />
         )}
 
         {activeTab === 'shop_amigos' && (
@@ -387,7 +396,7 @@ const BackStage = ({ session, onLogout }) => {
         )}
 
         {activeTab === 'games' && (
-          <GamesTab />
+          <GamesTab session={session} />
         )}
 
         {activeTab === 'tarjetas_diseno' && <TarjetasRegalo profile={profile} />}
@@ -395,6 +404,10 @@ const BackStage = ({ session, onLogout }) => {
 
         {activeTab === 'estudio' && (
           <DemoBlogTab />
+        )}
+
+        {activeTab === 'diamante_admin' && isAdmin && (
+          <DiamantePanelAdmin session={session} />
         )}
 
       </div>

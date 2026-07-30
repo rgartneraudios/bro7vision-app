@@ -109,7 +109,11 @@ const SlideRailTab = ({ session, role }) => {
       </div>
 
       <div className="max-w-3xl w-full">
-        {SECTORES.map(s => renderGrid(s.id, s.color))}
+        {SECTORES.map(s => (
+          <React.Fragment key={s.id}>
+            {renderGrid(s.id, s.color)}
+          </React.Fragment>
+        ))}
       </div>
 
       <p style={{ fontFamily: SYNE }} className="text-[9px] text-gray-700 mt-6 uppercase tracking-widest">

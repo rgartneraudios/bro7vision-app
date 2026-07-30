@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { getCitiesForCobertura } from '../../data/citycodes';
 
@@ -33,7 +33,7 @@ const COBERTURAS_LIST = [
 const NEEDS_CIUDAD = ['SALA_CIUDAD', 'SALA_GRAN_CIUDAD', 'GIRA_REGIONAL', 'GIRA_GRAN_REGIONAL', 'METROPOLIS'];
 
 // ── Panel lateral ─────────────────────────────────────────────────────────────
-const Panel = ({ juego, onClose }) => {
+const Panel = ({ juego, session, onClose }) => {
   const [cobertura, setCobertura] = useState('SALA_CIUDAD');
   const [ciudad,    setCiudad]    = useState('');
   const [pregunta,  setPregunta]  = useState('');
@@ -43,6 +43,24 @@ const Panel = ({ juego, onClose }) => {
   const [opcionD,   setOpcionD]   = useState('');
   const [error,     setError]     = useState('');
   const [done,      setDone]      = useState(false);
+  const [descuento, setDescuento] = useState(0);
+
+  useEffect(() => {
+    const fetchDescuento = async () => {
+      const { data } = await supabase
+        .from('b_advertiser_profiles')
+        .select('descuento_publicitario')
+        .eq('id', session.user.id)
+        .maybeSingle();
+      setDescuento(data?.descuento_publicitario ?? 0);
+    };
+    fetchDescuento();
+  }, [session]);
+
+  const precioFinal = (precio) =>
+    descuento > 0
+      ? Math.round(precio * (1 - descuento / 100) * 100) / 100
+      : precio;
 
   const needsCiudad = NEEDS_CIUDAD.includes(cobertura);
   const cities      = useMemo(() => getCitiesForCobertura(cobertura), [cobertura]);
@@ -56,7 +74,6 @@ const Panel = ({ juego, onClose }) => {
     if (!pregunta.trim() || !respuesta.trim() || !opcionB.trim() || !opcionC.trim() || !opcionD.trim()) {
       setError('Todos los campos de la pregunta son obligatorios.'); return;
     }
-    const { data: { user } } = await supabase.auth.getUser();
     const { error: err } = await supabase.from('promo_games').insert([{
       juego:            juego.id === 'the7gates' ? 'SEVEN_GATES' : 'COSMIC_QUIZ',
       pregunta:         pregunta.trim(),
@@ -65,7 +82,7 @@ const Panel = ({ juego, onClose }) => {
       opcion_c:         opcionC.trim(),
       opcion_d:         opcionD.trim(),
       es_brovision:     false,
-      comercio_id:      user.id,
+      comercio_id:      session.user.id,
       lunas_bonus:      20,
       fase_lunar_activa: 'LUNA_NUEVA',
       activo:           true,
@@ -258,9 +275,25 @@ const Panel = ({ juego, onClose }) => {
                 Precio estimado · 28 días
               </span>
               <span style={{ fontFamily: INTER, fontWeight: 700 }} className="text-violet-400 text-3xl">
-                {precio} €
+                {precioFinal(precio)} €
               </span>
             </div>
+            {descuento > 0 && (
+              <>
+                <div style={{ fontFamily: INTER }}
+                     className="flex items-center justify-between text-xs mb-2 px-1">
+                  <span className="text-gray-500">Precio base</span>
+                  <span className="text-gray-500 line-through">{precio} €</span>
+                </div>
+                <div style={{ fontFamily: SYNE, fontWeight: 700 }}
+                     className="flex items-center justify-between text-xs mb-3 px-1">
+                  <span className="text-emerald-400 uppercase tracking-widest">
+                    ✦ Descuento activo · -{descuento}%
+                  </span>
+                  <span className="text-emerald-400">{precioFinal(precio)} €</span>
+                </div>
+              </>
+            )}
             <p style={{ fontFamily: INTER }} className="text-xs text-gray-700 mb-3 leading-relaxed">
               FASE 0 · Simulación — No se realizará ningún cargo real.
             </p>
@@ -279,7 +312,7 @@ const Panel = ({ juego, onClose }) => {
 };
 
 // ── GamesTab ──────────────────────────────────────────────────────────────────
-const GamesTab = () => {
+const GamesTab = ({ session }) => {
   const [selected, setSelected] = useState(null);
 
   return (
@@ -344,7 +377,7 @@ const GamesTab = () => {
         FASE 0 · Simulación — No se realizará ningún cargo real
       </p>
 
-      {selected && <Panel juego={selected} onClose={() => setSelected(null)} />}
+      {selected && <Panel juego={selected} session={session} onClose={() => setSelected(null)} />}
     </div>
   );
 };

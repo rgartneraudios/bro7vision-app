@@ -7,7 +7,16 @@ import { useHaloTrivia } from '../hooks/useHaloTrivia';
 const DR_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&display=swap');
 
-  @keyframes glowSwimPC {
+  @keyframes vortexRise {
+    0%   { transform: translate(-80vw,-30vh) scale(0.9) rotate(0deg); opacity:0.8; }
+    15%  { transform: translate(-30vw,0vh) scale(1.3) rotate(90deg); }
+    70%  { transform: translate(10vw,-35vh) scale(1.2) rotate(450deg); }
+    80%  { transform: translate(5vw,-45vh) scale(0.9) rotate(540deg); }
+    100% { transform: translate(-30vw,-60vh) scale(0.05) rotate(720deg); opacity:0.8; }
+  }
+  .animate-vortex { animation: vortexRise 6s cubic-bezier(0.45,0.05,0.55,0.95) forwards; }
+
+  @keyframes monsterRise {
     0%   { transform: translate(0,0) scale(0.9) rotate(0deg);   opacity:1; }
     20%  { transform: translate(-8vw,-18vh) scale(1.3) rotate(90deg);  opacity:1; }
     50%  { transform: translate(-20vw,-50vh) scale(1.2) rotate(270deg); }
@@ -15,7 +24,7 @@ const DR_STYLES = `
     95%  { transform: translate(-38vw,-85vh) scale(0.2) rotate(660deg); opacity:1; }
     100% { transform: translate(-38vw,-88vh) scale(0.05) rotate(720deg); opacity:0.6; }
   }
-  .animate-halo-pc { animation: glowSwimPC 6s cubic-bezier(0.45,0.05,0.55,0.95) forwards; }
+  .animate-monster { animation: monsterRise 6s cubic-bezier(0.45,0.05,0.55,0.95) forwards; }
 
   @keyframes spin-cw  { from{transform:rotate(0deg)}   to{transform:rotate(360deg)}  }
   @keyframes spin-ccw { from{transform:rotate(360deg)} to{transform:rotate(0deg)}    }
@@ -289,9 +298,9 @@ const fase  = num === 2 ? getMoonSuffix() : '0';
 
       {/* Scanline */}
 
-      {/* HALO SUMA — vortex PC (diseño ChannelMoon) */}
+      {/* HALO SUMA — vortex PC (diseño BioForest) */}
       {haloActivo === 'suma' && (
-        <div className="fixed z-[300] pointer-events-none animate-halo-pc"
+        <div className="fixed z-[300] pointer-events-none animate-vortex"
           style={{ bottom: 80, right: '12%' }}>
           {(() => {
             const pal = [
@@ -327,7 +336,7 @@ const fase  = num === 2 ? getMoonSuffix() : '0';
 
       {/* HALO RESTA — monstruo vortex */}
       {haloActivo === 'resta' && falloImg && (
-        <div className="fixed z-[300] pointer-events-none animate-halo-pc"
+        <div className="fixed z-[300] pointer-events-none animate-monster"
           style={{ bottom: 80, right: '12%' }}>
           <div className="relative w-40 h-40 flex items-center justify-center">
             <div className="absolute inset-0 bg-red-500/20 rounded-full blur-[60px] animate-energy-pulse" />

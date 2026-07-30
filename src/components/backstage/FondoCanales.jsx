@@ -70,7 +70,7 @@ const EscenarioCard = ({ slot, butacas, onSelectSlot, role }) => {
             ? { width: '100%', height: '100%', objectFit: 'cover' }
             : { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', height: '100%', width: 'auto' }
           }
-          onMouseEnter={() => { if (videoRef.current) { videoRef.current.load(); videoRef.current.play(); } }}
+          onMouseEnter={() => { if (videoRef.current) { videoRef.current.load(); videoRef.current.play().catch(() => {}); } }}
           onMouseLeave={() => { if (videoRef.current) { videoRef.current.pause(); videoRef.current.currentTime = 0; } }}
         />
 

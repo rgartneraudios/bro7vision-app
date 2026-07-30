@@ -477,7 +477,6 @@ function BurbujaDescripcion({ card, intent, accent, onHandoff, onClose }) {
 const MobileLayout = ({
   children,
   realityMode, setRealityMode,
-  audmovilList=[],
   scope, setScope,
   step, setStep,
   intent, setIntent,

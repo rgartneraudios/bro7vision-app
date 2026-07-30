@@ -3,47 +3,13 @@
  * ================================================================
  * Endpoints:
  *   POST /canjear-cupon     → genera cupón, resta génesis
- *   POST /proyectar         → sincroniza brotwit, blog, holoprisma → mini_proyeccion
- *   POST /proyectar-169     → sincroniza video 16:9 → proyeccion_169
- *   POST /proyectar-916     → sincroniza video 9:16 → proyeccion_916
- *   POST /proyectar-audio   → sincroniza audio PC   → proyeccion_audio
- *   POST /proyectar-audmovil → sincroniza audio móvil → proyeccion_audmovil
+ *   POST /upload-presigned  → subida firmada a R2
  *
  * Secrets requeridos en Cloudflare (Settings → Variables):
  *   SUPABASE_URL         → https://xxxx.supabase.co
  *   SUPABASE_SERVICE_KEY → service_role key de Supabase
  * ================================================================
  */
-
-// ================================================================
-// DOMINIOS BLOQUEADOS — solo contenido soberano del creador
-// ================================================================
-const DOMINIOS_BLOQUEADOS = [
-  'youtube.com',
-  'youtu.be',
-  'tiktok.com',
-  'vimeo.com',
-  'instagram.com',
-  'facebook.com',
-  'fb.watch',
-  'twitter.com',
-  'x.com',
-];
-
-function validarURL(url) {
-  if (!url) return null;
-  try {
-    const parsed = new URL(url);
-    const dominio = parsed.hostname.replace('www.', '');
-    const bloqueado = DOMINIOS_BLOQUEADOS.find(d => dominio === d || dominio.endsWith('.' + d));
-    if (bloqueado) {
-      return `URL no permitida (${bloqueado}). Solo se aceptan URLs de almacenamiento propio: Cloudflare R2, Bunny CDN u hosting soberano.`;
-    }
-    return null;
-  } catch {
-    return 'URL con formato inválido.';
-  }
-}
 
 // ================================================================
 // ENTRY POINT
@@ -68,17 +34,7 @@ export default {
     try {
       const url = new URL(request.url);
 
-      // GET /carrusel-audmovil
-      if (request.method === 'GET' && url.pathname === '/carrusel-audmovil') {
-        return await handleCarruselAudmovil(env, corsHeaders);
-      }
-
       if (url.pathname === '/canjear-cupon')      return await handleCanjearCupon(request, env, corsHeaders);
-      if (url.pathname === '/proyectar')          return await handleProyectar(request, env, corsHeaders);
-      if (url.pathname === '/proyectar-169')      return await handleProyectar169(request, env, corsHeaders);
-      if (url.pathname === '/proyectar-916')      return await handleProyectar916(request, env, corsHeaders);
-      if (url.pathname === '/proyectar-audio')    return await handleProyectarAudio(request, env, corsHeaders);
-      if (url.pathname === '/proyectar-audmovil') return await handleProyectarAudmovil(request, env, corsHeaders);
       if (url.pathname === '/upload-presigned') return await handleUploadPresigned(request, env, corsHeaders);
 
       // GET /banners/* → sirve imagen desde R2 (bucket privado)
@@ -108,232 +64,6 @@ async function resolverUsuario(env, token) {
   );
   if (!perfil || perfil.length === 0) return null;
   return perfil[0].id;
-}
-
-// ================================================================
-// ENDPOINT: /proyectar → brotwit, blog, holoprisma → mini_proyeccion
-// ================================================================
-async function handleProyectar(request, env, corsHeaders) {
-
-  let payload;
-  try { payload = await request.json(); }
-  catch { return json({ error: 'JSON inválido' }, 400, corsHeaders); }
-
-  const { token, proyeccion } = payload;
-  if (!token || !proyeccion) {
-    return json({ error: 'Token o datos de proyección ausentes' }, 400, corsHeaders);
-  }
-
-  const user_id = await resolverUsuario(env, token);
-  if (!user_id) return json({ error: 'Token no reconocido' }, 401, corsHeaders);
-
-  const registro = {
-    user_id,
-    brotwit:           proyeccion.brotwit           || null,
-    editorial_title:   proyeccion.editorial_title   || null,
-    editorial_text:    proyeccion.editorial_text    || null,
-    editorial_img_url: proyeccion.editorial_img_url || null,
-    holoprisma_1:      proyeccion.holoprisma_1      || null,
-    holoprisma_2:      proyeccion.holoprisma_2      || null,
-    holoprisma_3:      proyeccion.holoprisma_3      || null,
-    holoprisma_4:      proyeccion.holoprisma_4      || null,
-    updated_at:        new Date().toISOString(),
-  };
-
-  const existente = await sbGet(env,
-    `mini_proyeccion?user_id=eq.${user_id}&select=id&limit=1`
-  );
-
-  if (existente && existente.length > 0) {
-    await sbPatch(env, `mini_proyeccion?user_id=eq.${user_id}`, registro);
-  } else {
-    registro.proyectado_at = new Date().toISOString();
-    await sbPost(env, 'mini_proyeccion', registro);
-  }
-
-  return json({ ok: true, mensaje: '¡Proyectado! Tu blog y BroTwit ya están en Brovision.' }, 200, corsHeaders);
-}
-
-// ================================================================
-// ENDPOINT: /proyectar-169 → video 16:9 → proyeccion_169
-// ================================================================
-async function handleProyectar169(request, env, corsHeaders) {
-
-  let payload;
-  try { payload = await request.json(); }
-  catch { return json({ error: 'JSON inválido' }, 400, corsHeaders); }
-
-  const { token, url, titulo, descripcion, tipo } = payload;
-  if (!token) return json({ error: 'Token ausente' }, 400, corsHeaders);
-  if (!url)   return json({ error: 'URL de video ausente' }, 400, corsHeaders);
-
-  const errorURL = validarURL(url);
-  if (errorURL) return json({ error: errorURL }, 400, corsHeaders);
-
-  const tiposValidos = ['original', 'ia', 'publicidad'];
-  const tipoFinal = tiposValidos.includes(tipo) ? tipo : 'original';
-
-  const user_id = await resolverUsuario(env, token);
-  if (!user_id) return json({ error: 'Token no reconocido' }, 401, corsHeaders);
-
-  const registro = {
-    user_id,
-    url,
-    titulo:      titulo      || null,
-    descripcion: descripcion || null,
-    tipo:        tipoFinal,
-    updated_at:  new Date().toISOString(),
-  };
-
-  const existente = await sbGet(env,
-    `proyeccion_169?user_id=eq.${user_id}&select=id&limit=1`
-  );
-
-  if (existente && existente.length > 0) {
-    await sbPatch(env, `proyeccion_169?user_id=eq.${user_id}`, registro);
-  } else {
-    registro.created_at = new Date().toISOString();
-    await sbPost(env, 'proyeccion_169', registro);
-  }
-
-  return json({ ok: true, mensaje: '¡Video 16:9 proyectado! Ya aparece en los canales horizontales de Brovision.' }, 200, corsHeaders);
-}
-
-// ================================================================
-// ENDPOINT: /proyectar-916 → video 9:16 → proyeccion_916
-// ================================================================
-async function handleProyectar916(request, env, corsHeaders) {
-
-  let payload;
-  try { payload = await request.json(); }
-  catch { return json({ error: 'JSON inválido' }, 400, corsHeaders); }
-
-  const { token, url, titulo, descripcion, tipo } = payload;
-  if (!token) return json({ error: 'Token ausente' }, 400, corsHeaders);
-  if (!url)   return json({ error: 'URL de video ausente' }, 400, corsHeaders);
-
-  const errorURL = validarURL(url);
-  if (errorURL) return json({ error: errorURL }, 400, corsHeaders);
-
-  const tiposValidos = ['original', 'ia', 'publicidad'];
-  const tipoFinal = tiposValidos.includes(tipo) ? tipo : 'original';
-
-  const user_id = await resolverUsuario(env, token);
-  if (!user_id) return json({ error: 'Token no reconocido' }, 401, corsHeaders);
-
-  const registro = {
-    user_id,
-    url,
-    titulo:      titulo      || null,
-    descripcion: descripcion || null,
-    tipo:        tipoFinal,
-    updated_at:  new Date().toISOString(),
-  };
-
-  const existente = await sbGet(env,
-    `proyeccion_916?user_id=eq.${user_id}&select=id&limit=1`
-  );
-
-  if (existente && existente.length > 0) {
-    await sbPatch(env, `proyeccion_916?user_id=eq.${user_id}`, registro);
-  } else {
-    registro.created_at = new Date().toISOString();
-    await sbPost(env, 'proyeccion_916', registro);
-  }
-
-  return json({ ok: true, mensaje: '¡Video 9:16 proyectado! Ya aparece en los canales verticales de Brovision.' }, 200, corsHeaders);
-}
-
-// ================================================================
-// ENDPOINT: /proyectar-audio → audio PC → proyeccion_audio
-// ================================================================
-async function handleProyectarAudio(request, env, corsHeaders) {
-
-  let payload;
-  try { payload = await request.json(); }
-  catch { return json({ error: 'JSON inválido' }, 400, corsHeaders); }
-
-  const { token, url, titulo, descripcion, tipo, alcance, circular_url } = payload;
-  if (!token) return json({ error: 'Token ausente' }, 400, corsHeaders);
-  if (!url)   return json({ error: 'URL de audio ausente' }, 400, corsHeaders);
-
-  const errorURL = validarURL(url);
-  if (errorURL) return json({ error: errorURL }, 400, corsHeaders);
-
-  const tiposValidos = ['original', 'ia', 'publicidad'];
-  const tipoFinal = tiposValidos.includes(tipo) ? tipo : 'original';
-
-  const user_id = await resolverUsuario(env, token);
-  if (!user_id) return json({ error: 'Token no reconocido' }, 401, corsHeaders);
-
-  const registro = {
-    user_id,
-    url,
-    titulo:      titulo      || null,
-    descripcion: descripcion || null,
-    tipo:        tipoFinal,
-    alcance:     ['local','nacional','internacional'].includes(alcance) ? alcance : null,
-    circular_url: circular_url || null,
-    updated_at:  new Date().toISOString(),
-  };
-
-  const existente = await sbGet(env,
-    `proyeccion_audio?user_id=eq.${user_id}&select=id&limit=1`
-  );
-
-  if (existente && existente.length > 0) {
-    await sbPatch(env, `proyeccion_audio?user_id=eq.${user_id}`, registro);
-  } else {
-    registro.created_at = new Date().toISOString();
-    await sbPost(env, 'proyeccion_audio', registro);
-  }
-
-  return json({ ok: true, mensaje: '¡Audio proyectado! Ya suena en BroLives de Brovision.' }, 200, corsHeaders);
-}
-
-// ================================================================
-// ENDPOINT: /proyectar-audmovil → audio móvil → proyeccion_audmovil
-// ================================================================
-async function handleProyectarAudmovil(request, env, corsHeaders) {
-
-  let payload;
-  try { payload = await request.json(); }
-  catch { return json({ error: 'JSON inválido' }, 400, corsHeaders); }
-
-  const { token, url, titulo, descripcion, tipo } = payload;
-  if (!token) return json({ error: 'Token ausente' }, 400, corsHeaders);
-  if (!url)   return json({ error: 'URL de audio ausente' }, 400, corsHeaders);
-
-  const errorURL = validarURL(url);
-  if (errorURL) return json({ error: errorURL }, 400, corsHeaders);
-
-  const tiposValidos = ['original', 'ia', 'publicidad'];
-  const tipoFinal = tiposValidos.includes(tipo) ? tipo : 'original';
-
-  const user_id = await resolverUsuario(env, token);
-  if (!user_id) return json({ error: 'Token no reconocido' }, 401, corsHeaders);
-
-  const registro = {
-    user_id,
-    url,
-    titulo:      titulo      || null,
-    descripcion: descripcion || null,
-    tipo:        tipoFinal,
-    updated_at:  new Date().toISOString(),
-  };
-
-  const existente = await sbGet(env,
-    `proyeccion_audmovil?user_id=eq.${user_id}&select=id&limit=1`
-  );
-
-  if (existente && existente.length > 0) {
-    await sbPatch(env, `proyeccion_audmovil?user_id=eq.${user_id}`, registro);
-  } else {
-    registro.created_at = new Date().toISOString();
-    await sbPost(env, 'proyeccion_audmovil', registro);
-  }
-
-  return json({ ok: true, mensaje: '¡Audio móvil proyectado! Ya disponible en el reproductor central de Brovision.' }, 200, corsHeaders);
 }
 
 // ================================================================
@@ -475,32 +205,6 @@ async function handleCanjearCupon(request, env, corsHeaders) {
     balance_nuevo:   nuevoBalance,
     mensaje:         'Tarjeta canjeada. En tu Booster › Mis Cupones tienes tu Luna con la palabra clave secreta.',
   }, 200, corsHeaders);
-}
-
-// ================================================================
-// ENDPOINT: GET /carrusel-audmovil → carrusel audio móvil con datos de creador
-// ================================================================
-async function handleCarruselAudmovil(env, corsHeaders) {
-  const datos = await sbGet(env,
-    'proyeccion_audmovil?select=url,titulo,descripcion,tipo,updated_at,promoted_until,user_id,profiles(username)&order=promoted_until.desc.nullslast,updated_at.desc&limit=40'
-  );
-
-  if (!datos) {
-    return json({ error: 'Error al obtener carrusel' }, 500, corsHeaders);
-  }
-
-  const carrusel = datos.map(item => ({
-    url:            item.url,
-    titulo:         item.titulo         || null,
-    descripcion:    item.descripcion    || null,
-    tipo:           item.tipo           || 'original',
-    updated_at:     item.updated_at,
-    promoted_until: item.promoted_until || null,
-    user_id:        item.user_id,
-    username:       item.profiles?.username || null,
-  }));
-
-  return json({ ok: true, carrusel }, 200, corsHeaders);
 }
 
 // ================================================================

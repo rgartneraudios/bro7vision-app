@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { cityList } from '../../data/citycodes';
 
@@ -25,6 +25,24 @@ const ReservaPanelRail = ({ slot, session, onClose, onReserved, faseLunarActiva:
   const [loading, setLoading]           = useState(false);
   const [error, setError]               = useState(null);
   const [success, setSuccess]           = useState(false);
+  const [descuento, setDescuento]       = useState(0);
+
+  useEffect(() => {
+    const fetchDescuento = async () => {
+      const { data } = await supabase
+        .from('b_advertiser_profiles')
+        .select('descuento_publicitario')
+        .eq('id', session.user.id)
+        .maybeSingle();
+      setDescuento(data?.descuento_publicitario ?? 0);
+    };
+    fetchDescuento();
+  }, [session]);
+
+  const precioFinal = (precio) =>
+    descuento > 0
+      ? Math.round(precio * (1 - descuento / 100) * 100) / 100
+      : precio;
 
   const needsCiudad = CIUDAD_COBERTURAS.includes(cobertura);
   const faseLunarActiva = propFase || 'Luna Llena';
@@ -250,8 +268,24 @@ const ReservaPanelRail = ({ slot, session, onClose, onReserved, faseLunarActiva:
         <div className="px-6 py-4 border-t border-white/5 bg-black/20 shrink-0">
           <div className="flex items-center justify-between mb-3">
             <span style={{ fontFamily: INTER, fontWeight: 500 }} className="text-sm text-gray-400 uppercase tracking-widest">Precio</span>
-            <span style={{ fontFamily: INTER, fontWeight: 700 }} className="text-3xl text-white">{precio}€</span>
+            <span style={{ fontFamily: INTER, fontWeight: 700 }} className="text-3xl text-white">{precioFinal(precio)}€</span>
           </div>
+          {descuento > 0 && (
+            <>
+              <div style={{ fontFamily: INTER }}
+                   className="flex items-center justify-between text-xs mb-2 px-1">
+                <span className="text-gray-500">Precio base</span>
+                <span className="text-gray-500 line-through">{precio}€</span>
+              </div>
+              <div style={{ fontFamily: SYNE, fontWeight: 700 }}
+                   className="flex items-center justify-between text-xs mb-3 px-1">
+                <span className="text-emerald-400 uppercase tracking-widest">
+                  ✦ Descuento activo · -{descuento}%
+                </span>
+                <span className="text-emerald-400">{precioFinal(precio)}€</span>
+              </div>
+            </>
+          )}
           <button
             onClick={handleReservar}
             disabled={loading || success}
