@@ -13,6 +13,10 @@ import { getAudioForRumores }   from '../data/audioMap_rumores';
 import { getAudioForEvelyn }    from '../data/audioMap_evelyn';
 import ChapterGrid from './ChapterGrid';
 import ChapterPlayer from './ChapterPlayer';
+import SmisterioBandChat from './personajes/SmisterioBandChat';
+import StoryListOverlay from './StoryListOverlay';
+import StoryPanel from './StoryPanel';
+import { SMISTERIO_CUENTO_MAP } from '../data/smisterio/smisterioData';
 import { getMoonSuffix } from '../utils/moonUtils';
 
 const AUDIO_RESOLVER_MAP = {
@@ -79,6 +83,7 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
   const [display, setDisplay] = useState('');
   const [cursor, setCursor] = useState(true);
   const [mensajeBienvenida, setMensajeBienvenida] = useState('');
+  const [iaMensaje, setIaMensaje] = useState('');
   const [footerOpen, setFooterOpen] = useState(false);
   const charIdx = useRef(0);
   const [userLocation, setUserLocation] = useState(null);
@@ -88,6 +93,9 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
   const faseLunar = getMoonSuffix();
   const [selectedChapter, setSelectedChapter] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [storyListVisible, setStoryListVisible] = useState(false);
+  const [cuentos, setCuentos] = useState([]);
+  const [cuentoActivo, setCuentoActivo] = useState(null);
 
   const group = GROUPS.find(g => g.id === selectedGroup);
 
@@ -109,6 +117,7 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
     const msg = elegir(frases);
     setMensajeBienvenida(msg);
     setDisplay('');
+    setIaMensaje('');
     charIdx.current = 0;
   }, [selectedGroup]);
 
@@ -123,6 +132,16 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
     }, 26);
     return () => clearInterval(t);
   }, [mensajeBienvenida]);
+
+  useEffect(() => {
+    supabase
+      .from('bro7band_cuentos')
+      .select('numero, titulo, audio_url')
+      .eq('personaje_id', 'smisterio')
+      .eq('activo', true)
+      .order('numero')
+      .then(({ data }) => { if (data) setCuentos(data); });
+  }, []);
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -265,7 +284,7 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
       <div className="fixed inset-0 z-[90] bg-black overflow-hidden">
         <LunasCounter balances={balances} />
         <button
-          onClick={() => { setSelectedGroup(null); setIaActive(false); setClaimStatus(null); setPalabraClave(''); setMensajeBienvenida(''); }}
+          onClick={() => { setSelectedGroup(null); setIaActive(false); setClaimStatus(null); setPalabraClave(''); setMensajeBienvenida(''); setStoryListVisible(false); setCuentoActivo(null); }}
           className="fixed top-4 left-4 z-[110] px-6 py-3 rounded-full border-2 border-cyan-400/80 text-cyan-300 text-sm font-black uppercase tracking-widest hover:bg-cyan-400/20 hover:border-cyan-300 transition-all shadow-[0_0_25px_rgba(34,211,238,0.5)] backdrop-blur-md"
         >
           VOLVER
@@ -314,18 +333,39 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
               {group.hasChat && agentKey && (
                 <div className="flex items-center gap-6 flex-1 max-w-3xl mx-auto">
                   <div className="flex-1">
-                    <AgentChatInput
-                      agent={agentKey}
-                      onSend={handleAgentSend}
-                      isLoading={false}
-                      placeholder={hasMembers ? `Habla con ${activeMember}` : undefined}
-                    />
+                    {iaActive && group.groupId === 'smisterio' ? (
+                      <SmisterioBandChat
+                        iaMode={iaMode}
+                        isAdmin={isAdmin}
+                        onHandoff={() => setSelectedGroup(null)}
+                        onMensaje={setIaMensaje}
+                        onShowStoryList={() => setStoryListVisible(true)}
+                        onLaunchStory={(n) => {
+                          const ep = SMISTERIO_CUENTO_MAP[n];
+                          const meta = cuentos.find(c => c.numero === n);
+                          if (ep) {
+                            setCuentoActivo({ ...ep, audioUrl: meta?.audio_url || null });
+                            setStoryListVisible(false);
+                          }
+                        }}
+                      />
+                    ) : (
+                      <AgentChatInput
+                        agent={agentKey}
+                        onSend={handleAgentSend}
+                        isLoading={false}
+                        placeholder={hasMembers ? `Habla con ${activeMember}` : undefined}
+                      />
+                    )}
                   </div>
                   <div className="flex-1 min-h-[5em] flex items-center border-l border-white/10 pl-4">
-                    {display && (
+                    {(iaMensaje || display) && (
                       <p className="text-white/90 text-sm font-bold italic uppercase leading-relaxed">
-                        {display}
-                        <span className="inline-block w-[3px] h-[0.8em] ml-1 bg-cyan-400 align-middle" style={{ opacity: cursor ? 1 : 0 }} />
+                        {iaActive && iaMensaje ? iaMensaje : display}
+                        <span
+                          className="inline-block w-[3px] h-[0.8em] ml-1 bg-cyan-400 align-middle"
+                          style={{ opacity: cursor ? 1 : 0 }}
+                        />
                       </p>
                     )}
                   </div>
@@ -370,6 +410,33 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
             </div>
           )}
         </div>
+
+        {storyListVisible && (
+          <StoryListOverlay
+            cuentos={cuentos}
+            personaje="Señor Misterio"
+            accentColor="#a855f7"
+            onClose={() => setStoryListVisible(false)}
+            onSelectCuento={(n) => {
+              const ep = SMISTERIO_CUENTO_MAP[n];
+              const meta = cuentos.find(c => c.numero === n);
+              if (ep) {
+                setCuentoActivo({ ...ep, audioUrl: meta?.audio_url || null });
+                setStoryListVisible(false);
+              }
+            }}
+          />
+        )}
+
+        {cuentoActivo && (
+          <StoryPanel
+            titulo={cuentoActivo.titulo}
+            texto={cuentoActivo.texto}
+            audioUrl={cuentoActivo.audioUrl}
+            accentColor="#a855f7"
+            onClose={() => setCuentoActivo(null)}
+          />
+        )}
       </div>
     );
   }

@@ -28,7 +28,7 @@ export default function StoryPanel({ titulo, texto, audioUrl, accentColor = '#a8
   };
 
   return (
-    <div className="absolute inset-0 z-[110] flex items-center justify-center"
+    <div className="fixed inset-0 z-[110] flex items-center justify-center"
          style={{ background: 'rgba(0,0,0,0.80)', backdropFilter: 'blur(8px)' }}>
       <div style={{
         background: 'rgba(10,10,20,0.95)',
@@ -42,6 +42,7 @@ export default function StoryPanel({ titulo, texto, audioUrl, accentColor = '#a8
         display: 'flex',
         flexDirection: 'column',
         gap: '1rem',
+        fontFamily: 'Georgia, serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla"',
       }}>
         {/* Header */}
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
@@ -77,8 +78,8 @@ export default function StoryPanel({ titulo, texto, audioUrl, accentColor = '#a8
         {/* Texto */}
         <div style={{ overflowY:'auto', flex:1, display:'flex', flexDirection:'column', gap:'1rem' }}>
           {parrafos.map((p, i) => (
-            <p key={i} style={{ color:'rgba(255,255,255,0.88)', fontSize:'0.9rem',
-                                lineHeight:1.7, margin:0 }}>{p}</p>
+            <p key={i} style={{ color:'rgba(255,255,255,0.88)', fontSize:'1.05rem',
+                                lineHeight:1.8, margin:0, fontFamily:'Georgia, serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla"' }}>{p}</p>
           ))}
         </div>
       </div>
