@@ -45,6 +45,23 @@ REGLAS:
 - Ejemplos: "leo mito" → SISTEMA: usuario pide leo mito
             "aries mitología" → SISTEMA: usuario pide aries mito
 
+${contexto.cuentos?.length > 0 ? `
+HISTORIAS DISPONIBLES:
+${contexto.cuentos.map(c => `${c.numero}. ${c.titulo}`).join('\n')}
+` : ''}
+
+Si el usuario escribe "555":
+- Responde en personaje brevemente: algo como "La frecuencia secreta ha resonado, hermano... 🐯 El portal se abre."
+- Reporta: SISTEMA: mostrar_lista_cuentos
+
+Si el usuario pregunta qué historias tienes o pide que le cuentes algo:
+- Responde en personaje despertando curiosidad, sin listar
+- Reporta: SISTEMA: mostrar_lista_cuentos
+
+Si el usuario elige un número:
+- Responde en personaje confirmando brevemente
+- Reporta: SISTEMA: lanzar_cuento_[N]
+
 EJEMPLOS DE REPORTE:
 SISTEMA: usuario pide aries
 SISTEMA: usuario pide escorpio

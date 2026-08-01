@@ -4,33 +4,21 @@ export const lasCatedralosHundidas = {
   titulo: "Las Catedrales Hundidas",
   tema:   "tartaria",
   texto: `
-Las Catedrales Hundidas
+Las Catedrales Hundidas.
 
-En una tarde de verano me posé en los alrededores de una de las catedrales más
-emblemáticas de Europa. Durante el día, para preservar mi anonimato y privacidad,
-transité con un paraguas de sol acorde a la situación, discreto, para no llamar la
-atención.
+En una tarde de verano, me posé en los alrededores de una de las catedrales más emblemáticas de Europa. Durante el día, para preservar mi anonimato y privacidad, transité con un paraguas de sol acorde a la situación, discreto, para no llamar la atención.
 
-Aproveché la oportunidad para degustar un yogur griego con mi preferida mermelada
-de higos, que la encargo a hacer a gente especializada.
+Recuerdo haber aprovechado la oportunidad para degustar un yogur griego con mi preferida mermelada de higos, que encargo a hacer a gente especializada.
 
-En cierto momento me pude percatar de la elevación del terreno donde estaba situada
-esa catedral. Y lo vi. Es muy posible que esa Catedral tenga, al igual que otras,
-subsuelos y pasadizos subterráneos.☎️
+En cierto momento, me pude percatar de la elevación del terreno donde estaba situada esa catedral. Y lo vi. Es muy posible que esa Catedral tenga, al igual que otras, subsuelos y pasadizos subterráneos.☎️
 
-Para ser más claro: es muy posible que esa Catedral y otras estén hundidas unos 50
-metros hacia abajo. Y cobraría sentido que lo que llamamos puerta en realidad sea
-su ventana real. Que la verdadera entrada esté situada a 50 metros abajo.
+Para ser más claro: es muy posible que esa Catedral, y otras estén hundidas unos 50 metros hacia abajo. Y cobraría sentido, que lo que llamamos puerta, en realidad sea su ventana real. Que la verdadera entrada esté situada a 50 metros abajo.
 
-Las puertas grandes de entrada han dado lugar a todo tipo de especulaciones sobre
-gigantes y seres de otras dimensiones corporales. No lo descarto. La teoría de
-gigantes es tentadora.
+Las puertas grandes de entrada han dado lugar a todo tipo de especulaciones sobre gigantes y seres de otras dimensiones corporales. No lo descarto. La teoría de gigantes es tentadora.
 
-Solo que presenciar ese dato de elevación de terreno me dio motivos para investigar
-más.☎️
+Solo, que presenciar ese dato de elevación de terreno, me dio motivos para investigar más.☎️
 
-Si quieres más de Tartaria escribe TARTARIA.
-También tengo historias de Antártida, Bucegi y Egipto.
+Si quieres más cuentos pídeme el listado de historias otra vez con el 555.☎️
   `.trim()
 }
 export default lasCatedralosHundidas;

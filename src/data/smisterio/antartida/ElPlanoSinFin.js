@@ -21,7 +21,7 @@ Yo me pregunto. ¿ cómo serán los Mundos en esos lugares?.
 
 Depende. Depende de qué, encuentres primero.☎️
 
-Si quieres más cuentos pídeme el listado de cuentos otra vez.
+Si quieres más cuentos pídeme el listado de historias otra vez con el 555.☎️
   `.trim()
 }
 export default elPlanoSinFin;

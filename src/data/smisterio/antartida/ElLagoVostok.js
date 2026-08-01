@@ -20,7 +20,7 @@ Los informes se clasificaron. Los científicos dejaron de hablar. Las expedicion
 Yo me pregunto.  ¿qué encontraron realmente?. ¿por qué
 dejaron de contarlo?. Quizás había algo más que bacterias?. Quizás había algo...algo que prefirieron no nombrar.☎️
 
-Si quieres más cuentos pídeme el listado de cuentos otra vez.
+Si quieres más cuentos pídeme el listado de historias otra vez con el 555.☎️
   `.trim()
 }
 export default elLagoVostok;

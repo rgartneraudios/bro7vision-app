@@ -24,8 +24,7 @@ Orumama habrían podido combatir semejante temperatura.
 Y eso ya es decir mucho, porque esa mujer,
 pone cosas en sus guisos que son un misterio aparte.☎️
 
-Si quieres más de Antártida escribe ANTÁRTIDA.
-También tengo historias de Bucegi, Egipto y Tartaria.
+Si quieres más cuentos pídeme el listado de historias otra vez con el 555.☎️
   `.trim()
 }
 export default laOperacionHighjump;

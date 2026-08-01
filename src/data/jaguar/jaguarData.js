@@ -4,36 +4,56 @@
 // Función helpers
 export { calcularSignoSideral } from './calcularSigno';
 
-// Signos (13)
-export { aries } from './aries';
-export { tauro } from './tauro';
-export { geminis } from './geminis';
-export { cancer } from './cancer';
-export { leo } from './leo';
-export { virgo } from './virgo';
-export { libra } from './libra';
-export { escorpio } from './escorpio';
-export { ofiuco } from './ofiuco';
-export { sagitario } from './sagitario';
-export { capricornio } from './capricornio';
-export { acuario } from './acuario';
-export { piscis } from './piscis';
-
-// Mitos (13)
-export { ariesMito } from './ariesMito';
-export { tauroMito } from './tauroMito';
-export { geminisMito } from './geminisMito';
-export { cancerMito } from './cancerMito';
-export { leoMito } from './leoMito';
-export { virgoMito } from './virgoMito';
-export { libraMito } from './libraMito';
-export { escorpioMito } from './escorpioMito';
-export { ofiucoMito } from './ofiucoMito';
-export { sagitarioMito } from './sagitarioMito';
-export { capricornioMito } from './capricornioMito';
-export { acuarioMito } from './acuarioMito';
-export { piscisMito } from './piscisMito';
+// Signos (13) — ahora con mito integrado
+export { aries } from './stories/aries';
+export { tauro } from './stories/tauro';
+export { geminis } from './stories/geminis';
+export { cancer } from './stories/cancer';
+export { leo } from './stories/leo';
+export { virgo } from './stories/virgo';
+export { libra } from './stories/libra';
+export { escorpio } from './stories/escorpio';
+export { ofiuco } from './stories/ofiuco';
+export { sagitario } from './stories/sagitario';
+export { capricornio } from './stories/capricornio';
+export { acuario } from './stories/acuario';
+export { piscis } from './stories/piscis';
 
 // Amazonas (2)
 export { amazonas1 } from './amazonas/amazonas1';
 export { amazonas2 } from './amazonas/amazonas2';
+
+// Mapa numérico para cuentos de Jaguar
+import { aries } from './stories/aries';
+import { tauro } from './stories/tauro';
+import { geminis } from './stories/geminis';
+import { cancer } from './stories/cancer';
+import { leo } from './stories/leo';
+import { virgo } from './stories/virgo';
+import { libra } from './stories/libra';
+import { escorpio } from './stories/escorpio';
+import { ofiuco } from './stories/ofiuco';
+import { sagitario } from './stories/sagitario';
+import { capricornio } from './stories/capricornio';
+import { acuario } from './stories/acuario';
+import { piscis } from './stories/piscis';
+import { amazonas1 } from './amazonas/amazonas1';
+import { amazonas2 } from './amazonas/amazonas2';
+
+export const JAGUAR_CUENTO_MAP = {
+  1:  aries,
+  2:  tauro,
+  3:  geminis,
+  4:  cancer,
+  5:  leo,
+  6:  virgo,
+  7:  libra,
+  8:  escorpio,
+  9:  ofiuco,
+  10: sagitario,
+  11: capricornio,
+  12: acuario,
+  13: piscis,
+  14: amazonas1,
+  15: amazonas2,
+};

@@ -14,9 +14,9 @@ import { getAudioForEvelyn }    from '../data/audioMap_evelyn';
 import ChapterGrid from './ChapterGrid';
 import ChapterPlayer from './ChapterPlayer';
 import SmisterioBandChat from './personajes/SmisterioBandChat';
+import JaguarBandChat from './personajes/JaguarBandChat';
 import StoryListOverlay from './StoryListOverlay';
 import StoryPanel from './StoryPanel';
-import { SMISTERIO_CUENTO_MAP } from '../data/smisterio/smisterioData';
 import { getMoonSuffix } from '../utils/moonUtils';
 
 const AUDIO_RESOLVER_MAP = {
@@ -58,10 +58,12 @@ const GROUP_AGENT_MAP = {
 const FRASES_BIENVENIDA = {
   osos: ["Tito aquí 🐻 ¿Qué necesitas hoy?", "Aquí Tito, ¿a dónde te llevo?", "Oye, ¿qué buscas? Yo te ayudo."],
   nova: ["Nova ✨ Hola amigos", "Dime qué buscas y te encuentro lo mejor."],
-  isabella: ["Isabella aquí 💫 ¿Qué servicio necesitas?", "Cuéntame qué buscas, te guío."],
+  isabella: ["Isabella aquí 💫 ¿Qué necesitas?", "Cuéntame qué buscas, te guío."],
   evelyn: ["Evelyn 🌙 ¿Publicas algo hoy?", "Cuéntame tu deseo, lo hacemos realidad."],
-  mapache: ["Mapache 🦝 ¿Buscas música o podcast?", "Ponme ritmo, yo te pongo la banda."],
-  oraculo: ["Oráculo 🔮 Las voces me hablan... ¿qué quieres saber?", "Pregunta, y el universo responde."],
+  mapache: ["Mapache 🦝 ¿Qué tal colega?", "¿Quieres hablar conmigo o con mi hermana?"],
+  jaguar: ["Bienvenido hermanos... ¿qué quieres saber?", "Pregunta, y el universo responde."],
+  orumama: ["Oráculo 🔮 Las voces me hablan... ¿qué quieres saber?", "Pregunta, y el universo responde."],
+  smisterio: ["Bienvenido alma inquieta... ¿qué quieres saber?", "Pregunta, y el universo responde."],
 };
 
 const elegir = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -93,9 +95,7 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
   const faseLunar = getMoonSuffix();
   const [selectedChapter, setSelectedChapter] = useState(null);
   const [userId, setUserId] = useState(null);
-  const [storyListVisible, setStoryListVisible] = useState(false);
-  const [cuentos, setCuentos] = useState([]);
-  const [cuentoActivo, setCuentoActivo] = useState(null);
+  const [storyModal, setStoryModal] = useState(null);
 
   const group = GROUPS.find(g => g.id === selectedGroup);
 
@@ -132,16 +132,6 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
     }, 26);
     return () => clearInterval(t);
   }, [mensajeBienvenida]);
-
-  useEffect(() => {
-    supabase
-      .from('bro7band_cuentos')
-      .select('numero, titulo, audio_url')
-      .eq('personaje_id', 'smisterio')
-      .eq('activo', true)
-      .order('numero')
-      .then(({ data }) => { if (data) setCuentos(data); });
-  }, []);
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -284,7 +274,7 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
       <div className="fixed inset-0 z-[90] bg-black overflow-hidden">
         <LunasCounter balances={balances} />
         <button
-          onClick={() => { setSelectedGroup(null); setIaActive(false); setClaimStatus(null); setPalabraClave(''); setMensajeBienvenida(''); setStoryListVisible(false); setCuentoActivo(null); }}
+          onClick={() => { setSelectedGroup(null); setIaActive(false); setClaimStatus(null); setPalabraClave(''); setMensajeBienvenida(''); }}
           className="fixed top-4 left-4 z-[110] px-6 py-3 rounded-full border-2 border-cyan-400/80 text-cyan-300 text-sm font-black uppercase tracking-widest hover:bg-cyan-400/20 hover:border-cyan-300 transition-all shadow-[0_0_25px_rgba(34,211,238,0.5)] backdrop-blur-md"
         >
           VOLVER
@@ -339,15 +329,13 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
                         isAdmin={isAdmin}
                         onHandoff={() => setSelectedGroup(null)}
                         onMensaje={setIaMensaje}
-                        onShowStoryList={() => setStoryListVisible(true)}
-                        onLaunchStory={(n) => {
-                          const ep = SMISTERIO_CUENTO_MAP[n];
-                          const meta = cuentos.find(c => c.numero === n);
-                          if (ep) {
-                            setCuentoActivo({ ...ep, audioUrl: meta?.audio_url || null });
-                            setStoryListVisible(false);
-                          }
-                        }}
+                      />
+                    ) : iaActive && group.groupId === 'jaguar' ? (
+                      <JaguarBandChat
+                        iaMode={iaMode}
+                        isAdmin={isAdmin}
+                        onHandoff={() => setSelectedGroup(null)}
+                        onMensaje={setIaMensaje}
                       />
                     ) : (
                       <AgentChatInput
@@ -407,36 +395,12 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
                   </div>
                 </div>
               )}
+
             </div>
           )}
         </div>
 
-        {storyListVisible && (
-          <StoryListOverlay
-            cuentos={cuentos}
-            personaje="Señor Misterio"
-            accentColor="#a855f7"
-            onClose={() => setStoryListVisible(false)}
-            onSelectCuento={(n) => {
-              const ep = SMISTERIO_CUENTO_MAP[n];
-              const meta = cuentos.find(c => c.numero === n);
-              if (ep) {
-                setCuentoActivo({ ...ep, audioUrl: meta?.audio_url || null });
-                setStoryListVisible(false);
-              }
-            }}
-          />
-        )}
-
-        {cuentoActivo && (
-          <StoryPanel
-            titulo={cuentoActivo.titulo}
-            texto={cuentoActivo.texto}
-            audioUrl={cuentoActivo.audioUrl}
-            accentColor="#a855f7"
-            onClose={() => setCuentoActivo(null)}
-          />
-        )}
+        <div id="story-portal-target" />
       </div>
     );
   }
@@ -545,7 +509,7 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
       >
         <div className="rounded-full border border-cyan-500/30 bg-black/30 backdrop-blur-md w-full h-full flex flex-col items-center justify-center px-4">
           <p className="text-cyan-300 text-sm font-bold uppercase tracking-wide leading-relaxed text-center">
-            🤖<br />¡Los personajes<br />tienen modo IA!<br />Chatea con ellos<br />y descubre<br />sus historias.
+            🤖<br />¡Los personajes<br />tienen modo IA!<br />Chatea con ellos<br />y descubre<br />sus historias<br />en audios<br />exclusivos
           </p>
         </div>
       </div>

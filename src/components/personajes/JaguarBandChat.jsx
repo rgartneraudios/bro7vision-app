@@ -1,17 +1,21 @@
-// src/components/personajes/SmisterioBandChat.jsx
+// src/components/personajes/JaguarBandChat.jsx
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import AgentChatInput from '../AgentChatInput';
 import StoryPanel from '../StoryPanel';
 import StoryListOverlay from '../StoryListOverlay';
-import { useAgentSMisterio } from '../../hooks/useAgentSMisterio';
-import { SMISTERIO_CUENTO_MAP } from '../../data/smisterio/smisterioData';
+import { useAgentJaguar } from '../../hooks/useAgentJaguar';
+import { JAGUAR_CUENTO_MAP } from '../../data/jaguar/jaguarData';
 import { supabase } from '../../supabaseClient';
 
-const ACCENT  = '#a855f7';
-const NOMBRE  = 'Señor Misterio';
+const ACCENT  = '#f59e0b';
+const NOMBRE  = 'Jaguar';
 
-export default function SmisterioBandChat({ iaMode, isAdmin, onHandoff, onMensaje }) {
+const buildTexto = (s) =>
+  [s.frase, s.esencia?.trim(), s.consejo, s.mito]
+    .filter(Boolean).join('\n===🐯===\n');
+
+export default function JaguarBandChat({ iaMode, isAdmin, onHandoff, onMensaje }) {
   const [cuentos,          setCuentos]          = useState([]);
   const [storyListVisible, setStoryListVisible] = useState(false);
   const [cuentoActivo,     setCuentoActivo]     = useState(null);
@@ -20,22 +24,26 @@ export default function SmisterioBandChat({ iaMode, isAdmin, onHandoff, onMensaj
     supabase
       .from('bro7band_cuentos')
       .select('numero, titulo, audio_url')
-      .eq('personaje_id', 'smisterio')
+      .eq('personaje_id', 'jaguar')
       .eq('activo', true)
       .order('numero')
       .then(({ data }) => { if (data) setCuentos(data); });
   }, []);
 
-  const { mensaje, loading, enviar } = useAgentSMisterio({
+  const { mensaje, loading, enviar } = useAgentJaguar({
     iaMode,
     isAdmin,
     onHandoff,
     onShowStoryList: () => setStoryListVisible(true),
     onLaunchStory: (n) => {
-      const ep   = SMISTERIO_CUENTO_MAP[n];
+      const ep   = JAGUAR_CUENTO_MAP[n];
       const meta = cuentos.find(c => c.numero === n);
       if (ep) {
-        setCuentoActivo({ ...ep, audioUrl: meta?.audio_url || null });
+        setCuentoActivo({
+          titulo:   ep.titulo,
+          texto:    buildTexto(ep),
+          audioUrl: meta?.audio_url || null,
+        });
         setStoryListVisible(false);
       }
     },
@@ -48,10 +56,10 @@ export default function SmisterioBandChat({ iaMode, isAdmin, onHandoff, onMensaj
   return (
     <>
       <AgentChatInput
-        agent="smisterio"
+        agent="oraculo"
         onSend={enviar}
         isLoading={loading}
-        placeholder="Pregunta al Señor Misterio..."
+        placeholder="Pregunta a Jaguar..."
       />
 
       {storyListVisible && ReactDOM.createPortal(
@@ -61,10 +69,14 @@ export default function SmisterioBandChat({ iaMode, isAdmin, onHandoff, onMensaj
           accentColor={ACCENT}
           onClose={() => setStoryListVisible(false)}
           onSelect={(n) => {
-            const ep   = SMISTERIO_CUENTO_MAP[n];
+            const ep   = JAGUAR_CUENTO_MAP[n];
             const meta = cuentos.find(c => c.numero === n);
             if (ep) {
-              setCuentoActivo({ ...ep, audioUrl: meta?.audio_url || null });
+              setCuentoActivo({
+                titulo:   ep.titulo,
+                texto:    buildTexto(ep),
+                audioUrl: meta?.audio_url || null,
+              });
               setStoryListVisible(false);
             }
           }}
@@ -77,7 +89,7 @@ export default function SmisterioBandChat({ iaMode, isAdmin, onHandoff, onMensaj
           texto={cuentoActivo.texto}
           audioUrl={cuentoActivo.audioUrl}
           accentColor={ACCENT}
-          separator="☎️"
+          separator="\n===🐯===\n"
           onClose={() => setCuentoActivo(null)}
         />
       , document.getElementById('story-portal-target'))}

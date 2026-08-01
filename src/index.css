@@ -270,6 +270,27 @@ img {
     height: 0 !important;
 }
 
+/* Scrollbar Neón para StoryListOverlay (el panel de historias) */
+.story-list-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.story-list-scroll::-webkit-scrollbar-track {
+  background: rgba(5, 5, 5, 0.3);
+  border-radius: 10px;
+}
+.story-list-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00f2ff, #bc13fe);
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+}
+.story-list-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #bc13fe, #00f2ff);
+}
+.story-list-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #00f2ff rgba(5, 5, 5, 0.3);
+}
+
 /* =======================================================
    1. SCROLLBAR NEÓN GLOBAL (LA BARRA DERECHA DEL NAVEGADOR)
    Esto afecta a toda la página web (Edge, Chrome, Opera, Safari)

@@ -47,7 +47,7 @@ function parsearTema(intencion) {
     .replace(/\s+mito$/, '_mito');
 }
 
-export function useAgentJaguar({ iaMode, isAdmin, onHandoff, onBotContent }) {
+export function useAgentJaguar({ iaMode, isAdmin, onHandoff, onBotContent, onShowStoryList, onLaunchStory }) {
   const [mensaje, setMensaje]         = useState(null);
   const [loading, setLoading]         = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
@@ -60,6 +60,19 @@ export function useAgentJaguar({ iaMode, isAdmin, onHandoff, onBotContent }) {
 
   const interpretarSistema = (intencion) => {
     const t = norm(intencion);
+
+    // Lista de cuentos
+    if (t.includes('mostrar_lista_cuentos')) {
+      onShowStoryList?.();
+      return;
+    }
+    // Lanzar cuento específico
+    const matchCuento = intencion.match(/lanzar_cuento_(\d+)/i);
+    if (matchCuento) {
+      onLaunchStory?.(parseInt(matchCuento[1]));
+      return;
+    }
+
     for (const [destino, keys] of Object.entries(HANDOFF_KEYWORDS)) {
       if (keys.some(k => t.includes(k))) {
         setTimeout(() => onHandoff?.(destino), 2500);

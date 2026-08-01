@@ -23,7 +23,7 @@ Lo de Irak y Egipto es muy curioso porque en la película Stargate muestran una 
 
 Recuerdo que en esa película viajaron a esas tierras tan misteriosas con tantos secretos. Dan ganas de volver,  e intentar quebrantar esa apertura de la piedra.
 
-Si quieres más cuentos pídeme el listado de historias otra vez.☎️
+Si quieres más cuentos pídeme el listado de historias otra vez con el 555.☎️
   `.trim()
 }
 export default laTeoriaStargate;

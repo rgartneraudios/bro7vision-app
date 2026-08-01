@@ -1,12 +1,12 @@
 // src/components/StoryPanel.jsx
 import React, { useRef, useState, useEffect } from 'react';
 
-export default function StoryPanel({ titulo, texto, audioUrl, accentColor = '#a855f7', onClose }) {
+export default function StoryPanel({ titulo, texto, audioUrl, accentColor = '#a855f7', separator = '|', onClose }) {
   const audioRef = useRef(null);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const parrafos = texto ? texto.split('☎️').map(p => p.trim()).filter(Boolean) : [];
+  const parrafos = texto ? texto.split(separator).map(p => p.trim()).filter(Boolean) : [];
 
   useEffect(() => {
     if (audioUrl && audioRef.current) {
@@ -28,13 +28,26 @@ export default function StoryPanel({ titulo, texto, audioUrl, accentColor = '#a8
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center"
-         style={{ background: 'rgba(0,0,0,0.80)', backdropFilter: 'blur(8px)' }}>
-      <div style={{
-        background: 'rgba(10,10,20,0.95)',
-        border: `1px solid ${accentColor}44`,
+    <div className="fixed inset-0 z-[60] flex items-start justify-center pointer-events-none"
+         style={{ background: 'rgba(0,0,0,0.12)', paddingTop: '2%' }}>
+      <style>{`
+        .story-panel-scroll::-webkit-scrollbar { width: 6px; }
+        .story-panel-scroll::-webkit-scrollbar-track { background: transparent; }
+        .story-panel-scroll::-webkit-scrollbar-thumb {
+          background: ${accentColor}88;
+          border-radius: 3px;
+          box-shadow: 0 0 8px ${accentColor}44;
+        }
+        .story-panel-scroll::-webkit-scrollbar-thumb:hover {
+          background: ${accentColor};
+          box-shadow: 0 0 12px ${accentColor}66;
+        }
+      `}</style>
+      <div className="pointer-events-auto" style={{
+        background: 'rgba(10,10,20,0.6)',
+        border: '1.5px solid #a855f7',
         borderRadius: '1.5rem',
-        boxShadow: `0 0 40px ${accentColor}33`,
+        boxShadow: '0 0 30px rgba(168,85,247,0.35)',
         padding: '2rem',
         maxWidth: '640px',
         width: '90%',
@@ -43,16 +56,17 @@ export default function StoryPanel({ titulo, texto, audioUrl, accentColor = '#a8
         flexDirection: 'column',
         gap: '1rem',
         fontFamily: 'Georgia, serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla"',
+        backdropFilter: 'blur(6px)',
       }}>
         {/* Header */}
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-          <h2 style={{ color: accentColor, fontWeight:900, fontSize:'1rem',
+          <h2 style={{ color: accentColor, fontWeight:900, fontSize:'1.35rem',
                        letterSpacing:'0.1em', textTransform:'uppercase', margin:0 }}>
             {titulo}
           </h2>
           <button onClick={onClose}
             style={{ color:'#fff', background:'none', border:'none',
-                     fontSize:'1.2rem', cursor:'pointer', opacity:0.6 }}>✕</button>
+                     fontSize:'1.5rem', cursor:'pointer', opacity:0.6 }}>✕</button>
         </div>
 
         {/* Audio player */}
@@ -76,9 +90,10 @@ export default function StoryPanel({ titulo, texto, audioUrl, accentColor = '#a8
         )}
 
         {/* Texto */}
-        <div style={{ overflowY:'auto', flex:1, display:'flex', flexDirection:'column', gap:'1rem' }}>
+        <div className="story-panel-scroll" style={{ overflowY:'auto', flex:1, display:'flex', flexDirection:'column', gap:'1rem',
+          scrollbarWidth:'thin', scrollbarColor:`${accentColor}66 transparent` }}>
           {parrafos.map((p, i) => (
-            <p key={i} style={{ color:'rgba(255,255,255,0.88)', fontSize:'1.05rem',
+            <p key={i} style={{ color:'rgba(255,255,255,0.88)', fontSize:'1.3rem',
                                 lineHeight:1.8, margin:0, fontFamily:'Georgia, serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla"' }}>{p}</p>
           ))}
         </div>

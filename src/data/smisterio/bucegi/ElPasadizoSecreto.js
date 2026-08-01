@@ -24,7 +24,7 @@ Sin embargo, algo se puede ver a través de una pequeña apertura.
 
 Es ahí. Y es muy posible que esos rumores sean ciertos. ☎️
 
-Si quieres más cuentos pídeme el listado de historias otra vez.☎️
+Si quieres más cuentos pídeme el listado de historias otra vez con el 555.☎️
   `.trim()
 }
 export default elPasadizoSecreto;

@@ -17,7 +17,7 @@ Se los recomiendo, estas tierras son muy gélidas durante la noche. Hay criatura
 Bien, ya con todo el equipo listo, emprendí camino hacia las montañas. Las montañas Bucegi me esperaban. Sentía que me llamaban. Como si algo en la cima, quisiera
 que llegara.☎️
 
-Si quieres más cuentos pídeme el listado de historias otra vez.☎️
+Si quieres más cuentos pídeme el listado de historias otra vez con el 555.☎️
   `.trim()
 }
 export default rumboBucegi;

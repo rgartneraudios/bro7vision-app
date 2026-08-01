@@ -37,6 +37,16 @@ export async function fetchContextoJaguar(ciudadCodigo = null) {
 
     const promoGeo = resolverPromoGeo(data, ciudadCodigo);
 
+    // Fetch títulos de cuentos activos
+    const { data: cuentosData } = await supabase
+      .from('bro7band_cuentos')
+      .select('numero, titulo')
+      .eq('personaje_id', 'jaguar')
+      .eq('activo', true)
+      .order('numero');
+
+    const cuentos = cuentosData || [];
+
     return {
       vivencia:      data.vivencia_actual || null,
       estadoAnimo:   data.estado_animo    || null,
@@ -47,6 +57,7 @@ export async function fetchContextoJaguar(ciudadCodigo = null) {
         codigo: data.special_codigo,
         stock:  data.special_stock,
       } : null,
+      cuentos,
     };
   } catch {
     return null;

@@ -72,30 +72,29 @@ blue: {
 const AGENT_PROFILES = {
   osos: {
     theme: 'violet',
-    text: '✦  Elige Sector y ubicación deseada por Ciudad o País. Ejemplos: Hola Lara o Tito o Puffo · Vamos a Shop Amigos · Vamos a Canjes · Games · Canjes de Lunas · Tarjetas · Sabadell · España',
-    bro7band: 'Habla con Tito, Lara o Puffo — escucha el audio grupal y encuentra la palabra clave',
+    text: '✦  Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes. Para ver el listado de historias escribe 5555, si hay un listado, aparecerá en uno de los laterales.',
     rows: 3,
     maxLength: 200,
   },
   nova: {
   theme: 'gold',
-  text: ` ✦ Hola amigos! Que hermoso día!`
+  text: ` ✦ Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes. Para ver el listado de historias escribe 5555, si hay un listado, aparecerá en uno de los laterales.`
 },
   isabella: {
     theme: 'pink',
-    text: '✦  Hola queridos!, vienen por consulta o por curiosidad? '
+    text: '✦  Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes. Para ver el listado de historias escribe 5555, si hay un listado, aparecerá en uno de los laterales. '
   },
   evelyn: {
     theme: 'blue',
-    text: '✦  Publica o busca lo que necesitas — BroDeseos '
+    text: '✦  Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes. Para ver el listado de historias escribe 5555, si hay un listado, aparecerá en uno de los laterales. '
   },
   mapache: {
     theme: 'cyan',
-    text: '✦  Hola! Dime si buscas músicas o Podcast! | Pulsa en las BroCards para la descripción y play si quieres escuchar | El Stop/Pause está en la puerta lateral izquierda, en el Brolives junto a Brotuner! '
+    text: '✦  Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes. Para ver el listado de historias escribe 5555, si hay un listado, aparecerá en uno de los laterales. '
   },
   oraculo: {
     theme: 'violet',
-    text: '✦ Los personajes te cuentan historias de ficción y entretenimiento, Con Orumama antes de proceder consulta a un profesional, el Señor Misterio es Ficción entretenimiento, Jaguar es experimental y Ficción entretenimiento '
+    text: '✦ Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes. Para ver el listado de historias escribe 5555, si hay un listado, aparecerá en uno de los laterales.  '
   }
 };
 

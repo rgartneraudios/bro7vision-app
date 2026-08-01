@@ -1,6 +1,20 @@
-export const virgoMito = {
-  keyword: "virgo_mito",
-  data: `Me siento con cuidado, cruzando mis patas delanteras y mirando hacia el horizonte, donde la luz del atardecer comienza a teñir el cielo de colores puros. Siento una energía de limpieza, de orden, de una paz que solo llega cuando dejamos de intentar controlar el mundo y empezamos a entender cómo funciona. 🐯
+export const virgo = {
+  signo: 'virgo',
+  numero: 6,
+  titulo: 'Virgo ♍ — La Doncella de la Justicia',
+  elemento: 'Tierra',
+  planeta: 'Mercurio',
+  simbolo: '♍ La Doncella',
+  frase: "Hermanos... las constelaciones no mienten: Virgo sideral nace entre el 16 de septiembre y el 30 de octubre. El orden del cosmos así lo dicta.",
+  esencia: `
+Virgo sideral vibra con la frecuencia del análisis puro, de la perfección buscada en cada detalle.
+Mercurio les da una mente afilada capaz de ver lo que otros ignoran.
+Son los sanadores, los que organizan el caos y encuentran el patrón oculto en todo.
+Su frecuencia es meticulosa, servicial, profundamente inteligente.
+El reto de Virgo sideral es aceptar que el universo es imperfecto por diseño, no por error.
+  `,
+  consejo: "Hermano, quien busca la grieta en cada piedra nunca disfruta del camino que lo sostiene.\n\n...Si están en modo IA hermanos, escriban el nombre de un signo y la palabra Mito, así conoces más frecuencias 🐯",
+  mito: `Me siento con cuidado, cruzando mis patas delanteras y mirando hacia el horizonte, donde la luz del atardecer comienza a teñir el cielo de colores puros. Siento una energía de limpieza, de orden, de una paz que solo llega cuando dejamos de intentar controlar el mundo y empezamos a entender cómo funciona. 🐯
 Virgo, hermano... la gente suele ver a Virgo como alguien demasiado crítico, pero eso es porque no entienden su frecuencia. Virgo no busca fallos, Virgo busca la pureza. Virgo es la mano que organiza el cosmos después del caos. Escucha la historia de Astrea, la última luz de la justicia.
 Virgo: La Doncella de la Justicia (La Pureza del Orden) 🐯
 En un tiempo muy antiguo, la humanidad vivía en la llamada "Edad de Oro". Los hombres y los dioses compartían la Tierra en perfecta armonía, y la diosa Astrea caminaba entre nosotros, asegurándose de que cada cosa estuviera en su lugar correcto. Era una época de paz, donde el discernimiento era la ley natural.
@@ -8,6 +22,6 @@ Sin embargo, a medida que los siglos pasaron, las almas humanas se fueron descon
 El mensaje del cosmos: Virgo nos enseña la importancia de la atención al detalle y el servicio a los demás. Es la energía que nos invita a sanar nuestro entorno, a limpiar nuestra mente de pensamientos que vibran bajo y a reconocer que, incluso en un mundo caótico, podemos encontrar la belleza si aprendemos a discernir qué es lo que realmente nutre nuestra alma.
 Cierro los ojos, inhalando profundamente el aroma de la selva húmeda. 🐯 Siento que... cuando Virgo se alinea en nuestra vida, es porque el universo nos está pidiendo que pongamos en orden nuestro interior. Si nuestra mente está clara, nuestras acciones florecen como una cosecha abundante.
 ¿Sientes esa calma, hermano? ¿Esa necesidad de que todo esté en su sitio para poder meditar mejor? Si tu aura está lista para encontrar el equilibrio exacto, podemos pasar a Libra, la balanza que sostiene el cosmos. ¿Qué dice tu intuición?.
-El modo IA es alta frecuencia hermanos! Pueden conocer los demás Mitos de la misma manera que han llegado hasta aquí. Y además si escriben "cuentos del Amazonas" se iluminarán con mis notas de transformación espiritual. Purifíquense hermanos! Sean bienvenidos!  🐯`
-}
-export default virgoMito;
+El modo IA es alta frecuencia hermanos! Pueden conocer mas de mis historias escribiendo "555". Con esto, el sistema volverá a mostrarles el listado de audios. Purifíquense hermanos! Sean bienvenidos! 🐯`
+};
+export default virgo;

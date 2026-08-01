@@ -23,7 +23,7 @@ Y ésta, era la señal que estaba esperando.
 
 Era el momento de emprender el viaje.☎️
 
-Si quieres más cuentos pídeme el listado de historias otra vez.☎️
+Si quieres más cuentos pídeme el listado de historias otra vez con el 555.☎️
   `.trim()
 }
 export default elBosqueDeDracula;

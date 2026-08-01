@@ -68,6 +68,11 @@ SISTEMA: CONTINUA
 ${contexto.cuentos?.length > 0 ? `
 HISTORIAS DISPONIBLES PARA EL USUARIO:
 ${contexto.cuentos.map(c => `${c.numero}. ${c.titulo}`).join('\n')}
+` : ''}
+
+Si el usuario escribe "555":
+- Responde en personaje brevemente, con misterio
+- Reporta: SISTEMA: mostrar_lista_cuentos
 
 Si el usuario pregunta qué historias tienes o pide que le cuentes algo:
 - Menciona que tienes historias disponibles en personaje (sin listar, solo intriga)
@@ -77,7 +82,6 @@ Si el usuario elige un número (ej: "el 1", "ponme el 3", "quiero el 7"):
 - Responde en personaje confirmando que abre esa historia
 - Reporta: SISTEMA: lanzar_cuento_[N]
 - Ejemplo: "el 3" → SISTEMA: lanzar_cuento_3
-` : ''}
 ${contexto.vivencia    ? `\nVIVENCIA ACTUAL: ${contexto.vivencia}` : ''}
 ${contexto.estadoAnimo ? `\nESTADO DE ÁNIMO: ${contexto.estadoAnimo}` : ''}
 ${contexto.promoGeo    ? `\nPROMOCIÓN ACTIVA: ${contexto.promoGeo}` : ''}

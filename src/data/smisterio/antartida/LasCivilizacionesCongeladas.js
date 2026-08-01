@@ -19,7 +19,7 @@ Hoy hablan de cambio climático. De zonas que se descongelan mientras otras se c
 Yo tengo una teoría.
 
 Has conocido todo lo que sé sobre Antártida por ahora.
-Si quieres más cuentos pídeme el listado de cuentos otra vez.☎️
+Si quieres más cuentos pídeme el listado de historias otra vez con el 555.☎️
   `.trim()
 }
 export default lasCivilizacionesCongeladas;

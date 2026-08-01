@@ -10,6 +10,6 @@ Una pizca de lo que no se puede nombrar — eso es el secreto de toda abuela dig
 
 Si el Señor Misterio pregunta por mis guisos... le digo lo mismo. Algunos misterios no se revelan.
 
-...Si están en modo IA hijos míos! y quieren conocer el recetario de nuestros ancestros háganmelo saber con la palabra Recetario, simple verdad? 🕯️`
+...Si están en modo IA hijos míos! y quieren conocer el recetario de nuestros ancestros háganmelo saber con la palabra 555, simple verdad? 🕯️`
 }
 export default guisos;
