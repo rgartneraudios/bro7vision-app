@@ -15,6 +15,7 @@ import ChapterGrid from './ChapterGrid';
 import ChapterPlayer from './ChapterPlayer';
 import SmisterioBandChat from './personajes/SmisterioBandChat';
 import JaguarBandChat from './personajes/JaguarBandChat';
+import OrumamaBandChat from './personajes/OrumamaBandChat';
 import StoryListOverlay from './StoryListOverlay';
 import StoryPanel from './StoryPanel';
 import { getMoonSuffix } from '../utils/moonUtils';
@@ -29,6 +30,18 @@ const AUDIO_RESOLVER_MAP = {
   jaguar:            getAudioForJaguar,
   rumores:           getAudioForRumores,
   evelyn_larry:      getAudioForEvelyn,
+};
+
+const DEMO_AUDIO_MAP = {
+  osos:              'https://media.bro7vision.com/stories/osos_0.m4a',
+  nova:              'https://media.bro7vision.com/stories/nova_0.m4a',
+  isabella_profesor: 'https://media.bro7vision.com/stories/isabella_0.m4a',
+  evelyn_larry:      'https://media.bro7vision.com/stories/evelyn_0.m4a',
+  mapache_ami:       'https://media.bro7vision.com/stories/mapache_0.m4a',
+  orumama:           'https://media.bro7vision.com/stories/orumama_0.m4a',
+  smisterio:         'https://media.bro7vision.com/stories/smisterio_0.m4a',
+  jaguar:            'https://media.bro7vision.com/stories/jaguar_0.m4a',
+  rumores:           'https://media.bro7vision.com/stories/rumores_0.m4a',
 };
 
 const GROUPS = [
@@ -55,19 +68,6 @@ const GROUP_AGENT_MAP = {
   jaguar: 'oraculo',
 };
 
-const FRASES_BIENVENIDA = {
-  osos: ["Tito aquí 🐻 ¿Qué necesitas hoy?", "Aquí Tito, ¿a dónde te llevo?", "Oye, ¿qué buscas? Yo te ayudo."],
-  nova: ["Nova ✨ Hola amigos", "Dime qué buscas y te encuentro lo mejor."],
-  isabella: ["Isabella aquí 💫 ¿Qué necesitas?", "Cuéntame qué buscas, te guío."],
-  evelyn: ["Evelyn 🌙 ¿Publicas algo hoy?", "Cuéntame tu deseo, lo hacemos realidad."],
-  mapache: ["Mapache 🦝 ¿Qué tal colega?", "¿Quieres hablar conmigo o con mi hermana?"],
-  jaguar: ["Bienvenido hermanos... ¿qué quieres saber?", "Pregunta, y el universo responde."],
-  orumama: ["Oráculo 🔮 Las voces me hablan... ¿qué quieres saber?", "Pregunta, y el universo responde."],
-  smisterio: ["Bienvenido alma inquieta... ¿qué quieres saber?", "Pregunta, y el universo responde."],
-};
-
-const elegir = (arr) => arr[Math.floor(Math.random() * arr.length)];
-
 const normalizar = (str) =>
   str.trim().toLowerCase()
     .normalize("NFD")
@@ -82,12 +82,10 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
   const [iaActive, setIaActive] = useState(false);
   const [palabraClave, setPalabraClave] = useState('');
   const [claimStatus, setClaimStatus] = useState(null);
-  const [display, setDisplay] = useState('');
   const [cursor, setCursor] = useState(true);
-  const [mensajeBienvenida, setMensajeBienvenida] = useState('');
   const [iaMensaje, setIaMensaje] = useState('');
-  const [footerOpen, setFooterOpen] = useState(false);
-  const charIdx = useRef(0);
+  const [demoPlaying, setDemoPlaying] = useState(false);
+  const demoAudioRef = useRef(null);
   const [userLocation, setUserLocation] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
   const [audioPlaying, setAudioPlaying] = useState(false);
@@ -112,26 +110,13 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
 
   useEffect(() => {
     if (!group) return;
-    const agentKey = GROUP_AGENT_MAP[group.groupId];
-    const frases = FRASES_BIENVENIDA[agentKey] || ["Bienvenido."];
-    const msg = elegir(frases);
-    setMensajeBienvenida(msg);
-    setDisplay('');
     setIaMensaje('');
-    charIdx.current = 0;
+    setDemoPlaying(false);
+    if (demoAudioRef.current) {
+      demoAudioRef.current.pause();
+      demoAudioRef.current.src = '';
+    }
   }, [selectedGroup]);
-
-  useEffect(() => {
-    if (!mensajeBienvenida) return;
-    charIdx.current = 0;
-    setDisplay('');
-    const t = setInterval(() => {
-      charIdx.current++;
-      setDisplay(mensajeBienvenida.slice(0, charIdx.current));
-      if (charIdx.current >= mensajeBienvenida.length) clearInterval(t);
-    }, 26);
-    return () => clearInterval(t);
-  }, [mensajeBienvenida]);
 
   useEffect(() => {
     const fetchLocation = async () => {
@@ -167,6 +152,20 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
   }, [selectedGroup, userLocation]);
 
   const isAdmin = balances?.is_admin === true;
+  const modoIA = isAdmin ? 'admin' : null;
+
+  const handleDemo = () => {
+    const url = DEMO_AUDIO_MAP[group?.groupId];
+    if (!url || !demoAudioRef.current) return;
+    if (demoPlaying) {
+      demoAudioRef.current.pause();
+      setDemoPlaying(false);
+    } else {
+      demoAudioRef.current.src = url;
+      demoAudioRef.current.play();
+      setDemoPlaying(true);
+    }
+  };
 
   const handleClaim = async (palabra, grp) => {
     setClaimStatus(null);
@@ -274,7 +273,7 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
       <div className="fixed inset-0 z-[90] bg-black overflow-hidden">
         <LunasCounter balances={balances} />
         <button
-          onClick={() => { setSelectedGroup(null); setIaActive(false); setClaimStatus(null); setPalabraClave(''); setMensajeBienvenida(''); }}
+          onClick={() => { setSelectedGroup(null); setIaActive(false); setClaimStatus(null); setPalabraClave(''); }}
           className="fixed top-4 left-4 z-[110] px-6 py-3 rounded-full border-2 border-cyan-400/80 text-cyan-300 text-sm font-black uppercase tracking-widest hover:bg-cyan-400/20 hover:border-cyan-300 transition-all shadow-[0_0_25px_rgba(34,211,238,0.5)] backdrop-blur-md"
         >
           VOLVER
@@ -289,115 +288,135 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
         />
 
         <audio ref={audioRef} onEnded={handleAudioEnded} />
+        <audio ref={demoAudioRef} onEnded={() => setDemoPlaying(false)} />
+
+        {iaMensaje && (
+          <div style={{
+            position: 'absolute',
+            bottom: '80px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 30,
+            maxWidth: '560px',
+            width: '90%',
+            background: 'rgba(0,0,0,0.70)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255,255,255,0.10)',
+            borderRadius: '1.25rem',
+            padding: '0.75rem 1.25rem',
+            pointerEvents: 'none',
+          }}>
+            <p style={{
+              color: 'rgba(255,255,255,0.90)',
+              fontSize: '0.85rem',
+              fontWeight: 700,
+              fontStyle: 'italic',
+              textTransform: 'uppercase',
+              margin: 0,
+              lineHeight: 1.5,
+            }}>
+              {iaMensaje}
+              <span style={{
+                display: 'inline-block', width: 3, height: '0.8em',
+                marginLeft: 4, background: '#22d3ee', verticalAlign: 'middle',
+                opacity: cursor ? 1 : 0,
+              }} />
+            </p>
+          </div>
+        )}
 
         <div className="absolute bottom-0 left-0 right-0 z-20">
-          <div
-            onClick={() => setFooterOpen(v => !v)}
-            className="flex items-center justify-center gap-2 py-3 px-6 bg-black/70 backdrop-blur-xl border-t border-white/10 cursor-pointer hover:bg-white/5 transition-all select-none"
-          >
-            <span className={`text-white/60 text-xs font-black uppercase tracking-[0.2em] transition-transform ${footerOpen ? 'rotate-180' : ''}`}>▼</span>
-            <span className="text-white/80 text-sm font-black uppercase tracking-[0.25em]">FUNCIONES</span>
-            <span className={`text-white/60 text-xs font-black uppercase tracking-[0.2em] transition-transform ${footerOpen ? 'rotate-180' : ''}`}>▼</span>
-          </div>
-          {footerOpen && (
-            <div className="flex items-center justify-between px-6 py-4 bg-black/80 backdrop-blur-xl border-t border-white/5">
-              <div className="flex gap-3 shrink-0">
-                {group.hasIA && (
-                  <button
-                    onClick={() => {
-                      if (isAdmin) {
-                        setIaActive(v => !v);
-                      }
-                    }}
-                    className={`flex items-center gap-3 px-6 py-3 rounded-full border-2 font-black uppercase tracking-widest backdrop-blur-md transition-all
-                      ${iaActive && isAdmin
-                        ? 'border-cyan-400 text-cyan-300 shadow-[0_0_30px_rgba(34,211,238,0.7)] bg-cyan-400/10'
-                        : 'border-white/20 text-white/30 bg-black/20'}`}
-                  >
-                    <img src={`${EMOJI_PATH}bro7band.webp`} alt="" className="w-8 h-8 object-contain" />
-                    <span className="text-sm">PERSONAJES CON IA</span>
-                  </button>
+          <div className="flex items-center justify-between px-6 py-3 bg-black/80 backdrop-blur-xl border-t border-white/5"
+               onFocus={() => setIaMensaje('')}>
+
+            <div className="flex items-center gap-2 shrink-0">
+              {group.hasIA && (
+                <button
+                  onClick={() => { if (modoIA) setIaActive(v => !v); }}
+                  title={!modoIA ? 'Disponible con Prepago IA' : ''}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 font-black uppercase tracking-widest backdrop-blur-md transition-all text-sm shrink-0
+                    ${iaActive && modoIA
+                      ? 'border-cyan-400 text-cyan-300 shadow-[0_0_30px_rgba(34,211,238,0.7)] bg-cyan-400/10'
+                      : modoIA
+                        ? 'border-white/20 text-white/30 bg-black/20 hover:border-white/40'
+                        : 'border-white/10 text-white/15 bg-black/10 cursor-not-allowed opacity-50'}`}
+                >
+                  <img src={`${EMOJI_PATH}bro7band.webp`} alt="" className="w-6 h-6 object-contain" />
+                  <span>PERSONAJES IA</span>
+                </button>
+              )}
+
+              {DEMO_AUDIO_MAP[group.groupId] && (
+                <button onClick={handleDemo}
+                  className={`px-4 py-2 rounded-full border-2 text-sm font-black uppercase tracking-widest backdrop-blur-md transition-all
+                    ${demoPlaying
+                      ? 'border-lime-400 text-lime-200 bg-lime-500/20 shadow-[0_0_20px_rgba(132,204,22,0.6)]'
+                      : 'border-lime-500/60 text-lime-300 hover:bg-lime-500/20'}`}>
+                  {demoPlaying ? '⏸ DEMO' : '🎵 DEMO'}
+                </button>
+              )}
+            </div>
+
+            {group.hasChat && agentKey && (
+              <div className="flex-1 mx-4 flex justify-center" onFocus={() => setIaMensaje('')}>
+                {iaActive && modoIA && group.groupId === 'smisterio' && (
+                  <SmisterioBandChat iaMode={modoIA} isAdmin={isAdmin}
+                    onHandoff={() => setSelectedGroup(null)} onMensaje={setIaMensaje} />
+                )}
+                {iaActive && modoIA && group.groupId === 'jaguar' && (
+                  <JaguarBandChat iaMode={modoIA} isAdmin={isAdmin}
+                    onHandoff={() => setSelectedGroup(null)} onMensaje={setIaMensaje} />
+                )}
+                {iaActive && modoIA && group.groupId === 'orumama' && (
+                  <OrumamaBandChat iaMode={modoIA} isAdmin={isAdmin}
+                    onHandoff={() => setSelectedGroup(null)} onMensaje={setIaMensaje} />
+                )}
+                {(!iaActive || !modoIA) && (
+                  <AgentChatInput
+                    agent={agentKey}
+                    onSend={handleAgentSend}
+                    isLoading={false}
+                    rows={1}
+                    placeholder={iaActive && !modoIA
+                      ? 'Activa Prepago IA para chatear...'
+                      : hasMembers ? `Habla con ${activeMember}` : undefined}
+                  />
                 )}
               </div>
+            )}
 
-              {group.hasChat && agentKey && (
-                <div className="flex items-center gap-6 flex-1 max-w-3xl mx-auto">
-                  <div className="flex-1">
-                    {iaActive && group.groupId === 'smisterio' ? (
-                      <SmisterioBandChat
-                        iaMode={iaMode}
-                        isAdmin={isAdmin}
-                        onHandoff={() => setSelectedGroup(null)}
-                        onMensaje={setIaMensaje}
-                      />
-                    ) : iaActive && group.groupId === 'jaguar' ? (
-                      <JaguarBandChat
-                        iaMode={iaMode}
-                        isAdmin={isAdmin}
-                        onHandoff={() => setSelectedGroup(null)}
-                        onMensaje={setIaMensaje}
-                      />
-                    ) : (
-                      <AgentChatInput
-                        agent={agentKey}
-                        onSend={handleAgentSend}
-                        isLoading={false}
-                        placeholder={hasMembers ? `Habla con ${activeMember}` : undefined}
-                      />
-                    )}
-                  </div>
-                  <div className="flex-1 min-h-[5em] flex items-center border-l border-white/10 pl-4">
-                    {(iaMensaje || display) && (
-                      <p className="text-white/90 text-sm font-bold italic uppercase leading-relaxed">
-                        {iaActive && iaMensaje ? iaMensaje : display}
-                        <span
-                          className="inline-block w-[3px] h-[0.8em] ml-1 bg-cyan-400 align-middle"
-                          style={{ opacity: cursor ? 1 : 0 }}
-                        />
-                      </p>
-                    )}
-                  </div>
-                </div>
+            <div className="flex items-center gap-3 shrink-0 mr-10">
+              {group.hasAudio && (
+                <button onClick={handleAudio}
+                  className={`px-4 py-2 rounded-full border-2 text-sm font-black uppercase tracking-widest backdrop-blur-md transition-all
+                    ${audioPlaying
+                      ? 'border-fuchsia-400 text-fuchsia-200 bg-fuchsia-500/20 shadow-[0_0_30px_rgba(217,70,239,0.8)]'
+                      : 'border-fuchsia-500/80 text-fuchsia-300 hover:bg-fuchsia-500/20'}`}>
+                  {audioPlaying ? '⏸ AUDIO' : '▶ AUDIO'}
+                </button>
               )}
 
               {group.hasPalabraClave && (
-                <div className="flex items-center gap-3 shrink-0 mr-[4%]">
-                  {group.hasAudio && (
-                    <button
-                      onClick={handleAudio}
-                      className={`px-6 py-3 rounded-full border-2 text-sm font-black uppercase tracking-widest backdrop-blur-md transition-all
-                        ${audioPlaying
-                          ? 'border-fuchsia-400 text-fuchsia-200 bg-fuchsia-500/20 shadow-[0_0_30px_rgba(217,70,239,0.8)]'
-                          : 'border-fuchsia-500/80 text-fuchsia-300 hover:bg-fuchsia-500/20 hover:border-fuchsia-400 shadow-[0_0_30px_rgba(217,70,239,0.6)]'}`}
-                    >
-                      {audioPlaying ? '⏸ AUDIO' : '▶ AUDIO'}
+                <div className="w-56 rounded-2xl border border-cyan-400/60 bg-black/60 backdrop-blur-md p-1.5 flex flex-col gap-0 shadow-[0_0_20px_rgba(34,211,238,0.25)]">
+                  <div className="flex gap-2">
+                    <input
+                      value={palabraClave}
+                      onChange={e => setPalabraClave(e.target.value)}
+                      placeholder="Palabra clave del audio..."
+                      className="flex-1 bg-transparent border border-cyan-500/40 rounded-lg px-2 py-1 text-white text-sm outline-none"
+                    />
+                    <button onClick={() => handleClaim(palabraClave, group)}
+                      className="px-2 py-1 rounded-lg border border-cyan-400/60 text-cyan-300 text-sm hover:bg-cyan-400/20 transition-all">
+                      →
                     </button>
-                  )}
-                  <div className="w-64 rounded-2xl border border-cyan-400/60 bg-black/60 backdrop-blur-md p-3 flex flex-col gap-2 shadow-[0_0_20px_rgba(34,211,238,0.25)]">
-                    <span className="text-cyan-400/80 text-[10px] uppercase tracking-widest font-mono">
-                      🔑 {hasMembers ? group.name : group.name.split(' ')[0]}
-                    </span>
-                    <div className="flex gap-2">
-                      <input
-                        value={palabraClave}
-                        onChange={e => setPalabraClave(e.target.value)}
-                        placeholder="Palabra clave del audio..."
-                        className="flex-1 bg-transparent border border-cyan-500/40 rounded-lg px-3 py-1 text-white text-sm outline-none"
-                      />
-                      <button onClick={() => handleClaim(palabraClave, group)}
-                        className="px-3 py-1 rounded-lg border border-cyan-400/60 text-cyan-300 text-sm hover:bg-cyan-400/20 transition-all">
-                        →
-                      </button>
-                    </div>
-                    {claimStatus === 'ok'       && <span className="text-green-400 text-xs">+50 Lunas ✓</span>}
-                    {claimStatus === 'error'    && <span className="text-red-400 text-xs">Palabra incorrecta</span>}
-                    {claimStatus === 'repetido' && <span className="text-cyan-400 text-xs">Ya canjeado esta fase lunar ✓</span>}
                   </div>
+                  {claimStatus === 'ok'       && <span className="text-green-400 text-xs">+50 Lunas ✓</span>}
+                  {claimStatus === 'error'    && <span className="text-red-400 text-xs">Palabra incorrecta</span>}
+                  {claimStatus === 'repetido' && <span className="text-cyan-400 text-xs">Ya canjeado esta fase ✓</span>}
                 </div>
               )}
-
             </div>
-          )}
+          </div>
         </div>
 
         <div id="story-portal-target" />

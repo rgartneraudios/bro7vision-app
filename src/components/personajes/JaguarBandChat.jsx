@@ -8,12 +8,12 @@ import { useAgentJaguar } from '../../hooks/useAgentJaguar';
 import { JAGUAR_CUENTO_MAP } from '../../data/jaguar/jaguarData';
 import { supabase } from '../../supabaseClient';
 
-const ACCENT  = '#f59e0b';
+const ACCENT  = '#a855f7';
 const NOMBRE  = 'Jaguar';
 
 const buildTexto = (s) =>
   [s.frase, s.esencia?.trim(), s.consejo, s.mito]
-    .filter(Boolean).join('\n===🐯===\n');
+    .filter(Boolean).join('|||');
 
 export default function JaguarBandChat({ iaMode, isAdmin, onHandoff, onMensaje }) {
   const [cuentos,          setCuentos]          = useState([]);
@@ -30,7 +30,7 @@ export default function JaguarBandChat({ iaMode, isAdmin, onHandoff, onMensaje }
       .then(({ data }) => { if (data) setCuentos(data); });
   }, []);
 
-  const { mensaje, loading, enviar } = useAgentJaguar({
+  const { mensaje, loading, enviar, setStoryContext } = useAgentJaguar({
     iaMode,
     isAdmin,
     onHandoff,
@@ -44,6 +44,7 @@ export default function JaguarBandChat({ iaMode, isAdmin, onHandoff, onMensaje }
           texto:    buildTexto(ep),
           audioUrl: meta?.audio_url || null,
         });
+        setStoryContext(ep);
         setStoryListVisible(false);
       }
     },
@@ -59,7 +60,8 @@ export default function JaguarBandChat({ iaMode, isAdmin, onHandoff, onMensaje }
         agent="oraculo"
         onSend={enviar}
         isLoading={loading}
-        placeholder="Pregunta a Jaguar..."
+        rows={1}
+        placeholder="Pregunta a Jaguar. Escribe 555 para ver el listado de historias, si hay un listado, aparecerá en el centro. Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes."
       />
 
       {storyListVisible && ReactDOM.createPortal(
@@ -77,6 +79,7 @@ export default function JaguarBandChat({ iaMode, isAdmin, onHandoff, onMensaje }
                 texto:    buildTexto(ep),
                 audioUrl: meta?.audio_url || null,
               });
+              setStoryContext(ep);
               setStoryListVisible(false);
             }
           }}
@@ -89,8 +92,8 @@ export default function JaguarBandChat({ iaMode, isAdmin, onHandoff, onMensaje }
           texto={cuentoActivo.texto}
           audioUrl={cuentoActivo.audioUrl}
           accentColor={ACCENT}
-          separator="\n===🐯===\n"
-          onClose={() => setCuentoActivo(null)}
+          separator="|||"
+          onClose={() => { setCuentoActivo(null); setStoryContext(null); }}
         />
       , document.getElementById('story-portal-target'))}
     </>

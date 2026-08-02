@@ -72,29 +72,29 @@ blue: {
 const AGENT_PROFILES = {
   osos: {
     theme: 'violet',
-    text: '✦  Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes. Para ver el listado de historias escribe 5555, si hay un listado, aparecerá en uno de los laterales.',
+    text: '✦ Escribe 555 para ver el listado de historias , si hay un listado, aparecerá en el centro. Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes. ',
     rows: 3,
     maxLength: 200,
   },
   nova: {
   theme: 'gold',
-  text: ` ✦ Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes. Para ver el listado de historias escribe 5555, si hay un listado, aparecerá en uno de los laterales.`
+  text: ` (Modo IA) Escribe 555 para ver el listado de historias , si hay un listado, aparecerá en el centro. Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes.`
 },
   isabella: {
     theme: 'pink',
-    text: '✦  Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes. Para ver el listado de historias escribe 5555, si hay un listado, aparecerá en uno de los laterales. '
+    text: '(Modo IA)  Escribe 555 para ver el listado de historias , si hay un listado, aparecerá en el centro. Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes. '
   },
   evelyn: {
     theme: 'blue',
-    text: '✦  Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes. Para ver el listado de historias escribe 5555, si hay un listado, aparecerá en uno de los laterales. '
+    text: '(Modo IA)  Escribe 555 para ver el listado de historias , si hay un listado, aparecerá en el centro. Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes. '
   },
   mapache: {
     theme: 'cyan',
-    text: '✦  Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes. Para ver el listado de historias escribe 5555, si hay un listado, aparecerá en uno de los laterales. '
+    text: '(Modo IA)  Escribe 555 para ver el listado de historias , si hay un listado, aparecerá en el centro. Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes. '
   },
   oraculo: {
     theme: 'violet',
-    text: '✦ Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes. Para ver el listado de historias escribe 5555, si hay un listado, aparecerá en uno de los laterales.  '
+    text: '(Modo IA) Escribe 555 para ver el listado de historias , si hay un listado, aparecerá en el centro. Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes.  '
   }
 };
 
@@ -112,6 +112,7 @@ export default function AgentChatInput({
   agent       = 'osos',
   placeholder, 
   maxLength: maxLengthProp,
+  rows: rowsProp,
 }) {
   const [text, setText] = useState('');
   
@@ -124,7 +125,8 @@ export default function AgentChatInput({
   // Si le pasamos un placeholder por prop, lo usa. Si no, usa el del perfil.
   const finalPlaceholder = placeholder || profile.text;
 
-  const rows = profile.rows || 3;
+  const rows = rowsProp || profile.rows || 3;
+  const isCompact = rows <= 1;
   const maxLength = maxLengthProp || profile.maxLength || 120;
 
   const handleSend = () => {
@@ -183,7 +185,7 @@ export default function AgentChatInput({
         value={text}
         onChange={e => setText(e.target.value)}
         onKeyDown={handleKeyDown}
-        className={`agent-textarea w-full bg-black/70 backdrop-blur-sm border ${c.border} ${c.borderFocus} px-4 py-3 rounded-2xl outline-none font-mono text-base text-white ${c.placeholder} transition-colors resize-none leading-relaxed`}
+        className={`agent-textarea w-full bg-black/70 backdrop-blur-sm border ${c.border} ${c.borderFocus} ${isCompact ? 'px-4 py-1.5' : 'px-4 py-3'} rounded-2xl outline-none font-mono text-base text-white ${c.placeholder} transition-colors resize-none leading-relaxed`}
       />
     </div>
   );
