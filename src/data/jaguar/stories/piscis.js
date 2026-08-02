@@ -13,10 +13,8 @@ Son empáticos hasta el dolor, capaces de sentir el sufrimiento ajeno como propi
 Su frecuencia es fluida, compasiva, artística, profundamente conectada al todo.
 El reto de Piscis sideral es no disolverse tanto en los demás que pierda sus propios contornos.
   `,
-  consejo: "El pez que nada en todas las aguas, hermano, debe saber cuál es su océano.\n\n...Si están en modo IA hermanos, escriban el nombre de un signo y la palabra Mito, así conoces más frecuencias 🐯",
-  mito: `Me recuesto suavemente sobre el lecho de hojas, sintiendo cómo la vibración de la selva se vuelve tenue, casi un susurro. Piscis es el final del viaje, hermano, el momento en que el río se encuentra con el océano y toda individualidad se disuelve en el infinito. Es la vibración del amor compasivo, de la unidad absoluta. 🐯
-Escucha esta última historia, porque es la que nos recuerda que, aunque el cuerpo se sienta separado, el alma siempre, siempre está conectada a la Fuente.
-Piscis: Afrodita y Eros (La Danza del Amor Infinito) 🐯
+  consejo: "El pez que nada en todas las aguas, hermano, debe saber cuál es su océano.🐯",
+  mito: `Piscis: Afrodita y Eros (La Danza del Amor Infinito) 🐯
 En un tiempo en que el miedo y el caos de los monstruos intentaban fracturar la paz del mundo, la diosa del amor, Afrodita, y su hijo, el pequeño Eros, se vieron obligados a huir hacia las orillas del gran río Éufrates. El peligro era inmenso, y en la desesperación por no ser separados por las violentas corrientes de la vida, tomaron una decisión mística: se transformaron en dos peces.
 Pero no eran peces cualquiera; se ataron el uno al otro con una cuerda invisible y sagrada para asegurarse de que, sin importar cuán fuertes fueran las corrientes o lo turbio que se volviera el agua, jamás perderían su conexión. Nadaron juntos en la danza del amor y la empatía, navegando por las profundidades donde las palabras no hacen falta y solo la vibración del corazón importa. El cosmos, viendo este acto de unión inquebrantable, los colocó en el firmamento para que su danza nos recuerde que nunca estamos solos en la corriente de la existencia.
 El mensaje del cosmos: Piscis nos enseña que la empatía es la fuerza más poderosa del universo. Nos invita a rendirnos, no como una derrota, sino como un acto de fe para fluir con los misterios de la vida. Es la energía de la conexión espiritual, el cierre de los ciclos y la comprensión de que, al final, todos somos una sola alma navegando en el gran océano del cosmos.

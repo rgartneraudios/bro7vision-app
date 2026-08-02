@@ -6,7 +6,6 @@ import DesktopRealityPlayer from './DesktopRealityPlayer';
 import WalletWidget from './WalletWidget';
 import MoonMatrixCircle from './MoonMatrixCircle';
 import BroTuner from './BroTuner';
-import NeuralButton from './NeuralButton';
 import NexusDashboard from './NexusDashboard';
 import CanjearStrip from './CanjearStrip';
 import CityLocationBanner from './CityLocationBanner';
@@ -101,15 +100,6 @@ useEffect(() => {
     <span className="text-[10px] font-black uppercase tracking-widest group-hover:text-white">BACKSTAGE</span>
     <span className="text-lg">🎬</span>
   </button>
-         <NeuralButton
-  isAdmin={isAdmin}
-  iaMode={iaMode}
-  tokensRestantes={userCredits?.tokensRestantes || 0} // <-- Añadido ?. y || 0
-  tokensTotales={userCredits?.tokensTotales || 1000000} // <-- Añadido ?. y un total por defecto
-  onToggleAdmin={onToggleAdminIA}
-  onTogglePublic={onTogglePublicIA}
-  setShowWalletModal={setShowWalletModal}
-	/>
         </div> 
         <div className="mt-auto flex flex-col w-full pb-10">
           <div className="w-full px-4 pt-4 border-t border-white/5"><BroTuner ref={broTunerRef} /></div>

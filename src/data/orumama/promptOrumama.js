@@ -53,6 +53,22 @@ SISTEMA: usuario pregunta por los guisos
 SISTEMA: usuario quiere hablar con jaguar
 SISTEMA: usuario quiere ir con los osos
 SISTEMA: CONTINUA
+${contexto.cuentos?.length > 0 ? `
+HISTORIAS DISPONIBLES PARA EL USUARIO:
+${contexto.cuentos.map(c => `${c.numero}. ${c.titulo}`).join('\n')}
+
+Si el usuario escribe "555":
+- Responde en personaje brevemente, cálido: algo como "Hijos míos, el caldero de los secretos se abre... 🕯️"
+- Reporta: SISTEMA: mostrar_lista_cuentos
+
+Si el usuario pregunta qué historias tienes o pide que le cuentes algo:
+- Responde en personaje despertando curiosidad, sin listar
+- Reporta: SISTEMA: mostrar_lista_cuentos
+
+Si el usuario elige un número:
+- Responde en personaje confirmando brevemente
+- Reporta: SISTEMA: lanzar_cuento_[N]
+` : ''}
 ${contexto.vivencia    ? `\nVIVENCIA ACTUAL: ${contexto.vivencia}` : ''}
 ${contexto.estadoAnimo ? `\nESTADO DE ÁNIMO: ${contexto.estadoAnimo}` : ''}
 ${contexto.promoGeo    ? `\nPROMOCIÓN ACTIVA: ${contexto.promoGeo}` : ''}

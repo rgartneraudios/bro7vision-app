@@ -42,6 +42,7 @@ export function useAgentSMisterio({ iaMode, isAdmin, onHandoff, onBotContent, on
   const [mensaje, setMensaje]         = useState(null);
   const [loading, setLoading]         = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
+  const [storyContext, setStoryContext] = useState(null);
 
   const iaActiva = (iaMode === 'admin' && isAdmin) || (iaMode === 'public' && !isAdmin);
 
@@ -76,7 +77,12 @@ export function useAgentSMisterio({ iaMode, isAdmin, onHandoff, onBotContent, on
     setLoading(true);
     try {
       const contexto = await fetchContextoSMisterio();
-      const system   = promptSmisterio(contexto || {});
+      const system   = promptSmisterio({
+        ...contexto || {},
+        storyContext: storyContext
+          ? `\nHISTORIA EN CURSO — el usuario está leyendo/escuchando:\nTítulo: ${storyContext.titulo}\n${(storyContext.texto || '').slice(0, 800)}...\nSi pregunta sobre ella, responde en personaje usando este contenido.`
+          : null,
+      });
       const res = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -122,5 +128,5 @@ export function useAgentSMisterio({ iaMode, isAdmin, onHandoff, onBotContent, on
 
   const reset = () => { setMensaje(null); setChatHistory([]); };
 
-  return { mensaje, loading, enviar, reset, iaActiva };
+  return { mensaje, loading, enviar, reset, iaActiva, setStoryContext };
 }

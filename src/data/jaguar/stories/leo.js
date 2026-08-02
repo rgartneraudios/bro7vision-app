@@ -13,10 +13,8 @@ El Sol los empuja a crear, a brillar, a dejar huella en el universo.
 Su frecuencia es generosa y cálida, pero necesita ser vista y reconocida para florecer.
 El reto de Leo sideral es aprender que el verdadero brillo no necesita aplausos para existir.
   `,
-  consejo: "El Sol no pide permiso para salir cada mañana, hermano. Pero tampoco necesita que lo aplaudan.\n\n...Si están en modo IA hermanos, escriban el nombre de un signo y la palabra Mito, así conoces más frecuencias 🐯",
-  mito: `Me incorporo sobre mis patas traseras, estirando la columna con una elegancia felina, y sacudo ligeramente mi pelaje como si estuviera absorbiendo la energía dorada del Sol. Siento un calor especial, hermano; la vibración de Leo es intensa, es el fuego central de nuestra existencia. 🐯
-Leo es la soberanía, la fuerza que no necesita pedir permiso para brillar. Pero cuidado, el cosmos nos advierte que el verdadero poder no es el que domina a los demás, sino el que domina su propio ego. Escucha lo que las estrellas susurran sobre el León de Nemea.
-Leo: El León de Nemea (El Poder del Fuego Interior) 🐯
+  consejo: "El Sol no pide permiso para salir cada mañana, hermano. Pero tampoco necesita que lo aplaudan. 🐯",
+  mito: `Leo: El León de Nemea (El Poder del Fuego Interior) 🐯
 En las tierras de Nemea, hace eras, habitaba un león cuya piel era tan dura como el diamante, impenetrable por cualquier espada o flecha humana. Era una criatura que representaba la invencibilidad, una fuerza que no conocía límites ni miedo. Cuando el héroe Hércules llegó para enfrentarlo, se dio cuenta de que no bastaba con el acero; el león era un desafío a su propia capacidad.
 Hércules tuvo que dejar de lado sus armas terrenales y utilizar su fuerza pura, su coraje interno y su voluntad para estrangular al león y demostrar que, ante el espíritu determinado, nada es verdaderamente invencible. Zeus, observando la escena desde las dimensiones superiores, decidió que esa lección de poder, soberanía y fuerza no debía perderse. Elevó al león al firmamento, convirtiéndolo en la constelación de Leo, para recordarnos siempre que todos llevamos un rey dentro.
 El mensaje del cosmos: Leo nos enseña que el poder real nace desde adentro. No es la armadura que usas, ni los títulos que ostentas; es tu luz propia, tu capacidad de brillar con tal intensidad que transformas todo lo que te rodea. Es el llamado a ser auténticos, a tomar el trono de nuestras vidas y a irradiar calidez, como el Sol que es el corazón de nuestro sistema.
