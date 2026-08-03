@@ -2,7 +2,7 @@
 // Hook exclusivo de Lara. Nadie más lo usa.
 
 import { useState } from 'react';
-import { promptLara }        from '../data/lara/promptLara';
+import { promptLara }        from '../data/Grupo Osos/lara/promptLara';
 import { fetchContextoLara } from '../services/contexto/fetchContextoLara';
 
 

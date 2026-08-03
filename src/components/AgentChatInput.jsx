@@ -72,7 +72,7 @@ blue: {
 const AGENT_PROFILES = {
   osos: {
     theme: 'violet',
-    text: '✦ Escribe 555 para ver el listado de historias , si hay un listado, aparecerá en el centro. Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes. ',
+    text: '(Modo IA) Escribe 555 para ver el listado de historias , si hay un listado, aparecerá en el centro. Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes. ',
     rows: 3,
     maxLength: 200,
   },

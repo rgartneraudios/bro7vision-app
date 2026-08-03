@@ -2,7 +2,7 @@
 // Hook exclusivo de Puffo. Nadie más lo usa.
 
 import { useState } from 'react';
-import { promptPuffo }       from '../data/puffo/promptPuffo';
+import { promptPuffo }       from '../data/Grupo Osos/puffo/promptPuffo';
 import { fetchContextoPuffo } from '../services/contexto/fetchContextoPuffo';
 
 

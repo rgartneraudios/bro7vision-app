@@ -16,6 +16,7 @@ import ChapterPlayer from './ChapterPlayer';
 import SmisterioBandChat from './personajes/SmisterioBandChat';
 import JaguarBandChat from './personajes/JaguarBandChat';
 import OrumamaBandChat from './personajes/OrumamaBandChat';
+import OSOSBandChat from './personajes/OSOSBandChat';
 import StoryListOverlay from './StoryListOverlay';
 import StoryPanel from './StoryPanel';
 import { getMoonSuffix } from '../utils/moonUtils';
@@ -371,6 +372,14 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
                   <OrumamaBandChat iaMode={modoIA} isAdmin={isAdmin}
                     onHandoff={() => setSelectedGroup(null)} onMensaje={setIaMensaje} />
                 )}
+                {iaActive && modoIA && group.groupId === 'osos' && (
+                  <OSOSBandChat
+                    iaMode={modoIA}
+                    isAdmin={isAdmin}
+                    onHandoff={() => setSelectedGroup(null)}
+                    onMensaje={setIaMensaje}
+                  />
+                )}
                 {(!iaActive || !modoIA) && (
                   <AgentChatInput
                     agent={agentKey}
@@ -379,7 +388,7 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
                     rows={1}
                     placeholder={iaActive && !modoIA
                       ? 'Activa Prepago IA para chatear...'
-                      : hasMembers ? `Habla con ${activeMember}` : undefined}
+                      : hasMembers ? `Habla con ${activeMember} (Modo IA) Escribe 555 para ver el listado de historias, si hay un listado, aparecerá en el centro. Ten en cuenta que los personajes te cuentan historias de ficción y entretenimiento. Las historias no te consumen saldo, solo lo consumen los mensajes.` : undefined}
                   />
                 )}
               </div>

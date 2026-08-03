@@ -2,7 +2,7 @@
 // Hook exclusivo de Tito. Nadie más lo usa.
 
 import { useState, useRef } from 'react';
-import { promptTito }        from '../data/tito/promptTito';
+import { promptTito }        from '../data/Grupo Osos/tito/promptTito';
 import { fetchContextoTito } from '../services/contexto/fetchContextoTito';
 
 
