@@ -16,7 +16,8 @@ const FRASES_FALLBACK = [
   "Cuéntame mejor. ¿Canjear Lunas, Shop Amigos, Games?",
 ];
 
-export function useAgentLara({ iaMode, isAdmin, onHandoff, ciudad = null }) {
+export function useAgentLara({ iaMode, isAdmin, onHandoff, ciudad = null,
+                               onShowStoryList, onLaunchStory, storyEpisode = null }) {
   const [mensaje, setMensaje]             = useState(null);
   const [loading, setLoading]             = useState(false);
   const [chatHistory, setChatHistory]     = useState([]);
@@ -31,13 +32,25 @@ export function useAgentLara({ iaMode, isAdmin, onHandoff, ciudad = null }) {
     const t = norm(intencion);
     if (t.includes('tito'))  { setTimeout(() => onHandoff?.({ agente: 'OSOS_INTERNO', oso_id: 'tito'  }), 2500); return; }
     if (t.includes('puffo')) { setTimeout(() => onHandoff?.({ agente: 'OSOS_INTERNO', oso_id: 'puffo' }), 2500); return; }
+    if (t.includes('mostrar_lista_cuentos')) {
+      setTimeout(() => onShowStoryList?.(), 1200);
+      return;
+    }
+    const lanzarMatch = t.match(/lanzar_cuento[_\s:]+(\d+)/);
+    if (lanzarMatch) {
+      setTimeout(() => onLaunchStory?.(parseInt(lanzarMatch[1])), 1200);
+      return;
+    }
   };
 
   const enviarIA = async (textoUsuario) => {
     setLoading(true);
     try {
-      const contexto = await fetchContextoLara(ciudad);
-      const system   = promptLara(contexto || {});
+      const contexto    = await fetchContextoLara(ciudad);
+      const baseSystem  = promptLara(contexto || {});
+      const system      = storyEpisode
+        ? `${baseSystem}\n\nHISTORIA EN PANTALLA:\n${storyEpisode.texto?.slice(0, 800) || ''}`
+        : baseSystem;
       const res = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -92,6 +105,12 @@ export function useAgentLara({ iaMode, isAdmin, onHandoff, ciudad = null }) {
     // 1. Handoff interno
     if (t.includes('tito'))  { setTimeout(() => onHandoff?.({ agente: 'OSOS_INTERNO', oso_id: 'tito'  }), 1200); return; }
     if (t.includes('puffo')) { setTimeout(() => onHandoff?.({ agente: 'OSOS_INTERNO', oso_id: 'puffo' }), 1200); return; }
+
+    // 2. 555 → mostrar lista de cuentos (intercepción directa, sin pasar por IA)
+    if (t.includes('555')) {
+      onShowStoryList?.();
+      return;
+    }
 
     // 3. Modo IA
     if (iaActiva) { enviarIA(textoUsuario); return; }
