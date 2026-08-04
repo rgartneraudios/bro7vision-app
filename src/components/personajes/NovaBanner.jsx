@@ -1,9 +1,7 @@
 // src/components/personajes/NovaBanner.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import AgentChatInput from '../AgentChatInput';
-import CuponModal from '../CuponModal';
 import { useAgentNova } from '../../hooks/useAgentNova';
-import { useCanjearCupon } from '../../hooks/useCanjearCupon';
 
 const NOVA_GREETINGS = [
   "¡Oh, hola! Soy Nova, qué alegría saludarte. Dime qué buscas y me pongo en marcha enseguida, porfi,",
@@ -20,26 +18,16 @@ export default function NovaBanner({
   iaMode        = 'off',
   isAdmin       = false,
   entidad       = null,
-  hayTarjetas   = false,
-  userId        = null,
-  lunasBalance = 0,
-  onLunasUpdate,
 }) {
   const [display, setDisplay]           = useState('');
   const [cursor, setCursor]             = useState(true);
   const [currentMsg, setCurrentMsg]     = useState('');
-  const [selectedCard, setSelectedCard] = useState(null);
   const charIdx = useRef(0);
 
   const { mensaje: novaMensaje, loading: novaLoading, enviar: novaEnviar,
           esPatrocinado } = useAgentNova({
     iaMode, isAdmin, onHandoff, ciudad: sessionCity,
   });
-
-  const {
-    estado, cuponActivo, cardPendiente, errorMsg,
-    iniciarCanje, cancelar, confirmar, cerrar,
-  } = useCanjearCupon({ userId, onLunasUpdate });
 
   // ── Cursor parpadeante ─────────────────────────────────────────────
   useEffect(() => {
@@ -54,7 +42,7 @@ export default function NovaBanner({
 
   // ── Mensajes del hook ──────────────────────────────────────────────
   useEffect(() => {
-    if (novaMensaje) { setCurrentMsg(novaMensaje); setSelectedCard(null); }
+    if (novaMensaje) setCurrentMsg(novaMensaje);
   }, [novaMensaje]);
 
   // ── Typewriter ────────────────────────────────────────────────────
@@ -66,51 +54,26 @@ export default function NovaBanner({
       charIdx.current++;
       setDisplay(currentMsg.slice(0, charIdx.current));
       if (charIdx.current >= currentMsg.length) clearInterval(t);
-    }, 28);
+    }, 30);
     return () => clearInterval(t);
   }, [currentMsg]);
 
-  // ── Clic en BroCard ────────────────────────────────────────────────
-  const handleCardClick = (card) => {
-    setSelectedCard(prev => prev?.id === card.id ? null : card);
-  };
-
   // ── Enviar desde input ─────────────────────────────────────────────
   const handleEnviar = (texto) => {
-    setSelectedCard(null);
-    novaEnviar(texto, { entidad, hayTarjetas });
-  };
-
-  // ── Botón CANJEAR ──────────────────────────────────────────────────
-  const handleCanjear = () => {
-    if (!selectedCard) return;
-    iniciarCanje(selectedCard);
-    setSelectedCard(null);
+    novaEnviar(texto, { entidad });
   };
 
   return (
-  <>
-        {/* MODAL CUPÓN */}
-      <CuponModal
-        estado={estado}
-        cardPendiente={cardPendiente}
-        cuponActivo={cuponActivo}
-        errorMsg={errorMsg}
-        lunasBalance={lunasBalance}
-        onConfirmar={confirmar}
-        onCancelar={cancelar}
-        onCerrar={cerrar}
-      />
     <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
 
-      {/* 2. BANNER */}
+      {/* BANNER */}
       <div className="w-full max-w-2xl mb-3 pointer-events-auto">
         <div
           className="nv-wrap w-full flex flex-col items-center justify-center text-center bg-black/75 backdrop-blur-xl border border-amber-400/30 rounded-3xl p-5 shadow-[0_0_24px_rgba(251,191,36,0.2)]"
           style={{ transition: 'all 0.3s ease' }}
         >
-          {/* Sin mensaje ni card */}
-          {!currentMsg && !selectedCard && (
+          {/* Sin mensaje */}
+          {!currentMsg && (
             <div className="flex items-center gap-2">
               <p className="text-amber-700/60 text-xs font-bold uppercase tracking-widest">
                 ◈ NOVA · EN LÍNEA
@@ -124,40 +87,12 @@ export default function NovaBanner({
           )}
 
           {/* Procesando */}
-          {novaLoading && !selectedCard && (
+          {novaLoading && (
             <span className="text-amber-400">Procesando...</span>
           )}
 
-           {/* Card seleccionada */}
-           {selectedCard && !novaLoading && (
-             <div className="w-full flex flex-col items-center gap-3 animate-fadeIn">
-               <p
-                 className="text-amber-300 font-black italic uppercase text-base leading-tight tracking-widest"
-                 style={{ textShadow: '0 0 16px rgba(251,191,36,0.7)' }}
-               >
-                 {selectedCard.nombre}
-               </p>
-
-                <p className="text-amber-400 font-black italic uppercase text-lg leading-relaxed"
-                  style={{ textShadow: '0 0 20px rgba(251,191,36,0.6)' }}>
-                  El comercio te comenta que {selectedCard.description || 'sin descripción'}.
-                  La oferta incluye: {selectedCard.descripcion || 'sin detalles'}.
-                  Los encontrarás en {selectedCard.neighborhood || 'su zona'}, cerca de {selectedCard.nearby_ref || 'sin referencia'}.
-                  <span style={{ opacity: cursor ? 1 : 0 }}>_</span>
-                </p>
-
-               <button
-                 onClick={handleCanjear}
-                 className="mt-1 px-8 py-2.5 bg-amber-500/20 border border-amber-400/70 rounded-2xl text-amber-300 font-black text-sm uppercase tracking-widest hover:bg-amber-400/40 hover:text-white transition-all"
-                 style={{ boxShadow: '0 0 16px rgba(251,191,36,0.3)' }}
-               >
-                 ✦ CANJEAR
-               </button>
-             </div>
-           )}
-
           {/* Mensaje typewriter */}
-          {!selectedCard && !novaLoading && currentMsg && (
+          {!novaLoading && currentMsg && (
             <p className="text-amber-400 font-black italic uppercase text-lg leading-relaxed shadow-amber-400">
               {display}<span style={{ opacity: cursor ? 1 : 0 }}>_</span>
             </p>
@@ -165,11 +100,10 @@ export default function NovaBanner({
         </div>
       </div>
 
-      {/* 3. INPUT */}
+      {/* INPUT */}
       <div className="w-full max-w-2xl pointer-events-auto mb-4">
         <AgentChatInput agent="nova" onSend={handleEnviar} isLoading={novaLoading} />
       </div>
     </div>
-    </>
   );
 }

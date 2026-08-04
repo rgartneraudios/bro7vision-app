@@ -3,48 +3,36 @@ import AgentChatInput from '../AgentChatInput';
 import { useAgentEvelyn } from '../../hooks/useAgentEvelyn';
 
 const GREETINGS_EVELYN = [
-  "Soy Evelyn. ¿Quieres publicar algo que buscas o ver lo que la gente necesita?",
-  "Evelyn al habla. ¿Tienes algo que publicar o quieres ver los deseos activos?",
-  "Soy Evelyn. A ver — ¿quieres publicar un deseo de compra o buscar lo que pide la gente?",
-  "Evelyn aquí. ¿Publicamos tu deseo o echamos un ojo a lo que busca la ciudad?",
+  "Soy Evelyn. ¿Listo para explorar Bro7band?",
+  "Evelyn al habla. Cuéntame qué necesitas y lo vemos.",
+  "Soy Evelyn. ¿En qué puedo ayudarte hoy?",
 ];
 
 const GREETINGS_LARRY = [
-  "Larry al aparato. Negocios en marcha — ¿buscas algo o tienes algo que publicar?",
-  "Soy Larry. He visto oferta y demanda... ¿qué movimiento quieres hacer hoy?",
-  "Larry aquí. ¿Quieres publicar una necesidad o estás explorando el mercado?",
+  "Larry al aparato. Negocios en marcha — ¿qué movimiento hacemos hoy?",
+  "Soy Larry. El mercado habla... ¿qué se te ofrece?",
 ];
 
 export default function EvelynBanner({
   personaje    = 'evelyn',
-  avisos_personaje,
   sessionCity,
-  lunas      = 0,
-  userId       = null,
-  autorAlias   = 'Ciudadano',
   onHandoff,
-  onLunasUpdate,
   iaMode  = 'off',
   isAdmin = false,
 }) {
-  const personajeActivo = (avisos_personaje || personaje || 'evelyn').toLowerCase();
+  const personajeActivo = (personaje || 'evelyn').toLowerCase();
 
-  const { mensaje, loading, enviar, resultadosBroDeseos, panelAbierto, setPanelAbierto } = useAgentEvelyn({
-    personaje:   personajeActivo,
+  const { mensaje, loading, enviar } = useAgentEvelyn({
+    personaje: personajeActivo,
     iaMode,
     isAdmin,
     onHandoff,
-onLunasUpdate,
-    ciudad:      sessionCity,
-    lunas,
-    userId,
-    autorAlias,
+    ciudad: sessionCity,
   });
 
   const [display, setDisplay]       = useState('');
   const [cursor, setCursor]         = useState(true);
   const [currentMsg, setCurrentMsg] = useState('');
-  const [isMobile, setIsMobile]     = useState(false);
   const charIdx = useRef(0);
 
   const esLarry         = personajeActivo === 'larry';
@@ -71,9 +59,7 @@ onLunasUpdate,
   }, [personaje]);
 
   useEffect(() => {
-    if (mensaje) {
-      setCurrentMsg(mensaje);
-    }
+    if (mensaje) setCurrentMsg(mensaje);
   }, [mensaje]);
 
   useEffect(() => {
@@ -87,13 +73,6 @@ onLunasUpdate,
     }, 28);
     return () => clearInterval(t);
   }, [currentMsg]);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const handleEnviar = (texto) => {
     enviar(texto);
@@ -145,7 +124,7 @@ onLunasUpdate,
           {!currentMsg && !loading && (
             <div className="flex items-center gap-2">
               <p style={{ color: `${colorPrimario}99`, fontSize: 10, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
-                ◈ {nombrePersonaje} · BRODESEOS
+                ◈ {nombrePersonaje} · EN LÍNEA
               </p>
             </div>
           )}
@@ -155,7 +134,7 @@ onLunasUpdate,
             <div className="av-loading"><span /><span /><span /></div>
           )}
 
-          {/* Mensaje del bot */}
+          {/* Mensaje */}
           {!loading && currentMsg && (
             <p className="av-texto">
               {display}<span style={{ opacity: cursor ? 1 : 0 }}>_</span>

@@ -5,53 +5,37 @@ import AgentChatInput from '../AgentChatInput';
 import { useAgentMapache } from '../../hooks/useAgentMapache';
 
 const GREETINGS_MAPACHE = [
-  "Mapache en cabina. ¿Qué rollo buscamos hoy? 🎧",
-  "Soy Mapache. Dale al play a lo que te rente.",
-  "Aquí Mapache. Ajustando la movida... ¿Qué quieres escuchar, bro?",
-  "Mapache al habla 🎧 ¿Música, podcast o quieres ver qué movida hay?",
+  "Mapache en cabina. ¿Qué rollo tenemos hoy?",
+  "Soy Mapache. Cuéntame qué necesitas, bro.",
+  "Aquí Mapache. Ajustando la movida... ¿qué se te ofrece?",
 ];
 
 const GREETINGS_AMI = [
-  "Ami al micrófono. ¿Qué vibes descubrimos hoy? 🎙️",
+  "Ami al micrófono. ¿Qué exploramos hoy?",
   "Soy Ami. Literal, el dial es todo tuyo.",
-  "Ami súper lista. Dime qué buscas en el dial.",
+  "Ami súper lista. Dime qué buscas.",
 ];
 
 export default function MapacheBanner({
   personaje = 'mapache',
-  audio_personaje,
-  realItems = [],
-  findChannelByAlias,
-  checkIfNew,
   onHandoff,
-  onInvokeOsos,
-  onInvokeNova,
-  onOpenProfile,
-  onTuneIn,
-  onTuneTuner,
-  onStopTuner,
   iaMode      = 'off',
   isAdmin     = false,
   ciudad      = null,
-  entidad     = null,
-  hayTarjetas = false,
 }) {
-  const personajeActivo = (audio_personaje || personaje || 'mapache').toLowerCase();
+  const personajeActivo = (personaje || 'mapache').toLowerCase();
 
   const { mensaje, loading, enviar, esPatrocinado } = useAgentMapache({
-    personaje:   personajeActivo,
+    personaje: personajeActivo,
     iaMode,
     isAdmin,
     onHandoff,
     ciudad,
-    entidad,
-    hayTarjetas,
   });
 
-  const [display, setDisplay]           = useState('');
-  const [cursor, setCursor]             = useState(true);
-  const [currentMsg, setCurrentMsg]     = useState('');
-  const [selectedCard, setSelectedCard] = useState(null);
+  const [display, setDisplay]       = useState('');
+  const [cursor, setCursor]         = useState(true);
+  const [currentMsg, setCurrentMsg] = useState('');
   const charIdx = useRef(0);
 
   const esAmi        = personajeActivo === 'ami';
@@ -68,12 +52,8 @@ export default function MapacheBanner({
   useEffect(() => { const t = setInterval(() => setCursor(c => !c), 530); return () => clearInterval(t); }, []);
   useEffect(() => { setCurrentMsg(GREETINGS[Math.floor(Math.random() * GREETINGS.length)]); }, [personaje]);
 
-  // ── Mensajes del hook → limpia card seleccionada ─────────────────────────
   useEffect(() => {
-    if (mensaje) {
-      setCurrentMsg(mensaje);
-      setSelectedCard(null);
-    }
+    if (mensaje) setCurrentMsg(mensaje);
   }, [mensaje]);
 
   useEffect(() => {
@@ -88,27 +68,8 @@ export default function MapacheBanner({
     return () => clearInterval(t);
   }, [currentMsg]);
 
-  // ── Clic en BroCard ──────────────────────────────────────────────────────
-  const handleCardClick = (card) => {
-    setSelectedCard(prev => (prev?.bro_mus || prev?.bro_aud) === (card.bro_mus || card.bro_aud) ? null : card);
-  };
-
-  // ── Enviar desde input → pasa card activa antes de limpiarla ─────────────
   const handleEnviar = (texto) => {
-    const cardAEnviar = selectedCard;
-    setSelectedCard(null);
-    enviar(texto, cardAEnviar ? { card_activa: cardAEnviar } : {});
-  };
-
-  // ── Botón PLAY → AUDIO_PLAY directo ──────────────────────────────────────
-  const handleEntrar = () => {
-    if (!selectedCard || !onHandoff) return;
-    onHandoff({
-      agente: 'AUDIO_PLAY',
-      codigo: selectedCard.bro_mus || selectedCard.bro_aud,
-      canal:  selectedCard,
-    });
-    setSelectedCard(null);
+    enviar(texto);
   };
 
   return (
@@ -150,89 +111,33 @@ export default function MapacheBanner({
         .mp-loading span:nth-child(3) { animation-delay: 0.4s; }
       `}</style>
 
-      {/* 2. BANNER — descripción de card seleccionada O mensaje del bot */}
+      {/* BANNER */}
       <div className="w-full max-w-2xl mb-3 pointer-events-auto">
         <div className="mp-wrap w-full flex flex-col items-center justify-center text-center">
 
-          {/* Header personaje — solo si no hay card seleccionada */}
-          {!selectedCard && (
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-lg">{iconoPersonaje}</span>
-              <span style={{ color, fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
-                {nombrePersonaje}
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-lg">{iconoPersonaje}</span>
+            <span style={{ color, fontSize: 9, fontWeight: 900, letterSpacing: '0.25em', textTransform: 'uppercase' }}>
+              {nombrePersonaje}
+            </span>
+            {esPatrocinado && (
+              <span style={{ fontSize: 8, fontWeight: 900, letterSpacing: '0.2em', color: '#000', background: '#FACC15', borderRadius: 3, padding: '1px 5px', textTransform: 'uppercase' }}>
+                PATROCINADO
               </span>
-              {esPatrocinado && (
-                <span style={{ fontSize: 8, fontWeight: 900, letterSpacing: '0.2em', color: '#000', background: '#FACC15', borderRadius: 3, padding: '1px 5px', textTransform: 'uppercase' }}>
-                  PATROCINADO
-                </span>
-              )}
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* Sin mensaje ni card */}
-          {!currentMsg && !selectedCard && !loading && (
+          {!currentMsg && !loading && (
             <p className="text-cyan-500/60 text-xs uppercase tracking-widest font-bold">
-              ◈ {nombreAgente} · AUDIO DISPATCHER
+              ◈ {nombreAgente} · EN LÍNEA
             </p>
           )}
 
-          {/* Procesando */}
-          {loading && !selectedCard && (
+          {loading && (
             <div className="mp-loading"><span /><span /><span /></div>
           )}
 
-          {/* Card seleccionada — descripción con estética Mapache */}
-          {selectedCard && !loading && (
-            <div className="w-full flex flex-col items-center gap-3">
-              {/* Nombre del canal */}
-              <p
-                className="font-black italic uppercase text-base leading-tight tracking-widest"
-                style={{ color, textShadow: `0 0 16px ${color}` }}
-              >
-                {selectedCard.nombre || selectedCard.alias}
-              </p>
-
-              {/* Barrio / referencia */}
-              {(selectedCard.neighborhood || selectedCard.nearby_ref) && (
-                <p
-                  className="font-bold uppercase text-xs tracking-[0.25em]"
-                  style={{ color: '#0088aa' }}
-                >
-                  {selectedCard.neighborhood}
-                  {selectedCard.neighborhood && selectedCard.nearby_ref ? ' · ' : ''}
-                  {selectedCard.nearby_ref}
-                </p>
-              )}
-
-              {/* Descripción */}
-              <p
-                className="font-black italic uppercase text-lg leading-relaxed"
-                style={{ color, textShadow: `0 0 20px rgba(0,208,255,0.6)` }}
-              >
-                {selectedCard.descripcion || selectedCard.audio_description || selectedCard.description}
-                <span style={{ opacity: cursor ? 1 : 0 }}>_</span>
-              </p>
-
-              {/* Botón ENTRAR → play */}
-              <button
-                onClick={handleEntrar}
-                className="mt-1 px-8 py-2.5 rounded-2xl font-black text-sm uppercase tracking-widest transition-all"
-                style={{
-                  background: 'rgba(0,208,255,0.15)',
-                  border: `1px solid rgba(0,208,255,0.6)`,
-                  color,
-                  boxShadow: `0 0 16px rgba(0,208,255,0.3)`,
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,208,255,0.35)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,208,255,0.15)'}
-              >
-                ▶ PLAY
-              </button>
-            </div>
-          )}
-
-          {/* Mensaje del bot (typewriter) — solo si no hay card seleccionada */}
-          {!selectedCard && !loading && currentMsg && (
+          {!loading && currentMsg && (
             <p className="mp-texto">
               {display}<span className="mp-cursor" style={{ opacity: cursor ? 1 : 0 }} />
             </p>
@@ -241,7 +146,7 @@ export default function MapacheBanner({
         </div>
       </div>
 
-      {/* 3. INPUT */}
+      {/* INPUT */}
       <div className="w-full max-w-2xl pointer-events-auto mb-4">
         <AgentChatInput agent="mapache" onSend={handleEnviar} isLoading={loading} />
       </div>

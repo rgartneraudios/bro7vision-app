@@ -15,9 +15,6 @@ const norm = (str) =>
 
 const KEYWORDS_SALIDA_REINOS = [
   'salir', 'volver', 'inicio', 'recepción', 'recepcion', 'osos', 'portero',
-  'producto', 'productos', 'tienda', 'shop', 'nova', 'broshop',
-  'servicio', 'servicios', 'isabella', 'profesor', 'prmaestro',
-  'aviso', 'avisos', 'anuncio', 'anuncios', 'evelyn', 'larry',
   'audio', 'música', 'musica', 'podcast', 'mapache', 'ami',
   'oráculo', 'oraculo', 'orumama', 'jaguar', 'misterio',
   'juego', 'juegos', 'games',

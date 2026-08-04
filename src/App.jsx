@@ -213,7 +213,7 @@ setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
     setScope({ city: String(ciudadFinal), type: 'teleport' });
     setSessionCity(ciudadFinal);
     setSessionCP(cp);
-    setIntent(intentMap[agente] || 'productos');
+    setIntent(intentMap[agente] || 'general');
     setOsosModo('retorno');
     setStep(2);
   };

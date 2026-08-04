@@ -168,9 +168,7 @@ useEffect(() => {
       )}
       
       
-      {/* ── AVISOS ──────────────────────────────────────────────────────── */}
-
-{/* 6. OSOS IA RECEPCION */}
+      {/* 6. OSOS IA RECEPCION */}
 {step === 1 && (() => {
   const osoId = (perfilOso?.oso_id || '').toLowerCase().trim();
   const osoValido = ['tito', 'lara', 'puffo'].includes(osoId) ? osoId : 'lara';

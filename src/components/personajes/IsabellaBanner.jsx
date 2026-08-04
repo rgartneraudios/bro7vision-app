@@ -1,9 +1,7 @@
 // src/components/personajes/IsabellaBanner.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import AgentChatInput from '../AgentChatInput';
-import CuponModal from '../CuponModal';
 import { useAgentIsabella } from '../../hooks/useAgentIsabella';
-import { useCanjearCupon } from '../../hooks/useCanjearCupon';
 
 const GREETINGS_ISABELLA = [
   "Hola, soy Isabella 🐘 ¿Cómo puedo acompañarte hoy?",
@@ -33,25 +31,15 @@ export default function IsabellaBanner({
   iaMode         = 'off',
   isAdmin        = false,
   entidad        = null,
-  hayTarjetas    = false,
-  userId         = null,
-  lunasBalance = 0,
-  onLunasUpdate,
 }) {
   const { mensaje, loading, enviar, esPatrocinado } = useAgentIsabella({
     personaje, iaMode, isAdmin, onHandoff,
-    ciudad: sessionCity, entidad, hayTarjetas,
+    ciudad: sessionCity,
   });
-
-  const {
-    estado, cuponActivo, cardPendiente, errorMsg,
-    iniciarCanje, cancelar, confirmar, cerrar,
-  } = useCanjearCupon({ userId, onLunasUpdate });
 
   const [display, setDisplay]           = useState('');
   const [cursor, setCursor]             = useState(true);
   const [currentMsg, setCurrentMsg]     = useState('');
-  const [selectedCard, setSelectedCard] = useState(null);
   const charIdx = useRef(0);
 
   const personajeActivo = (personaje || 'isabella').toLowerCase();
@@ -61,7 +49,7 @@ export default function IsabellaBanner({
 
   useEffect(() => { const t = setInterval(() => setCursor(c => !c), 530); return () => clearInterval(t); }, []);
   useEffect(() => { setCurrentMsg(GREETINGS[Math.floor(Math.random() * GREETINGS.length)]); }, [personaje]);
-  useEffect(() => { if (mensaje) { setCurrentMsg(mensaje); setSelectedCard(null); } }, [mensaje]);
+  useEffect(() => { if (mensaje) setCurrentMsg(mensaje); }, [mensaje]);
 
   useEffect(() => {
     if (!currentMsg) return;
@@ -75,38 +63,12 @@ export default function IsabellaBanner({
     return () => clearInterval(t);
   }, [currentMsg]);
 
-  // ── Clic en BroCard ────────────────────────────────────────────────
-  const handleCardClick = (card) => {
-    setSelectedCard(prev => prev?.id === card.id ? null : card);
-  };
-
   // ── Enviar desde input ─────────────────────────────────────────────
   const handleEnviar = (texto) => {
-    setSelectedCard(null);
     enviar(texto);
   };
 
-  // ── Botón CANJEAR ──────────────────────────────────────────────────
-  const handleCanjear = () => {
-    if (!selectedCard) return;
-    iniciarCanje(selectedCard);
-    setSelectedCard(null);
-  };
-
   return (
-     <>
-        {/* MODAL CUPÓN */}
-      <CuponModal
-        estado={estado}
-        cardPendiente={cardPendiente}
-        cuponActivo={cuponActivo}
-        errorMsg={errorMsg}
-        lunasBalance={lunasBalance}
-        onConfirmar={confirmar}
-        onCancelar={cancelar}
-        onCerrar={cerrar}
-      />
-      
     <div className="absolute inset-0 z-[50] flex flex-col items-center justify-end pb-0 px-4 pointer-events-none">
       <style>{`
         @keyframes neonPulseServicios {
@@ -145,8 +107,7 @@ export default function IsabellaBanner({
         .sv-loading span:nth-child(3) { animation-delay: 0.4s; }
       `}</style>
 
-
-      {/* 2. BANNER */}
+      {/* BANNER */}
       <div className="w-full max-w-2xl mb-3 pointer-events-auto">
         <div className="sv-wrap w-full flex flex-col items-center justify-center text-center">
 
@@ -162,57 +123,17 @@ export default function IsabellaBanner({
             )}
           </div>
 
-          {!currentMsg && !loading && !selectedCard && (
+          {!currentMsg && !loading && (
             <p className="text-slate-500/60 text-xs uppercase tracking-widest font-bold">
               ◈ {nombrePersonaje} · EN LÍNEA
             </p>
           )}
 
-          {loading && !selectedCard && (
+          {loading && (
             <div className="sv-loading"><span /><span /><span /></div>
           )}
 
-           {/* Card seleccionada */}
-           {selectedCard && !loading && (
-             <div className="w-full flex flex-col items-center gap-3" style={{ animation: 'stripIn 0.3s ease both' }}>
-               <p className="sv-texto" style={{ minHeight: 'unset', fontSize: 'clamp(13px, 2vw, 16px)' }}>
-                 {selectedCard.nombre}
-               </p>
-
-                <p className="sv-texto" style={{ minHeight: 'unset' }}>
-                  El profesional te comenta que {selectedCard.description || 'sin descripción'}.
-                  La oferta incluye: {selectedCard.descripcion || 'sin detalles'}.
-                  Especialidad: {selectedCard.biz_profession || 'sin especialidad'}. En {selectedCard.neighborhood || 'su zona'}.
-                  <span className="sv-cursor" style={{ opacity: cursor ? 1 : 0 }} />
-                </p>
-
-               <button
-                 onClick={handleCanjear}
-                 style={{
-                   marginTop: 4,
-                   padding: '10px 32px',
-                   background: 'rgba(245,40,145,0.15)',
-                   border: '1px solid rgba(245,40,145,0.6)',
-                   borderRadius: '1rem',
-                   color: '#F792CF',
-                   fontWeight: 900,
-                   fontSize: 13,
-                   textTransform: 'uppercase',
-                   letterSpacing: '0.15em',
-                   cursor: 'pointer',
-                   boxShadow: '0 0 14px rgba(245,40,145,0.25)',
-                   transition: 'all 0.2s',
-                   fontFamily: "'Orbitron', monospace",
-                 }}
-                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,40,145,0.35)'}
-                 onMouseLeave={e => e.currentTarget.style.background = 'rgba(245,40,145,0.15)'}
-               >
-                 ✦ CANJEAR
-               </button>
-             </div>
-           )}
-
-          {!selectedCard && !loading && currentMsg && (
+          {!loading && currentMsg && (
             <p className="sv-texto">
               {display}<span className="sv-cursor" style={{ opacity: cursor ? 1 : 0 }} />
             </p>
@@ -220,11 +141,10 @@ export default function IsabellaBanner({
         </div>
       </div>
 
-      {/* 3. INPUT */}
+      {/* INPUT */}
       <div className="w-full max-w-2xl pointer-events-auto mb-4">
         <AgentChatInput agent="isabella" onSend={handleEnviar} isLoading={loading} />
       </div>
     </div>
-     </>
   );
 }
