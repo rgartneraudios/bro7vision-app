@@ -160,10 +160,17 @@ export default function StoryPanel({ titulo, texto, audioUrl, accentColor = '#a8
 
           <div className="story-panel-scroll"
                style={{ overflowY:'auto', flex:1, display:'flex',
-                        flexDirection:'column', gap:'1rem' }}>
+                        flexDirection:'column', gap:'0.25rem' }}>
             {parrafos.map((p, i) => (
-              <p key={i} style={{ color:'rgba(255,255,255,0.88)', fontSize:'1.05rem',
-                                  lineHeight:1.7, margin:0 }}>{p}</p>
+              <React.Fragment key={i}>
+                {i > 0 && (
+                  <div style={{ textAlign:'center', fontSize:'1.2rem', lineHeight:1, margin:'0.15rem 0', opacity:0.5 }}>
+                    {separator}
+                  </div>
+                )}
+                <p style={{ color:'rgba(255,255,255,0.88)', fontSize:'1.05rem',
+                            lineHeight:1.7, margin:0 }}>{p}</p>
+              </React.Fragment>
             ))}
           </div>
         </div>

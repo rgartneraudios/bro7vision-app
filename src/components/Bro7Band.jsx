@@ -18,6 +18,8 @@ import JaguarBandChat from './personajes/JaguarBandChat';
 import OrumamaBandChat from './personajes/OrumamaBandChat';
 import OSOSBandChat from './personajes/OSOSBandChat';
 import NovaBandChat from './personajes/NovaBandChat';
+import EvelynLarryBandChat      from './personajes/EvelynLarryBandChat';
+import IsabellaProfesorBandChat from './personajes/IsabellaProfesorBandChat';
 import StoryListOverlay from './StoryListOverlay';
 import StoryPanel from './StoryPanel';
 import { getMoonSuffix } from '../utils/moonUtils';
@@ -49,8 +51,8 @@ const DEMO_AUDIO_MAP = {
 const GROUPS = [
   { id: 1,  name: 'OSOS',               groupId:'osos',               members:['TITO','LARA','PUFFO'], hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['osos.webp'],             video: 'osos_default5.mp4',              top: '8%',  left: '20%',   animDuration: '6s'   },
   { id: 2,  name: 'NOVA',               groupId:'nova',               members:[],                      hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['nova.webp'],             video: 'nova_default7.mp4',              top: '12%',  left: '42%',  animDuration: '8s'   },
-  { id: 3,  name: 'ISABELLA & PROFESOR',groupId:'isabella_profesor',  members:['ISABELLA','PROFESOR'], hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['elefantes.webp'],       video: 'isabella_default1.mp4', top: '12%', left: '65%',  animDuration: '7s'   },
-  { id: 4,  name: 'EVELYN & LARRY',     groupId:'evelyn_larry',       members:['EVELYN','LARRY'],      hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['larry_evelyn.webp'],    video: 'larry_evelyn_default1.mp4',      top: '38%', left: '65%',  animDuration: '9s'   },
+  { id: 3,  name: 'ISABELLA & PROFESOR',groupId:'isabella_profesor',  members:['ISABELLA','PROFESOR'], hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['elefantes.webp'],       video: 'isabella_default7.mp4', top: '12%', left: '65%',  animDuration: '7s'   },
+  { id: 4,  name: 'EVELYN & LARRY',     groupId:'evelyn_larry',       members:['EVELYN','LARRY'],      hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['larry_evelyn.webp'],    video: 'evelyn_default5.mp4',      top: '38%', left: '65%',  animDuration: '9s'   },
   { id: 5,  name: 'MAPACHE & AMI',      groupId:'mapache_ami',        members:['MAPACHE','AMI'],       hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['mapache_ami.webp'],     video: 'mapache_ami_default.mp4',       top: '68%', left: '75%',  animDuration: '6.5s' },
   { id: 6,  name: 'ORUMAMA',            groupId:'orumama',            members:[],                      hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['orumama.webp'],         video: 'orumamaDefaults.mp4',           top: '80%', left: '32%',  animDuration: '8.5s' },
   { id: 7,  name: 'SEÑOR MISTERIO',     groupId:'smisterio',          members:[],                      hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['smisterio.webp'],       video: 'smisterioDefaults.mp4',         top: '72%', left: '8%',   animDuration: '7.5s' },
@@ -388,6 +390,14 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
                     onHandoff={() => setSelectedGroup(null)}
                     onMensaje={setIaMensaje}
                   />
+                )}
+                {iaActive && modoIA && group.groupId === 'evelyn_larry' && (
+                  <EvelynLarryBandChat iaMode={modoIA} isAdmin={isAdmin}
+                    onHandoff={() => setSelectedGroup(null)} onMensaje={setIaMensaje} />
+                )}
+                {iaActive && modoIA && group.groupId === 'isabella_profesor' && (
+                  <IsabellaProfesorBandChat iaMode={modoIA} isAdmin={isAdmin}
+                    onHandoff={() => setSelectedGroup(null)} onMensaje={setIaMensaje} />
                 )}
                 {(!iaActive || !modoIA) && (
                   <AgentChatInput

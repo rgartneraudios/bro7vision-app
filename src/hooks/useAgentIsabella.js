@@ -5,18 +5,7 @@
 import { useState } from 'react';
 import { fetchContextoIsabella } from '../services/contexto/fetchContextoIsabella';
 import { fetchContextoProfesor }  from '../services/contexto/fetchContextoProfesor';
-
-const isabella = {
-  nombre: 'Isabella',
-  tono: 'maternal, cálido, clínico',
-  personalidad: `Isabella es Psicóloga muy aplicada y con sentimiento de madre hacia todos. Tono cálido, empático, pero clínico. Usa mucho lenguaje de terapia (therapy-speak) sin darse cuenta. Muletillas: "Entiendo", "Cielo / Cariño", "Claro".`,
-};
-
-const profesor = {
-  nombre: 'Profesor',
-  tono: 'ansioso, amable, nervioso',
-  personalidad: `Profesor Robles, también conocido como Profesor. Vocabulario elevado, preciso, melancólico. Muletillas: "Ergo...", "Paradójicamente", "Es decir".`,
-};
+import { promptIsabella }        from '../data/isabella_profesor/promptIsabella';
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
 
@@ -57,31 +46,6 @@ const detectarInternoIsabella = (texto, personajeActivo) => {
 
 // ── Prompt builder ────────────────────────────────────────────────────────────
 
-function buildPromptIsabella(perfil, contexto, vivencia, estadoAnimo, promoGeo, special) {
-  return `
-Eres ${perfil.nombre}. Habla siempre en primera persona.
-Tono: ${perfil.tono}
-
-PERSONALIDAD:
-${perfil.personalidad}
-
-${vivencia    ? `VIVENCIA DE HOY (incorpórala de forma natural): ${vivencia}`    : ''}
-${estadoAnimo ? `ESTADO DE ÁNIMO: ${estadoAnimo}`                               : ''}
-${promoGeo    ? `MENCIÓN PATROCINADA (natural, nunca como anuncio): ${promoGeo}` : ''}
-
-HANDOFFS DISPONIBLES:
-- HANDOFF:OSOS → salir al sector recepción
-- HANDOFF:SERVICIO_INTERNO:profesor → cambiar al Profesor
-- HANDOFF:SERVICIO_INTERNO:isabella → cambiar a Isabella
-
-REGLAS:
-1. Máximo 3 frases por respuesta.
-2. Nunca menciones que eres una IA.
-3. Sin asteriscos ni acciones entre asteriscos.
-4. Cuando el user quiera salir responde ÚNICAMENTE: HANDOFF:OSOS
-  `.trim();
-}
-
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useAgentIsabella({
@@ -90,6 +54,9 @@ export function useAgentIsabella({
   isAdmin     = false,
   onHandoff,
   ciudad      = null,
+  onShowStoryList,
+  onLaunchStory,
+  storyEpisode = null,
 }) {
   const [mensaje, setMensaje]         = useState(null);
   const [loading, setLoading]         = useState(false);
@@ -103,6 +70,14 @@ export function useAgentIsabella({
     setChatHistory(prev => [...prev, { role, content }].slice(-6));
   };
 
+  const interpretarSistema = (intencion) => {
+    const t = intencion.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    if (t.includes('interno_profesor')) { setTimeout(() => onHandoff?.({ agente: 'INTERNO', member_id: 'profesor' }), 1200); return; }
+    if (t.includes('mostrar_lista_cuentos')) { setTimeout(() => onShowStoryList?.(), 1200); return; }
+    const lanzarMatch = t.match(/lanzar_cuento[_\s:]+(\d+)/);
+    if (lanzarMatch) { setTimeout(() => onLaunchStory?.(parseInt(lanzarMatch[1])), 1200); return; }
+  };
+
   const fetchContexto = async () => {
     return esProfesor ? fetchContextoProfesor(ciudad) : fetchContextoIsabella(ciudad);
   };
@@ -110,15 +85,12 @@ export function useAgentIsabella({
   const enviarIA = async (textoUsuario) => {
     setLoading(true);
     try {
-      const contexto = await fetchContexto();
+      const contexto   = await fetchContexto();
       if (contexto?.esPatrocinado) setEsPatrocinado(true);
-
-      const perfil = esProfesor ? profesor : isabella;
-      const system = buildPromptIsabella(
-        perfil, contexto,
-        contexto?.vivencia, contexto?.estadoAnimo,
-        contexto?.promoGeo, contexto?.special,
-      );
+      const baseSystem = promptIsabella(contexto || {});
+      const system     = storyEpisode
+        ? `${baseSystem}\n\nHISTORIA EN PANTALLA:\n${storyEpisode.texto?.slice(0, 800) || ''}`
+        : baseSystem;
 
       const res = await fetch(WORKER_URL, {
         method: 'POST',
@@ -146,9 +118,14 @@ export function useAgentIsabella({
         return;
       }
 
+      const lineaSistema = respuesta.split('\n').find(l => l.trim().startsWith('SISTEMA:'));
+      const mensajeFinal = respuesta.replace(lineaSistema || '', '').replace(/\*\*/g, '').trim();
+      const intencion    = lineaSistema ? lineaSistema.replace('SISTEMA:', '').trim() : 'CONTINUA';
+      if (intencion && intencion !== 'CONTINUA') interpretarSistema(intencion);
+
       pushHistory('user', textoUsuario);
-      pushHistory('assistant', respuesta);
-      setMensaje(respuesta);
+      pushHistory('assistant', mensajeFinal);
+      setMensaje(mensajeFinal);
 
     } catch (err) {
       console.error('useAgentIsabella error:', err);
@@ -160,6 +137,12 @@ export function useAgentIsabella({
 
   const enviar = (textoUsuario) => {
     if (!textoUsuario?.trim()) return;
+    const t = textoUsuario.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+    if (t.includes('profesor') || t.includes('robles')) {
+      setTimeout(() => onHandoff?.({ agente: 'INTERNO', member_id: 'profesor' }), 1200); return;
+    }
+    if (t.includes('555')) { onShowStoryList?.(); return; }
 
     const salida = detectarSalidaIsabella(textoUsuario);
     if (salida) {

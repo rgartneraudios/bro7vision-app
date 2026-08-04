@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { fetchContextoEvelyn } from '../services/contexto/fetchContextoEvelyn';
 import { fetchContextoLarry }  from '../services/contexto/fetchContextoLarry';
+import { promptEvelyn }        from '../data/evelyn_larry/promptEvelyn';
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
 
@@ -46,37 +47,15 @@ const detectarInterno = (texto, personajeActivo) => {
   return null;
 };
 
-function buildPromptEvelyn(perfil, contexto, vivencia, estadoAnimo, promoGeo) {
-  return `
-Eres ${perfil.nombre}. Habla siempre en primera persona.
-Tono: ${perfil.tono}
-
-PERSONALIDAD:
-${perfil.personalidad}
-
-${vivencia    ? `VIVENCIA DE HOY (incorpórala de forma natural): ${vivencia}`    : ''}
-${estadoAnimo ? `ESTADO DE ÁNIMO: ${estadoAnimo}`                               : ''}
-${promoGeo    ? `MENCIÓN PATROCINADA (natural, nunca como anuncio): ${promoGeo}` : ''}
-
-HANDOFFS DISPONIBLES:
-- HANDOFF:OSOS → salir al sector recepción
-- HANDOFF:AVISO_INTERNO:evelyn → cambiar a Evelyn
-- HANDOFF:AVISO_INTERNO:larry → cambiar a Larry
-
-REGLAS:
-1. Máximo 3 frases por respuesta.
-2. Nunca menciones que eres una IA.
-3. Sin asteriscos ni acciones entre asteriscos.
-4. Cuando el user quiera salir responde ÚNICAMENTE: HANDOFF:OSOS
-  `.trim();
-}
-
 export function useAgentEvelyn({
   personaje    = 'evelyn',
   iaMode       = 'off',
   isAdmin      = false,
   onHandoff,
   ciudad       = null,
+  onShowStoryList,
+  onLaunchStory,
+  storyEpisode = null,
 }) {
   const [mensaje, setMensaje]       = useState(null);
   const [loading, setLoading]       = useState(false);
@@ -89,6 +68,14 @@ export function useAgentEvelyn({
     setChatHistory(prev => [...prev, { role, content }].slice(-6));
   };
 
+  const interpretarSistema = (intencion) => {
+    const t = intencion.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    if (t.includes('interno_larry')) { setTimeout(() => onHandoff?.({ agente: 'INTERNO', member_id: 'larry' }), 1200); return; }
+    if (t.includes('mostrar_lista_cuentos')) { setTimeout(() => onShowStoryList?.(), 1200); return; }
+    const lanzarMatch = t.match(/lanzar_cuento[_\s:]+(\d+)/);
+    if (lanzarMatch) { setTimeout(() => onLaunchStory?.(parseInt(lanzarMatch[1])), 1200); return; }
+  };
+
   const fetchContexto = async () => {
     return esLarry ? fetchContextoLarry(ciudad) : fetchContextoEvelyn(ciudad);
   };
@@ -96,15 +83,11 @@ export function useAgentEvelyn({
   const enviarIA = async (textoUsuario) => {
     setLoading(true);
     try {
-      const contexto = await fetchContexto();
-      const perfil = esLarry
-        ? { nombre: 'Larry', tono: 'seco, empresario, astuto', personalidad: 'Perro empresario con olfato para los negocios. Humor seco y criterio afilado.' }
-        : { nombre: 'Evelyn', tono: 'eficiente, amable, directa', personalidad: 'Loba del sector bancario. Eficiente, amable, directa.' };
-
-      const system = buildPromptEvelyn(
-        perfil, contexto,
-        contexto?.vivencia, contexto?.estadoAnimo, contexto?.promoGeo,
-      );
+      const contexto   = await fetchContexto();
+      const baseSystem = promptEvelyn(contexto || {});
+      const system     = storyEpisode
+        ? `${baseSystem}\n\nHISTORIA EN PANTALLA:\n${storyEpisode.texto?.slice(0, 800) || ''}`
+        : baseSystem;
 
       const res = await fetch(WORKER_URL, {
         method: 'POST',
@@ -132,9 +115,14 @@ export function useAgentEvelyn({
         return;
       }
 
+      const lineaSistema = respuesta.split('\n').find(l => l.trim().startsWith('SISTEMA:'));
+      const mensajeFinal = respuesta.replace(lineaSistema || '', '').replace(/\*\*/g, '').trim();
+      const intencion    = lineaSistema ? lineaSistema.replace('SISTEMA:', '').trim() : 'CONTINUA';
+      if (intencion && intencion !== 'CONTINUA') interpretarSistema(intencion);
+
       pushHistory('user', textoUsuario);
-      pushHistory('assistant', respuesta);
-      setMensaje(respuesta);
+      pushHistory('assistant', mensajeFinal);
+      setMensaje(mensajeFinal);
 
     } catch (err) {
       console.error('useAgentEvelyn IA error:', err);
@@ -146,6 +134,10 @@ export function useAgentEvelyn({
 
   const enviar = async (textoUsuario) => {
     if (!textoUsuario?.trim()) return;
+    const t = textoUsuario.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+    if (t.includes('larry')) { setTimeout(() => onHandoff?.({ agente: 'INTERNO', member_id: 'larry' }), 1200); return; }
+    if (t.includes('555'))   { onShowStoryList?.(); return; }
 
     const salida = detectarSalida(textoUsuario);
     if (salida) {
