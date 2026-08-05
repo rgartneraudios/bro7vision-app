@@ -2,6 +2,7 @@
 // Hook exclusivo del sector Reinos. Solo Rumores — sin handoffs internos.
 
 import { useState } from 'react';
+import { promptRumores } from '../data/rumores/promptRumores';
 import { fetchContextoRumores } from '../services/contexto/fetchContextoRumores';
 
 const RUMORES_PERSONALIDAD = `Rumores fue un reportero de alfombras rojas de cine y ahora, ya retirado, usa su energía y dramatismo para narrar los Reinos de BRO7VISION. Es elegante, dramático y habla con la autoridad de quien ha visto a las grandes estrellas. Dramático/a, exagerado/a, vive todo como si fuera el guion de una película de Hollywood. Muletillas: "My Friends", "Divinos", "¡Chicos!".`;
@@ -197,6 +198,9 @@ export function useAgentRumores({
   ciudad       = null,
   reinos       = [],
   reinoDetalle = null,
+  onShowStoryList,
+  onLaunchStory,
+  storyEpisode = null,
 }) {
   const [mensaje, setMensaje]         = useState(null);
   const [loading, setLoading]         = useState(false);
@@ -208,12 +212,29 @@ export function useAgentRumores({
     setChatHistory(prev => [...prev, { role, content }].slice(-6));
   };
 
+  const interpretarSistema = (intencion) => {
+    const t = norm(intencion);
+
+    if (t.includes('mostrar_lista_cuentos')) {
+      setTimeout(() => onShowStoryList?.(), 1200);
+      return;
+    }
+    const lanzarMatch = intencion.match(/lanzar_cuento[_\s:]+(\d+)/i);
+    if (lanzarMatch) {
+      setTimeout(() => onLaunchStory?.(parseInt(lanzarMatch[1])), 1200);
+      return;
+    }
+  };
+
   // ── Envío IA ──────────────────────────────────────────────────────────────
   const enviarIA = async (textoUsuario) => {
     setLoading(true);
     try {
-      const contexto  = await fetchContextoRumores(ciudad);
-      const system    = buildPromptRumores(contexto);
+      const contexto   = await fetchContextoRumores(ciudad);
+      const baseSystem = promptRumores(contexto || {});
+      const system     = storyEpisode
+        ? `${baseSystem}\n\nHISTORIA EN PANTALLA:\n${storyEpisode.texto?.slice(0, 800) || ''}`
+        : baseSystem;
 
       const res = await fetch(WORKER_URL, {
         method: 'POST',
@@ -254,6 +275,11 @@ export function useAgentRumores({
   // ── Entrada principal — Bot e IA ──────────────────────────────────────────
   const enviar = (textoUsuario) => {
     if (!textoUsuario?.trim()) return;
+
+    if (textoUsuario.trim() === '555') {
+      onShowStoryList?.();
+      return;
+    }
 
     // 1. Salida → Osos — siempre
     const salida = detectarSalidaReinos(textoUsuario);

@@ -18,6 +18,7 @@ import JaguarBandChat from './personajes/JaguarBandChat';
 import OrumamaBandChat from './personajes/OrumamaBandChat';
 import OSOSBandChat from './personajes/OSOSBandChat';
 import NovaBandChat from './personajes/NovaBandChat';
+import RumoresBandChat from './personajes/RumoresBandChat';
 import EvelynLarryBandChat      from './personajes/EvelynLarryBandChat';
 import IsabellaProfesorBandChat from './personajes/IsabellaProfesorBandChat';
 import MapacheAmiBandChat from './personajes/MapacheAmiBandChat';
@@ -58,7 +59,7 @@ const GROUPS = [
   { id: 6,  name: 'ORUMAMA',            groupId:'orumama',            members:[],                      hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['orumama.webp'],         video: 'orumamaDefaults.mp4',           top: '80%', left: '32%',  animDuration: '8.5s' },
   { id: 7,  name: 'SEÑOR MISTERIO',     groupId:'smisterio',          members:[],                      hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['smisterio.webp'],       video: 'smisterioDefaults.mp4',         top: '72%', left: '8%',   animDuration: '7.5s' },
   { id: 8,  name: 'JAGUAR',             groupId:'jaguar',             members:[],                      hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['jaguar.webp'],          video: 'jaguarSignos.mp4',              top: '42%', left: '18%',   animDuration: '9.5s' },
-  { id: 9,  name: 'RUMORES',            groupId:'rumores',            members:[],                      hasIA:false, hasAudio:true, hasPalabraClave:true,  hasChat:false, images: ['rumores.webp'],         video: 'rumores_default5.mp4',                    top: '78%', left: '55%',  animDuration: '11s'  },
+  { id: 9,  name: 'RUMORES',            groupId:'rumores',            members:[],                      hasIA:true, hasAudio:true, hasPalabraClave:true,  hasChat:true, images: ['rumores.webp'],         video: 'rumores_default5.mp4',                    top: '78%', left: '55%',  animDuration: '11s'  },
   { id: 10, name: 'BRO7BAND',           groupId:'bro7band',           members:[],                      hasIA:false, hasAudio:false,hasPalabraClave:false, hasChat:false, images: ['bro7band.webp'],        video: 'https://pub-a77d1f38b28849c1ad7e977150ecb53f.r2.dev/Bro7Band_Insectos5.mp4', top: '45%', left: '44%', animDuration: '10s'  },
 ];
 
@@ -71,6 +72,7 @@ const GROUP_AGENT_MAP = {
   orumama: 'oraculo',
   smisterio: 'oraculo',
   jaguar: 'oraculo',
+  rumores: 'rumores',
 };
 
 const normalizar = (str) =>
@@ -384,14 +386,22 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
                     onMensaje={setIaMensaje}
                   />
                 )}
-                {iaActive && modoIA && group.groupId === 'nova' && (
-                  <NovaBandChat
-                    iaMode={modoIA}
-                    isAdmin={isAdmin}
-                    onHandoff={() => setSelectedGroup(null)}
-                    onMensaje={setIaMensaje}
-                  />
-                )}
+{iaActive && modoIA && group.groupId === 'nova' && (
+  <NovaBandChat
+    iaMode={modoIA}
+    isAdmin={isAdmin}
+    onHandoff={() => setSelectedGroup(null)}
+    onMensaje={setIaMensaje}
+  />
+)}
+{iaActive && modoIA && group.groupId === 'rumores' && (
+  <RumoresBandChat
+    iaMode={modoIA}
+    isAdmin={isAdmin}
+    onHandoff={() => setSelectedGroup(null)}
+    onMensaje={setIaMensaje}
+  />
+)}
                 {iaActive && modoIA && group.groupId === 'evelyn_larry' && (
                   <EvelynLarryBandChat iaMode={modoIA} isAdmin={isAdmin}
                     onHandoff={() => setSelectedGroup(null)} onMensaje={setIaMensaje} />
