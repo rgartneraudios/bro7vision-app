@@ -11,10 +11,6 @@ import CanjearStrip from './CanjearStrip';
 import CityLocationBanner from './CityLocationBanner';
 import SlideRailAmigos from './SlideRailAmigos';
 import TriviaRail from './TriviaRail';
-import MapacheBanner from './personajes/MapacheBanner';
-import TitoBanner  from "./personajes/TitoBanner";
-import LaraBanner  from "./personajes/LaraBanner";
-import PuffoBanner from "./personajes/PuffoBanner";
 import { getVideoForLocation } from '../data/VideoMap';
 
 export default function DesktopLayout(props) {
@@ -170,16 +166,7 @@ useEffect(() => {
       
       {/* 6. OSOS IA RECEPCION */}
 {step === 1 && (() => {
-  const osoId = (perfilOso?.oso_id || '').toLowerCase().trim();
-  const osoValido = ['tito', 'lara', 'puffo'].includes(osoId) ? osoId : 'lara';
-  switch (osoValido) {
-    case 'tito':
-      return <TitoBanner onHandoff={handleCentralHandoff} iaMode={iaMode} isAdmin={isAdmin} ciudad={sessionCity} />;
-    case 'puffo':
-      return <PuffoBanner onHandoff={handleCentralHandoff} iaMode={iaMode} isAdmin={isAdmin} ciudad={sessionCity} />;
-    default:
-      return <LaraBanner onHandoff={handleCentralHandoff} iaMode={iaMode} isAdmin={isAdmin} ciudad={sessionCity} />;
-  }
+  return null;
 })()}
 
       <style>{`
