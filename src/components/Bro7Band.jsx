@@ -20,6 +20,7 @@ import OSOSBandChat from './personajes/OSOSBandChat';
 import NovaBandChat from './personajes/NovaBandChat';
 import EvelynLarryBandChat      from './personajes/EvelynLarryBandChat';
 import IsabellaProfesorBandChat from './personajes/IsabellaProfesorBandChat';
+import MapacheAmiBandChat from './personajes/MapacheAmiBandChat';
 import StoryListOverlay from './StoryListOverlay';
 import StoryPanel from './StoryPanel';
 import { getMoonSuffix } from '../utils/moonUtils';
@@ -53,12 +54,12 @@ const GROUPS = [
   { id: 2,  name: 'NOVA',               groupId:'nova',               members:[],                      hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['nova.webp'],             video: 'nova_default7.mp4',              top: '12%',  left: '42%',  animDuration: '8s'   },
   { id: 3,  name: 'ISABELLA & PROFESOR',groupId:'isabella_profesor',  members:['ISABELLA','PROFESOR'], hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['elefantes.webp'],       video: 'isabella_default7.mp4', top: '12%', left: '65%',  animDuration: '7s'   },
   { id: 4,  name: 'EVELYN & LARRY',     groupId:'evelyn_larry',       members:['EVELYN','LARRY'],      hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['larry_evelyn.webp'],    video: 'evelyn_default5.mp4',      top: '38%', left: '65%',  animDuration: '9s'   },
-  { id: 5,  name: 'MAPACHE & AMI',      groupId:'mapache_ami',        members:['MAPACHE','AMI'],       hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['mapache_ami.webp'],     video: 'mapache_ami_default.mp4',       top: '68%', left: '75%',  animDuration: '6.5s' },
+  { id: 5,  name: 'MAPACHE & AMI',      groupId:'mapache_ami',        members:['MAPACHE','AMI'],       hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['mapache_ami.webp'],     video: 'mapache_default7.mp4',       top: '68%', left: '75%',  animDuration: '6.5s' },
   { id: 6,  name: 'ORUMAMA',            groupId:'orumama',            members:[],                      hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['orumama.webp'],         video: 'orumamaDefaults.mp4',           top: '80%', left: '32%',  animDuration: '8.5s' },
   { id: 7,  name: 'SEÑOR MISTERIO',     groupId:'smisterio',          members:[],                      hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['smisterio.webp'],       video: 'smisterioDefaults.mp4',         top: '72%', left: '8%',   animDuration: '7.5s' },
   { id: 8,  name: 'JAGUAR',             groupId:'jaguar',             members:[],                      hasIA:true,  hasAudio:true, hasPalabraClave:true,  hasChat:true,  images: ['jaguar.webp'],          video: 'jaguarSignos.mp4',              top: '42%', left: '18%',   animDuration: '9.5s' },
-  { id: 9,  name: 'RUMORES',            groupId:'rumores',            members:[],                      hasIA:false, hasAudio:true, hasPalabraClave:true,  hasChat:false, images: ['rumores.webp'],         video: 'rumoresdefaults1.mp4',                    top: '78%', left: '55%',  animDuration: '11s'  },
-  { id: 10, name: 'BRO7BAND',           groupId:'bro7band',           members:[],                      hasIA:false, hasAudio:false,hasPalabraClave:false, hasChat:false, images: ['bro7band.webp'],        video: 'https://pub-a77d1f38b28849c1ad7e977150ecb53f.r2.dev/Bro7Band%20Insectos.mp4', top: '45%', left: '44%', animDuration: '10s'  },
+  { id: 9,  name: 'RUMORES',            groupId:'rumores',            members:[],                      hasIA:false, hasAudio:true, hasPalabraClave:true,  hasChat:false, images: ['rumores.webp'],         video: 'rumores_default5.mp4',                    top: '78%', left: '55%',  animDuration: '11s'  },
+  { id: 10, name: 'BRO7BAND',           groupId:'bro7band',           members:[],                      hasIA:false, hasAudio:false,hasPalabraClave:false, hasChat:false, images: ['bro7band.webp'],        video: 'https://pub-a77d1f38b28849c1ad7e977150ecb53f.r2.dev/Bro7Band_Insectos5.mp4', top: '45%', left: '44%', animDuration: '10s'  },
 ];
 
 const GROUP_AGENT_MAP = {
@@ -398,6 +399,14 @@ function Bro7Band({ iaMode, onBack, balances, setBalances }) {
                 {iaActive && modoIA && group.groupId === 'isabella_profesor' && (
                   <IsabellaProfesorBandChat iaMode={modoIA} isAdmin={isAdmin}
                     onHandoff={() => setSelectedGroup(null)} onMensaje={setIaMensaje} />
+                )}
+                {iaActive && modoIA && group.groupId === 'mapache_ami' && (
+                  <MapacheAmiBandChat
+                    iaMode={modoIA}
+                    isAdmin={isAdmin}
+                    onHandoff={() => setSelectedGroup(null)}
+                    onMensaje={setIaMensaje}
+                  />
                 )}
                 {(!iaActive || !modoIA) && (
                   <AgentChatInput

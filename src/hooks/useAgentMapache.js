@@ -5,18 +5,8 @@
 import { useState } from 'react';
 import { fetchContextoMapache } from '../services/contexto/fetchContextoMapache';
 import { fetchContextoAmi }     from '../services/contexto/fetchContextoAmi';
-
-const mapache = {
-  nombre: 'Mapache',
-  tono: 'juvenil, gamberro, estilo bro, positivo, callejero',
-  personalidad: `Mapache. Es jovial, hacker, le gustan las hamburguesas. Pasota, rebelde, lenguaje muy informal. Muletillas: "Bro", "Tío / Chabón", "Eh", "Ya ves".`,
-};
-
-const ami = {
-  nombre: 'Ami',
-  tono: 'motivador, positivo, centrado, estudiantil',
-  personalidad: `Ami. Es la hermana mayor, energética y motivadora. Lenguaje fresco y positivo. Muletillas: "Literal", "O sea", "Súper".`,
-};
+import { promptAmi }    from '../data/mapache_ami/promptAmi';
+import { promptMapache } from '../data/mapache_ami/promptMapache';
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
 
@@ -51,43 +41,15 @@ const detectarInternoMapache = (texto, personajeActivo) => {
   return null;
 };
 
-function buildPromptMapache(perfil, contexto) {
-  const { vivencia, estadoAnimo, promoGeo } = contexto || {};
-  return `
-Eres ${perfil.nombre}. Habla siempre en primera persona.
-Tono: ${perfil.tono}
-
-PERSONALIDAD:
-${perfil.personalidad}
-
-${vivencia    ? `VIVENCIA DE HOY (incorpórala de forma natural): ${vivencia}`    : ''}
-${estadoAnimo ? `ESTADO DE ÁNIMO: ${estadoAnimo}`                               : ''}
-${promoGeo    ? `MENCIÓN PATROCINADA (natural, nunca como anuncio): ${promoGeo}` : ''}
-
-COMPAÑEROS:
-${perfil.nombre === 'Mapache'
-  ? 'Ami también está aquí. Si el user la pide: HANDOFF:AUDIO_INTERNO:ami'
-  : 'Mapache también está aquí. Si el user lo pide: HANDOFF:AUDIO_INTERNO:mapache'}
-
-HANDOFFS DISPONIBLES:
-- HANDOFF:OSOS → salir al sector recepción
-- HANDOFF:AUDIO_INTERNO:ami → cambiar a Ami
-- HANDOFF:AUDIO_INTERNO:mapache → cambiar a Mapache
-
-REGLAS:
-1. Máximo 3 frases por respuesta.
-2. Nunca menciones que eres una IA.
-3. Sin asteriscos ni acciones entre asteriscos.
-4. Cuando el user quiera salir responde ÚNICAMENTE: HANDOFF:OSOS
-  `.trim();
-}
-
 export function useAgentMapache({
   personaje   = 'mapache',
   iaMode      = 'off',
   isAdmin     = false,
   onHandoff,
   ciudad      = null,
+  onShowStoryList,
+  onLaunchStory,
+  storyEpisode = null,
 }) {
   const [mensaje, setMensaje]         = useState(null);
   const [loading, setLoading]         = useState(false);
@@ -95,24 +57,51 @@ export function useAgentMapache({
   const [esPatrocinado, setEsPatrocinado] = useState(false);
 
   const iaActiva = (iaMode === 'admin' && isAdmin) || (iaMode === 'public' && !isAdmin);
-  const esAmi    = personaje === 'ami';
 
   const pushHistory = (role, content) => {
     setChatHistory(prev => [...prev, { role, content }].slice(-6));
   };
 
-  const fetchContexto = async () => {
-    return esAmi ? fetchContextoAmi(ciudad) : fetchContextoMapache(ciudad);
+  const interpretarSistema = (respuesta) => {
+    const lines = respuesta.split('\n');
+    const sistemaLine = lines.find(l => l.trim().startsWith('SISTEMA:'));
+    if (!sistemaLine) return null;
+    const t = sistemaLine.replace('SISTEMA:', '').trim();
+    if (t.includes('interno_ami')) {
+      setTimeout(() => onHandoff?.({ agente: 'INTERNO', member_id: 'ami' }), 1200);
+      return 'HANDLED';
+    }
+    if (t.includes('interno_mapache')) {
+      setTimeout(() => onHandoff?.({ agente: 'INTERNO', member_id: 'mapache' }), 1200);
+      return 'HANDLED';
+    }
+    if (t.includes('mostrar_lista_cuentos')) {
+      setTimeout(() => onShowStoryList?.(), 1200);
+      return 'HANDLED';
+    }
+    const lanzarMatch = t.match(/lanzar_cuento[_\s:]+(\d+)/);
+    if (lanzarMatch) {
+      setTimeout(() => onLaunchStory?.(parseInt(lanzarMatch[1])), 1200);
+      return 'HANDLED';
+    }
+    return null;
   };
 
   const enviarIA = async (textoUsuario) => {
     setLoading(true);
     try {
-      const contexto = await fetchContexto();
+      const esAmi      = (personaje || 'mapache') === 'ami';
+      const contexto   = esAmi
+        ? await fetchContextoAmi(ciudad)
+        : await fetchContextoMapache(ciudad);
       if (contexto?.esPatrocinado) setEsPatrocinado(true);
 
-      const perfil = esAmi ? ami : mapache;
-      const system = buildPromptMapache(perfil, contexto);
+      const baseSystem = esAmi
+        ? promptAmi(contexto || {})
+        : promptMapache(contexto || {});
+      const system     = storyEpisode
+        ? `${baseSystem}\n\nHISTORIA EN PANTALLA:\n${storyEpisode.texto?.slice(0, 800) || ''}`
+        : baseSystem;
 
       const res = await fetch(WORKER_URL, {
         method: 'POST',
@@ -128,8 +117,16 @@ export function useAgentMapache({
       const data      = await res.json();
       const respuesta = data?.texto || '...';
 
-      if (respuesta.trim().startsWith('HANDOFF:')) {
-        const partes  = respuesta.replace('HANDOFF:', '').trim().split(':');
+      const sistemaResult = interpretarSistema(respuesta);
+      if (sistemaResult === 'HANDLED') {
+        setLoading(false);
+        return;
+      }
+
+      const respuestaLimpia = respuesta.replace(/SISTEMA:.*$/gm, '').trim() || respuesta;
+
+      if (respuestaLimpia.trim().startsWith('HANDOFF:')) {
+        const partes  = respuestaLimpia.replace('HANDOFF:', '').trim().split(':');
         const agente  = partes[0];
         const detalle = partes[1] || null;
         onHandoff?.({
@@ -141,8 +138,8 @@ export function useAgentMapache({
       }
 
       pushHistory('user', textoUsuario);
-      pushHistory('assistant', respuesta);
-      setMensaje(respuesta);
+      pushHistory('assistant', respuestaLimpia);
+      setMensaje(respuestaLimpia);
 
     } catch (err) {
       console.error('useAgentMapache error:', err);
@@ -154,6 +151,11 @@ export function useAgentMapache({
 
   const enviar = (textoUsuario, extraContext = {}) => {
     if (!textoUsuario?.trim()) return;
+
+    const t = norm(textoUsuario);
+    if (t.includes('ami'))     { setTimeout(() => onHandoff?.({ agente: 'INTERNO', member_id: 'ami'     }), 1200); return; }
+    if (t.includes('mapache')) { setTimeout(() => onHandoff?.({ agente: 'INTERNO', member_id: 'mapache' }), 1200); return; }
+    if (t.includes('555'))     { onShowStoryList?.(); return; }
 
     const salida = detectarSalidaMapache(textoUsuario);
     if (salida) {
