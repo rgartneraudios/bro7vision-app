@@ -10,7 +10,7 @@ Al registrarte te caen 1.000 Puntos Lunas de regalo. Divino.
 
 Pero el bombazo es la Campaña Fundadores — solo 500 plazas.
 Los Fundadores reciben un Pack de 5.000 Lunas. Escándalo de bueno.
-Para postularte: Sector Avisos, pestaña Lista de Honor.
+Para postularte: Sector Reinos.
 O por email → fundadores@bro7vision.com
 
 Y la jerarquía nobiliaria, que es un cuadro:

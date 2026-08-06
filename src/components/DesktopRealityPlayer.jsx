@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { buildBgVideoName, getTurno } from '../data/citycodes';
+import { supabase } from '../supabaseClient';
+import { getTurno } from '../data/citycodes';
 import { getMoonSuffix } from '../utils/moonUtils';
 import { useAdOverlay } from '../hooks/useAdOverlay';
 import { useHaloTrivia } from '../hooks/useHaloTrivia';
@@ -222,12 +223,30 @@ const DesktopRealityPlayer = ({
 
   useEffect(() => {
     if (!realityMode) return;
-    const num = CANAL_NUM[realityMode];
-    if (!num) return;
-const fase  = num === 2 ? getMoonSuffix() : '0';
-    const turno = num === 2 ? '0' : turnoActual;
-    const url   = `https://media.bro7vision.com/${buildBgVideoName(num, fase, turno)}`;
-    setBgVideoUrl(url);
+    const canalNum = CANAL_NUM[realityMode];
+    if (!canalNum) return;
+
+    const loadBg = async () => {
+      const dispositivo = 0;
+      const canalMiniatura = dispositivo === 0 ? canalNum : canalNum + 10;
+      const faseQuery = (canalMiniatura === 2 || canalMiniatura === 12)
+        ? parseInt(getMoonSuffix())
+        : 0;
+
+      const { data: fondoData } = await supabase
+        .from('bs_miniaturas')
+        .select('fondo_url')
+        .eq('canal', canalMiniatura)
+        .eq('fase_lunar', faseQuery)
+        .eq('funcion', canalMiniatura * 10 + turnoActual)
+        .eq('activo', true)
+        .maybeSingle();
+
+      const bgUrl = fondoData?.fondo_url ?? null;
+      setBgVideoUrl(bgUrl);
+    };
+
+    loadBg();
   }, [realityMode, turnoActual]);
 
   const adVideoUrl = useAdOverlay({
@@ -246,13 +265,13 @@ const fase  = num === 2 ? getMoonSuffix() : '0';
     let timeout;
     const mostrar = () => {
       setAdVisible(true);
-      timeout = setTimeout(ocultar, 40000);
+      timeout = setTimeout(ocultar, 20000);
     };
     const ocultar = () => {
       setAdVisible(false);
-      timeout = setTimeout(mostrar, 20000);
+      timeout = setTimeout(mostrar, 40000);
     };
-    timeout = setTimeout(ocultar, 40000);
+    timeout = setTimeout(ocultar, 20000);
     return () => clearTimeout(timeout);
   }, [adVideoUrl]);
 
@@ -285,12 +304,12 @@ const fase  = num === 2 ? getMoonSuffix() : '0';
       {/* Video publicitario del anunciante — overlay mudo vertical */}
       {adVideoUrl && adVisible && (
         <div className="absolute z-10 pointer-events-none"
-          style={{ bottom: '50%', right: '3%', transform: 'translateY(50%)' }}>
+          style={{ bottom: '50%', right: '10%', transform: 'translateY(50%)' }}>
           <div className="text-[8px] text-white/30 uppercase tracking-widest text-center mb-1 font-mono">
             PUBLI
           </div>
           <video key={adVideoUrl} autoPlay loop muted playsInline
-            style={{ height: '55%', width: 'auto', borderRadius: '16px', opacity: 0.95 }}>
+            style={{ height: '80vh', width: 'auto', maxWidth: '320px', borderRadius: '28px', opacity: 0.95 }}>
             <source src={adVideoUrl} type="video/mp4" />
           </video>
         </div>
@@ -401,7 +420,7 @@ const fase  = num === 2 ? getMoonSuffix() : '0';
                             ? '1px solid rgba(239,68,68,0.3)'
                             : `1px solid ${color}33`,
                       }}>
-                      <span className="text-4xl flex-shrink-0">{op.emoji}</span>
+                      <img src={op.emoji} alt="" className="w-14 h-14 flex-shrink-0 object-contain" />
                       <span className="text-white font-black text-base uppercase leading-snug flex-1"
                         style={{ fontFamily: "'Courier New', monospace" }}>
                         {textoDisplay}
@@ -432,9 +451,9 @@ const fase  = num === 2 ? getMoonSuffix() : '0';
             {(burbujaOpen && preguntaActual
               ? preguntaActual.opciones
               : [
-                  { emoji: '🦈', clave: 'a' },
-                  { emoji: '🐘', clave: 'b' },
-                  { emoji: '🐞', clave: 'c' },
+                  { emoji: '/assets/ami.webp', clave: 'a' },
+                  { emoji: '/assets/evelyn.webp', clave: 'b' },
+                  { emoji: '/assets/profesor.webp', clave: 'c' },
                 ]
             ).map((op) => (
               <button key={op.clave}
@@ -452,7 +471,7 @@ const fase  = num === 2 ? getMoonSuffix() : '0';
                   opacity: !burbujaOpen ? 0.25 : 1,
                   cursor: burbujaOpen && !resultado ? 'pointer' : 'default',
                 }}>
-                {op.emoji}
+<img src={op.emoji} alt="" className="w-16 h-16 object-contain" />
               </button>
             ))}
           </div>

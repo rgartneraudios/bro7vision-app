@@ -247,7 +247,7 @@ const Therians = ({ onWin, onClose }) => {
                                         {pendingReward > 0 ? '+' : ''}{pendingReward}
                                     </span>
                                 </div>
-                                <p className="text-[7px] text-indigo-300 font-mono tracking-widest uppercase mt-1">GÉNESIS</p>
+                                <p className="text-[7px] text-indigo-300 font-mono tracking-widest uppercase mt-1">LUNAS</p>
                             </div>
                         </div>
 

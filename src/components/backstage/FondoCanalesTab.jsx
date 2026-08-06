@@ -50,6 +50,7 @@ const MarketplaceTab = ({ session, profile, role: roleProp }) => {
   const [escenarios, setEscenarios] = useState([]);
   const [butacas,    setButacas]    = useState([]);
   const [tarifas,    setTarifas]    = useState([]);
+  const [miniaturas, setMiniaturas] = useState([]);
   const [loading,    setLoading]    = useState(true);
   const [error,      setError]      = useState(null);
 
@@ -62,16 +63,18 @@ const MarketplaceTab = ({ session, profile, role: roleProp }) => {
 
   const fetchData = useCallback(async () => {
     setError(null);
-    const [{ data: escs, error: eErr }, { data: buts, error: bErr }, { data: tars, error: tErr }] =
+    const [{ data: escs, error: eErr }, { data: buts, error: bErr }, { data: tars, error: tErr }, { data: mins, error: mErr }] =
       await Promise.all([
         supabase.from('bs_escenarios').select('id,canal,fase_lunar,funcion,activo').eq('activo', true),
         supabase.from('bs_butacas').select('canal,fase_lunar,funcion,dispositivo,cobertura,ciudad_codigo,estado'),
         supabase.from('bs_tarifas').select('cobertura,precio').eq('activo', true),
+        supabase.from('bs_miniaturas').select('canal, fase_lunar, funcion, miniatura_url').eq('activo', true),
       ]);
-    if (eErr || bErr || tErr) setError('Error cargando datos del Marketplace.');
+    if (eErr || bErr || tErr || mErr) setError('Error cargando datos del Marketplace.');
     setEscenarios(escs || []);
     setButacas(buts   || []);
     setTarifas(tars   || []);
+    setMiniaturas(mins || []);
     setLoading(false);
   }, []);
 
@@ -186,9 +189,17 @@ const MarketplaceTab = ({ session, profile, role: roleProp }) => {
                     PC
                   </span>
                   <div className="grid grid-cols-4 gap-3 flex-1">
-                    {pcSlots.map((slot, i) => (
-                      <FondoCanales key={i} slot={slot} butacas={butacas} onSelectSlot={handleSelectSlot} role={role} />
-                    ))}
+                    {pcSlots.map((slot, i) => {
+                      const canalMiniatura = slot.dispositivo === 0 ? slot.canal : slot.canal + 10;
+                      const miniatura = miniaturas.find(m =>
+                        m.canal === canalMiniatura &&
+                        m.fase_lunar === (slot.canal === 2 ? slot.fase : 0) &&
+                        m.funcion === canalMiniatura * 10 + slot.turno
+                      )?.miniatura_url ?? null;
+                      return (
+                        <FondoCanales key={i} slot={slot} butacas={butacas} miniaturaUrl={miniatura} onSelectSlot={handleSelectSlot} role={role} />
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -201,9 +212,17 @@ const MarketplaceTab = ({ session, profile, role: roleProp }) => {
                     MOVIL 
                   </span>
                   <div className="grid grid-cols-4 gap-3 flex-1">
-                    {mobSlots.map((slot, i) => (
-                      <FondoCanales key={i} slot={slot} butacas={butacas} onSelectSlot={handleSelectSlot} role={role} />
-                    ))}
+                    {mobSlots.map((slot, i) => {
+                      const canalMiniatura = slot.dispositivo === 0 ? slot.canal : slot.canal + 10;
+                      const miniatura = miniaturas.find(m =>
+                        m.canal === canalMiniatura &&
+                        m.fase_lunar === (slot.canal === 2 ? slot.fase : 0) &&
+                        m.funcion === canalMiniatura * 10 + slot.turno
+                      )?.miniatura_url ?? null;
+                      return (
+                        <FondoCanales key={i} slot={slot} butacas={butacas} miniaturaUrl={miniatura} onSelectSlot={handleSelectSlot} role={role} />
+                      );
+                    })}
                   </div>
                 </div>
 

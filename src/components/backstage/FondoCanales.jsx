@@ -1,21 +1,14 @@
 import React, { useRef } from 'react';
-import { CHANNELS, FASES, TURNOS, buildVideoName } from '../../data/citycodes';
+import { CHANNELS, FASES, TURNOS } from '../../data/citycodes';
 
-const THUMBS_BASE  = 'https://media.bro7vision.com/thumbs/';
 const ACTIVE_STATES = ['EN_CASTING', 'EN_RODAJE', 'EN_DEBATE', 'LISTO_PARA_ESTRENO', 'EN_CARTELERA'];
 const ORBITRON = "'Orbitron', monospace";
 
-const EscenarioCard = ({ slot, butacas, onSelectSlot, role }) => {
+const EscenarioCard = ({ slot, butacas, onSelectSlot, role, miniaturaUrl }) => {
   const videoRef = useRef(null);
   const isPC = slot.dispositivo === 0;
 
-  const thumbSrc = `${THUMBS_BASE}${buildVideoName(
-    slot.canal,
-    slot.canal === 2 ? slot.fase : 0,
-    slot.canal === 2 ? 0 : slot.turno,
-    slot.dispositivo,
-    '000'
-  )}`;
+  const thumbSrc = miniaturaUrl ?? null;
 
   const slotButacas = butacas.filter(b => {
     if (!ACTIVE_STATES.includes(b.estado)) return false;
@@ -61,18 +54,20 @@ const EscenarioCard = ({ slot, butacas, onSelectSlot, role }) => {
 
       {/* Video — siempre contenedor 16/9; MOB usa video portrait centrado */}
       <div className="relative bg-black overflow-hidden" style={{ aspectRatio: '16/9' }}>
-        <video
-          ref={videoRef}
-          src={thumbSrc}
-          muted loop playsInline preload="none"
-          className="opacity-40 group-hover:opacity-95 transition-opacity duration-300"
-          style={isPC
-            ? { width: '100%', height: '100%', objectFit: 'cover' }
-            : { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', height: '100%', width: 'auto' }
-          }
-          onMouseEnter={() => { if (videoRef.current) { videoRef.current.load(); videoRef.current.play().catch(() => {}); } }}
-          onMouseLeave={() => { if (videoRef.current) { videoRef.current.pause(); videoRef.current.currentTime = 0; } }}
-        />
+        {thumbSrc && (
+          <video
+            ref={videoRef}
+            src={thumbSrc}
+            muted loop playsInline preload="none"
+            className="opacity-40 group-hover:opacity-95 transition-opacity duration-300"
+            style={isPC
+              ? { width: '100%', height: '100%', objectFit: 'cover' }
+              : { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', height: '100%', width: 'auto' }
+            }
+            onMouseEnter={() => { if (videoRef.current) { videoRef.current.load(); videoRef.current.play().catch(() => {}); } }}
+            onMouseLeave={() => { if (videoRef.current) { videoRef.current.pause(); videoRef.current.currentTime = 0; } }}
+          />
+        )}
 
         {/* Badge dispositivo */}
         <span

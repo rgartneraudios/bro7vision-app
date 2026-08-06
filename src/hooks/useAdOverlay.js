@@ -1,17 +1,10 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
-import { buildAdVideoName, getCodeForCity, getTipoForCity } from '../data/citycodes';
-
-const R2_BASE = 'https://media.bro7vision.com/';
+import { getCodeForCity, getTipoForCity } from '../data/citycodes';
 
 const CANAL_NUM = {
   luna: 2, mercurio: 1, venus: 3, tierra: 4, marte: 6,
   jupiter: 5, saturno: 7, urano: 8, neptuno: 9,
-};
-
-const COBERTURA_CODIGO = {
-  GIRA_MUNDIAL: '404', METROPOLIS: '307',
-  GIRA_GRAN_REGIONAL: 'GREG', GIRA_REGIONAL: 'REG', GIRA_NACIONAL: '300',
 };
 
 export function useAdOverlay({ escenarioId, canal, turno, faseLunar, cityKey, dispositivo = 0 }) {
@@ -25,7 +18,7 @@ export function useAdOverlay({ escenarioId, canal, turno, faseLunar, cityKey, di
     const load = async () => {
       let query = supabase
         .from('bs_butacas')
-        .select('campana, cobertura, ciudad_codigo, ciudad_codigos')
+        .select('campana, cobertura, ciudad_codigo, ciudad_codigos, pieza_final')
         .eq('canal', canalNum)
         .eq('funcion', turno)
         .eq('dispositivo', dispositivo)
@@ -61,11 +54,7 @@ export function useAdOverlay({ escenarioId, canal, turno, faseLunar, cityKey, di
 
       if (!chosen) { setAdVideoUrl(null); return; }
 
-      const codigo = COBERTURA_CODIGO[chosen.cobertura] ?? chosen.ciudad_codigo;
-      if (!codigo) { setAdVideoUrl(null); return; }
-
-      const fileName = buildAdVideoName(chosen.campana, canalNum, turno, dispositivo, codigo);
-      if (active) setAdVideoUrl(R2_BASE + fileName);
+      if (active) setAdVideoUrl(chosen.pieza_final ?? null);
     };
 
     load();

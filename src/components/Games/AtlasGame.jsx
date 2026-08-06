@@ -220,10 +220,10 @@ useEffect(() => {
             <div className="mb-8 animate-fadeIn max-w-xs">
               {/* Tabla de Puntos simplificada */}
               <div className="flex flex-wrap justify-center gap-3 mb-4 font-mono text-[10px] font-black tracking-tighter">
-                <span className="px-2 py-1 bg-white/5 border border-cyan-500/30 text-cyan-400">5K: 50 GEN</span>
-                <span className="px-2 py-1 bg-white/5 border border-fuchsia-500/30 text-fuchsia-400">10K: 100 GEN</span>
-                <span className="px-2 py-1 bg-white/5 border border-cyan-500/30 text-cyan-400">15K: 150 GEN</span>
-                <span className="px-2 py-1 bg-white/5 border border-fuchsia-500/30 text-fuchsia-400">20K: 200 GEN</span>
+                <span className="px-2 py-1 bg-white/5 border border-cyan-500/30 text-cyan-400">5K: 50 LUNAS</span>
+                <span className="px-2 py-1 bg-white/5 border border-fuchsia-500/30 text-fuchsia-400">10K: 100 LUNAS</span>
+                <span className="px-2 py-1 bg-white/5 border border-cyan-500/30 text-cyan-400">15K: 150 LUNAS</span>
+                <span className="px-2 py-1 bg-white/5 border border-fuchsia-500/30 text-fuchsia-400">20K: 200 LUNAS</span>
               </div>
               
               {/* Tip de Estrategia */}
@@ -242,8 +242,8 @@ useEffect(() => {
                 {score >= 5000 && (
                     <div className="bg-white/10 px-6 py-2 rounded-full border border-white/20">
                         <p className="text-cyan-300 font-bold uppercase text-xs tracking-widest">
-                            RECOMPENSA: +{score >= 20000 ? 200 : score >= 15000 ? 150 : score >= 10000 ? 100 : 50} GÉNESIS
-                        </p>
+                            RECOMPENSA: +{score >= 20000 ? 200 : score >= 15000 ? 150 : score >= 10000 ? 100 : 50} LUNAS
+                         </p>
                     </div>
                 )}
             </div>

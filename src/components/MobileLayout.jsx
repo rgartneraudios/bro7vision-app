@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { supabase } from '../supabaseClient';
 import CityLocationBanner from './CityLocationBanner';
 import AgentChatInput from './AgentChatInput';
 import NeuralButton from './NeuralButton';
 import BroTuner from '../components/BroTuner';
 import { getMoonSuffix } from '../utils/moonUtils';
-import { buildBgVideoName, getTurno } from '../data/citycodes';
+import { getTurno } from '../data/citycodes';
 import { useAdOverlay } from '../hooks/useAdOverlay';
 import CuponModal from './CuponModal';
 import { useCanjearCupon } from '../hooks/useCanjearCupon';
@@ -391,9 +392,21 @@ function Puertas({ isLeftOpen, setIsLeftOpen, isRightOpen, setIsRightOpen,
           </div>
           <div className="px-4 mt-4">
             <button onClick={() => { setStep(0); setRealityMode(null); setScope?.(null); setIsRightOpen(false); }}
-              className="w-full flex justify-between items-center p-3 bg-fuchsia-500/10 border border-fuchsia-400/40 rounded-2xl transition-all">
-              <span className="text-[10px] font-black uppercase">CAMBIAR CANALES</span>
-              <span className="text-lg">🌐</span>
+              className="w-full flex items-center gap-3 px-4 py-3 min-h-[5.5rem] rounded-xl border text-left transition-all active:scale-95"
+              style={{
+                borderColor: 'rgba(255,255,255,0.1)',
+                background: 'rgba(0,0,0,0.4)',
+                boxShadow: 'none',
+              }}>
+              <div className="flex -space-x-2 flex-shrink-0">
+                <img src="/emojis/emoji_7.webp" alt=""
+                  className="w-16 h-16 rounded-full object-cover border-2"
+                  style={{ borderColor: accent, boxShadow: `0 0 12px ${accent}` }} />
+              </div>
+              <span className="mobile-display-font text-xl tracking-widest"
+                style={{ color: 'rgba(255,255,255,0.7)' }}>
+                Canales
+              </span>
             </button>
           </div>
           <div className="flex-1 overflow-y-auto bro-scroll py-3 px-3 flex flex-col gap-2">
@@ -570,12 +583,29 @@ const MobileLayout = ({
 
   useEffect(() => {
     const MOBILE_CANAL = { luna:2, tierra:4, jupiter:5, marte:6, saturno:7, urano:8, neptuno:9, venus:3, mercurio:1 };
-    const canal = realityMode ? MOBILE_CANAL[realityMode] : null;
-    if (!canal) { setBgVideoUrl(''); return; }
-    const fase = canal === 2 ? getMoonSuffix() : '0';
-    const turno = canal === 2 ? '0' : turnoActual;
-    const url = `https://media.bro7vision.com/${buildBgVideoName(canal, fase, turno, 1)}`;
-    setBgVideoUrl(url);
+    const num = realityMode ? MOBILE_CANAL[realityMode] : null;
+    if (!num) { setBgVideoUrl(''); return; }
+
+    const loadBg = async () => {
+      const canalMiniatura = num + 10;
+      const faseQuery = (canalMiniatura === 12)
+        ? parseInt(getMoonSuffix())
+        : 0;
+
+      const { data: fondoData } = await supabase
+        .from('bs_miniaturas')
+        .select('fondo_url')
+        .eq('canal', canalMiniatura)
+        .eq('fase_lunar', faseQuery)
+        .eq('funcion', canalMiniatura * 10 + turnoActual)
+        .eq('activo', true)
+        .maybeSingle();
+
+      const bgUrl = fondoData?.fondo_url ?? null;
+      setBgVideoUrl(bgUrl);
+    };
+
+    loadBg();
   }, [realityMode, turnoActual]);
 
   const adVideoUrl = useAdOverlay({
@@ -594,13 +624,13 @@ const MobileLayout = ({
     let timeout;
     const mostrar = () => {
       setAdVisible(true);
-      timeout = setTimeout(ocultar, 40000);
+      timeout = setTimeout(ocultar, 20000);
     };
     const ocultar = () => {
       setAdVisible(false);
-      timeout = setTimeout(mostrar, 20000);
+      timeout = setTimeout(mostrar, 40000);
     };
-    timeout = setTimeout(ocultar, 40000);
+    timeout = setTimeout(ocultar, 20000);
     return () => clearTimeout(timeout);
   }, [adVideoUrl]);
 
@@ -686,39 +716,77 @@ const MobileLayout = ({
             style={{ color: '#00ffff', textShadow: '0 0 20px #00ffff' }}>
             BRO<span style={{ color: '#fff' }}>7</span>VISION
           </div>
-          <p className="text-[9px] text-white/30 uppercase tracking-[0.4em] mt-2 font-mono">SINTONIZA TU FRECUENCIA</p>
+          <p className="text-[9px] text-white/30 uppercase tracking-[0.4em] mt-2 font-mono">SINTONIZA TU CANAL FAVORITO</p>
         </div>
         <div className="relative z-10 overflow-y-auto bro-scroll px-4 pb-8 flex flex-col gap-6" style={{ maxHeight: 'calc(100dvh - 140px)' }}>
-          {['NEUTRAL','SOLO','BAND','ESPACIO'].map(group => {
-            const items = REALITIES.filter(r => r.group === group);
-            if (!items.length) return null;
+
+          {/* TOPE: Mercurio · Luna · Venus */}
+          {['mercurio', 'luna', 'venus'].map(id => {
+            const r = REALITIES.find(x => x.id === id);
+            if (!r) return null;
             return (
-              <div key={group} className="flex flex-col gap-2">
-                {group !== 'NEUTRAL' && (
-                  <div className="flex items-center gap-3 opacity-40 px-1">
-                    <div className="h-px flex-1 bg-white/30" />
-                    <span className="text-[9px] text-white/60 font-black tracking-widest uppercase">{group}</span>
-                    <div className="h-px flex-1 bg-white/30" />
-                  </div>
-                )}
-                {items.map(r => (
-                  <button key={r.id} onClick={() => setRealityMode(r.id)}
-                    className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border-2 active:scale-95 transition-all"
-                    style={{ borderColor: `${r.color}66`, background: `${r.color}11` }}>
-                    <img
-                      src={CANAL_IMAGES[r.id]}
-                      alt={r.title}
-                      className="w-14 h-14 object-contain shrink-0 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]"
-                    />
-                    <div className="flex-1 text-left">
-                      <div className="mobile-display-font text-2xl tracking-widest" style={{ color: r.color }}>{r.title}</div>
-                      <div className="text-[10px] text-white/40 uppercase tracking-widest font-mono">{r.desc}</div>
-                    </div>
-                  </button>
-                ))}
-              </div>
+              <button key={r.id} onClick={() => setRealityMode(r.id)}
+                className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border-2 active:scale-95 transition-all"
+                style={{ borderColor: `${r.color}66`, background: `${r.color}11` }}>
+                <img
+                  src={CANAL_IMAGES[r.id]}
+                  alt={r.title}
+                  className="w-14 h-14 object-contain shrink-0 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+                />
+                <div className="flex-1 text-left">
+                  <div className="mobile-display-font text-2xl tracking-widest" style={{ color: r.color }}>{r.title}</div>
+                  <div className="text-[10px] text-white/40 uppercase tracking-widest font-mono">{r.desc}</div>
+                </div>
+              </button>
             );
           })}
+
+          {/* SEPARADOR SOLO */}
+          <div className="flex items-center gap-3 opacity-40 px-1">
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent to-emerald-500" />
+            <div className="h-px flex-1 bg-gradient-to-l from-transparent to-emerald-500" />
+          </div>
+
+          {/* SOLO: Tierra · Júpiter · Marte */}
+          {REALITIES.filter(r => r.group === 'SOLO').map(r => (
+            <button key={r.id} onClick={() => setRealityMode(r.id)}
+              className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border-2 active:scale-95 transition-all"
+              style={{ borderColor: `${r.color}66`, background: `${r.color}11` }}>
+              <img
+                src={CANAL_IMAGES[r.id]}
+                alt={r.title}
+                className="w-14 h-14 object-contain shrink-0 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+              />
+              <div className="flex-1 text-left">
+                <div className="mobile-display-font text-2xl tracking-widest" style={{ color: r.color }}>{r.title}</div>
+                <div className="text-[10px] text-white/40 uppercase tracking-widest font-mono">{r.desc}</div>
+              </div>
+            </button>
+          ))}
+
+          {/* SEPARADOR BAND */}
+          <div className="flex items-center gap-3 opacity-40 px-1">
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent to-blue-500" />
+            <div className="h-px flex-1 bg-gradient-to-l from-transparent to-blue-500" />
+          </div>
+
+          {/* BAND: Saturno · Urano · Neptuno */}
+          {REALITIES.filter(r => r.group === 'BAND').map(r => (
+            <button key={r.id} onClick={() => setRealityMode(r.id)}
+              className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border-2 active:scale-95 transition-all"
+              style={{ borderColor: `${r.color}66`, background: `${r.color}11` }}>
+              <img
+                src={CANAL_IMAGES[r.id]}
+                alt={r.title}
+                className="w-14 h-14 object-contain shrink-0 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+              />
+              <div className="flex-1 text-left">
+                <div className="mobile-display-font text-2xl tracking-widest" style={{ color: r.color }}>{r.title}</div>
+                <div className="text-[10px] text-white/40 uppercase tracking-widest font-mono">{r.desc}</div>
+              </div>
+            </button>
+          ))}
+
         </div>
       </div>
     );
@@ -851,7 +919,7 @@ const MobileLayout = ({
                               ? '1px solid rgba(239,68,68,0.3)'
                               : `1px solid ${escena?.color}33`,
                         }}>
-                        <span className="text-2xl flex-shrink-0">{op.emoji}</span>
+                        <img src={op.emoji} alt="" className="w-12 h-12 flex-shrink-0 object-contain" />
                         <span className="text-white font-black text-sm uppercase leading-snug flex-1"
                           style={{ fontFamily: "'Courier New', monospace" }}>
                           {textoDisplay}
@@ -882,9 +950,9 @@ const MobileLayout = ({
               {(triviaBurbujaOpen && preguntaActual
                 ? preguntaActual.opciones
                 : [
-                    { emoji: '🦈', clave: 'a' },
-                    { emoji: '🐘', clave: 'b' },
-                    { emoji: '🐞', clave: 'c' },
+                    { emoji: '/assets/ami.webp', clave: 'a' },
+                    { emoji: '/assets/evelyn.webp', clave: 'b' },
+                    { emoji: '/assets/profesor.webp', clave: 'c' },
                   ]
               ).map((op) => (
                 <button key={op.clave}
@@ -906,7 +974,7 @@ const MobileLayout = ({
                     opacity: !triviaBurbujaOpen ? 0.3 : 1,
                     cursor: triviaBurbujaOpen && !resultado ? 'pointer' : 'default',
                   }}>
-                  {op.emoji}
+                  <img src={op.emoji} alt="" className="w-14 h-14 object-contain" />
                 </button>
               ))}
             </div>

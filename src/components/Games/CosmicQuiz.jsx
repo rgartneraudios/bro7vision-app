@@ -394,7 +394,7 @@ const CosmicQuiz = ({ onWin, scope }) => {
                   </div>
                   <div className="p-2">
                       <p className="text-gray-500 text-xs uppercase">MAX PREMIO</p>
-                      <p className="text-cyan-400 font-bold text-xl">100 GÉNESIS</p>
+                      <p className="text-cyan-400 font-bold text-xl">100 LUNAS</p>
                   </div>
                   <div className="col-span-2 border-t border-white/10 pt-2 flex justify-around">
                      <span className="text-green-400 text-sm">✅ +10</span>
@@ -473,7 +473,7 @@ const CosmicQuiz = ({ onWin, scope }) => {
           <div className="absolute inset-0 z-50 bg-black/95 flex flex-col items-center justify-center animate-zoomIn">
               <h2 className="text-5xl text-white font-bold mb-6">VIAJE COMPLETADO</h2>
               <p className="text-8xl font-black text-cyan-400 mb-10 drop-shadow-[0_0_30px_cyan]">{score}</p>
-              <p className="text-gray-500 text-sm mb-12 uppercase tracking-widest">GÉNESIS ACUMULADOS</p>
+              <p className="text-gray-500 text-sm mb-12 uppercase tracking-widest">LUNAS ACUMULADAS</p>
               <button onClick={() => setGameState('menu')} className="px-10 py-4 border-2 border-white text-white hover:bg-white hover:text-black font-bold uppercase rounded-full transition-all text-lg">
                   VOLVER AL PORTAL              </button>
           </div>

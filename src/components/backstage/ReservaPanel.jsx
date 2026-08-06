@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { supabase } from '../../supabaseClient';
 import {
   CHANNELS, FASES, TURNOS,
-  getMiniCities, getMegaCities, getCodeForCity, buildAdVideoName, COBERTURAS as COB_DATA,
+  getMiniCities, getMegaCities, getCodeForCity, COBERTURAS as COB_DATA,
 } from '../../data/citycodes';
 
 const COBERTURAS = [
@@ -98,7 +98,7 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
       // For Phase 0: fase_lunar=1 for non-Moon, MT=moonTurno for Moon
       const fase_lunar     = isMoon ? slot.fase : 1;
       const funcion        = isMoon ? moonTurno : slot.turno;
-      const nombre_archivo = buildAdVideoName(campana, slot.canal, funcion, slot.dispositivo, codigoCsv);
+      const nombre_archivo = `${campana}_${slot.canal}_${funcion}_${slot.dispositivo}_${codigoCsv}.mp4`;
 
       const today    = new Date();
       const fechaFin = new Date(today.getTime() + 7 * 86_400_000);

@@ -253,15 +253,3 @@ export const getTurno = () => {
   if (h >= 17 && h < 23) return 3;
   return 4;
 };
-
-/** Construye nombre del video publicitario del anunciante */
-export const buildAdVideoName = (campana, canal, turno, dispositivo = 0, codigo) =>
-  `${campana}_${canal}_${turno}_${dispositivo}_${codigo}.mp4`;
-
-/** Construye el nombre del video de fondo ambiental (nuestro, no del anunciante) */
-export const buildBgVideoName = (canal, fase, turno, dispositivo = 0) =>
-  `${canal}_${fase}${turno}${dispositivo}_000.mp4`;
-
-/** Construye nombre del video/cartel siguiendo el patrón canónico */
-export const buildVideoName = (canal, fase, turno, dispositivo, codigo) =>
-  `${canal}_${fase}${turno}${dispositivo}_${codigo}.mp4`;

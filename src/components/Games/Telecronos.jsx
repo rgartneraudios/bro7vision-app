@@ -593,7 +593,7 @@ const Telecronos = ({ onWin, onClose }) => {
       )}
       <canvas ref={canvasRef} width={WIDTH} height={HEIGHT} className="max-w-full max-h-full object-contain" />
       <button onClick={handleClose} className="absolute top-10 right-10 z-[30] text-white/40 hover:text-white font-black text-xl uppercase tracking-widest">❮ EXIT</button>
-      <div className="absolute top-6 left-16 text-cyan-400 font-black text-5xl italic drop-shadow-2xl">GÉNESIS: {score}</div>
+      <div className="absolute top-6 left-16 text-cyan-400 font-black text-5xl italic drop-shadow-2xl">LUNAS: {score}</div>
       
       {gameOver && (
         <div className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center z-[20] animate-fadeIn">
@@ -606,7 +606,7 @@ const Telecronos = ({ onWin, onClose }) => {
              <>
                <h1 className="text-red-600 font-black text-8xl italic mb-6">Gracias por participar !</h1>
                <div className="text-white text-2xl mb-8">
-  		GÉNESIS OBTENIDOS: <span className="text-cyan-400">10</span>
+  		LUNAS OBTENIDAS: <span className="text-cyan-400">10</span>
 		</div>
              </>
           )}

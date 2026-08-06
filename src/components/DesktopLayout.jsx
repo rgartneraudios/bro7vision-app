@@ -78,9 +78,6 @@ useEffect(() => {
         <div className="mt-8 w-full px-4"><WalletWidget balances={balances} onClick={() => setShowWalletModal(true)} /></div>
         <div className="w-full flex justify-center my-2"><MoonMatrixCircle /></div>
         <div className="px-4 mt-4">
-          <button onClick={() => { setStep(0); setRealityMode(null); setIsRightOpen(false); setIntent(null); }} className="w-full flex justify-between items-center p-3 bg-fuchsia-900/40 border border-fuchsia-500/40 rounded-2xl hover:bg-orange-400 hover:text-black transition-all group">
-            <span className="text-[10px] font-black uppercase group-hover:text-black">CAMBIAR CANALES</span><span className="text-lg">🌐</span>
-          </button>
 <button
     onClick={() => {
       const role = session?.user?.user_metadata?.role;
@@ -106,6 +103,10 @@ useEffect(() => {
       <div className={`side-panel side-panel-right ${isRightOpen ? 'open' : ''} flex flex-col p-4 gap-2 overflow-y-auto right-panel-scroll`}>
         <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest text-right mb-1 mt-6 font-mono">Navegación</p>
          <div className="w-full flex flex-col gap-2.5 flex-1 mt-2">
+           <button onClick={() => { setStep(0); setRealityMode(null); setIsRightOpen(false); setIntent(null); }} className="w-full flex justify-between items-center pl-2 pr-4 py-4 min-h-[4.5rem] border rounded-2xl transition-all group hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-r from-amber-500/20 via-fuchsia-500/20 to-cyan-500/20 border-amber-400/30 hover:from-amber-500/40 hover:via-fuchsia-500/40 hover:to-cyan-500/40">
+             <span className="text-xs font-black uppercase tracking-[0.2em] text-amber-200 transition-colors group-hover:text-white">Canales</span>
+             <img src="/emojis/emoji_7.webp" alt="" className="w-9 h-9 rounded-full border-2 border-black object-cover shadow-[0_0_10px_rgba(0,0,0,0.8)]" />
+           </button>
            {navItems.map((item) => (
              <button key={item.id} onClick={() => handleNavigation(item.id)} className={`w-full flex justify-between items-center pl-2 pr-4 py-4 min-h-[4.5rem] border rounded-2xl transition-all group hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-r from-amber-500/20 via-fuchsia-500/20 to-cyan-500/20 border-amber-400/30 hover:from-amber-500/40 hover:via-fuchsia-500/40 hover:to-cyan-500/40`}>
                <span className="text-xs font-black uppercase tracking-[0.2em] text-amber-200 transition-colors group-hover:text-white">{item.label}</span>

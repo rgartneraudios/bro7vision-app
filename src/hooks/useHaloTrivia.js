@@ -3,7 +3,22 @@ import { supabase } from '../supabaseClient';
 
 
 
-const ANIMALES = ['🦈','🐘','🐞','🦊','🐬','🦁','🐸','🦋','🦅','🐺'];
+const ANIMALES = [
+  '/assets/ami.webp',
+  '/assets/evelyn.webp',
+  '/assets/profesor.webp',
+  '/assets/mapache.webp',
+  '/assets/lara.webp',
+  '/assets/puffo.webp',
+  '/assets/tito.webp',
+  '/assets/isabella.webp',
+  '/assets/larry.webp',
+  '/assets/nova.webp',
+  '/assets/smisterio.webp',
+  '/assets/orumama.webp',
+  '/assets/jaguar.webp',
+  '/assets/rumores.webp',
+];
 const LUNAS_ACIERTO       = 10;
 const LUNAS_FALLO         = 5;
 const LUNAS_PROMO_ACIERTO = 20;
