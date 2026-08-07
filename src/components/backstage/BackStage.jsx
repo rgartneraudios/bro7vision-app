@@ -4,7 +4,7 @@ import FondoCanalesTab from './FondoCanalesTab';
 import Bro7bandTab from './Bro7bandTab';
 import SlideRailTab from './SlideRailTab';
 import GamesTab from './GamesTab';
-import DemoBlogTab from './DemoBlogTab';
+import DemosTab from './DemosTab';
 import MisCampanasTab from './MisCampanasTab';
 import TarjetasRegalo from './TarjetasRegalo';
 import TarjetasCanjesRecibidosTab from './TarjetasCanjesRecibidosTab';
@@ -273,7 +273,7 @@ const BackStage = ({ session, onLogout }) => {
     { id: 'bro7band',   label: 'BRO7BAND'              },
     { id: 'slide_rail', label: 'SLIDE RAIL'             },
     { id: 'games',      label: 'GAMES'                  },
-    { id: 'estudio',    label: 'DEMOS & BLOG'           },
+    { id: 'estudio',    label: 'ESTRATEGIAS & DEMOS'      },
     { id: 'campanas',   label: 'MIS CAMPAÑAS'           },
     ...(isAdmin ? [{ id: 'diamante_admin', label: '💎 DIAMANTE ADMIN' }] : []),
   ];
@@ -290,7 +290,7 @@ const BackStage = ({ session, onLogout }) => {
     <div
       className="fixed inset-0 flex flex-col font-mono text-white overflow-hidden"
       style={{
-        background: `linear-gradient(rgba(0,0,0,0.78), rgba(0,0,0,0.78)), url('/images/productor.webp') center/cover no-repeat`,
+        background: `url('/images/productor.webp') center/cover no-repeat`,
       }}
     >
 
@@ -403,7 +403,7 @@ const BackStage = ({ session, onLogout }) => {
         {activeTab === 'canjes_recibidos' && <TarjetasCanjesRecibidosTab />}
 
         {activeTab === 'estudio' && (
-          <DemoBlogTab />
+          <DemosTab />
         )}
 
         {activeTab === 'diamante_admin' && isAdmin && (
