@@ -89,9 +89,9 @@ export function useHaloTrivia({ escenarioId, canalId, userId, onLunasUpdate }) {
     const promoPreguntas = (promos || []).map(p => {
       const animales = shuffle(ANIMALES).slice(0, 3);
       const opciones = shuffle([
-        { emoji: animales[0], texto: p.opcion_a, clave: 'a' },
-        { emoji: animales[1], texto: p.opcion_b, clave: 'b' },
-        { emoji: animales[2], texto: p.opcion_c, clave: 'c' },
+        { emoji: animales[0], texto: p.opcion_a?.replace('(*)', '').trim(), esCorrecta: p.opcion_a?.includes('(*)'), clave: 'a' },
+        { emoji: animales[1], texto: p.opcion_b?.replace('(*)', '').trim(), esCorrecta: p.opcion_b?.includes('(*)'), clave: 'b' },
+        { emoji: animales[2], texto: p.opcion_c?.replace('(*)', '').trim(), esCorrecta: p.opcion_c?.includes('(*)'), clave: 'c' },
       ]);
       return { ...p, opciones, esPromo: true };
     });
@@ -116,9 +116,9 @@ export function useHaloTrivia({ escenarioId, canalId, userId, onLunasUpdate }) {
     const set3 = shuffle(data).slice(0, 3).map(p => {
       const animales = shuffle(ANIMALES).slice(0, 3);
       const opciones = shuffle([
-        { emoji: animales[0], texto: p.opcion_a, clave: 'a' },
-        { emoji: animales[1], texto: p.opcion_b, clave: 'b' },
-        { emoji: animales[2], texto: p.opcion_c, clave: 'c' },
+        { emoji: animales[0], texto: p.opcion_a?.replace('(*)', '').trim(), esCorrecta: p.opcion_a?.includes('(*)'), clave: 'a' },
+        { emoji: animales[1], texto: p.opcion_b?.replace('(*)', '').trim(), esCorrecta: p.opcion_b?.includes('(*)'), clave: 'b' },
+        { emoji: animales[2], texto: p.opcion_c?.replace('(*)', '').trim(), esCorrecta: p.opcion_c?.includes('(*)'), clave: 'c' },
       ]);
       const esPromo = [p.opcion_a, p.opcion_b, p.opcion_c].some(o => o?.includes('(*)'));
       return { ...p, opciones, esPromo };
@@ -150,10 +150,9 @@ export function useHaloTrivia({ escenarioId, canalId, userId, onLunasUpdate }) {
     if (!pregunta) return;
 
     const opcionElegida = pregunta.opciones.find(o => o.clave === clave);
-    const textoElegido  = opcionElegida?.texto || '';
 
     const esAcierto = pregunta.esPromo
-      ? textoElegido.includes('(*)')
+      ? opcionElegida?.esCorrecta === true
       : clave === pregunta.respuesta_correcta;
 
     setResultado(esAcierto ? 'acierto' : 'fallo');

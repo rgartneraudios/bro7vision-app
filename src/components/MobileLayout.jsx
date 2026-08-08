@@ -809,17 +809,17 @@ const MobileLayout = ({
           </video>
         )}
 
-        {/* Visor publicitario móvil — cuadrado 1:1 */}
+        {/* Visor publicitario móvil — 16:9 */}
         {adVideoUrl && adVisible && (
           <div className="absolute z-10 pointer-events-none"
-            style={{ top: '12%', left: '50%', transform: 'translateX(-50%)', width: '64vw', height: '64vw' }}>
+            style={{ top: '8%', left: '50%', transform: 'translateX(-50%)', width: '90vw' }}>
             <div className="text-[8px] text-white/30 uppercase tracking-widest text-center mb-1 font-mono">
               PUBLI
             </div>
             <video key={adVideoUrl} autoPlay loop muted playsInline
               style={{
                 width: '100%',
-                height: '100%',
+                aspectRatio: '16 / 9',
                 borderRadius: '16px',
                 objectFit: 'cover',
                 opacity: 0.95,
@@ -868,7 +868,7 @@ const MobileLayout = ({
             <LockClockWidget accent={escena?.color} lunasBalance={lunasBalance} />
           </header>
 
-          {/* CENTRO — Pregunta + Respuestas con emoji */}
+{/* CENTRO — Pregunta + Respuestas con emoji */}
           {triviaBurbujaOpen && preguntaActual ? (
             <div className="flex-1 flex items-center justify-center px-5">
               <div className="burbuja-in w-full rounded-2xl px-5 py-6 flex flex-col gap-4"
@@ -877,6 +877,7 @@ const MobileLayout = ({
                   backdropFilter: 'blur(16px)',
                   border: `1px solid ${escena?.color}55`,
                   boxShadow: `0 0 32px ${escena?.color}22`,
+                  marginTop: '200px',
                 }}>
 
                 {/* Aviso publicidad ECO */}
@@ -895,11 +896,9 @@ const MobileLayout = ({
                 {/* Respuestas con emoji vinculado */}
                 <div className="flex flex-col gap-2 mt-2">
                   {preguntaActual.opciones.map((op) => {
-                    const textoDisplay = op.texto?.replace(/\(\*\)/g, '').trim();
-                    const tieneStar    = op.texto?.includes('(*)');
                     const esCorrecta   = resultado === 'acierto' && (
                       preguntaActual.esEco
-                        ? op.texto?.includes('(*)')
+                        ? op.esCorrecta
                         : op.clave === preguntaActual.respuesta_correcta
                     );
                     const esFallo = resultado === 'fallo';
@@ -922,8 +921,7 @@ const MobileLayout = ({
                         <img src={op.emoji} alt="" className="w-12 h-12 flex-shrink-0 object-contain" />
                         <span className="text-white font-black text-sm uppercase leading-snug flex-1"
                           style={{ fontFamily: "'Courier New', monospace" }}>
-                          {textoDisplay}
-                          {tieneStar && <span className="text-yellow-400 ml-1">★</span>}
+                          {op.texto}
                         </span>
                         {esCorrecta && <span className="text-green-400 text-lg">✓</span>}
                       </div>
