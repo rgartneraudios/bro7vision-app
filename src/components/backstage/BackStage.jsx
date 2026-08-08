@@ -290,7 +290,7 @@ const BackStage = ({ session, onLogout }) => {
     <div
       className="fixed inset-0 flex flex-col font-mono text-white overflow-hidden"
       style={{
-        background: `url('/images/productor.webp') center/cover no-repeat`,
+        background: '#000',
       }}
     >
 
@@ -373,7 +373,12 @@ const BackStage = ({ session, onLogout }) => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden backstage-scroll">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden backstage-scroll"
+        style={{
+          background: `url('/images/productor.webp') center/cover no-repeat`,
+          backgroundAttachment: 'scroll',
+        }}
+      >
 
         {activeTab === 'fondos' && (
           <FondoCanalesTab session={session} profile={profile} role={rolUsuario} />

@@ -1,4 +1,11 @@
 import React, { useState } from 'react';
+import {
+  PROMPT_REALITY,
+  PROMPT_BRO7BAND,
+  PROMPT_SLIDRAIL,
+  PROMPT_GAMES,
+  PROMPT_TARJETAS,
+} from '../../data/prompts/backstagePrompts.js';
 
 const DemoViewer = ({ titulo, subtitulo, videoUrl, vertical = false }) => (
   <div className="flex flex-col gap-2 items-center text-center">
@@ -32,36 +39,106 @@ const SPACE_GROTESK = "'Space Grotesk', sans-serif";
 
 const ESPACIOS_TABS = [
   { id: 'menciones',  label: 'MENCIONES BRO7BAND'       },
-  { id: 'fondos',     label: 'FONDOS REALITY TRIVIA'     },
+  { id: 'fondos',     label: 'REALITY PROMOTRIVIA'       },
   { id: 'games',      label: 'GAMES'                     },
-  { id: 'slide_rail', label: 'SLIDE RAIL / PROMO TRIVIA' },
+  { id: 'slide_rail', label: 'SLIDE TRIVIA RAIL'         },
   { id: 'tarjetas',   label: 'TARJETAS DE REGALO'        },
 ];
+
+const PromptBlock = ({ tabLabel = '', promptText = '' }) => {
+  const [copiado, setCopiado] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(promptText);
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
+  };
+  return (
+    <div className="flex flex-col items-center text-center gap-5 w-full max-w-3xl mx-auto mt-10 pt-10 border-t border-white/10">
+      <div style={{ fontFamily: INTER }}
+        className="text-lg text-white/90 leading-relaxed font-medium">
+        <p>En Bro7Vision hemos preparado un Prompt especial para este espacio.</p>
+        <p>Cópialo y llévalo a tu IA favorita.</p>
+        <br />
+        <p>Dentro encontrarás todo lo que necesita saber:</p>
+        <p>qué es Bro7Vision, cómo funciona este formato,</p>
+        <p>las dimensiones y características técnicas del espacio</p>
+        <p>y ejemplos visuales con enlaces directos</p>
+        <p>para que tu IA los analice si puede navegar.</p>
+        <br />
+        <p>Pulsa el botón, pégalo y deja que tu IA trabaje.</p>
+        <p>A ver qué te cuenta.</p>
+      </div>
+      <button
+        onClick={handleCopy}
+        style={{ fontFamily: HEADING }}
+        className="px-10 py-4 rounded-xl text-sm font-black uppercase tracking-widest text-black bg-gradient-to-r from-cyan-400 to-purple-500 hover:from-cyan-300 hover:to-purple-400 transition-all shadow-[0_0_30px_rgba(0,255,200,0.3)] hover:shadow-[0_0_50px_rgba(0,255,200,0.5)]"
+      >
+        {copiado ? '¡COPIADO!' : `COPIAR PROMPT ${tabLabel}`}
+      </button>
+      <p style={{ fontFamily: INTER }} className="text-base text-gray-500 mt-2">
+        ¿Prefieres una propuesta personalizada? →{' '}
+        <a href="mailto:contacto@bro7vision.com" className="text-cyan-400 hover:text-cyan-300 underline">contacto@bro7vision.com</a>
+      </p>
+    </div>
+  );
+};
 
 const ComoFuncionaTabs = () => {
   const [active, setActive] = useState('menciones');
   return (
     <div className="flex flex-col gap-0">
-      <div className="flex gap-0 border-b border-white/10 flex-wrap justify-center">
+      <div className="flex border-b border-white/10 justify-center">
         {ESPACIOS_TABS.map(t => (
           <button
             key={t.id}
             onClick={() => setActive(t.id)}
             style={{ fontFamily: HEADING }}
-            className={`px-4 py-2.5 text-xs font-black uppercase tracking-widest transition-all ${
+            className={`px-4 py-4 text-xs md:text-sm font-black uppercase tracking-widest transition-all ${
               active === t.id
-                ? 'text-white border-b-2 border-cyan-400'
-                : 'text-gray-600 hover:text-gray-400'
+                ? 'text-white border-b-2 border-cyan-400 bg-cyan-900/20 shadow-[0_0_20px_rgba(0,255,200,0.15)]'
+                : 'text-gray-600 hover:text-gray-300 hover:bg-white/5'
             }`}
           >
             {t.label}
           </button>
         ))}
       </div>
-      <div className="flex items-center justify-center h-48 text-gray-700"
-        style={{ fontFamily: INTER }}>
-        Contenido próximamente
-      </div>
+
+      {active === 'menciones' && (
+        <div className="flex flex-col items-center py-12 px-6 text-gray-700"
+          style={{ fontFamily: INTER }}>
+          <PromptBlock tabLabel="MENCIONES BRO7BAND" promptText={PROMPT_BRO7BAND} />
+        </div>
+      )}
+
+      {active === 'fondos' && (
+        <div className="flex flex-col items-center py-12 px-6 text-gray-700"
+          style={{ fontFamily: INTER }}>
+          <PromptBlock tabLabel="REALITY PROMOTRIVIA" promptText={PROMPT_REALITY} />
+        </div>
+      )}
+
+      {active === 'games' && (
+        <div className="flex flex-col items-center py-12 px-6 text-gray-700"
+          style={{ fontFamily: INTER }}>
+          <PromptBlock tabLabel="GAMES" promptText={PROMPT_GAMES} />
+        </div>
+      )}
+
+      {active === 'slide_rail' && (
+        <div className="flex flex-col items-center py-12 px-6 text-gray-700"
+          style={{ fontFamily: INTER }}>
+          <PromptBlock tabLabel="SLIDE TRIVIA RAIL" promptText={PROMPT_SLIDRAIL} />
+        </div>
+      )}
+
+      {active === 'tarjetas' && (
+        <div className="flex flex-col items-center py-12 px-6 text-gray-700"
+          style={{ fontFamily: INTER }}>
+          <PromptBlock tabLabel="TARJETAS DE REGALO" promptText={PROMPT_TARJETAS} />
+        </div>
+      )}
+
     </div>
   );
 };
@@ -254,8 +331,107 @@ const EstudioMarketingTab = () => {
             </h3>
             <div style={{ fontFamily: INTER }}
               className="text-lg text-white/90 leading-relaxed text-center max-w-3xl font-medium">
-              <p>Contenido próximamente</p>
+              <p>Bro7Band está formado por 10 grupos de personajes únicos.</p>
+              <p>Cada uno con su voz, su estilo y su propia audiencia.</p>
+              <br />
+              <p>En cada fase lunar,</p>
+              <p>9 grupos emiten un audio exclusivo</p>
+              <p>con una Palabra Clave oculta en el mensaje.</p>
+              <p>Los usuarios la buscan activamente para llevarse sus Lunas.</p>
+              <br />
+              <p>Lo que lo hace diferente</p>
+              <p>es que tu negocio puede ser esa Palabra Clave.</p>
+              <p>Tu marca, pronunciada por los personajes.</p>
+              <p>Tu nombre, en boca de todos.</p>
+              <br />
+              <p>El décimo grupo reúne a toda la banda</p>
+              <p>en episodios especiales de la Saga Bro7Band</p>
+              <p>y en el podcast de los OSOS:</p>
+              <p>Lara, Tito y Puffo, generado con Inteligencia Artificial.</p>
+              <p>Tu Marca, Producto o Servicio</p>
+              <p>también tienen hueco en su micrófono.</p>
             </div>
+
+            <img
+              src="/images/menciones_broband.webp"
+              alt="Menciones Bro7Band"
+              className="w-full max-w-3xl rounded-lg border border-white/10 shadow-[0_0_20px_rgba(168,85,247,0.15)]"
+            />
+          </div>
+
+          <div className="w-24 h-px bg-gradient-to-r from-transparent via-gray-500 to-transparent" />
+
+          {/* ─── SLIDE RAIL ─── */}
+          <div className="flex flex-col items-center text-center gap-6 w-full">
+            <h3 className="text-2xl text-white uppercase tracking-widest font-bold"
+              style={{ fontFamily: HEADING }}>
+              SLIDE RAIL TRIVIA — CANJES DE LUNAS | SHOP AMIGOS
+            </h3>
+            <div style={{ fontFamily: INTER }}
+              className="text-lg text-white/90 leading-relaxed text-center max-w-3xl font-medium">
+              <p>Slide Rail Trivia vive en dos sectores clave:</p>
+              <p>Canjes de Lunas y Shop Amigos.</p>
+              <br />
+              <p>En el lateral izquierdo circula un carrusel de 8 banners.</p>
+              <p>Los slots 1, 3, 5 y 7 son de Bro7Vision.</p>
+              <p>Los slots 2, 4, 6 y 8 son tuyos.</p>
+              <br />
+              <p>En el lateral derecho, el Trivia.</p>
+              <p>El usuario debe decidir si lo que ve en el banner numerado</p>
+              <p>es verdadero o falso.</p>
+              <p>Cada respuesta le acerca a sus Lunas.</p>
+              <br />
+              <p>Lo que lo hace diferente</p>
+              <p>es que el usuario estudia tu banner para poder jugar.</p>
+              <p>No lo ignora. Lo necesita.</p>
+              <br />
+              <p>Las posibilidades creativas son infinitas.</p>
+              <p>Tu imagen, tu mensaje, tu marca</p>
+              <p>en el centro de la acción.</p>
+              <br />
+              <p>Formato recomendado: vertical.</p>
+              <p>Dimensiones: 450 × 1080 px.</p>
+            </div>
+            <img
+              src="/images/slideRail_Trivia.webp"
+              alt="Slide Rail Trivia"
+              className="w-full max-w-3xl rounded-lg border border-white/10 shadow-[0_0_20px_rgba(168,85,247,0.15)]"
+            />
+          </div>
+
+          <div className="w-24 h-px bg-gradient-to-r from-transparent via-gray-500 to-transparent" />
+
+          {/* ─── GAMES ─── */}
+          <div className="flex flex-col items-center text-center gap-6 w-full">
+            <h3 className="text-2xl text-white uppercase tracking-widest font-bold"
+              style={{ fontFamily: HEADING }}>
+              GAMES — COSMIC PORTAL | THE SEVEN GATES
+            </h3>
+            <div style={{ fontFamily: INTER }}
+              className="text-lg text-white/90 leading-relaxed text-center max-w-3xl font-medium">
+              <p>En el sector Games hay dos Trivias</p>
+              <p>donde tu Marca, Producto o Servicio</p>
+              <p>pueden estar en el centro del juego.</p>
+              <br />
+              <p>Cosmic Portal y The Seven Gates</p>
+              <p>renuevan sus preguntas en cada fase lunar,</p>
+              <p>generadas con Inteligencia Artificial,</p>
+              <p>con temáticas modernas y sorprendentes.</p>
+              <br />
+              <p>Lo que lo hace diferente</p>
+              <p>es que tu marca aparece resaltada en color</p>
+              <p>como pista para que el usuario acierte.</p>
+              <p>El jugador la lee, la recuerda y gana sus Lunas.</p>
+              <br />
+              <p>Tú le ayudas a ganar.</p>
+              <p>Él te recuerda a ti.</p>
+              <p>Así funcionan las conversiones aquí.</p>
+            </div>
+            <img
+              src="/images/games_promos.webp"
+              alt="Games Promos"
+              className="w-full max-w-3xl rounded-lg border border-white/10 shadow-[0_0_20px_rgba(168,85,247,0.15)]"
+            />
           </div>
 
         </div>
