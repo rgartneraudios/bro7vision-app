@@ -401,7 +401,7 @@ const BackStage = ({ session, onLogout }) => {
         )}
 
         {activeTab === 'games' && (
-          <GamesTab session={session} />
+          <GamesTab session={session} profile={profile} />
         )}
 
         {activeTab === 'tarjetas_diseno' && <TarjetasRegalo profile={profile} />}
