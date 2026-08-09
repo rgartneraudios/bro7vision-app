@@ -10,6 +10,7 @@ import TarjetasRegalo from './TarjetasRegalo';
 import TarjetasCanjesRecibidosTab from './TarjetasCanjesRecibidosTab';
 import ShopAmigosTab from './ShopAmigosTab';
 import DiamantePanelAdmin from './DiamantePanelAdmin';
+import CarritoTab from './CarritoTab';
 
 const SYNE = "'Exo 2', sans-serif";
 
@@ -281,6 +282,7 @@ const BackStage = ({ session, onLogout }) => {
   const TABS_COMERCIO = [
     { id: 'shop_amigos',      label: 'SHOP AMIGOS'       },
     { id: 'tarjetas_diseno',  label: 'TARJETAS REGALO'  },
+    { id: 'carrito',          label: '🛒 Carrito'         },
     { id: 'canjes_recibidos', label: 'CANJES RECIBIDOS'  },
   ];
 
@@ -375,7 +377,7 @@ const BackStage = ({ session, onLogout }) => {
       {/* Content */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden backstage-scroll"
         style={{
-          background: `url('/images/productor.webp') center/cover no-repeat`,
+          background: `url('/images/productor2.webp') center/cover no-repeat`,
           backgroundAttachment: 'scroll',
         }}
       >
@@ -405,6 +407,9 @@ const BackStage = ({ session, onLogout }) => {
         )}
 
         {activeTab === 'tarjetas_diseno' && <TarjetasRegalo profile={profile} />}
+        {activeTab === 'carrito' && (
+          <CarritoTab session={session} profile={profile} />
+        )}
         {activeTab === 'canjes_recibidos' && <TarjetasCanjesRecibidosTab />}
 
         {activeTab === 'estudio' && (

@@ -42,10 +42,10 @@ const ESPACIOS_TABS = [
   { id: 'fondos',     label: 'REALITY PROMOTRIVIA'       },
   { id: 'games',      label: 'GAMES'                     },
   { id: 'slide_rail', label: 'SLIDE TRIVIA RAIL'         },
-  { id: 'tarjetas',   label: 'TARJETAS DE REGALO'        },
+  { id: 'tarjetas',   label: 'AHORRA CON TARJETAS DE REGALO'        },
 ];
 
-const PromptBlock = ({ tabLabel = '', promptText = '' }) => {
+const PromptBlock = ({ tabLabel = '', promptText = '', showIntro = true }) => {
   const [copiado, setCopiado] = useState(false);
   const handleCopy = () => {
     navigator.clipboard.writeText(promptText);
@@ -54,20 +54,22 @@ const PromptBlock = ({ tabLabel = '', promptText = '' }) => {
   };
   return (
     <div className="flex flex-col items-center text-center gap-5 w-full max-w-3xl mx-auto mt-10 pt-10 border-t border-white/10">
-      <div style={{ fontFamily: INTER }}
-        className="text-lg text-white/90 leading-relaxed font-medium">
-        <p>En Bro7Vision hemos preparado un Prompt especial para este espacio.</p>
-        <p>Cópialo y llévalo a tu IA favorita.</p>
-        <br />
-        <p>Dentro encontrarás todo lo que necesita saber:</p>
-        <p>qué es Bro7Vision, cómo funciona este formato,</p>
-        <p>las dimensiones y características técnicas del espacio</p>
-        <p>y ejemplos visuales con enlaces directos</p>
-        <p>para que tu IA los analice si puede navegar.</p>
-        <br />
-        <p>Pulsa el botón, pégalo y deja que tu IA trabaje.</p>
-        <p>A ver qué te cuenta.</p>
-      </div>
+      {showIntro && (
+        <div style={{ fontFamily: INTER }}
+          className="text-lg text-white/90 leading-relaxed font-medium">
+          <p>En Bro7Vision hemos preparado un Prompt especial para este espacio.</p>
+          <p>Cópialo y llévalo a tu IA favorita.</p>
+          <br />
+          <p>Dentro encontrarás todo lo que necesita saber:</p>
+          <p>qué es Bro7Vision, cómo funciona este formato,</p>
+          <p>las dimensiones y características técnicas del espacio</p>
+          <p>y ejemplos visuales con enlaces directos</p>
+          <p>para que tu IA los analice si puede navegar.</p>
+          <br />
+          <p>Pulsa el botón, pégalo y deja que tu IA trabaje.</p>
+          <p>A ver qué te cuenta.</p>
+        </div>
+      )}
       <button
         onClick={handleCopy}
         style={{ fontFamily: HEADING }}
@@ -135,7 +137,119 @@ const ComoFuncionaTabs = () => {
       {active === 'tarjetas' && (
         <div className="flex flex-col items-center py-12 px-6 text-gray-700"
           style={{ fontFamily: INTER }}>
-          <PromptBlock tabLabel="TARJETAS DE REGALO" promptText={PROMPT_TARJETAS} />
+
+          {/* Texto explicativo */}
+          <div style={{ fontFamily: INTER }}
+            className="text-xl md:text-2xl text-gray-300 leading-relaxed md:leading-loose text-center font-medium max-w-5xl mx-auto mb-12">
+
+            <p className="mb-1 text-white font-bold">Las Tarjetas de Regalo son tu moneda de publicidad.</p>
+            <p className="mb-1">En lugar de pagar toda tu campaña en efectivo,</p>
+            <p className="mb-1">puedes cubrir parte del coste con tarjetas reales</p>
+            <p className="mb-1">que los usuarios de Brovision canjean con sus Lunas.</p>
+
+            <div className="h-8" />
+
+            <p className="mb-1 text-white font-bold">Así funciona el sistema:</p>
+            <p className="mb-1">Brovision siempre cobra un seguro publicitario mínimo en efectivo.</p>
+            <p className="mb-1">Es el 20% de tu presupuesto, con un máximo de 40€.</p>
+            <p className="mb-1">El resto lo puedes cubrir con tarjetas.</p>
+
+            <div className="h-8" />
+
+            <p className="mb-1 text-white font-bold">Cuatro tipos de tarjeta, con ratios de cobertura:</p>
+
+            <img
+              src="/images/demotarjetas.webp"
+              alt="Tipos de Tarjetas de Regalo Brovision"
+              className="mx-auto"
+              style={{ maxWidth: 600, width: '100%', display: 'block', borderRadius: 16,
+                border: '1px solid rgba(255,255,255,0.08)', margin: '8px auto 24px' }}
+            />
+
+            <p className="mb-1">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-300 to-gray-400 font-bold">Luna 100</span>
+              {' '}— Descuento del 100% en el producto o servicio que describas.
+            </p>
+            <p className="mb-1">Ideal para muestras gratuitas, primeras visitas o contenidos digitales de captación.</p>
+            <p className="mb-1">No tiene ratio: el comercio asume el coste íntegro del obsequio.</p>
+
+            <div className="h-4" />
+
+            <p className="mb-1">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-300 to-gray-400 font-bold">Luna Plata</span>
+              {' '}— tarjeta de regalo condicional a compra mínima. Ratio 0.50.
+            </p>
+            <p className="mb-1">100€ en tarjetas Plata cubren 50€ de campaña.</p>
+            <p className="mb-1">Hay tarjetas de Envío Gratis, 3€, 5€, 10€, 20€, 40€, 60€, 100€, 200€</p>
+            <p className="mb-1">El valor de compra mínima lo añades tú, según necesidad de ventas.</p>
+
+            <div className="h-4" />
+
+            <p className="mb-1">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">Luna Oro</span>
+              {' '}— tarjeta de regalo de compra libre (1€ = 1€). Ratio 0.80.
+            </p>
+            <p className="mb-1">100€ en tarjetas Oro cubren 80€ de campaña.</p>
+            <p className="mb-1">Hay tarjetas de 5€, 10€, 20€, 40€, 60€, 100€, 200€</p>
+
+            <div className="h-4" />
+
+            <p className="mb-1">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-violet-500 font-bold">Luna Diamante</span>
+              {' '}— tarjeta de regalo por producto o pack concreto. Ratio 0.80.
+            </p>
+            <p className="mb-1">200€, 500€ o 1.000€ en artículos reales.</p>
+            <p className="mb-1">El Estudio revisa y activa cada premio antes de publicarlo.</p>
+
+            <div className="h-8" />
+
+            <p className="mb-1">Esto quiere decir que si tu negocio precisa espacios publicitarios</p>
+            <p className="mb-1">por valor de 500€, puedes abonar esos 40€ de seguro publicitario mínimos</p>
+            <p className="mb-1">y el resto cubrirlos con distintas tarjetas de regalo. ¿Es posible?</p>
+            <p className="mb-1">Sí, esto es posible y para ello Brovision ha desarrollado un Prompt</p>
+            <p className="mb-1">para que lo puedas analizar junto a tu IA para elaborar la mejor estrategia para tu negocio.</p>
+
+            <div className="h-6" />
+
+            <p className="mb-1">La estrategia base consiste en calcular el presupuesto total de los</p>
+            <p className="mb-1">espacios publicitarios que necesites y sobre todo medir los precios por alcance.</p>
+
+            <div className="h-6" />
+
+            <p className="mb-1">Una vez que tengas el coste total de lo que necesitas, hay que construir un Nido</p>
+            <p className="mb-1">con un surtido de varios tipos de Tarjetas de regalo desactivadas,</p>
+            <p className="mb-1">para luego activarlas en el Carrito general para que se descuente</p>
+            <p className="mb-1">el monto a abonar por esos espacios publicitarios que necesitas.</p>
+
+            <div className="h-8" />
+
+            <p className="mb-1 text-white font-bold">DÓNDE CREAR LAS TARJETAS Y CAMPAÑAS:</p>
+            <p className="mb-1">Todo se gestiona desde el Backstage de Brovision, en la pestaña "COMERCIO".</p>
+            <p className="mb-1">Ahí encontrarás:</p>
+            <p className="mb-1">- "Tarjetas de Regalo" para crear tu Nido de tarjetas</p>
+            <p className="mb-1">- "Carrito" para revisar tu Nido y activar las tarjetas antes de confirmar tu campaña</p>
+            <p className="mb-1">El comercio debe tener cuenta activa en Brovision para acceder al Backstage.</p>
+            <p className="mb-1">Si aún no tienes cuenta, solicítala en tu Booster Studio, donde está tu perfil en la pestaña ANUNCIANTE o escribe a{' '}
+              <a href="mailto:contacto@bro7vision.com" className="text-cyan-400 hover:text-cyan-300 underline">contacto@bro7vision.com</a>
+            </p>
+
+            <div className="h-8" />
+
+            <p className="mb-1 text-white font-bold">El Nido.</p>
+            <p className="mb-1">Antes de contratar publicidad, creas tus tarjetas</p>
+            <p className="mb-1">y las dejas en el Nido con un nombre de campaña.</p>
+            <p className="mb-1">Cuando vayas al Carrito a confirmar tu contrato,</p>
+            <p className="mb-1">el sistema aplica el descuento automáticamente.</p>
+
+            <div className="h-8" />
+
+            <p className="mb-1">¿No sabes por dónde empezar?</p>
+            <p className="mb-1">Copia el Prompt y llévalo a tu IA favorita.</p>
+            <p className="mb-1">Te hará las preguntas clave y calculará tu mezcla óptima.</p>
+
+          </div>
+
+          <PromptBlock tabLabel="AHORRA CON TARJETAS DE REGALO" promptText={PROMPT_TARJETAS} showIntro={false} />
         </div>
       )}
 

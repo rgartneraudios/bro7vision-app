@@ -71,31 +71,31 @@ const NexusDashboard = ({
               <div onClick={() => setSelectedGame('neon')} className="group bg-black/80 border border-fuchsia-500/30 p-4 md:p-5 rounded-2xl hover:border-fuchsia-500 hover:bg-fuchsia-900/20 cursor-pointer transition-all flex flex-col items-center gap-1.5">
                 <div className="text-3xl md:text-4xl">🧠</div>
                 <h3 className="text-lg md:text-xl font-black text-white italic">NEON MEMORY</h3>
-                <div className="px-3 py-1 bg-fuchsia-500 text-black text-[9px] font-bold uppercase rounded-full">50 GEN</div>
+                <div className="px-3 py-1 bg-fuchsia-500 text-black text-[9px] font-bold uppercase rounded-full">50 LUNAS</div>
               </div>
               
               <div onClick={() => { setSelectedGame('racer'); setGameDifficulty('easy'); }} className="group bg-black/80 border border-green-500/30 p-4 md:p-5 rounded-2xl hover:border-green-500 hover:bg-green-900/20 cursor-pointer transition-all flex flex-col items-center gap-1.5">
                 <div className="text-3xl md:text-4xl">🏎️</div>
                 <h3 className="text-lg md:text-xl font-black text-white italic">F1 ROOKIE</h3>
-                <div className="px-3 py-1 bg-green-500 text-black text-[9px] font-bold uppercase rounded-full">50 GEN</div>
+                <div className="px-3 py-1 bg-green-500 text-black text-[9px] font-bold uppercase rounded-full">50 LUNAS</div>
               </div>
               
               <div onClick={() => { setSelectedGame('racer'); setGameDifficulty('hard'); }} className="group bg-black/80 border border-cyan-500/30 p-4 md:p-5 rounded-2xl hover:border-cyan-500 hover:bg-cyan-900/20 cursor-pointer transition-all flex flex-col items-center gap-1.5">
                 <div className="text-3xl md:text-4xl">🔥</div>
                 <h3 className="text-lg md:text-xl font-black text-white italic">F1 PRO</h3>
-                <div className="px-3 py-1 bg-cyan-500 text-black text-[9px] font-bold uppercase rounded-full">50 GEN</div>
+                <div className="px-3 py-1 bg-cyan-500 text-black text-[9px] font-bold uppercase rounded-full">50 LUNAS</div>
               </div>
               
               <div onClick={() => setSelectedGame('quiz')} className="group bg-black/80 border border-purple-500/30 p-4 md:p-5 rounded-2xl hover:border-purple-500 hover:bg-purple-900/20 cursor-pointer transition-all flex flex-col items-center gap-1.5">
                 <div className="text-3xl md:text-4xl">🌌</div>
                 <h3 className="text-lg md:text-xl font-black text-white italic">COSMIC PORTAL</h3>
-                <div className="px-3 py-1 bg-purple-500 text-black text-[9px] font-bold uppercase rounded-full">10 GEN</div>
+                <div className="px-3 py-1 bg-purple-500 text-black text-[9px] font-bold uppercase rounded-full">10 LUNAS</div>
               </div>
               
               <div onClick={() => setSelectedGame('gates')} className="group bg-black/80 border border-yellow-500/30 p-4 md:p-5 rounded-2xl hover:border-yellow-500 hover:bg-yellow-900/20 cursor-pointer transition-all flex flex-col items-center gap-1.5">
                 <div className="text-3xl md:text-4xl">🔓</div>
                 <h3 className="text-lg md:text-xl font-black text-white italic">THE 7 GATES</h3>
-                <div className="px-3 py-1 bg-yellow-500 text-black text-[9px] font-bold uppercase rounded-full">140 GEN</div>
+                <div className="px-3 py-1 bg-yellow-500 text-black text-[9px] font-bold uppercase rounded-full">140 LUNAS</div>
               </div>
               
               <div onClick={() => setSelectedGame('steps')} className="group bg-black/80 border border-indigo-500/30 p-4 md:p-5 rounded-2xl hover:border-indigo-500 hover:bg-indigo-900/20 cursor-pointer transition-all flex flex-col items-center gap-1.5">
@@ -107,13 +107,13 @@ const NexusDashboard = ({
               <div onClick={() => setSelectedGame('atlas')} className="group bg-black/80 border border-blue-500/30 p-4 md:p-5 rounded-2xl hover:border-blue-500 hover:bg-blue-900/20 cursor-pointer transition-all flex flex-col items-center gap-1.5">
                 <div className="text-3xl md:text-4xl">☄️</div>
                 <h3 className="text-lg md:text-xl font-black text-white italic">3i-ATLAS</h3>
-                <div className="px-3 py-1 bg-blue-500 text-black text-[9px] font-bold uppercase rounded-full">100 GEN</div>
+                <div className="px-3 py-1 bg-blue-500 text-black text-[9px] font-bold uppercase rounded-full">100 LUNAS</div>
               </div>
               
               <div onClick={() => setSelectedGame('cronos')} className="group bg-black/80 border border-orange-500/30 p-4 md:p-5 rounded-2xl hover:border-orange-500 hover:bg-orange-900/20 cursor-pointer transition-all flex flex-col items-center gap-1.5">
                 <div className="text-3xl md:text-4xl">😄😡🤪🤬</div>
                 <h3 className="text-lg md:text-xl font-black text-white italic">TELECRONOS</h3>
-                <div className="px-3 py-1 bg-orange-500 text-black text-[9px] font-bold uppercase rounded-full">HASTA 180 GEN</div>
+                <div className="px-3 py-1 bg-orange-500 text-black text-[9px] font-bold uppercase rounded-full">HASTA 180 LUNAS</div>
               </div>
             </div> 
           )}                            

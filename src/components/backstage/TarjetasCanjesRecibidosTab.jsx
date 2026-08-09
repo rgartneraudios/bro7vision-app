@@ -167,7 +167,7 @@ const BoosterCanjesRecibidos = () => {
               <tr className="border-b border-white/10 text-xs text-gray-500 uppercase tracking-widest">
                 <th className="py-3 px-4 font-bold">Cliente</th>
                 <th className="py-3 px-4 font-bold">Palabras clave</th>
-                <th className="py-3 px-4 font-bold">Tipo Brocard</th>
+                <th className="py-3 px-4 font-bold">Tipo Tarjeta</th>
                 <th className="py-3 px-4 font-bold">Fecha</th>
                 <th className="py-3 px-4 font-bold">Estado</th>
               </tr>
@@ -181,7 +181,7 @@ const BoosterCanjesRecibidos = () => {
                       {canje.palabra_clave_1 || '—'} · {canje.palabra_clave_2 || '—'} · {canje.palabra_clave_3 || '—'}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-sm text-gray-300">{canje.tipo_brocard || '—'}</td>
+                  <td className="py-3 px-4 text-sm text-gray-300">{canje.tipo_tarjeta || '—'}</td>
                   <td className="py-3 px-4 text-sm text-gray-400">{formatDate(canje.created_at)}</td>
                   <td className="py-3 px-4">
                     <span className={`text-sm font-bold px-3 py-1 rounded-full border ${

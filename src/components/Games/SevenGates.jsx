@@ -300,7 +300,7 @@ const SevenGates = ({ onWin, onClose, scope }) => {
                         <span>{phase === 'entry' ? 'INFILTRATION' : 'EXTRACTION'}</span>
                         <div className="flex gap-4">
                             <span className="text-cyan-100">GATE {level}/7</span>
-                            <span className="text-yellow-400">GEN: {score}</span>
+                            <span className="text-yellow-400">LUNAS: {score}</span>
                         </div>
                     </div>
                     <div className="w-full py-4 text-center border-t border-cyan-500/20">
@@ -400,7 +400,7 @@ const SevenGates = ({ onWin, onClose, scope }) => {
                     <div className="bg-black/80 backdrop-blur-md p-8 rounded-2xl border border-orange-500 shadow-[0_0_50px_orange] text-center max-w-sm">
                         <h1 className="text-4xl font-black text-white mb-2">LIBERTAD</h1>
                         <p className="text-orange-400 text-xs font-bold uppercase tracking-widest mb-6">Misión Cumplida</p>
-                        <button onClick={() => onWin(140)} className="bg-white text-black font-black py-3 px-10 rounded-full hover:scale-105 transition-transform shadow-[0_0_30px_white] text-xs">RECOGER 140 GEN</button>
+                        <button onClick={() => onWin(140)} className="bg-white text-black font-black py-3 px-10 rounded-full hover:scale-105 transition-transform shadow-[0_0_30px_white] text-xs">RECOGER 140 LUNAS</button>
                     </div>
                 </div>
             </div>

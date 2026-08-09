@@ -10,18 +10,18 @@ const COBERTURAS_LIST = [
   { id: 'SALA_GRAN_CIUDAD',   label: 'Sala Gran Ciudad',   precio: 60  },
   { id: 'GIRA_REGIONAL',      label: 'Gira Regional',      precio: 80  },
   { id: 'GIRA_GRAN_REGIONAL', label: 'Gira Gran Regional', precio: 160 },
-  { id: 'METROPOLIS',         label: 'Metrópolis',         precio: 350 },
+  
   { id: 'GIRA_NACIONAL',      label: 'Gira Nacional',      precio: 500 },
   { id: 'GIRA_MUNDIAL',       label: 'Gira Mundial',       precio: 800 },
 ];
 
-const NEEDS_CIUDAD = ['SALA_CIUDAD', 'SALA_GRAN_CIUDAD', 'GIRA_REGIONAL', 'GIRA_GRAN_REGIONAL'];
+const CIUDAD_COBERTURAS = ['SALA_CIUDAD', 'SALA_GRAN_CIUDAD', 'GIRA_REGIONAL', 'GIRA_GRAN_REGIONAL'];
 
 const LIMITE_CIUDADES = {
   SALA_CIUDAD:        1,
   SALA_GRAN_CIUDAD:   1,
-  GIRA_REGIONAL:      5,
-  GIRA_GRAN_REGIONAL: 9,
+  GIRA_REGIONAL:      3,
+  GIRA_GRAN_REGIONAL: 7,
 };
 
 const ReservaPanelGames = ({ juego, session, profile, onClose }) => {
@@ -44,7 +44,7 @@ const ReservaPanelGames = ({ juego, session, profile, onClose }) => {
   const [opcionDOut,   setOpcionDOut]   = useState('');
 
   const isSevenGates = juego.id === 'the7gates';
-  const needsCiudad  = NEEDS_CIUDAD.includes(cobertura);
+  const needsCiudad  = CIUDAD_COBERTURAS.includes(cobertura);
   const precioBase   = COBERTURAS_LIST.find(c => c.id === cobertura)?.precio ?? 0;
   const precioFinal  = descuento > 0
     ? Math.round(precioBase * (1 - descuento / 100) * 100) / 100

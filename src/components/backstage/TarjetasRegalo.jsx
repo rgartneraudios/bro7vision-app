@@ -4,10 +4,15 @@ import { supabase } from '../../supabaseClient';
 const SYNE = "'Exo 2', sans-serif";
 
 const COSTE_LUNAS = {
-  PLATA:    { ENVIO_GRATIS: 25000, '3': 30000, '5': 35000, '10': 40000, '20': 45000, '40': 50000, '60': 55000, '100': 60000, '200': 70000 },
-  ORO:      { '5': 50000, '10': 60000, '20': 70000, '40': 80000, '60': 90000, '100': 100000, '200': 150000 },
-  DIAMANTE: { '200': 200000, '500': 300000, '1000': 400000 },
-  LUNA100:  { '100pct': 10000 },
+  PLATA:   { ENVIO_GRATIS: 25000, '3': 30000, '5': 35000, '10': 40000, '20': 45000, '40': 50000, '60': 55000, '100': 60000, '200': 70000 },
+  ORO:     { '5': 50000, '10': 60000, '20': 70000, '40': 80000, '60': 90000, '100': 100000, '200': 150000 },
+  LUNA100: { '100pct': 10000 },
+};
+
+const DIAMANTE_CONFIG = {
+  200:  { descuento_pct: 40, lunas_canje: 200000, cash: 40  },
+  500:  { descuento_pct: 45, lunas_canje: 300000, cash: 100 },
+  1000: { descuento_pct: 50, lunas_canje: 400000, cash: 200 },
 };
 
 const CARD_ASSETS = {
@@ -18,10 +23,9 @@ const CARD_ASSETS = {
 };
 
 const VALORES_POR_TIER = {
-  PLATA:    ['ENVIO_GRATIS','3','5','10','20','40','60','100','200'],
-  ORO:      ['5','10','20','40','60','100','200'],
-  DIAMANTE: ['200','500','1000'],
-  LUNA100:  ['100pct'],
+  PLATA:   ['ENVIO_GRATIS','3','5','10','20','40','60','100','200'],
+  ORO:     ['5','10','20','40','60','100','200'],
+  LUNA100: ['100pct'],
 };
 
 const LABEL_VALOR = {
@@ -78,10 +82,10 @@ const LUNA_STYLES = {
 };
 
 const REVERSO_INTRO = {
-  PLATA:    (valor) => `Descuento de ${valor}€ en compras con importe mínimo establecido por el comercio.`,
-  ORO:      (valor) => `Vale de ${valor}€ de descuento en compra de igual o superior monto. Si el total es mayor pagas la diferencia.`,
-  DIAMANTE: (valor) => `Obsequio sorpresa por valor de ${valor}€ o superior. Brovision selecciona y envía el regalo.`,
-  '100':    ()      => `Tarjeta con un 100% de descuento en el producto o servicio descrito a continuación.`,
+  PLATA:    (valor) => `Descuento de ${valor}€ con compra mínima establecida por el comercio.`,
+  ORO:      (valor) => `Vale de ${valor}€. Úsalo en cualquier compra de igual o superior importe. Si el total es mayor, pagas la diferencia.`,
+  DIAMANTE: (valor) => `Premio de ${valor}€ en producto o pack descrito por el comercio. Ver detalle en descripción.`,
+  '100':    ()      => `Descuento del 100% en el producto o servicio descrito a continuación.`,
 };
 
 const ALCANCE_OPCIONES = [
@@ -113,9 +117,31 @@ export default function TarjetasRegalo({ profile }) {
   const [palabraClave1, setPalabraClave1] = useState('');
   const [palabraClave2, setPalabraClave2] = useState('');
 
+  const [emisionTotal,   setEmisionTotal]   = useState('');
+  const [nombrePremio,   setNombrePremio]   = useState('');
+  const [tipoPremio,     setTipoPremio]     = useState('digital');
+  const [valorDiamante,  setValorDiamante]  = useState('');
+
+  const [nombreCampana, setNombreCampana] = useState('');
+  const [calcPresupuesto, setCalcPresupuesto] = useState('');
+
+  const isDiamante     = tier === 'DIAMANTE';
+  const diamanteConfig = isDiamante && valorDiamante
+    ? DIAMANTE_CONFIG[parseInt(valorDiamante)]
+    : null;
   const costeLunas = valor ? (COSTE_LUNAS[tier]?.[valor] || 0) : 0;
   const valorEuros = (valor && valor !== 'ENVIO_GRATIS' && valor !== '100pct')
     ? parseFloat(valor) : null;
+
+  const compraMinimaNum = compraMinima ? parseFloat(compraMinima) : null;
+  const ratioOk = !compraMinimaNum || !valorEuros || compraMinimaNum <= valorEuros * 10;
+
+  const calcNum     = parseFloat(calcPresupuesto) || 0;
+  const calcSeguro  = calcNum > 0 ? Math.min(calcNum * 0.20, 40) : 0;
+  const calcDisp    = calcNum - calcSeguro;
+  const calcPlata   = calcDisp / 0.50;
+  const calcOro     = calcDisp / 0.80;
+  const calcDiam    = calcDisp / 0.80;
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -153,6 +179,9 @@ export default function TarjetasRegalo({ profile }) {
     setTier('PLATA'); setValor(''); setCompraMinima('');
     setDescripcion(''); setBannerUrl(''); setAlcance([]);
     setPalabraClave1(''); setPalabraClave2('');
+    setEmisionTotal('');
+    setNombrePremio(''); setTipoPremio('digital'); setValorDiamante('');
+    setNombreCampana(''); setCalcPresupuesto('');
     setMsg('');
   };
 
@@ -196,29 +225,67 @@ export default function TarjetasRegalo({ profile }) {
   };
 
   const handleSave = async () => {
+    setMsg('');
+
+    if (isDiamante) {
+      if (!valorDiamante || !nombrePremio.trim() || !descripcion.trim() || !emisionTotal) {
+        setMsg('Completa el tier, nombre del premio, descripción y cantidad de unidades.'); return;
+      }
+      setSaving(true);
+      const cfg = DIAMANTE_CONFIG[parseInt(valorDiamante)];
+      const { error } = await supabase.from('diamante_catalogo').insert([{
+        comercio_id:         userId,
+        nombre_premio:       nombrePremio.trim(),
+        descripcion:         descripcion.trim(),
+        tipo:                tipoPremio,
+        valor_pvp:           parseFloat(valorDiamante),
+        tier:                parseInt(valorDiamante),
+        descuento_pct:       cfg.descuento_pct,
+        cantidad_inicial:    parseInt(emisionTotal),
+        cantidad_disponible: parseInt(emisionTotal),
+        estado:              'PENDIENTE',
+        lunas_canje:         cfg.lunas_canje,
+      }]);
+      setSaving(false);
+      if (error) { setMsg(`Error: ${error.message}`); return; }
+      setMsg('✅ Premio Diamante enviado a revisión. El Estudio lo activará en breve.');
+      resetForm();
+      return;
+    }
+
     if (!userId || !tier || !valor || alcance.length === 0) {
       setMsg('Completa tier, valor y al menos un alcance.'); return;
     }
+    if (tier === 'PLATA' && compraMinimaNum && !ratioOk) {
+      setMsg(`La compra mínima no puede superar ${valorEuros ? valorEuros * 10 : '—'}€ (máx 10× el descuento).`); return;
+    }
+    if ((tier === 'ORO') && !emisionTotal) {
+      setMsg('Indica el número de tarjetas que emites. Es obligatorio para Tarjetas Oro.'); return;
+    }
+    if (!nombreCampana.trim()) {
+      setMsg('El nombre de campaña es obligatorio.'); return;
+    }
+
     setSaving(true);
-    setMsg('');
-    console.log('payload valor_euros:', valorEuros, 'compra_minima:', compraMinima);
     const comercioNombre = profile?.razon_social || profile?.alias || 'Comercio';
     const payload = {
-      user_id:        userId,
-      tipo_tarjeta:   tier === 'LUNA100' ? '100' : tier,
-      valor_euros:    valorEuros,
-      coste_lunas:    costeLunas,
-      compra_minima:  tier === 'PLATA' ? compraMinima || null : null,
+      user_id:         userId,
+      tipo_tarjeta:    tier === 'LUNA100' ? '100' : tier,
+      valor_euros:     valorEuros,
+      coste_lunas:     costeLunas,
+      compra_minima:   tier === 'PLATA' ? (compraMinimaNum?.toString() || null) : null,
       comercio_nombre: comercioNombre,
-      descripcion:    descripcion || null,
-      sector:         'PRODUCTO',
-      banner_url:     bannerUrl  || null,
-      alcance:        alcance,
+      descripcion:     descripcion || null,
+      sector:          'PRODUCTO',
+      banner_url:      bannerUrl  || null,
+      alcance:         alcance,
       palabra_clave_1: palabraClave1 || null,
       palabra_clave_2: palabraClave2 || null,
-      activo:         true,
-      estado_canje:   'ACTIVO',
-      emision_usada:  0,
+      nombre_campana:  nombreCampana.trim() || null,
+      activo:          false,
+      estado_canje:    'NIDO',
+      emision_usada:   0,
+      emision_total:   emisionTotal ? parseInt(emisionTotal) : null,
     };
 
     let error;
@@ -227,7 +294,6 @@ export default function TarjetasRegalo({ profile }) {
     } else {
       ({ error } = await supabase.from('comercio_cupones').insert(payload));
     }
-
     setSaving(false);
     if (error) { setMsg(`Error: ${error.message}`); return; }
     setMsg(editando ? '✅ Tarjeta actualizada.' : '✅ Tarjeta creada.');
@@ -247,6 +313,12 @@ export default function TarjetasRegalo({ profile }) {
     setAlcance(t.alcance || []);
     setPalabraClave1(t.palabra_clave_1 || '');
     setPalabraClave2(t.palabra_clave_2 || '');
+    setEmisionTotal(t.emision_total ? String(t.emision_total) : '');
+    setNombreCampana(t.nombre_campana || '');
+    setCalcPresupuesto('');
+    setValorDiamante('');
+    setNombrePremio('');
+    setTipoPremio('digital');
     setMsg('');
   };
 
@@ -317,10 +389,103 @@ export default function TarjetasRegalo({ profile }) {
             border: '1px solid rgba(255,255,255,0.08)',
             borderRadius: 20, padding: 28,
           }}>
+            {/* ── CALCULADORA ── */}
+            <div style={{
+              background: 'rgba(255,255,255,0.02)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              borderRadius: 16, padding: 24, marginBottom: 28,
+            }}>
+              <h3 style={{ fontSize: 12, fontWeight: 700, color: '#67e8f9',
+                letterSpacing: 3, textTransform: 'uppercase', margin: '0 0 16px' }}>
+                🧮 Calculadora de Tarjetas
+              </h3>
+              <div style={{ marginBottom: 16 }}>
+                <span style={labelStyle}>Presupuesto de campaña (€)</span>
+                <input
+                  type="number" min="0" step="1"
+                  placeholder="Ej: 500"
+                  value={calcPresupuesto}
+                  onChange={e => setCalcPresupuesto(e.target.value)}
+                  style={{ ...inputStyle, backgroundImage: 'none' }}
+                />
+              </div>
+
+              {calcNum > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+                  {/* Seguro */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between',
+                    padding: '10px 14px', background: 'rgba(248,113,113,0.08)',
+                    border: '1px solid rgba(248,113,113,0.2)', borderRadius: 10 }}>
+                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
+                      🔒 Seguro publicitario (20%, máx 40€)
+                    </span>
+                    <span style={{ fontSize: 13, fontWeight: 900, color: '#f87171' }}>
+                      {calcSeguro.toFixed(2)}€
+                    </span>
+                  </div>
+
+                  {/* Disponible para tarjetas */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between',
+                    padding: '10px 14px', background: 'rgba(250,204,21,0.07)',
+                    border: '1px solid rgba(250,204,21,0.15)', borderRadius: 10 }}>
+                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
+                      💰 Disponible para cubrir con tarjetas
+                    </span>
+                    <span style={{ fontSize: 13, fontWeight: 900, color: '#facc15' }}>
+                      {calcDisp.toFixed(2)}€
+                    </span>
+                  </div>
+
+                  {/* Capacidad por tier */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginTop: 4 }}>
+                    {[
+                      { label: 'Luna Plata', ratio: '0.50', val: calcPlata, color: '#d0d8e8', bg: 'rgba(160,168,184,0.08)', border: 'rgba(160,168,184,0.2)' },
+                      { label: 'Luna Oro', ratio: '0.80', val: calcOro, color: '#ffe566', bg: 'rgba(200,150,10,0.08)', border: 'rgba(200,150,10,0.2)' },
+                      { label: 'Luna Diamante', ratio: '0.80', val: calcDiam, color: '#d090ff', bg: 'rgba(180,80,255,0.08)', border: 'rgba(180,80,255,0.2)' },
+                    ].map(({ label, ratio, val, color, bg, border }) => (
+                      <div key={label} style={{ padding: '12px 10px', background: bg,
+                        border: `1px solid ${border}`, borderRadius: 10, textAlign: 'center' }}>
+                        <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)',
+                          textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>
+                          {label}
+                        </div>
+                        <div style={{ fontSize: 16, fontWeight: 900, color }}>
+                          {val.toFixed(0)}€
+                        </div>
+                        <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>
+                          en tarjetas (×{ratio})
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', margin: 0, lineHeight: 1.6 }}>
+                    Crea tus tarjetas por ese valor total y aplícalas desde el Carrito al confirmar tu campaña.
+                  </p>
+                </div>
+              )}
+            </div>
+
             <h3 style={{ fontSize: 13, fontWeight: 700, color: '#a78bfa', letterSpacing: 3,
               textTransform: 'uppercase', margin: '0 0 24px' }}>
               {editando ? '✏️ Editar Tarjeta' : '+ Nueva Tarjeta'}
             </h3>
+
+            {/* NOMBRE CAMPAÑA */}
+            <div style={{ marginBottom: 20 }}>
+              <span style={labelStyle}>Nombre de campaña *</span>
+              <input
+                type="text"
+                placeholder="Ej: Campaña Julio 2026 — Verano Madrid"
+                value={nombreCampana}
+                onChange={e => setNombreCampana(e.target.value)}
+                style={inputStyle}
+              />
+              <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 6 }}>
+                Identifica este lote de tarjetas. Podrás aplicarlo desde el Carrito.
+              </p>
+            </div>
 
             {/* TIER */}
             <div style={{ marginBottom: 20 }}>
@@ -348,47 +513,205 @@ export default function TarjetasRegalo({ profile }) {
               </div>
             </div>
 
-            {/* VALOR */}
-            <div style={{ marginBottom: 20 }}>
-              <span style={labelStyle}>Valor</span>
-              <select value={valor} onChange={e => setValor(e.target.value)} style={inputStyle}>
-                <option value="">— Selecciona valor —</option>
-                {(VALORES_POR_TIER[tier] || []).map(v => (
-                  <option key={v} value={v}>{LABEL_VALOR[v] || v}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* LUNAS — solo lectura */}
-            {valor && (
-              <div style={{
-                marginBottom: 20, padding: '14px 18px',
-                background: 'rgba(250,204,21,0.07)',
-                border: '1px solid rgba(250,204,21,0.2)',
-                borderRadius: 12, display: 'flex', alignItems: 'center',
-                justifyContent: 'space-between',
-              }}>
-                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', letterSpacing: 2, textTransform: 'uppercase' }}>
-                  Coste en Lunas
-                </span>
-                <span style={{ fontSize: 22, fontWeight: 900, color: '#facc15', letterSpacing: 1 }}>
-                  🌙 {costeLunas.toLocaleString()}
-                </span>
+            {/* Info económica por tier */}
+            {tier === 'PLATA' && (
+              <div style={{ marginBottom: 16, padding: '12px 16px',
+                background: 'rgba(160,168,184,0.08)', border: '1px solid rgba(160,168,184,0.2)',
+                borderRadius: 12 }}>
+                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, margin: 0 }}>
+                  💿 <strong style={{ color: '#d0d8e8' }}>Luna de Plata</strong> — El cliente recibe un descuento directo al presentar la tarjeta.
+                  Establece una compra mínima razonable: máximo 10× el valor del descuento.
+                  Tú ganas visita y venta asegurada.
+                </p>
+              </div>
+            )}
+            {tier === 'ORO' && (
+              <div style={{ marginBottom: 16, padding: '12px 16px',
+                background: 'rgba(200,150,10,0.08)', border: '1px solid rgba(200,150,10,0.2)',
+                borderRadius: 12 }}>
+                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, margin: 0 }}>
+                  🥇 <strong style={{ color: '#ffe566' }}>Luna de Oro</strong> — El cliente usa la tarjeta como vale de compra libre (1€ = 1€).
+                  Tú pagas la publicidad a precio reducido y honras el valor de la tarjeta en producto o servicio cuando el cliente venga.
+                  Indica cuántas tarjetas emites — ese es tu compromiso real de stock.
+                </p>
+              </div>
+            )}
+            {tier === 'DIAMANTE' && (
+              <div style={{ marginBottom: 16, padding: '12px 16px',
+                background: 'rgba(180,80,255,0.08)', border: '1px solid rgba(180,80,255,0.2)',
+                borderRadius: 12 }}>
+                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, margin: 0 }}>
+                  💎 <strong style={{ color: '#d090ff' }}>Luna Diamante</strong> — Publica un producto o pack concreto (nuevo, reacondicionado, excedente).
+                  El usuario canjea Lunas por ese premio. Tú pagas solo el 20% de su valor en publicidad
+                  (mínimo garantizado 40€). El Estudio revisa y activa tu premio antes de publicarlo.
+                </p>
+              </div>
+            )}
+            {tier === 'LUNA100' && (
+              <div style={{ marginBottom: 16, padding: '12px 16px',
+                background: 'rgba(180,80,220,0.08)', border: '1px solid rgba(180,80,220,0.2)',
+                borderRadius: 12 }}>
+                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, margin: 0 }}>
+                  🌙 <strong style={{ color: '#c080ff' }}>Luna 100</strong> — Descuento del 100% en el producto o servicio que describas.
+                  Ideal para muestras, pruebas gratuitas o experiencias de captación.
+                </p>
               </div>
             )}
 
-            {/* COMPRA MÍNIMA — solo PLATA */}
-            {tier === 'PLATA' && (
-              <div style={{ marginBottom: 20 }}>
-                <span style={labelStyle}>Compra mínima (libre)</span>
-                <input
-                  type="text"
-                  placeholder="Ej: 10€, 50 euros, 1 artículo mínimo..."
-                  value={compraMinima}
-                  onChange={e => setCompraMinima(e.target.value)}
-                  style={inputStyle}
-                />
-              </div>
+            {/* DIAMANTE — formulario completo */}
+            {isDiamante ? (
+              <>
+                <div style={{ marginBottom: 20 }}>
+                  <span style={labelStyle}>Valor del Premio</span>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {['200','500','1000'].map(v => {
+                      const cfg = DIAMANTE_CONFIG[parseInt(v)];
+                      const active = valorDiamante === v;
+                      return (
+                        <button key={v} onClick={() => setValorDiamante(v)}
+                          style={{
+                            flex: 1, padding: '10px 8px', borderRadius: 12, fontSize: 11,
+                            fontWeight: 700, cursor: 'pointer', fontFamily: SYNE,
+                            background: active ? 'rgba(180,80,255,0.15)' : 'rgba(255,255,255,0.04)',
+                            border: `1px solid ${active ? '#9040e0' : 'rgba(255,255,255,0.1)'}`,
+                            color: active ? '#d090ff' : 'rgba(255,255,255,0.4)',
+                            textAlign: 'center',
+                          }}>
+                          <div style={{ fontSize: 15, fontWeight: 900 }}>{parseInt(v).toLocaleString()}€</div>
+                          <div style={{ fontSize: 9, marginTop: 3, opacity: 0.7 }}>
+                            -{cfg.descuento_pct}% pub · {cfg.cash}€ cash
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: 20 }}>
+                  <span style={labelStyle}>Nombre del premio *</span>
+                  <input type="text" placeholder="Ej: iPhone 13 128GB reacondicionado A+"
+                    value={nombrePremio} onChange={e => setNombrePremio(e.target.value)}
+                    style={inputStyle} />
+                </div>
+
+                <div style={{ marginBottom: 20 }}>
+                  <span style={labelStyle}>Tipo</span>
+                  <select value={tipoPremio} onChange={e => setTipoPremio(e.target.value)} style={inputStyle}>
+                    <option value="digital">Digital</option>
+                    <option value="servicio">Servicio / Físico</option>
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: 20 }}>
+                  <span style={labelStyle}>Descripción del producto * (visible al canjear)</span>
+                  <textarea rows={4}
+                    placeholder="Describe el producto: marca, modelo, estado, condiciones de entrega..."
+                    value={descripcion} onChange={e => setDescripcion(e.target.value)}
+                    style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5 }} />
+                </div>
+
+                <div style={{ marginBottom: 20 }}>
+                  <span style={labelStyle}>Unidades disponibles *</span>
+                  <input type="number" min="1" placeholder="Ej: 2"
+                    value={emisionTotal} onChange={e => setEmisionTotal(e.target.value)}
+                    style={inputStyle} />
+                  <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 6 }}>
+                    Cada unidad = un canje. El sistema las descuenta automáticamente.
+                  </p>
+                </div>
+
+                {valorDiamante && diamanteConfig && (
+                  <div style={{ padding: '14px 18px', background: 'rgba(180,80,255,0.07)',
+                    border: '1px solid rgba(180,80,255,0.2)', borderRadius: 12, marginBottom: 20 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Valor en especie</span>
+                      <span style={{ fontSize: 13, fontWeight: 900, color: '#d090ff' }}>{valorDiamante}€</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Cash a Brovision (20%)</span>
+                      <span style={{ fontSize: 13, fontWeight: 900, color: '#fff' }}>{diamanteConfig.cash}€</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Descuento publicitario obtenido</span>
+                      <span style={{ fontSize: 13, fontWeight: 900, color: '#4ade80' }}>+{diamanteConfig.descuento_pct}%</span>
+                    </div>
+                    <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 10, marginBottom: 0 }}>
+                      El Estudio revisará tu premio antes de publicarlo. Estado inicial: PENDIENTE.
+                    </p>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                {/* VALOR — selector para PLATA / ORO / LUNA100 */}
+                <div style={{ marginBottom: 20 }}>
+                  <span style={labelStyle}>Valor</span>
+                  <select value={valor} onChange={e => setValor(e.target.value)} style={inputStyle}>
+                    <option value="">— Selecciona valor —</option>
+                    {(VALORES_POR_TIER[tier] || []).map(v => (
+                      <option key={v} value={v}>{LABEL_VALOR[v] || v}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* LUNAS — solo lectura */}
+                {valor && (
+                  <div style={{
+                    marginBottom: 20, padding: '14px 18px',
+                    background: 'rgba(250,204,21,0.07)',
+                    border: '1px solid rgba(250,204,21,0.2)',
+                    borderRadius: 12, display: 'flex', alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}>
+                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', letterSpacing: 2, textTransform: 'uppercase' }}>
+                      Coste en Lunas
+                    </span>
+                    <span style={{ fontSize: 22, fontWeight: 900, color: '#facc15', letterSpacing: 1 }}>
+                      🌙 {costeLunas.toLocaleString()}
+                    </span>
+                  </div>
+                )}
+
+                {/* COMPRA MÍNIMA — solo PLATA con validación */}
+                {tier === 'PLATA' && (
+                  <div style={{ marginBottom: 20 }}>
+                    <span style={labelStyle}>Compra mínima en euros</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder={valorEuros ? `Máx. ${valorEuros * 10}€` : 'Ej: 30'}
+                      value={compraMinima}
+                      onChange={e => setCompraMinima(e.target.value)}
+                      style={{
+                        ...inputStyle,
+                        borderColor: !ratioOk ? 'rgba(248,113,113,0.5)' : 'rgba(255,255,255,0.12)',
+                      }}
+                    />
+                    {!ratioOk && (
+                      <p style={{ fontSize: 10, color: '#f87171', marginTop: 6 }}>
+                        La compra mínima no puede superar {valorEuros ? valorEuros * 10 : '—'}€ (máx 10× el descuento).
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* EMISIÓN TOTAL — PLATA y ORO */}
+                {tier !== 'LUNA100' && (
+                  <div style={{ marginBottom: 20 }}>
+                    <span style={labelStyle}>
+                      {tier === 'ORO' ? 'Tarjetas a emitir *' : 'Tarjetas a emitir (recomendado, máx 500)'}
+                    </span>
+                    <input
+                      type="number" min="1" max={tier === 'PLATA' ? 500 : undefined}
+                      placeholder={tier === 'ORO' ? 'Obligatorio' : 'Opcional · Máx. 500'}
+                      value={emisionTotal}
+                      onChange={e => setEmisionTotal(e.target.value)}
+                      style={inputStyle}
+                    />
+                  </div>
+                )}
+              </>
             )}
 
             {/* DESCRIPCIÓN */}
