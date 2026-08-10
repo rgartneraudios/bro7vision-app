@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
-import {
-  PROMPT_REALITY,
-  PROMPT_BRO7BAND,
-  PROMPT_SLIDRAIL,
-  PROMPT_GAMES,
-  PROMPT_TARJETAS,
-} from '../../data/prompts/backstagePrompts.js';
+import { PROMPT_GENERAL } from '../../data/prompts/backstagePrompts.js';
 
 const DemoViewer = ({ titulo, subtitulo, videoUrl, vertical = false }) => (
   <div className="flex flex-col gap-2 items-center text-center">
@@ -109,28 +103,28 @@ const ComoFuncionaTabs = () => {
       {active === 'menciones' && (
         <div className="flex flex-col items-center py-12 px-6 text-gray-700"
           style={{ fontFamily: INTER }}>
-          <PromptBlock tabLabel="MENCIONES BRO7BAND" promptText={PROMPT_BRO7BAND} />
+          <PromptBlock tabLabel="MENCIONES BRO7BAND" promptText={PROMPT_GENERAL} />
         </div>
       )}
 
       {active === 'fondos' && (
         <div className="flex flex-col items-center py-12 px-6 text-gray-700"
           style={{ fontFamily: INTER }}>
-          <PromptBlock tabLabel="REALITY PROMOTRIVIA" promptText={PROMPT_REALITY} />
+          <PromptBlock tabLabel="REALITY PROMOTRIVIA" promptText={PROMPT_GENERAL} />
         </div>
       )}
 
       {active === 'games' && (
         <div className="flex flex-col items-center py-12 px-6 text-gray-700"
           style={{ fontFamily: INTER }}>
-          <PromptBlock tabLabel="GAMES" promptText={PROMPT_GAMES} />
+          <PromptBlock tabLabel="GAMES" promptText={PROMPT_GENERAL} />
         </div>
       )}
 
       {active === 'slide_rail' && (
         <div className="flex flex-col items-center py-12 px-6 text-gray-700"
           style={{ fontFamily: INTER }}>
-          <PromptBlock tabLabel="SLIDE TRIVIA RAIL" promptText={PROMPT_SLIDRAIL} />
+          <PromptBlock tabLabel="SLIDE TRIVIA RAIL" promptText={PROMPT_GENERAL} />
         </div>
       )}
 
@@ -249,7 +243,7 @@ const ComoFuncionaTabs = () => {
 
           </div>
 
-          <PromptBlock tabLabel="AHORRA CON TARJETAS DE REGALO" promptText={PROMPT_TARJETAS} showIntro={false} />
+          <PromptBlock tabLabel="AHORRA CON TARJETAS DE REGALO" promptText={PROMPT_GENERAL} showIntro={false} />
         </div>
       )}
 
