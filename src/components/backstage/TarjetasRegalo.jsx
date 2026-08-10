@@ -137,8 +137,8 @@ export default function TarjetasRegalo({ profile }) {
   const ratioOk = !compraMinimaNum || !valorEuros || compraMinimaNum <= valorEuros * 10;
 
   const calcNum     = parseFloat(calcPresupuesto) || 0;
-  const calcSeguro  = calcNum > 0 ? Math.min(calcNum * 0.20, 40) : 0;
-  const calcDisp    = calcNum - calcSeguro;
+  const calcSeguro  = calcNum > 0 ? Math.min(calcNum * 0.20, 60) : 0;
+  const calcDisp    = calcNum;
   const calcPlata   = calcDisp / 0.50;
   const calcOro     = calcDisp / 0.80;
   const calcDiam    = calcDisp / 0.80;
@@ -262,6 +262,9 @@ export default function TarjetasRegalo({ profile }) {
     if ((tier === 'ORO') && !emisionTotal) {
       setMsg('Indica el número de tarjetas que emites. Es obligatorio para Tarjetas Oro.'); return;
     }
+    if (parseInt(emisionTotal) > 10) {
+      setMsg('Máximo 10 tarjetas por tipo y valor por Fase Lunar.'); return;
+    }
     if (!nombreCampana.trim()) {
       setMsg('El nombre de campaña es obligatorio.'); return;
     }
@@ -271,7 +274,7 @@ export default function TarjetasRegalo({ profile }) {
     const payload = {
       user_id:         userId,
       tipo_tarjeta:    tier === 'LUNA100' ? '100' : tier,
-      valor_euros:     valorEuros,
+      valor_euros:     valor === 'ENVIO_GRATIS' ? 5 : valorEuros,
       coste_lunas:     costeLunas,
       compra_minima:   tier === 'PLATA' ? (compraMinimaNum?.toString() || null) : null,
       comercio_nombre: comercioNombre,
@@ -350,6 +353,23 @@ export default function TarjetasRegalo({ profile }) {
     marginBottom: 6, display: 'block',
   };
 
+  const nidoAgrupado = tarjetas
+    .filter(t => t.estado_canje === 'NIDO')
+    .reduce((acc, t) => {
+      const key = t.nombre_campana || 'Sin nombre';
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(t);
+      return acc;
+    }, {});
+
+  const valorNidoCampana = (tarjetas) => tarjetas.reduce((sum, t) => {
+    const euros = parseFloat(t.valor_euros) || 5;
+    const ratio = t.tipo_tarjeta === 'PLATA' ? 0.50 : 0.80;
+    return sum + euros * (t.emision_total || 1) * ratio;
+  }, 0);
+
+  const nidoKeys = Object.keys(nidoAgrupado);
+
   return (
     <>
       <style>{`
@@ -402,7 +422,7 @@ export default function TarjetasRegalo({ profile }) {
               <div style={{ marginBottom: 16 }}>
                 <span style={labelStyle}>Presupuesto de campaña (€)</span>
                 <input
-                  type="number" min="0" step="1"
+                  type="number" min="0" max="1000" step="1"
                   placeholder="Ej: 500"
                   value={calcPresupuesto}
                   onChange={e => setCalcPresupuesto(e.target.value)}
@@ -418,7 +438,7 @@ export default function TarjetasRegalo({ profile }) {
                     padding: '10px 14px', background: 'rgba(248,113,113,0.08)',
                     border: '1px solid rgba(248,113,113,0.2)', borderRadius: 10 }}>
                     <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
-                      🔒 Seguro publicitario (20%, máx 40€)
+                      🔒 Seguro publicitario (20%, máx 60€)
                     </span>
                     <span style={{ fontSize: 13, fontWeight: 900, color: '#f87171' }}>
                       {calcSeguro.toFixed(2)}€
@@ -469,7 +489,7 @@ export default function TarjetasRegalo({ profile }) {
 
             <h3 style={{ fontSize: 13, fontWeight: 700, color: '#a78bfa', letterSpacing: 3,
               textTransform: 'uppercase', margin: '0 0 24px' }}>
-              {editando ? '✏️ Editar Tarjeta' : '+ Nueva Tarjeta'}
+              {editando ? '✏️ Editar Tarjeta del Nido' : '+ Añadir Tarjeta al Nido'}
             </h3>
 
             {/* NOMBRE CAMPAÑA */}
@@ -612,7 +632,7 @@ export default function TarjetasRegalo({ profile }) {
 
                 <div style={{ marginBottom: 20 }}>
                   <span style={labelStyle}>Unidades disponibles *</span>
-                  <input type="number" min="1" placeholder="Ej: 2"
+                  <input type="number" min="1" max="10" placeholder="Ej: 2"
                     value={emisionTotal} onChange={e => setEmisionTotal(e.target.value)}
                     style={inputStyle} />
                   <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 6 }}>
@@ -700,11 +720,11 @@ export default function TarjetasRegalo({ profile }) {
                 {tier !== 'LUNA100' && (
                   <div style={{ marginBottom: 20 }}>
                     <span style={labelStyle}>
-                      {tier === 'ORO' ? 'Tarjetas a emitir *' : 'Tarjetas a emitir (recomendado, máx 500)'}
+                      {tier === 'ORO' ? 'Tarjetas a emitir * (máx 10)' : 'Tarjetas a emitir (máx 10)'}
                     </span>
                     <input
-                      type="number" min="1" max={tier === 'PLATA' ? 500 : undefined}
-                      placeholder={tier === 'ORO' ? 'Obligatorio' : 'Opcional · Máx. 500'}
+                      type="number" min="1" max="10"
+                      placeholder={tier === 'ORO' ? 'Obligatorio · Máx. 10' : 'Opcional · Máx. 10'}
                       value={emisionTotal}
                       onChange={e => setEmisionTotal(e.target.value)}
                       style={inputStyle}
@@ -870,7 +890,9 @@ export default function TarjetasRegalo({ profile }) {
 
       {/* Overlay asset PNG transparente */}
       {(() => {
-        const valorKey = valor || (tier === 'LUNA100' ? '100pct' : 'ENVIO_GRATIS');
+        const valorKey = tier === 'DIAMANTE'
+          ? valorDiamante
+          : (valor || (tier === 'LUNA100' ? '100pct' : 'ENVIO_GRATIS'));
         const tierAssetKey = tier === 'LUNA100' ? '100' : tier;
         const assetName = CARD_ASSETS[tierAssetKey]?.[valorKey];
         return assetName ? (
@@ -1009,6 +1031,60 @@ export default function TarjetasRegalo({ profile }) {
           </div>
 
         </div>
+
+        {/* Bloque Mis Nidos */}
+        {nidoKeys.length > 0 && (
+          <div style={{ marginBottom: 40 }}>
+            <h3 style={{ fontSize: 13, fontWeight: 700, color: '#facc15', letterSpacing: 3,
+              textTransform: 'uppercase', margin: '0 0 20px' }}>
+              🧺 Mis Nidos ({nidoKeys.length})
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {nidoKeys.map(key => {
+                const grupo = nidoAgrupado[key];
+                const valor = valorNidoCampana(grupo);
+                const pct = Math.min(valor / 1000 * 100, 100);
+                const resumen = grupo.reduce((acc, t) => {
+                  const label = `${t.tipo_tarjeta} ${t.valor_euros || 5}€`;
+                  acc[label] = (acc[label] || 0) + (t.emision_total || 1);
+                  return acc;
+                }, {});
+                const resumenStr = Object.entries(resumen)
+                  .map(([lbl, cnt]) => `${cnt} × ${lbl}`).join(' · ');
+                return (
+                  <div key={key} style={{
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(250,204,21,0.15)',
+                    borderRadius: 14, padding: '18px 22px',
+                  }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#facc15', marginBottom: 8 }}>
+                      🌙 {key}
+                    </div>
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginBottom: 10 }}>
+                      {resumenStr}
+                    </div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#4ade80', marginBottom: 10 }}>
+                      Valor en espacios: {valor.toFixed(2)}€
+                    </div>
+                    <div style={{
+                      width: '100%', height: 8, background: 'rgba(255,255,255,0.08)',
+                      borderRadius: 10, overflow: 'hidden',
+                    }}>
+                      <div style={{
+                        width: `${Math.min(pct, 100)}%`, height: '100%',
+                        background: 'linear-gradient(90deg, #facc15, #4ade80)',
+                        borderRadius: 10, transition: 'width 0.4s',
+                      }} />
+                    </div>
+                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>
+                      {valor.toFixed(0)}€ / 1000€
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Fila inferior: listado completo */}
         <div>

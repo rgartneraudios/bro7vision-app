@@ -32,11 +32,8 @@ const INTER        = "'Inter', sans-serif";
 const SPACE_GROTESK = "'Space Grotesk', sans-serif";
 
 const ESPACIOS_TABS = [
-  { id: 'menciones',  label: 'MENCIONES BRO7BAND'       },
-  { id: 'fondos',     label: 'REALITY PROMOTRIVIA'       },
-  { id: 'games',      label: 'GAMES'                     },
-  { id: 'slide_rail', label: 'SLIDE TRIVIA RAIL'         },
-  { id: 'tarjetas',   label: 'AHORRA CON TARJETAS DE REGALO'        },
+  { id: 'tarjetas',  label: 'AHORRA CON TARJETAS DE REGALO' },
+  { id: 'prompt_ia', label: 'PROMPT IA'                     },
 ];
 
 const PromptBlock = ({ tabLabel = '', promptText = '', showIntro = true }) => {
@@ -79,8 +76,32 @@ const PromptBlock = ({ tabLabel = '', promptText = '', showIntro = true }) => {
   );
 };
 
+const CopyButtonInline = ({ promptText = '' }) => {
+  const [copiado, setCopiado] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(promptText);
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
+  };
+  return (
+    <div className="flex flex-col items-center text-center gap-5 w-full max-w-3xl mx-auto">
+      <button
+        onClick={handleCopy}
+        style={{ fontFamily: HEADING }}
+        className="px-10 py-4 rounded-xl text-sm font-black uppercase tracking-widest text-black bg-gradient-to-r from-cyan-400 to-purple-500 hover:from-cyan-300 hover:to-purple-400 transition-all shadow-[0_0_30px_rgba(0,255,200,0.3)] hover:shadow-[0_0_50px_rgba(0,255,200,0.5)]"
+      >
+        {copiado ? '¡COPIADO!' : 'COPIAR PROMPT IA'}
+      </button>
+      <p style={{ fontFamily: INTER }} className="text-base text-gray-500 mt-2">
+        ¿Prefieres una propuesta personalizada? →{' '}
+        <a href="mailto:contacto@bro7vision.com" className="text-cyan-400 hover:text-cyan-300 underline">contacto@bro7vision.com</a>
+      </p>
+    </div>
+  );
+};
+
 const ComoFuncionaTabs = () => {
-  const [active, setActive] = useState('menciones');
+  const [active, setActive] = useState('tarjetas');
   return (
     <div className="flex flex-col gap-0">
       <div className="flex border-b border-white/10 justify-center">
@@ -100,57 +121,33 @@ const ComoFuncionaTabs = () => {
         ))}
       </div>
 
-      {active === 'menciones' && (
-        <div className="flex flex-col items-center py-12 px-6 text-gray-700"
-          style={{ fontFamily: INTER }}>
-          <PromptBlock tabLabel="MENCIONES BRO7BAND" promptText={PROMPT_GENERAL} />
-        </div>
-      )}
-
-      {active === 'fondos' && (
-        <div className="flex flex-col items-center py-12 px-6 text-gray-700"
-          style={{ fontFamily: INTER }}>
-          <PromptBlock tabLabel="REALITY PROMOTRIVIA" promptText={PROMPT_GENERAL} />
-        </div>
-      )}
-
-      {active === 'games' && (
-        <div className="flex flex-col items-center py-12 px-6 text-gray-700"
-          style={{ fontFamily: INTER }}>
-          <PromptBlock tabLabel="GAMES" promptText={PROMPT_GENERAL} />
-        </div>
-      )}
-
-      {active === 'slide_rail' && (
-        <div className="flex flex-col items-center py-12 px-6 text-gray-700"
-          style={{ fontFamily: INTER }}>
-          <PromptBlock tabLabel="SLIDE TRIVIA RAIL" promptText={PROMPT_GENERAL} />
-        </div>
-      )}
-
       {active === 'tarjetas' && (
         <div className="flex flex-col items-center py-12 px-6 text-gray-700"
           style={{ fontFamily: INTER }}>
 
-          {/* Texto explicativo */}
           <div style={{ fontFamily: INTER }}
-            className="text-xl md:text-2xl text-gray-300 leading-relaxed md:leading-loose text-center font-medium max-w-5xl mx-auto mb-12">
+            className="text-xl md:text-2xl text-gray-300 leading-relaxed md:leading-loose text-center font-medium max-w-6xl mx-auto mb-12">
 
-            <p className="mb-1 text-white font-bold">Las Tarjetas de Regalo son tu moneda de publicidad.</p>
-            <p className="mb-1">En lugar de pagar toda tu campaña en efectivo,</p>
-            <p className="mb-1">puedes cubrir parte del coste con tarjetas reales</p>
-            <p className="mb-1">que los usuarios de Brovision canjean con sus Lunas.</p>
+            <p className="mb-1 text-white font-bold">Las <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400">Tarjetas de Regalo</span> son tu moneda de publicidad.</p>
+
+            <div className="h-6" />
+
+            <p className="mb-1">En lugar de pagar toda tu campaña en efectivo, puedes cubrir parte del coste</p>
+            <p className="mb-1">con tarjetas reales que los usuarios de <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Bro7Vision</span> canjean con sus <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Lunas</span>.</p>
 
             <div className="h-8" />
 
             <p className="mb-1 text-white font-bold">Así funciona el sistema:</p>
-            <p className="mb-1">Brovision siempre cobra un seguro publicitario mínimo en efectivo.</p>
-            <p className="mb-1">Es el 20% de tu presupuesto, con un máximo de 40€.</p>
-            <p className="mb-1">El resto lo puedes cubrir con tarjetas.</p>
+
+            <p className="mb-1"><span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Bro7Vision</span> siempre cobra un seguro publicitario mínimo en efectivo.</p>
+            <p className="mb-1">Es el <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">20%</span> de tu presupuesto, con un máximo de <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">60€</span>.</p>
+            <p className="mb-1">El resto lo puedes cubrir con <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">tarjetas</span>.</p>
 
             <div className="h-8" />
 
             <p className="mb-1 text-white font-bold">Cuatro tipos de tarjeta, con ratios de cobertura:</p>
+
+            <div className="h-6" />
 
             <img
               src="/images/demotarjetas.webp"
@@ -160,90 +157,128 @@ const ComoFuncionaTabs = () => {
                 border: '1px solid rgba(255,255,255,0.08)', margin: '8px auto 24px' }}
             />
 
-            <p className="mb-1">
+            <p className="mb-2">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-300 to-gray-400 font-bold">Luna 100</span>
               {' '}— Descuento del 100% en el producto o servicio que describas.
             </p>
-            <p className="mb-1">Ideal para muestras gratuitas, primeras visitas o contenidos digitales de captación.</p>
-            <p className="mb-1">No tiene ratio: el comercio asume el coste íntegro del obsequio.</p>
+            <p className="mb-2 text-left max-w-2xl mx-auto">• Ideal para muestras gratuitas, primeras visitas o contenidos digitales de captación.</p>
+            <p className="mb-4 text-left max-w-2xl mx-auto">• No tiene ratio: el comercio asume el coste íntegro del obsequio.</p>
 
-            <div className="h-4" />
-
-            <p className="mb-1">
+            <p className="mb-2">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-300 to-gray-400 font-bold">Luna Plata</span>
-              {' '}— tarjeta de regalo condicional a compra mínima. Ratio 0.50.
+              {' '}— tarjeta de regalo condicional a compra mínima. <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">Ratio 0.50</span>.
             </p>
-            <p className="mb-1">100€ en tarjetas Plata cubren 50€ de campaña.</p>
-            <p className="mb-1">Hay tarjetas de Envío Gratis, 3€, 5€, 10€, 20€, 40€, 60€, 100€, 200€</p>
-            <p className="mb-1">El valor de compra mínima lo añades tú, según necesidad de ventas.</p>
+            <p className="mb-2 text-left max-w-2xl mx-auto">• <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">100€</span> en tarjetas Plata cubren <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">50€</span> de campaña.</p>
+            <p className="mb-2 text-left max-w-2xl mx-auto">• Hay tarjetas de Envío Gratis, 3€, 5€, 10€, 20€, 40€, 60€, 100€, 200€</p>
+            <p className="mb-4 text-left max-w-2xl mx-auto">• El valor de compra mínima lo añades tú, según necesidad de ventas.</p>
 
-            <div className="h-4" />
-
-            <p className="mb-1">
+            <p className="mb-2">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">Luna Oro</span>
-              {' '}— tarjeta de regalo de compra libre (1€ = 1€). Ratio 0.80.
+              {' '}— tarjeta de regalo de compra libre (1€ = 1€). <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">Ratio 0.80</span>.
             </p>
-            <p className="mb-1">100€ en tarjetas Oro cubren 80€ de campaña.</p>
-            <p className="mb-1">Hay tarjetas de 5€, 10€, 20€, 40€, 60€, 100€, 200€</p>
+            <p className="mb-2 text-left max-w-2xl mx-auto">• <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">100€</span> en tarjetas Oro cubren <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">80€</span> de campaña.</p>
+            <p className="mb-4 text-left max-w-2xl mx-auto">• Hay tarjetas de 5€, 10€, 20€, 40€, 60€, 100€, 200€</p>
 
-            <div className="h-4" />
-
-            <p className="mb-1">
+            <p className="mb-2">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-violet-500 font-bold">Luna Diamante</span>
-              {' '}— tarjeta de regalo por producto o pack concreto. Ratio 0.80.
+              {' '}— tarjeta de regalo por producto o pack concreto. <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">Ratio 0.80</span>.
             </p>
-            <p className="mb-1">200€, 500€ o 1.000€ en artículos reales.</p>
-            <p className="mb-1">El Estudio revisa y activa cada premio antes de publicarlo.</p>
+            <p className="mb-2 text-left max-w-2xl mx-auto">• 200€, 500€ o 1.000€ en artículos reales.</p>
+            <p className="mb-4 text-left max-w-2xl mx-auto">• El <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Estudio</span> revisa y activa cada premio antes de publicarlo.</p>
 
             <div className="h-8" />
 
             <p className="mb-1">Esto quiere decir que si tu negocio precisa espacios publicitarios</p>
-            <p className="mb-1">por valor de 500€, puedes abonar esos 40€ de seguro publicitario mínimos</p>
-            <p className="mb-1">y el resto cubrirlos con distintas tarjetas de regalo. ¿Es posible?</p>
-            <p className="mb-1">Sí, esto es posible y para ello Brovision ha desarrollado un Prompt</p>
-            <p className="mb-1">para que lo puedas analizar junto a tu IA para elaborar la mejor estrategia para tu negocio.</p>
+            <p className="mb-1">por valor de 500€, puedes cubrirlos con distintas tarjetas de regalo,</p>
+            <p className="mb-1">y solo abonar esos <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">60€</span> de seguro publicitario de tope. ¿Es posible?</p>
+            <p className="mb-1">Sí, esto es posible y para ello <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Bro7Vision</span> ha desarrollado un <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Prompt</span>.</p>
+            <p className="mb-1">Para que lo puedas analizar junto a tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">IA</span>, y así elaborar</p>
+            <p className="mb-1">la mejor estrategia para tu negocio.</p>
 
             <div className="h-6" />
 
-            <p className="mb-1">La estrategia base consiste en calcular el presupuesto total de los</p>
-            <p className="mb-1">espacios publicitarios que necesites y sobre todo medir los precios por alcance.</p>
+            <p className="mb-1">La estrategia base consiste en calcular</p>
+            <p className="mb-1">el presupuesto total de los espacios publicitarios que necesites</p>
+            <p className="mb-1">y sobre todo medir los <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">precios por alcance geográfico</span>.</p>
 
             <div className="h-6" />
 
-            <p className="mb-1">Una vez que tengas el coste total de lo que necesitas, hay que construir un Nido</p>
-            <p className="mb-1">con un surtido de varios tipos de Tarjetas de regalo desactivadas,</p>
-            <p className="mb-1">para luego activarlas en el Carrito general para que se descuente</p>
+            <p className="mb-1">Una vez que tengas el coste total de lo que necesitas, hay que construir un <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Nido</span></p>
+            <p className="mb-1">con un surtido de varios tipos de <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">Tarjetas de regalo</span> inactivas,</p>
+            <p className="mb-1">para luego activarlas en el <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Carrito</span> general para que se descuente</p>
             <p className="mb-1">el monto a abonar por esos espacios publicitarios que necesitas.</p>
 
             <div className="h-8" />
 
             <p className="mb-1 text-white font-bold">DÓNDE CREAR LAS TARJETAS Y CAMPAÑAS:</p>
-            <p className="mb-1">Todo se gestiona desde el Backstage de Brovision, en la pestaña "COMERCIO".</p>
+            <p className="mb-1">Todo se gestiona desde el <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Backstage</span> de <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Bro7Vision</span>, en la pestaña <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">"COMERCIO"</span>.</p>
             <p className="mb-1">Ahí encontrarás:</p>
-            <p className="mb-1">- "Tarjetas de Regalo" para crear tu Nido de tarjetas</p>
-            <p className="mb-1">- "Carrito" para revisar tu Nido y activar las tarjetas antes de confirmar tu campaña</p>
-            <p className="mb-1">El comercio debe tener cuenta activa en Brovision para acceder al Backstage.</p>
-            <p className="mb-1">Si aún no tienes cuenta, solicítala en tu Booster Studio, donde está tu perfil en la pestaña ANUNCIANTE o escribe a{' '}
+            <p className="mb-2 text-left max-w-2xl mx-auto">• "Tarjetas de Regalo" para crear tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Nido</span> de tarjetas y Campañas.</p>
+            <p className="mb-4 text-left max-w-2xl mx-auto">• "Carrito" para revisar tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Nido</span> y activar las tarjetas antes de confirmar tu campaña</p>
+            <p className="mb-1">El comercio debe tener cuenta activa en <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Bro7Vision</span> para acceder al <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Backstage</span>.</p>
+            <p className="mb-1">Si aún no tienes cuenta, solicítala en tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Booster Studio</span>, donde está tu perfil en la pestaña ANUNCIANTE o escribe a{' '}
               <a href="mailto:contacto@bro7vision.com" className="text-cyan-400 hover:text-cyan-300 underline">contacto@bro7vision.com</a>
             </p>
 
             <div className="h-8" />
 
             <p className="mb-1 text-white font-bold">El Nido.</p>
-            <p className="mb-1">Antes de contratar publicidad, creas tus tarjetas</p>
-            <p className="mb-1">y las dejas en el Nido con un nombre de campaña.</p>
-            <p className="mb-1">Cuando vayas al Carrito a confirmar tu contrato,</p>
+            <p className="mb-1">Antes de contratar publicidad, creas tus tarjetas y las dejas en el <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Nido</span></p>
+            <p className="mb-1">con un nombre de campaña.</p>
+            <p className="mb-1">Cuando vayas al <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Carrito</span> a confirmar tu contrato,</p>
             <p className="mb-1">el sistema aplica el descuento automáticamente.</p>
 
             <div className="h-8" />
 
             <p className="mb-1">¿No sabes por dónde empezar?</p>
-            <p className="mb-1">Copia el Prompt y llévalo a tu IA favorita.</p>
-            <p className="mb-1">Te hará las preguntas clave y calculará tu mezcla óptima.</p>
+            <p className="mb-1">En la pestaña <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">PROMPT IA</span> tienes un mega Prompt para copiarlo</p>
+            <p className="mb-1">y llevarlo a tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">IA favorita</span>.</p>
+            <p className="mb-1">Te hará las preguntas clave y calculará una <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">campaña publicitaria óptima</span>.</p>
 
           </div>
 
-          <PromptBlock tabLabel="AHORRA CON TARJETAS DE REGALO" promptText={PROMPT_GENERAL} showIntro={false} />
+        </div>
+      )}
+
+      {active === 'prompt_ia' && (
+        <div className="flex flex-col items-center py-12 px-6 text-gray-700"
+          style={{ fontFamily: INTER }}>
+
+          <div style={{ fontFamily: INTER }}
+            className="text-xl md:text-2xl text-gray-300 leading-relaxed md:leading-loose text-center font-medium max-w-6xl mx-auto mb-12">
+
+            <p className="mb-4">En <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Bro7Vision</span> hemos preparado un <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Prompt</span> especial para todos los espacios.</p>
+
+            <div className="h-6" />
+
+            <p className="mb-4">Cópialo y llévalo a tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">IA favorita</span>.</p>
+
+            <div className="h-6" />
+
+            <p className="mb-4">Dentro encontrarás todo lo que necesita saber:</p>
+
+            <p className="mb-2 text-left max-w-2xl mx-auto">• Qué es <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Bro7Vision</span></p>
+            <p className="mb-2 text-left max-w-2xl mx-auto">• Cómo armar una <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">campaña publicitaria</span> eficiente</p>
+            <p className="mb-2 text-left max-w-2xl mx-auto">• Cómo diseñar y combinar las <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">tarjetas de regalo</span></p>
+            <p className="mb-2 text-left max-w-2xl mx-auto">• Medir los <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">alcances geográficos</span>, calcular <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">precios</span></p>
+            <p className="mb-2 text-left max-w-2xl mx-auto">• Cómo funcionan los <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 font-bold">formatos</span>, las <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 font-bold">dimensiones</span></p>
+            <p className="mb-2 text-left max-w-2xl mx-auto">• <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 font-bold">Características técnicas</span> de los mismos</p>
+            <p className="mb-4 text-left max-w-2xl mx-auto">• <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Ejemplos visuales</span> con enlaces directos</p>
+
+            <p className="mb-4">Para que tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">IA</span> los analice si puede navegar.</p>
+
+            <div className="h-6" />
+
+            <p className="mb-4">Pulsa el botón, pégalo y deja que tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">IA</span> trabaje.</p>
+
+            <div className="h-6" />
+
+            <p className="">A ver qué te cuenta.</p>
+
+          </div>
+
+          <CopyButtonInline promptText={PROMPT_GENERAL} />
+
         </div>
       )}
 

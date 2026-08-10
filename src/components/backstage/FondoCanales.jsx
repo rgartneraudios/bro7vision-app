@@ -1,14 +1,19 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { CHANNELS, FASES, TURNOS } from '../../data/citycodes';
 
 const ACTIVE_STATES = ['EN_CASTING', 'EN_RODAJE', 'EN_DEBATE', 'LISTO_PARA_ESTRENO', 'EN_CARTELERA'];
-const ORBITRON = "'Orbitron', monospace";
+const NOTO = "'Noto Sans', sans-serif";
 
 const EscenarioCard = ({ slot, butacas, onSelectSlot, role, miniaturaUrl }) => {
   const videoRef = useRef(null);
   const isPC = slot.dispositivo === 0;
-
   const thumbSrc = miniaturaUrl ?? null;
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !thumbSrc) return;
+    video.load();
+  }, [thumbSrc]);
 
   const slotButacas = butacas.filter(b => {
     if (!ACTIVE_STATES.includes(b.estado)) return false;
@@ -38,7 +43,7 @@ const EscenarioCard = ({ slot, butacas, onSelectSlot, role, miniaturaUrl }) => {
     <button
       onClick={ocupado ? undefined : onClick}
       disabled={ocupado}
-      style={{ fontFamily: ORBITRON }}
+      style={{ fontFamily: NOTO }}
       className={`text-[10px] px-2 py-1 rounded font-bold uppercase tracking-tight border transition-all ${
         ocupado
           ? 'bg-red-950/40 text-red-500/60 border-red-900/30 cursor-default'
@@ -58,7 +63,7 @@ const EscenarioCard = ({ slot, butacas, onSelectSlot, role, miniaturaUrl }) => {
           <video
             ref={videoRef}
             src={thumbSrc}
-            muted loop playsInline preload="none"
+            muted loop playsInline preload="metadata"
             className="opacity-40 group-hover:opacity-95 transition-opacity duration-300"
             style={isPC
               ? { width: '100%', height: '100%', objectFit: 'cover' }
@@ -71,7 +76,7 @@ const EscenarioCard = ({ slot, butacas, onSelectSlot, role, miniaturaUrl }) => {
 
         {/* Badge dispositivo */}
         <span
-          style={{ fontFamily: ORBITRON }}
+          style={{ fontFamily: NOTO }}
           className={`absolute top-1.5 right-1.5 text-[8px] font-black px-1.5 py-[2px] rounded z-10 ${
             isPC ? 'bg-cyan-950/90 text-cyan-400' : 'bg-fuchsia-950/90 text-fuchsia-400'
           }`}
@@ -84,7 +89,7 @@ const EscenarioCard = ({ slot, butacas, onSelectSlot, role, miniaturaUrl }) => {
       {/* Vista Montador */}
       {!isAdvertiser && (
         <div className="px-2 py-2 bg-zinc-900">
-          <div style={{ fontFamily: ORBITRON }} className="text-[11px] font-bold leading-snug">
+          <div style={{ fontFamily: NOTO }} className="text-[11px] font-bold leading-snug">
             {ocupadoMundial
               ? <span className="text-red-400">🔴 GLOBAL</span>
               : ocupadoNacional

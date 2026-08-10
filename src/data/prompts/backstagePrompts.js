@@ -42,16 +42,22 @@ El comercio solo paga en efectivo el Seguro Publicitario.
 
 Brovision siempre cobra un seguro mínimo en efectivo,
 independientemente de cuántas tarjetas emita el comercio.
-Fórmula: seguro = 20% del presupuesto, con un máximo de 40€.
+
+Fórmula: seguro = 20% del presupuesto, con tope según tramo:
+
+  Hasta 300€ de presupuesto   → 20%, tope 40€
+  De 300€ a 500€              → 20%, tope 50€
+  Más de 500€                 → 20%, tope 60€
 
 Ejemplos:
 - Presupuesto 20€   → seguro 4€
 - Presupuesto 100€  → seguro 20€
-- Presupuesto 200€  → seguro 40€ (tope)
-- Presupuesto 500€  → seguro 40€ (tope)
+- Presupuesto 200€  → seguro 40€  (tope tramo 1)
+- Presupuesto 300€  → seguro 50€  (tope tramo 2)
+- Presupuesto 500€  → seguro 50€  (tope tramo 2)
+- Presupuesto 800€  → seguro 60€  (tope tramo 3)
 
 El seguro no es negociable y no puede cubrirse con tarjetas.
-
 
 — TIPOS DE TARJETA Y SUS RATIOS —
 

@@ -27,6 +27,7 @@ const slotLabel = (slot) => TURNOS[slot.turno];
 const slotNum   = (slot) => slot.turno;
 
 const SYNE = "'Exo 2', sans-serif";
+const NOTO = "'Noto Sans', sans-serif";
 
 const COLOR_DIRECTOR = '#00ff88';
 const COLOR_PRODUCTOR = '#ff00ff';
@@ -37,7 +38,7 @@ const ColHeaders = ({ slots, prefix, hexColor }) => (
     <div className="grid grid-cols-4 gap-3 flex-1">
       {slots.map((slot, i) => (
         <div key={i} className="text-center">
-          <div style={{ fontFamily: SYNE, color: hexColor, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', lineHeight: 1.3 }} className="truncate">
+          <div style={{ fontFamily: NOTO, color: hexColor, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', lineHeight: 1.3 }} className="truncate">
             {prefix} · T{slotNum(slot)} &nbsp; {slotLabel(slot)}
           </div>
         </div>
@@ -185,7 +186,7 @@ const MarketplaceTab = ({ session, profile, role: roleProp }) => {
 
                 {/* Fila PC */}
                 <div className="flex items-start gap-2 mb-6">
-                  <span style={{ fontFamily: SYNE, color: rolColor, fontSize: 9, fontWeight: 600, letterSpacing: '0.15em' }} className="uppercase w-8 pt-2 shrink-0">
+                  <span style={{ fontFamily: NOTO, color: rolColor, fontSize: 9, fontWeight: 600, letterSpacing: '0.15em' }} className="uppercase w-8 pt-2 shrink-0">
                     PC
                   </span>
                   <div className="grid grid-cols-4 gap-3 flex-1">
@@ -208,7 +209,7 @@ const MarketplaceTab = ({ session, profile, role: roleProp }) => {
 
                 {/* Fila MOVIL */}
                 <div className="flex items-start gap-2">
-                  <span style={{ fontFamily: SYNE, color: rolColor, fontSize: 9, fontWeight: 600, letterSpacing: '0.15em' }} className="uppercase w-8 pt-2 shrink-0">
+                  <span style={{ fontFamily: NOTO, color: rolColor, fontSize: 9, fontWeight: 600, letterSpacing: '0.15em' }} className="uppercase w-8 pt-2 shrink-0">
                     MOVIL 
                   </span>
                   <div className="grid grid-cols-4 gap-3 flex-1">
