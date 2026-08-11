@@ -104,7 +104,7 @@ const ComoFuncionaTabs = () => {
   const [active, setActive] = useState('tarjetas');
   return (
     <div className="flex flex-col gap-0">
-      <div className="flex border-b border-white/10 justify-center">
+      <div className="flex border-b border-white/10 justify-center gap-8">
         {ESPACIOS_TABS.map(t => (
           <button
             key={t.id}
@@ -112,7 +112,7 @@ const ComoFuncionaTabs = () => {
             style={{ fontFamily: HEADING }}
             className={`px-4 py-4 text-xs md:text-sm font-black uppercase tracking-widest transition-all ${
               active === t.id
-                ? 'text-white border-b-2 border-cyan-400 bg-cyan-900/20 shadow-[0_0_20px_rgba(0,255,200,0.15)]'
+                ? 'text-white border-b-2 border-blue-400 bg-blue-900/20 shadow-[0_0_20px_rgba(96,165,250,0.15)]'
                 : 'text-gray-600 hover:text-gray-300 hover:bg-white/5'
             }`}
           >
@@ -331,10 +331,10 @@ const MANIFIESTO = [
     color: 'text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-indigo-600',
     cuerpo: [
       [{ t: 'Nuestros espacios son de dos tipos:' }],
-      [{ t: 'Publicidad muda', c: 'text-pink-200' }],
-      [{ t: '(Fondos Reality Trivia, Slide Rail, Games, Tarjetas de Regalo)', c: 'text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-indigo-500' }],
+      [{ t: 'Publicidad muda :', c: 'text-transparent bg-clip-text bg-gradient-to-r from-orange-200 to-orange-400', s: '0 0 12px rgba(251,146,60,0.6), 0 0 30px rgba(251,146,60,0.4)' }],
+      [{ t: '(Fondos Reality Trivia, Slide Trivia Rail, Games Trivia, Tarjetas de Regalo)', c: 'text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-indigo-500' }],
       [{ t: 'presencia visual limpia', c: 'text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-indigo-500' }, { t: ' mientras el usuario juega o explora;' }],
-      [{ t: 'Menciones Bro7Band', c: 'text-pink-200' }, { t: ' :' }],
+      [{ t: 'Menciones Bro7Band :', c: 'text-transparent bg-clip-text bg-gradient-to-r from-orange-200 to-orange-400', s: '0 0 12px rgba(251,146,60,0.6), 0 0 30px rgba(251,146,60,0.4)' }],
       [{ t: 'integración no intrusiva dentro del universo de los personajes.' }],
       [{ t: 'Formatos distintos, mismo principio:' }],
       [{ t: 'transparencia, contexto positivo', c: 'text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-indigo-500' }, { t: ' y ' }, { t: 'potencial real de conversión.', c: 'text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-indigo-500' }],
@@ -504,15 +504,15 @@ const EstudioMarketingTab = () => {
 
           <div className="w-24 h-px bg-gradient-to-r from-transparent via-gray-500 to-transparent" />
 
-          {/* ─── SLIDE RAIL ─── */}
+          {/* ─── SLIDE TRIVIA RAIL ─── */}
           <div className="flex flex-col items-center text-center gap-6 w-full">
             <h3 className="text-2xl text-white uppercase tracking-widest font-bold"
               style={{ fontFamily: HEADING }}>
-              SLIDE RAIL TRIVIA — CANJES DE LUNAS | SHOP AMIGOS
+              SLIDE TRIVIA RAIL — CANJES DE LUNAS | SHOP AMIGOS
             </h3>
             <div style={{ fontFamily: INTER }}
               className="text-lg text-white/90 leading-relaxed text-center max-w-3xl font-medium">
-              <p>Slide Rail Trivia vive en dos sectores clave:</p>
+              <p>Slide Trivia Rail vive en dos sectores clave:</p>
               <p>Canjes de Lunas y Shop Amigos.</p>
               <br />
               <p>En el lateral izquierdo circula un carrusel de 8 banners.</p>
@@ -537,18 +537,18 @@ const EstudioMarketingTab = () => {
             </div>
             <img
               src="/images/slideRail_Trivia.webp"
-              alt="Slide Rail Trivia"
+              alt="Slide Trivia Rail"
               className="w-full max-w-3xl rounded-lg border border-white/10 shadow-[0_0_20px_rgba(168,85,247,0.15)]"
             />
           </div>
 
           <div className="w-24 h-px bg-gradient-to-r from-transparent via-gray-500 to-transparent" />
 
-          {/* ─── GAMES ─── */}
+          {/* ─── GAMES TRIVIA ─── */}
           <div className="flex flex-col items-center text-center gap-6 w-full">
             <h3 className="text-2xl text-white uppercase tracking-widest font-bold"
               style={{ fontFamily: HEADING }}>
-              GAMES — COSMIC PORTAL | THE SEVEN GATES
+              GAMES TRIVIA — COSMIC PORTAL | THE SEVEN GATES
             </h3>
             <div style={{ fontFamily: INTER }}
               className="text-lg text-white/90 leading-relaxed text-center max-w-3xl font-medium">
