@@ -88,13 +88,6 @@ const REVERSO_INTRO = {
   '100':    ()      => `Descuento del 100% en el producto o servicio descrito a continuación.`,
 };
 
-const ALCANCE_OPCIONES = [
-  { value: 'LOCAL',          label: 'Local'          },
-  { value: 'CERCANIAS',      label: 'Cercanías'      },
-  { value: 'NACIONAL',       label: 'Nacional'       },
-  { value: 'INTERNACIONAL',  label: 'Internacional'  },
-];
-
 const SUPABASE_STORAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/comercio-banners`;
 
 export default function TarjetasRegalo({ profile }) {
@@ -113,7 +106,6 @@ export default function TarjetasRegalo({ profile }) {
   const [compraMinima, setCompraMinima] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [bannerUrl, setBannerUrl]     = useState('');
-  const [alcance, setAlcance]         = useState([]);
   const [palabraClave1, setPalabraClave1] = useState('');
   const [palabraClave2, setPalabraClave2] = useState('');
 
@@ -122,8 +114,15 @@ export default function TarjetasRegalo({ profile }) {
   const [tipoPremio,     setTipoPremio]     = useState('digital');
   const [valorDiamante,  setValorDiamante]  = useState('');
 
-  const [nombreCampana, setNombreCampana] = useState('');
   const [calcPresupuesto, setCalcPresupuesto] = useState('');
+  const [nidos, setNidos]                   = useState([]);
+  const [activeNidoId, setActiveNidoId]     = useState(null);
+  const [activeNidoNombre, setActiveNidoNombre] = useState('');
+  const [activeNidoAlcance, setActiveNidoAlcance] = useState('');
+  const [nidoNombreInput, setNidoNombreInput] = useState('');
+  const [nidoAlcanceInput, setNidoAlcanceInput] = useState('');
+  const [creandoNido, setCreandoNido]       = useState(false);
+  const [nidoMsg, setNidoMsg]              = useState('');
 
   const isDiamante     = tier === 'DIAMANTE';
   const diamanteConfig = isDiamante && valorDiamante
@@ -160,7 +159,23 @@ export default function TarjetasRegalo({ profile }) {
     setLoading(false);
   }, [userId]);
 
-  useEffect(() => { loadTarjetas(); }, [loadTarjetas]);
+  const loadNidos = useCallback(async () => {
+    if (!userId) return;
+    const { data } = await supabase
+      .from('comercio_nidos')
+      .select(`
+        *,
+        comercio_cupones (
+          id, tipo_tarjeta, valor_euros,
+          emision_total, emision_usada
+        )
+      `)
+      .eq('comercio_user_id', userId)
+      .order('created_at', { ascending: false });
+    setNidos(data || []);
+  }, [userId]);
+
+  useEffect(() => { loadTarjetas(); loadNidos(); }, [loadTarjetas, loadNidos]);
 
   const [bsSolicitud, setBsSolicitud] = useState(null);
 
@@ -177,11 +192,14 @@ export default function TarjetasRegalo({ profile }) {
   const resetForm = () => {
     setEditando(null);
     setTier('PLATA'); setValor(''); setCompraMinima('');
-    setDescripcion(''); setBannerUrl(''); setAlcance([]);
+    setDescripcion(''); setBannerUrl('');
     setPalabraClave1(''); setPalabraClave2('');
     setEmisionTotal('');
     setNombrePremio(''); setTipoPremio('digital'); setValorDiamante('');
-    setNombreCampana(''); setCalcPresupuesto('');
+    setCalcPresupuesto('');
+    setActiveNidoId(null);
+    setActiveNidoNombre('');
+    setActiveNidoAlcance('');
     setMsg('');
   };
 
@@ -220,10 +238,6 @@ export default function TarjetasRegalo({ profile }) {
     }
   };
 
-  const toggleAlcance = (val) => {
-    setAlcance(prev => prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val]);
-  };
-
   const handleSave = async () => {
     setMsg('');
 
@@ -253,8 +267,13 @@ export default function TarjetasRegalo({ profile }) {
       return;
     }
 
-    if (!userId || !tier || !valor || alcance.length === 0) {
-      setMsg('Completa tier, valor y al menos un alcance.'); return;
+    if (!activeNidoId) {
+      setMsg('Crea o selecciona un Nido antes de añadir tarjetas.');
+      return;
+    }
+
+    if (!userId || !tier || !valor) {
+      setMsg('Completa tier y valor.'); return;
     }
     if (tier === 'PLATA' && compraMinimaNum && !ratioOk) {
       setMsg(`La compra mínima no puede superar ${valorEuros ? valorEuros * 10 : '—'}€ (máx 10× el descuento).`); return;
@@ -264,9 +283,6 @@ export default function TarjetasRegalo({ profile }) {
     }
     if (parseInt(emisionTotal) > 10) {
       setMsg('Máximo 10 tarjetas por tipo y valor por Fase Lunar.'); return;
-    }
-    if (!nombreCampana.trim()) {
-      setMsg('El nombre de campaña es obligatorio.'); return;
     }
 
     setSaving(true);
@@ -281,10 +297,9 @@ export default function TarjetasRegalo({ profile }) {
       descripcion:     descripcion || null,
       sector:          'PRODUCTO',
       banner_url:      bannerUrl  || null,
-      alcance:         alcance,
+      nido_id:         activeNidoId,
       palabra_clave_1: palabraClave1 || null,
       palabra_clave_2: palabraClave2 || null,
-      nombre_campana:  nombreCampana.trim() || null,
       activo:          false,
       estado_canje:    'NIDO',
       emision_usada:   0,
@@ -313,11 +328,10 @@ export default function TarjetasRegalo({ profile }) {
     setCompraMinima(t.compra_minima || '');
     setDescripcion(t.descripcion || '');
     setBannerUrl(t.banner_url || '');
-    setAlcance(t.alcance || []);
+    setActiveNidoId(t.nido_id || null);
     setPalabraClave1(t.palabra_clave_1 || '');
     setPalabraClave2(t.palabra_clave_2 || '');
     setEmisionTotal(t.emision_total ? String(t.emision_total) : '');
-    setNombreCampana(t.nombre_campana || '');
     setCalcPresupuesto('');
     setValorDiamante('');
     setNombrePremio('');
@@ -330,6 +344,32 @@ export default function TarjetasRegalo({ profile }) {
       .update({ activo: !t.activo, estado_canje: !t.activo ? 'ACTIVO' : 'PAUSADO' })
       .eq('id', t.id);
     loadTarjetas();
+  };
+
+  const handleCrearNido = async () => {
+    if (!nidoNombreInput.trim() || !nidoAlcanceInput) {
+      setNidoMsg('Nombre y alcance son obligatorios.');
+      return;
+    }
+    setCreandoNido(true);
+    const { data, error } = await supabase
+      .from('comercio_nidos')
+      .insert({
+        comercio_user_id: userId,
+        nombre_nido:      nidoNombreInput.trim(),
+        alcance:          nidoAlcanceInput,
+      })
+      .select()
+      .single();
+    setCreandoNido(false);
+    if (error) { setNidoMsg(`Error: ${error.message}`); return; }
+    setActiveNidoId(data.id);
+    setActiveNidoNombre(data.nombre_nido);
+    setActiveNidoAlcance(data.alcance);
+    setNidoNombreInput('');
+    setNidoAlcanceInput('');
+    setNidoMsg('');
+    loadNidos();
   };
 
   const inputStyle = {
@@ -353,23 +393,6 @@ export default function TarjetasRegalo({ profile }) {
     marginBottom: 6, display: 'block',
   };
 
-  const nidoAgrupado = tarjetas
-    .filter(t => t.estado_canje === 'NIDO')
-    .reduce((acc, t) => {
-      const key = t.nombre_campana || 'Sin nombre';
-      if (!acc[key]) acc[key] = [];
-      acc[key].push(t);
-      return acc;
-    }, {});
-
-  const valorNidoCampana = (tarjetas) => tarjetas.reduce((sum, t) => {
-    const euros = parseFloat(t.valor_euros) || 5;
-    const ratio = t.tipo_tarjeta === 'PLATA' ? 0.50 : 0.80;
-    return sum + euros * (t.emision_total || 1) * ratio;
-  }, 0);
-
-  const nidoKeys = Object.keys(nidoAgrupado);
-
   return (
     <>
       <style>{`
@@ -383,7 +406,7 @@ export default function TarjetasRegalo({ profile }) {
           100% { background-position: -200% center; }
         }
       `}</style>
-      <div style={{ padding: '32px 40px', maxWidth: 1100, margin: '0 auto', fontFamily: SYNE }}>
+      <div style={{ padding: '32px 40px', maxWidth: 1400, margin: '0 auto', fontFamily: SYNE }}>
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 32 }}>
@@ -401,7 +424,7 @@ export default function TarjetasRegalo({ profile }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
 
         {/* Fila superior: formulario + preview */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 32, alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.8fr 1fr 1.2fr', gap: 32, alignItems: 'start' }}>
 
           {/* ── FORMULARIO ── */}
           <div style={{
@@ -491,21 +514,6 @@ export default function TarjetasRegalo({ profile }) {
               textTransform: 'uppercase', margin: '0 0 24px' }}>
               {editando ? '✏️ Editar Tarjeta del Nido' : '+ Añadir Tarjeta al Nido'}
             </h3>
-
-            {/* NOMBRE CAMPAÑA */}
-            <div style={{ marginBottom: 20 }}>
-              <span style={labelStyle}>Nombre de campaña *</span>
-              <input
-                type="text"
-                placeholder="Ej: Campaña Julio 2026 — Verano Madrid"
-                value={nombreCampana}
-                onChange={e => setNombreCampana(e.target.value)}
-                style={inputStyle}
-              />
-              <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 6 }}>
-                Identifica este lote de tarjetas. Podrás aplicarlo desde el Carrito.
-              </p>
-            </div>
 
             {/* TIER */}
             <div style={{ marginBottom: 20 }}>
@@ -674,24 +682,6 @@ export default function TarjetasRegalo({ profile }) {
                   </select>
                 </div>
 
-                {/* LUNAS — solo lectura */}
-                {valor && (
-                  <div style={{
-                    marginBottom: 20, padding: '14px 18px',
-                    background: 'rgba(250,204,21,0.07)',
-                    border: '1px solid rgba(250,204,21,0.2)',
-                    borderRadius: 12, display: 'flex', alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}>
-                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', letterSpacing: 2, textTransform: 'uppercase' }}>
-                      Coste en Lunas
-                    </span>
-                    <span style={{ fontSize: 22, fontWeight: 900, color: '#facc15', letterSpacing: 1 }}>
-                      🌙 {costeLunas.toLocaleString()}
-                    </span>
-                  </div>
-                )}
-
                 {/* COMPRA MÍNIMA — solo PLATA con validación */}
                 {tier === 'PLATA' && (
                   <div style={{ marginBottom: 20 }}>
@@ -793,28 +783,39 @@ export default function TarjetasRegalo({ profile }) {
               )}
             </div>
 
-            {/* ALCANCE */}
-            <div style={{ marginBottom: 24 }}>
-              <span style={labelStyle}>Alcance geográfico</span>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {ALCANCE_OPCIONES.map(op => {
-                  const active = alcance.includes(op.value);
-                  return (
-                    <button key={op.value} onClick={() => toggleAlcance(op.value)}
-                      style={{
-                        padding: '7px 14px', borderRadius: 20, fontSize: 11,
-                        fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase',
-                        cursor: 'pointer', fontFamily: SYNE, transition: 'all 0.2s',
-                        background: active ? 'rgba(0,229,212,0.12)' : 'rgba(255,255,255,0.04)',
-                        border: `1px solid ${active ? '#00e5d4' : 'rgba(255,255,255,0.1)'}`,
-                        color: active ? '#00e5d4' : 'rgba(255,255,255,0.4)',
-                      }}>
-                      {op.label}
-                    </button>
-                  );
-                })}
+            {/* NIDO ACTIVO — indicador */}
+            {activeNidoId ? (
+              <div style={{
+                marginBottom: 16, padding: '10px 14px', borderRadius: 10,
+                background: 'rgba(74,222,128,0.08)',
+                border: '1px solid rgba(74,222,128,0.2)',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              }}>
+                <span style={{ fontSize: 11, color: '#4ade80', fontWeight: 700 }}>
+                  🧺 {activeNidoNombre} · {activeNidoAlcance}
+                </span>
+                <button onClick={() => {
+                  setActiveNidoId(null);
+                  setActiveNidoNombre('');
+                  setActiveNidoAlcance('');
+                }} style={{
+                  fontSize: 10, color: 'rgba(255,255,255,0.4)',
+                  background: 'none', border: 'none', cursor: 'pointer', fontFamily: SYNE,
+                }}>
+                  CAMBIAR
+                </button>
               </div>
-            </div>
+            ) : (
+              <div style={{
+                marginBottom: 16, padding: '10px 14px', borderRadius: 10,
+                background: 'rgba(248,113,113,0.06)',
+                border: '1px solid rgba(248,113,113,0.15)',
+              }}>
+                <span style={{ fontSize: 11, color: 'rgba(248,113,113,0.7)' }}>
+                  ⚠️ Crea o selecciona un Nido en el panel lateral para añadir tarjetas.
+                </span>
+              </div>
+            )}
 
             {/* ACCIONES */}
             {msg && (
@@ -830,17 +831,17 @@ export default function TarjetasRegalo({ profile }) {
             )}
 
             <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={handleSave} disabled={saving}
+              <button onClick={handleSave} disabled={saving || (!editando && !activeNidoId)}
                 style={{
                   flex: 1, padding: '13px 0',
                   background: saving ? 'rgba(168,85,247,0.1)' : 'rgba(168,85,247,0.2)',
                   border: '1px solid rgba(168,85,247,0.5)',
                   borderRadius: 12, color: '#c084fc',
                   fontSize: 12, fontWeight: 900, letterSpacing: 2,
-                  textTransform: 'uppercase', cursor: saving ? 'not-allowed' : 'pointer',
+                  textTransform: 'uppercase', cursor: saving || (!editando && !activeNidoId) ? 'not-allowed' : 'pointer',
                   fontFamily: SYNE,
                 }}>
-                {saving ? 'GUARDANDO...' : editando ? 'ACTUALIZAR' : 'CREAR TARJETA'}
+                {saving ? 'GUARDANDO...' : editando ? 'ACTUALIZAR' : 'AÑADIR AL NIDO'}
               </button>
               {editando && (
                 <button onClick={resetForm}
@@ -890,10 +891,19 @@ export default function TarjetasRegalo({ profile }) {
 
       {/* Overlay asset PNG transparente */}
       {(() => {
-        const valorKey = tier === 'DIAMANTE'
-          ? valorDiamante
-          : (valor || (tier === 'LUNA100' ? '100pct' : 'ENVIO_GRATIS'));
         const tierAssetKey = tier === 'LUNA100' ? '100' : tier;
+        let valorKey;
+        if (tier === 'DIAMANTE') {
+          valorKey = valorDiamante || Object.keys(CARD_ASSETS.DIAMANTE)[0];
+        } else if (tier === 'ORO') {
+          valorKey = valor || Object.keys(CARD_ASSETS.ORO)[0];
+        } else if (tier === 'PLATA') {
+          valorKey = valor || 'ENVIO_GRATIS';
+        } else if (tier === 'LUNA100') {
+          valorKey = '100pct';
+        } else {
+          valorKey = 'ENVIO_GRATIS';
+        }
         const assetName = CARD_ASSETS[tierAssetKey]?.[valorKey];
         return assetName ? (
           <img
@@ -1030,61 +1040,238 @@ export default function TarjetasRegalo({ profile }) {
             </p>
           </div>
 
-        </div>
+          {/* ── TERMINAL PRE-NIDO ── */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-        {/* Bloque Mis Nidos */}
-        {nidoKeys.length > 0 && (
-          <div style={{ marginBottom: 40 }}>
-            <h3 style={{ fontSize: 13, fontWeight: 700, color: '#facc15', letterSpacing: 3,
-              textTransform: 'uppercase', margin: '0 0 20px' }}>
-              🧺 Mis Nidos ({nidoKeys.length})
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {nidoKeys.map(key => {
-                const grupo = nidoAgrupado[key];
-                const valor = valorNidoCampana(grupo);
-                const pct = Math.min(valor / 1000 * 100, 100);
-                const resumen = grupo.reduce((acc, t) => {
-                  const label = `${t.tipo_tarjeta} ${t.valor_euros || 5}€`;
-                  acc[label] = (acc[label] || 0) + (t.emision_total || 1);
-                  return acc;
-                }, {});
-                const resumenStr = Object.entries(resumen)
-                  .map(([lbl, cnt]) => `${cnt} × ${lbl}`).join(' · ');
-                return (
-                  <div key={key} style={{
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(250,204,21,0.15)',
-                    borderRadius: 14, padding: '18px 22px',
-                  }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#facc15', marginBottom: 8 }}>
-                      🌙 {key}
-                    </div>
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginBottom: 10 }}>
-                      {resumenStr}
-                    </div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#4ade80', marginBottom: 10 }}>
-                      Valor en espacios: {valor.toFixed(2)}€
-                    </div>
-                    <div style={{
-                      width: '100%', height: 8, background: 'rgba(255,255,255,0.08)',
-                      borderRadius: 10, overflow: 'hidden',
-                    }}>
-                      <div style={{
-                        width: `${Math.min(pct, 100)}%`, height: '100%',
-                        background: 'linear-gradient(90deg, #facc15, #4ade80)',
-                        borderRadius: 10, transition: 'width 0.4s',
-                      }} />
-                    </div>
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>
-                      {valor.toFixed(0)}€ / 1000€
-                    </div>
+            {/* Crear Nido */}
+            {!activeNidoId ? (
+              <div style={{
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 20, padding: 24,
+              }}>
+                <h3 style={{ fontSize: 12, fontWeight: 700, color: '#facc15',
+                  letterSpacing: 3, textTransform: 'uppercase', margin: '0 0 20px' }}>
+                  🧺 Nuevo Nido
+                </h3>
+
+                <div style={{ marginBottom: 16 }}>
+                  <span style={labelStyle}>Nombre del Nido *</span>
+                  <input
+                    type="text"
+                    placeholder="Ej: Nido Verano 2026"
+                    value={nidoNombreInput}
+                    onChange={e => setNidoNombreInput(e.target.value)}
+                    style={inputStyle}
+                  />
+                </div>
+
+                <div style={{ marginBottom: 20 }}>
+                  <span style={labelStyle}>Alcance geográfico *</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {['LOCAL','CERCANIAS','NACIONAL','INTERNACIONAL'].map(op => (
+                      <button key={op} onClick={() => setNidoAlcanceInput(op)}
+                        style={{
+                          padding: '8px 14px', borderRadius: 10, fontSize: 11,
+                          fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase',
+                          cursor: 'pointer', fontFamily: SYNE, textAlign: 'left',
+                          transition: 'all 0.2s',
+                          background: nidoAlcanceInput === op
+                            ? 'rgba(0,229,212,0.12)' : 'rgba(255,255,255,0.04)',
+                          border: `1px solid ${nidoAlcanceInput === op
+                            ? '#00e5d4' : 'rgba(255,255,255,0.1)'}`,
+                          color: nidoAlcanceInput === op
+                            ? '#00e5d4' : 'rgba(255,255,255,0.4)',
+                        }}>
+                        {op === 'LOCAL' && '📍 Local'}
+                        {op === 'CERCANIAS' && '🗺️ Cercanías'}
+                        {op === 'NACIONAL' && '🇪🇸 Nacional'}
+                        {op === 'INTERNACIONAL' && '🌍 Internacional'}
+                      </button>
+                    ))}
                   </div>
-                );
-              })}
-            </div>
+                </div>
+
+                {nidoMsg && (
+                  <p style={{ fontSize: 11, color: '#f87171', marginBottom: 12 }}>{nidoMsg}</p>
+                )}
+
+                <button onClick={handleCrearNido} disabled={creandoNido}
+                  style={{
+                    width: '100%', padding: '12px 0',
+                    background: creandoNido
+                      ? 'rgba(250,204,21,0.1)' : 'rgba(250,204,21,0.18)',
+                    border: '1px solid rgba(250,204,21,0.4)',
+                    borderRadius: 12, color: '#facc15',
+                    fontSize: 12, fontWeight: 900, letterSpacing: 2,
+                    textTransform: 'uppercase', cursor: creandoNido ? 'not-allowed' : 'pointer',
+                    fontFamily: SYNE,
+                  }}>
+                  {creandoNido ? 'CREANDO...' : 'CREAR NIDO'}
+                </button>
+              </div>
+            ) : (
+              /* Nido activo — acumulador */
+              <div style={{
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(74,222,128,0.2)',
+                borderRadius: 20, padding: 24,
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between',
+                  alignItems: 'flex-start', marginBottom: 16 }}>
+                  <div>
+                    <h3 style={{ fontSize: 12, fontWeight: 700, color: '#4ade80',
+                      letterSpacing: 3, textTransform: 'uppercase', margin: '0 0 4px' }}>
+                      🧺 {activeNidoNombre}
+                    </h3>
+                    <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)',
+                      letterSpacing: 2, textTransform: 'uppercase' }}>
+                      {activeNidoAlcance}
+                    </span>
+                  </div>
+                  <button onClick={() => {
+                    setActiveNidoId(null);
+                    setActiveNidoNombre('');
+                    setActiveNidoAlcance('');
+                  }} style={{
+                    fontSize: 10, color: 'rgba(255,255,255,0.3)',
+                    background: 'none', border: 'none', cursor: 'pointer', fontFamily: SYNE,
+                  }}>
+                    CAMBIAR
+                  </button>
+                </div>
+
+                {/* Tarjetas en este nido */}
+                {(() => {
+                  const enNido = tarjetas.filter(t => t.nido_id === activeNidoId);
+                  const cobertura = enNido.reduce((sum, t) => {
+                    const euros = parseFloat(t.valor_euros) || 5;
+                    const ratio = t.tipo_tarjeta === 'PLATA' ? 0.50 : 0.80;
+                    return sum + euros * (t.emision_total || 1) * ratio;
+                  }, 0);
+                  return (
+                    <>
+                      {enNido.length === 0 ? (
+                        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)',
+                          textAlign: 'center', padding: '20px 0' }}>
+                          Aún no hay tarjetas en este Nido.
+                        </p>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+                          {enNido.map(t => {
+                            const ts = LUNA_STYLES[t.tipo_tarjeta] || LUNA_STYLES.PLATA;
+                            return (
+                              <div key={t.id} style={{
+                                display: 'flex', justifyContent: 'space-between',
+                                alignItems: 'center', padding: '8px 12px',
+                                background: 'rgba(255,255,255,0.03)',
+                                border: `1px solid ${ts.color}33`,
+                                borderRadius: 10,
+                              }}>
+                                <span style={{ fontSize: 11, color: ts.color, fontWeight: 700 }}>
+                                  {ts.badge}
+                                </span>
+                                <span style={{ fontSize: 13, fontWeight: 900, color: '#fff' }}>
+                                  {t.valor_euros != null ? `${t.valor_euros}€` : '—'}
+                                </span>
+                                <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>
+                                  ×{t.emision_total || 1}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                      {enNido.length > 0 && (
+                        <div style={{ padding: '10px 14px', borderRadius: 10,
+                          background: 'rgba(74,222,128,0.07)',
+                          border: '1px solid rgba(74,222,128,0.2)',
+                          display: 'flex', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
+                            Cobertura en espacios
+                          </span>
+                          <span style={{ fontSize: 14, fontWeight: 900, color: '#4ade80' }}>
+                            {cobertura.toFixed(2)}€
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* Mis Nidos */}
+            {nidos.length > 0 && (
+              <div style={{
+                background: 'rgba(255,255,255,0.02)',
+                border: '1px solid rgba(255,255,255,0.06)',
+                borderRadius: 20, padding: 24,
+              }}>
+                <h3 style={{ fontSize: 12, fontWeight: 700, color: '#a78bfa',
+                  letterSpacing: 3, textTransform: 'uppercase', margin: '0 0 16px' }}>
+                  Mis Nidos ({nidos.length})
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {nidos.map(n => {
+                    const tarjetasNido = n.comercio_cupones || [];
+                    const cobertura = tarjetasNido.reduce((sum, t) => {
+                      const euros = parseFloat(t.valor_euros) || 5;
+                      const ratio = t.tipo_tarjeta === 'PLATA' ? 0.50 : 0.80;
+                      return sum + euros * (t.emision_total || 1) * ratio;
+                    }, 0);
+                    const isActive = n.id === activeNidoId;
+                    return (
+                      <div key={n.id}
+                        onClick={() => {
+                          setActiveNidoId(n.id);
+                          setActiveNidoNombre(n.nombre_nido);
+                          setActiveNidoAlcance(n.alcance);
+                        }}
+                        style={{
+                          padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
+                          background: isActive
+                            ? 'rgba(74,222,128,0.06)' : 'rgba(255,255,255,0.02)',
+                          border: `1px solid ${isActive
+                            ? 'rgba(74,222,128,0.3)' : 'rgba(255,255,255,0.08)'}`,
+                          transition: 'all 0.2s',
+                        }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between',
+                          alignItems: 'center', marginBottom: 6 }}>
+                          <span style={{ fontSize: 12, fontWeight: 700,
+                            color: isActive ? '#4ade80' : '#fff' }}>
+                            🌙 {n.nombre_nido}
+                          </span>
+                          <span style={{
+                            fontSize: 9, fontWeight: 700, letterSpacing: 1,
+                            textTransform: 'uppercase', padding: '2px 8px',
+                            borderRadius: 20,
+                            background: n.activo
+                              ? 'rgba(74,222,128,0.15)' : 'rgba(255,255,255,0.06)',
+                            color: n.activo ? '#4ade80' : 'rgba(255,255,255,0.3)',
+                          }}>
+                            {n.activo ? 'ACTIVO' : 'INACTIVO'}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)',
+                            textTransform: 'uppercase', letterSpacing: 1 }}>
+                            {n.alcance} · {tarjetasNido.length} tarjetas
+                          </span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: '#4ade80' }}>
+                            {cobertura.toFixed(0)}€
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
           </div>
-        )}
+
+        </div>
 
         {/* Fila inferior: listado completo */}
         <div>
@@ -1139,6 +1326,14 @@ export default function TarjetasRegalo({ profile }) {
                         }}>
                           {ts.badge}
                         </span>
+                        {(() => {
+                          const nido = nidos.find(n => n.id === t.nido_id);
+                          return nido ? (
+                            <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', letterSpacing: 1, textTransform: 'uppercase' }}>
+                              🧺 {nido.nombre_nido}
+                            </span>
+                          ) : null;
+                        })()}
                         <span style={{ fontSize: 18, fontWeight: 900, color: ts.color, fontFamily: SYNE }}>
                           {t.valor_euros != null ? `${t.valor_euros}€` : LABEL_VALOR[t.tipo_tarjeta === '100' ? '100pct' : 'ENVIO_GRATIS']}
                         </span>
