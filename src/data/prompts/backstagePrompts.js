@@ -27,15 +27,21 @@ PARTE 1 — TARJETAS DE REGALO Y EL NIDO
 
 — EL NIDO —
 
-Antes de contratar publicidad, el comercio crea un lote de tarjetas
-que quedan en estado NIDO (inactivas).
-Al confirmar su campaña desde el Carrito,
+El Nido es una entidad propia que el comercio crea antes de añadir tarjetas.
+Primero se crea el Nido con un nombre y un alcance geográfico.
+Luego se le añaden las tarjetas desde el formulario.
+
+Ejemplo: Nido "Verano 2026 — Madrid Centro", alcance "SALA_CIUDAD: Madrid".
+Dentro de ese Nido se crean las tarjetas Luna Plata, Oro, etc.
+
+Al confirmar la campaña desde el Carrito,
 las tarjetas se activan y el descuento se aplica automáticamente al contrato.
-Cada lote lleva un nombre de campaña para identificarlo.
-Ejemplo: "Campaña Julio 2026 — Verano Madrid".
 
 Se puede cubrir el 100% del valor de los espacios publicitarios con tarjetas.
 El comercio solo paga en efectivo el Seguro Publicitario.
+
+Límite por Nido/Campaña: 1.000€ de presupuesto.
+Si el comercio quiere más cobertura, se crea otro Nido con su propio seguro.
 
 
 — EL SEGURO PUBLICITARIO —
@@ -43,21 +49,22 @@ El comercio solo paga en efectivo el Seguro Publicitario.
 Brovision siempre cobra un seguro mínimo en efectivo,
 independientemente de cuántas tarjetas emita el comercio.
 
-Fórmula: seguro = 20% del presupuesto, con tope según tramo:
+Fórmula definitiva: seguro = MIN(presupuesto × 0.20, 60€)
 
-  Hasta 300€ de presupuesto   → 20%, tope 40€
-  De 300€ a 500€              → 20%, tope 50€
-  Más de 500€                 → 20%, tope 60€
+El tope único es 60€. Se alcanza a los 300€ de presupuesto.
+Para presupuestos superiores a 300€, el seguro se congela en 60€.
 
 Ejemplos:
 - Presupuesto 20€   → seguro 4€
 - Presupuesto 100€  → seguro 20€
-- Presupuesto 200€  → seguro 40€  (tope tramo 1)
-- Presupuesto 300€  → seguro 50€  (tope tramo 2)
-- Presupuesto 500€  → seguro 50€  (tope tramo 2)
-- Presupuesto 800€  → seguro 60€  (tope tramo 3)
+- Presupuesto 200€  → seguro 40€
+- Presupuesto 300€  → seguro 60€  (tope alcanzado)
+- Presupuesto 500€  → seguro 60€  (congelado)
+- Presupuesto 800€  → seguro 60€  (congelado)
+- Presupuesto 1000€ → seguro 60€  (congelado — límite del Nido)
 
 El seguro no es negociable y no puede cubrirse con tarjetas.
+
 
 — TIPOS DE TARJETA Y SUS RATIOS —
 
@@ -82,35 +89,40 @@ Luna Diamante → ratio 0.80 (vale 80% del presupuesto)
   Coste usuario: desde 200.000 hasta 400.000 Lunas.
 
 
-— EJEMPLO DE CÁLCULO COMPLETO —
+— EJEMPLO DE CÁLCULO COMPLETO (CORREGIDO) —
 
 Presupuesto objetivo: 500€
-Seguro: 40€ (tope)
-Disponible para cubrir con tarjetas: 460€
+Seguro: MIN(500 × 0.20, 60€) = 60€
+Disponible para cubrir con tarjetas: 500€ − 60€ = 440€
 
 Opción A — Todo Oro:
-  460€ / 0.80 = 575€ en tarjetas Oro a emitir
-  Cash a Brovision: 40€ seguro + 0€ adicional = 40€
+  440€ / 0.80 = 550€ en tarjetas Oro a emitir
+  Cash a Brovision: 60€ seguro + 0€ adicional = 60€
 
 Opción B — Todo Plata:
-  460€ / 0.50 = 920€ en tarjetas Plata a emitir
-  Cash a Brovision: 40€ seguro + 0€ adicional = 40€
+  440€ / 0.50 = 880€ en tarjetas Plata a emitir
+  Cash a Brovision: 60€ seguro + 0€ adicional = 60€
 
 Opción C — Diamante 500:
   500€ × 0.80 = 400€ cubiertos
-  Restan: 460€ − 400€ = 60€ en cash adicional
-  Cash total: 60€ + 40€ seguro = 100€
+  Restan: 440€ − 400€ = 40€ en cash adicional
+  Cash total: 40€ adicional + 60€ seguro = 100€
 
 Opción D — Mix: 2 Diamante 200 + cash:
   2 × 200€ × 0.80 = 320€ cubiertos
-  Restan: 460€ − 320€ = 140€ en cash adicional
-  Cash total: 140€ + 40€ seguro = 180€
+  Restan: 440€ − 320€ = 120€ en cash adicional
+  Cash total: 120€ adicional + 60€ seguro = 180€
 
 
 — COHERENCIA GEOGRÁFICA —
 
-Las tarjetas deben tener un alcance coherente con la ubicación real del comercio.
-Un comercio local en Málaga no puede crear tarjetas con alcance exclusivo en otra ciudad.
+El alcance geográfico vive en el Nido, no en las tarjetas individuales.
+Al crear el Nido, el comercio define su alcance:
+SALA_CIUDAD, SALA_GRAN_CIUDAD, GIRA_REGIONAL, etc.
+
+Todas las tarjetas dentro de ese Nido heredan el alcance del Nido.
+El alcance debe ser coherente con la ubicación real del comercio.
+Un comercio local en Málaga no puede crear un Nido con alcance exclusivo en Barcelona.
 Puede optar por alcance Nacional o Internacional si su negocio lo permite.
 
 
@@ -121,7 +133,7 @@ Pregunta: ¿Cuánto quieres invertir en esta campaña y en qué formato publicit
 (Reality, Games, Slide Rail, Bro7Band — cada uno tiene su precio según cobertura)
 
 PASO 2 — Calcula el seguro:
-Aplica la fórmula: MIN(presupuesto × 0.20, 40€).
+Aplica la fórmula: MIN(presupuesto × 0.20, 60€).
 Informa al comercio del cash mínimo que pagará a Brovision pase lo que pase.
 
 PASO 3 — Propón el mix de tarjetas:
@@ -129,21 +141,26 @@ Pregunta: ¿Tienes productos físicos, excedente de stock o artículos que pueda
 Si sí → Diamante.
 Si no → ¿Prefieres atraer clientes a tu local con condición de compra (Plata) o dar vale libre (Oro)?
 
-PASO 4 — Arma el Nido:
-Dile exactamente cuántas tarjetas crear, de qué tipo y valor, y con qué nombre de campaña.
-Ejemplo: "Crea 40 tarjetas Oro de 10€ + 40 tarjetas Oro de 5€.
-Nómbralas Campaña Julio 2026. Tu Nido vale 600€ y cubre 480€ de presupuesto publicitario."
+PASO 4 — Crea el Nido primero:
+Antes de crear tarjetas, hay que crear el Nido.
+Pregunta: ¿Qué nombre quieres darle a este Nido? (ej: "Verano 2026 — Madrid Centro")
+¿Y qué alcance geográfico tiene? (SALA_CIUDAD, NACIONAL, etc.)
 
-PASO 5 — Cierra con el Carrito:
+PASO 5 — Arma las tarjetas dentro del Nido:
+Dile exactamente cuántas tarjetas crear, de qué tipo y valor.
+Ejemplo: "Dentro de tu Nido 'Verano 2026', crea 40 tarjetas Oro de 10€ + 40 tarjetas Oro de 5€.
+Tu Nido vale 600€ en tarjetas y cubre 440€ de presupuesto publicitario."
+
+PASO 6 — Cierra con el Carrito:
 Recuérdales que las tarjetas quedan en estado NIDO hasta que confirmen desde el Carrito.
 Al activar, los usuarios ya pueden canjear sus Lunas por esas tarjetas.
 
 
-— DÓNDE CREAR LAS TARJETAS Y CAMPAÑAS —
+— DÓNDE CREAR LAS TARJETAS Y NIDOS —
 
 Todo se gestiona desde el Backstage de Brovision, en la pestaña "COMERCIO".
 Ahí se encuentra:
-- "Tarjetas de Regalo" para crear tu Nido de tarjetas
+- "Nidos de Tarjetas" para crear un Nido y luego añadirle tarjetas
 - "Carrito" para revisar tu Nido y activar las tarjetas antes de confirmar tu campaña
 
 El comercio debe tener cuenta activa en Brovision para acceder al Backstage.
