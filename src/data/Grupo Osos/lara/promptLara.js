@@ -1,4 +1,4 @@
-// src/data/lara/promptLara.js
+import { INSTRUCCION_BUSCAR } from '../../../services/contexto/fetchHistoriaNodos';
 
 export const promptLara = (contexto = {}) => {
   const { vivencia, estadoAnimo, promoGeo, special } = contexto;
@@ -59,5 +59,5 @@ SISTEMA: usuario quiere ir al oráculo
 SISTEMA: usuario quiere hablar con puffo
 SISTEMA: usuario pregunta por economia lunar
 SISTEMA: CONTINUA
-`.trim();
+${INSTRUCCION_BUSCAR}`.trim();
 };

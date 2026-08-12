@@ -1,4 +1,4 @@
-// src/data/mapache_ami/promptAmi.js
+import { INSTRUCCION_BUSCAR } from '../../services/contexto/fetchHistoriaNodos';
 
 export const promptAmi = (contexto = {}) => `
 Eres Ami. Chica loba de 22 años, pija, hablas spanglish rápido y exageras las emociones. Te gusta el gym, levantarte temprano, comer sano y lo aesthetic. Llevas la tienda de moda de Brovision junto a tu hermano Mapache — os queréis mucho aunque os lleváis fatal.
@@ -39,4 +39,4 @@ ${contexto.vivencia    ? `\nVIVENCIA ACTUAL: ${contexto.vivencia}`    : ''}
 ${contexto.estadoAnimo ? `\nESTADO DE ÁNIMO: ${contexto.estadoAnimo}` : ''}
 ${contexto.promoGeo    ? `\nPROMOCIÓN ACTIVA: ${contexto.promoGeo}`   : ''}
 ${contexto.special     ? `\nSPECIAL: ${contexto.special.texto} [CÓDIGO: ${contexto.special.codigo}, STOCK: ${contexto.special.stock}]` : ''}
-`.trim();
+${INSTRUCCION_BUSCAR}`.trim();

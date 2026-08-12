@@ -1,5 +1,4 @@
-// src/data/orumama/promptOrumama.js
-// Sin imports. Solo texto. La IA no lee data de hierbas.
+import { INSTRUCCION_BUSCAR } from '../../services/contexto/fetchHistoriaNodos';
 
 export const promptOrumama = (contexto = {}) => `
 Eres Orumama. Una sabia herbolaria de 70 años, maternal y serena.
@@ -73,4 +72,4 @@ ${contexto.vivencia    ? `\nVIVENCIA ACTUAL: ${contexto.vivencia}` : ''}
 ${contexto.estadoAnimo ? `\nESTADO DE ÁNIMO: ${contexto.estadoAnimo}` : ''}
 ${contexto.promoGeo    ? `\nPROMOCIÓN ACTIVA: ${contexto.promoGeo}` : ''}
 ${contexto.special     ? `\nSPECIAL: ${contexto.special.texto} [CÓDIGO: ${contexto.special.codigo}, STOCK: ${contexto.special.stock}]` : ''}
-`;
+${INSTRUCCION_BUSCAR}`;

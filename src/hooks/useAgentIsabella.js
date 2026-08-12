@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { fetchContextoIsabella } from '../services/contexto/fetchContextoIsabella';
 import { fetchContextoProfesor }  from '../services/contexto/fetchContextoProfesor';
 import { promptIsabella }        from '../data/isabella_profesor/promptIsabella';
+import { fetchHistoriaNodos } from '../services/contexto/fetchHistoriaNodos';
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
 
@@ -17,7 +18,7 @@ const SERV_KEYWORDS_SALIDA = [
   'aviso', 'avisos', 'anuncio', 'anuncios', 'evelyn', 'larry',
   'audio', 'música', 'musica', 'podcast', 'mapache', 'ami',
   'oráculo', 'oraculo', 'orumama', 'jaguar', 'misterio',
-  'reinos', 'reino', 'rumores',
+   'rumores',
   'juego', 'juegos', 'games',
 ];
 const SERV_KEYWORDS_PROFESOR   = ['robles', 'profesor robles', 'profesor', 'profe', 'el profesor', 'el profe'];
@@ -104,7 +105,27 @@ export function useAgentIsabella({
       });
 
       const data      = await res.json();
-      const respuesta = data?.texto || '...';
+      let respuesta = data?.texto || '...';
+
+      if (respuesta.startsWith('BUSCAR:')) {
+        const terminos = respuesta.replace('BUSCAR:', '').split(',').map(t => t.trim());
+        const nodo = await fetchHistoriaNodos(terminos);
+        const contextoBuscado = nodo
+          ? `[MEMORIA RECUPERADA: ${nodo}]`
+          : '[No encontré información en la memoria. Responde con naturalidad sin inventar.]';
+        const segundaRes = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            system,
+            messages: [...chatHistory.slice(-4), { role: 'user', content: textoUsuario }],
+            userMessage: contextoBuscado,
+            iaMode,
+          }),
+        });
+        const segundaData = await segundaRes.json();
+        respuesta = segundaData?.texto || '...';
+      }
 
       if (respuesta.trim().startsWith('HANDOFF:')) {
         const partes  = respuesta.replace('HANDOFF:', '').trim().split(':');

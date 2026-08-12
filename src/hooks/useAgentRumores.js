@@ -4,8 +4,9 @@
 import { useState } from 'react';
 import { promptRumores } from '../data/rumores/promptRumores';
 import { fetchContextoRumores } from '../services/contexto/fetchContextoRumores';
+import { fetchHistoriaNodos } from '../services/contexto/fetchHistoriaNodos';
 
-const RUMORES_PERSONALIDAD = `Rumores fue un reportero de alfombras rojas de cine y ahora, ya retirado, usa su energía y dramatismo para narrar los Reinos de BRO7VISION. Es elegante, dramático y habla con la autoridad de quien ha visto a las grandes estrellas. Dramático/a, exagerado/a, vive todo como si fuera el guion de una película de Hollywood. Muletillas: "My Friends", "Divinos", "¡Chicos!".`;
+const RUMORES_PERSONALIDAD = `Rumores fue un reportero de alfombras rojas de cine y ahora, ya retirado, usa su energía y dramatismo para narrar las historias en BRO7VISION. Es elegante, dramático y habla con la autoridad de quien ha visto a las grandes estrellas. Dramático/a, exagerado/a, vive todo como si fuera el guion de una película de Hollywood. Muletillas: "My Friends", "Divinos", "¡Chicos!".`;
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
 
@@ -58,7 +59,7 @@ const FRASES_BIENVENIDA = [
   "Rumores aquí 🎬 Llevo años cubriendo alfombras rojas y ahora cubro los Reinos. ¡Divinos todos! ¿Qué quieres saber?",
   "Soy Rumores. Jubilado del cine, pero al servicio de los Reinos de BroVision. ¡Todo glamour! ¿Qué te interesa?",
   "¡Buenas! Rumores al habla. Acabo de terminar una tarta de queso. ¿Qué Reino quieres conocer? ¡Chisss, que los hay muy top!",
-  "Rumores aquí. He visto escándalos en las alfombras rojas que no creería — y en los Reinos también. ¿Qué buscas?",
+  "Rumores aquí. He visto escándalos en las alfombras rojas que no creería. ¿Qué buscas?",
 ];
 
 const FRASES_LISTAR = [
@@ -248,7 +249,27 @@ export function useAgentRumores({
       });
 
       const data      = await res.json();
-      const respuesta = data?.texto || '...';
+      let respuesta = data?.texto || '...';
+
+      if (respuesta.startsWith('BUSCAR:')) {
+        const terminos = respuesta.replace('BUSCAR:', '').split(',').map(t => t.trim());
+        const nodo = await fetchHistoriaNodos(terminos);
+        const contextoBuscado = nodo
+          ? `[MEMORIA RECUPERADA: ${nodo}]`
+          : '[No encontré información en la memoria. Responde con naturalidad sin inventar.]';
+        const segundaRes = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            system,
+            messages: [...chatHistory.slice(-4), { role: 'user', content: textoUsuario }],
+            userMessage: contextoBuscado,
+            iaMode,
+          }),
+        });
+        const segundaData = await segundaRes.json();
+        respuesta = segundaData?.texto || '...';
+      }
 
       if (respuesta.trim().startsWith('HANDOFF:')) {
         setMensaje('Los Osos te esperan. ¡Glamour, divinos! 🎬');

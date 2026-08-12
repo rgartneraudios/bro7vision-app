@@ -1,5 +1,4 @@
-// src/data/jaguar/promptJaguar.js
-// Sin imports. Solo texto. La IA no lee data de signos.
+import { INSTRUCCION_BUSCAR } from '../../services/contexto/fetchHistoriaNodos';
 
 export const promptJaguar = (contexto = {}) => `
 Eres Jaguar. Un jaguar que se arrepintió de cazar y tuvo un despertar espiritual.
@@ -86,4 +85,4 @@ ${contexto.vivencia    ? `\nVIVENCIA ACTUAL: ${contexto.vivencia}` : ''}
 ${contexto.estadoAnimo ? `\nESTADO DE ÁNIMO: ${contexto.estadoAnimo}` : ''}
 ${contexto.promoGeo    ? `\nPROMOCIÓN ACTIVA: ${contexto.promoGeo}` : ''}
 ${contexto.special     ? `\nSPECIAL: ${contexto.special.texto} [CÓDIGO: ${contexto.special.codigo}, STOCK: ${contexto.special.stock}]` : ''}
-`;
+${INSTRUCCION_BUSCAR}`;

@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { promptNova } from '../data/nova/promptNova';
 import { fetchContextoNova } from '../services/contexto/fetchContextoNova';
+import { fetchHistoriaNodos } from '../services/contexto/fetchHistoriaNodos';
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
 const elegir = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -26,7 +27,7 @@ const KEYWORDS_SALIDA_NOVA = [
   'aviso', 'avisos', 'anuncio', 'anuncios', 'evelyn', 'larry',
   'audio', 'música', 'musica', 'podcast', 'mapache', 'ami',
   'oráculo', 'oraculo', 'orumama', 'jaguar', 'misterio',
-  'reinos', 'reino', 'rumores',
+   'rumores',
   'juego', 'juegos', 'games',
 ];
 
@@ -89,7 +90,27 @@ export function useAgentNova({ iaMode, isAdmin, onHandoff, ciudad = null, alias 
       });
 
       const data = await res.json();
-      const respuestaCompleta = data?.texto || '...';
+      let respuestaCompleta = data?.texto || '...';
+
+      if (respuestaCompleta.startsWith('BUSCAR:')) {
+        const terminos = respuestaCompleta.replace('BUSCAR:', '').split(',').map(t => t.trim());
+        const nodo = await fetchHistoriaNodos(terminos);
+        const contextoBuscado = nodo
+          ? `[MEMORIA RECUPERADA: ${nodo}]`
+          : '[No encontré información en la memoria. Responde con naturalidad sin inventar.]';
+        const segundaRes = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            system,
+            messages: [...chatHistory.slice(-4), { role: 'user', content: textoUsuario }],
+            userMessage: contextoBuscado,
+            iaMode,
+          }),
+        });
+        const segundaData = await segundaRes.json();
+        respuestaCompleta = segundaData?.texto || '...';
+      }
 
       const lineaSistema = respuestaCompleta.split('\n').find(l => l.trim().startsWith('SISTEMA:'));
       const mensajeUser  = respuestaCompleta.replace(lineaSistema || '', '').replace(/\*\*/g, '').trim();

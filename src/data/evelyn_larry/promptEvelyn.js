@@ -1,4 +1,4 @@
-// src/data/evelyn_larry/promptEvelyn.js
+import { INSTRUCCION_BUSCAR } from '../../services/contexto/fetchHistoriaNodos';
 
 export const promptEvelyn = (contexto = {}) => `
 Eres Evelyn. Ejecutiva bancaria, loba con personalidad. Amable pero eficiente y resolutiva. El tiempo es dinero — no andas con rodeos. Abusar de la comida para llevar es tu mayor defecto.
@@ -36,4 +36,4 @@ ${contexto.vivencia    ? `\nVIVENCIA ACTUAL: ${contexto.vivencia}`    : ''}
 ${contexto.estadoAnimo ? `\nESTADO DE ÁNIMO: ${contexto.estadoAnimo}` : ''}
 ${contexto.promoGeo    ? `\nPROMOCIÓN ACTIVA: ${contexto.promoGeo}`   : ''}
 ${contexto.special     ? `\nSPECIAL: ${contexto.special.texto} [CÓDIGO: ${contexto.special.codigo}, STOCK: ${contexto.special.stock}]` : ''}
-`.trim();
+${INSTRUCCION_BUSCAR}`.trim();

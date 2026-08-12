@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { promptOrumama }        from '../data/orumama/promptOrumama';
 import { fetchContextoOrumama } from '../services/contexto/fetchContextoOrumama';
+import { fetchHistoriaNodos } from '../services/contexto/fetchHistoriaNodos';
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
 const norm   = (s) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -94,7 +95,27 @@ export function useAgentOrumama({ iaMode, isAdmin, onHandoff, onBotContent, onSh
         }),
       });
       const data = await res.json();
-      const respuestaCompleta = data?.texto || '...';
+      let respuestaCompleta = data?.texto || '...';
+
+      if (respuestaCompleta.startsWith('BUSCAR:')) {
+        const terminos = respuestaCompleta.replace('BUSCAR:', '').split(',').map(t => t.trim());
+        const nodo = await fetchHistoriaNodos(terminos);
+        const contextoBuscado = nodo
+          ? `[MEMORIA RECUPERADA: ${nodo}]`
+          : '[No encontré información en la memoria. Responde con naturalidad sin inventar.]';
+        const segundaRes = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            system,
+            messages: [...chatHistory.slice(-4), { role: 'user', content: textoUsuario }],
+            userMessage: contextoBuscado,
+            iaMode,
+          }),
+        });
+        const segundaData = await segundaRes.json();
+        respuestaCompleta = segundaData?.texto || '...';
+      }
 
       const lineaSistema = respuestaCompleta.split('\n').find(l => l.trim().startsWith('SISTEMA:'));
       const mensajeUser  = respuestaCompleta.replace(lineaSistema || '', '').replace(/\*\*/g, '').trim();

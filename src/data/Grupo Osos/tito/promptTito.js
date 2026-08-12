@@ -1,5 +1,4 @@
-// src/data/tito/promptTito.js
-// Sin imports. Solo texto. Personalidad compacta de Tito.
+import { INSTRUCCION_BUSCAR } from '../../../services/contexto/fetchHistoriaNodos';
 
 export const promptTito = (contexto = {}) => {
   const { vivencia, estadoAnimo, promoGeo, special } = contexto;
@@ -56,5 +55,5 @@ SISTEMA: usuario quiere ir al oráculo
 SISTEMA: usuario quiere hablar con lara
 SISTEMA: usuario pregunta por la economia lunar
 SISTEMA: CONTINUA
-`.trim();
+${INSTRUCCION_BUSCAR}`.trim();
 };

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { promptLarry }        from '../data/evelyn_larry/promptLarry';
 import { fetchContextoEvelyn } from '../services/contexto/fetchContextoEvelyn';
+import { fetchHistoriaNodos } from '../services/contexto/fetchHistoriaNodos';
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
 const norm   = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -48,7 +49,27 @@ export function useAgentLarry({ iaMode, isAdmin, onHandoff, ciudad = null,
         body: JSON.stringify({ system, messages: chatHistory.slice(-4), userMessage: textoUsuario, iaMode }),
       });
       const data = await res.json();
-      const respuestaCompleta = data?.texto || '...';
+      let respuestaCompleta = data?.texto || '...';
+
+      if (respuestaCompleta.startsWith('BUSCAR:')) {
+        const terminos = respuestaCompleta.replace('BUSCAR:', '').split(',').map(t => t.trim());
+        const nodo = await fetchHistoriaNodos(terminos);
+        const contextoBuscado = nodo
+          ? `[MEMORIA RECUPERADA: ${nodo}]`
+          : '[No encontré información en la memoria. Responde con naturalidad sin inventar.]';
+        const segundaRes = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            system,
+            messages: [...chatHistory.slice(-4), { role: 'user', content: textoUsuario }],
+            userMessage: contextoBuscado,
+            iaMode,
+          }),
+        });
+        const segundaData = await segundaRes.json();
+        respuestaCompleta = segundaData?.texto || '...';
+      }
 
       const lineaSistema = respuestaCompleta.split('\n').find(l => l.trim().startsWith('SISTEMA:'));
       const mensajeFinal = respuestaCompleta.replace(lineaSistema || '', '').replace(/\*\*/g, '').trim();

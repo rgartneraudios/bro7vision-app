@@ -7,6 +7,7 @@ import { fetchContextoMapache } from '../services/contexto/fetchContextoMapache'
 import { fetchContextoAmi }     from '../services/contexto/fetchContextoAmi';
 import { promptAmi }    from '../data/mapache_ami/promptAmi';
 import { promptMapache } from '../data/mapache_ami/promptMapache';
+import { fetchHistoriaNodos } from '../services/contexto/fetchHistoriaNodos';
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
 
@@ -16,7 +17,7 @@ const norm = (str) =>
 const AUDIO_KEYWORDS_SALIDA = [
   'salir', 'volver', 'inicio', 'recepción', 'recepcion', 'osos', 'portero',
   'oráculo', 'oraculo', 'orumama', 'jaguar', 'misterio',
-  'reinos', 'reino', 'rumores',
+  'rumores',
   'juego', 'juegos', 'games',
 ];
 const AUDIO_KEYWORDS_AMI     = ['ami', 'amí', 'la ami', 'amy'];
@@ -115,7 +116,27 @@ export function useAgentMapache({
       });
 
       const data      = await res.json();
-      const respuesta = data?.texto || '...';
+      let respuesta = data?.texto || '...';
+
+      if (respuesta.startsWith('BUSCAR:')) {
+        const terminos = respuesta.replace('BUSCAR:', '').split(',').map(t => t.trim());
+        const nodo = await fetchHistoriaNodos(terminos);
+        const contextoBuscado = nodo
+          ? `[MEMORIA RECUPERADA: ${nodo}]`
+          : '[No encontré información en la memoria. Responde con naturalidad sin inventar.]';
+        const segundaRes = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            system,
+            messages: [...chatHistory.slice(-4), { role: 'user', content: textoUsuario }],
+            userMessage: contextoBuscado,
+            iaMode,
+          }),
+        });
+        const segundaData = await segundaRes.json();
+        respuesta = segundaData?.texto || '...';
+      }
 
       const sistemaResult = interpretarSistema(respuesta);
       if (sistemaResult === 'HANDLED') {

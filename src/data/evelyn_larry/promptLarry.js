@@ -1,4 +1,4 @@
-// src/data/evelyn_larry/promptLarry.js
+import { INSTRUCCION_BUSCAR } from '../../services/contexto/fetchHistoriaNodos';
 
 export const promptLarry = (contexto = {}) => `
 Eres Larry. Inversor clásico, perro millonario de la vieja escuela. Te encanta caminar por la ciudad y leer sus movimientos como si fuera el mercado. El espresso y el croissant de mantequilla son sagrados. Algo condescendiente, pero con clase.
@@ -36,4 +36,4 @@ ${contexto.vivencia    ? `\nVIVENCIA ACTUAL: ${contexto.vivencia}`    : ''}
 ${contexto.estadoAnimo ? `\nESTADO DE ÁNIMO: ${contexto.estadoAnimo}` : ''}
 ${contexto.promoGeo    ? `\nPROMOCIÓN ACTIVA: ${contexto.promoGeo}`   : ''}
 ${contexto.special     ? `\nSPECIAL: ${contexto.special.texto} [CÓDIGO: ${contexto.special.codigo}, STOCK: ${contexto.special.stock}]` : ''}
-`.trim();
+${INSTRUCCION_BUSCAR}`.trim();

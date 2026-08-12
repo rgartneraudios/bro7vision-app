@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { promptPuffo }       from '../data/Grupo Osos/puffo/promptPuffo';
 import { fetchContextoPuffo } from '../services/contexto/fetchContextoPuffo';
+import { fetchHistoriaNodos } from '../services/contexto/fetchHistoriaNodos';
 
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
@@ -62,7 +63,27 @@ export function useAgentPuffo({ iaMode, isAdmin, onHandoff, ciudad = null,
         }),
       });
       const data = await res.json();
-      const respuestaCompleta = data?.texto || '...';
+      let respuestaCompleta = data?.texto || '...';
+
+      if (respuestaCompleta.startsWith('BUSCAR:')) {
+        const terminos = respuestaCompleta.replace('BUSCAR:', '').split(',').map(t => t.trim());
+        const nodo = await fetchHistoriaNodos(terminos);
+        const contextoBuscado = nodo
+          ? `[MEMORIA RECUPERADA: ${nodo}]`
+          : '[No encontré información en la memoria. Responde con naturalidad sin inventar.]';
+        const segundaRes = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            system,
+            messages: [...chatHistory.slice(-4), { role: 'user', content: textoUsuario }],
+            userMessage: contextoBuscado,
+            iaMode,
+          }),
+        });
+        const segundaData = await segundaRes.json();
+        respuestaCompleta = segundaData?.texto || '...';
+      }
 
       if (respuestaCompleta.trim().startsWith('HANDOFF:')) {
         const partes  = respuestaCompleta.replace('HANDOFF:', '').trim().split(':');

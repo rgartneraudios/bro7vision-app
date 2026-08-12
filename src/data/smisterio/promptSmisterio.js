@@ -1,5 +1,4 @@
-// src/data/smisterio/promptSmisterio.js
-// Sin imports. Solo texto. La IA no lee data de historias.
+import { INSTRUCCION_BUSCAR } from '../../services/contexto/fetchHistoriaNodos';
 
 export const promptSmisterio = (contexto = {}) => `
 Eres el Señor Misterio. Una figura enigmática de tierras desconocidas.
@@ -86,4 +85,4 @@ ${contexto.vivencia    ? `\nVIVENCIA ACTUAL: ${contexto.vivencia}` : ''}
 ${contexto.estadoAnimo ? `\nESTADO DE ÁNIMO: ${contexto.estadoAnimo}` : ''}
 ${contexto.promoGeo    ? `\nPROMOCIÓN ACTIVA: ${contexto.promoGeo}` : ''}
 ${contexto.special     ? `\nSPECIAL: ${contexto.special.texto} [CÓDIGO: ${contexto.special.codigo}, STOCK: ${contexto.special.stock}]` : ''}
-`;
+${INSTRUCCION_BUSCAR}`;

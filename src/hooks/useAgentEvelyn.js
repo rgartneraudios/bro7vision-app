@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { fetchContextoEvelyn } from '../services/contexto/fetchContextoEvelyn';
 import { fetchContextoLarry }  from '../services/contexto/fetchContextoLarry';
 import { promptEvelyn }        from '../data/evelyn_larry/promptEvelyn';
+import { fetchHistoriaNodos } from '../services/contexto/fetchHistoriaNodos';
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
 
@@ -12,7 +13,7 @@ const KEYWORDS_SALIDA = [
   'salir', 'volver', 'inicio', 'recepción', 'recepcion', 'osos', 'portero',
   'audio', 'música', 'musica', 'podcast', 'mapache', 'ami',
   'oráculo', 'oraculo', 'orumama', 'jaguar', 'misterio',
-  'reinos', 'reino', 'rumores',
+   'rumores',
   'juego', 'juegos', 'games',
 ];
 
@@ -101,7 +102,27 @@ export function useAgentEvelyn({
       });
 
       const data = await res.json();
-      const respuesta = data?.texto || '...';
+      let respuesta = data?.texto || '...';
+
+      if (respuesta.startsWith('BUSCAR:')) {
+        const terminos = respuesta.replace('BUSCAR:', '').split(',').map(t => t.trim());
+        const nodo = await fetchHistoriaNodos(terminos);
+        const contextoBuscado = nodo
+          ? `[MEMORIA RECUPERADA: ${nodo}]`
+          : '[No encontré información en la memoria. Responde con naturalidad sin inventar.]';
+        const segundaRes = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            system,
+            messages: [...chatHistory.slice(-4), { role: 'user', content: textoUsuario }],
+            userMessage: contextoBuscado,
+            iaMode,
+          }),
+        });
+        const segundaData = await segundaRes.json();
+        respuesta = segundaData?.texto || '...';
+      }
 
       if (respuesta.trim().startsWith('HANDOFF:')) {
         const partes  = respuesta.replace('HANDOFF:', '').trim().split(':');
