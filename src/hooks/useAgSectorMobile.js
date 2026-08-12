@@ -64,7 +64,7 @@ export function useAgSectorMobile({
 
   const active =
     intent === 'canjear'   ? nova     :
-    intent === 'reinos'    ? rumores  :
+    intent === 'tablón'    ? rumores  :
     intent === 'ai'        ? oraculo  :
     { enviar: noop, mensaje: null, loading: false, reset: noop };
 

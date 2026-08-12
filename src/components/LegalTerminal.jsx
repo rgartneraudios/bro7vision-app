@@ -43,25 +43,14 @@ const LegalTerminal = ({ onClose }) => {
 <div className="w-full mt-auto mb-4 bg-white/5 rounded-xl p-5 border border-white/10">
    <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-4">Contacto Oficial</p>
    
-   <div className="space-y-4">
-      {/* Contacto General - Color Cian Neón */}
+<div className="space-y-4">
       <div>
-         <p className="text-[8px] text-cyan-400 uppercase tracking-widest mb-1">General</p>
-         <p className="text-cyan-400 font-mono font-bold text-sm drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]">contacto@bro7vision.com</p>
+        <p className="text-[8px] text-cyan-400 uppercase tracking-widest mb-1">Contacto</p>
+        <p className="text-cyan-400 font-mono font-bold text-sm drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]">
+          contacto@bro7vision.com
+        </p>
       </div>
-
-      {/* Fundadores - Color Rosa Neón */}
-      <div>
-         <p className="text-[8px] text-pink-400 uppercase tracking-widest mb-1">Fundadores</p>
-         <p className="text-pink-400 font-mono font-bold text-sm drop-shadow-[0_0_8px_rgba(244,114,182,0.6)]">fundadores@bro7vision.com</p>
-      </div>
-
-      {/* Inversores - Color Azul Eléctrico Neón */}
-      <div>
-         <p className="text-[8px] text-blue-400 uppercase tracking-widest mb-1">Inversores</p>
-         <p className="text-blue-400 font-mono font-bold text-sm drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]">bro7vision@bro7vision.com</p>
-      </div>
-   </div>
+    </div>
    
    <div className="w-full h-[1px] bg-white/10 my-6"></div>
    <a href="https://www.linkedin.com/in/rober-ehgartner-74a10a124/" target="_blank" className="text-[10px] text-gray-400 hover:text-white underline transition-all">
@@ -79,22 +68,32 @@ const LegalTerminal = ({ onClose }) => {
            <div className="overflow-y-auto custom-scrollbar pr-4 space-y-6 text-gray-400 text-xs font-mono leading-relaxed text-justify">
               <section>
   <h4 className="text-cyan-300 font-bold mb-2">1. NATURALEZA DEL ECOSISTEMA</h4>
-  <p>BRO7VISION es una plataforma experimental de gamificación social en fase Beta privada. La Fase 0 (Lunas) es un entorno de simulación diseñado para el entrenamiento de usuarios y validación técnica, exento de transacciones financieras con moneda fiduciaria.</p>
+  <p>Bro7Vision es una plataforma de entretenimiento interactivo donde los usuarios participan en juegos, exploran contenidos y acumulan Puntos Lunas canjeables por Tarjetas de Regalo de comercios adheridos. La plataforma se encuentra en fase activa de desarrollo y crecimiento. Algunas funcionalidades pueden evolucionar o ampliarse sin previo aviso.</p>
 </section>
 
 <section>
   <h4 className="text-cyan-300 font-bold mb-2">2. PRIVACIDAD Y SEGURIDAD</h4>
-  <p>Priorizamos tu privacidad. Utilizamos Supabase para una autenticación segura y cifrada. Los datos de geolocalización (si son activados) se procesan exclusivamente en el dispositivo del usuario para optimizar la experiencia local y no se almacenan de forma persistente en nuestros servidores.</p>
+  <p>La autenticación y el almacenamiento de datos se gestionan mediante Supabase, con cifrado estándar de la industria. Los datos de geolocalización, cuando están activados, se utilizan exclusivamente para adaptar la experiencia local y no se comparten con terceros. Bro7Vision no vende datos de usuarios ni los cede con fines publicitarios externos.</p>
 </section>
 
 <section>
   <h4 className="text-cyan-300 font-bold mb-2">3. ECONOMÍA DIGITAL</h4>
-  <p>Los "Puntos Lunas", "Moon Cupones" y "Moon Packs" constituyen un sistema cerrado de lealtad y gamificación interna. No representan criptomonedas, activos financieros, ni valores regulables bajo la normativa de la CNMV o MiCA en su estado actual de simulación.</p>
+  <p>Los Puntos Lunas constituyen un sistema cerrado de fidelización interna. No representan criptomonedas, activos financieros ni valores regulables bajo normativa CNMV o MiCA. No son convertibles en dinero fiduciario ni transferibles entre usuarios. Su único uso es el canje por Tarjetas de Regalo dentro de la plataforma.</p>
 </section>
 
 <section>
-  <h4 className="text-cyan-300 font-bold mb-2">4. PROPIEDAD INTELECTUAL</h4>
-  <p>La arquitectura del sistema, el diseño visual "Neón Bioluminiscente" y los conceptos de la "Moon Matrix" son propiedad intelectual exclusiva de RGartner. Todo contenido generado por los usuarios sigue siendo propiedad de sus respectivos autores bajo licencia de uso dentro del ecosistema.</p>
+  <h4 className="text-cyan-300 font-bold mb-2">4. TARJETAS DE REGALO</h4>
+  <p>Las Tarjetas de Regalo son emitidas por los comercios adheridos, que son los únicos responsables de las condiciones, disponibilidad y cumplimiento de cada tarjeta. Bro7Vision actúa como plataforma intermediaria y no garantiza el servicio final del comercio emisor. Ante cualquier disputa entre usuario y comercio, Bro7Vision intervendrá como árbitro de buena fe, tratando de facilitar una solución razonable para ambas partes, sin que ello implique responsabilidad legal directa sobre el comercio.</p>
+</section>
+
+<section>
+  <h4 className="text-cyan-300 font-bold mb-2">5. PROPIEDAD INTELECTUAL</h4>
+  <p>La arquitectura del sistema, el diseño visual Neón Bioluminiscente, los personajes del universo Bro7Vision y todos los conceptos narrativos asociados son propiedad intelectual exclusiva de RGartner. Queda prohibida su reproducción, distribución o uso comercial sin autorización expresa. El contenido generado por usuarios dentro de la plataforma sigue siendo propiedad de sus autores, bajo licencia de uso no exclusiva dentro del ecosistema.</p>
+</section>
+
+<section>
+  <h4 className="text-cyan-300 font-bold mb-2">6. EDAD Y ACCESO</h4>
+  <p>El uso de Bro7Vision está dirigido a mayores de 16 años, de acuerdo con la normativa vigente en materia de servicios digitales y protección de menores. Si un usuario menor de 16 años accede a la plataforma, se asume que lo hace bajo la supervisión y responsabilidad de un adulto tutor legal, que acepta estas condiciones en su nombre.</p>
 </section>              
               <div className="pt-8 text-center opacity-50">
                   <p>Bro7Vision © {new Date().getFullYear()}</p>

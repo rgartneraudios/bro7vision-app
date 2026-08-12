@@ -171,7 +171,7 @@ const SECTOR_ACCENT = {
   destino:   '#d946ef',
   canjear:   '#facc15',
   shopamigos: '#94a3b8',
-  reinos:    '#fb923c',
+  tablón:    '#fb923c',
   ai:        '#a3e635',
   games:     '#ffffff',
 };
@@ -185,7 +185,7 @@ const SECTOR_AVATARS = {
   destino:   { tito: '/emojis/tito.webp', lara: '/emojis/lara.webp', puffo: '/emojis/puffo.webp' },
   canjear:   {},
   shopamigos: {},
-  reinos:    { rumores: '/emojis/rumores.webp' },
+  tablón:    { rumores: '/emojis/rumores.webp' },
   ai:        { orumama: '/emojis/orumama.webp', jaguar: '/emojis/jaguar.webp', smisterio: '/emojis/smisterio.webp' },
   games:     { default: '/emojis/emoji_5.webp' },
 };

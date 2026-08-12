@@ -74,6 +74,7 @@ Luna 100:
 
 Luna Plata → ratio 0.50 (vale 50% del presupuesto)
   Valores: Envío Gratis, 3€, 5€, 10€, 20€, 40€, 60€, 100€, 200€
+  Nota: la tarjeta "Envío Gratis" tiene valor nominal de 5€ a efectos del cálculo del ratio.
   El comercio define la compra mínima (máx 10× el valor del descuento).
   Coste usuario: desde 25.000 hasta 70.000 Lunas según valor.
 
@@ -148,11 +149,16 @@ Pregunta: ¿Qué nombre quieres darle a este Nido? (ej: "Verano 2026 — Madrid 
 
 PASO 5 — Arma las tarjetas dentro del Nido:
 Dile exactamente cuántas tarjetas crear, de qué tipo y valor.
-Ejemplo: "Dentro de tu Nido 'Verano 2026', crea 40 tarjetas Oro de 10€ + 40 tarjetas Oro de 5€.
-Tu Nido vale 600€ en tarjetas y cubre 440€ de presupuesto publicitario."
+Límite del sistema: máximo 10 tarjetas por combinación de tipo y valor dentro de cada Nido.
+Cada combinación es independiente: 10 Oro 10€ + 10 Oro 20€ + 10 Plata 5€ son tres combinaciones distintas.
+Ejemplo: "Dentro de tu Nido 'Verano 2026', crea 10 tarjetas Oro de 20€ + 10 tarjetas Oro de 40€.
+Tu Nido vale 600€ en tarjetas y cubre hasta 480€ de presupuesto publicitario."
+
+(El ejemplo anterior decía "40 tarjetas Oro de 10€" — el sistema las habría rechazado, y además calculaba 440€ de cobertura cuando en realidad son 480€.)
 
 PASO 6 — Cierra con el Carrito:
 Recuérdales que las tarjetas quedan en estado NIDO hasta que confirmen desde el Carrito.
+Al confirmar, el Carrito aplica el descuento de las tarjetas, calcula el seguro e incorpora el IVA correspondiente sobre ese importe.
 Al activar, los usuarios ya pueden canjear sus Lunas por esas tarjetas.
 
 
@@ -160,7 +166,7 @@ Al activar, los usuarios ya pueden canjear sus Lunas por esas tarjetas.
 
 Todo se gestiona desde el Backstage de Brovision, en la pestaña "COMERCIO".
 Ahí se encuentra:
-- "Nidos de Tarjetas" para crear un Nido y luego añadirle tarjetas
+- "Tarjetas de Regalo" para crear tu Nido y añadirle tarjetas
 - "Carrito" para revisar tu Nido y activar las tarjetas antes de confirmar tu campaña
 
 El comercio debe tener cuenta activa en Brovision para acceder al Backstage.

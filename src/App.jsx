@@ -8,7 +8,7 @@ import BroTuner from './components/BroTuner';
 import BoosterModal from './components/BoosterModal';
 import LegalTerminal from './components/LegalTerminal';
 
-import Reinos from './components/Reinos';
+import Tablon from './components/Tablon';
 import RealityTuner from './components/RealityTuner';
 import MoonMatrixCircle from './components/MoonMatrixCircle';
 import { getMoonSuffix } from './utils/moonUtils';
@@ -191,12 +191,12 @@ const [boosterTab, setBoosterTab]           = useState(null);
       'CANJEAR':        'canjear',
       'CANJES':         'canjear',
       'SHOP AMIGOS':    'shopamigos',
-      'REINOS':         'reinos',
+      'EL TABLÓN':      'tablón',
       'GAMES':          'games',
       'BRO7BAND':       'bro7band',
     };
 
-    const SIN_UBICACION = ['REINOS', 'BRO7BAND'];
+    const SIN_UBICACION = ['EL TABLÓN', 'BRO7BAND'];
     if (SIN_UBICACION.includes(agente)) {
       setPerfilSector(null);
       setIntent(intentMap[agente] || 'ai');
@@ -303,7 +303,7 @@ setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
     { id: 'shopamigos',       label: 'SHOP AMIGOS',        color: 'border-slate-500/30 hover:border-slate-400',      images: ['/emojis/emoji_3.webp'] },
     { id: 'bro7band',        label: 'BRO7BAND',         color: 'border-cyan-500/30 hover:border-cyan-400',       images: ['/emojis/bro7band.webp'] },
     { id: 'games',           label: 'GAMES',            color: 'border-white/30 hover:border-white/60',           images: ['/emojis/emoji8.webp', '/emojis/emoji9.webp'] },
-    { id: 'reinos',          label: 'REINOS',           color: 'border-orange-500/30 hover:border-orange-400',    images: ['/emojis/rumores.webp'] },
+    { id: 'tablón',          label: 'EL TABLÓN',      color: 'border-orange-500/30 hover:border-orange-400',    images: ['/emojis/rumores.webp'] },
   ];
 
   // ══════════════════════════════════════════════════════
@@ -384,11 +384,11 @@ setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
         </div>
       )}
 
-      {intent === 'reinos' && step === 2 && (
+      {intent === 'tablón' && step === 2 && (
         <div className={`fixed inset-x-0 top-[10%] bottom-[16%] z-[90] mx-auto max-w-5xl px-4 ${
           window.innerWidth < 768 ? 'pointer-events-none' : 'pointer-events-auto'
         }`}>
-          <Reinos
+          <Tablon
             isMobile={window.innerWidth < 768}
             onClose={() => { setStep(0); setIntent(null); }}
             session={session} balances={balances} setBalances={setBalances}
