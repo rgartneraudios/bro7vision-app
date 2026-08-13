@@ -303,7 +303,7 @@ setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
     { id: 'shopamigos',       label: 'SHOP AMIGOS',        color: 'border-slate-500/30 hover:border-slate-400',      images: ['/emojis/emoji_3.webp'] },
     { id: 'bro7band',        label: 'BRO7BAND',         color: 'border-cyan-500/30 hover:border-cyan-400',       images: ['/emojis/bro7band.webp'] },
     { id: 'games',           label: 'GAMES',            color: 'border-white/30 hover:border-white/60',           images: ['/emojis/emoji8.webp', '/emojis/emoji9.webp'] },
-    { id: 'tablón',          label: 'EL TABLÓN',      color: 'border-orange-500/30 hover:border-orange-400',    images: ['/emojis/rumores.webp'] },
+    { id: 'tablón',          label: 'EL TABLÓN',      color: 'border-orange-500/30 hover:border-orange-400',    images: ['/emojis/tablon.webp'] },
   ];
 
   // ══════════════════════════════════════════════════════

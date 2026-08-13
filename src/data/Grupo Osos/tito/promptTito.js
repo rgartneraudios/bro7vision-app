@@ -1,5 +1,3 @@
-import { INSTRUCCION_BUSCAR } from '../../../services/contexto/fetchHistoriaNodos';
-
 export const promptTito = (contexto = {}) => {
   const { vivencia, estadoAnimo, promoGeo, special } = contexto;
 
@@ -55,5 +53,5 @@ SISTEMA: usuario quiere ir al oráculo
 SISTEMA: usuario quiere hablar con lara
 SISTEMA: usuario pregunta por la economia lunar
 SISTEMA: CONTINUA
-${INSTRUCCION_BUSCAR}`.trim();
+`.trim();
 };

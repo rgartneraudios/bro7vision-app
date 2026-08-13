@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { promptOrumama }        from '../data/orumama/promptOrumama';
 import { fetchContextoOrumama } from '../services/contexto/fetchContextoOrumama';
-import { fetchHistoriaNodos } from '../services/contexto/fetchHistoriaNodos';
+import { buscarNodosRelevantes } from '../services/contexto/fetchHistoriaNodos';
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
 const norm   = (s) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -38,6 +38,12 @@ function detectarHandoff(texto) {
   }
   return null;
 }
+
+const limpiarRespuesta = (texto) =>
+  texto
+    .replace(/BUSCAR:.*$/im, '')
+    .replace(/SISTEMA:.*$/im, '')
+    .trim();
 
 export function useAgentOrumama({ iaMode, isAdmin, onHandoff, onBotContent, onShowStoryList, onLaunchStory }) {
   const [mensaje, setMensaje]         = useState(null);
@@ -77,13 +83,19 @@ export function useAgentOrumama({ iaMode, isAdmin, onHandoff, onBotContent, onSh
   const enviarIA = async (textoUsuario) => {
     setLoading(true);
     try {
-      const contexto = await fetchContextoOrumama();
-      const system   = promptOrumama({
+      const [contexto, nodo] = await Promise.all([
+        fetchContextoOrumama(),
+        buscarNodosRelevantes(textoUsuario),
+      ]);
+      let system   = promptOrumama({
         ...contexto || {},
         storyContext: storyContext
           ? `\nHISTORIA EN CURSO — el usuario está leyendo/escuchando:\nTítulo: ${storyContext.titulo}\n${(storyContext.texto || '').slice(0, 800)}...\nSi pregunta sobre ella, responde en personaje usando este contenido.`
           : null,
       });
+
+      if (nodo)
+        system += `\n\nCONTEXTO RELEVANTE (úsalo si viene al caso, no lo menciones directamente): ${nodo}`;
       const res = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -95,37 +107,16 @@ export function useAgentOrumama({ iaMode, isAdmin, onHandoff, onBotContent, onSh
         }),
       });
       const data = await res.json();
-      let respuestaCompleta = data?.texto || '...';
+      const respuestaCompleta = data?.texto || '...';
 
-      if (respuestaCompleta.startsWith('BUSCAR:')) {
-        const terminos = respuestaCompleta.replace('BUSCAR:', '').split(',').map(t => t.trim());
-        const nodo = await fetchHistoriaNodos(terminos);
-        const contextoBuscado = nodo
-          ? `[MEMORIA RECUPERADA: ${nodo}]`
-          : '[No encontré información en la memoria. Responde con naturalidad sin inventar.]';
-        const segundaRes = await fetch(WORKER_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            system,
-            messages: [...chatHistory.slice(-4), { role: 'user', content: textoUsuario }],
-            userMessage: contextoBuscado,
-            iaMode,
-          }),
-        });
-        const segundaData = await segundaRes.json();
-        respuestaCompleta = segundaData?.texto || '...';
-      }
+      // Interceptar comandos SISTEMA antes de mostrar nada al usuario
+      interpretarSistema(respuestaCompleta);
 
-      const lineaSistema = respuestaCompleta.split('\n').find(l => l.trim().startsWith('SISTEMA:'));
-      const mensajeUser  = respuestaCompleta.replace(lineaSistema || '', '').replace(/\*\*/g, '').trim();
-      const intencion    = lineaSistema ? lineaSistema.replace('SISTEMA:', '').trim() : 'CONTINUA';
-
-      if (intencion && intencion !== 'CONTINUA') interpretarSistema(intencion);
+      const mensajeLimpio = limpiarRespuesta(respuestaCompleta);
 
       pushHistory('user', textoUsuario);
-      pushHistory('assistant', mensajeUser);
-      setMensaje(mensajeUser);
+      pushHistory('assistant', mensajeLimpio);
+      setMensaje(mensajeLimpio);
     } catch (err) {
       console.error('useAgentOrumama error:', err);
       setMensaje('...');
@@ -141,6 +132,21 @@ export function useAgentOrumama({ iaMode, isAdmin, onHandoff, onBotContent, onSh
     if (destino) {
       setMensaje(elegir(HANDOFF_PHRASES[destino]));
       setTimeout(() => onHandoff?.(destino), 2500);
+      return;
+    }
+
+    if (textoUsuario.trim() === '555') {
+      onShowStoryList?.();
+      return;
+    }
+
+    const TRIGGER_STORIES = ['cuento', 'cuentos', 'episodio', 'episodios',
+      'historia', 'historias', 'exclusiva', 'exclusivas', 'listado',
+      'ver historias', 'ponme el', 'quiero escuchar'];
+    const tNorm = textoUsuario.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (TRIGGER_STORIES.some(kw => tNorm.includes(kw))) {
+      onShowStoryList?.();
       return;
     }
 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { fetchContextoEvelyn } from '../services/contexto/fetchContextoEvelyn';
 import { fetchContextoLarry }  from '../services/contexto/fetchContextoLarry';
 import { promptEvelyn }        from '../data/evelyn_larry/promptEvelyn';
-import { fetchHistoriaNodos } from '../services/contexto/fetchHistoriaNodos';
+import { buscarNodosRelevantes } from '../services/contexto/fetchHistoriaNodos';
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
 
@@ -48,6 +48,12 @@ const detectarInterno = (texto, personajeActivo) => {
   return null;
 };
 
+const limpiarRespuesta = (texto) =>
+  texto
+    .replace(/BUSCAR:.*$/im, '')
+    .replace(/SISTEMA:.*$/im, '')
+    .trim();
+
 export function useAgentEvelyn({
   personaje    = 'evelyn',
   iaMode       = 'off',
@@ -84,11 +90,17 @@ export function useAgentEvelyn({
   const enviarIA = async (textoUsuario) => {
     setLoading(true);
     try {
-      const contexto   = await fetchContexto();
+      const [contexto, nodo] = await Promise.all([
+        fetchContexto(),
+        buscarNodosRelevantes(textoUsuario),
+      ]);
       const baseSystem = promptEvelyn(contexto || {});
-      const system     = storyEpisode
+      let system     = storyEpisode
         ? `${baseSystem}\n\nHISTORIA EN PANTALLA:\n${storyEpisode.texto?.slice(0, 800) || ''}`
         : baseSystem;
+
+      if (nodo)
+        system += `\n\nCONTEXTO RELEVANTE (úsalo si viene al caso, no lo menciones directamente): ${nodo}`;
 
       const res = await fetch(WORKER_URL, {
         method: 'POST',
@@ -102,30 +114,15 @@ export function useAgentEvelyn({
       });
 
       const data = await res.json();
-      let respuesta = data?.texto || '...';
+      const respuesta = data?.texto || '...';
 
-      if (respuesta.startsWith('BUSCAR:')) {
-        const terminos = respuesta.replace('BUSCAR:', '').split(',').map(t => t.trim());
-        const nodo = await fetchHistoriaNodos(terminos);
-        const contextoBuscado = nodo
-          ? `[MEMORIA RECUPERADA: ${nodo}]`
-          : '[No encontré información en la memoria. Responde con naturalidad sin inventar.]';
-        const segundaRes = await fetch(WORKER_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            system,
-            messages: [...chatHistory.slice(-4), { role: 'user', content: textoUsuario }],
-            userMessage: contextoBuscado,
-            iaMode,
-          }),
-        });
-        const segundaData = await segundaRes.json();
-        respuesta = segundaData?.texto || '...';
-      }
+      // Interceptar comandos SISTEMA antes de mostrar nada al usuario
+      interpretarSistema(respuesta);
 
-      if (respuesta.trim().startsWith('HANDOFF:')) {
-        const partes  = respuesta.replace('HANDOFF:', '').trim().split(':');
+      const mensajeLimpio = limpiarRespuesta(respuesta);
+
+      if (mensajeLimpio.trim().startsWith('HANDOFF:')) {
+        const partes  = mensajeLimpio.replace('HANDOFF:', '').trim().split(':');
         const agente  = partes[0];
         const detalle = partes[1] || null;
         onHandoff?.({
@@ -136,10 +133,8 @@ export function useAgentEvelyn({
         return;
       }
 
-      const lineaSistema = respuesta.split('\n').find(l => l.trim().startsWith('SISTEMA:'));
-      const mensajeFinal = respuesta.replace(lineaSistema || '', '').replace(/\*\*/g, '').trim();
-      const intencion    = lineaSistema ? lineaSistema.replace('SISTEMA:', '').trim() : 'CONTINUA';
-      if (intencion && intencion !== 'CONTINUA') interpretarSistema(intencion);
+      const canjeMatch   = mensajeLimpio.match(/\[CANJE_CONFIRMADO:([^:]+):(\d{3})\]/);
+      const mensajeFinal = canjeMatch ? mensajeLimpio.replace(canjeMatch[0], '').trim() : mensajeLimpio;
 
       pushHistory('user', textoUsuario);
       pushHistory('assistant', mensajeFinal);
@@ -159,6 +154,14 @@ export function useAgentEvelyn({
 
     if (t.includes('larry')) { setTimeout(() => onHandoff?.({ agente: 'INTERNO', member_id: 'larry' }), 1200); return; }
     if (t.includes('555'))   { onShowStoryList?.(); return; }
+
+    const TRIGGER_STORIES = ['cuento', 'cuentos', 'episodio', 'episodios',
+      'historia', 'historias', 'exclusiva', 'exclusivas', 'listado',
+      'ver historias', 'ponme el', 'quiero escuchar'];
+    if (TRIGGER_STORIES.some(kw => t.includes(kw))) {
+      onShowStoryList?.();
+      return;
+    }
 
     const salida = detectarSalida(textoUsuario);
     if (salida) {

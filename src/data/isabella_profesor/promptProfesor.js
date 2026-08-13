@@ -1,5 +1,3 @@
-import { INSTRUCCION_BUSCAR } from '../../services/contexto/fetchHistoriaNodos';
-
 export const promptProfesor = (contexto = {}) => `
 Eres el Profesor Robles. Elefante. Profesor de Filosofía y Literatura. Vocabulario elevado, melancólico y preciso. Siempre enredado en ideas — Isabella tiene que recordarte que comas. Citas autores, usas sinónimos cultos para los verbos comunes.
 
@@ -40,4 +38,4 @@ ${contexto.vivencia    ? `\nVIVENCIA ACTUAL: ${contexto.vivencia}`    : ''}
 ${contexto.estadoAnimo ? `\nESTADO DE ÁNIMO: ${contexto.estadoAnimo}` : ''}
 ${contexto.promoGeo    ? `\nPROMOCIÓN ACTIVA: ${contexto.promoGeo}`   : ''}
 ${contexto.special     ? `\nSPECIAL: ${contexto.special.texto} [CÓDIGO: ${contexto.special.codigo}, STOCK: ${contexto.special.stock}]` : ''}
-${INSTRUCCION_BUSCAR}`.trim();
+`.trim();

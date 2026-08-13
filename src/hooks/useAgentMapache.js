@@ -7,7 +7,7 @@ import { fetchContextoMapache } from '../services/contexto/fetchContextoMapache'
 import { fetchContextoAmi }     from '../services/contexto/fetchContextoAmi';
 import { promptAmi }    from '../data/mapache_ami/promptAmi';
 import { promptMapache } from '../data/mapache_ami/promptMapache';
-import { fetchHistoriaNodos } from '../services/contexto/fetchHistoriaNodos';
+import { buscarNodosRelevantes } from '../services/contexto/fetchHistoriaNodos';
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
 
@@ -41,6 +41,12 @@ const detectarInternoMapache = (texto, personajeActivo) => {
   if (personajeActivo !== 'mapache' && AUDIO_KEYWORDS_MAPACHE.some(kw => t.includes(norm(kw)))) return { interno: true, personaje_id: 'mapache' };
   return null;
 };
+
+const limpiarRespuesta = (texto) =>
+  texto
+    .replace(/BUSCAR:.*$/im, '')
+    .replace(/SISTEMA:.*$/im, '')
+    .trim();
 
 export function useAgentMapache({
   personaje   = 'mapache',
@@ -92,17 +98,21 @@ export function useAgentMapache({
     setLoading(true);
     try {
       const esAmi      = (personaje || 'mapache') === 'ami';
-      const contexto   = esAmi
-        ? await fetchContextoAmi(ciudad)
-        : await fetchContextoMapache(ciudad);
+      const [contexto, nodo] = await Promise.all([
+        esAmi ? fetchContextoAmi(ciudad) : fetchContextoMapache(ciudad),
+        buscarNodosRelevantes(textoUsuario),
+      ]);
       if (contexto?.esPatrocinado) setEsPatrocinado(true);
 
       const baseSystem = esAmi
         ? promptAmi(contexto || {})
         : promptMapache(contexto || {});
-      const system     = storyEpisode
+      let system     = storyEpisode
         ? `${baseSystem}\n\nHISTORIA EN PANTALLA:\n${storyEpisode.texto?.slice(0, 800) || ''}`
         : baseSystem;
+
+      if (nodo)
+        system += `\n\nCONTEXTO RELEVANTE (úsalo si viene al caso, no lo menciones directamente): ${nodo}`;
 
       const res = await fetch(WORKER_URL, {
         method: 'POST',
@@ -116,38 +126,15 @@ export function useAgentMapache({
       });
 
       const data      = await res.json();
-      let respuesta = data?.texto || '...';
+      const respuesta = data?.texto || '...';
 
-      if (respuesta.startsWith('BUSCAR:')) {
-        const terminos = respuesta.replace('BUSCAR:', '').split(',').map(t => t.trim());
-        const nodo = await fetchHistoriaNodos(terminos);
-        const contextoBuscado = nodo
-          ? `[MEMORIA RECUPERADA: ${nodo}]`
-          : '[No encontré información en la memoria. Responde con naturalidad sin inventar.]';
-        const segundaRes = await fetch(WORKER_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            system,
-            messages: [...chatHistory.slice(-4), { role: 'user', content: textoUsuario }],
-            userMessage: contextoBuscado,
-            iaMode,
-          }),
-        });
-        const segundaData = await segundaRes.json();
-        respuesta = segundaData?.texto || '...';
-      }
+      // Interceptar comandos SISTEMA antes de mostrar nada al usuario
+      interpretarSistema(respuesta);
 
-      const sistemaResult = interpretarSistema(respuesta);
-      if (sistemaResult === 'HANDLED') {
-        setLoading(false);
-        return;
-      }
+      const mensajeLimpio = limpiarRespuesta(respuesta);
 
-      const respuestaLimpia = respuesta.replace(/SISTEMA:.*$/gm, '').trim() || respuesta;
-
-      if (respuestaLimpia.trim().startsWith('HANDOFF:')) {
-        const partes  = respuestaLimpia.replace('HANDOFF:', '').trim().split(':');
+      if (mensajeLimpio.trim().startsWith('HANDOFF:')) {
+        const partes  = mensajeLimpio.replace('HANDOFF:', '').trim().split(':');
         const agente  = partes[0];
         const detalle = partes[1] || null;
         onHandoff?.({
@@ -159,8 +146,8 @@ export function useAgentMapache({
       }
 
       pushHistory('user', textoUsuario);
-      pushHistory('assistant', respuestaLimpia);
-      setMensaje(respuestaLimpia);
+      pushHistory('assistant', mensajeLimpio);
+      setMensaje(mensajeLimpio);
 
     } catch (err) {
       console.error('useAgentMapache error:', err);
@@ -177,6 +164,14 @@ export function useAgentMapache({
     if (t.includes('ami'))     { setTimeout(() => onHandoff?.({ agente: 'INTERNO', member_id: 'ami'     }), 1200); return; }
     if (t.includes('mapache')) { setTimeout(() => onHandoff?.({ agente: 'INTERNO', member_id: 'mapache' }), 1200); return; }
     if (t.includes('555'))     { onShowStoryList?.(); return; }
+
+    const TRIGGER_STORIES = ['cuento', 'cuentos', 'episodio', 'episodios',
+      'historia', 'historias', 'exclusiva', 'exclusivas', 'listado',
+      'ver historias', 'ponme el', 'quiero escuchar'];
+    if (TRIGGER_STORIES.some(kw => t.includes(kw))) {
+      onShowStoryList?.();
+      return;
+    }
 
     const salida = detectarSalidaMapache(textoUsuario);
     if (salida) {

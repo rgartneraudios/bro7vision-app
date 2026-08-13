@@ -20,7 +20,6 @@ const BoosterModal = ({ onClose, initialTab, session }) => {
     alias: '', avatar_url: '', banner_url: '',
     audio_file: '', audio_type: '', audio_description: '',
     track_name: '',
-genero: 'n',
   });
 
   // ── UI ──
@@ -45,7 +44,6 @@ genero: 'n',
           alias:              profile.alias              || user.user_metadata?.alias || '',
           avatar_url:         profile.avatar_url         || '',
           banner_url:         profile.banner_url         || '',
-          genero:             profile.genero             || 'n',
         });
       } catch (e) {
         console.error("Error cargando perfil:", e);

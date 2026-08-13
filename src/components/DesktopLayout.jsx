@@ -65,7 +65,7 @@ useEffect(() => {
               step === 1
                 ? ososModo === 'retorno' ? "https://media.bro7vision.com/ososia_recepcion.mp4" : "https://media.bro7vision.com/ososia_recepcion.mp4"
                 : intent === 'games'  ? "https://media.bro7vision.com/game_bg.mp4"
-                : intent === 'tablón' ? "https://media.bro7vision.com/tablon.mp4"
+                : intent === 'tablón' ? "https://media.bro7vision.com/tablon9.mp4"
                 : getVideoForLocation(scope)
             }
             autoPlay loop muted playsInline className="w-full h-full object-cover transition-opacity duration-1000 animate-fadeIn"

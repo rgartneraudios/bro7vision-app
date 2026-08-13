@@ -4,7 +4,7 @@
 import { useState, useRef } from 'react';
 import { promptTito }        from '../data/Grupo Osos/tito/promptTito';
 import { fetchContextoTito } from '../services/contexto/fetchContextoTito';
-import { fetchHistoriaNodos } from '../services/contexto/fetchHistoriaNodos';
+import { buscarNodosRelevantes } from '../services/contexto/fetchHistoriaNodos';
 
 
 const WORKER_URL = 'https://brovision-ai.bro7vision.workers.dev';
@@ -16,6 +16,12 @@ const FRASES_FALLBACK = [
   "Yo solo decía... que si me dices el sector te llevo directo. ¿Cuál es?",
   "Es curioso, ¿verdad? que a veces cuesta decir lo que se busca. ¿A qué sector quieres ir?",
 ];
+
+const limpiarRespuesta = (texto) =>
+  texto
+    .replace(/BUSCAR:.*$/im, '')
+    .replace(/SISTEMA:.*$/im, '')
+    .trim();
 
 export function useAgentTito({ iaMode, isAdmin, onHandoff, ciudad = null,
                                onShowStoryList, onLaunchStory, storyEpisode = null }) {
@@ -47,11 +53,17 @@ export function useAgentTito({ iaMode, isAdmin, onHandoff, ciudad = null,
   const enviarIA = async (textoUsuario) => {
     setLoading(true);
     try {
-      const contexto    = await fetchContextoTito(ciudad);
+      const [contexto, nodo] = await Promise.all([
+        fetchContextoTito(ciudad),
+        buscarNodosRelevantes(textoUsuario),
+      ]);
       const baseSystem  = promptTito(contexto || {});
-      const system      = storyEpisode
+      let system      = storyEpisode
         ? `${baseSystem}\n\nHISTORIA EN PANTALLA:\n${storyEpisode.texto?.slice(0, 800) || ''}`
         : baseSystem;
+
+      if (nodo)
+        system += `\n\nCONTEXTO RELEVANTE (úsalo si viene al caso, no lo menciones directamente): ${nodo}`;
       const res = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -63,30 +75,15 @@ export function useAgentTito({ iaMode, isAdmin, onHandoff, ciudad = null,
         }),
       });
       const data = await res.json();
-      let respuestaCompleta = data?.texto || '...';
+      const respuestaCompleta = data?.texto || '...';
 
-      if (respuestaCompleta.startsWith('BUSCAR:')) {
-        const terminos = respuestaCompleta.replace('BUSCAR:', '').split(',').map(t => t.trim());
-        const nodo = await fetchHistoriaNodos(terminos);
-        const contextoBuscado = nodo
-          ? `[MEMORIA RECUPERADA: ${nodo}]`
-          : '[No encontré información en la memoria. Responde con naturalidad sin inventar.]';
-        const segundaRes = await fetch(WORKER_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            system,
-            messages: [...chatHistory.slice(-4), { role: 'user', content: textoUsuario }],
-            userMessage: contextoBuscado,
-            iaMode,
-          }),
-        });
-        const segundaData = await segundaRes.json();
-        respuestaCompleta = segundaData?.texto || '...';
-      }
+      // Interceptar comandos SISTEMA antes de mostrar nada al usuario
+      interpretarSistema(respuestaCompleta);
 
-      if (respuestaCompleta.trim().startsWith('HANDOFF:')) {
-        const partes  = respuestaCompleta.replace('HANDOFF:', '').trim().split(':');
+      const mensajeLimpio = limpiarRespuesta(respuestaCompleta);
+
+      if (mensajeLimpio.trim().startsWith('HANDOFF:')) {
+        const partes  = mensajeLimpio.replace('HANDOFF:', '').trim().split(':');
         const agente  = partes[0];
         const detalle = partes[1] || null;
         onHandoff?.({
@@ -99,14 +96,8 @@ export function useAgentTito({ iaMode, isAdmin, onHandoff, ciudad = null,
         return;
       }
 
-      const lineaSistema = respuestaCompleta.split('\n').find(l => l.trim().startsWith('SISTEMA:'));
-      const mensajeUser  = respuestaCompleta.replace(lineaSistema || '', '').replace(/\*\*/g, '').trim();
-      const intencion    = lineaSistema ? lineaSistema.replace('SISTEMA:', '').trim() : 'CONTINUA';
-
-      if (intencion && intencion !== 'CONTINUA') interpretarSistema(intencion);
-
-      const canjeMatch   = mensajeUser.match(/\[CANJE_CONFIRMADO:([^:]+):(\d{3})\]/);
-      const mensajeFinal = canjeMatch ? mensajeUser.replace(canjeMatch[0], '').trim() : mensajeUser;
+      const canjeMatch   = mensajeLimpio.match(/\[CANJE_CONFIRMADO:([^:]+):(\d{3})\]/);
+      const mensajeFinal = canjeMatch ? mensajeLimpio.replace(canjeMatch[0], '').trim() : mensajeLimpio;
 
       pushHistory('user', textoUsuario);
       pushHistory('assistant', mensajeFinal);
@@ -129,6 +120,14 @@ export function useAgentTito({ iaMode, isAdmin, onHandoff, ciudad = null,
 
     // 2. 555 → mostrar lista de cuentos (intercepción directa, sin pasar por IA)
     if (t.includes('555')) {
+      onShowStoryList?.();
+      return;
+    }
+
+    const TRIGGER_STORIES = ['cuento', 'cuentos', 'episodio', 'episodios',
+      'historia', 'historias', 'exclusiva', 'exclusivas', 'listado',
+      'ver historias', 'ponme el', 'quiero escuchar'];
+    if (TRIGGER_STORIES.some(kw => t.includes(kw))) {
       onShowStoryList?.();
       return;
     }
