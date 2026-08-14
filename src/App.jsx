@@ -289,7 +289,7 @@ setOsosHandoffContext({ intencion, comercio_especifico: comercio, modalidad });
 
   if (!session && !isGuest) {
     return <LunasGate
-      onGuestAccess={() => { setIsGuest(true); setStep(0); setRealityMode(null); setBalances({ lunas: 500, nova: 20 }); }}
+      onGuestAccess={() => { setIsGuest(true); setStep(0); setRealityMode(null); setBalances({ lunas: 0, nova: 20 }); }}
     />;
   }
 

@@ -4,6 +4,25 @@ import React from 'react';
 const LegalTerminal = ({ onClose }) => {
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 animate-fadeIn">
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.3);
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, #06b6d4, #3b82f6);
+          border-radius: 3px;
+          border: 1px solid transparent;
+          background-clip: padding-box;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(180deg, #22d3ee, #60a5fa);
+          box-shadow: 0 0 10px rgba(6, 182, 212, 0.5), 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+      `}</style>
       {/* Fondo oscuro traslúcido */}
       <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" onClick={onClose}></div>
 

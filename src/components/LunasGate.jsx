@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 
 
@@ -11,6 +11,10 @@ const LunasGate = ({ onGuestAccess }) => {
   const [mode, setMode] = useState('login'); 
   const [message, setMessage] = useState(null);
   const [legalAccepted, setLegalAccepted] = useState(false);
+  const [playingMapache, setPlayingMapache] = useState(false);
+  const [playingProfesor, setPlayingProfesor] = useState(false);
+  const audioMapache = useRef(null);
+  const audioProfesor = useRef(null);
   
   // ... otros estados ...
 
@@ -46,8 +50,37 @@ const LunasGate = ({ onGuestAccess }) => {
     }
   };
 
+  const handlePlayMapache = () => {
+    if (playingMapache) {
+      audioMapache.current.pause();
+      audioMapache.current.currentTime = 0;
+      setPlayingMapache(false);
+    } else {
+      if (playingProfesor) {
+        audioProfesor.current.pause();
+        audioProfesor.current.currentTime = 0;
+        setPlayingProfesor(false);
+      }
+      audioMapache.current.play();
+      setPlayingMapache(true);
+    }
+  };
 
-
+  const handlePlayProfesor = () => {
+    if (playingProfesor) {
+      audioProfesor.current.pause();
+      audioProfesor.current.currentTime = 0;
+      setPlayingProfesor(false);
+    } else {
+      if (playingMapache) {
+        audioMapache.current.pause();
+        audioMapache.current.currentTime = 0;
+        setPlayingMapache(false);
+      }
+      audioProfesor.current.play();
+      setPlayingProfesor(true);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[999] bg-black flex items-center justify-center overflow-hidden font-mono text-white">
@@ -155,7 +188,71 @@ const LunasGate = ({ onGuestAccess }) => {
         </div>
 
         </div>
-      
+
+      {/* --- AUDIO (sin visual) --- */}
+      <audio
+        ref={audioMapache}
+        src="https://media.bro7vision.com/Mapache_Entrada.m4a"
+        onEnded={() => setPlayingMapache(false)}
+      />
+      <audio
+        ref={audioProfesor}
+        src="https://media.bro7vision.com/Profesor_Entrada.m4a"
+        onEnded={() => setPlayingProfesor(false)}
+      />
+
+      {/* --- MAPACHE — esquina inferior izquierda --- */}
+      <div className="absolute bottom-0 left-0 z-20 flex flex-col items-center gap-2 pb-4 pl-4">
+        <img
+          src={playingMapache ? '/assets/mapache-on.webp' : '/assets/mapache-off.webp'}
+          alt="Mapache"
+          style={{
+            width: 200,
+            filter: playingMapache
+              ? 'drop-shadow(0 0 24px rgba(251,146,60,0.9))'
+              : 'none',
+            transition: 'filter 0.3s ease',
+          }}
+        />
+        <button
+          onClick={handlePlayMapache}
+          className="text-[9px] font-black uppercase tracking-widest px-4 py-1.5 rounded border transition-all"
+          style={{
+            borderColor: playingMapache ? 'rgba(251,146,60,0.7)' : 'rgba(255,255,255,0.15)',
+            color:       playingMapache ? 'rgb(251,146,60)'      : 'rgba(255,255,255,0.5)',
+            background:  playingMapache ? 'rgba(251,146,60,0.1)' : 'rgba(0,0,0,0.4)',
+          }}
+        >
+          {playingMapache ? '■ MAPACHE' : '▶ MAPACHE'}
+        </button>
+      </div>
+
+      {/* --- PROFESOR — esquina inferior derecha --- */}
+      <div className="absolute bottom-0 right-0 z-20 flex flex-col items-center gap-2 pb-4 pr-4">
+        <img
+          src={playingProfesor ? '/assets/profesor-on.webp' : '/assets/profesor-off.webp'}
+          alt="Profesor Robles"
+          style={{
+            width: 200,
+            filter: playingProfesor
+              ? 'drop-shadow(0 0 24px rgba(34,211,238,0.9))'
+              : 'none',
+            transition: 'filter 0.3s ease',
+          }}
+        />
+        <button
+          onClick={handlePlayProfesor}
+          className="text-[9px] font-black uppercase tracking-widest px-4 py-1.5 rounded border transition-all"
+          style={{
+            borderColor: playingProfesor ? 'rgba(34,211,238,0.7)' : 'rgba(255,255,255,0.15)',
+            color:       playingProfesor ? 'rgb(34,211,238)'      : 'rgba(255,255,255,0.5)',
+            background:  playingProfesor ? 'rgba(34,211,238,0.1)' : 'rgba(0,0,0,0.4)',
+          }}
+        >
+          {playingProfesor ? '■ PROFESOR' : '▶ PROFESOR'}
+        </button>
+      </div>
+
     </div>
   );
 };

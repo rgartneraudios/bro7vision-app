@@ -49,6 +49,25 @@ const Tablon = ({ isMobile }) => {
 
   return (
     <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-5xl z-[60] flex flex-col items-center font-mono">
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.3);
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, #06b6d4, #3b82f6);
+          border-radius: 3px;
+          border: 1px solid transparent;
+          background-clip: padding-box;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(180deg, #22d3ee, #60a5fa);
+          box-shadow: 0 0 10px rgba(6, 182, 212, 0.5), 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+      `}</style>
       <div className={`w-full bg-[#080808]/90 backdrop-blur-md border-t border-x border-cyan-500/50 rounded-t-3xl overflow-hidden shadow-[0_-10px_40px_rgba(6,182,212,0.15)] transition-all duration-500 ease-in-out flex flex-col ${
         isOpen ? 'max-h-[85vh] opacity-100 border-b-0' : 'max-h-0 opacity-0 border-transparent'
       }`}>

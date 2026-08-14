@@ -30,38 +30,42 @@ export async function fetchHistoriaNodos(terminos) {
 }
 
 export async function buscarNodosRelevantes(textoUsuario) {
-  const PALABRAS_VACIAS = [
-    'hola','buenas','hey','ey','hi','hello','buenas','saludos',
-    'gracias','ok','vale','genial','perfecto','bien','claro',
-    'rumores','tito','lara','puffo','nova','jaguar','evelyn',
-    'larry','isabella','profesor','mapache','ami','smisterio','orumama'
-  ];
-
-  const palabras = textoUsuario
+  const t = textoUsuario
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .split(/\s+/)
-    .filter(p => p.length > 3 && !PALABRAS_VACIAS.includes(p));
+    .replace(/[^a-z0-9\s]/g, ' ');
 
-  if (palabras.length === 0) return null;
+  const SALUDOS_VACIOS = [
+    'hola','buenas','hey','ey','hi','hello','saludos','gracias',
+    'ok','vale','genial','perfecto','bien','claro','que','como',
+    'estas','eres','ola','pues','nada','algo'
+  ];
+
+  const palabras = t.split(/\s+/).filter(p => p.length > 2);
+
+  const soloTrivial = palabras.every(p =>
+    SALUDOS_VACIOS.includes(p) || PERSONAJE_IDS.includes(p)
+  );
+  if (soloTrivial || palabras.length === 0) return null;
 
   const personajesBuscados = palabras.filter(p => PERSONAJE_IDS.includes(p));
-  const keywordsBuscadas   = palabras.filter(p => !PERSONAJE_IDS.includes(p));
+  const keywordsBuscadas   = palabras.filter(p =>
+    !PERSONAJE_IDS.includes(p) && !SALUDOS_VACIOS.includes(p) && p.length > 3
+  );
+
+  if (personajesBuscados.length === 0 && keywordsBuscadas.length === 0) return null;
 
   let query = supabase
     .from('historia_nodos')
     .select('descripcion')
     .eq('activo', true);
 
-  if (personajesBuscados.length > 0) {
-    query = query.contains('personajes', personajesBuscados);
-  } else if (keywordsBuscadas.length > 0) {
-    query = query.contains('keywords', keywordsBuscadas);
-  } else {
-    return null;
-  }
+  if (personajesBuscados.length > 0)
+    query = query.filter('personajes', 'ov', `{${personajesBuscados.join(',')}}`);
+
+  if (keywordsBuscadas.length > 0)
+    query = query.filter('keywords', 'ov', `{${keywordsBuscadas.join(',')}}`);
 
   const { data } = await query.limit(1).maybeSingle();
   return data?.descripcion ?? null;
