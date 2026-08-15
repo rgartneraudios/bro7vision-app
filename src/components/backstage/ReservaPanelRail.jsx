@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
-import { cityList } from '../../data/citycodes';
+import { cityList, getCodeForCity } from '../../data/citycodes';
 
 const SYNE = "'Exo 2', sans-serif";
 const INTER = "'Inter', sans-serif";
@@ -16,7 +16,7 @@ const COBERTURAS = [
 
 const CIUDAD_COBERTURAS = ['SALA_CIUDAD', 'SALA_GRAN_CIUDAD', 'GIRA_REGIONAL', 'GIRA_GRAN_REGIONAL'];
 
-const ReservaPanelRail = ({ slot, session, onClose, onReserved, faseLunarActiva: propFase }) => {
+const ReservaPanelRail = ({ slot, session, onClose, onReserved }) => {
   const [cobertura, setCobertura]       = useState('SALA_CIUDAD');
   const [ciudad, setCiudad]             = useState('');
   const [bannerUrl, setBannerUrl]       = useState('');
@@ -25,7 +25,9 @@ const ReservaPanelRail = ({ slot, session, onClose, onReserved, faseLunarActiva:
   const [loading, setLoading]           = useState(false);
   const [error, setError]               = useState(null);
   const [success, setSuccess]           = useState(false);
-  const [descuento, setDescuento]       = useState(0);
+  const [descuento,       setDescuento]       = useState(0);
+  const [faseLunarId,     setFaseLunarId]     = useState(null);
+  const [faseLunarNombre, setFaseLunarNombre] = useState('LUNA_NUEVA');
 
   useEffect(() => {
     const fetchDescuento = async () => {
@@ -39,13 +41,26 @@ const ReservaPanelRail = ({ slot, session, onClose, onReserved, faseLunarActiva:
     fetchDescuento();
   }, [session]);
 
+  useEffect(() => {
+    supabase
+      .from('fases_lunares')
+      .select('id, nombre')
+      .eq('activa', true)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setFaseLunarId(data.id);
+          setFaseLunarNombre(data.nombre);
+        }
+      });
+  }, []);
+
   const precioFinal = (precio) =>
     descuento > 0
       ? Math.round(precio * (1 - descuento / 100) * 100) / 100
       : precio;
 
   const needsCiudad = CIUDAD_COBERTURAS.includes(cobertura);
-  const faseLunarActiva = propFase || 'Luna Llena';
 
   const precio = useMemo(() => {
     return COBERTURAS.find(c => c.id === cobertura)?.precio ?? 0;
@@ -70,9 +85,9 @@ const ReservaPanelRail = ({ slot, session, onClose, onReserved, faseLunarActiva:
         lunas_bonus:         20,
         banner_url:          bannerUrl.trim() || null,
         comercio_id:         session.user.id,
-        fase_lunar_activa:   faseLunarActiva,
-        cobertura:           cobertura,
-        ciudad_codigo:       needsCiudad ? ciudad : null,
+fase_lunar_activa:  faseLunarNombre,
+          cobertura:           cobertura,
+          ciudad_codigos:     needsCiudad ? [getCodeForCity(ciudad)].filter(Boolean) : null,
         activo:              true,
       }]);
       if (err) throw err;

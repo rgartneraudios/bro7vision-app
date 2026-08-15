@@ -27,7 +27,9 @@ const LIMITE_CIUDADES = {
 const ReservaPanelGames = ({ juego, session, profile, onClose }) => {
   const [cobertura, setCobertura] = useState('SALA_CIUDAD');
   const [ciudades, setCiudades]   = useState([]);
-  const [descuento, setDescuento] = useState(0);
+  const [descuento,       setDescuento]       = useState(0);
+  const [faseLunarId,     setFaseLunarId]     = useState(null);
+  const [faseLunarNombre, setFaseLunarNombre] = useState('LUNA_NUEVA');
   const [error,     setError]     = useState('');
   const [done,      setDone]      = useState(false);
 
@@ -59,6 +61,20 @@ const ReservaPanelGames = ({ juego, session, profile, onClose }) => {
       .then(({ data }) => setDescuento(data?.descuento_publicitario ?? 0));
   }, [session]);
 
+  useEffect(() => {
+    supabase
+      .from('fases_lunares')
+      .select('id, nombre')
+      .eq('activa', true)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setFaseLunarId(data.id);
+          setFaseLunarNombre(data.nombre);
+        }
+      });
+  }, []);
+
   const toggleCiudad = (key) => {
     setCiudades(prev => {
       if (prev.includes(key)) return prev.filter(c => c !== key);
@@ -87,20 +103,20 @@ const ReservaPanelGames = ({ juego, session, profile, onClose }) => {
 
     const juegoKey    = isSevenGates ? 'SEVEN_GATES' : 'COSMIC_QUIZ';
     const today       = new Date();
-    const fechaFin    = new Date(today.getTime() + 28 * 86_400_000);
+    const fechaFin    = new Date(today.getTime() + 7 * 86_400_000);
 
     const { error: butacaErr } = await supabase.from('bs_butacas').insert([{
-      productor_id:      session.user.id,
+      productor_id:  session.user.id,
+      formato:       isSevenGates ? 'GAMES_7GATES' : 'GAMES_COSMIC',
+      fase_lunar_id: faseLunarId,
       cobertura,
-      ciudad_codigos:    ciudades.length > 0
+      ciudad_codigos: ciudades.length > 0
         ? ciudades.map(k => getCodeForCity(k)).filter(Boolean)
         : null,
-      precio:            precioFinal,
-      estado:            'EN_CASTING',
-      fecha_inicio:      today.toISOString().split('T')[0],
-      fecha_fin:         fechaFin.toISOString().split('T')[0],
-      promo_cosmic_quiz: !isSevenGates,
-      promo_seven_gates: isSevenGates,
+      precio:        precioFinal,
+      estado:        'EN_CASTING',
+      fecha_inicio:  today.toISOString().split('T')[0],
+      fecha_fin:     fechaFin.toISOString().split('T')[0],
     }]);
     if (butacaErr) { setError(butacaErr.message); return; }
 
@@ -120,7 +136,7 @@ const ReservaPanelGames = ({ juego, session, profile, onClose }) => {
       cobertura,
       ciudad_codigo:     ciudadCodigoPromo,
       lunas_bonus:       20,
-      fase_lunar_activa: 'LUNA_NUEVA',
+      fase_lunar_activa: faseLunarNombre,
       activo:            true,
       es_brovision:      false,
       ...(isSevenGates && {
@@ -188,7 +204,7 @@ const ReservaPanelGames = ({ juego, session, profile, onClose }) => {
                 <span className="text-violet-400 text-base">🌙</span>
                 <div>
                   <p style={{ fontFamily: INTER, fontWeight: 600 }} className="text-sm text-white">
-                    Por fase lunar — 28 días
+                    Por fase lunar — aprox. 7 días
                   </p>
                   <p style={{ fontFamily: INTER }} className="text-xs text-gray-500 mt-0.5">
                     La mención estará activa durante toda la fase lunar en curso
@@ -435,7 +451,7 @@ const ReservaPanelGames = ({ juego, session, profile, onClose }) => {
           <div className="shrink-0 px-6 py-4 border-t border-white/5 bg-black/20">
             <div className="flex items-center justify-between mb-1">
               <span style={{ fontFamily: INTER, fontWeight: 500 }} className="text-sm text-gray-500 uppercase tracking-wider">
-                Precio estimado · 28 días
+                Precio estimado · fase lunar
               </span>
               <span style={{ fontFamily: INTER, fontWeight: 700 }} className="text-violet-400 text-3xl">
                 {precioFinal} €

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import {
   CHANNELS, FASES, TURNOS,
@@ -36,11 +36,12 @@ const CANAL_STRING = {
 };
 
 const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, profile, onClose, onReserved }) => {
-  const [cobertura, setCobertura]   = useState(coberturaInicial || 'SALA_CIUDAD');
-  const [ciudades, setCiudades]         = useState([]);
-  const [moonTurno, setMoonTurno]   = useState(1);
-  const [videoLink, setVideoLink] = useState('');
-  const [campana,   setCampana]   = useState('01');
+  const [cobertura, setCobertura]         = useState(coberturaInicial || 'SALA_CIUDAD');
+  const [ciudades, setCiudades]           = useState([]);
+  const [moonTurno, setMoonTurno]         = useState(1);
+  const [videoLink, setVideoLink]         = useState('');
+  const [faseLunarId,     setFaseLunarId]     = useState(null);
+  const [faseLunarNombre, setFaseLunarNombre] = useState('LUNA_NUEVA');
   const [promoPregunta,  setPromoPregunta]  = useState('');
   const [promoOpcionA,   setPromoOpcionA]   = useState('');
   const [promoOpcionB,   setPromoOpcionB]   = useState('');
@@ -49,6 +50,20 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState(null);
   const [success, setSuccess]       = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from('fases_lunares')
+      .select('id, nombre')
+      .eq('activa', true)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setFaseLunarId(data.id);
+          setFaseLunarNombre(data.nombre);
+        }
+      });
+  }, []);
 
   const isMoon      = slot.canal === 2;
   const needsCiudad = CIUDAD_COBERTURAS.includes(cobertura);
@@ -83,44 +98,32 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
     setError(null);
 
     try {
-      let cityCode = null;
-      let codigoCsv = '000';
-
-      if (cobertura === 'GIRA_REGIONAL')           codigoCsv = 'REG';
-      else if (cobertura === 'GIRA_GRAN_REGIONAL') codigoCsv = 'GREG';
-      else if (cobertura === 'GIRA_MUNDIAL')       codigoCsv = '404';
-      else if (cobertura === 'GIRA_NACIONAL')      codigoCsv = '300';
-      else if (needsCiudad && ciudades[0]) {
-        cityCode  = getCodeForCity(ciudades[0]);
-        codigoCsv = cityCode || '000';
-      }
-
-      // For Phase 0: fase_lunar=1 for non-Moon, MT=moonTurno for Moon
-      const fase_lunar     = isMoon ? slot.fase : 1;
       const funcion        = isMoon ? moonTurno : slot.turno;
-      const nombre_archivo = `${campana}_${slot.canal}_${funcion}_${slot.dispositivo}_${codigoCsv}.mp4`;
+      const ciudadStr      = ciudades.length > 0
+        ? ciudades.map(k => getCodeForCity(k)).filter(Boolean).join('-')
+        : '000';
+      const nombre_archivo = `${slot.canal}_${funcion}_${slot.dispositivo}_${ciudadStr}.mp4`;
 
       const today    = new Date();
       const fechaFin = new Date(today.getTime() + 7 * 86_400_000);
 
       const payload = {
-        escenario_id:  escenarioId,
-        canal:         slot.canal,
-        fase_lunar,
+        canal:          slot.canal,
         funcion,
-        dispositivo:   slot.dispositivo,
+        dispositivo:    slot.dispositivo,
+        formato:        slot.dispositivo === 0 ? 'REALITY_PC' : 'REALITY_MOVIL',
+        fase_lunar_id:  faseLunarId,
         cobertura,
         ciudad_codigos: ciudades.length > 0
           ? ciudades.map(k => getCodeForCity(k)).filter(Boolean)
           : null,
-        productor_id:  session.user.id,
-        guion:         videoLink.trim() || null,
+        productor_id:   session.user.id,
+        guion:          videoLink.trim() || null,
         nombre_archivo,
-        campana,
-        estado:        'EN_CASTING',
+        estado:         'EN_CASTING',
         precio,
-        fecha_inicio:  today.toISOString().split('T')[0],
-        fecha_fin:     fechaFin.toISOString().split('T')[0],
+        fecha_inicio:   today.toISOString().split('T')[0],
+        fecha_fin:      fechaFin.toISOString().split('T')[0],
       };
 
       const { error: err } = await supabase.from('bs_butacas').insert([payload]);
@@ -139,7 +142,7 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
         turno:        isMoon ? moonTurno : slot.turno,
         alcance:      cobertura,
         activo:       true,
-        vence_luna:   'Luna Llena',
+        vence_luna:   faseLunarNombre,
         lunas_bonus:  20,
       }]);
       if (promoErr) throw promoErr;

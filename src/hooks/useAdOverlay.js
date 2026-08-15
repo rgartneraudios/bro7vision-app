@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
-import { getCodeForCity, getTipoForCity } from '../data/citycodes';
+import { getCodeForCity } from '../data/citycodes';
 
 const CANAL_NUM = {
   luna: 2, mercurio: 1, venus: 3, tierra: 4, marte: 6,
@@ -18,7 +18,7 @@ export function useAdOverlay({ escenarioId, canal, turno, faseLunar, cityKey, di
     const load = async () => {
       let query = supabase
         .from('bs_butacas')
-        .select('campana, cobertura, ciudad_codigo, ciudad_codigos, pieza_final')
+        .select('cobertura, ciudad_codigos, pieza_final')
         .eq('canal', canalNum)
         .eq('funcion', turno)
         .eq('dispositivo', dispositivo)
@@ -33,11 +33,9 @@ export function useAdOverlay({ escenarioId, canal, turno, faseLunar, cityKey, di
       if (error || !data?.length) { setAdVideoUrl(null); return; }
 
       const cityCode = cityKey ? getCodeForCity(cityKey) : null;
-      const cityTipo = cityKey ? getTipoForCity(cityKey) : null;
 
       let chosen =
         data.find(r => r.cobertura === 'GIRA_MUNDIAL') ||
-        data.find(r => r.cobertura === 'METROPOLIS' && cityTipo === 'mega') ||
         data.find(r => r.cobertura === 'GIRA_NACIONAL') ||
         (cityCode && data.find(r =>
           r.cobertura === 'GIRA_GRAN_REGIONAL' &&
@@ -49,7 +47,7 @@ export function useAdOverlay({ escenarioId, canal, turno, faseLunar, cityKey, di
         )) ||
         (cityCode && data.find(r =>
           (r.cobertura === 'SALA_CIUDAD' || r.cobertura === 'SALA_GRAN_CIUDAD') &&
-          r.ciudad_codigo === cityCode
+          Array.isArray(r.ciudad_codigos) && r.ciudad_codigos.includes(cityCode)
         )) || null;
 
       if (!chosen) { setAdVideoUrl(null); return; }
