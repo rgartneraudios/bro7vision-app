@@ -93,7 +93,23 @@ useEffect(() => {
     <span className="text-[10px] font-black uppercase tracking-widest group-hover:text-white">BACKSTAGE</span>
     <span className="text-lg">🎬</span>
   </button>
-        </div> 
+        </div>
+
+        <div className="mx-3 my-2 border-t border-white/5"></div>
+
+        {/* ── Aviso Ad Blocker ── */}
+        <div
+          style={{ fontFamily: "'Inter', sans-serif" }}
+          className="mx-3 px-3 py-3 rounded-xl border border-cyan-500/20 bg-cyan-950/20 text-center flex flex-col gap-1"
+        >
+          <span className="text-cyan-400 text-xs font-black uppercase tracking-widest">
+            PARA PARTICIPAR
+          </span>
+          <span className="text-gray-400 text-xs leading-snug">
+            Si no ves los banners del juego, desactiva tu bloqueador de anuncios.
+          </span>
+        </div>
+
         <div className="mt-auto flex flex-col w-full pb-10">
           <div className="w-full px-4 pt-4 border-t border-white/5"><BroTuner ref={broTunerRef} /></div>
         </div>

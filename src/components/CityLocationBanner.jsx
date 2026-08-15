@@ -3,10 +3,11 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 
 const MENSAJES = [
-  { etiqueta: 'UBICACIÓN ACTUAL', texto: 'Estás en {city} — Disfruta de tu estancia.' },
-  { etiqueta: 'SISTEMA',          texto: 'Estate atento a las novedades de la nueva Fase 1.' },
-  { etiqueta: 'RED BRO7VISION',   texto: 'Conectado a la red desde {city}. Bienvenido.' },
-  { etiqueta: 'AVISO',            texto: 'Nuevos descuentos disponibles en tu zona. ¡Explóralos!' },
+  { etiqueta: 'UBICACIÓN ACTUAL', texto: 'Estás en {city} — Bienvenido a la red.' },
+  { etiqueta: 'SISTEMA',          texto: 'Fase 0 activa — Explora, juega y acumula tus Lunas.' },
+  { etiqueta: 'RED BRO7VISION',   texto: 'Conexión establecida desde {city}.' },
+  { etiqueta: 'PARA PARTICIPAR',   texto: '¿No ves los banners? Desactiva tu bloqueador de anuncios para jugar.' },
+  { etiqueta: 'PARA PARTICIPAR',   texto: 'Sin banners no hay Trivia. Desactiva tu ad blocker y llévate tus Lunas.' },
 ];
 
 export default function CityLocationBanner({ scope, isMobile }) {

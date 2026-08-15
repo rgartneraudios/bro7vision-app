@@ -300,7 +300,7 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
               className="block text-xs text-gray-400 uppercase tracking-widest mb-1.5">
               Link del Video
               <span className="ml-1 text-gray-600 normal-case font-normal">
-                (PC: vertical · Móvil: cuadrado 1:1)
+                (PC: vertical 9:16 · Móvil: horizontal 16:9)
               </span>
             </label>
             <input
