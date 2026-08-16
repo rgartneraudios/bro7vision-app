@@ -4,6 +4,7 @@ import { getTurno } from '../data/citycodes';
 import { getMoonSuffix } from '../utils/moonUtils';
 import { useAdOverlay } from '../hooks/useAdOverlay';
 import { useHaloTrivia } from '../hooks/useHaloTrivia';
+import TurnoCountdown from './TurnoCountdown';
 
 const DR_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&display=swap');
@@ -173,10 +174,14 @@ const HeaderWidget = ({ color, lunasBalance, onCityDetected }) => {
   return (
     <div className="flex items-center justify-between w-full px-8 py-4 select-none">
 
-      {/* Izquierda: Hora + Fecha */}
-      <div className="flex flex-col items-start">
-        <span className="dr-clock">{time}</span>
-        <span className="dr-label">{date}</span>
+      {/* Izquierda: Hora + Fecha + Turno */}
+      <div className="flex items-start gap-6">
+        <div className="flex flex-col items-start">
+          <span className="dr-clock">{time}</span>
+          <span className="dr-label">{date}</span>
+        </div>
+        <span className="text-gray-600 text-lg mt-1">·</span>
+        <TurnoCountdown />
       </div>
 
       {/* Centro: Lunas */}
