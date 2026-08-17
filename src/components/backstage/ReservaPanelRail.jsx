@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
-import { cityList, getCodeForCity } from '../../data/citycodes';
+import { getMiniCities, getMegaCities, getCodeForCity } from '../../data/citycodes';
 
 const SYNE = "'Exo 2', sans-serif";
 const INTER = "'Inter', sans-serif";
@@ -16,9 +16,13 @@ const COBERTURAS = [
 
 const CIUDAD_COBERTURAS = ['SALA_CIUDAD', 'SALA_GRAN_CIUDAD', 'GIRA_REGIONAL', 'GIRA_GRAN_REGIONAL'];
 
+const LIMITE_CIUDADES = {
+  SALA_CIUDAD: 1, SALA_GRAN_CIUDAD: 1, GIRA_REGIONAL: 3, GIRA_GRAN_REGIONAL: 7,
+};
+
 const ReservaPanelRail = ({ slot, session, onClose, onReserved }) => {
   const [cobertura, setCobertura]       = useState('SALA_CIUDAD');
-  const [ciudad, setCiudad]             = useState('');
+  const [ciudades, setCiudades]         = useState([]);
   const [bannerUrl, setBannerUrl]       = useState('');
   const [pregunta, setPregunta]         = useState('');
   const [respuestaCorrecta, setRespuestaCorrecta] = useState(true);
@@ -28,6 +32,8 @@ const ReservaPanelRail = ({ slot, session, onClose, onReserved }) => {
   const [descuento,       setDescuento]       = useState(0);
   const [faseLunarId,     setFaseLunarId]     = useState(null);
   const [faseLunarNombre, setFaseLunarNombre] = useState('LUNA_NUEVA');
+  const [ocupados,      setOcupados]      = useState([]);
+  const [slotBloqueado, setSlotBloqueado]  = useState(false);
 
   useEffect(() => {
     const fetchDescuento = async () => {
@@ -51,6 +57,21 @@ const ReservaPanelRail = ({ slot, session, onClose, onReserved }) => {
         if (data) {
           setFaseLunarId(data.id);
           setFaseLunarNombre(data.nombre);
+          supabase
+            .from('trivia_rail')
+            .select('cobertura, ciudad_codigos')
+            .eq('sector',            slot.sector)
+            .eq('slot_numero',       slot.slot_numero)
+            .eq('fase_lunar_activa', data.nombre)
+            .eq('activo',            true)
+            .then(({ data: ocupData }) => {
+              if (ocupData) {
+                setOcupados(ocupData);
+                setSlotBloqueado(ocupData.some(r =>
+                  r.cobertura === 'GIRA_MUNDIAL' || r.cobertura === 'GIRA_NACIONAL'
+                ));
+              }
+            });
         }
       });
   }, []);
@@ -62,15 +83,41 @@ const ReservaPanelRail = ({ slot, session, onClose, onReserved }) => {
 
   const needsCiudad = CIUDAD_COBERTURAS.includes(cobertura);
 
+  const codigosOcupados = useMemo(() =>
+    ocupados.flatMap(r => r.ciudad_codigos ?? []),
+  [ocupados]);
+
+  const toggleCiudad = (key) => {
+    setCiudades(prev => {
+      if (prev.includes(key)) return prev.filter(c => c !== key);
+      const limite = LIMITE_CIUDADES[cobertura] ?? 1;
+      if (prev.length >= limite) return prev;
+      return [...prev, key];
+    });
+  };
+
   const precio = useMemo(() => {
     return COBERTURAS.find(c => c.id === cobertura)?.precio ?? 0;
   }, [cobertura]);
 
   const sectorLabel = slot.sector === 'CANJES' ? 'CANJES DE LUNAS' : 'SHOP AMIGOS';
 
-  const handleReservar = async () => {
-    if (needsCiudad && !ciudad) { setError('Selecciona una ciudad para esta cobertura.'); return; }
+const handleReservar = async () => {
+    if (slotBloqueado) {
+      setError('Este slot ya tiene cobertura Nacional o Mundial contratada.');
+      return;
+    }
+    if (needsCiudad && ciudades.length === 0) { setError('Selecciona al menos una ciudad para esta cobertura.'); return; }
     if (!pregunta.trim())       { setError('La pregunta PromoTrivia es obligatoria.'); return; }
+
+    if (ciudades.length > 0) {
+      const selectedCodes = ciudades.map(k => getCodeForCity(k)).filter(Boolean);
+      const hayConflicto  = selectedCodes.some(c => codigosOcupados.includes(c));
+      if (hayConflicto) {
+        setError('Una o más ciudades seleccionadas ya están contratadas en este slot.');
+        return;
+      }
+    }
 
     setLoading(true);
     setError(null);
@@ -87,7 +134,11 @@ const ReservaPanelRail = ({ slot, session, onClose, onReserved }) => {
         comercio_id:         session.user.id,
 fase_lunar_activa:  faseLunarNombre,
           cobertura:           cobertura,
-          ciudad_codigos:     needsCiudad ? [getCodeForCity(ciudad)].filter(Boolean) : null,
+          ciudad_codigos:     ciudades.length > 0
+  ? ciudades.map(k => getCodeForCity(k)).filter(Boolean)
+  : cobertura === 'GIRA_MUNDIAL' ? ['WW']
+  : cobertura === 'GIRA_NACIONAL' ? ['ES']
+  : null,
         activo:              true,
       }]);
       if (err) throw err;
@@ -163,7 +214,7 @@ fase_lunar_activa:  faseLunarNombre,
                       name="cobertura"
                       value={c.id}
                       checked={cobertura === c.id}
-                      onChange={() => { setCobertura(c.id); setCiudad(''); }}
+                      onChange={() => { setCobertura(c.id); setCiudades([]); }}
                       className="accent-purple-500"
                     />
                     <span className="text-sm font-medium">{c.label}</span>
@@ -174,21 +225,48 @@ fase_lunar_activa:  faseLunarNombre,
             </div>
           </div>
 
-          {/* Ciudad */}
+          {/* Ciudades */}
           {needsCiudad && (
             <div>
-              <label style={{ fontFamily: INTER, fontWeight: 600 }} className="block text-xs text-gray-400 uppercase tracking-widest mb-1.5">Ciudad</label>
-              <select
-                value={ciudad}
-                onChange={e => setCiudad(e.target.value)}
-                style={{ fontFamily: INTER }}
-                className="w-full bg-zinc-900 border border-white/10 text-white text-sm px-3 py-2.5 rounded focus:border-purple-500 focus:outline-none transition-colors"
-              >
-                <option value="">Selecciona ciudad...</option>
-                {cityList.map(c => (
-                  <option key={c.key} value={c.key}>{c.label}</option>
-                ))}
-              </select>
+              <label style={{ fontFamily: INTER, fontWeight: 600 }}
+                className="block text-xs text-gray-400 uppercase tracking-widest mb-1.5">
+                Ciudades
+                <span className="ml-2 text-purple-400 font-mono">
+                  {ciudades.length}/{LIMITE_CIUDADES[cobertura]}
+                </span>
+              </label>
+              <div className="max-h-48 overflow-y-auto space-y-1 pr-1">
+                {(cobertura === 'SALA_GRAN_CIUDAD' ? getMegaCities() : getMiniCities()).map(c => {
+                  const sel      = ciudades.includes(c.key);
+                  const ocupadaDB = codigosOcupados.includes(c.code);
+                  const lleno    = ciudades.length >= (LIMITE_CIUDADES[cobertura] ?? 1);
+                  const bloq     = !sel && (lleno || ocupadaDB);
+                  return (
+                    <label
+                      key={c.key}
+                      className={`flex items-center gap-3 px-3 py-2 rounded border cursor-pointer transition-all
+                        ${sel
+                          ? 'border-purple-500/60 bg-purple-950/30 text-white'
+                          : bloq
+                            ? 'border-white/5 text-gray-600 opacity-30 cursor-not-allowed'
+                            : 'border-white/5 text-gray-400 hover:border-white/15 hover:text-gray-200'
+                        }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={sel}
+                        disabled={bloq}
+                        onChange={() => toggleCiudad(c.key)}
+                        className="accent-purple-500"
+                      />
+                      <span className="text-sm">{c.label}</span>
+                      {ocupadaDB && (
+                        <span className="ml-auto text-[9px] text-red-500 uppercase tracking-widest">ocupada</span>
+                      )}
+                    </label>
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -303,7 +381,7 @@ fase_lunar_activa:  faseLunarNombre,
           )}
           <button
             onClick={handleReservar}
-            disabled={loading || success}
+            disabled={loading || success || slotBloqueado}
             style={{ fontFamily: SYNE, fontWeight: 700 }}
             className="w-full py-3.5 bg-purple-600 hover:bg-purple-500 active:bg-purple-700 text-white text-sm font-bold uppercase tracking-widest rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_24px_rgba(168,85,247,0.25)]"
           >

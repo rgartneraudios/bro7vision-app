@@ -10,7 +10,7 @@ const TURNOS = {
       nombre: 'MAPACHE',
       imgOn:  '/assets/mapache-on.webp',
       imgOff: '/assets/mapache-off.webp',
-      audio:  'https://media.bro7vision.com/Mapache_Entrada1.m4a',
+      audio:  'https://media.bro7vision.com/mapache_entrada1.m4a',
       rgb:    [251, 146, 60],
     },
     derecha: {
@@ -96,7 +96,7 @@ const CharSlot = ({ char, playing, onPlay, side }) => (
     />
     <button
       onClick={onPlay}
-      className="text-[9px] font-black uppercase tracking-widest px-4 py-1.5 rounded border transition-all"
+      className="text-xs font-black uppercase tracking-widest px-5 py-2.5 rounded border transition-all hover:scale-105"
       style={{
         borderColor: playing ? rgba(char.rgb, 0.7) : 'rgba(255,255,255,0.15)',
         color:       playing ? `rgb(${char.rgb.join(',')})` : 'rgba(255,255,255,0.5)',

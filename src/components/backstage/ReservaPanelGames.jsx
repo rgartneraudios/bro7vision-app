@@ -8,8 +8,8 @@ const INTER = "'Inter', sans-serif";
 const COBERTURAS_LIST = [
   { id: 'SALA_CIUDAD',        label: 'Sala Ciudad',        precio: 20  },
   { id: 'SALA_GRAN_CIUDAD',   label: 'Sala Gran Ciudad',   precio: 60  },
-  { id: 'GIRA_REGIONAL',      label: 'Gira Regional',      precio: 80  },
-  { id: 'GIRA_GRAN_REGIONAL', label: 'Gira Gran Regional', precio: 160 },
+  { id: 'GIRA_REGIONAL',      label: 'Gira Regional',      precio: 120 },
+  { id: 'GIRA_GRAN_REGIONAL', label: 'Gira Gran Regional', precio: 200 },
   
   { id: 'GIRA_NACIONAL',      label: 'Gira Nacional',      precio: 500 },
   { id: 'GIRA_MUNDIAL',       label: 'Gira Mundial',       precio: 800 },
@@ -32,6 +32,8 @@ const ReservaPanelGames = ({ juego, session, profile, onClose }) => {
   const [faseLunarNombre, setFaseLunarNombre] = useState('LUNA_NUEVA');
   const [error,     setError]     = useState('');
   const [done,      setDone]      = useState(false);
+  const [ocupados,      setOcupados]      = useState([]);
+  const [slotBloqueado, setSlotBloqueado]  = useState(false);
 
   const [pregunta,  setPregunta]  = useState('');
   const [respuesta, setRespuesta] = useState('');
@@ -47,6 +49,9 @@ const ReservaPanelGames = ({ juego, session, profile, onClose }) => {
 
   const isSevenGates = juego.id === 'the7gates';
   const needsCiudad  = CIUDAD_COBERTURAS.includes(cobertura);
+  const codigosOcupados = useMemo(() =>
+    ocupados.flatMap(r => r.ciudad_codigos ?? []),
+  [ocupados]);
   const precioBase   = COBERTURAS_LIST.find(c => c.id === cobertura)?.precio ?? 0;
   const precioFinal  = descuento > 0
     ? Math.round(precioBase * (1 - descuento / 100) * 100) / 100
@@ -71,6 +76,21 @@ const ReservaPanelGames = ({ juego, session, profile, onClose }) => {
         if (data) {
           setFaseLunarId(data.id);
           setFaseLunarNombre(data.nombre);
+          const fmt = isSevenGates ? 'GAMES_7GATES' : 'GAMES_COSMIC';
+          supabase
+            .from('bs_butacas')
+            .select('cobertura, ciudad_codigos')
+            .eq('formato',       fmt)
+            .eq('fase_lunar_id', data.id)
+            .neq('estado',       'CANCELADO')
+            .then(({ data: ocupData }) => {
+              if (ocupData) {
+                setOcupados(ocupData);
+                setSlotBloqueado(ocupData.some(r =>
+                  r.cobertura === 'GIRA_MUNDIAL' || r.cobertura === 'GIRA_NACIONAL'
+                ));
+              }
+            });
         }
       });
   }, []);
@@ -105,25 +125,38 @@ const ReservaPanelGames = ({ juego, session, profile, onClose }) => {
     const today       = new Date();
     const fechaFin    = new Date(today.getTime() + 7 * 86_400_000);
 
+    const ciudadCodigos = ciudades.length > 0
+      ? ciudades.map(k => getCodeForCity(k)).filter(Boolean)
+      : cobertura === 'GIRA_MUNDIAL' ? ['WW']
+      : cobertura === 'GIRA_NACIONAL' ? ['ES']
+      : null;
+
+    const { data: disp, error: dispErr } = await supabase.rpc('consultar_disponibilidad_butaca', {
+      p_formato:        isSevenGates ? 'GAMES_7GATES' : 'GAMES_COSMIC',
+      p_fase_lunar_id:  faseLunarId,
+      p_ciudad_codigos: ciudadCodigos,
+      p_canal:          null,
+      p_funcion:        null,
+      p_slot_numero:    null,
+      p_grupo_id:       null,
+    });
+    if (dispErr || !disp?.disponible) {
+      setError('Este espacio ya no está disponible. Revisa tu selección.');
+      return;
+    }
+
     const { error: butacaErr } = await supabase.from('bs_butacas').insert([{
       productor_id:  session.user.id,
       formato:       isSevenGates ? 'GAMES_7GATES' : 'GAMES_COSMIC',
       fase_lunar_id: faseLunarId,
       cobertura,
-      ciudad_codigos: ciudades.length > 0
-        ? ciudades.map(k => getCodeForCity(k)).filter(Boolean)
-        : null,
+      ciudad_codigos,
       precio:        precioFinal,
       estado:        'EN_CASTING',
       fecha_inicio:  today.toISOString().split('T')[0],
       fecha_fin:     fechaFin.toISOString().split('T')[0],
     }]);
     if (butacaErr) { setError(butacaErr.message); return; }
-
-    const isRegionalOrHigher = ['GIRA_REGIONAL', 'GIRA_GRAN_REGIONAL', 'GIRA_NACIONAL', 'GIRA_MUNDIAL'].includes(cobertura);
-    const ciudadCodigoPromo = (!isRegionalOrHigher && ciudades.length > 0)
-      ? getCodeForCity(ciudades[0])
-      : null;
 
     const promoPayload = {
       juego:             juegoKey,
@@ -134,7 +167,7 @@ const ReservaPanelGames = ({ juego, session, profile, onClose }) => {
       opcion_c:          opcionC.trim(),
       opcion_d:          isSevenGates ? opcionD.trim() : null,
       cobertura,
-      ciudad_codigo:     ciudadCodigoPromo,
+      ciudad_codigos,
       lunas_bonus:       20,
       fase_lunar_activa: faseLunarNombre,
       activo:            true,
@@ -251,8 +284,9 @@ const ReservaPanelGames = ({ juego, session, profile, onClose }) => {
                   <div className="max-h-48 overflow-y-auto space-y-1 pr-1">
                     {(cobertura === 'SALA_GRAN_CIUDAD' ? getMegaCities() : getMiniCities()).map(c => {
                       const seleccionada = ciudades.includes(c.key);
+                      const ocupadaDB = codigosOcupados.includes(c.code);
                       const lleno = ciudades.length >= (LIMITE_CIUDADES[cobertura] ?? 1);
-                      const bloqueada = !seleccionada && lleno;
+                      const bloqueada = !seleccionada && (lleno || ocupadaDB);
                       return (
                         <label
                           key={c.key}
@@ -272,6 +306,9 @@ const ReservaPanelGames = ({ juego, session, profile, onClose }) => {
                             className="accent-purple-500"
                           />
                           <span className="text-sm">{c.label}</span>
+                          {ocupadaDB && (
+                            <span className="ml-auto text-[9px] text-red-500 uppercase tracking-widest">ocupada</span>
+                          )}
                         </label>
                       );
                     })}
@@ -478,8 +515,9 @@ const ReservaPanelGames = ({ juego, session, profile, onClose }) => {
             </p>
             <button
               onClick={handleSolicitar}
+              disabled={slotBloqueado}
               style={{ fontFamily: SYNE, fontWeight: 700 }}
-              className="w-full bg-violet-700 hover:bg-violet-600 text-white text-sm font-bold uppercase tracking-widest py-3 rounded transition-all"
+              className="w-full bg-violet-700 hover:bg-violet-600 text-white text-sm font-bold uppercase tracking-widest py-3 rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               SOLICITAR MENCIÓN
             </button>

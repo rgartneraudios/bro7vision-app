@@ -50,6 +50,8 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState(null);
   const [success, setSuccess]       = useState(false);
+  const [ocupados,      setOcupados]      = useState([]);
+  const [slotBloqueado, setSlotBloqueado]  = useState(false);
 
   useEffect(() => {
     supabase
@@ -61,12 +63,35 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
         if (data) {
           setFaseLunarId(data.id);
           setFaseLunarNombre(data.nombre);
+          const formato = slot.dispositivo === 0 ? 'REALITY_PC' : 'REALITY_MOVIL';
+          const funcion = slot.canal === 2 ? moonTurno : slot.turno;
+          supabase
+            .from('bs_butacas')
+            .select('cobertura, ciudad_codigos')
+            .eq('canal',         slot.canal)
+            .eq('funcion',       funcion)
+            .eq('formato',       formato)
+            .eq('fase_lunar_id', data.id)
+            .neq('estado',       'CANCELADO')
+            .then(({ data: ocupData }) => {
+              if (ocupData) {
+                setOcupados(ocupData);
+                const bloqueado = ocupData.some(r =>
+                  r.cobertura === 'GIRA_MUNDIAL' || r.cobertura === 'GIRA_NACIONAL'
+                );
+                setSlotBloqueado(bloqueado);
+              }
+            });
         }
       });
   }, []);
 
   const isMoon      = slot.canal === 2;
   const needsCiudad = CIUDAD_COBERTURAS.includes(cobertura);
+
+  const codigosOcupados = useMemo(() =>
+    ocupados.flatMap(r => r.ciudad_codigos ?? []),
+  [ocupados]);
 
   const toggleCiudad = (key) => {
     setCiudades(prev => {
@@ -99,6 +124,28 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
 
     try {
       const funcion        = isMoon ? moonTurno : slot.turno;
+
+      const ciudadCodigos = ciudades.length > 0
+        ? ciudades.map(k => getCodeForCity(k)).filter(Boolean)
+        : cobertura === 'GIRA_MUNDIAL' ? ['WW']
+        : cobertura === 'GIRA_NACIONAL' ? ['ES']
+        : null;
+
+      const { data: disp, error: dispErr } = await supabase.rpc('consultar_disponibilidad_butaca', {
+        p_formato:        slot.dispositivo === 0 ? 'REALITY_PC' : 'REALITY_MOVIL',
+        p_fase_lunar_id:  faseLunarId,
+        p_ciudad_codigos: ciudadCodigos,
+        p_canal:          slot.canal,
+        p_funcion:        funcion,
+        p_slot_numero:    null,
+        p_grupo_id:       null,
+      });
+      if (dispErr || !disp?.disponible) {
+        setError('Este espacio ya no está disponible. Revisa tu selección.');
+        setLoading(false);
+        return;
+      }
+
       const ciudadStr      = ciudades.length > 0
         ? ciudades.map(k => getCodeForCity(k)).filter(Boolean).join('-')
         : '000';
@@ -196,6 +243,13 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
             </div>
           </div>
 
+          {slotBloqueado && (
+            <div style={{ fontFamily: "'Inter', sans-serif" }}
+              className="text-sm text-red-400 bg-red-950/30 border border-red-900/40 rounded px-3 py-2 text-center">
+              ⚠️ Este turno ya tiene cobertura Nacional o Mundial contratada.
+            </div>
+          )}
+
           {/* Moon Turno — solo canal 2 */}
           {isMoon && (
             <div>
@@ -274,8 +328,9 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
               <div className="max-h-48 overflow-y-auto space-y-1 pr-1">
                 {(cobertura === 'SALA_GRAN_CIUDAD' ? getMegaCities() : getMiniCities()).map(c => {
                   const seleccionada = ciudades.includes(c.key);
+                  const ocupadaDB = codigosOcupados.includes(c.code);
                   const lleno = ciudades.length >= (LIMITE_CIUDADES[cobertura] ?? 1);
-                  const bloqueada = !seleccionada && lleno;
+                  const bloqueada = !seleccionada && (lleno || ocupadaDB);
                   return (
                     <label
                       key={c.key}
@@ -295,6 +350,9 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
                         className="accent-purple-500"
                       />
                       <span className="text-sm">{c.label}</span>
+                      {ocupadaDB && (
+                        <span className="ml-auto text-[9px] text-red-500 uppercase tracking-widest">ocupada</span>
+                      )}
                     </label>
                   );
                 })}
@@ -397,7 +455,7 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
           </div>
           <button
             onClick={handleReservar}
-            disabled={loading || success}
+            disabled={loading || success || slotBloqueado}
             style={{ fontFamily: "'Exo 2', sans-serif", fontWeight: 700 }}
             className="w-full py-3.5 bg-purple-600 hover:bg-purple-500 active:bg-purple-700 text-white text-sm font-bold uppercase tracking-widest rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_24px_rgba(168,85,247,0.25)]"
           >
