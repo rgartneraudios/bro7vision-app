@@ -211,6 +211,7 @@ const DesktopRealityPlayer = ({
   userId,
   lunasBalance,
   onLunasUpdate,
+  perfilOso,
 }) => {
   const [bgVideoUrl, setBgVideoUrl] = useState('');
   const [userCity, setUserCity] = useState(null);
@@ -218,12 +219,22 @@ const DesktopRealityPlayer = ({
   const nombre = CANAL_NOMBRE[realityMode] || 'CANAL';
 
   const [turnoActual, setTurnoActual] = useState(getTurno());
+  const [faseLunarId, setFaseLunarId] = useState(null);
 
   useEffect(() => {
     const intervalo = setInterval(() => {
       setTurnoActual(getTurno());
     }, 60000);
     return () => clearInterval(intervalo);
+  }, []);
+
+  useEffect(() => {
+    supabase
+      .from('fases_lunares')
+      .select('id')
+      .eq('activa', true)
+      .maybeSingle()
+      .then(({ data }) => { if (data) setFaseLunarId(data.id); });
   }, []);
 
   useEffect(() => {
@@ -257,7 +268,7 @@ const DesktopRealityPlayer = ({
   const adVideoUrl = useAdOverlay({
     escenarioId: realityMode,
     turno: turnoActual,
-    faseLunar: getMoonSuffix(),
+    faseLunarId: faseLunarId,
     cityKey: userCity,
     dispositivo: 0,
   });
@@ -291,6 +302,8 @@ const DesktopRealityPlayer = ({
     escenarioId: PC_ESCENARIO_MAP[realityMode] || realityMode,
     canalId: realityMode,
     userId,
+    userCity:    perfilOso?.city    ?? null,
+    userCountry: perfilOso?.country ?? null,
     onLunasUpdate,
   });
 

@@ -40,7 +40,7 @@ const AUDIO_RESOLVER_MAP = {
 
 const DEMO_AUDIO_MAP = {
   osos:              'https://media.bro7vision.com/stories/osos_0.m4a',
-  nova:              'https://media.bro7vision.com/stories/nova_0.m4a',
+  nova:              'https://media.bro7vision.com/stories/nova_00.m4a',
   isabella_profesor: 'https://media.bro7vision.com/stories/isabella_0.m4a',
   evelyn_larry:      'https://media.bro7vision.com/stories/evelyn_0.m4a',
   mapache_ami:       'https://media.bro7vision.com/stories/mapache_0.m4a',

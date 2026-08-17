@@ -141,6 +141,11 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
         escenario_id: CANAL_STRING[slot.canal],
         turno:        isMoon ? moonTurno : slot.turno,
         alcance:      cobertura,
+        ciudad_codigos: cobertura === 'GIRA_MUNDIAL' ? ['WW'] :
+                        cobertura === 'GIRA_NACIONAL' ? ['ES'] :
+                        ciudades.length > 0
+                          ? ciudades.map(k => getCodeForCity(k)).filter(Boolean)
+                          : null,
         activo:       true,
         vence_luna:   faseLunarNombre,
         lunas_bonus:  20,

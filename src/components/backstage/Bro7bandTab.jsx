@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../supabaseClient';
 import Bro7bandModal from './Bro7bandModal';
+import { getMiniCities, getMegaCities, getCodeForCity } from '../../data/citycodes';
 
 const SYNE  = "'Exo 2', sans-serif";
 const INTER = "'Inter', sans-serif";
@@ -26,9 +27,20 @@ const GRUPOS = [
 
 const IDIOMAS = ['ES', 'EN', 'DE', 'PT', 'FR'];
 
-const FASE_LUNAR_ACTIVA = 2;
-const FASE_LUNAR_TEXTO  = 'Luna Creciente';
-const PRECIO_MENCION    = 20;
+const COBERTURAS_MENCION = [
+  { id: 'SALA_CIUDAD',        label: 'Sala Ciudad'        },
+  { id: 'SALA_GRAN_CIUDAD',   label: 'Sala Gran Ciudad'   },
+  { id: 'GIRA_REGIONAL',      label: 'Gira Regional'      },
+  { id: 'GIRA_GRAN_REGIONAL', label: 'Gira Gran Regional' },
+  { id: 'GIRA_NACIONAL',      label: 'Gira Nacional'      },
+  { id: 'GIRA_MUNDIAL',       label: 'Gira Mundial'       },
+];
+
+const CIUDAD_COBERTURAS = ['SALA_CIUDAD', 'SALA_GRAN_CIUDAD', 'GIRA_REGIONAL', 'GIRA_GRAN_REGIONAL'];
+
+const LIMITE_CIUDADES = {
+  SALA_CIUDAD: 1, SALA_GRAN_CIUDAD: 1, GIRA_REGIONAL: 3, GIRA_GRAN_REGIONAL: 7,
+};
 
 const MencionesTab = ({ session }) => {
   const [carrito, setCarrito]     = useState([]);
@@ -38,41 +50,76 @@ const MencionesTab = ({ session }) => {
   const [idiomas, setIdiomas]     = useState(() =>
     Object.fromEntries(GRUPOS.map(g => [g.grupo_id, 'ES']))
   );
+  const [faseLunarId,     setFaseLunarId]     = useState(null);
+  const [faseLunarNombre, setFaseLunarNombre] = useState('');
+  const [cobertura,       setCobertura]       = useState('GIRA_NACIONAL');
+  const [ciudades,        setCiudades]        = useState([]);
 
   useEffect(() => {
+    supabase
+      .from('fases_lunares')
+      .select('id, nombre')
+      .eq('activa', true)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setFaseLunarId(data.id);
+          setFaseLunarNombre(data.nombre);
+        }
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!faseLunarId) return;
     const fetchOcupados = async () => {
       const { data } = await supabase
         .from('bro7band_menciones')
-        .select('grupo_id, idioma')
-        .eq('fase_lunar_activa', FASE_LUNAR_ACTIVA);
+        .select('grupo_id, cobertura, ciudad_codigos')
+        .eq('fase_lunar_id', faseLunarId);
       if (data) setOcupados(data);
     };
     fetchOcupados();
-  }, []);
+  }, [faseLunarId]);
 
-  const ocupadoMap = useMemo(() => {
-    const map = {};
-    ocupados.forEach(o => {
-      if (!map[o.grupo_id]) map[o.grupo_id] = {};
-      map[o.grupo_id][o.idioma] = true;
+  const isOcupado = (grupoId) => {
+    const selectedCodes = ciudades.map(k => getCodeForCity(k)).filter(Boolean);
+    return ocupados.some(o => {
+      if (o.grupo_id !== grupoId) return false;
+      if (o.cobertura === 'GIRA_MUNDIAL' || o.cobertura === 'GIRA_NACIONAL') return true;
+      if (!CIUDAD_COBERTURAS.includes(cobertura)) return o.cobertura === cobertura;
+      return Array.isArray(o.ciudad_codigos) &&
+             o.ciudad_codigos.some(c => selectedCodes.includes(c));
     });
-    return map;
-  }, [ocupados]);
+  };
 
-  const carritoKeySet = useMemo(() => {
-    const set = new Set();
-    carrito.forEach(c => set.add(`${c.grupo_id}_${c.idioma}`));
-    return set;
-  }, [carrito]);
+  const carritoKeySet = useMemo(() => new Set(carrito.map(c => c.grupo_id)), [carrito]);
+  const isEnCarrito   = (grupoId) => carritoKeySet.has(grupoId);
 
-  const isOcupado = (grupoId, idioma) => !!ocupadoMap[grupoId]?.[idioma];
-  const isEnCarrito = (grupoId, idioma) => carritoKeySet.has(`${grupoId}_${idioma}`);
-
-  const handleAdd = (grupoId, idioma) => {
-    if (isOcupado(grupoId, idioma) || isEnCarrito(grupoId, idioma)) return;
-    const grupo = GRUPOS.find(g => g.grupo_id === grupoId);
+  const handleAdd = (grupoId) => {
+    if (isOcupado(grupoId) || isEnCarrito(grupoId)) return;
+    const grupo        = GRUPOS.find(g => g.grupo_id === grupoId);
     const tipo_contenido = grupoId === 'bro7band' ? tiposBro7Band : null;
-    setCarrito(prev => [...prev, { ...grupo, idioma, tipo_contenido }]);
+    const idiomaFinal  = cobertura === 'GIRA_MUNDIAL' ? (idiomas[grupoId] || 'ES') : 'ES';
+    const ciudadCodigos = CIUDAD_COBERTURAS.includes(cobertura)
+      ? ciudades.map(k => getCodeForCity(k)).filter(Boolean)
+      : cobertura === 'GIRA_MUNDIAL' ? ['WW'] : ['ES'];
+
+    setCarrito(prev => [...prev, {
+      ...grupo,
+      idioma:         idiomaFinal,
+      tipo_contenido,
+      cobertura,
+      ciudad_codigos: ciudadCodigos,
+    }]);
+  };
+
+  const toggleCiudad = (key) => {
+    setCiudades(prev => {
+      if (prev.includes(key)) return prev.filter(c => c !== key);
+      const limite = LIMITE_CIUDADES[cobertura] ?? 1;
+      if (prev.length >= limite) return prev;
+      return [...prev, key];
+    });
   };
 
   const total = carrito.reduce((sum, item) => sum + (item.precio ?? 20), 0);
@@ -96,11 +143,70 @@ const MencionesTab = ({ session }) => {
         </p>
       </div>
 
+      {/* Cobertura global */}
+      <div className="w-full max-w-5xl mb-6">
+        <label style={{ fontFamily: INTER, fontWeight: 600 }}
+          className="block text-xs text-gray-400 uppercase tracking-widest mb-3">
+          Cobertura de la campaña
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {COBERTURAS_MENCION.map(c => (
+            <button
+              key={c.id}
+              onClick={() => { setCobertura(c.id); setCiudades([]); }}
+              style={{ fontFamily: INTER, fontWeight: 600 }}
+              className={`text-xs px-4 py-2 rounded border transition-all uppercase tracking-widest ${
+                cobertura === c.id
+                  ? 'border-fuchsia-500/60 bg-fuchsia-950/30 text-white'
+                  : 'border-white/10 text-gray-500 hover:border-white/25 hover:text-gray-300'
+              }`}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Selector de ciudades — solo si cobertura lo requiere */}
+      {CIUDAD_COBERTURAS.includes(cobertura) && (
+        <div className="w-full max-w-5xl mb-6">
+          <label style={{ fontFamily: INTER, fontWeight: 600 }}
+            className="block text-xs text-gray-400 uppercase tracking-widest mb-3">
+            Ciudades
+            <span className="ml-2 text-fuchsia-400 font-mono">
+              {ciudades.length}/{LIMITE_CIUDADES[cobertura]}
+            </span>
+          </label>
+          <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
+            {(cobertura === 'SALA_GRAN_CIUDAD' ? getMegaCities() : getMiniCities()).map(c => {
+              const sel    = ciudades.includes(c.key);
+              const lleno  = ciudades.length >= (LIMITE_CIUDADES[cobertura] ?? 1);
+              const bloq   = !sel && lleno;
+              return (
+                <button
+                  key={c.key}
+                  onClick={() => !bloq && toggleCiudad(c.key)}
+                  style={{ fontFamily: INTER }}
+                  className={`text-xs px-3 py-1.5 rounded border transition-all ${
+                    sel
+                      ? 'border-fuchsia-500/60 bg-fuchsia-950/30 text-white'
+                      : bloq
+                        ? 'border-white/5 text-gray-600 opacity-30 cursor-not-allowed'
+                        : 'border-white/10 text-gray-500 hover:border-white/25 hover:text-gray-300'
+                  }`}
+                >
+                  {c.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-3 gap-6 w-full max-w-5xl mb-24">
         {GRUPOS.map(grupo => {
-          const idiomaSel = idiomas[grupo.grupo_id];
-          const ocupado   = isOcupado(grupo.grupo_id, idiomaSel);
-          const enCarrito = isEnCarrito(grupo.grupo_id, idiomaSel);
+          const ocupado   = isOcupado(grupo.grupo_id);
+          const enCarrito = isEnCarrito(grupo.grupo_id);
 
           return (
             <div
@@ -148,31 +254,33 @@ const MencionesTab = ({ session }) => {
                 </div>
               )}
 
-              <div className="flex gap-1.5">
-                {IDIOMAS.map(idi => (
-                  <button
-                    key={idi}
-                    onClick={() => setIdiomas(prev => ({ ...prev, [grupo.grupo_id]: idi }))}
-                    style={{ fontFamily: INTER, fontWeight: 600 }}
-                    className={`text-[10px] px-2 py-1 rounded border transition-all uppercase tracking-wider ${
-                      idiomaSel === idi
-                        ? enCarrito
-                          ? 'border-cyan-500/60 bg-cyan-950/30 text-cyan-300'
-                          : ocupado
-                            ? 'border-red-900/40 bg-red-950/20 text-red-400'
-                            : 'border-fuchsia-500/40 bg-fuchsia-950/30 text-fuchsia-300'
-                        : 'border-white/10 text-gray-500 hover:border-white/25 hover:text-gray-300'
-                    }`}
-                  >
-                    {idi}
-                  </button>
-                ))}
-              </div>
+              {cobertura === 'GIRA_MUNDIAL' && (
+                <div className="flex gap-1.5">
+                  {IDIOMAS.map(idi => (
+                    <button
+                      key={idi}
+                      onClick={() => setIdiomas(prev => ({ ...prev, [grupo.grupo_id]: idi }))}
+                      style={{ fontFamily: INTER, fontWeight: 600 }}
+                      className={`text-[10px] px-2 py-1 rounded border transition-all uppercase tracking-wider ${
+                        idiomas[grupo.grupo_id] === idi
+                          ? enCarrito
+                            ? 'border-cyan-500/60 bg-cyan-950/30 text-cyan-300'
+                            : ocupado
+                              ? 'border-red-900/40 bg-red-950/20 text-red-400'
+                              : 'border-fuchsia-500/40 bg-fuchsia-950/30 text-fuchsia-300'
+                          : 'border-white/10 text-gray-500 hover:border-white/25 hover:text-gray-300'
+                      }`}
+                    >
+                      {idi}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               <div className="mt-auto pt-2 w-full">
                 {ocupado ? (
                   <span style={{ fontFamily: INTER }} className="block text-center text-[10px] text-red-400 uppercase tracking-widest">
-                    OCUPADO · {idiomaSel} · {FASE_LUNAR_TEXTO}
+                    OCUPADO · {faseLunarNombre || '—'}
                   </span>
                 ) : enCarrito ? (
                   <span style={{ fontFamily: INTER, fontWeight: 600 }} className="block text-center text-[10px] text-cyan-400 uppercase tracking-widest">
@@ -180,7 +288,7 @@ const MencionesTab = ({ session }) => {
                   </span>
                 ) : (
                   <button
-                    onClick={() => handleAdd(grupo.grupo_id, idiomaSel)}
+                    onClick={() => handleAdd(grupo.grupo_id)}
                     style={{ fontFamily: SYNE, fontWeight: 700 }}
                     className="w-full text-[11px] bg-fuchsia-600 hover:bg-fuchsia-500 text-white uppercase tracking-widest py-2 rounded transition-all"
                   >
@@ -213,17 +321,15 @@ const MencionesTab = ({ session }) => {
           onClose={() => setShowModal(false)}
           onReserved={() => {
             setShowModal(false);
-            const fetchOcupados = async () => {
-              const { data } = await supabase
-                .from('bro7band_menciones')
-                .select('grupo_id, idioma')
-                .eq('fase_lunar_activa', FASE_LUNAR_ACTIVA);
-              if (data) setOcupados(data);
-            };
-            fetchOcupados();
+            if (!faseLunarId) return;
+            supabase
+              .from('bro7band_menciones')
+              .select('grupo_id, cobertura, ciudad_codigos')
+              .eq('fase_lunar_id', faseLunarId)
+              .then(({ data }) => { if (data) setOcupados(data); });
           }}
-          faseLunarTexto={FASE_LUNAR_TEXTO}
-          faseLunarActiva={FASE_LUNAR_ACTIVA}
+          faseLunarTexto={faseLunarNombre}
+          faseLunarId={faseLunarId}
         />
       )}
     </div>

@@ -568,17 +568,29 @@ const MobileLayout = ({
     escenarioId: MOBILE_ESCENARIO_MAP[realityMode] || realityMode,
     canalId: realityMode,
     userId,
+    userCity:    perfilOso?.city    ?? null,
+    userCountry: perfilOso?.country ?? null,
     onLunasUpdate,
   });
   
 
   const [turnoActual, setTurnoActual] = useState(getTurno());
+  const [faseLunarId, setFaseLunarId] = useState(null);
 
   useEffect(() => {
     const intervalo = setInterval(() => {
       setTurnoActual(getTurno());
     }, 60000);
     return () => clearInterval(intervalo);
+  }, []);
+
+  useEffect(() => {
+    supabase
+      .from('fases_lunares')
+      .select('id')
+      .eq('activa', true)
+      .maybeSingle()
+      .then(({ data }) => { if (data) setFaseLunarId(data.id); });
   }, []);
 
   useEffect(() => {
@@ -611,7 +623,7 @@ const MobileLayout = ({
   const adVideoUrl = useAdOverlay({
     escenarioId: realityMode,
     turno: turnoActual,
-    faseLunar: getMoonSuffix(),
+    faseLunarId: faseLunarId,
     cityKey: userCity || scope?.city,
     dispositivo: 1,
   });

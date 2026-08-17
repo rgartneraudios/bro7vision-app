@@ -55,6 +55,7 @@ useEffect(() => {
             userId={userId}
             lunasBalance={lunasBalance}
             onLunasUpdate={onLunasUpdate}
+            perfilOso={perfilOso}
           />
         )}
           

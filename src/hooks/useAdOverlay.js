@@ -7,7 +7,7 @@ const CANAL_NUM = {
   jupiter: 5, saturno: 7, urano: 8, neptuno: 9,
 };
 
-export function useAdOverlay({ escenarioId, canal, turno, faseLunar, cityKey, dispositivo = 0 }) {
+export function useAdOverlay({ escenarioId, canal, turno, faseLunarId, cityKey, dispositivo = 0 }) {
   const [adVideoUrl, setAdVideoUrl] = useState(null);
 
   useEffect(() => {
@@ -24,8 +24,8 @@ export function useAdOverlay({ escenarioId, canal, turno, faseLunar, cityKey, di
         .eq('dispositivo', dispositivo)
         .eq('estado', 'EN_CARTELERA');
 
-      if (canalNum === 2 && faseLunar) {
-        query = query.eq('fase_lunar', faseLunar);
+      if (canalNum === 2 && faseLunarId) {
+        query = query.eq('fase_lunar_id', faseLunarId);
       }
 
       const { data, error } = await query;
@@ -57,7 +57,7 @@ export function useAdOverlay({ escenarioId, canal, turno, faseLunar, cityKey, di
 
     load();
     return () => { active = false; };
-  }, [escenarioId, canal, turno, faseLunar, cityKey, dispositivo]);
+  }, [escenarioId, canal, turno, faseLunarId, cityKey, dispositivo]);
 
   return adVideoUrl;
 }

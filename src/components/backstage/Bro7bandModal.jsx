@@ -4,7 +4,7 @@ import { supabase } from '../../supabaseClient';
 const SYNE  = "'Exo 2', sans-serif";
 const INTER = "'Inter', sans-serif";
 
-const MencionesModal = ({ session, carrito, setCarrito, onClose, onReserved, faseLunarTexto, faseLunarActiva }) => {
+const MencionesModal = ({ session, carrito, setCarrito, onClose, onReserved, faseLunarTexto, faseLunarId }) => {
   const [brief, setBrief]       = useState('');
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState(null);
@@ -41,14 +41,17 @@ const MencionesModal = ({ session, carrito, setCarrito, onClose, onReserved, fas
 
     try {
       const rows = carrito.map(item => ({
-        grupo_id:        item.grupo_id,
-        idioma:          item.idioma,
-        fase_lunar_activa: faseLunarActiva,
-        brief:           brief.trim(),
-        anunciante_id:   session.user.id,
-        estado:          'PENDIENTE',
-        precio:          20,
-        tipo_contenido:  item.tipo_contenido ?? null,
+        grupo_id:          item.grupo_id,
+        idioma:            item.idioma,
+        fase_lunar_activa: faseLunarTexto,
+        fase_lunar_id:     faseLunarId,
+        brief:             brief.trim(),
+        anunciante_id:     session.user.id,
+        estado:            'PENDIENTE',
+        precio:            item.precio ?? 20,
+        tipo_contenido:    item.tipo_contenido ?? null,
+        cobertura:         item.cobertura,
+        ciudad_codigos:    item.ciudad_codigos ?? null,
       }));
 
       const { error: err } = await supabase.from('bro7band_menciones').insert(rows);

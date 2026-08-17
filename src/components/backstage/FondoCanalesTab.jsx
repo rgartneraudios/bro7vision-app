@@ -67,7 +67,7 @@ const MarketplaceTab = ({ session, profile, role: roleProp }) => {
     const [{ data: escs, error: eErr }, { data: buts, error: bErr }, { data: tars, error: tErr }, { data: mins, error: mErr }] =
       await Promise.all([
         supabase.from('bs_escenarios').select('id,canal,fase_lunar,funcion,activo').eq('activo', true),
-        supabase.from('bs_butacas').select('canal,fase_lunar,funcion,dispositivo,cobertura,ciudad_codigo,estado'),
+        supabase.from('bs_butacas').select('canal,fase_lunar,funcion,dispositivo,cobertura,ciudad_codigos,estado'),
         supabase.from('bs_tarifas').select('cobertura,precio').eq('activo', true),
         supabase.from('bs_miniaturas').select('canal, fase_lunar, funcion, miniatura_url').eq('activo', true),
       ]);
@@ -96,7 +96,7 @@ const MarketplaceTab = ({ session, profile, role: roleProp }) => {
     setSelectedSlot(null);
     supabase
       .from('bs_butacas')
-      .select('canal,fase_lunar,funcion,dispositivo,cobertura,ciudad_codigo,estado')
+      .select('canal,fase_lunar,funcion,dispositivo,cobertura,ciudad_codigos,estado')
       .then(({ data }) => setButacas(data || []));
   };
 

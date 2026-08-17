@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
+import { getCodeForCity, COUNTRY_CODES } from '../data/citycodes';
 
 
 
@@ -46,7 +47,7 @@ function shuffle(arr) {
 
 const storageKey = (escenarioId, turno) => `haloTrivia_${escenarioId}_t${turno}`;
 
-export function useHaloTrivia({ escenarioId, canalId, userId, onLunasUpdate }) {
+export function useHaloTrivia({ escenarioId, canalId, userId, userCity, userCountry, onLunasUpdate }) {
   const escenarioNormalizado = escenarioId;
   const turno = getTurnoActual();
   const yaJugado = !!localStorage.getItem(storageKey(escenarioNormalizado, turno));
@@ -73,7 +74,11 @@ export function useHaloTrivia({ escenarioId, canalId, userId, onLunasUpdate }) {
 
     const turnoActual = getTurnoActual();
 
-    const { data: promos } = await supabase
+    const cityCode    = userCity    ? getCodeForCity(userCity) : null;
+    const countryCode = userCountry ? (COUNTRY_CODES[userCountry.toLowerCase()] ?? userCountry.toUpperCase()) : null;
+    const userCodes   = [cityCode, countryCode, 'WW'].filter(Boolean);
+
+    const promoQuery = supabase
       .from('promo_trivia')
       .select('*')
       .eq('escenario_id', canalId || escenarioNormalizado)
@@ -81,10 +86,15 @@ export function useHaloTrivia({ escenarioId, canalId, userId, onLunasUpdate }) {
       .eq('activo', true)
       .in('alcance', [
         'GIRA_MUNDIAL', 'GIRA_NACIONAL', 'GIRA_REGIONAL',
-        'GIRA_GRAN_REGIONAL', 'METROPOLIS',
+        'GIRA_GRAN_REGIONAL',
         'SALA_CIUDAD', 'SALA_GRAN_CIUDAD'
-      ])
-      .limit(1);
+      ]);
+
+    if (userCodes.length > 0) {
+      promoQuery.filter('ciudad_codigos', 'ov', JSON.stringify(userCodes));
+    }
+
+    const { data: promos } = await promoQuery.limit(1);
 
     const promoPreguntas = (promos || []).map(p => {
       const animales = shuffle(ANIMALES).slice(0, 3);

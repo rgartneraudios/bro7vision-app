@@ -120,7 +120,7 @@ const ReservaPanelGames = ({ juego, session, profile, onClose }) => {
     }]);
     if (butacaErr) { setError(butacaErr.message); return; }
 
-    const isRegionalOrHigher = ['GIRA_REGIONAL', 'GIRA_GRAN_REGIONAL', 'METROPOLIS', 'GIRA_NACIONAL', 'GIRA_MUNDIAL'].includes(cobertura);
+    const isRegionalOrHigher = ['GIRA_REGIONAL', 'GIRA_GRAN_REGIONAL', 'GIRA_NACIONAL', 'GIRA_MUNDIAL'].includes(cobertura);
     const ciudadCodigoPromo = (!isRegionalOrHigher && ciudades.length > 0)
       ? getCodeForCity(ciudades[0])
       : null;

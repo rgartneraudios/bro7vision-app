@@ -36,13 +36,12 @@ export const TURNOS = {
 
 // ── Coberturas — fuente de verdad para Backstage ─────────────────
 export const COBERTURAS = {
-  SALA_CIUDAD:         { codigo: null,  precio: 20,  tipo_ciudad: "mini", max_ciudades: 1,    label: "Sala Ciudad" },
-  SALA_GRAN_CIUDAD:    { codigo: null,  precio: 60,  tipo_ciudad: "mega", max_ciudades: 1,    label: "Sala Gran Ciudad" },
-  GIRA_REGIONAL:       { codigo: "305", precio: 80,  tipo_ciudad: "mini", max_ciudades: 5,    label: "Gira Regional" },
-  GIRA_GRAN_REGIONAL:  { codigo: "309", precio: 160, tipo_ciudad: "mini", max_ciudades: 9,    label: "Gira Gran Regional" },
-  METROPOLIS:          { codigo: "307", precio: 350, tipo_ciudad: "mega", max_ciudades: 7,    label: "Metrópolis" },
-  GIRA_NACIONAL:       { codigo: "300", precio: 500, tipo_ciudad: null,   max_ciudades: null, label: "Gira Nacional" },
-  GIRA_MUNDIAL:        { codigo: "404", precio: 800, tipo_ciudad: null,   max_ciudades: null, label: "Gira Mundial" },
+  SALA_CIUDAD:         { precio: 20,  tipo_ciudad: "mini", max_ciudades: 1,    label: "Sala Ciudad" },
+  SALA_GRAN_CIUDAD:    { precio: 60,  tipo_ciudad: "mega", max_ciudades: 1,    label: "Sala Gran Ciudad" },
+  GIRA_REGIONAL:       { precio: 120, tipo_ciudad: "mini", max_ciudades: 3,    label: "Gira Regional" },
+  GIRA_GRAN_REGIONAL:  { precio: 200, tipo_ciudad: "mini", max_ciudades: 7,    label: "Gira Gran Regional" },
+  GIRA_NACIONAL:       { precio: 500, tipo_ciudad: null,   max_ciudades: null, label: "Gira Nacional" },
+  GIRA_MUNDIAL:        { precio: 800, tipo_ciudad: null,   max_ciudades: null, label: "Gira Mundial" },
 };
 
 // ── Ciudad → Código + Tipo ───────────────────────────────────────
@@ -128,7 +127,7 @@ export const cityToCode = {
   "algeciras":                  { code: "075", tipo: "mini" },
   "torremolinos":               { code: "076", tipo: "mini" },
   // País Vasco
-  "bilbao":                     { code: "077", tipo: "mini" },
+  "bilbao":                     { code: "077", tipo: "mega" },
   "vitoria_gasteiz":            { code: "078", tipo: "mini" },
   "san_sebastian":              { code: "079", tipo: "mini" },
   "barakaldo":                  { code: "080", tipo: "mini" },
@@ -243,6 +242,19 @@ export const getCitiesForCobertura = (cobertura) => {
   const cfg = COBERTURAS[cobertura];
   if (!cfg || !cfg.tipo_ciudad) return [];
   return cfg.tipo_ciudad === "mega" ? getMegaCities() : getMiniCities();
+};
+
+export const COUNTRY_CODES = {
+  espana:    'ES',
+  mexico:    'MX',
+  argentina: 'AR',
+  colombia:  'CO',
+  chile:     'CL',
+  peru:      'PE',
+  venezuela: 'VE',
+  ecuador:   'EC',
+  uruguay:   'UY',
+  mundial:   'WW',
 };
 
 /** Turno activo según hora local (1–4) */
