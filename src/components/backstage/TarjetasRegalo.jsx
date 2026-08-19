@@ -136,11 +136,25 @@ export default function TarjetasRegalo({ profile }) {
   const ratioOk = !compraMinimaNum || !valorEuros || compraMinimaNum <= valorEuros * 10;
 
   const calcNum     = parseFloat(calcPresupuesto) || 0;
-  const calcSeguro  = calcNum > 0 ? Math.min(calcNum * 0.20, 60) : 0;
+  const calcSeguro  = calcNum > 0 ? Math.min(calcNum * 0.20, 90) : 0;
   const calcDisp    = calcNum;
-  const calcPlata   = calcDisp / 0.50;
-  const calcOro     = calcDisp / 0.80;
+  const calcPlata   = calcDisp / 0.60;
+  const calcOro     = calcDisp / 0.90;
   const calcDiam    = calcDisp / 0.80;
+  const nidoActivoData     = nidos.find(n => n.id === activeNidoId);
+  const tarjetasNidoActivo = nidoActivoData?.comercio_cupones || [];
+  const coberturaActual    = tarjetasNidoActivo.reduce((sum, t) => {
+    const ratio = t.tipo_tarjeta === 'PLATA' ? 0.60 : 0.90;
+    return sum + (parseFloat(t.valor_euros) || 0) * (t.emision_total || 1) * ratio;
+  }, 0);
+  const unidadesNidoActivo = tarjetasNidoActivo.reduce(
+    (s, t) => s + (t.emision_total || 1), 0
+  );
+  const presupuestoObjetivo = parseFloat(calcPresupuesto) || 0;
+  const faltanEuros  = presupuestoObjetivo > 0
+    ? Math.max(presupuestoObjetivo - coberturaActual, 0) : null;
+  const progresoPct  = presupuestoObjetivo > 0
+    ? Math.min((coberturaActual / presupuestoObjetivo) * 100, 100) : null;
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -317,6 +331,7 @@ export default function TarjetasRegalo({ profile }) {
     setMsg(editando ? '✅ Tarjeta actualizada.' : '✅ Tarjeta creada.');
     resetForm();
     loadTarjetas();
+    loadNidos();
   };
 
   const handleEditar = (t) => {
@@ -461,7 +476,7 @@ export default function TarjetasRegalo({ profile }) {
                     padding: '10px 14px', background: 'rgba(248,113,113,0.08)',
                     border: '1px solid rgba(248,113,113,0.2)', borderRadius: 10 }}>
                     <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
-                      🔒 Seguro publicitario (20%, máx 60€)
+                      🔒 Seguro publicitario (20%, máx 90€)
                     </span>
                     <span style={{ fontSize: 13, fontWeight: 900, color: '#f87171' }}>
                       {calcSeguro.toFixed(2)}€
@@ -483,8 +498,8 @@ export default function TarjetasRegalo({ profile }) {
                   {/* Capacidad por tier */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginTop: 4 }}>
                     {[
-                      { label: 'Luna Plata', ratio: '0.50', val: calcPlata, color: '#d0d8e8', bg: 'rgba(160,168,184,0.08)', border: 'rgba(160,168,184,0.2)' },
-                      { label: 'Luna Oro', ratio: '0.80', val: calcOro, color: '#ffe566', bg: 'rgba(200,150,10,0.08)', border: 'rgba(200,150,10,0.2)' },
+                      { label: 'Luna Plata', ratio: '0.60', val: calcPlata, color: '#d0d8e8', bg: 'rgba(160,168,184,0.08)', border: 'rgba(160,168,184,0.2)' },
+                      { label: 'Luna Oro', ratio: '0.90', val: calcOro, color: '#ffe566', bg: 'rgba(200,150,10,0.08)', border: 'rgba(200,150,10,0.2)' },
                       { label: 'Luna Diamante', ratio: '0.80', val: calcDiam, color: '#d090ff', bg: 'rgba(180,80,255,0.08)', border: 'rgba(180,80,255,0.2)' },
                     ].map(({ label, ratio, val, color, bg, border }) => (
                       <div key={label} style={{ padding: '12px 10px', background: bg,
@@ -514,6 +529,51 @@ export default function TarjetasRegalo({ profile }) {
               textTransform: 'uppercase', margin: '0 0 24px' }}>
               {editando ? '✏️ Editar Tarjeta del Nido' : '+ Añadir Tarjeta al Nido'}
             </h3>
+
+            {/* Medidor vivo de cobertura del Nido activo */}
+            {activeNidoId && (
+              <div style={{
+                background: 'rgba(74,222,128,0.05)',
+                border: '1px solid rgba(74,222,128,0.15)',
+                borderRadius: 14, padding: '16px 20px', marginBottom: 24,
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#4ade80',
+                  letterSpacing: 2, textTransform: 'uppercase', marginBottom: 12 }}>
+                  📊 Cobertura del Nido — {activeNidoNombre}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
+                    {tarjetasNidoActivo.length} tipos · {unidadesNidoActivo} unidades
+                  </span>
+                  <span style={{ fontSize: 16, fontWeight: 900, color: '#4ade80' }}>
+                    {coberturaActual.toFixed(2)} €
+                  </span>
+                </div>
+                {presupuestoObjetivo > 0 && (
+                  <>
+                    <div style={{
+                      height: 6, borderRadius: 99,
+                      background: 'rgba(255,255,255,0.08)',
+                      overflow: 'hidden', marginBottom: 8,
+                    }}>
+                      <div style={{
+                        height: '100%', borderRadius: 99,
+                        width: `${progresoPct}%`,
+                        background: progresoPct >= 100
+                          ? 'linear-gradient(90deg, #4ade80, #22c55e)'
+                          : 'linear-gradient(90deg, #60a5fa, #818cf8)',
+                        transition: 'width 0.4s ease',
+                      }} />
+                    </div>
+                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', textAlign: 'right' }}>
+                      {faltanEuros > 0
+                        ? `Faltan ${faltanEuros.toFixed(2)} € para cubrir el presupuesto`
+                        : '✅ El Nido cubre el presupuesto objetivo'}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
 
             {/* TIER */}
             <div style={{ marginBottom: 20 }}>
@@ -1146,8 +1206,8 @@ export default function TarjetasRegalo({ profile }) {
                   const enNido = tarjetas.filter(t => t.nido_id === activeNidoId);
                   const cobertura = enNido.reduce((sum, t) => {
                     const euros = parseFloat(t.valor_euros) || 5;
-                    const ratio = t.tipo_tarjeta === 'PLATA' ? 0.50 : 0.80;
-                    return sum + euros * (t.emision_total || 1) * ratio;
+const ratio = t.tipo_tarjeta === 'PLATA' ? 0.60 : 0.90;
+                      return sum + euros * (t.emision_total || 1) * ratio;
                   }, 0);
                   return (
                     <>
@@ -1217,10 +1277,10 @@ export default function TarjetasRegalo({ profile }) {
                     const tarjetasNido = n.comercio_cupones || [];
                     const cobertura = tarjetasNido.reduce((sum, t) => {
                       const euros = parseFloat(t.valor_euros) || 5;
-                      const ratio = t.tipo_tarjeta === 'PLATA' ? 0.50 : 0.80;
-                      return sum + euros * (t.emision_total || 1) * ratio;
-                    }, 0);
-                    const isActive = n.id === activeNidoId;
+const ratio = t.tipo_tarjeta === 'PLATA' ? 0.60 : 0.90;
+                    return sum + euros * (t.emision_total || 1) * ratio;
+                  }, 0);
+                  const isActive = n.id === activeNidoId;
                     return (
                       <div key={n.id}
                         onClick={() => {

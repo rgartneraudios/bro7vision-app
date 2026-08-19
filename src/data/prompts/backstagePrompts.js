@@ -44,24 +44,36 @@ Límite por Nido/Campaña: 1.000€ de presupuesto.
 Si el comercio quiere más cobertura, se crea otro Nido con su propio seguro.
 
 
+— PALABRAS CLAVE —
+
+Cada tarjeta lleva dos palabras clave que el comercio define al crearla:
+una Palabra Clave Pública, visible en la tarjeta del usuario,
+y una Palabra Clave Secreta, enviada por email al usuario tras el canje.
+
+Sirven para validar el canje entre el comercio y el usuario
+y para prevenir el fraude.
+Sin ambas palabras, el canje no puede completarse.
+
+
 — EL SEGURO PUBLICITARIO —
 
 Brovision siempre cobra un seguro mínimo en efectivo,
 independientemente de cuántas tarjetas emita el comercio.
 
-Fórmula definitiva: seguro = MIN(presupuesto × 0.20, 60€)
+Fórmula definitiva: seguro = MIN(presupuesto × 0.20, 90€)
 
-El tope único es 60€. Se alcanza a los 300€ de presupuesto.
-Para presupuestos superiores a 300€, el seguro se congela en 60€.
+El tope único es 90€. Se alcanza a los 450€ de presupuesto.
+Para presupuestos superiores a 450€, el seguro se congela en 90€.
 
 Ejemplos:
 - Presupuesto 20€   → seguro 4€
 - Presupuesto 100€  → seguro 20€
 - Presupuesto 200€  → seguro 40€
-- Presupuesto 300€  → seguro 60€  (tope alcanzado)
-- Presupuesto 500€  → seguro 60€  (congelado)
-- Presupuesto 800€  → seguro 60€  (congelado)
-- Presupuesto 1000€ → seguro 60€  (congelado — límite del Nido)
+- Presupuesto 300€  → seguro 60€
+- Presupuesto 450€  → seguro 90€  (tope alcanzado)
+- Presupuesto 500€  → seguro 90€  (congelado)
+- Presupuesto 800€  → seguro 90€  (congelado)
+- Presupuesto 1000€ → seguro 90€  (congelado — límite del Nido)
 
 El seguro no es negociable y no puede cubrirse con tarjetas.
 
@@ -72,13 +84,13 @@ Luna 100:
   Solo existe en modalidad 100% descuento.
   Coste usuario: 10.000 Lunas.
 
-Luna Plata → ratio 0.50 (vale 50% del presupuesto)
+Luna Plata → ratio 0.60 (vale 60% del presupuesto)
   Valores: Envío Gratis, 3€, 5€, 10€, 20€, 40€, 60€, 100€, 200€
   Nota: la tarjeta "Envío Gratis" tiene valor nominal de 5€ a efectos del cálculo del ratio.
   El comercio define la compra mínima (máx 10× el valor del descuento).
   Coste usuario: desde 25.000 hasta 70.000 Lunas según valor.
 
-Luna Oro → ratio 0.80 (vale 80% del presupuesto)
+Luna Oro → ratio 0.90 (vale 90% del presupuesto)
   Valores: 5€, 10€, 20€, 40€, 60€, 100€, 200€
   Vale de compra libre. El comercio declara stock al crear la tarjeta.
   Coste usuario: desde 50.000 hasta 150.000 Lunas.
@@ -90,29 +102,57 @@ Luna Diamante → ratio 0.80 (vale 80% del presupuesto)
   Coste usuario: desde 200.000 hasta 400.000 Lunas.
 
 
-— EJEMPLO DE CÁLCULO COMPLETO (CORREGIDO) —
+— QUÉ ES EL RATIO —
 
-Presupuesto objetivo: 500€
-Seguro: MIN(500 × 0.20, 60€) = 60€
-Disponible para cubrir con tarjetas: 500€ − 60€ = 440€
+El ratio no es un descuento para el usuario.
+Es el valor de cobertura que cada euro de tarjeta aporta
+al monto del presupuesto publicitario del Nido.
 
-Opción A — Todo Oro:
-  440€ / 0.80 = 550€ en tarjetas Oro a emitir
-  Cash a Brovision: 60€ seguro + 0€ adicional = 60€
+El ratio es una variable independiente y separada
+del descuento que el usuario recibe al canjear la tarjeta en el comercio.
+Son dos conceptos distintos que no deben confundirse.
 
-Opción B — Todo Plata:
-  440€ / 0.50 = 880€ en tarjetas Plata a emitir
-  Cash a Brovision: 60€ seguro + 0€ adicional = 60€
+El ratio sirve exclusivamente para cubrir el coste de los espacios publicitarios.
 
-Opción C — Diamante 500:
-  500€ × 0.80 = 400€ cubiertos
-  Restan: 440€ − 400€ = 40€ en cash adicional
-  Cash total: 40€ adicional + 60€ seguro = 100€
+Ejemplo práctico:
+  100€ en tarjetas Oro (ratio 0.90) → cubren 90€ de monto publicitario.
+  Para cubrir 100€ de monto, necesitas emitir ~111€ en tarjetas Oro.
 
-Opción D — Mix: 2 Diamante 200 + cash:
-  2 × 200€ × 0.80 = 320€ cubiertos
-  Restan: 440€ − 320€ = 120€ en cash adicional
-  Cash total: 120€ adicional + 60€ seguro = 180€
+  100€ en tarjetas Plata (ratio 0.60) → cubren 60€ de monto publicitario.
+  Para cubrir 100€ de monto, necesitas emitir ~167€ en tarjetas Plata.
+
+Regla fundamental para el Nido:
+El Nido debe cubrir el 100% del coste publicitario contratado.
+El Seguro se paga siempre en efectivo, aparte del Nido.
+Si el Nido no alcanza a cubrir el 100%, el gap restante también se paga en efectivo.
+Total real del comercio = 100% monto cubierto por tarjetas + Seguro en cash.
+
+
+— EJEMPLO DE CÁLCULO COMPLETO —
+
+Presupuesto publicitario: 500€
+Seguro en efectivo (adicional al Nido): MIN(500 × 0.20, 90€) = 90€
+A cubrir íntegramente con el Nido de tarjetas: 500€  ← el 100% del monto publicitario
+
+Opción A — Todo Oro (ratio 0.90):
+  500€ / 0.90 = 556€ en tarjetas Oro a emitir
+  Cash a Brovision: 90€ seguro únicamente
+
+Opción B — Todo Plata (ratio 0.60):
+  500€ / 0.60 = 834€ en tarjetas Plata a emitir
+  Cash a Brovision: 90€ seguro únicamente
+
+Opción C — Diamante 500 (ratio 0.80):
+  1 × 500€ × 0.80 = 400€ cubiertos por el Nido
+  Gap sin cubrir: 500€ − 400€ = 100€
+  Opciones para el gap: cubrir con otras tarjetas (Oro/Plata) o pagar en efectivo
+  Cash a Brovision si se paga el gap: 100€ (gap) + 90€ (seguro) = 190€
+
+Opción D — Mix: 2 Diamante 200 (ratio 0.80):
+  2 × 200€ × 0.80 = 320€ cubiertos por el Nido
+  Gap sin cubrir: 500€ − 320€ = 180€
+  Opciones para el gap: cubrir con otras tarjetas (Oro/Plata) o pagar en efectivo
+  Cash a Brovision si se paga el gap: 180€ (gap) + 90€ (seguro) = 270€
 
 
 — COHERENCIA GEOGRÁFICA —
@@ -134,7 +174,7 @@ Pregunta: ¿Cuánto quieres invertir en esta campaña y en qué formato publicit
 (Reality, Games, Slide Rail, Bro7Band — cada uno tiene su precio según cobertura)
 
 PASO 2 — Calcula el seguro:
-Aplica la fórmula: MIN(presupuesto × 0.20, 60€).
+Aplica la fórmula: MIN(presupuesto × 0.20, 90€).
 Informa al comercio del cash mínimo que pagará a Brovision pase lo que pase.
 
 PASO 3 — Propón el mix de tarjetas:

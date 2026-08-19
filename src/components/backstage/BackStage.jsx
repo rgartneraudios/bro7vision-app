@@ -14,6 +14,7 @@ import CarritoTab from './CarritoTab';
 import ContratoModal from './ContratoModal';
 
 const HEADING = "'Noto Sans', sans-serif";
+const INTER   = "'Inter', sans-serif";
 
 const BackStage = ({ session, onLogout }) => {
   const [profile, setProfile]     = useState(null);
@@ -285,23 +286,24 @@ const BackStage = ({ session, onLogout }) => {
   ];
 
   const TABS_COMERCIO = [
-    { id: 'shop_amigos',      label: 'SHOP AMIGOS'       },
     { id: 'tarjetas_diseno',  label: 'TARJETAS REGALO'  },
     { id: 'carrito',          label: '🛒 Carrito'         },
     { id: 'canjes_recibidos', label: 'CANJES RECIBIDOS'  },
+    { id: 'shop_amigos',      label: 'SHOP AMIGOS'       },
   ];
 
   const tabs = activeBlock === 'anuncios' ? TABS_ANUNCIOS : TABS_COMERCIO;
 
   return (
     <div
-      className="fixed inset-0 flex flex-col font-mono text-white overflow-hidden"
+      className="fixed inset-0 flex flex-col text-white overflow-hidden"
       style={{
         background: '#000',
+        fontFamily: INTER,
       }}
     >
 
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;900&display=swap');
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;900&family=Inter:wght@400;500;600;700&display=swap');
         .backstage-scroll::-webkit-scrollbar { width: 8px; }
         .backstage-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
         .backstage-scroll::-webkit-scrollbar-thumb { background: linear-gradient(#a855f7, #22d3ee); border-radius: 4px; box-shadow: 0 0 10px rgba(168,85,247,0.5); }

@@ -126,26 +126,43 @@ const ComoFuncionaTabs = () => {
           style={{ fontFamily: INTER }}>
 
           <div style={{ fontFamily: INTER }}
-            className="text-xl md:text-2xl text-gray-300 leading-relaxed md:leading-loose text-center font-medium max-w-6xl mx-auto mb-12">
+            className="text-xl md:text-2xl text-gray-300 leading-relaxed md:leading-loose text-center font-medium max-w-[1600px] mx-auto mb-12">
 
-            <p className="mb-1 text-white font-bold">Las <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400">Tarjetas de Regalo</span> son tu moneda de publicidad.</p>
+            <p className="mb-1 text-white font-bold">¿No tienes tiempo de leer?</p>
+
+            <p className="mb-1">En la pestaña <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">PROMPT IA</span> tienes un mega Prompt para copiarlo y llevarlo a tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">IA favorita</span>.</p>
+            <p className="mb-1">Te informará de todo y te hará las preguntas clave para calcular una <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">campaña publicitaria óptima</span>.</p>
+
+            <div className="w-24 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto my-8" />
+
+            <div className="h-8" />
+
+            <p className="text-2xl md:text-3xl font-black text-white"
+              style={{ textShadow: '0 0 20px rgba(255,255,255,0.15)' }}>
+              Existen dos modos de contratar los espacios publicitarios de <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400">Bro7Vision</span>:
+            </p>
 
             <div className="h-6" />
 
-            <p className="mb-1">En lugar de pagar toda tu campaña en efectivo, puedes cubrir parte del coste</p>
-            <p className="mb-1">con tarjetas reales que los usuarios de <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Bro7Vision</span> canjean con sus <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Lunas</span>.</p>
+            <ul className="list-none mx-auto text-center space-y-3">
+              <li><span className="font-bold text-white">1-</span> Eligiendo los espacios necesarios y abonarlos en <span className="text-emerald-400 font-semibold">efectivo</span>.</li>
+              <li><span className="font-bold text-white">2-</span> Eligiendo los espacios necesarios y abonarlos con <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">Tarjetas de Regalo</span> aptas para cubrir los montos, más un <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-semibold">seguro publicitario</span>.</li>
+            </ul>
+
+            <div className="w-24 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto my-8" />
 
             <div className="h-8" />
 
-            <p className="mb-1 text-white font-bold">Así funciona el sistema:</p>
+            <p className="mb-1 text-white font-bold">SI EMITES TARJETAS SOLO PAGAS UN SEGURO</p>
 
-            <p className="mb-1"><span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Bro7Vision</span> siempre cobra un seguro publicitario mínimo en efectivo.</p>
-            <p className="mb-1">Es el <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">20%</span> de tu presupuesto, con un máximo de <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">60€</span>.</p>
-            <p className="mb-1">El resto lo puedes cubrir con <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">tarjetas</span>.</p>
+            <p className="mb-1">Si decides crear <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">Tarjetas de Regalo</span> (a excepción de la Tarjeta Luna 100, que no aplica en esta regla),</p>
+            <p className="mb-1"><span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Bro7Vision</span> cobrará un seguro publicitario mínimo en efectivo.</p>
+            <p className="mb-1">Es el <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">20%</span> de tu presupuesto, con un máximo de <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">90€</span> para presupuestos de <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">450€</span> en adelante.</p>
+            <p className="mb-1">El resto del coste del espacio publicitario se cubre con tus tarjetas creadas.</p>
 
             <div className="h-8" />
 
-            <p className="mb-1 text-white font-bold">Cuatro tipos de tarjeta, con ratios de cobertura:</p>
+            <p className="mb-1 text-white font-bold">Cuatro tipos de tarjeta, tres aptas para la cobertura de montos:</p>
 
             <div className="h-6" />
 
@@ -157,58 +174,110 @@ const ComoFuncionaTabs = () => {
                 border: '1px solid rgba(255,255,255,0.08)', margin: '8px auto 24px' }}
             />
 
-            <p className="mb-2">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-300 to-gray-400 font-bold">Luna 100</span>
-              {' '}— Descuento del 100% en el producto o servicio que describas.
-            </p>
-            <p className="mb-2 text-left max-w-2xl mx-auto">• Ideal para muestras gratuitas, primeras visitas o contenidos digitales de captación.</p>
-            <p className="mb-4 text-left max-w-2xl mx-auto">• No tiene ratio: el comercio asume el coste íntegro del obsequio.</p>
+<p className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gray-300 to-gray-400 mb-1">Luna 100</p>
+            <p className="mb-2">Descuento del 100% en el producto o servicio que describas.</p>
 
-            <p className="mb-2">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-300 to-gray-400 font-bold">Luna Plata</span>
-              {' '}— tarjeta de regalo condicional a compra mínima. <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">Ratio 0.50</span>.
-            </p>
-            <p className="mb-2 text-left max-w-2xl mx-auto">• <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">100€</span> en tarjetas Plata cubren <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">50€</span> de campaña.</p>
-            <p className="mb-2 text-left max-w-2xl mx-auto">• Hay tarjetas de Envío Gratis, 3€, 5€, 10€, 20€, 40€, 60€, 100€, 200€</p>
-            <p className="mb-4 text-left max-w-2xl mx-auto">• El valor de compra mínima lo añades tú, según necesidad de ventas.</p>
+            <p className="mb-2">• Ideal para muestras gratuitas, primeras visitas o contenidos digitales de captación.</p>
 
-            <p className="mb-2">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">Luna Oro</span>
-              {' '}— tarjeta de regalo de compra libre (1€ = 1€). <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">Ratio 0.80</span>.
-            </p>
-            <p className="mb-2 text-left max-w-2xl mx-auto">• <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">100€</span> en tarjetas Oro cubren <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">80€</span> de campaña.</p>
-            <p className="mb-4 text-left max-w-2xl mx-auto">• Hay tarjetas de 5€, 10€, 20€, 40€, 60€, 100€, 200€</p>
-
-            <p className="mb-2">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-violet-500 font-bold">Luna Diamante</span>
-              {' '}— tarjeta de regalo por producto o pack concreto. <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">Ratio 0.80</span>.
-            </p>
-            <p className="mb-2 text-left max-w-2xl mx-auto">• 200€, 500€ o 1.000€ en artículos reales.</p>
-            <p className="mb-4 text-left max-w-2xl mx-auto">• El <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Estudio</span> revisa y activa cada premio antes de publicarlo.</p>
-
-            <div className="h-8" />
-
-            <p className="mb-1">Esto quiere decir que si tu negocio precisa espacios publicitarios</p>
-            <p className="mb-1">por valor de 500€, puedes cubrirlos con distintas tarjetas de regalo,</p>
-            <p className="mb-1">y solo abonar esos <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">60€</span> de seguro publicitario de tope. ¿Es posible?</p>
-            <p className="mb-1">Sí, esto es posible y para ello <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Bro7Vision</span> ha desarrollado un <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Prompt</span>.</p>
-            <p className="mb-1">Para que lo puedas analizar junto a tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">IA</span>, y así elaborar</p>
-            <p className="mb-1">la mejor estrategia para tu negocio.</p>
+            <p className="mb-4">• <span className="text-red-400 font-semibold">No es apta para cobertura</span>: el comercio asume el coste íntegro del obsequio.</p>
 
             <div className="h-6" />
 
-            <p className="mb-1">La estrategia base consiste en calcular</p>
-            <p className="mb-1">el presupuesto total de los espacios publicitarios que necesites</p>
-            <p className="mb-1">y sobre todo medir los <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">precios por alcance geográfico</span>.</p>
+            <p className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-gray-300 to-gray-400 mb-1">Luna Plata</p>
+            <p className="mb-2">Tarjeta de regalo condicional a compra mínima.</p>
+
+            <p className="mb-2">• Hay tarjetas de <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-semibold">Envío Gratis, 3€, 5€, 10€, 20€, 40€, 60€, 100€, 200€</span></p>
+
+            <p className="mb-2">• El valor de <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-semibold">compra mínima</span> lo añades tú, según necesidad de ventas.</p>
+
+            <p className="mb-4">• Ratio: <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">0.60€</span></p>
 
             <div className="h-6" />
 
-            <p className="mb-1">Una vez que tengas el coste total de lo que necesitas, hay que construir un <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Nido</span></p>
-            <p className="mb-1">con un surtido de varios tipos de <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">Tarjetas de regalo</span> inactivas,</p>
-            <p className="mb-1">para luego activarlas en el <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Carrito</span> general para que se descuente</p>
-            <p className="mb-1">el monto a abonar por esos espacios publicitarios que necesitas.</p>
+            <p className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 mb-1">Luna Oro</p>
+            <p className="mb-2">Tarjeta de regalo de compra libre (1€ = 1€).</p>
+
+            <p className="mb-2">• <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">100€</span> en tarjetas Oro cubren <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">90€</span> de campaña.</p>
+
+            <p className="mb-2">• Hay tarjetas de <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-semibold">5€, 10€, 20€, 40€, 60€, 100€, 200€</span></p>
+
+            <p className="mb-4">• Ratio: <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">0.90€</span></p>
+
+            <div className="h-6" />
+
+            <p className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-violet-500 mb-1">Luna Diamante</p>
+            <p className="mb-2">Tarjeta de regalo por producto o pack concreto.</p>
+
+            <p className="mb-2">• <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-violet-500 font-semibold">200€, 500€ o 1.000€</span> en artículos reales.</p>
+
+            <p className="mb-2">• El <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Estudio</span> revisa y activa cada premio antes de publicarlo.</p>
+
+            <p className="mb-4">• Ratio: <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-bold">0.80€</span></p>
 
             <div className="h-8" />
+
+            <div className="w-24 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto mb-6" />
+
+            <p className="mb-1 text-white font-bold">¿QUÉ ES EL RATIO DE LAS TARJETAS? — EJEMPLOS</p>
+
+            <div className="h-4" />
+
+            <p className="mb-1">El <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-semibold">ratio</span> es el valor en euros que tiene la tarjeta para cubrir el monto de los espacios publicitarios.</p>
+
+            <div className="w-24 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto my-8" />
+
+            <p className="mb-2 text-xl md:text-2xl font-bold text-white">▸ Tarjetas <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-300 to-gray-400">Luna Plata</span> — Ratio 0.60</p>
+            <p className="mb-2">Ejemplo: Tus espacios publicitarios deseados suman <span className="text-emerald-400 font-bold">100€</span>.</p>
+            <p className="mb-2">Abonas el seguro publicitario del <span className="text-emerald-400 font-bold">20% = 20€</span>, creas tarjetas por <span className="text-emerald-400 font-bold">100€</span> según ratio.</p>
+            <p className="mb-2">Cálculo: <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-semibold">30 Tarjetas Luna Plata de 3€</span> → 30 x 3€ x 0.60 = <span className="text-emerald-400 font-bold">54€</span> (faltarían cubrir <span className="text-amber-400 font-bold">46€</span> con otras tarjetas).</p>
+            <p className="mb-2">Las tarjetas Luna Plata son con <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-semibold">condición de compra mínima</span>. Ej: tarjeta de 3€ con compra mínima de 30€ = descuento del 10%.</p>
+            <p className="mb-4">Los montos de compra mínima tienen límites según tu táctica de ventas.</p>
+
+            <div className="w-24 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto my-8" />
+
+            <p className="mb-2 text-xl md:text-2xl font-bold text-white">▸ Tarjetas <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400">Luna Oro</span> — Ratio 0.90</p>
+            <p className="mb-2">Ejemplo: Tus espacios publicitarios deseados suman <span className="text-emerald-400 font-bold">100€</span>.</p>
+            <p className="mb-2">Abonas el seguro publicitario del <span className="text-emerald-400 font-bold">20% = 20€</span>, creas tarjetas por <span className="text-emerald-400 font-bold">100€</span> según ratio.</p>
+            <p className="mb-2">Cálculo: <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-semibold">10 Tarjetas Luna Oro de 10€</span> → 10 x 10€ x 0.90 = <span className="text-emerald-400 font-bold">90€</span> (faltarían cubrir <span className="text-amber-400 font-bold">10€</span> con otras tarjetas).</p>
+            <p className="mb-2">Son <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-semibold">descuento real en efectivo</span>. El cliente debe hacer una compra ≥ al monto de la tarjeta.</p>
+            <p className="mb-4">Ej: Compra de 15€ con Luna Oro 10€ → el cliente paga solo <span className="text-emerald-400 font-bold">5€</span>. Reservadas para aniversarios y situaciones especiales.</p>
+
+            <div className="w-24 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto my-8" />
+
+            <p className="mb-2 text-xl md:text-2xl font-bold text-white">▸ Tarjetas <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-violet-500">Luna Diamante</span> — Ratio 0.80</p>
+            <p className="mb-2">Ejemplo: Tus espacios publicitarios deseados suman <span className="text-emerald-400 font-bold">500€</span>. Abonas el seguro (tope <span className="text-emerald-400 font-bold">90€</span>), creas tarjetas por <span className="text-emerald-400 font-bold">500€</span> según ratio.</p>
+            <p className="mb-2">Cálculo: <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-semibold">1 Tarjeta Luna Diamante de 500€</span> → 1 x 500€ x 0.80 = <span className="text-emerald-400 font-bold">400€</span> (faltarían cubrir <span className="text-amber-400 font-bold">100€</span> con otras tarjetas o en efectivo).</p>
+            <p className="mb-4">Son <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-violet-500 font-semibold">artículos nuevos de tu Stock</span> que encuentran salida al descuento de espacios publicitarios.</p>
+
+            <div className="w-24 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto mt-6 mb-8" />
+
+            <div className="h-8" />
+
+            <p className="mb-1 text-white font-bold">EL NIDO DE TARJETAS</p>
+
+            <div className="h-4" />
+
+            <p className="mb-1">Antes de contratar publicidad, <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-semibold">calcula el monto de tu publicidad</span>, crea tus tarjetas y déjalas en el <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Nido</span> con un nombre de campaña.</p>
+            <p className="mb-1">Cuando vayas al <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Carrito</span> a confirmar tu contrato, el sistema aplica el descuento automáticamente.</p>
+
+            <div className="h-6" />
+
+            <p className="mb-1 font-semibold text-amber-400">NOTA:</p>
+            <p className="mb-1">El monto del <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Nido</span> debe ser igual o superior al monto del contrato publicitario.</p>
+            <p className="mb-1">El <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-semibold">seguro</span> va aparte de esta cuenta.</p>
+            <p className="mb-1">Ejemplo: <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-semibold">Monto Publicitario 100€</span> → 100€ en tarjetas + Seguro.</p>
+            <p className="mb-1">Por Nido o Campaña se pueden crear un máximo de 10 Tarjetas por tipo.</p>
+            <p className="mb-1">Ejemplo: 10 tarjetas de 3€ , 10 tarjetas por 5€ etc.</p>
+
+            <div className="h-6" />
+
+            <p className="mb-1 font-semibold text-amber-400">PALABRAS CLAVE:</p>
+            <p className="mb-1">Son palabras necesarias para la seguridad del canje entre el emisor y el usuario</p>
+            <p className="mb-1">y previene el fraude.</p>
+            <p className="mb-1">Se utiliza una Palabra clave Pública y una palabra clave secreta</p>
+            <p className="mb-1">que se envía por email al usuario que ha canjeado sus Lunas por dicha tarjeta.</p>
+
+            <div className="w-24 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto my-8" />
 
             <p className="mb-1 text-white font-bold">DÓNDE CREAR LAS TARJETAS Y CAMPAÑAS:</p>
             <p className="mb-1">Todo se gestiona desde el <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Backstage</span> de <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Bro7Vision</span>, en la pestaña <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">"COMERCIO"</span>.</p>
@@ -222,17 +291,8 @@ const ComoFuncionaTabs = () => {
 
             <div className="h-8" />
 
-            <p className="mb-1 text-white font-bold">El Nido.</p>
-            <p className="mb-1">Antes de contratar publicidad, creas tus tarjetas y las dejas en el <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Nido</span></p>
-            <p className="mb-1">con un nombre de campaña.</p>
-            <p className="mb-1">Cuando vayas al <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Carrito</span> a confirmar tu contrato,</p>
-            <p className="mb-1">el sistema aplica el descuento automáticamente.</p>
-
-            <div className="h-8" />
-
             <p className="mb-1">¿No sabes por dónde empezar?</p>
-            <p className="mb-1">En la pestaña <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">PROMPT IA</span> tienes un mega Prompt para copiarlo</p>
-            <p className="mb-1">y llevarlo a tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">IA favorita</span>.</p>
+            <p className="mb-1">En la pestaña <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">PROMPT IA</span> tienes un mega Prompt para copiarlo y llevarlo a tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">IA favorita</span>.</p>
             <p className="mb-1">Te hará las preguntas clave y calculará una <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">campaña publicitaria óptima</span>.</p>
 
           </div>
@@ -747,7 +807,7 @@ const EstudioMarketingTab = () => {
 
       {/* ───── TAB: DEMOS & GUÍA ───── */}
       {subTab === 'demos' && (
-        <div className="w-full max-w-6xl">
+        <div className="w-full max-w-[1600px]">
           <ComoFuncionaTabs />
         </div>
       )}

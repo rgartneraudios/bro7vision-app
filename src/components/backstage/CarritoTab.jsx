@@ -41,7 +41,7 @@ export default function CarritoTab({ session, profile }) {
 
   const valorNidoCampana = (tarjetas) => tarjetas.reduce((sum, t) => {
     const euros = parseFloat(t.valor_euros) || 5;
-    const ratio = t.tipo_tarjeta === 'PLATA' ? 0.50 : 0.80;
+    const ratio = t.tipo_tarjeta === 'PLATA' ? 0.60 : 0.90;
     return sum + euros * (t.emision_total || 1) * ratio;
   }, 0);
 
@@ -54,7 +54,7 @@ export default function CarritoTab({ session, profile }) {
 
   const diferencia    = valorNidoElegido - totalEspacios;
   const nidoCubre     = diferencia >= 0;
-  const seguroBase    = Math.min(totalEspacios * 0.20, 60);
+  const seguroBase    = Math.min(totalEspacios * 0.20, 90);
   const seguroConIva  = seguroBase * 1.21;
 
   const handleActivarNido = async () => {
@@ -67,6 +67,11 @@ export default function CarritoTab({ session, profile }) {
       .in('id', ids);
     setSaving(false);
     if (error) { setMsg(`Error: ${error.message}`); return; }
+    await supabase
+      .from('bs_butacas')
+      .update({ estado: 'ACTIVO' })
+      .eq('productor_id', session.user.id)
+      .eq('estado', 'EN_CASTING');
     setMsg(`✅ Nido activado. Seguro a pagar: ${seguroConIva.toFixed(2)}€ (IVA incluido).`);
     setNido([]);
     setNidoSeleccionado(null);
