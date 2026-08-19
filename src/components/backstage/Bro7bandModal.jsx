@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 
-const SYNE  = "'Exo 2', sans-serif";
+const HEADING  = "'Noto Sans', sans-serif";
 const INTER = "'Inter', sans-serif";
 
 const MencionesModal = ({ session, carrito, setCarrito, onClose, onReserved, faseLunarTexto, faseLunarId }) => {
@@ -74,12 +74,12 @@ const MencionesModal = ({ session, carrito, setCarrito, onClose, onReserved, fas
       <div className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" onClick={onClose} />
       <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-[420px] bg-zinc-950 border-l border-white/10 flex flex-col shadow-2xl font-mono">
 
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');`}</style>
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;900&family=Inter:wght@400;500;600;700&display=swap');`}</style>
 
         {/* Header */}
         <div className="flex items-start justify-between px-6 py-4 border-b border-white/5 bg-black/30 shrink-0">
           <div>
-            <h3 style={{ fontFamily: SYNE, fontWeight: 800 }} className="text-base font-black text-white tracking-tight">CONTRATAR MENCIONES</h3>
+            <h3 style={{ fontFamily: HEADING, fontWeight: 800 }} className="text-base font-black text-white tracking-tight">CONTRATAR MENCIONES</h3>
             <p style={{ fontFamily: INTER }} className="text-xs text-gray-500 mt-1">Audios de personajes para tu comercio</p>
           </div>
           <button onClick={onClose} className="text-gray-500 hover:text-white text-xl leading-none mt-0.5 transition-colors">✕</button>
@@ -91,16 +91,16 @@ const MencionesModal = ({ session, carrito, setCarrito, onClose, onReserved, fas
           {done ? (
             <div className="flex flex-col items-center justify-center h-full gap-4 text-center py-16">
               <div className="text-4xl">🎬</div>
-              <p style={{ fontFamily: SYNE, fontWeight: 800 }} className="text-white text-sm uppercase tracking-widest">
+              <p style={{ fontFamily: HEADING, fontWeight: 800 }} className="text-white text-sm uppercase tracking-widest">
                 Solicitud enviada
               </p>
               <p style={{ fontFamily: INTER }} className="text-gray-500 text-sm max-w-[260px] leading-relaxed">
                 El estudio revisará tu brief.
               </p>
-              <span style={{ fontFamily: SYNE }} className="text-[9px] text-gray-700 border border-white/5 px-3 py-1 rounded uppercase tracking-widest">
+              <span style={{ fontFamily: HEADING }} className="text-[9px] text-gray-700 border border-white/5 px-3 py-1 rounded uppercase tracking-widest">
                 FASE 0 · SIMULACIÓN
               </span>
-              <button onClick={onClose} style={{ fontFamily: SYNE }} className="mt-2 text-xs text-gray-500 hover:text-white border border-white/10 hover:border-white/25 px-4 py-2 rounded transition-all uppercase tracking-wider">
+              <button onClick={onClose} style={{ fontFamily: HEADING }} className="mt-2 text-xs text-gray-500 hover:text-white border border-white/10 hover:border-white/25 px-4 py-2 rounded transition-all uppercase tracking-wider">
                 CERRAR
               </button>
             </div>
@@ -125,7 +125,7 @@ const MencionesModal = ({ session, carrito, setCarrito, onClose, onReserved, fas
                           onError={e => { e.target.style.display = 'none' }}
                         />
                         <div className="flex-1 min-w-0">
-                          <p style={{ fontFamily: SYNE, fontWeight: 700 }} className="text-xs text-white uppercase tracking-wider">
+                          <p style={{ fontFamily: HEADING, fontWeight: 700 }} className="text-xs text-white uppercase tracking-wider">
                             {item.nombre}
                           </p>
                           <p style={{ fontFamily: INTER }} className="text-[10px] text-gray-500">
@@ -192,7 +192,7 @@ const MencionesModal = ({ session, carrito, setCarrito, onClose, onReserved, fas
                   <span className="text-gray-500">Precio base</span>
                   <span className="text-gray-500 line-through">{carrito.reduce((sum, item) => sum + (item.precio ?? 20), 0)}€</span>
                 </div>
-                <div style={{ fontFamily: SYNE, fontWeight: 700 }}
+                <div style={{ fontFamily: HEADING, fontWeight: 700 }}
                      className="flex items-center justify-between text-xs mb-3 px-1">
                   <span className="text-emerald-400 uppercase tracking-widest">
                     ✦ Descuento activo · -{descuento}%
@@ -204,7 +204,7 @@ const MencionesModal = ({ session, carrito, setCarrito, onClose, onReserved, fas
             <button
               onClick={handleContratar}
               disabled={loading || carrito.length === 0}
-              style={{ fontFamily: SYNE, fontWeight: 700 }}
+              style={{ fontFamily: HEADING, fontWeight: 700 }}
               className="w-full py-3.5 bg-purple-600 hover:bg-purple-500 active:bg-purple-700 text-white text-sm font-bold uppercase tracking-widest rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_24px_rgba(168,85,247,0.25)]"
             >
               {loading ? 'PROCESANDO...' : 'CONTRATAR'}

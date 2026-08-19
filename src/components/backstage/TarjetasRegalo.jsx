@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../supabaseClient';
 
-const SYNE = "'Exo 2', sans-serif";
+const HEADING = "'Noto Sans', sans-serif";
 
 const COSTE_LUNAS = {
   PLATA:   { ENVIO_GRATIS: 25000, '3': 30000, '5': 35000, '10': 40000, '20': 45000, '40': 50000, '60': 55000, '100': 60000, '200': 70000 },
@@ -376,7 +376,7 @@ export default function TarjetasRegalo({ profile }) {
     width: '100%', background: 'rgba(255,255,255,0.05)',
     border: '1px solid rgba(255,255,255,0.12)',
     borderRadius: 10, padding: '10px 14px',
-    color: '#fff', fontSize: 13, fontFamily: SYNE,
+    color: '#fff', fontSize: 13, fontFamily: HEADING,
     outline: 'none',
     appearance: 'none',
     WebkitAppearance: 'none',
@@ -406,7 +406,7 @@ export default function TarjetasRegalo({ profile }) {
           100% { background-position: -200% center; }
         }
       `}</style>
-      <div style={{ padding: '32px 40px', maxWidth: 1400, margin: '0 auto', fontFamily: SYNE }}>
+      <div style={{ padding: '32px 40px', maxWidth: 1400, margin: '0 auto', fontFamily: HEADING }}>
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 32 }}>
@@ -528,7 +528,7 @@ export default function TarjetasRegalo({ profile }) {
                       style={{
                         padding: '8px 16px', borderRadius: 20, fontSize: 11,
                         fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase',
-                        cursor: 'pointer', fontFamily: SYNE, transition: 'all 0.2s',
+                        cursor: 'pointer', fontFamily: HEADING, transition: 'all 0.2s',
                         background: active ? `${s.color}33` : 'rgba(255,255,255,0.04)',
                         border: `1px solid ${active ? s.color : 'rgba(255,255,255,0.1)'}`,
                         color: active ? s.color : 'rgba(255,255,255,0.4)',
@@ -599,7 +599,7 @@ export default function TarjetasRegalo({ profile }) {
                         <button key={v} onClick={() => setValorDiamante(v)}
                           style={{
                             flex: 1, padding: '10px 8px', borderRadius: 12, fontSize: 11,
-                            fontWeight: 700, cursor: 'pointer', fontFamily: SYNE,
+                            fontWeight: 700, cursor: 'pointer', fontFamily: HEADING,
                             background: active ? 'rgba(180,80,255,0.15)' : 'rgba(255,255,255,0.04)',
                             border: `1px solid ${active ? '#9040e0' : 'rgba(255,255,255,0.1)'}`,
                             color: active ? '#d090ff' : 'rgba(255,255,255,0.4)',
@@ -775,7 +775,7 @@ export default function TarjetasRegalo({ profile }) {
                       position: 'absolute', top: 6, right: 6,
                       background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.2)',
                       borderRadius: 6, color: '#f87171', fontSize: 10, fontWeight: 700,
-                      padding: '3px 8px', cursor: 'pointer', fontFamily: SYNE,
+                      padding: '3px 8px', cursor: 'pointer', fontFamily: HEADING,
                     }}>
                     QUITAR
                   </button>
@@ -800,7 +800,7 @@ export default function TarjetasRegalo({ profile }) {
                   setActiveNidoAlcance('');
                 }} style={{
                   fontSize: 10, color: 'rgba(255,255,255,0.4)',
-                  background: 'none', border: 'none', cursor: 'pointer', fontFamily: SYNE,
+                  background: 'none', border: 'none', cursor: 'pointer', fontFamily: HEADING,
                 }}>
                   CAMBIAR
                 </button>
@@ -839,7 +839,7 @@ export default function TarjetasRegalo({ profile }) {
                   borderRadius: 12, color: '#c084fc',
                   fontSize: 12, fontWeight: 900, letterSpacing: 2,
                   textTransform: 'uppercase', cursor: saving || (!editando && !activeNidoId) ? 'not-allowed' : 'pointer',
-                  fontFamily: SYNE,
+                  fontFamily: HEADING,
                 }}>
                 {saving ? 'GUARDANDO...' : editando ? 'ACTUALIZAR' : 'AÑADIR AL NIDO'}
               </button>
@@ -849,7 +849,7 @@ export default function TarjetasRegalo({ profile }) {
                     padding: '13px 20px', background: 'rgba(255,255,255,0.04)',
                     border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12,
                     color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: 700,
-                    cursor: 'pointer', fontFamily: SYNE, letterSpacing: 1,
+                    cursor: 'pointer', fontFamily: HEADING, letterSpacing: 1,
                   }}>
                   CANCELAR
                 </button>
@@ -1024,7 +1024,7 @@ export default function TarjetasRegalo({ profile }) {
                           color: '#000', fontWeight: 900, fontSize: 11,
                           border: 'none', borderRadius: 10, cursor: 'default',
                           textTransform: 'uppercase', letterSpacing: '0.12em',
-                          fontFamily: "'Exo 2', sans-serif", opacity: 0.8,
+                          fontFamily: HEADING, opacity: 0.8,
                         }}>
                           CANJEAR →
                         </button>
@@ -1074,7 +1074,7 @@ export default function TarjetasRegalo({ profile }) {
                         style={{
                           padding: '8px 14px', borderRadius: 10, fontSize: 11,
                           fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase',
-                          cursor: 'pointer', fontFamily: SYNE, textAlign: 'left',
+                          cursor: 'pointer', fontFamily: HEADING, textAlign: 'left',
                           transition: 'all 0.2s',
                           background: nidoAlcanceInput === op
                             ? 'rgba(0,229,212,0.12)' : 'rgba(255,255,255,0.04)',
@@ -1105,7 +1105,7 @@ export default function TarjetasRegalo({ profile }) {
                     borderRadius: 12, color: '#facc15',
                     fontSize: 12, fontWeight: 900, letterSpacing: 2,
                     textTransform: 'uppercase', cursor: creandoNido ? 'not-allowed' : 'pointer',
-                    fontFamily: SYNE,
+                    fontFamily: HEADING,
                   }}>
                   {creandoNido ? 'CREANDO...' : 'CREAR NIDO'}
                 </button>
@@ -1135,7 +1135,7 @@ export default function TarjetasRegalo({ profile }) {
                     setActiveNidoAlcance('');
                   }} style={{
                     fontSize: 10, color: 'rgba(255,255,255,0.3)',
-                    background: 'none', border: 'none', cursor: 'pointer', fontFamily: SYNE,
+                    background: 'none', border: 'none', cursor: 'pointer', fontFamily: HEADING,
                   }}>
                     CAMBIAR
                   </button>
@@ -1334,7 +1334,7 @@ export default function TarjetasRegalo({ profile }) {
                             </span>
                           ) : null;
                         })()}
-                        <span style={{ fontSize: 18, fontWeight: 900, color: ts.color, fontFamily: SYNE }}>
+                        <span style={{ fontSize: 18, fontWeight: 900, color: ts.color, fontFamily: HEADING }}>
                           {t.valor_euros != null ? `${t.valor_euros}€` : LABEL_VALOR[t.tipo_tarjeta === '100' ? '100pct' : 'ENVIO_GRATIS']}
                         </span>
                       </div>
@@ -1360,7 +1360,7 @@ export default function TarjetasRegalo({ profile }) {
                       <button onClick={() => handleEditar(t)}
                         style={{
                           padding: '7px 14px', borderRadius: 8, fontSize: 11,
-                          fontWeight: 700, cursor: 'pointer', fontFamily: SYNE,
+                          fontWeight: 700, cursor: 'pointer', fontFamily: HEADING,
                           background: 'rgba(255,255,255,0.06)',
                           border: '1px solid rgba(255,255,255,0.12)',
                           color: 'rgba(255,255,255,0.6)', letterSpacing: 1,
@@ -1370,7 +1370,7 @@ export default function TarjetasRegalo({ profile }) {
                       <button onClick={() => handleToggleActivo(t)}
                         style={{
                           padding: '7px 14px', borderRadius: 8, fontSize: 11,
-                          fontWeight: 700, cursor: 'pointer', fontFamily: SYNE,
+                          fontWeight: 700, cursor: 'pointer', fontFamily: HEADING,
                           background: t.activo ? 'rgba(248,113,113,0.1)' : 'rgba(74,222,128,0.1)',
                           border: `1px solid ${t.activo ? 'rgba(248,113,113,0.3)' : 'rgba(74,222,128,0.3)'}`,
                           color: t.activo ? '#f87171' : '#4ade80', letterSpacing: 1,

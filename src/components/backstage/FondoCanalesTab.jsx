@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { CHANNELS, FASES, TURNOS } from '../../data/citycodes';
 import FondoCanales from './FondoCanales';
@@ -25,7 +25,7 @@ const CANAL_LIST = [...new Set(SLOTS.map(s => s.canal))].sort((a, b) => a - b);
 const slotLabel = (slot) => TURNOS[slot.turno];
 const slotNum   = (slot) => slot.turno;
 
-const SYNE = "'Exo 2', sans-serif";
+const HEADING = "'Noto Sans', sans-serif";
 const NOTO = "'Noto Sans', sans-serif";
 
 const COLOR_DIRECTOR = '#00ff88';
@@ -47,72 +47,50 @@ const ColHeaders = ({ slots, prefix, hexColor }) => (
 );
 
 const MarketplaceTab = ({ session, profile, role: roleProp, onContratar }) => {
-  const [escenarios, setEscenarios] = useState([]);
-  const [butacas,    setButacas]    = useState([]);
-  const [tarifas,    setTarifas]    = useState([]);
   const [miniaturas, setMiniaturas] = useState([]);
   const [loading,    setLoading]    = useState(true);
-  const [error,      setError]      = useState(null);
 
   const role     = roleProp ?? session?.user?.user_metadata?.role
     ?? (profile?.tipo ? 'director' : 'advertiser');
   const rolColor = role === 'director' ? COLOR_DIRECTOR : COLOR_PRODUCTOR;
 
-  const fetchData = useCallback(async () => {
-    setError(null);
-    const [{ data: escs, error: eErr }, { data: buts, error: bErr }, { data: tars, error: tErr }, { data: mins, error: mErr }] =
-      await Promise.all([
-        supabase.from('bs_escenarios').select('id,canal,fase_lunar,funcion,activo').eq('activo', true),
-        supabase.from('bs_butacas').select('canal,fase_lunar,funcion,dispositivo,cobertura,ciudad_codigos,estado'),
-        supabase.from('bs_tarifas').select('cobertura,precio').eq('activo', true),
-        supabase.from('bs_miniaturas').select('canal, fase_lunar, funcion, miniatura_url').eq('activo', true),
-      ]);
-    if (eErr || bErr || tErr || mErr) setError('Error cargando datos del Marketplace.');
-    setEscenarios(escs || []);
-    setButacas(buts   || []);
-    setTarifas(tars   || []);
-    setMiniaturas(mins || []);
-    setLoading(false);
+  useEffect(() => {
+    supabase
+      .from('bs_miniaturas')
+      .select('canal, fase_lunar, funcion, miniatura_url')
+      .eq('activo', true)
+      .then(({ data }) => {
+        setMiniaturas(data || []);
+        setLoading(false);
+      });
   }, []);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
-
-  const totalOcupadas = butacas.filter(b =>
-    ['EN_CASTING', 'EN_RODAJE', 'EN_DEBATE', 'LISTO_PARA_ESTRENO', 'EN_CARTELERA'].includes(b.estado)
-  ).length;
 
   return (
     <div className="relative min-h-full">
 
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&display=swap');`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;900&display=swap');`}</style>
 
       {/* Header sticky */}
       <div className="sticky top-0 z-10 bg-zinc-950/95 backdrop-blur-sm border-b border-white/5 px-6 py-4">
         <div className="flex flex-col items-center gap-3">
           <div className="text-center">
-            <h2 style={{ fontFamily: SYNE }} className="text-3xl font-black tracking-tight text-white">
-              CONTRATACIÓN PARA LA PRÓXIMA FASE LUNAR
+            <h2 style={{ fontFamily: HEADING }} className="text-3xl font-black tracking-tight text-white">
+              MUESTRARIO - CONTRATACIÓN POR FASE LUNAR
             </h2>
-            <p style={{ fontFamily: SYNE, fontWeight: 700, color: '#facc15' }} className="text-2xl mt-2">72 Turnos · 9 canales · 2 dispositivos PC y Móvil</p>
-            <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, color: '#f5e6c8' }} className="text-lg mt-4 w-full max-w-full text-center leading-relaxed px-4">
-              Bro7vision vive sincronizado con el ciclo Lunar. La contratación de los turnos tiene una durabilidad de una Fase Lunar, Luna Nueva-Luna Creciente-Luna Llena-Luna Menguante.
-            </p>
-            <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, color: '#f5e6c8' }} className="text-lg mt-2 w-full max-w-full text-center leading-relaxed px-4">
-              Los Fondos de Canales se renovarán en cada Ciclo Lunar y se publicarán durante la Luna Menguante del ciclo anterior.
-            </p>
-            <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, color: '#a3a3a3' }} className="text-base mt-4 w-full max-w-full text-center leading-relaxed px-4">
-              <span className="text-red-400 font-bold">🔴 Rojo</span> → ocupado Mundial / Nacional &nbsp;·&nbsp;
-              <span className="text-orange-400 font-bold">🟠 Naranja</span> → Comunidades y Ciudades ocupadas &nbsp;·&nbsp;
-              <span className="text-yellow-400 font-bold">🟡 Amarillo</span> → Ciudades ocupadas &nbsp;·&nbsp;
-              <span className="text-green-400 font-bold">🟢 Verde</span> → slot Libre
-            </p>
+            <p style={{ fontFamily: HEADING, fontWeight: 700, color: '#facc15' }} className="text-2xl mt-2">72 Turnos · 9 canales · 2 dispositivos PC y Móvil</p>
+            <div style={{ fontFamily: "'Inter', sans-serif" }} className="text-lg md:text-xl text-gray-300 leading-relaxed text-center font-medium max-w-4xl mx-auto mt-4 px-4">
+              <p className="mb-1">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold" style={{ textShadow: '0 0 20px rgba(0,255,200,0.5), 0 0 60px rgba(168,85,247,0.3)' }}>Bro7vision</span> vive sincronizado con el <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">ciclo Lunar</span>.
+              </p>
+              <p className="mb-1 mt-2">
+                La <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">contratación</span> de los turnos tiene una durabilidad de una <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">Fase Lunar</span>: <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">Luna Nueva</span>, <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">Luna Creciente</span>, <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">Luna Llena</span> o <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">Luna Menguante</span>.
+              </p>
+              <p className="mb-1 mt-2">
+                Los <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">Fondos de Canales</span> se renovarán ocasionalmente, sin interrumpir <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">campañas publicitarias</span>.
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-3">
-            {totalOcupadas > 0 && (
-              <span className="text-[9px] text-amber-400 border border-amber-900/40 px-2.5 py-1 rounded bg-amber-950/20">
-                {totalOcupadas} butacas ocupadas
-              </span>
-            )}
             <span className="text-[9px] text-gray-600 border border-white/5 px-2.5 py-1 rounded">
               FASE 0 · SIMULACIÓN
             </span>
@@ -122,15 +100,8 @@ const MarketplaceTab = ({ session, profile, role: roleProp, onContratar }) => {
 
       {/* Grid o estados */}
       {loading ? (
-        <div className="flex items-center justify-center h-64 text-gray-500 text-sm animate-pulse" style={{ fontFamily: SYNE }}>
+        <div className="flex items-center justify-center h-64 text-gray-500 text-sm animate-pulse" style={{ fontFamily: HEADING }}>
           CARGANDO ESCENARIOS...
-        </div>
-      ) : error ? (
-        <div className="flex flex-col items-center justify-center h-64 text-center px-6">
-          <div className="text-red-400 text-xs mb-3">{error}</div>
-          <button onClick={fetchData} className="text-[10px] border border-white/10 hover:border-white/30 text-gray-400 hover:text-white px-4 py-2 rounded transition-all">
-            REINTENTAR
-          </button>
         </div>
       ) : (
         <div className="p-6">
@@ -144,14 +115,14 @@ const MarketplaceTab = ({ session, profile, role: roleProp, onContratar }) => {
 
                 {/* Título canal */}
                 <div className="flex items-center gap-3 mb-4">
-                  <span style={{ fontFamily: SYNE, color: rolColor, textShadow: `0 0 12px ${rolColor}55` }} className="text-2xl font-black tracking-widest">
+                  <span style={{ fontFamily: HEADING, color: rolColor, textShadow: `0 0 12px ${rolColor}55` }} className="text-2xl font-black tracking-widest">
                     CANAL{canal}
                   </span>
-                  <span style={{ fontFamily: SYNE, color: rolColor }} className="text-xl font-black tracking-wide">
+                  <span style={{ fontFamily: HEADING, color: rolColor }} className="text-xl font-black tracking-wide">
                     {CHANNELS[canal]}
                   </span>
                   {canal === 2 && (
-                    <span style={{ fontFamily: SYNE, color: rolColor, opacity: 0.55 }} className="text-sm font-bold uppercase tracking-widest">
+                    <span style={{ fontFamily: HEADING, color: rolColor, opacity: 0.55 }} className="text-sm font-bold uppercase tracking-widest">
                       {FASES[MOON_FASES_ACTIVAS[0]]}
                     </span>
                   )}
@@ -175,7 +146,7 @@ const MarketplaceTab = ({ session, profile, role: roleProp, onContratar }) => {
                         m.funcion === canalMiniatura * 10 + slot.turno
                       )?.miniatura_url ?? null;
                       return (
-                        <FondoCanales key={i} slot={slot} butacas={butacas} miniaturaUrl={miniatura} onContratar={onContratar} role={role} />
+                        <FondoCanales key={i} slot={slot} miniaturaUrl={miniatura} onContratar={onContratar} />
                       );
                     })}
                   </div>
@@ -198,7 +169,7 @@ const MarketplaceTab = ({ session, profile, role: roleProp, onContratar }) => {
                         m.funcion === canalMiniatura * 10 + slot.turno
                       )?.miniatura_url ?? null;
                       return (
-                        <FondoCanales key={i} slot={slot} butacas={butacas} miniaturaUrl={miniatura} onContratar={onContratar} role={role} />
+                        <FondoCanales key={i} slot={slot} miniaturaUrl={miniatura} onContratar={onContratar} />
                       );
                     })}
                   </div>

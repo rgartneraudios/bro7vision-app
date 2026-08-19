@@ -13,7 +13,7 @@ import DiamantePanelAdmin from './DiamantePanelAdmin';
 import CarritoTab from './CarritoTab';
 import ContratoModal from './ContratoModal';
 
-const SYNE = "'Exo 2', sans-serif";
+const HEADING = "'Noto Sans', sans-serif";
 
 const BackStage = ({ session, onLogout }) => {
   const [profile, setProfile]     = useState(null);
@@ -301,7 +301,7 @@ const BackStage = ({ session, onLogout }) => {
       }}
     >
 
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&display=swap');
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;900&display=swap');
         .backstage-scroll::-webkit-scrollbar { width: 8px; }
         .backstage-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
         .backstage-scroll::-webkit-scrollbar-thumb { background: linear-gradient(#a855f7, #22d3ee); border-radius: 4px; box-shadow: 0 0 10px rgba(168,85,247,0.5); }
@@ -312,7 +312,7 @@ const BackStage = ({ session, onLogout }) => {
       {/* Topbar */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-black/40 shrink-0">
         <div className="flex items-center gap-4">
-          <span style={{ fontFamily: SYNE }} className="text-4xl font-black tracking-tight">
+          <span style={{ fontFamily: HEADING }} className="text-4xl font-black tracking-tight">
             BRO7VISION <span className="text-purple-400">BACKSTAGE</span>
           </span>
           {session?.user?.user_metadata?.role && (
@@ -345,13 +345,13 @@ const BackStage = ({ session, onLogout }) => {
           </button>
         </div>
         <div className="flex items-center gap-5">
-          <span className="hidden sm:block text-2xl text-gray-300 font-semibold truncate max-w-[240px]" style={{ fontFamily: SYNE }}>
+          <span className="hidden sm:block text-2xl text-gray-300 font-semibold truncate max-w-[240px]" style={{ fontFamily: HEADING }}>
             {profile.razon_social || profile.alias || session?.user?.email}
           </span>
           <button
             onClick={onLogout}
             className="text-2xl font-semibold text-gray-400 hover:text-white border border-white/10 hover:border-white/30 px-4 py-2 rounded transition-all uppercase tracking-wider"
-            style={{ fontFamily: SYNE }}
+            style={{ fontFamily: HEADING }}
           >
             Salir
           </button>
@@ -364,7 +364,7 @@ const BackStage = ({ session, onLogout }) => {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            style={{ fontFamily: SYNE }}
+            style={{ fontFamily: HEADING }}
             className={`relative px-4 py-4 text-2xl font-bold uppercase tracking-widest transition-all ${
               activeTab === tab.id
                 ? 'text-white border-b-2 border-purple-500'
@@ -400,7 +400,7 @@ const BackStage = ({ session, onLogout }) => {
         )}
 
         {activeTab === 'slide_rail' && (
-          <SlideRailTab session={session} role={rolUsuario} onContratar={handleContratar} />
+          <SlideRailTab session={session} onContratar={handleContratar} />
         )}
 
         {activeTab === 'shop_amigos' && (

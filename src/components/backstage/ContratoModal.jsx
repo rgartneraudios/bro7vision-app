@@ -2,8 +2,14 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../supabaseClient';
 import { useReservaTemporal } from '../../hooks/useReservaTemporal';
 import { CHANNELS, TURNOS, getMiniCities, getMegaCities, getCodeForCity } from '../../data/citycodes';
+import {
+  getFaseActualNombre,
+  getFaseActualDisplay,
+  getCicloActual,
+  SUFFIX_TO_NOMBRE
+} from '../../utils/moonUtils';
 
-const SYNE  = "'Exo 2', sans-serif";
+const HEADING  = "'Noto Sans', sans-serif";
 const INTER = "'Inter', sans-serif";
 
 const CANAL_STRING = {
@@ -109,7 +115,7 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
     const load = async () => {
       const [{ data: slotFromDB }, { data: fasesData }] = await Promise.all([
         supabase.from('bs_slots_catalogo').select('*').eq('slot_id', slotId).maybeSingle(),
-        supabase.from('fases_lunares').select('id, nombre, activa').order('id'),
+        supabase.from('fases_lunares').select('id, nombre').order('id'),
       ]);
       if (slotFromDB) setSlotData(slotFromDB);
       else if (SLOT_CATALOGO_LOCAL[slotId]) setSlotData(SLOT_CATALOGO_LOCAL[slotId]);
@@ -129,6 +135,16 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
         }
       }
       setFases(fasesData || []);
+
+      const ciclo = getCicloActual();
+      const { data: faseData } = await supabase
+        .from('fases_lunares')
+        .select('id, nombre')
+        .eq('nombre', getFaseActualNombre())
+        .eq('ciclo', ciclo)
+        .maybeSingle();
+      setFaseLunarId(faseData?.id ?? null);
+
       setLoading(false);
     };
     load();
@@ -336,19 +352,16 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
   const CICLO = ['LUNA_NUEVA', 'LUNA_CRECIENTE', 'LUNA_LLENA', 'LUNA_MENGUANTE'];
 
   const renderCapa1 = () => {
-    const faseActiva = fases.find(f => f.activa === true);
-    const idxActual = CICLO.indexOf(faseActiva?.nombre);
+    const idxActual = CICLO.indexOf(getFaseActualNombre());
     const ordenado = idxActual >= 0
       ? [...CICLO.slice(idxActual), ...CICLO.slice(0, idxActual)]
       : CICLO;
 
     return (
       <div>
-        {faseActiva && (
-          <p style={{ fontFamily: INTER, fontSize: '2rem', fontWeight: 600, marginBottom: '32px' }} className="text-white">
-            Estamos en: {faseActiva.nombre}
-          </p>
-        )}
+        <p style={{ fontFamily: INTER, fontSize: '2rem', fontWeight: 600, marginBottom: '32px' }} className="text-white">
+          Estamos en: {getFaseActualDisplay()}
+        </p>
         <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'nowrap', gap: '24px', width: '100%' }}>
           {ordenado.map(nombre => {
             const fase = fases.find(f => f.nombre === nombre);
@@ -357,7 +370,7 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
                 key={nombre}
                 onClick={() => fase && handleElegirFase(fase)}
                 disabled={!fase}
-                style={{ fontFamily: SYNE, fontSize: '2rem', padding: '28px 60px', borderRadius: '16px', flex: 1, textAlign: 'center', fontWeight: 700, letterSpacing: '0.05em' }}
+                style={{ fontFamily: HEADING, fontSize: '2rem', padding: '28px 60px', borderRadius: '16px', flex: 1, textAlign: 'center', fontWeight: 700, letterSpacing: '0.05em' }}
                 className={`${btnBig} ${!fase ? 'opacity-30 cursor-not-allowed' : ''}`}
               >
                 {nombre}
@@ -379,7 +392,7 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
           <button
             key={c.id}
             onClick={() => { setCobertura(c.id); setCiudadCodigos([]); }}
-            style={{ fontFamily: SYNE, fontSize: '2rem', padding: '28px 60px', borderRadius: '16px', minWidth: '320px', margin: '16px', fontWeight: 700, letterSpacing: '0.05em' }}
+            style={{ fontFamily: HEADING, fontSize: '2rem', padding: '28px 60px', borderRadius: '16px', minWidth: '320px', margin: '16px', fontWeight: 700, letterSpacing: '0.05em' }}
             className={`${btnBig} ${cobertura === c.id ? btnActive : btnInactive}`}
           >
             <span>{c.label}</span>
@@ -405,7 +418,7 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
                       onClick={() => !bloq && toggleCiudad(c.key)}
                       disabled={bloq}
                       style={{
-                        fontFamily: SYNE,
+                        fontFamily: HEADING,
                         fontSize: '1.2rem',
                         padding: '14px 28px',
                         borderRadius: '10px',
@@ -445,7 +458,7 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
         <button
           onClick={handleConfirmarCobertura}
           disabled={!cobertura}
-          style={{ fontFamily: SYNE, fontSize: '2rem', padding: '28px 60px', borderRadius: '16px', fontWeight: 700, letterSpacing: '0.05em' }}
+          style={{ fontFamily: HEADING, fontSize: '2rem', padding: '28px 60px', borderRadius: '16px', fontWeight: 700, letterSpacing: '0.05em' }}
           className="bg-purple-600 hover:bg-purple-500 text-white uppercase tracking-widest transition-all disabled:opacity-50 shadow-[0_0_32px_rgba(168,85,247,0.3)]"
         >
           CONFIRMAR COBERTURA
@@ -473,7 +486,7 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
           </div>
 
           <div className="border-t border-white/10 pt-6">
-            <p style={{ fontFamily: SYNE, fontSize: '1.8rem', fontWeight: 700 }} className="text-cyan-400 uppercase tracking-widest mb-6">📡 PromoTrivia</p>
+            <p style={{ fontFamily: HEADING, fontSize: '1.8rem', fontWeight: 700 }} className="text-cyan-400 uppercase tracking-widest mb-6">📡 PromoTrivia</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               <input type="text" value={promoPregunta} onChange={e => setPromoPregunta(e.target.value)}
                 maxLength={120} placeholder="Pregunta..."
@@ -525,12 +538,12 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
             <label style={{ fontFamily: INTER, fontSize: '1.6rem', fontWeight: 600 }} className="block text-gray-400 uppercase tracking-widest mb-3">Respuesta correcta</label>
             <div style={{ display: 'flex', gap: '16px' }}>
               <button type="button" onClick={() => setPromoVf(true)}
-                style={{ fontFamily: SYNE, fontSize: '1.6rem', padding: '20px 48px', borderRadius: '12px', fontWeight: 700, letterSpacing: '0.05em' }}
+                style={{ fontFamily: HEADING, fontSize: '1.6rem', padding: '20px 48px', borderRadius: '12px', fontWeight: 700, letterSpacing: '0.05em' }}
                 className={`uppercase tracking-widest transition-all border ${
                   promoVf === true ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-400' : 'bg-zinc-900 border-white/10 text-gray-500 hover:border-white/25'
                 }`}>VERDADERO</button>
               <button type="button" onClick={() => setPromoVf(false)}
-                style={{ fontFamily: SYNE, fontSize: '1.6rem', padding: '20px 48px', borderRadius: '12px', fontWeight: 700, letterSpacing: '0.05em' }}
+                style={{ fontFamily: HEADING, fontSize: '1.6rem', padding: '20px 48px', borderRadius: '12px', fontWeight: 700, letterSpacing: '0.05em' }}
                 className={`uppercase tracking-widest transition-all border ${
                   promoVf === false ? 'bg-rose-950/40 border-rose-500/50 text-rose-400' : 'bg-zinc-900 border-white/10 text-gray-500 hover:border-white/25'
                 }`}>FALSO</button>
@@ -556,7 +569,7 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
       {isGames && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
           <div className="border-t border-white/10 pt-6">
-            <p style={{ fontFamily: SYNE, fontSize: '1.8rem', fontWeight: 700 }} className="text-violet-400 uppercase tracking-widest mb-6">
+            <p style={{ fontFamily: HEADING, fontSize: '1.8rem', fontWeight: 700 }} className="text-violet-400 uppercase tracking-widest mb-6">
               {isSevenGates ? '🚪 PREGUNTA DE ENTRADA' : '🎯 PREGUNTA'}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -582,7 +595,7 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
 
           {isSevenGates && (
             <div className="border-t border-white/10 pt-6">
-              <p style={{ fontFamily: SYNE, fontSize: '1.8rem', fontWeight: 700 }} className="text-emerald-400 uppercase tracking-widest mb-6">🏆 PREGUNTA DE SALIDA</p>
+              <p style={{ fontFamily: HEADING, fontSize: '1.8rem', fontWeight: 700 }} className="text-emerald-400 uppercase tracking-widest mb-6">🏆 PREGUNTA DE SALIDA</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <input type="text" value={gamesPreguntaOut} onChange={e => setGamesPreguntaOut(e.target.value)}
                   placeholder="Pregunta de salida..." style={{ fontFamily: INTER, fontSize: '1.6rem', padding: '18px 28px' }}
@@ -615,7 +628,7 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
         <button
           onClick={handleConfirmarCreativo}
           disabled={loading}
-          style={{ fontFamily: SYNE, fontSize: '2rem', padding: '28px 60px', borderRadius: '16px', fontWeight: 700, letterSpacing: '0.05em' }}
+          style={{ fontFamily: HEADING, fontSize: '2rem', padding: '28px 60px', borderRadius: '16px', fontWeight: 700, letterSpacing: '0.05em' }}
           className="bg-purple-600 hover:bg-purple-500 active:bg-purple-700 text-white uppercase tracking-widest transition-all disabled:opacity-50 shadow-[0_0_32px_rgba(168,85,247,0.3)]"
         >
           {loading ? 'PROCESANDO...' : 'CONFIRMAR Y CONTRATAR'}
@@ -627,7 +640,7 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
   const renderFinal = () => (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '48px', paddingTop: '48px' }}>
       <div style={{ fontSize: '6rem' }}>🎬</div>
-      <p style={{ fontFamily: SYNE, fontSize: '3rem', fontWeight: 800 }} className="text-white uppercase tracking-widest">
+      <p style={{ fontFamily: HEADING, fontSize: '3rem', fontWeight: 800 }} className="text-white uppercase tracking-widest">
         Solicitud enviada
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', minWidth: '400px' }}>
@@ -643,7 +656,7 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
       </p>
       <button
         onClick={handleVolver}
-        style={{ fontFamily: SYNE, fontSize: '2rem', padding: '28px 60px', borderRadius: '16px', fontWeight: 700, letterSpacing: '0.05em' }}
+        style={{ fontFamily: HEADING, fontSize: '2rem', padding: '28px 60px', borderRadius: '16px', fontWeight: 700, letterSpacing: '0.05em' }}
         className="bg-purple-600 hover:bg-purple-500 text-white uppercase tracking-widest transition-all shadow-[0_0_32px_rgba(168,85,247,0.3)]"
       >
         IR AL CARRITO
@@ -660,7 +673,7 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
       fontFamily: 'monospace', color: 'white', overflowY: 'auto', overflowX: 'hidden',
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;900&family=Inter:wght@400;500;600;700&display=swap');
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
         ::-webkit-scrollbar-thumb {
@@ -674,7 +687,7 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexShrink: 0 }}>
         <div>
-          <p style={{ fontFamily: SYNE, fontSize: '3.5rem', fontWeight: 800, letterSpacing: '0.2em' }} className="text-white">
+          <p style={{ fontFamily: HEADING, fontSize: '3.5rem', fontWeight: 800, letterSpacing: '0.2em' }} className="text-white">
             BRO7VISION · CONTRATO
           </p>
           <p style={{ fontFamily: INTER, fontSize: '2.8rem', fontWeight: 700 }} className="text-gray-300 mt-2">
@@ -682,7 +695,7 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-          <span style={{ fontFamily: SYNE, fontSize: '4rem', fontWeight: 900 }}
+          <span style={{ fontFamily: HEADING, fontSize: '4rem', fontWeight: 900 }}
             className={`tabular-nums ${segundosRestantes <= 60 ? 'text-red-400' : 'text-amber-400'}`}>
             ⏱ {countdown}
           </span>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 
-const SYNE = "'Exo 2', sans-serif";
+const HEADING = "'Noto Sans', sans-serif";
 
 export default function CarritoTab({ session, profile }) {
   const [nido,    setNido]    = useState([]);
@@ -74,7 +74,7 @@ export default function CarritoTab({ session, profile }) {
   };
 
   return (
-    <div style={{ padding: '32px 40px', maxWidth: 900, margin: '0 auto', fontFamily: SYNE }}>
+    <div style={{ padding: '32px 40px', maxWidth: 900, margin: '0 auto', fontFamily: HEADING }}>
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 32 }}>
@@ -232,7 +232,7 @@ export default function CarritoTab({ session, profile }) {
               letterSpacing: 3, textTransform: 'uppercase',
               cursor: (saving || !nidoSeleccionado || !nidoCubre) ? 'not-allowed' : 'pointer',
               opacity: (saving || !nidoSeleccionado || !nidoCubre) ? 0.6 : 1,
-              fontFamily: SYNE,
+              fontFamily: HEADING,
               boxShadow: '0 0 30px rgba(124,58,237,0.3)',
             }}>
             {saving ? 'ACTIVANDO...' : `✅ CONFIRMAR — ${nidoSeleccionado || 'SELECCIONA UN NIDO'}`}

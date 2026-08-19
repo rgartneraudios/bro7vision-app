@@ -1,8 +1,8 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../supabaseClient';
 import { getMiniCities, getMegaCities, getCodeForCity } from '../../data/citycodes';
 
-const SYNE = "'Exo 2', sans-serif";
+const HEADING = "'Noto Sans', sans-serif";
 const INTER = "'Inter', sans-serif";
 
 const COBERTURAS = [
@@ -32,8 +32,6 @@ const ReservaPanelRail = ({ slot, session, onClose, onReserved }) => {
   const [descuento,       setDescuento]       = useState(0);
   const [faseLunarId,     setFaseLunarId]     = useState(null);
   const [faseLunarNombre, setFaseLunarNombre] = useState('LUNA_NUEVA');
-  const [ocupados,      setOcupados]      = useState([]);
-  const [slotBloqueado, setSlotBloqueado]  = useState(false);
 
   useEffect(() => {
     const fetchDescuento = async () => {
@@ -57,21 +55,6 @@ const ReservaPanelRail = ({ slot, session, onClose, onReserved }) => {
         if (data) {
           setFaseLunarId(data.id);
           setFaseLunarNombre(data.nombre);
-          supabase
-            .from('trivia_rail')
-            .select('cobertura, ciudad_codigos')
-            .eq('sector',            slot.sector)
-            .eq('slot_numero',       slot.slot_numero)
-            .eq('fase_lunar_activa', data.nombre)
-            .eq('activo',            true)
-            .then(({ data: ocupData }) => {
-              if (ocupData) {
-                setOcupados(ocupData);
-                setSlotBloqueado(ocupData.some(r =>
-                  r.cobertura === 'GIRA_MUNDIAL' || r.cobertura === 'GIRA_NACIONAL'
-                ));
-              }
-            });
         }
       });
   }, []);
@@ -82,10 +65,6 @@ const ReservaPanelRail = ({ slot, session, onClose, onReserved }) => {
       : precio;
 
   const needsCiudad = CIUDAD_COBERTURAS.includes(cobertura);
-
-  const codigosOcupados = useMemo(() =>
-    ocupados.flatMap(r => r.ciudad_codigos ?? []),
-  [ocupados]);
 
   const toggleCiudad = (key) => {
     setCiudades(prev => {
@@ -103,21 +82,8 @@ const ReservaPanelRail = ({ slot, session, onClose, onReserved }) => {
   const sectorLabel = slot.sector === 'CANJES' ? 'CANJES DE LUNAS' : 'SHOP AMIGOS';
 
 const handleReservar = async () => {
-    if (slotBloqueado) {
-      setError('Este slot ya tiene cobertura Nacional o Mundial contratada.');
-      return;
-    }
     if (needsCiudad && ciudades.length === 0) { setError('Selecciona al menos una ciudad para esta cobertura.'); return; }
     if (!pregunta.trim())       { setError('La pregunta PromoTrivia es obligatoria.'); return; }
-
-    if (ciudades.length > 0) {
-      const selectedCodes = ciudades.map(k => getCodeForCity(k)).filter(Boolean);
-      const hayConflicto  = selectedCodes.some(c => codigosOcupados.includes(c));
-      if (hayConflicto) {
-        setError('Una o más ciudades seleccionadas ya están contratadas en este slot.');
-        return;
-      }
-    }
 
     setLoading(true);
     setError(null);
@@ -157,12 +123,12 @@ fase_lunar_activa:  faseLunarNombre,
       <div className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" onClick={onClose} />
       <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-[420px] bg-zinc-950 border-l border-white/10 flex flex-col shadow-2xl font-mono">
 
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');`}</style>
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;900&family=Inter:wght@400;500;600;700&display=swap');`}</style>
 
         {/* Header */}
         <div className="flex items-start justify-between px-6 py-4 border-b border-white/5 bg-black/30 shrink-0">
           <div>
-            <h3 style={{ fontFamily: SYNE, fontWeight: 800 }} className="text-base font-black text-white tracking-tight">RESERVAR SLOT RAIL</h3>
+            <h3 style={{ fontFamily: HEADING, fontWeight: 800 }} className="text-base font-black text-white tracking-tight">RESERVAR SLOT RAIL</h3>
             <p style={{ fontFamily: INTER }} className="text-sm text-gray-400 mt-1">Slot #{slot.slot_numero} · {sectorLabel}</p>
           </div>
           <button onClick={onClose} className="text-gray-500 hover:text-white text-xl leading-none mt-0.5 transition-colors">✕</button>
@@ -238,9 +204,8 @@ fase_lunar_activa:  faseLunarNombre,
               <div className="max-h-48 overflow-y-auto space-y-1 pr-1">
                 {(cobertura === 'SALA_GRAN_CIUDAD' ? getMegaCities() : getMiniCities()).map(c => {
                   const sel      = ciudades.includes(c.key);
-                  const ocupadaDB = codigosOcupados.includes(c.code);
                   const lleno    = ciudades.length >= (LIMITE_CIUDADES[cobertura] ?? 1);
-                  const bloq     = !sel && (lleno || ocupadaDB);
+                  const bloq     = !sel && lleno;
                   return (
                     <label
                       key={c.key}
@@ -260,9 +225,6 @@ fase_lunar_activa:  faseLunarNombre,
                         className="accent-purple-500"
                       />
                       <span className="text-sm">{c.label}</span>
-                      {ocupadaDB && (
-                        <span className="ml-auto text-[9px] text-red-500 uppercase tracking-widest">ocupada</span>
-                      )}
                     </label>
                   );
                 })}
@@ -337,7 +299,7 @@ fase_lunar_activa:  faseLunarNombre,
           <div className="flex items-center gap-3 bg-zinc-900/50 border border-amber-500/20 rounded px-4 py-3">
             <span className="text-lg">🌙</span>
             <div>
-              <p style={{ fontFamily: SYNE, fontWeight: 700 }} className="text-sm text-amber-400 uppercase tracking-widest">+20 Lunas</p>
+              <p style={{ fontFamily: HEADING, fontWeight: 700 }} className="text-sm text-amber-400 uppercase tracking-widest">+20 Lunas</p>
               <p style={{ fontFamily: INTER }} className="text-xs text-gray-600 mt-0.5">
                 Bonus por respuesta correcta en PromoTrivia
               </p>
@@ -370,7 +332,7 @@ fase_lunar_activa:  faseLunarNombre,
                 <span className="text-gray-500">Precio base</span>
                 <span className="text-gray-500 line-through">{precio}€</span>
               </div>
-              <div style={{ fontFamily: SYNE, fontWeight: 700 }}
+              <div style={{ fontFamily: HEADING, fontWeight: 700 }}
                    className="flex items-center justify-between text-xs mb-3 px-1">
                 <span className="text-emerald-400 uppercase tracking-widest">
                   ✦ Descuento activo · -{descuento}%
@@ -381,8 +343,8 @@ fase_lunar_activa:  faseLunarNombre,
           )}
           <button
             onClick={handleReservar}
-            disabled={loading || success || slotBloqueado}
-            style={{ fontFamily: SYNE, fontWeight: 700 }}
+            disabled={loading || success}
+            style={{ fontFamily: HEADING, fontWeight: 700 }}
             className="w-full py-3.5 bg-purple-600 hover:bg-purple-500 active:bg-purple-700 text-white text-sm font-bold uppercase tracking-widest rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_24px_rgba(168,85,247,0.25)]"
           >
             {loading ? 'PROCESANDO...' : success ? 'RESERVADO ✓' : 'RESERVAR SLOT'}

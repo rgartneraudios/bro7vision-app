@@ -4,7 +4,7 @@ import { PROMPT_GENERAL } from '../../data/prompts/backstagePrompts.js';
 const DemoViewer = ({ titulo, subtitulo, videoUrl, vertical = false }) => (
   <div className="flex flex-col gap-2 items-center text-center">
     <div className="text-2xl text-gray-400 uppercase tracking-widest font-bold"
-      style={{ fontFamily: "'Exo 2', sans-serif" }}>
+      style={{ fontFamily: HEADING }}>
       {titulo}
     </div>
     <p style={{ fontFamily: "'Inter', sans-serif" }}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../supabaseClient';
 
-const SYNE  = "'Exo 2', sans-serif";
+const HEADING  = "'Noto Sans', sans-serif";
 const INTER = "'Inter', sans-serif";
 
 const TIER_COLOR = {
@@ -93,7 +93,7 @@ const DiamantePanelAdmin = ({ session }) => {
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p style={{ fontFamily: SYNE, fontWeight: 800 }}
+            <p style={{ fontFamily: HEADING, fontWeight: 800 }}
                className={`text-sm uppercase tracking-wider ${tc.text}`}>
               💎 Diamante {item.tier} · {item.descuento_pct}%
             </p>
@@ -107,7 +107,7 @@ const DiamantePanelAdmin = ({ session }) => {
             </p>
           </div>
           <div className="text-right shrink-0">
-            <p style={{ fontFamily: SYNE, fontWeight: 700 }}
+            <p style={{ fontFamily: HEADING, fontWeight: 700 }}
                className="text-white text-lg">
               {item.valor_pvp}€ PVP
             </p>
@@ -141,7 +141,7 @@ const DiamantePanelAdmin = ({ session }) => {
               <button
                 onClick={() => aprobar(item)}
                 disabled={enProceso}
-                style={{ fontFamily: SYNE, fontWeight: 700 }}
+                style={{ fontFamily: HEADING, fontWeight: 700 }}
                 className="flex-1 py-2 rounded bg-emerald-700 hover:bg-emerald-600 text-white text-xs uppercase tracking-widest transition-all disabled:opacity-40"
               >
                 {enProceso ? '...' : 'APROBAR'}
@@ -149,7 +149,7 @@ const DiamantePanelAdmin = ({ session }) => {
               <button
                 onClick={() => rechazar(item)}
                 disabled={enProceso}
-                style={{ fontFamily: SYNE, fontWeight: 700 }}
+                style={{ fontFamily: HEADING, fontWeight: 700 }}
                 className="flex-1 py-2 rounded bg-zinc-800 hover:bg-red-950 border border-white/10 hover:border-red-500/40 text-gray-400 hover:text-red-400 text-xs uppercase tracking-widest transition-all disabled:opacity-40"
               >
                 RECHAZAR
@@ -160,7 +160,7 @@ const DiamantePanelAdmin = ({ session }) => {
             <button
               onClick={() => desactivar(item)}
               disabled={enProceso}
-              style={{ fontFamily: SYNE, fontWeight: 700 }}
+              style={{ fontFamily: HEADING, fontWeight: 700 }}
               className="w-full py-2 rounded bg-zinc-800 hover:bg-red-950 border border-white/10 hover:border-red-500/40 text-gray-400 hover:text-red-400 text-xs uppercase tracking-widest transition-all disabled:opacity-40"
             >
               {enProceso ? '...' : 'DESACTIVAR'}
@@ -174,7 +174,7 @@ const DiamantePanelAdmin = ({ session }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <span style={{ fontFamily: SYNE }} className="text-gray-600 text-sm uppercase tracking-widest animate-pulse">
+        <span style={{ fontFamily: HEADING }} className="text-gray-600 text-sm uppercase tracking-widest animate-pulse">
           CARGANDO CATÁLOGO...
         </span>
       </div>
@@ -183,10 +183,10 @@ const DiamantePanelAdmin = ({ session }) => {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;900&family=Inter:wght@400;500;600;700&display=swap');`}</style>
 
       <div className="mb-8">
-        <h2 style={{ fontFamily: SYNE, fontWeight: 800 }}
+        <h2 style={{ fontFamily: HEADING, fontWeight: 800 }}
             className="text-2xl text-white tracking-tight">
           💎 BÓVEDA DIAMANTE — PANEL ADMIN
         </h2>
@@ -197,7 +197,7 @@ const DiamantePanelAdmin = ({ session }) => {
       </div>
 
       <section className="mb-10">
-        <h3 style={{ fontFamily: SYNE, fontWeight: 700 }}
+        <h3 style={{ fontFamily: HEADING, fontWeight: 700 }}
             className="text-sm text-amber-400 uppercase tracking-widest mb-4">
           ⏳ PENDIENTES DE REVISIÓN ({pendientes.length})
         </h3>
@@ -214,7 +214,7 @@ const DiamantePanelAdmin = ({ session }) => {
       </section>
 
       <section>
-        <h3 style={{ fontFamily: SYNE, fontWeight: 700 }}
+        <h3 style={{ fontFamily: HEADING, fontWeight: 700 }}
             className="text-sm text-emerald-400 uppercase tracking-widest mb-4">
           ✅ ACTIVOS EN CATÁLOGO ({activos.length})
         </h3>

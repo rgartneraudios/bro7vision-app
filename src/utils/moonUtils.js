@@ -12,4 +12,28 @@ export const getMoonSuffix = () => {
   return '4';
 };
 
+export const SUFFIX_TO_NOMBRE = {
+  '1': 'LUNA_NUEVA',
+  '2': 'LUNA_CRECIENTE',
+  '3': 'LUNA_LLENA',
+  '4': 'LUNA_MENGUANTE'
+};
+
+export const SUFFIX_TO_DISPLAY = {
+  '1': 'Luna Nueva',
+  '2': 'Luna Creciente',
+  '3': 'Luna Llena',
+  '4': 'Luna Menguante'
+};
+
+export const getFaseActualNombre  = () => SUFFIX_TO_NOMBRE[getMoonSuffix()];
+export const getFaseActualDisplay = () => SUFFIX_TO_DISPLAY[getMoonSuffix()];
+
+export const getCicloActual = () => {
+  const ref      = new Date('2024-05-08T15:22:00Z');
+  const lunation = 2551442.8;
+  const s        = (Date.now() - ref.getTime()) / 1000;
+  return Math.floor(s / lunation) + 1;
+};
+
 

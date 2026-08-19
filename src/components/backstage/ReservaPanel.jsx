@@ -1,9 +1,12 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../supabaseClient';
 import {
   CHANNELS, FASES, TURNOS,
   getMiniCities, getMegaCities, getCodeForCity, COBERTURAS as COB_DATA,
 } from '../../data/citycodes';
+
+const HEADING = "'Noto Sans', sans-serif";
+const INTER = "'Inter', sans-serif";
 
 const COBERTURAS = [
   { id: 'SALA_CIUDAD',        label: 'Sala Ciudad',        precio: 20  },
@@ -50,8 +53,6 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState(null);
   const [success, setSuccess]       = useState(false);
-  const [ocupados,      setOcupados]      = useState([]);
-  const [slotBloqueado, setSlotBloqueado]  = useState(false);
 
   useEffect(() => {
     supabase
@@ -63,35 +64,12 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
         if (data) {
           setFaseLunarId(data.id);
           setFaseLunarNombre(data.nombre);
-          const formato = slot.dispositivo === 0 ? 'REALITY_PC' : 'REALITY_MOVIL';
-          const funcion = slot.canal === 2 ? moonTurno : slot.turno;
-          supabase
-            .from('bs_butacas')
-            .select('cobertura, ciudad_codigos')
-            .eq('canal',         slot.canal)
-            .eq('funcion',       funcion)
-            .eq('formato',       formato)
-            .eq('fase_lunar_id', data.id)
-            .neq('estado',       'CANCELADO')
-            .then(({ data: ocupData }) => {
-              if (ocupData) {
-                setOcupados(ocupData);
-                const bloqueado = ocupData.some(r =>
-                  r.cobertura === 'GIRA_MUNDIAL' || r.cobertura === 'GIRA_NACIONAL'
-                );
-                setSlotBloqueado(bloqueado);
-              }
-            });
         }
       });
   }, []);
 
   const isMoon      = slot.canal === 2;
   const needsCiudad = CIUDAD_COBERTURAS.includes(cobertura);
-
-  const codigosOcupados = useMemo(() =>
-    ocupados.flatMap(r => r.ciudad_codigos ?? []),
-  [ocupados]);
 
   const toggleCiudad = (key) => {
     setCiudades(prev => {
@@ -216,12 +194,12 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
       {/* Panel */}
       <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-[420px] bg-zinc-950 border-l border-white/10 flex flex-col shadow-2xl font-mono">
 
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');`}</style>
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;900&family=Inter:wght@400;500;600;700&display=swap');`}</style>
 
         {/* Header */}
         <div className="flex items-start justify-between px-6 py-4 border-b border-white/5 bg-black/30 shrink-0">
           <div>
-            <h3 style={{ fontFamily: "'Exo 2', sans-serif", fontWeight: 800 }} className="text-base font-black text-white tracking-tight">RESERVAR BUTACA</h3>
+            <h3 style={{ fontFamily: HEADING, fontWeight: 800 }} className="text-base font-black text-white tracking-tight">RESERVAR BUTACA</h3>
             <p style={{ fontFamily: "'Inter', sans-serif" }} className="text-sm text-gray-400 mt-1">{slotLabel}</p>
             <p style={{ fontFamily: "'Inter', sans-serif" }} className="text-xs text-gray-600">
               {slot.dispositivo === 0 ? 'PC' : 'Móvil'} · Escenario #{slot.canal}
@@ -242,13 +220,6 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
               {profile?.razon_social || session.user.email}
             </div>
           </div>
-
-          {slotBloqueado && (
-            <div style={{ fontFamily: "'Inter', sans-serif" }}
-              className="text-sm text-red-400 bg-red-950/30 border border-red-900/40 rounded px-3 py-2 text-center">
-              ⚠️ Este turno ya tiene cobertura Nacional o Mundial contratada.
-            </div>
-          )}
 
           {/* Moon Turno — solo canal 2 */}
           {isMoon && (
@@ -328,9 +299,8 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
               <div className="max-h-48 overflow-y-auto space-y-1 pr-1">
                 {(cobertura === 'SALA_GRAN_CIUDAD' ? getMegaCities() : getMiniCities()).map(c => {
                   const seleccionada = ciudades.includes(c.key);
-                  const ocupadaDB = codigosOcupados.includes(c.code);
                   const lleno = ciudades.length >= (LIMITE_CIUDADES[cobertura] ?? 1);
-                  const bloqueada = !seleccionada && (lleno || ocupadaDB);
+                  const bloqueada = !seleccionada && lleno;
                   return (
                     <label
                       key={c.key}
@@ -350,9 +320,6 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
                         className="accent-purple-500"
                       />
                       <span className="text-sm">{c.label}</span>
-                      {ocupadaDB && (
-                        <span className="ml-auto text-[9px] text-red-500 uppercase tracking-widest">ocupada</span>
-                      )}
                     </label>
                   );
                 })}
@@ -382,7 +349,7 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
           {/* Separador PromoECO */}
           <div className="border-t border-white/5 pt-4">
             <div className="flex items-center gap-2 mb-3">
-              <span style={{ fontFamily: "'Exo 2', sans-serif", fontWeight: 700 }} className="text-xs text-cyan-400 uppercase tracking-widest">📡 PromoTrivia</span>
+              <span style={{ fontFamily: HEADING, fontWeight: 700 }} className="text-xs text-cyan-400 uppercase tracking-widest">📡 PromoTrivia</span>
               <span style={{ fontFamily: "'Inter', sans-serif" }} className="text-[10px] text-gray-600">· incluida en el pack · marcada como PUBLICIDAD</span>
             </div>
 
@@ -455,8 +422,8 @@ const ReservaPanel = ({ slot, coberturaInicial, escenarioId, tarifas, session, p
           </div>
           <button
             onClick={handleReservar}
-            disabled={loading || success || slotBloqueado}
-            style={{ fontFamily: "'Exo 2', sans-serif", fontWeight: 700 }}
+            disabled={loading || success}
+            style={{ fontFamily: HEADING, fontWeight: 700 }}
             className="w-full py-3.5 bg-purple-600 hover:bg-purple-500 active:bg-purple-700 text-white text-sm font-bold uppercase tracking-widest rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_24px_rgba(168,85,247,0.25)]"
           >
             {loading ? 'PROCESANDO...' : success ? 'RESERVADO ✓' : 'RESERVAR BUTACA'}
