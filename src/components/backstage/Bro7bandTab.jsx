@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../supabaseClient';
-import Bro7bandModal from './Bro7bandModal';
 import { getMiniCities, getMegaCities, getCodeForCity } from '../../data/citycodes';
 
 const SYNE  = "'Exo 2', sans-serif";
@@ -42,10 +41,8 @@ const LIMITE_CIUDADES = {
   SALA_CIUDAD: 1, SALA_GRAN_CIUDAD: 1, GIRA_REGIONAL: 3, GIRA_GRAN_REGIONAL: 7,
 };
 
-const MencionesTab = ({ session }) => {
-  const [carrito, setCarrito]     = useState([]);
+const MencionesTab = ({ session, onContratar }) => {
   const [ocupados, setOcupados]   = useState([]);
-  const [showModal, setShowModal] = useState(false);
   const [tiposBro7Band, setTiposBro7Band] = useState('capitulo_saga');
   const [idiomas, setIdiomas]     = useState(() =>
     Object.fromEntries(GRUPOS.map(g => [g.grupo_id, 'ES']))
@@ -92,27 +89,6 @@ const MencionesTab = ({ session }) => {
     });
   };
 
-  const carritoKeySet = useMemo(() => new Set(carrito.map(c => c.grupo_id)), [carrito]);
-  const isEnCarrito   = (grupoId) => carritoKeySet.has(grupoId);
-
-  const handleAdd = (grupoId) => {
-    if (isOcupado(grupoId) || isEnCarrito(grupoId)) return;
-    const grupo        = GRUPOS.find(g => g.grupo_id === grupoId);
-    const tipo_contenido = grupoId === 'bro7band' ? tiposBro7Band : null;
-    const idiomaFinal  = cobertura === 'GIRA_MUNDIAL' ? (idiomas[grupoId] || 'ES') : 'ES';
-    const ciudadCodigos = CIUDAD_COBERTURAS.includes(cobertura)
-      ? ciudades.map(k => getCodeForCity(k)).filter(Boolean)
-      : cobertura === 'GIRA_MUNDIAL' ? ['WW'] : ['ES'];
-
-    setCarrito(prev => [...prev, {
-      ...grupo,
-      idioma:         idiomaFinal,
-      tipo_contenido,
-      cobertura,
-      ciudad_codigos: ciudadCodigos,
-    }]);
-  };
-
   const toggleCiudad = (key) => {
     setCiudades(prev => {
       if (prev.includes(key)) return prev.filter(c => c !== key);
@@ -121,8 +97,6 @@ const MencionesTab = ({ session }) => {
       return [...prev, key];
     });
   };
-
-  const total = carrito.reduce((sum, item) => sum + (item.precio ?? 20), 0);
 
   return (
     <div className="p-6 flex flex-col items-center">
@@ -206,17 +180,14 @@ const MencionesTab = ({ session }) => {
       <div className="grid grid-cols-3 gap-6 w-full max-w-5xl mb-24">
         {GRUPOS.map(grupo => {
           const ocupado   = isOcupado(grupo.grupo_id);
-          const enCarrito = isEnCarrito(grupo.grupo_id);
 
           return (
             <div
               key={grupo.grupo_id}
               className={`flex flex-col items-center gap-3 p-5 rounded-xl border transition-all ${
-                enCarrito
-                  ? 'bg-zinc-900/60 border-cyan-500/50'
-                  : ocupado
-                    ? 'bg-zinc-900/20 border-white/5 opacity-50'
-                    : 'bg-zinc-900/40 border-white/5 hover:border-fuchsia-500/20'
+                ocupado
+                  ? 'bg-zinc-900/20 border-white/5 opacity-50'
+                  : 'bg-zinc-900/40 border-white/5 hover:border-fuchsia-500/20'
               }`}
             >
               <img
@@ -263,11 +234,9 @@ const MencionesTab = ({ session }) => {
                       style={{ fontFamily: INTER, fontWeight: 600 }}
                       className={`text-[10px] px-2 py-1 rounded border transition-all uppercase tracking-wider ${
                         idiomas[grupo.grupo_id] === idi
-                          ? enCarrito
-                            ? 'border-cyan-500/60 bg-cyan-950/30 text-cyan-300'
-                            : ocupado
-                              ? 'border-red-900/40 bg-red-950/20 text-red-400'
-                              : 'border-fuchsia-500/40 bg-fuchsia-950/30 text-fuchsia-300'
+                          ? ocupado
+                            ? 'border-red-900/40 bg-red-950/20 text-red-400'
+                            : 'border-fuchsia-500/40 bg-fuchsia-950/30 text-fuchsia-300'
                           : 'border-white/10 text-gray-500 hover:border-white/25 hover:text-gray-300'
                       }`}
                     >
@@ -282,17 +251,13 @@ const MencionesTab = ({ session }) => {
                   <span style={{ fontFamily: INTER }} className="block text-center text-[10px] text-red-400 uppercase tracking-widest">
                     OCUPADO · {faseLunarNombre || '—'}
                   </span>
-                ) : enCarrito ? (
-                  <span style={{ fontFamily: INTER, fontWeight: 600 }} className="block text-center text-[10px] text-cyan-400 uppercase tracking-widest">
-                    EN CARRITO
-                  </span>
                 ) : (
                   <button
-                    onClick={() => handleAdd(grupo.grupo_id)}
+                    onClick={() => onContratar(`band_${grupo.grupo_id}`)}
                     style={{ fontFamily: SYNE, fontWeight: 700 }}
                     className="w-full text-[11px] bg-fuchsia-600 hover:bg-fuchsia-500 text-white uppercase tracking-widest py-2 rounded transition-all"
                   >
-                    + AÑADIR · {grupo.precio}€
+                    CONTRATAR · {grupo.precio}€
                   </button>
                 )}
               </div>
@@ -300,38 +265,6 @@ const MencionesTab = ({ session }) => {
           );
         })}
       </div>
-
-      {carrito.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-30 flex justify-center pb-6 pointer-events-none">
-          <button
-            onClick={() => setShowModal(true)}
-            style={{ fontFamily: SYNE, fontWeight: 700 }}
-            className="pointer-events-auto bg-fuchsia-600 hover:bg-fuchsia-500 text-white text-sm uppercase tracking-widest py-3 px-8 rounded-full shadow-[0_0_32px_rgba(168,85,247,0.4)] transition-all"
-          >
-            VER SELECCIÓN ({carrito.length}) · TOTAL: {total}€
-          </button>
-        </div>
-      )}
-
-      {showModal && (
-        <Bro7bandModal
-          session={session}
-          carrito={carrito}
-          setCarrito={setCarrito}
-          onClose={() => setShowModal(false)}
-          onReserved={() => {
-            setShowModal(false);
-            if (!faseLunarId) return;
-            supabase
-              .from('bro7band_menciones')
-              .select('grupo_id, cobertura, ciudad_codigos')
-              .eq('fase_lunar_id', faseLunarId)
-              .then(({ data }) => { if (data) setOcupados(data); });
-          }}
-          faseLunarTexto={faseLunarNombre}
-          faseLunarId={faseLunarId}
-        />
-      )}
     </div>
   );
 };

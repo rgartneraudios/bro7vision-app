@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import ReservaPanelGames from './ReservaPanelGames';
+import React from 'react';
 
 const JUEGOS = [
   {
@@ -20,9 +19,7 @@ const SYNE  = "'Exo 2', sans-serif";
 const INTER = "'Inter', sans-serif";
 
 // ── GamesTab ──────────────────────────────────────────────────────────────────
-const GamesTab = ({ session, profile }) => {
-  const [selected, setSelected] = useState(null);
-
+const GamesTab = ({ session, profile, onContratar }) => {
   return (
     <div className="p-6">
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');`}</style>
@@ -45,7 +42,7 @@ const GamesTab = ({ session, profile }) => {
 
               {/* Card 16:9 */}
               <button
-                onClick={() => setSelected(juego)}
+                onClick={() => onContratar(`games_${juego.id === 'the7gates' ? '7gates' : 'cosmic'}`)}
                 className="group relative overflow-hidden rounded-xl border border-white/5 hover:border-violet-500/30 transition-all"
                 style={{ aspectRatio: '16 / 9' }}
               >
@@ -84,15 +81,6 @@ const GamesTab = ({ session, profile }) => {
       <p style={{ fontFamily: SYNE, color: '#f5e6c8' }} className="text-base mt-10 uppercase tracking-widest text-center">
         FASE 0 · Simulación — No se realizará ningún cargo real
       </p>
-
-      {selected && (
-        <ReservaPanelGames
-          juego={selected}
-          session={session}
-          profile={profile}
-          onClose={() => setSelected(null)}
-        />
-      )}
     </div>
   );
 };

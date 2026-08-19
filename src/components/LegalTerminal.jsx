@@ -41,7 +41,7 @@ const LegalTerminal = ({ onClose }) => {
            <div className="relative w-40 h-40 mb-6 group">
               <div className="absolute inset-0 rounded-full bg-cyan-500 blur-md opacity-20 group-hover:opacity-40 transition-opacity"></div>
               <img 
-                src="/images/rgartner.jpg" 
+                src="/images/rgartner-management.webp" 
                 alt="RGartner" 
                 className="w-full h-full object-cover rounded-full border-2 border-cyan-500/50 shadow-2xl relative z-10 grayscale group-hover:grayscale-0 transition-all duration-500"
                 onError={(e) => {

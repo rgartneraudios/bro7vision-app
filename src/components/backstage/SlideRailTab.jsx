@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
-import ReservaPanelRail from './ReservaPanelRail';
 
 const SYNE = "'Exo 2', sans-serif";
 const INTER = "'Inter', sans-serif";
@@ -10,9 +9,8 @@ const SECTORES = [
   { id: 'SHOP_AMIGOS', label: 'SHOP AMIGOS',        color: 'fuchsia' },
 ];
 
-const SlideRailTab = ({ session, role }) => {
+const SlideRailTab = ({ session, role, onContratar }) => {
   const [railData, setRailData] = useState([]);
-  const [selectedSlot, setSelectedSlot] = useState(null);
 
   useEffect(() => {
     supabase
@@ -22,14 +20,10 @@ const SlideRailTab = ({ session, role }) => {
       .then(({ data }) => setRailData(data || []));
   }, []);
 
+  const sectorKey = (s) => s === 'CANJES' ? 'canjear' : 'amigos';
+
   const getSlot = (sector, slotNum) =>
     railData.find(r => r.sector === sector && r.slot_numero === slotNum && r.comercio_id);
-
-  const handleSlotClick = (sector, slotNum) => {
-    setSelectedSlot({ sector, slot_numero: slotNum });
-  };
-
-  const sectorKey = (s) => s === 'CANJES' ? 'canjear' : 'amigos';
 
   const renderGrid = (sector, color) => {
     const isCyan = color === 'cyan';
@@ -51,7 +45,6 @@ const SlideRailTab = ({ session, role }) => {
             return (
               <div
                 key={num}
-                onClick={() => !isStatic && !ocupado && handleSlotClick(sector, num)}
                 className={`rounded-xl border flex flex-col p-2 transition-all ${
                   isStatic
                     ? 'bg-zinc-900 border-white/5 cursor-default'
@@ -76,13 +69,13 @@ const SlideRailTab = ({ session, role }) => {
                     OCUPADO
                   </span>
                 ) : (
-                  <span style={{ fontFamily: INTER }} className={`text-[10px] uppercase tracking-widest text-center border px-2 py-0.5 rounded self-center cursor-pointer ${
-                    isCyan
-                      ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-400'
-                      : 'bg-emerald-950/30 border-emerald-500/40 text-emerald-400'
-                  }`}>
-                    LIBRE
-                  </span>
+                  <button
+                    onClick={() => onContratar(`rail_${sector.toLowerCase()}_s${num}`)}
+                    style={{ fontFamily: INTER, fontWeight: 700 }}
+                    className="w-full text-[10px] uppercase tracking-widest text-center border px-2 py-1 rounded self-center bg-emerald-950/30 border-emerald-500/40 text-emerald-400 hover:bg-emerald-900/40 hover:text-emerald-300 transition-all"
+                  >
+                    CONTRATAR
+                  </button>
                 )}
               </div>
             );
@@ -120,21 +113,6 @@ const SlideRailTab = ({ session, role }) => {
         FASE 0 · Simulación
       </p>
 
-      {selectedSlot && (
-        <ReservaPanelRail
-          slot={selectedSlot}
-          session={session}
-          onClose={() => setSelectedSlot(null)}
-          onReserved={() => {
-            setSelectedSlot(null);
-            supabase
-              .from('trivia_rail')
-              .select('slot_numero, sector, banner_url, comercio_id')
-              .eq('activo', true)
-              .then(({ data }) => setRailData(data || []));
-          }}
-        />
-      )}
     </div>
   );
 };

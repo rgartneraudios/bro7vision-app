@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../supabaseClient';
 import { CHANNELS, FASES, TURNOS } from '../../data/citycodes';
 import FondoCanales from './FondoCanales';
-import ReservaPanel from './ReservaPanel';
 
 // Canal Moon (2): Fase 0 = solo Luna Nueva (fase 1) con T1–T4.
 // Cuando se active Luna Creciente se añade fase 2 con sus 4 turnos, etc.
@@ -47,16 +46,13 @@ const ColHeaders = ({ slots, prefix, hexColor }) => (
   </div>
 );
 
-const MarketplaceTab = ({ session, profile, role: roleProp }) => {
+const MarketplaceTab = ({ session, profile, role: roleProp, onContratar }) => {
   const [escenarios, setEscenarios] = useState([]);
   const [butacas,    setButacas]    = useState([]);
   const [tarifas,    setTarifas]    = useState([]);
   const [miniaturas, setMiniaturas] = useState([]);
   const [loading,    setLoading]    = useState(true);
   const [error,      setError]      = useState(null);
-
-  const [selectedSlot,     setSelectedSlot]    = useState(null);
-  const [coberturaInicial, setCoberturaInicial] = useState(null);
 
   const role     = roleProp ?? session?.user?.user_metadata?.role
     ?? (profile?.tipo ? 'director' : 'advertiser');
@@ -80,25 +76,6 @@ const MarketplaceTab = ({ session, profile, role: roleProp }) => {
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
-
-  const getEscenarioId = (slot) => {
-    if (slot.canal === 2)
-      return escenarios.find(e => e.canal === 2 && e.fase_lunar === slot.fase && e.funcion === slot.turno)?.id ?? null;
-    return escenarios.find(e => e.canal === slot.canal && e.funcion === slot.turno)?.id ?? null;
-  };
-
-  const handleSelectSlot = ({ slot, coberturaInicial: cob }) => {
-    setSelectedSlot(slot);
-    setCoberturaInicial(cob);
-  };
-
-  const handleReserved = () => {
-    setSelectedSlot(null);
-    supabase
-      .from('bs_butacas')
-      .select('canal,fase_lunar,funcion,dispositivo,cobertura,ciudad_codigos,estado')
-      .then(({ data }) => setButacas(data || []));
-  };
 
   const totalOcupadas = butacas.filter(b =>
     ['EN_CASTING', 'EN_RODAJE', 'EN_DEBATE', 'LISTO_PARA_ESTRENO', 'EN_CARTELERA'].includes(b.estado)
@@ -198,7 +175,7 @@ const MarketplaceTab = ({ session, profile, role: roleProp }) => {
                         m.funcion === canalMiniatura * 10 + slot.turno
                       )?.miniatura_url ?? null;
                       return (
-                        <FondoCanales key={i} slot={slot} butacas={butacas} miniaturaUrl={miniatura} onSelectSlot={handleSelectSlot} role={role} />
+                        <FondoCanales key={i} slot={slot} butacas={butacas} miniaturaUrl={miniatura} onContratar={onContratar} role={role} />
                       );
                     })}
                   </div>
@@ -221,7 +198,7 @@ const MarketplaceTab = ({ session, profile, role: roleProp }) => {
                         m.funcion === canalMiniatura * 10 + slot.turno
                       )?.miniatura_url ?? null;
                       return (
-                        <FondoCanales key={i} slot={slot} butacas={butacas} miniaturaUrl={miniatura} onSelectSlot={handleSelectSlot} role={role} />
+                        <FondoCanales key={i} slot={slot} butacas={butacas} miniaturaUrl={miniatura} onContratar={onContratar} role={role} />
                       );
                     })}
                   </div>
@@ -231,19 +208,6 @@ const MarketplaceTab = ({ session, profile, role: roleProp }) => {
             );
           })}
         </div>
-      )}
-
-      {selectedSlot && (
-        <ReservaPanel
-          slot={selectedSlot}
-          coberturaInicial={coberturaInicial}
-          escenarioId={getEscenarioId(selectedSlot)}
-          tarifas={tarifas}
-          session={session}
-          profile={profile}
-          onClose={() => setSelectedSlot(null)}
-          onReserved={handleReserved}
-        />
       )}
 
     </div>

@@ -4,7 +4,12 @@ import { CHANNELS, FASES, TURNOS } from '../../data/citycodes';
 const ACTIVE_STATES = ['EN_CASTING', 'EN_RODAJE', 'EN_DEBATE', 'LISTO_PARA_ESTRENO', 'EN_CARTELERA'];
 const NOTO = "'Noto Sans', sans-serif";
 
-const EscenarioCard = ({ slot, butacas, onSelectSlot, role, miniaturaUrl }) => {
+const CANAL_STRING = {
+  1:'mercurio', 2:'luna', 3:'venus', 4:'tierra',
+  5:'jupiter', 6:'marte', 7:'saturno', 8:'urano', 9:'neptuno'
+};
+
+const EscenarioCard = ({ slot, butacas, onContratar, role, miniaturaUrl }) => {
   const videoRef = useRef(null);
   const isPC = slot.dispositivo === 0;
   const thumbSrc = miniaturaUrl ?? null;
@@ -26,33 +31,11 @@ const EscenarioCard = ({ slot, butacas, onSelectSlot, role, miniaturaUrl }) => {
   const ocupadoNacional  = slotButacas.some(b => b.cobertura === 'GIRA_NACIONAL');
   const ciudadesOcupadas = new Set(slotButacas.filter(b => b.ciudad_codigo).map(b => b.ciudad_codigo));
   const ciudadesLibres   = 158 - ciudadesOcupadas.size;
-  const pocosCiudades    = ciudadesLibres > 0 && ciudadesLibres <= 20;
-  const semaforoColor = (() => {
-    if (ocupadoMundial || ocupadoNacional) return '#dc2626';
-    const ocupadoRegional = slotButacas.some(
-      b => b.cobertura === 'GIRA_REGIONAL' || b.cobertura === 'GIRA_GRAN_REGIONAL'
-    );
-    if (ocupadoRegional) return '#f97316';
-    if (ciudadesOcupadas.size > 0) return '#ca8a04';
-    return '#16a34a';
-  })();
 
   const isAdvertiser = role === 'advertiser';
 
-  const BadgeProducer = ({ label, ocupado, pulsar, onClick }) => (
-    <button
-      onClick={ocupado ? undefined : onClick}
-      disabled={ocupado}
-      style={{ fontFamily: NOTO }}
-      className={`text-[10px] px-2 py-1 rounded font-bold uppercase tracking-tight border transition-all ${
-        ocupado
-          ? 'bg-red-950/40 text-red-500/60 border-red-900/30 cursor-default'
-          : `bg-fuchsia-950/60 text-fuchsia-400 border-fuchsia-900/40 hover:bg-fuchsia-900/60 hover:text-fuchsia-200 cursor-pointer ${pulsar ? 'animate-pulse' : ''}`
-      }`}
-    >
-      {ocupado ? `● ${label}` : `● ${label}`}
-    </button>
-  );
+  const slotId = `canal_${CANAL_STRING[slot.canal]}_${isPC ? 'pc' : 'movil'}_t${slot.turno}`;
+  const ocupado = ocupadoMundial || ocupadoNacional;
 
   return (
     <div className={`group bg-zinc-900 border border-white/5 rounded overflow-hidden hover:border-white/25 hover:shadow-[0_0_16px_rgba(255,255,255,0.06)] transition-all duration-200 ${isAdvertiser ? 'cursor-pointer' : 'cursor-default'}`}>
@@ -102,27 +85,21 @@ const EscenarioCard = ({ slot, butacas, onSelectSlot, role, miniaturaUrl }) => {
         </div>
       )}
 
-      {/* Vista Productor */}
+      {/* Vista Productor — botón Contratar unificado */}
       {isAdvertiser && (
-        <div className="px-2 py-2 flex items-center gap-2">
-          <div className="flex flex-wrap gap-1 flex-1">
-            <BadgeProducer
-              label="MUNDIAL"  ocupado={ocupadoMundial}  pulsar={false}
-              onClick={() => onSelectSlot({ slot, coberturaInicial: 'GIRA_MUNDIAL' })}
-            />
-            <BadgeProducer
-              label="NACIONAL" ocupado={ocupadoNacional} pulsar={false}
-              onClick={() => onSelectSlot({ slot, coberturaInicial: 'GIRA_NACIONAL' })}
-            />
-            <BadgeProducer
-              label={ciudadesLibres === 0 ? 'LLENO' : `${ciudadesLibres} CIUDADES`}
-              ocupado={ciudadesLibres === 0} pulsar={pocosCiudades}
-              onClick={() => onSelectSlot({ slot, coberturaInicial: 'SALA_CIUDAD' })}
-            />
-          </div>
-
-          {/* Semáforo geográfico — una esfera, 4 estados */}
-          <div style={{ width: 10, height: 10, borderRadius: '50%', background: semaforoColor, flexShrink: 0 }} />
+        <div className="px-2 py-2">
+          <button
+            onClick={() => onContratar(slotId)}
+            disabled={ocupado}
+            style={{ fontFamily: NOTO, fontWeight: 700 }}
+            className={`w-full text-[10px] uppercase tracking-widest py-1.5 rounded border transition-all ${
+              ocupado
+                ? 'bg-red-950/40 text-red-500/60 border-red-900/30 cursor-not-allowed'
+                : 'bg-fuchsia-950/60 text-fuchsia-400 border-fuchsia-900/40 hover:bg-fuchsia-900/60 hover:text-fuchsia-200'
+            }`}
+          >
+            {ocupado ? 'OCUPADO' : 'CONTRATAR'}
+          </button>
         </div>
       )}
     </div>

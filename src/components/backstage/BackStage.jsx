@@ -11,6 +11,7 @@ import TarjetasCanjesRecibidosTab from './TarjetasCanjesRecibidosTab';
 import ShopAmigosTab from './ShopAmigosTab';
 import DiamantePanelAdmin from './DiamantePanelAdmin';
 import CarritoTab from './CarritoTab';
+import ContratoModal from './ContratoModal';
 
 const SYNE = "'Exo 2', sans-serif";
 
@@ -21,6 +22,7 @@ const BackStage = ({ session, onLogout }) => {
   const [activeBlock, setActiveBlock] = useState('anuncios');
   const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [slotSeleccionado, setSlotSeleccionado] = useState(null);
 
   useEffect(() => {
     const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
@@ -269,6 +271,9 @@ const BackStage = ({ session, onLogout }) => {
   // ── BackStage principal ──────────────────────────────────────────────────
   const rolUsuario  = session?.user?.user_metadata?.role;
 
+  const handleContratar = (slotId) => setSlotSeleccionado(slotId);
+  const handleCerrarModal = () => setSlotSeleccionado(null);
+
   const TABS_ANUNCIOS = [
     { id: 'fondos',     label: 'FONDOS CANALES TRIVIA' },
     { id: 'bro7band',   label: 'BRO7BAND'              },
@@ -383,7 +388,7 @@ const BackStage = ({ session, onLogout }) => {
       >
 
         {activeTab === 'fondos' && (
-          <FondoCanalesTab session={session} profile={profile} role={rolUsuario} />
+          <FondoCanalesTab session={session} profile={profile} role={rolUsuario} onContratar={handleContratar} />
         )}
 
         {activeTab === 'campanas' && (
@@ -391,11 +396,11 @@ const BackStage = ({ session, onLogout }) => {
         )}
 
         {activeTab === 'bro7band' && (
-          <Bro7bandTab session={session} />
+          <Bro7bandTab session={session} onContratar={handleContratar} />
         )}
 
         {activeTab === 'slide_rail' && (
-          <SlideRailTab session={session} role={rolUsuario} />
+          <SlideRailTab session={session} role={rolUsuario} onContratar={handleContratar} />
         )}
 
         {activeTab === 'shop_amigos' && (
@@ -403,7 +408,7 @@ const BackStage = ({ session, onLogout }) => {
         )}
 
         {activeTab === 'games' && (
-          <GamesTab session={session} profile={profile} />
+          <GamesTab session={session} profile={profile} onContratar={handleContratar} />
         )}
 
         {activeTab === 'tarjetas_diseno' && <TarjetasRegalo profile={profile} />}
@@ -421,6 +426,15 @@ const BackStage = ({ session, onLogout }) => {
         )}
 
       </div>
+
+      {slotSeleccionado && (
+        <ContratoModal
+          slotId={slotSeleccionado}
+          onClose={handleCerrarModal}
+          userId={session.user.id}
+        />
+      )}
+
     </div>
   );
 };
