@@ -78,14 +78,14 @@ const MarketplaceTab = ({ session, profile, role: roleProp, onContratar }) => {
               MUESTRARIO - CONTRATACIÓN POR FASE LUNAR
             </h2>
             <p style={{ fontFamily: HEADING, fontWeight: 700, color: '#facc15' }} className="text-2xl mt-2">72 Turnos · 9 canales · 2 dispositivos PC y Móvil</p>
-            <div style={{ fontFamily: "'Inter', sans-serif" }} className="text-lg md:text-xl text-gray-300 leading-relaxed text-center font-medium max-w-4xl mx-auto mt-4 px-4">
+            <div style={{ fontFamily: "'Inter', sans-serif" }} className="text-lg md:text-xl text-gray-300 leading-relaxed text-center font-medium max-w-6xl mx-auto mt-4 px-4">
               <p className="mb-1">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold" style={{ textShadow: '0 0 20px rgba(0,255,200,0.5), 0 0 60px rgba(168,85,247,0.3)' }}>Bro7vision</span> vive sincronizado con el <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">ciclo Lunar</span>.
               </p>
               <p className="mb-1 mt-2">
                 La <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">contratación</span> de los turnos tiene una durabilidad de una <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">Fase Lunar</span>: <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">Luna Nueva</span>, <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">Luna Creciente</span>, <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">Luna Llena</span> o <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">Luna Menguante</span>.
               </p>
-              <p className="mb-1 mt-2">
+              <p className="mb-1 mt-2 whitespace-nowrap">
                 Los <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-bold">Fondos de Canales</span> se renovarán ocasionalmente, sin interrumpir <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">campañas publicitarias</span>.
               </p>
             </div>

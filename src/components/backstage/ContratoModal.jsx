@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../supabaseClient';
 import { useReservaTemporal } from '../../hooks/useReservaTemporal';
-import { CHANNELS, TURNOS, getMiniCities, getMegaCities, getCodeForCity } from '../../data/citycodes';
+import { CHANNELS, TURNOS, getMiniCities, getMegaCities, getCodeForCity, COUNTRY_CODES } from '../../data/citycodes';
 import {
   getFaseActualNombre,
   getFaseActualDisplay,
@@ -71,6 +71,8 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
   const [capaActual, setCapaActual]     = useState(1);
   const [faseLunarId, setFaseLunarId]   = useState(null);
   const [faseLunarNombre, setFaseLunarNombre] = useState('');
+  const [paisSeleccionado, setPaisSeleccionado] = useState('ES');
+  const [precioTarifaPais, setPrecioTarifaPais] = useState(null);
   const [cobertura, setCobertura]       = useState(null);
   const [ciudadCodigos, setCiudadCodigos] = useState([]);
   const [historial, setHistorial]       = useState([]);
@@ -109,7 +111,8 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
   const isGames    = formato === 'GAMES_7GATES' || formato === 'GAMES_COSMIC';
   const isSevenGates = formato === 'GAMES_7GATES';
 
-  const needsCiudad = CIUDAD_COBERTURAS.includes(cobertura);
+  const needsCiudad  = CIUDAD_COBERTURAS.includes(cobertura);
+  const needsCountry = ['GIRA_NACIONAL', 'GIRA_MUNDIAL'].includes(cobertura);
 
   useEffect(() => {
     const load = async () => {
@@ -158,6 +161,20 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
     }
   }, [countdownActiva, segundosRestantes]);
 
+  useEffect(() => {
+    if (!['GIRA_NACIONAL', 'GIRA_MUNDIAL'].includes(cobertura)) {
+      setPrecioTarifaPais(null);
+      return;
+    }
+    supabase
+      .from('tarifas_pais')
+      .select('precio')
+      .eq('pais_codigo', paisSeleccionado)
+      .eq('cobertura', cobertura)
+      .maybeSingle()
+      .then(({ data }) => setPrecioTarifaPais(data ? Number(data.precio) : null));
+  }, [cobertura, paisSeleccionado]);
+
   const toggleCiudad = (key) => {
     setCiudadCodigos(prev => {
       if (prev.includes(key)) return prev.filter(c => c !== key);
@@ -179,11 +196,11 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
       setError('Selecciona al menos una ciudad.');
       return;
     }
-    const ciudadArr = ciudadCodigos.length > 0
-      ? ciudadCodigos.map(k => getCodeForCity(k)).filter(Boolean)
-      : cobertura === 'GIRA_MUNDIAL' ? ['WW']
-      : cobertura === 'GIRA_NACIONAL' ? ['ES']
-      : null;
+      const ciudadArr = ciudadCodigos.length > 0
+        ? ciudadCodigos.map(k => getCodeForCity(k)).filter(Boolean)
+        : cobertura === 'GIRA_MUNDIAL' ? ['WW']
+        : cobertura === 'GIRA_NACIONAL' ? [paisSeleccionado]
+        : null;
 
     const label = cobertura === 'GIRA_MUNDIAL' ? 'Cobertura: Internacional'
       : cobertura === 'GIRA_NACIONAL' ? 'Cobertura: Nacional'
@@ -234,7 +251,7 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
       const ciudadArr = ciudadCodigos.length > 0
         ? ciudadCodigos.map(k => getCodeForCity(k)).filter(Boolean)
         : cobertura === 'GIRA_MUNDIAL' ? ['WW']
-        : cobertura === 'GIRA_NACIONAL' ? ['ES']
+        : cobertura === 'GIRA_NACIONAL' ? [paisSeleccionado]
         : null;
 
       if (isReality) {
@@ -388,7 +405,7 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
         Cobertura
       </p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '32px', marginTop: '24px' }}>
-        {COBERTURAS_LIST.map(c => (
+        {COBERTURAS_LIST.filter(c => !isBand || ['GIRA_MUNDIAL', 'GIRA_NACIONAL'].includes(c.id)).map(c => (
           <button
             key={c.id}
             onClick={() => { setCobertura(c.id); setCiudadCodigos([]); }}
@@ -400,6 +417,53 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
           </button>
         ))}
       </div>
+
+      {needsCountry && (
+        <div style={{ marginTop: '48px' }}>
+          <p style={{ fontFamily: INTER, fontSize: '2rem', fontWeight: 600 }} className="text-gray-400 uppercase tracking-widest mb-6">
+            País
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px' }}>
+            {Object.entries(COUNTRY_CODES)
+              .filter(([key]) => key !== 'mundial')
+              .map(([key, code]) => (
+                <button
+                  key={code}
+                  onClick={() => setPaisSeleccionado(code)}
+                  style={{
+                    fontFamily: HEADING,
+                    fontSize: '1.2rem',
+                    padding: '14px 28px',
+                    borderRadius: '10px',
+                    minWidth: 'auto',
+                    fontWeight: paisSeleccionado === code ? 700 : 400,
+                    letterSpacing: '0.03em',
+                    ...(paisSeleccionado === code
+                      ? {
+                          background: 'rgba(168,85,247,0.25)',
+                          border: '2px solid #a855f7',
+                          color: '#c084fc',
+                          boxShadow: '0 0 16px rgba(168,85,247,0.6), 0 0 32px rgba(168,85,247,0.3)',
+                        }
+                      : {
+                          background: 'rgba(255,255,255,0.08)',
+                          border: '1px solid rgba(255,255,255,0.2)',
+                          color: 'rgba(255,255,255,0.7)',
+                        }),
+                  }}
+                  className="transition-all"
+                >
+                  {key.charAt(0).toUpperCase() + key.slice(1)}
+                </button>
+              ))}
+          </div>
+          {precioTarifaPais === null && (
+            <p style={{ fontFamily: INTER, fontSize: '1.4rem' }} className="text-gray-600 mt-4">
+              Precio estándar · tarifa específica no disponible para este país.
+            </p>
+          )}
+        </div>
+      )}
 
       {needsCiudad && (
         <div style={{ marginTop: '48px' }}>

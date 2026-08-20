@@ -122,7 +122,7 @@ const MencionesTab = ({ session, onContratar }) => {
                   style={{ fontFamily: HEADING, fontWeight: 700 }}
                   className="w-full text-[11px] bg-fuchsia-600 hover:bg-fuchsia-500 text-white uppercase tracking-widest py-2 rounded transition-all"
                 >
-                  CONTRATAR · {grupo.precio}€
+                  CONTRATAR
                 </button>
               </div>
             </div>
