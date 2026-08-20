@@ -181,6 +181,20 @@ export default function CanjearStrip({ scope }) {
   const [userId, setUserId] = useState(null);
   const [lunasBalance, setLunasBalance] = useState(null);
 
+  // Diamante states
+  const [premiosDiamante, setPremiosDiamante] = useState([]);
+  const [premioSeleccionado, setPremioSeleccionado] = useState(null);
+  const [canjeando, setCanjeando] = useState(null);
+  const [estadoCanje, setEstadoCanje] = useState('idle');
+  const [resultadoCanje, setResultadoCanje] = useState(null);
+  const [errorCanjeDiamante, setErrorCanjeDiamante] = useState('');
+
+  const DIAMANTE_CARD_ASSET = {
+    200:  '/images/demotarjetaD200.webp',
+    500:  '/images/demotarjetaD500.webp',
+    1000: '/images/demotarjetaD1000.webp',
+  };
+
   useEffect(() => {
     const fetchCity = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -258,6 +272,56 @@ export default function CanjearStrip({ scope }) {
     };
     fetchCupones();
   }, [activeTab]);
+
+  // Fetch premios Diamante
+  useEffect(() => {
+    const fetchDiamante = async () => {
+      const { data } = await supabase
+        .from('diamante_catalogo')
+        .select('*')
+        .eq('estado', 'ACTIVO')
+        .gt('cantidad_disponible', 0);
+
+      if (!data) { setPremiosDiamante([]); return; }
+
+      const filtrados = data.filter(p => {
+        const a = Array.isArray(p.alcance) ? p.alcance : ['ES'];
+        if (activeTab === 'CERCANIAS')     return a.some(x => x !== 'ES' && x !== 'WW');
+        if (activeTab === 'NACIONAL')      return a.includes('ES');
+        if (activeTab === 'INTERNACIONAL') return a.includes('WW');
+        return false;
+      });
+
+      setPremiosDiamante(filtrados);
+    };
+    fetchDiamante();
+  }, [activeTab]);
+
+  const ejecutarCanjeDiamante = async () => {
+    if (!canjeando || !userId) return;
+    setEstadoCanje('cargando');
+
+    const { data, error } = await supabase.rpc('canjear_diamante', {
+      p_premio_id: canjeando.id,
+      p_user_id:   userId,
+    });
+
+    if (error || !data?.ok) {
+      setErrorCanjeDiamante(data?.error || 'Error al canjear.');
+      setEstadoCanje('error');
+      return;
+    }
+
+    setLunasBalance(data.balance_nuevo);
+    setResultadoCanje(data);
+    setEstadoCanje('exito');
+    setPremiosDiamante(prev =>
+      prev.map(p => p.id === canjeando.id
+        ? { ...p, cantidad_disponible: p.cantidad_disponible - 1 }
+        : p
+      ).filter(p => p.cantidad_disponible > 0)
+    );
+  };
 
   const TOTAL_CARDS = cupones.length < 4 ? Math.max(cupones.length, 1) : 8;
 
@@ -618,6 +682,117 @@ export default function CanjearStrip({ scope }) {
     </div>
   );
 })}
+
+          {/* ── TARJETAS DIAMANTE ── */}
+          {premiosDiamante.map(premio => {
+            const isFlipped = isMobile ? flippedId === premio.id : hoveredId === premio.id;
+            const saldoTras = (lunasBalance || 0) - premio.lunas_canje;
+
+            return (
+              <div
+                key={premio.id}
+                onMouseEnter={() => !isMobile && setHoveredId(premio.id)}
+                onMouseLeave={() => !isMobile && setHoveredId(null)}
+                onClick={() => isMobile && setFlippedId(flippedId === premio.id ? null : premio.id)}
+                style={{
+                  width: isMobile ? 333 : 280, minWidth: isMobile ? 333 : 280,
+                  maxWidth: isMobile ? 333 : 280, height: isMobile ? 500 : 440,
+                  borderRadius: 12, position: 'relative', cursor: 'pointer',
+                  perspective: '1000px', flexShrink: 0,
+                }}
+              >
+                <div className={`flip-card-inner${isFlipped ? ' flipped' : ''}`}>
+
+                  {/* CARA A — arte coleccionable */}
+                  <div className="flip-face">
+                    <img
+                      src={DIAMANTE_CARD_ASSET[premio.tier] || DIAMANTE_CARD_ASSET[200]}
+                      alt={`Diamante ${premio.tier}`}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 12 }}
+                    />
+                    <div style={{
+                      position: 'absolute', top: 12, right: 12,
+                      background: 'rgba(0,0,0,0.7)', borderRadius: 20,
+                      padding: '3px 10px', fontSize: 10, fontWeight: 700,
+                      color: '#d090ff', border: '1px solid rgba(180,80,255,0.4)',
+                    }}>
+                      {premio.cantidad_disponible} disponibles
+                    </div>
+                  </div>
+
+                  {/* CARA B — info + botones */}
+                  <div className="flip-face flip-face-back" style={{ borderRadius: 12 }}>
+                    <img src="/images/cards/card-back.webp" alt="reverso"
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%',
+                        objectFit: 'cover', zIndex: 0 }} />
+                    <div style={{
+                      position: 'absolute', inset: 0, zIndex: 1,
+                      background: 'linear-gradient(170deg, rgba(20,0,40,0.85) 0%, rgba(40,0,80,0.9) 100%)',
+                    }} />
+                    <div style={{
+                      position: 'absolute', inset: 0, zIndex: 2,
+                      display: 'flex', flexDirection: 'column',
+                      justifyContent: 'space-between', padding: '18px 14px 14px',
+                    }}>
+                      <div>
+                        <p style={{ fontSize: 10, color: '#d090ff', fontWeight: 800,
+                          letterSpacing: 2, textTransform: 'uppercase' }}>
+                          💎 Diamante {premio.tier} · {premio.descuento_pct}%
+                        </p>
+                        <p style={{ fontSize: 13, color: '#fff', fontWeight: 700, marginTop: 4 }}>
+                          {premio.nombre_premio}
+                        </p>
+                        {premio.descripcion && (
+                          <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.6)',
+                            lineHeight: 1.5, marginTop: 6, fontStyle: 'italic' }}>
+                            {premio.descripcion}
+                          </p>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <div style={{ fontSize: 11, color: '#d090ff', fontWeight: 700,
+                          textAlign: 'center' }}>
+                          🌙 {premio.lunas_canje?.toLocaleString()} Lunas
+                        </div>
+
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setPremioSeleccionado(premio); }}
+                          style={{
+                            width: '100%', padding: '8px 0', borderRadius: 8, border: '1px solid #d090ff',
+                            background: 'transparent', color: '#d090ff', fontSize: 10,
+                            fontWeight: 700, letterSpacing: 2, cursor: 'pointer',
+                          }}
+                        >
+                          VER PRODUCTO →
+                        </button>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCanjeando(premio);
+                            setEstadoCanje('confirmando');
+                          }}
+                          disabled={saldoTras < 0}
+                          style={{
+                            width: '100%', padding: '10px 0', borderRadius: 8, border: 'none',
+                            background: saldoTras >= 0 ? '#9040e0' : 'rgba(144,64,224,0.2)',
+                            color: saldoTras >= 0 ? '#fff' : 'rgba(255,255,255,0.3)',
+                            fontSize: 10, fontWeight: 900, letterSpacing: 2, cursor: saldoTras >= 0 ? 'pointer' : 'not-allowed',
+                          }}
+                        >
+                          {saldoTras >= 0
+                            ? 'CANJEAR →'
+                            : `Te faltan 🌙 ${Math.abs(saldoTras).toLocaleString()}`}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -631,6 +806,206 @@ export default function CanjearStrip({ scope }) {
         onCancelar={cancelar}
         onCerrar={cerrar}
       />
+
+      {/* ── MODAL PRODUCTO DIAMANTE ── */}
+      {premioSeleccionado && (
+        <div
+          onClick={() => setPremioSeleccionado(null)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)',
+            backdropFilter: 'blur(8px)', zIndex: 200 }}
+        />
+      )}
+      {premioSeleccionado && (
+        <div style={{
+          position: 'fixed', top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 201, width: 'min(520px, 92vw)',
+          borderRadius: 20, overflow: 'hidden',
+          background: 'linear-gradient(145deg, #1a0a2e, #2d1050)',
+          border: '1px solid rgba(180,80,255,0.3)',
+          boxShadow: '0 0 40px rgba(144,64,224,0.3)',
+          padding: 28, display: 'flex', flexDirection: 'column', gap: 16,
+          fontFamily: "'Exo 2', sans-serif",
+        }}>
+          {premioSeleccionado.imagen_url && (
+            <img src={premioSeleccionado.imagen_url} alt={premioSeleccionado.nombre_premio}
+              style={{ width: '100%', borderRadius: 12, objectFit: 'cover', maxHeight: 240 }} />
+          )}
+          <p style={{ fontSize: 10, color: '#d090ff', fontWeight: 800,
+            letterSpacing: 2, textTransform: 'uppercase' }}>
+            💎 Diamante {premioSeleccionado.tier}
+          </p>
+          <p style={{ fontSize: 18, color: '#fff', fontWeight: 900 }}>
+            {premioSeleccionado.nombre_premio}
+          </p>
+          {premioSeleccionado.descripcion && (
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7 }}>
+              {premioSeleccionado.descripcion}
+            </p>
+          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between',
+            fontSize: 12, color: 'rgba(255,255,255,0.5)', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 12 }}>
+            <span>PVP referencia: <strong style={{ color: '#fff' }}>{premioSeleccionado.valor_pvp}€</strong></span>
+            <span>Stock: <strong style={{ color: '#d090ff' }}>{premioSeleccionado.cantidad_disponible}</strong></span>
+          </div>
+          <button onClick={() => setPremioSeleccionado(null)}
+            style={{ padding: '10px 0', borderRadius: 10, border: '1px solid rgba(180,80,255,0.3)',
+              background: 'transparent', color: '#d090ff', fontSize: 11,
+              fontWeight: 700, letterSpacing: 2, cursor: 'pointer' }}>
+            CERRAR
+          </button>
+        </div>
+      )}
+
+      {/* ── MODAL CANJE DIAMANTE ── */}
+      {canjeando && estadoCanje !== 'idle' && (
+        <>
+          <div onClick={() => { setCanjeando(null); setEstadoCanje('idle'); }}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)',
+              backdropFilter: 'blur(8px)', zIndex: 202 }} />
+
+          <div style={{
+            position: 'fixed', top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 203, width: 'min(540px, 92vw)',
+            borderRadius: 20, padding: '28px 24px',
+            background: 'linear-gradient(145deg, #1a0a2e, #2d1050)',
+            border: '1px solid rgba(180,80,255,0.3)',
+            boxShadow: '0 0 40px rgba(144,64,224,0.25)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
+            fontFamily: "'Exo 2', sans-serif",
+          }}>
+
+            {/* CONFIRMANDO */}
+            {estadoCanje === 'confirmando' && (
+              <>
+                <p style={{ fontSize: 11, color: '#d090ff', fontWeight: 700,
+                  letterSpacing: 2, textTransform: 'uppercase' }}>
+                  💎 Confirmar canje
+                </p>
+                <p style={{ fontSize: 16, color: '#fff', fontWeight: 900, textAlign: 'center' }}>
+                  {canjeando.nombre_premio}
+                </p>
+                <div style={{ width: '100%', background: 'rgba(0,0,0,0.3)',
+                  borderRadius: 12, padding: '16px 20px', display: 'flex',
+                  flexDirection: 'column', gap: 10 }}>
+                  {[
+                    ['Coste',     `🌙 ${canjeando.lunas_canje?.toLocaleString()} Lunas`, '#d090ff'],
+                    ['Tu saldo',  `🌙 ${(lunasBalance||0).toLocaleString()}`, '#fff'],
+                    ['Tras canje',`🌙 ${((lunasBalance||0) - canjeando.lunas_canje).toLocaleString()}`,
+                      (lunasBalance||0) - canjeando.lunas_canje < 0 ? '#ff4444' : '#fff'],
+                  ].map(([label, value, color]) => (
+                    <div key={label} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)',
+                        textTransform: 'uppercase', letterSpacing: 1 }}>{label}</span>
+                      <span style={{ fontSize: 14, color, fontWeight: 700 }}>{value}</span>
+                    </div>
+                  ))}
+                </div>
+                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', textAlign: 'center', lineHeight: 1.6 }}>
+                  Recibirás tu clave secreta en Booster › Mis Cupones.<br />
+                  El comercio se pondrá en contacto contigo.
+                </p>
+                <div style={{ display: 'flex', gap: 10, width: '100%' }}>
+                  <button onClick={() => { setCanjeando(null); setEstadoCanje('idle'); }}
+                    style={{ flex: 1, padding: '10px 0', borderRadius: 10,
+                      border: '1px solid rgba(180,80,255,0.2)', background: 'transparent',
+                      color: '#d090ff', fontSize: 11, fontWeight: 700,
+                      letterSpacing: 2, cursor: 'pointer' }}>
+                    CANCELAR
+                  </button>
+                  <button onClick={ejecutarCanjeDiamante}
+                    style={{ flex: 1, padding: '10px 0', borderRadius: 10,
+                      border: 'none', background: '#9040e0',
+                      color: '#fff', fontSize: 11, fontWeight: 700,
+                      letterSpacing: 2, cursor: 'pointer' }}>
+                    CONFIRMAR
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* CARGANDO */}
+            {estadoCanje === 'cargando' && (
+              <>
+                <div style={{ fontSize: 32, animation: 'spinCupon 1s linear infinite' }}>💎</div>
+                <p style={{ fontSize: 11, color: '#d090ff', letterSpacing: 2 }}>PROCESANDO...</p>
+                <style>{`@keyframes spinCupon { to { transform: rotate(360deg); } }`}</style>
+              </>
+            )}
+
+            {/* ÉXITO */}
+            {estadoCanje === 'exito' && resultadoCanje && (
+              <>
+                <div style={{ fontSize: 32 }}>✅</div>
+                <p style={{ fontSize: 11, color: '#d090ff', fontWeight: 700,
+                  letterSpacing: 2, textTransform: 'uppercase' }}>
+                  ¡Premio canjeado!
+                </p>
+                <p style={{ fontSize: 16, color: '#fff', fontWeight: 900, textAlign: 'center' }}>
+                  {resultadoCanje.nombre_premio}
+                </p>
+                <div style={{ width: '100%', background: 'rgba(0,0,0,0.3)',
+                  borderRadius: 12, padding: '16px 20px', display: 'flex',
+                  flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)',
+                      textTransform: 'uppercase', letterSpacing: 1 }}>Referencia</span>
+                    <span style={{ fontSize: 13, color: '#d090ff',
+                      fontWeight: 700, fontFamily: 'monospace',
+                      letterSpacing: 2 }}>{resultadoCanje.palabra_clave_1}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)',
+                      textTransform: 'uppercase', letterSpacing: 1 }}>Tu clave secreta</span>
+                    <span style={{ fontSize: 14, color: '#fbbf24',
+                      fontWeight: 900, fontFamily: 'monospace',
+                      letterSpacing: 3 }}>{resultadoCanje.clave_secreta}</span>
+                  </div>
+                </div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)',
+                  textAlign: 'center', lineHeight: 1.8 }}>
+                  {resultadoCanje.comercio_email && (
+                    <p>✉️ {resultadoCanje.comercio_email}</p>
+                  )}
+                  {resultadoCanje.comercio_tel && (
+                    <p>📞 {resultadoCanje.comercio_tel}</p>
+                  )}
+                  <p style={{ marginTop: 6, color: 'rgba(255,255,255,0.4)', fontSize: 10 }}>
+                    Indica tu clave secreta al comercio para reclamar tu premio.<br />
+                    Tu historial completo en Booster › Mis Cupones.
+                  </p>
+                </div>
+                <button onClick={() => { setCanjeando(null); setEstadoCanje('idle'); setResultadoCanje(null); }}
+                  style={{ width: '100%', padding: '10px 0', borderRadius: 10,
+                    border: '1px solid rgba(180,80,255,0.3)', background: 'transparent',
+                    color: '#d090ff', fontSize: 11, fontWeight: 700,
+                    letterSpacing: 2, cursor: 'pointer' }}>
+                  CERRAR
+                </button>
+              </>
+            )}
+
+            {/* ERROR */}
+            {estadoCanje === 'error' && (
+              <>
+                <div style={{ fontSize: 28 }}>⚠️</div>
+                <p style={{ fontSize: 11, color: '#ff6060', letterSpacing: 1, textAlign: 'center' }}>
+                  {errorCanjeDiamante}
+                </p>
+                <button onClick={() => { setCanjeando(null); setEstadoCanje('idle'); setErrorCanjeDiamante(''); }}
+                  style={{ padding: '10px 24px', borderRadius: 10,
+                    border: '1px solid rgba(255,255,255,0.2)', background: 'transparent',
+                    color: '#fff', fontSize: 11, fontWeight: 700,
+                    letterSpacing: 2, cursor: 'pointer' }}>
+                  CERRAR
+                </button>
+              </>
+            )}
+
+          </div>
+        </>
+      )}
     </div>
   );
 }

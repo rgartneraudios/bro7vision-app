@@ -14,7 +14,7 @@ const BoosterMisCupones = () => {
       if (!user) return;
 
       const { data: rows } = await supabase
-        .from('cupones_generados')
+        .from('nido_generado')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -53,6 +53,32 @@ const BoosterMisCupones = () => {
         aliasUsuario: r.user_id ? (aliasMap[r.user_id] || 'desconocido') : 'invitado',
         banner_11_url: bannerMap[r.comercio_id] || '',
       })));
+
+      // Fetch canjes Diamante
+      const { data: canjesDiamante } = await supabase
+        .from('diamante_canjes')
+        .select('*, diamante_catalogo(nombre_premio, imagen_url, tier, descuento_pct, palabra_clave_1)')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (canjesDiamante && canjesDiamante.length > 0) {
+        const mapped = canjesDiamante.map(c => ({
+          id:             c.id,
+          created_at:     c.created_at,
+          tipo_tarjeta:   'DIAMANTE_CANJE',
+          nombre_premio:  c.diamante_catalogo?.nombre_premio || '—',
+          imagen_url:     c.diamante_catalogo?.imagen_url    || '',
+          tier:           c.diamante_catalogo?.tier          || '',
+          palabra_clave_1:c.diamante_catalogo?.palabra_clave_1 || '',
+          clave_secreta:  c.clave_canje,
+          lunas_gastadas: c.lunas_gastadas,
+          estado_canje:   c.estado,
+          _esDiamante:    true,
+        }));
+        setCupones(prev => [...prev, ...mapped].sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        ));
+      }
     } catch (e) {
       console.error('Error loading cupones:', e);
     } finally {
@@ -104,34 +130,85 @@ const BoosterMisCupones = () => {
       <div className="max-w-3xl mx-auto space-y-6">
         {cupones.map((cupon) => (
           <div key={cupon.id} className={CardStyle}>
-            <StickerCupon
-              comercioNombre={cupon.comercio_nombre || 'Comercio'}
-              tipoBrocard={cupon.tipo_brocard || ''}
-              palabraClave1={cupon.palabra_clave_1 || ''}
-              aliasUsuario={cupon.aliasUsuario}
-              fechaCaduca={formatDate(cupon.caduca_at)}
-              banner_11_url={cupon.banner_11_url}
-              tipoTarjeta={cupon.tipo_tarjeta || ''}
-              valorEuros={cupon.valor_euros ?? null}
-              costeLunas={cupon.lunas_gastadas ?? null}
-            />
+            {cupon._esDiamante ? (
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">💎</span>
+                  <div>
+                    <p className="text-xs font-black text-violet-400 uppercase tracking-widest">
+                      Diamante {cupon.tier}
+                    </p>
+                    <p className="text-base font-black text-white">{cupon.nombre_premio}</p>
+                  </div>
+                </div>
 
-            <div className="mt-4 space-y-2 border-t border-white/10 pt-4">
-              <p className="text-xs text-gray-300">
-                <span className="font-bold text-yellow-400">🔐 Clave secreta:</span>{' '}
-                <span className="text-white font-mono tracking-widest">{cupon.palabra_clave_3 || '—'}</span>
-              </p>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400 font-bold">Estado:</span>
-                <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
-                  cupon.usado === true
-                    ? 'text-green-400 border-green-500/30 bg-green-950/20'
-                    : 'text-yellow-400 border-yellow-500/30 bg-yellow-950/20'
-                }`}>
-                  {cupon.usado === true ? '✅ Usado' : '🟡 Pendiente'}
-                </span>
+                {cupon.imagen_url && (
+                  <img
+                    src={cupon.imagen_url}
+                    alt={cupon.nombre_premio}
+                    className="w-full rounded-xl object-cover"
+                    style={{ maxHeight: 180 }}
+                  />
+                )}
+
+                <div className="border-t border-white/10 pt-4 space-y-2">
+                  <p className="text-xs text-gray-400">
+                    <span className="font-bold text-violet-300">Referencia pública:</span>{' '}
+                    <span className="font-mono tracking-widest text-white">{cupon.palabra_clave_1 || '—'}</span>
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    <span className="font-bold text-yellow-400">🔐 Tu clave secreta:</span>{' '}
+                    <span className="font-mono tracking-widest text-white">{cupon.clave_secreta}</span>
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    <span className="font-bold text-gray-300">Lunas gastadas:</span>{' '}
+                    🌙 {cupon.lunas_gastadas?.toLocaleString()}
+                  </p>
+                  <span className={`inline-block text-xs font-bold px-3 py-1 rounded-full border ${
+                    cupon.estado_canje === 'RECIBIDO'
+                      ? 'text-green-400 border-green-500/30 bg-green-950/20'
+                      : cupon.estado_canje === 'ENVIADO'
+                      ? 'text-blue-400 border-blue-500/30 bg-blue-950/20'
+                      : 'text-yellow-400 border-yellow-500/30 bg-yellow-950/20'
+                  }`}>
+                    {cupon.estado_canje === 'RECIBIDO' ? '✅ Recibido'
+                      : cupon.estado_canje === 'ENVIADO' ? '📦 En camino'
+                      : '🟡 Pendiente de contacto'}
+                  </span>
+                </div>
               </div>
-            </div>
+            ) : (
+              <>
+                <StickerCupon
+                  comercioNombre={cupon.comercio_nombre || 'Comercio'}
+                  tipoBrocard={cupon.tipo_brocard || ''}
+                  palabraClave1={cupon.palabra_clave_1 || ''}
+                  aliasUsuario={cupon.aliasUsuario}
+                  fechaCaduca={formatDate(cupon.caduca_at)}
+                  banner_11_url={cupon.banner_11_url}
+                  tipoTarjeta={cupon.tipo_tarjeta || ''}
+                  valorEuros={cupon.valor_euros ?? null}
+                  costeLunas={cupon.lunas_gastadas ?? null}
+                />
+
+                <div className="mt-4 space-y-2 border-t border-white/10 pt-4">
+                  <p className="text-xs text-gray-300">
+                    <span className="font-bold text-yellow-400">🔐 Clave secreta:</span>{' '}
+                    <span className="text-white font-mono tracking-widest">{cupon.palabra_clave_3 || '—'}</span>
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400 font-bold">Estado:</span>
+                    <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
+                      cupon.usado === true
+                        ? 'text-green-400 border-green-500/30 bg-green-950/20'
+                        : 'text-yellow-400 border-yellow-500/30 bg-yellow-950/20'
+                    }`}>
+                      {cupon.usado === true ? '✅ Usado' : '🟡 Pendiente'}
+                    </span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         ))}
       </div>

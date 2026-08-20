@@ -109,7 +109,7 @@ export default function CuponModal({
             {saldoTras < 0 && (
               <div style={{ fontSize: 11, color: '#ff4444', letterSpacing: 1,
                 textShadow: '0 0 8px rgba(255,68,68,0.4)' }}>
-                Lunas insuficientes
+                Te faltan 🌙 {Math.abs(saldoTras).toLocaleString()} Lunas
               </div>
             )}
 

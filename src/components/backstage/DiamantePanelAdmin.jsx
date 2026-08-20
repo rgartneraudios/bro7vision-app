@@ -47,9 +47,6 @@ const DiamantePanelAdmin = ({ session }) => {
         fecha_aprobacion: new Date().toISOString(),
       })
       .eq('id', item.id);
-    await supabase.rpc('recalcular_descuento_comercio', {
-      p_comercio_id: item.comercio_id,
-    });
     setProcesando(null);
     fetchData();
   };
@@ -70,9 +67,6 @@ const DiamantePanelAdmin = ({ session }) => {
       .from('diamante_catalogo')
       .update({ estado: 'AGOTADO' })
       .eq('id', item.id);
-    await supabase.rpc('recalcular_descuento_comercio', {
-      p_comercio_id: item.comercio_id,
-    });
     setProcesando(null);
     fetchData();
   };
