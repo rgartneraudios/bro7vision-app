@@ -10,9 +10,9 @@ const COSTE_LUNAS = {
 };
 
 const DIAMANTE_CONFIG = {
-  200:  { descuento_pct: 40, lunas_canje: 200000, cash: 40  },
-  500:  { descuento_pct: 45, lunas_canje: 300000, cash: 100 },
-  1000: { descuento_pct: 50, lunas_canje: 400000, cash: 200 },
+  200:  { descuento_pct: 40, lunas_canje: 200000, cash: 40 },
+  500:  { descuento_pct: 45, lunas_canje: 300000, cash: 90 },
+  1000: { descuento_pct: 50, lunas_canje: 400000, cash: 90 },
 };
 
 const CARD_ASSETS = {
@@ -273,6 +273,7 @@ export default function TarjetasRegalo({ profile }) {
         cantidad_disponible: parseInt(emisionTotal),
         estado:              'PENDIENTE',
         lunas_canje:         cfg.lunas_canje,
+        imagen_url:          bannerUrl || null,
       }]);
       setSaving(false);
       if (error) { setMsg(`Error: ${error.message}`); return; }
@@ -438,8 +439,230 @@ export default function TarjetasRegalo({ profile }) {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
 
-        {/* Fila superior: formulario + preview */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.8fr 1fr 1.2fr', gap: 32, alignItems: 'start' }}>
+        {/* Fila superior: nido + tarjetas + preview */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.8fr 1fr', gap: 32, alignItems: 'start' }}>
+
+          {/* ── TERMINAL PRE-NIDO ── */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+            {/* Crear Nido */}
+            {!activeNidoId ? (
+              <div style={{
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 20, padding: 24,
+              }}>
+                <h3 style={{ fontSize: 12, fontWeight: 700, color: '#facc15',
+                  letterSpacing: 3, textTransform: 'uppercase', margin: '0 0 20px' }}>
+                  🧺 Nuevo Nido
+                </h3>
+
+                <div style={{ marginBottom: 16 }}>
+                  <span style={labelStyle}>Nombre del Nido *</span>
+                  <input
+                    type="text"
+                    placeholder="Ej: Nido Verano 2026"
+                    value={nidoNombreInput}
+                    onChange={e => setNidoNombreInput(e.target.value)}
+                    style={inputStyle}
+                  />
+                </div>
+
+                <div style={{ marginBottom: 20 }}>
+                  <span style={labelStyle}>Alcance geográfico *</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {['LOCAL','CERCANIAS','NACIONAL','INTERNACIONAL'].map(op => (
+                      <button key={op} onClick={() => setNidoAlcanceInput(op)}
+                        style={{
+                          padding: '8px 14px', borderRadius: 10, fontSize: 11,
+                          fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase',
+                          cursor: 'pointer', fontFamily: HEADING, textAlign: 'left',
+                          transition: 'all 0.2s',
+                          background: nidoAlcanceInput === op
+                            ? 'rgba(0,229,212,0.12)' : 'rgba(255,255,255,0.04)',
+                          border: `1px solid ${nidoAlcanceInput === op
+                            ? '#00e5d4' : 'rgba(255,255,255,0.1)'}`,
+                          color: nidoAlcanceInput === op
+                            ? '#00e5d4' : 'rgba(255,255,255,0.4)',
+                        }}>
+                        {op === 'LOCAL' && '📍 Local'}
+                        {op === 'CERCANIAS' && '🗺️ Cercanías'}
+                        {op === 'NACIONAL' && '🇪🇸 Nacional'}
+                        {op === 'INTERNACIONAL' && '🌍 Internacional'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <button onClick={handleCrearNido}
+                  disabled={!nidoNombreInput.trim() || !nidoAlcanceInput || creandoNido}
+                  style={{
+                    width: '100%', padding: '13px 20px', border: 'none',
+                    borderRadius: 12, background: nidoNombreInput.trim() && nidoAlcanceInput && !creandoNido
+                      ? 'linear-gradient(135deg, #facc15, #f59e0b)' : 'rgba(255,255,255,0.06)',
+                    color: nidoNombreInput.trim() && nidoAlcanceInput && !creandoNido
+                      ? '#000' : 'rgba(255,255,255,0.2)',
+                    fontSize: 12, fontWeight: 900, letterSpacing: 2,
+                    textTransform: 'uppercase', cursor: nidoNombreInput.trim() && nidoAlcanceInput && !creandoNido
+                      ? 'pointer' : 'not-allowed',
+                    fontFamily: HEADING,
+                  }}>
+                  {creandoNido ? 'CREANDO...' : 'CREAR NIDO'}
+                </button>
+              </div>
+            ) : (
+              /* Nido activo — acumulador */
+              <div style={{
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(74,222,128,0.2)',
+                borderRadius: 20, padding: 24,
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between',
+                  alignItems: 'flex-start', marginBottom: 16 }}>
+                  <div>
+                    <h3 style={{ fontSize: 12, fontWeight: 700, color: '#4ade80',
+                      letterSpacing: 3, textTransform: 'uppercase', margin: '0 0 4px' }}>
+                      🧺 {activeNidoNombre}
+                    </h3>
+                    <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)',
+                      letterSpacing: 2, textTransform: 'uppercase' }}>
+                      {activeNidoAlcance}
+                    </span>
+                  </div>
+                  <button onClick={() => { setActiveNidoId(null); setActiveNidoNombre(''); setActiveNidoAlcance(''); }}
+                    style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)',
+                      cursor: 'pointer', fontSize: 16 }}>
+                    ✕
+                  </button>
+                </div>
+
+                {/* Tarjetas en el nido */}
+                {(() => {
+                  const enNido = tarjetas.filter(t => t.nido_id === activeNidoId);
+                  const totalGastado = enNido.reduce((sum, t) => {
+                    const euros = t.valor_euros != null ? parseFloat(t.valor_euros) : 0;
+                    const tierKey = t.tipo_tarjeta === 'LUNA100' ? '100' : t.tipo_tarjeta;
+                    const ratio = tierKey === 'PLATA' || t.tipo_tarjeta === 'PLATA' ? 0.60 : 0.90;
+                    return sum + euros * (t.emision_total || 1) * ratio;
+                  }, 0);
+                  const isActive = true;
+                  return (
+                    <>
+                      {enNido.length === 0 ? (
+                        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)',
+                          textAlign: 'center', padding: '20px 0' }}>
+                          Aún no hay tarjetas en este Nido.
+                        </p>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+                          {enNido.map(t => {
+                            const ts = LUNA_STYLES[t.tipo_tarjeta] || LUNA_STYLES.PLATA;
+                            return (
+                              <div key={t.id} style={{
+                                display: 'flex', justifyContent: 'space-between',
+                                alignItems: 'center', padding: '8px 12px',
+                                background: 'rgba(255,255,255,0.03)',
+                                border: `1px solid ${ts.color}33`,
+                                borderRadius: 10,
+                              }}>
+                                <span style={{ fontSize: 11, color: ts.color, fontWeight: 700 }}>
+                                  {ts.badge}
+                                </span>
+                                <span style={{ fontSize: 13, fontWeight: 900, color: '#fff' }}>
+                                  {t.valor_euros != null ? `${t.valor_euros}€` : '—'}
+                                </span>
+                                <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>
+                                  ×{t.emision_total || 1}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Indicador total */}
+                      {enNido.length > 0 && (
+                        <div style={{
+                          padding: '10px 14px', borderRadius: 10,
+                          background: 'rgba(74,222,128,0.06)',
+                          border: '1px solid rgba(74,222,128,0.15)',
+                          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        }}>
+                          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', letterSpacing: 1 }}>
+                            📦 TOTAL NIDO
+                          </span>
+                          <span style={{ fontSize: 16, fontWeight: 900, color: '#4ade80' }}>
+                            {totalGastado.toFixed(2)}€
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* Nidos guardados selector */}
+            {nidos.length > 0 && (
+              <div style={{
+                background: 'rgba(255,255,255,0.02)',
+                border: '1px solid rgba(255,255,255,0.06)',
+                borderRadius: 20, padding: 20,
+              }}>
+                <h3 style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.3)',
+                  letterSpacing: 3, textTransform: 'uppercase', margin: '0 0 12px' }}>
+                  📂 NIDOS GUARDADOS
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {nidos.map(n => {
+                    const enNido = tarjetas.filter(t => t.nido_id === n.id);
+                    const totalGastado = enNido.reduce((sum, t) => {
+                      const euros = t.valor_euros != null ? parseFloat(t.valor_euros) : 0;
+                      const ratio = t.tipo_tarjeta === 'PLATA' ? 0.60 : 0.90;
+                      return sum + euros * (t.emision_total || 1) * ratio;
+                    }, 0);
+                    const isActive = n.id === activeNidoId;
+                    return (
+                      <div key={n.id}
+                        onClick={() => {
+                          setActiveNidoId(n.id);
+                          setActiveNidoNombre(n.nombre_nido);
+                          setActiveNidoAlcance(n.alcance);
+                        }}
+                        style={{
+                          padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
+                          background: isActive
+                            ? 'rgba(74,222,128,0.06)' : 'rgba(255,255,255,0.02)',
+                          border: `1px solid ${isActive
+                            ? 'rgba(74,222,128,0.3)' : 'rgba(255,255,255,0.08)'}`,
+                          transition: 'all 0.2s',
+                        }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between',
+                          alignItems: 'center', marginBottom: 4 }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: isActive ? '#4ade80' : 'rgba(255,255,255,0.6)' }}>
+                            🧺 {n.nombre_nido}
+                          </span>
+                          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)',
+                            letterSpacing: 1, textTransform: 'uppercase' }}>
+                            {n.alcance}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)' }}>
+                            {enNido.length} tarjetas
+                          </span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: '#4ade80' }}>
+                            {totalGastado.toFixed(2)}€
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+          </div>
 
           {/* ── FORMULARIO ── */}
           <div style={{
@@ -708,6 +931,39 @@ export default function TarjetasRegalo({ profile }) {
                   </p>
                 </div>
 
+                {/* FOTO DEL ARTÍCULO — Diamante */}
+                <div style={{ marginBottom: 20 }}>
+                  <span style={labelStyle}>Foto del artículo (aparece en el modal al canjear)</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleUploadBanner}
+                    disabled={uploading}
+                    style={{ ...inputStyle, padding: '8px 14px', cursor: uploading ? 'not-allowed' : 'pointer', opacity: uploading ? 0.5 : 1 }}
+                  />
+                  {uploading && (
+                    <span style={{ fontSize: 11, color: '#facc15', marginTop: 6, display: 'block', letterSpacing: 1 }}>
+                      ⏳ {uploadProgress}
+                    </span>
+                  )}
+                  {bannerUrl && !uploading && (
+                    <div style={{ marginTop: 10, borderRadius: 10, overflow: 'hidden', height: 100, position: 'relative' }}>
+                      <img src={bannerUrl} alt="preview artículo"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <button
+                        onClick={() => setBannerUrl('')}
+                        style={{
+                          position: 'absolute', top: 6, right: 6,
+                          background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.2)',
+                          borderRadius: 6, color: '#f87171', fontSize: 10, fontWeight: 700,
+                          padding: '3px 8px', cursor: 'pointer', fontFamily: HEADING,
+                        }}>
+                        QUITAR
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 {valorDiamante && diamanteConfig && (
                   <div style={{ padding: '14px 18px', background: 'rgba(180,80,255,0.07)',
                     border: '1px solid rgba(180,80,255,0.2)', borderRadius: 12, marginBottom: 20 }}>
@@ -784,64 +1040,70 @@ export default function TarjetasRegalo({ profile }) {
               </>
             )}
 
-            {/* DESCRIPCIÓN */}
-            <div style={{ marginBottom: 20 }}>
-              <span style={labelStyle}>Descripción (aparece al girar la tarjeta)</span>
-              <textarea
-                rows={3}
-                placeholder="Describe tu oferta, condiciones o mensaje para el usuario..."
-                value={descripcion}
-                onChange={e => setDescripcion(e.target.value)}
-                style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5 }}
-              />
-            </div>
-
-            {/* PALABRAS CLAVE */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
-              <div>
-                <span style={labelStyle}>Palabra clave 1</span>
-                <input type="text" placeholder="Pública" value={palabraClave1}
-                  onChange={e => setPalabraClave1(e.target.value.toUpperCase())} style={inputStyle} />
+            {/* DESCRIPCIÓN — solo Plata/Oro/LUNA100, Diamante ya tiene la suya */}
+            {!isDiamante && (
+              <div style={{ marginBottom: 20 }}>
+                <span style={labelStyle}>Descripción (aparece al girar la tarjeta)</span>
+                <textarea
+                  rows={3}
+                  placeholder="Describe tu oferta, condiciones o mensaje para el usuario..."
+                  value={descripcion}
+                  onChange={e => setDescripcion(e.target.value)}
+                  style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5 }}
+                />
               </div>
-              <div>
-                <span style={labelStyle}>Palabra clave 2 (secreta)</span>
-                <input type="text" placeholder="Secreta" value={palabraClave2}
-                  onChange={e => setPalabraClave2(e.target.value.toUpperCase())} style={inputStyle} />
-              </div>
-            </div>
+            )}
 
-            {/* BANNER */}
-            <div style={{ marginBottom: 20 }}>
-              <span style={labelStyle}>Imagen de fondo (300×450px · formato 2:3)</span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleUploadBanner}
-                disabled={uploading}
-                style={{ ...inputStyle, padding: '8px 14px', cursor: uploading ? 'not-allowed' : 'pointer', opacity: uploading ? 0.5 : 1 }}
-              />
-              {uploading && (
-                <span style={{ fontSize: 11, color: '#facc15', marginTop: 6, display: 'block', letterSpacing: 1 }}>
-                  ⏳ {uploadProgress}
-                </span>
-              )}
-              {bannerUrl && !uploading && (
-                <div style={{ marginTop: 10, borderRadius: 10, overflow: 'hidden', height: 100, position: 'relative' }}>
-                  <img src={bannerUrl} alt="preview banner"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <button
-                    onClick={() => setBannerUrl('')}
-                    style={{
-                      position: 'absolute', top: 6, right: 6,
-                      background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.2)',
-                      borderRadius: 6, color: '#f87171', fontSize: 10, fontWeight: 700,
-                      padding: '3px 8px', cursor: 'pointer', fontFamily: HEADING,
-                    }}>
-                    QUITAR
-                  </button>
+            {/* PALABRAS CLAVE — solo Plata/Oro/LUNA100 */}
+            {!isDiamante && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
+                <div>
+                  <span style={labelStyle}>Palabra clave 1</span>
+                  <input type="text" placeholder="Pública" value={palabraClave1}
+                    onChange={e => setPalabraClave1(e.target.value.toUpperCase())} style={inputStyle} />
                 </div>
-              )}
-            </div>
+                <div>
+                  <span style={labelStyle}>Palabra clave 2 (secreta)</span>
+                  <input type="text" placeholder="Secreta" value={palabraClave2}
+                    onChange={e => setPalabraClave2(e.target.value.toUpperCase())} style={inputStyle} />
+                </div>
+              </div>
+            )}
+
+            {/* BANNER — solo Plata/Oro/LUNA100 */}
+            {!isDiamante && (
+              <div style={{ marginBottom: 20 }}>
+                <span style={labelStyle}>Imagen de fondo (300×450px · formato 2:3)</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleUploadBanner}
+                  disabled={uploading}
+                  style={{ ...inputStyle, padding: '8px 14px', cursor: uploading ? 'not-allowed' : 'pointer', opacity: uploading ? 0.5 : 1 }}
+                />
+                {uploading && (
+                  <span style={{ fontSize: 11, color: '#facc15', marginTop: 6, display: 'block', letterSpacing: 1 }}>
+                    ⏳ {uploadProgress}
+                  </span>
+                )}
+                {bannerUrl && !uploading && (
+                  <div style={{ marginTop: 10, borderRadius: 10, overflow: 'hidden', height: 100, position: 'relative' }}>
+                    <img src={bannerUrl} alt="preview banner"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <button
+                      onClick={() => setBannerUrl('')}
+                      style={{
+                        position: 'absolute', top: 6, right: 6,
+                        background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.2)',
+                        borderRadius: 6, color: '#f87171', fontSize: 10, fontWeight: 700,
+                        padding: '3px 8px', cursor: 'pointer', fontFamily: HEADING,
+                      }}>
+                      QUITAR
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* NIDO ACTIVO — indicador */}
             {activeNidoId ? (
@@ -939,8 +1201,8 @@ export default function TarjetasRegalo({ profile }) {
     <div className="flip-face" style={{
       borderRadius: 16, overflow: 'hidden',
     }}>
-      {/* Imagen fondo del comercio */}
-      {bannerUrl && (
+{/* Imagen fondo del comercio — solo Plata/Oro/LUNA100 */}
+              {!isDiamante && bannerUrl && (
         <img src={bannerUrl} alt="fondo"
           style={{
             position: 'absolute', inset: 0,
@@ -1095,240 +1357,29 @@ export default function TarjetasRegalo({ profile }) {
                 </div>
               );
             })()}
-            <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', textAlign: 'center', marginTop: 10, letterSpacing: 1 }}>
-              Toca la tarjeta para ver el reverso
-            </p>
-          </div>
 
-          {/* ── TERMINAL PRE-NIDO ── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-
-            {/* Crear Nido */}
-            {!activeNidoId ? (
-              <div style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 20, padding: 24,
-              }}>
-                <h3 style={{ fontSize: 12, fontWeight: 700, color: '#facc15',
-                  letterSpacing: 3, textTransform: 'uppercase', margin: '0 0 20px' }}>
-                  🧺 Nuevo Nido
-                </h3>
-
-                <div style={{ marginBottom: 16 }}>
-                  <span style={labelStyle}>Nombre del Nido *</span>
-                  <input
-                    type="text"
-                    placeholder="Ej: Nido Verano 2026"
-                    value={nidoNombreInput}
-                    onChange={e => setNidoNombreInput(e.target.value)}
-                    style={inputStyle}
+            {/* PREVIEW IMAGEN ARTÍCULO — solo Diamante */}
+            {isDiamante && bannerUrl && (
+              <div style={{ marginTop: 20 }}>
+                <span style={{ ...labelStyle, marginBottom: 10, display: 'block' }}>
+                  Foto del artículo
+                </span>
+                <div style={{
+                  borderRadius: 14,
+                  overflow: 'hidden',
+                  border: '1px solid rgba(180,80,255,0.25)',
+                  boxShadow: '0 0 20px rgba(144,64,224,0.15)',
+                  aspectRatio: '2/3',
+                  width: '100%',
+                }}>
+                  <img
+                    src={bannerUrl}
+                    alt="preview artículo"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                   />
                 </div>
-
-                <div style={{ marginBottom: 20 }}>
-                  <span style={labelStyle}>Alcance geográfico *</span>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {['LOCAL','CERCANIAS','NACIONAL','INTERNACIONAL'].map(op => (
-                      <button key={op} onClick={() => setNidoAlcanceInput(op)}
-                        style={{
-                          padding: '8px 14px', borderRadius: 10, fontSize: 11,
-                          fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase',
-                          cursor: 'pointer', fontFamily: HEADING, textAlign: 'left',
-                          transition: 'all 0.2s',
-                          background: nidoAlcanceInput === op
-                            ? 'rgba(0,229,212,0.12)' : 'rgba(255,255,255,0.04)',
-                          border: `1px solid ${nidoAlcanceInput === op
-                            ? '#00e5d4' : 'rgba(255,255,255,0.1)'}`,
-                          color: nidoAlcanceInput === op
-                            ? '#00e5d4' : 'rgba(255,255,255,0.4)',
-                        }}>
-                        {op === 'LOCAL' && '📍 Local'}
-                        {op === 'CERCANIAS' && '🗺️ Cercanías'}
-                        {op === 'NACIONAL' && '🇪🇸 Nacional'}
-                        {op === 'INTERNACIONAL' && '🌍 Internacional'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {nidoMsg && (
-                  <p style={{ fontSize: 11, color: '#f87171', marginBottom: 12 }}>{nidoMsg}</p>
-                )}
-
-                <button onClick={handleCrearNido} disabled={creandoNido}
-                  style={{
-                    width: '100%', padding: '12px 0',
-                    background: creandoNido
-                      ? 'rgba(250,204,21,0.1)' : 'rgba(250,204,21,0.18)',
-                    border: '1px solid rgba(250,204,21,0.4)',
-                    borderRadius: 12, color: '#facc15',
-                    fontSize: 12, fontWeight: 900, letterSpacing: 2,
-                    textTransform: 'uppercase', cursor: creandoNido ? 'not-allowed' : 'pointer',
-                    fontFamily: HEADING,
-                  }}>
-                  {creandoNido ? 'CREANDO...' : 'CREAR NIDO'}
-                </button>
-              </div>
-            ) : (
-              /* Nido activo — acumulador */
-              <div style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(74,222,128,0.2)',
-                borderRadius: 20, padding: 24,
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between',
-                  alignItems: 'flex-start', marginBottom: 16 }}>
-                  <div>
-                    <h3 style={{ fontSize: 12, fontWeight: 700, color: '#4ade80',
-                      letterSpacing: 3, textTransform: 'uppercase', margin: '0 0 4px' }}>
-                      🧺 {activeNidoNombre}
-                    </h3>
-                    <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)',
-                      letterSpacing: 2, textTransform: 'uppercase' }}>
-                      {activeNidoAlcance}
-                    </span>
-                  </div>
-                  <button onClick={() => {
-                    setActiveNidoId(null);
-                    setActiveNidoNombre('');
-                    setActiveNidoAlcance('');
-                  }} style={{
-                    fontSize: 10, color: 'rgba(255,255,255,0.3)',
-                    background: 'none', border: 'none', cursor: 'pointer', fontFamily: HEADING,
-                  }}>
-                    CAMBIAR
-                  </button>
-                </div>
-
-                {/* Tarjetas en este nido */}
-                {(() => {
-                  const enNido = tarjetas.filter(t => t.nido_id === activeNidoId);
-                  const cobertura = enNido.reduce((sum, t) => {
-                    const euros = parseFloat(t.valor_euros) || 5;
-const ratio = t.tipo_tarjeta === 'PLATA' ? 0.60 : 0.90;
-                      return sum + euros * (t.emision_total || 1) * ratio;
-                  }, 0);
-                  return (
-                    <>
-                      {enNido.length === 0 ? (
-                        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)',
-                          textAlign: 'center', padding: '20px 0' }}>
-                          Aún no hay tarjetas en este Nido.
-                        </p>
-                      ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-                          {enNido.map(t => {
-                            const ts = LUNA_STYLES[t.tipo_tarjeta] || LUNA_STYLES.PLATA;
-                            return (
-                              <div key={t.id} style={{
-                                display: 'flex', justifyContent: 'space-between',
-                                alignItems: 'center', padding: '8px 12px',
-                                background: 'rgba(255,255,255,0.03)',
-                                border: `1px solid ${ts.color}33`,
-                                borderRadius: 10,
-                              }}>
-                                <span style={{ fontSize: 11, color: ts.color, fontWeight: 700 }}>
-                                  {ts.badge}
-                                </span>
-                                <span style={{ fontSize: 13, fontWeight: 900, color: '#fff' }}>
-                                  {t.valor_euros != null ? `${t.valor_euros}€` : '—'}
-                                </span>
-                                <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>
-                                  ×{t.emision_total || 1}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                      {enNido.length > 0 && (
-                        <div style={{ padding: '10px 14px', borderRadius: 10,
-                          background: 'rgba(74,222,128,0.07)',
-                          border: '1px solid rgba(74,222,128,0.2)',
-                          display: 'flex', justifyContent: 'space-between' }}>
-                          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
-                            Cobertura en espacios
-                          </span>
-                          <span style={{ fontSize: 14, fontWeight: 900, color: '#4ade80' }}>
-                            {cobertura.toFixed(2)}€
-                          </span>
-                        </div>
-                      )}
-                    </>
-                  );
-                })()}
               </div>
             )}
-
-            {/* Mis Nidos */}
-            {nidos.length > 0 && (
-              <div style={{
-                background: 'rgba(255,255,255,0.02)',
-                border: '1px solid rgba(255,255,255,0.06)',
-                borderRadius: 20, padding: 24,
-              }}>
-                <h3 style={{ fontSize: 12, fontWeight: 700, color: '#a78bfa',
-                  letterSpacing: 3, textTransform: 'uppercase', margin: '0 0 16px' }}>
-                  Mis Nidos ({nidos.length})
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {nidos.map(n => {
-                    const tarjetasNido = n.comercio_cupones || [];
-                    const cobertura = tarjetasNido.reduce((sum, t) => {
-                      const euros = parseFloat(t.valor_euros) || 5;
-const ratio = t.tipo_tarjeta === 'PLATA' ? 0.60 : 0.90;
-                    return sum + euros * (t.emision_total || 1) * ratio;
-                  }, 0);
-                  const isActive = n.id === activeNidoId;
-                    return (
-                      <div key={n.id}
-                        onClick={() => {
-                          setActiveNidoId(n.id);
-                          setActiveNidoNombre(n.nombre_nido);
-                          setActiveNidoAlcance(n.alcance);
-                        }}
-                        style={{
-                          padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
-                          background: isActive
-                            ? 'rgba(74,222,128,0.06)' : 'rgba(255,255,255,0.02)',
-                          border: `1px solid ${isActive
-                            ? 'rgba(74,222,128,0.3)' : 'rgba(255,255,255,0.08)'}`,
-                          transition: 'all 0.2s',
-                        }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between',
-                          alignItems: 'center', marginBottom: 6 }}>
-                          <span style={{ fontSize: 12, fontWeight: 700,
-                            color: isActive ? '#4ade80' : '#fff' }}>
-                            🌙 {n.nombre_nido}
-                          </span>
-                          <span style={{
-                            fontSize: 9, fontWeight: 700, letterSpacing: 1,
-                            textTransform: 'uppercase', padding: '2px 8px',
-                            borderRadius: 20,
-                            background: n.activo
-                              ? 'rgba(74,222,128,0.15)' : 'rgba(255,255,255,0.06)',
-                            color: n.activo ? '#4ade80' : 'rgba(255,255,255,0.3)',
-                          }}>
-                            {n.activo ? 'ACTIVO' : 'INACTIVO'}
-                          </span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)',
-                            textTransform: 'uppercase', letterSpacing: 1 }}>
-                            {n.alcance} · {tarjetasNido.length} tarjetas
-                          </span>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: '#4ade80' }}>
-                            {cobertura.toFixed(0)}€
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
           </div>
 
         </div>

@@ -190,10 +190,10 @@ export default function CanjearStrip({ scope }) {
   const [errorCanjeDiamante, setErrorCanjeDiamante] = useState('');
 
   const DIAMANTE_CARD_ASSET = {
-    200:  '/images/demotarjetaD200.webp',
-    500:  '/images/demotarjetaD500.webp',
-    1000: '/images/demotarjetaD1000.webp',
-  };
+  200:  '/images/cards/diamante-200.webp',
+  500:  '/images/cards/diamante-500.webp',
+  1000: '/images/cards/diamante-1000.webp',
+};
 
   useEffect(() => {
     const fetchCity = async () => {
@@ -756,16 +756,18 @@ export default function CanjearStrip({ scope }) {
                           🌙 {premio.lunas_canje?.toLocaleString()} Lunas
                         </div>
 
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setPremioSeleccionado(premio); }}
-                          style={{
-                            width: '100%', padding: '8px 0', borderRadius: 8, border: '1px solid #d090ff',
-                            background: 'transparent', color: '#d090ff', fontSize: 10,
-                            fontWeight: 700, letterSpacing: 2, cursor: 'pointer',
-                          }}
-                        >
-                          VER PRODUCTO →
-                        </button>
+                        {premio.imagen_url && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setPremioSeleccionado(premio); }}
+                            style={{
+                              width: '100%', padding: '8px 0', borderRadius: 8, border: '1px solid rgba(180,80,255,0.4)',
+                              background: 'transparent', color: '#d090ff', fontSize: 10,
+                              fontWeight: 700, letterSpacing: 2, cursor: 'pointer',
+                            }}
+                          >
+                            📷 VER FOTO
+                          </button>
+                        )}
 
                         <button
                           onClick={(e) => {
@@ -819,41 +821,31 @@ export default function CanjearStrip({ scope }) {
         <div style={{
           position: 'fixed', top: '50%', left: '50%',
           transform: 'translate(-50%, -50%)',
-          zIndex: 201, width: 'min(520px, 92vw)',
+          zIndex: 201, width: 'min(480px, 92vw)',
           borderRadius: 20, overflow: 'hidden',
           background: 'linear-gradient(145deg, #1a0a2e, #2d1050)',
           border: '1px solid rgba(180,80,255,0.3)',
           boxShadow: '0 0 40px rgba(144,64,224,0.3)',
-          padding: 28, display: 'flex', flexDirection: 'column', gap: 16,
+          display: 'flex', flexDirection: 'column',
           fontFamily: "'Exo 2', sans-serif",
         }}>
-          {premioSeleccionado.imagen_url && (
-            <img src={premioSeleccionado.imagen_url} alt={premioSeleccionado.nombre_premio}
-              style={{ width: '100%', borderRadius: 12, objectFit: 'cover', maxHeight: 240 }} />
-          )}
-          <p style={{ fontSize: 10, color: '#d090ff', fontWeight: 800,
-            letterSpacing: 2, textTransform: 'uppercase' }}>
-            💎 Diamante {premioSeleccionado.tier}
-          </p>
-          <p style={{ fontSize: 18, color: '#fff', fontWeight: 900 }}>
-            {premioSeleccionado.nombre_premio}
-          </p>
-          {premioSeleccionado.descripcion && (
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7 }}>
-              {premioSeleccionado.descripcion}
-            </p>
-          )}
-          <div style={{ display: 'flex', justifyContent: 'space-between',
-            fontSize: 12, color: 'rgba(255,255,255,0.5)', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 12 }}>
-            <span>PVP referencia: <strong style={{ color: '#fff' }}>{premioSeleccionado.valor_pvp}€</strong></span>
-            <span>Stock: <strong style={{ color: '#d090ff' }}>{premioSeleccionado.cantidad_disponible}</strong></span>
+          <img
+            src={premioSeleccionado.imagen_url}
+            alt={premioSeleccionado.nombre_premio}
+            style={{ width: '100%', objectFit: 'cover', maxHeight: 380, display: 'block' }}
+          />
+          <div style={{ padding: '14px 20px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 13, color: '#fff', fontWeight: 700 }}>
+              {premioSeleccionado.nombre_premio}
+            </span>
+            <button onClick={() => setPremioSeleccionado(null)}
+              style={{ background: 'none', border: '1px solid rgba(180,80,255,0.3)',
+                borderRadius: 8, color: '#d090ff', fontSize: 10, fontWeight: 700,
+                letterSpacing: 2, cursor: 'pointer', padding: '5px 14px',
+                fontFamily: "'Exo 2', sans-serif" }}>
+              CERRAR
+            </button>
           </div>
-          <button onClick={() => setPremioSeleccionado(null)}
-            style={{ padding: '10px 0', borderRadius: 10, border: '1px solid rgba(180,80,255,0.3)',
-              background: 'transparent', color: '#d090ff', fontSize: 11,
-              fontWeight: 700, letterSpacing: 2, cursor: 'pointer' }}>
-            CERRAR
-          </button>
         </div>
       )}
 
