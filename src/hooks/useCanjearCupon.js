@@ -4,10 +4,10 @@ import { supabase } from '../supabaseClient';
 
 export function useCanjearCupon({ userId, onLunasUpdate }) {
 
-  const [estado,       setEstado]       = useState('idle');
-  const [cuponActivo,  setCuponActivo]  = useState(null);
-  const [cardPendiente,setCardPendiente]= useState(null);
-  const [errorMsg,     setErrorMsg]     = useState('');
+  const [estado,        setEstado]        = useState('idle');
+  const [cuponActivo,   setCuponActivo]   = useState(null);
+  const [cardPendiente, setCardPendiente] = useState(null);
+  const [errorMsg,      setErrorMsg]      = useState('');
 
   const iniciarCanje = useCallback((card) => {
     setCardPendiente(card);
@@ -28,7 +28,7 @@ export function useCanjearCupon({ userId, onLunasUpdate }) {
 
     const { data, error } = await supabase.rpc('procesar_canje', {
       p_user_id:     userId,
-      p_comercio_id: cardPendiente.id,
+      p_pack_id:     cardPendiente.id,       // ← era p_comercio_id
       p_coste_lunas: cardPendiente.coste_lunas,
     });
 
@@ -42,13 +42,11 @@ export function useCanjearCupon({ userId, onLunasUpdate }) {
     onLunasUpdate?.(data.balance_nuevo);
 
     setCuponActivo({
-      tipo_tarjeta:    data.tipo_tarjeta,
-      valor_euros:     data.valor_euros,
-      palabra_clave_2: data.palabra_clave_2,
-      comercio_nombre: data.comercio_nombre,
-      web_url:         data.web_url,
-      caduca_legible:  data.caduca_legible,
-      ya_existia:      data.ya_existia,
+      tipo_tarjeta:   data.tipo_tarjeta,
+      valor_euros:    data.valor_euros,
+      clave_secreta:  data.clave_secreta,    // ← nuevo
+      caduca_legible: data.caduca_legible,
+      ya_existia:     data.ya_existia,
     });
 
     setEstado('exito');

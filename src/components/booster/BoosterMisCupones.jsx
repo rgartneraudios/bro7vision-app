@@ -1,8 +1,15 @@
+// src/components/booster/BoosterMisCupones.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../supabaseClient';
-import StickerCupon from './StickerCupon';
 
 const CardStyle = "bg-blue-950/10 backdrop-blur-xl border border-white/10 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]";
+
+const TIPO_CONFIG = {
+  PLATA:    { emoji: '🥈', color: 'text-slate-300'  },
+  ORO:      { emoji: '🥇', color: 'text-yellow-300' },
+  DIAMANTE: { emoji: '💎', color: 'text-violet-300' },
+  LUNA100:  { emoji: '🌙', color: 'text-cyan-300'   },
+};
 
 const BoosterMisCupones = () => {
   const [cupones, setCupones] = useState([]);
@@ -14,71 +21,12 @@ const BoosterMisCupones = () => {
       if (!user) return;
 
       const { data: rows } = await supabase
-        .from('nido_generado')
-        .select('*')
+        .from('canjes_usuario')
+        .select('id, pack_id, tipo_tarjeta, valor_euros, clave_secreta, lunas_gastadas, caduca_at, usado, created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (!rows) {
-        setCupones([]);
-        return;
-      }
-
-      const comercioIds = rows.map(r => r.comercio_id).filter(Boolean);
-      const bannerMap = {};
-      if (comercioIds.length > 0) {
-        const { data: comercios } = await supabase
-          .from('comercio_cupones')
-          .select('id, banner_url')
-          .in('id', comercioIds);
-        if (comercios) {
-          comercios.forEach(c => { bannerMap[c.id] = c.banner_url || ''; });
-        }
-      }
-
-      const aliasMap = {};
-      const userIds = [...new Set(rows.map(r => r.user_id).filter(Boolean))];
-      if (userIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('id, alias')
-          .in('id', userIds);
-        if (profiles) {
-          profiles.forEach(p => { aliasMap[p.id] = p.alias; });
-        }
-      }
-
-      setCupones(rows.map(r => ({
-        ...r,
-        aliasUsuario: r.user_id ? (aliasMap[r.user_id] || 'desconocido') : 'invitado',
-        banner_11_url: bannerMap[r.comercio_id] || '',
-      })));
-
-      // Fetch canjes Diamante
-      const { data: canjesDiamante } = await supabase
-        .from('diamante_canjes')
-        .select('*, diamante_catalogo(nombre_premio, imagen_url, tier, descuento_pct, palabra_clave_1)')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (canjesDiamante && canjesDiamante.length > 0) {
-        const mapped = canjesDiamante.map(c => ({
-          id:             c.id,
-          created_at:     c.created_at,
-          tipo_tarjeta:   'DIAMANTE_CANJE',
-          nombre_premio:  c.diamante_catalogo?.nombre_premio || '—',
-          imagen_url:     c.diamante_catalogo?.imagen_url    || '',
-          tier:           c.diamante_catalogo?.tier          || '',
-          palabra_clave_1:c.diamante_catalogo?.palabra_clave_1 || '',
-          clave_secreta:  c.clave_canje,
-          lunas_gastadas: c.lunas_gastadas,
-          estado_canje:   c.estado,
-          _esDiamante:    true,
-        }));
-        setCupones(prev => [...prev, ...mapped].sort(
-          (a, b) => new Date(b.created_at) - new Date(a.created_at)
-        ));
-      }
+      setCupones(rows || []);
     } catch (e) {
       console.error('Error loading cupones:', e);
     } finally {
@@ -98,7 +46,9 @@ const BoosterMisCupones = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-gray-600 text-xs uppercase tracking-widest animate-pulse">Cargando cupones...</p>
+        <p className="text-gray-600 text-xs uppercase tracking-widest animate-pulse">
+          Cargando cupones...
+        </p>
       </div>
     );
   }
@@ -119,98 +69,70 @@ const BoosterMisCupones = () => {
 
   return (
     <div className="space-y-6 animate-fadeIn max-w-5xl mx-auto pb-10">
+
       <div className="flex items-center gap-4 mb-2">
         <span className="text-4xl">🎫</span>
         <div>
-          <h3 className="text-xl font-black text-fuchsia-400 tracking-widest uppercase">Mis Cupones</h3>
-          <p className="text-xs text-gray-500 font-bold tracking-widest mt-0.5">Cupones que has canjeado</p>
+          <h3 className="text-xl font-black text-fuchsia-400 tracking-widest uppercase">
+            Mis Cupones
+          </h3>
+          <p className="text-xs text-gray-500 font-bold tracking-widest mt-0.5">
+            Cupones que has canjeado
+          </p>
         </div>
       </div>
 
       <div className="max-w-3xl mx-auto space-y-6">
-        {cupones.map((cupon) => (
-          <div key={cupon.id} className={CardStyle}>
-            {cupon._esDiamante ? (
+        {cupones.map((cupon) => {
+          const cfg = TIPO_CONFIG[cupon.tipo_tarjeta] || TIPO_CONFIG.PLATA;
+          return (
+            <div key={cupon.id} className={CardStyle}>
               <div className="flex flex-col gap-4">
+
+                {/* Cabecera tipo + valor */}
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">💎</span>
+                  <span className="text-2xl">{cfg.emoji}</span>
                   <div>
-                    <p className="text-xs font-black text-violet-400 uppercase tracking-widest">
-                      Diamante {cupon.tier}
+                    <p className={`text-xs font-black uppercase tracking-widest ${cfg.color}`}>
+                      Tarjeta {cupon.tipo_tarjeta}
                     </p>
-                    <p className="text-base font-black text-white">{cupon.nombre_premio}</p>
+                    <p className="text-xl font-black text-white">
+                      {cupon.valor_euros
+                        ? `${Number(cupon.valor_euros).toLocaleString('es-ES', { minimumFractionDigits: 0 })} €`
+                        : '—'}
+                    </p>
                   </div>
                 </div>
 
-                {cupon.imagen_url && (
-                  <img
-                    src={cupon.imagen_url}
-                    alt={cupon.nombre_premio}
-                    className="w-full rounded-xl object-cover"
-                    style={{ maxHeight: 180 }}
-                  />
-                )}
-
+                {/* Datos */}
                 <div className="border-t border-white/10 pt-4 space-y-2">
                   <p className="text-xs text-gray-400">
-                    <span className="font-bold text-violet-300">Referencia pública:</span>{' '}
-                    <span className="font-mono tracking-widest text-white">{cupon.palabra_clave_1 || '—'}</span>
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    <span className="font-bold text-yellow-400">🔐 Tu clave secreta:</span>{' '}
-                    <span className="font-mono tracking-widest text-white">{cupon.clave_secreta}</span>
+                    <span className="font-bold text-yellow-400">🔐 Clave secreta:</span>{' '}
+                    <span className="font-mono tracking-widest text-white">
+                      {cupon.clave_secreta || '—'}
+                    </span>
                   </p>
                   <p className="text-xs text-gray-400">
                     <span className="font-bold text-gray-300">Lunas gastadas:</span>{' '}
                     🌙 {cupon.lunas_gastadas?.toLocaleString()}
                   </p>
+                  <p className="text-xs text-gray-400">
+                    <span className="font-bold text-gray-300">Caduca:</span>{' '}
+                    {formatDate(cupon.caduca_at)}
+                  </p>
                   <span className={`inline-block text-xs font-bold px-3 py-1 rounded-full border ${
-                    cupon.estado_canje === 'RECIBIDO'
+                    cupon.usado
                       ? 'text-green-400 border-green-500/30 bg-green-950/20'
-                      : cupon.estado_canje === 'ENVIADO'
-                      ? 'text-blue-400 border-blue-500/30 bg-blue-950/20'
                       : 'text-yellow-400 border-yellow-500/30 bg-yellow-950/20'
                   }`}>
-                    {cupon.estado_canje === 'RECIBIDO' ? '✅ Recibido'
-                      : cupon.estado_canje === 'ENVIADO' ? '📦 En camino'
-                      : '🟡 Pendiente de contacto'}
+                    {cupon.usado ? '✅ Usado' : '🟡 Pendiente de usar'}
                   </span>
                 </div>
-              </div>
-            ) : (
-              <>
-                <StickerCupon
-                  comercioNombre={cupon.comercio_nombre || 'Comercio'}
-                  tipoBrocard={cupon.tipo_brocard || ''}
-                  palabraClave1={cupon.palabra_clave_1 || ''}
-                  aliasUsuario={cupon.aliasUsuario}
-                  fechaCaduca={formatDate(cupon.caduca_at)}
-                  banner_11_url={cupon.banner_11_url}
-                  tipoTarjeta={cupon.tipo_tarjeta || ''}
-                  valorEuros={cupon.valor_euros ?? null}
-                  costeLunas={cupon.lunas_gastadas ?? null}
-                />
 
-                <div className="mt-4 space-y-2 border-t border-white/10 pt-4">
-                  <p className="text-xs text-gray-300">
-                    <span className="font-bold text-yellow-400">🔐 Clave secreta:</span>{' '}
-                    <span className="text-white font-mono tracking-widest">{cupon.palabra_clave_3 || '—'}</span>
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400 font-bold">Estado:</span>
-                    <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
-                      cupon.usado === true
-                        ? 'text-green-400 border-green-500/30 bg-green-950/20'
-                        : 'text-yellow-400 border-yellow-500/30 bg-yellow-950/20'
-                    }`}>
-                      {cupon.usado === true ? '✅ Usado' : '🟡 Pendiente'}
-                    </span>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
