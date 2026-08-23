@@ -84,7 +84,10 @@ export default function TarjetasRegalo({ profile }) {
   const [saving, setSaving]               = useState(false);
   const [uploading, setUploading]         = useState(false);
   const [msg, setMsg]                     = useState('');
-  const [calcPresupuesto, setCalcPresupuesto] = useState('');
+  const [calcTipo,     setCalcTipo]     = useState('');
+  const [calcDenom,    setCalcDenom]    = useState('');
+  const [calcCantidad, setCalcCantidad] = useState('');
+  const [calcTipoOpen, setCalcTipoOpen] = useState(false);
 
   const [descripcion, setDescripcion]         = useState('');
   const [compraMinima, setCompraMinima]       = useState('');
@@ -184,8 +187,20 @@ export default function TarjetasRegalo({ profile }) {
     await loadNidos();
   };
 
-  const calcNum    = parseFloat(calcPresupuesto) || 0;
-  const calcSeguro = calcNum > 0 ? Math.min(calcNum * 0.20, 90) : 0;
+  const calcDenomOpciones = CATALOGO_NIDOS
+  .filter(c => c.tipo_tarjeta === calcTipo)
+  .map(c => c.denominacion);
+
+const calcMaxCantidad = CATALOGO_NIDOS.find(
+  c => c.tipo_tarjeta === calcTipo && c.denominacion === Number(calcDenom)
+)?.cantidad_total ?? 0;
+
+const calcCoberturaRaw = (calcTipo && calcDenom && Number(calcCantidad) > 0)
+  ? Math.floor(Number(calcDenom) * Number(calcCantidad) * RATIO[calcTipo])
+  : 0;
+
+const calcCobertura = Math.min(calcCoberturaRaw, 1000);
+const calcCapped    = calcCoberturaRaw > 1000;
 
   const labelStyle = {
     fontSize: 10, fontWeight: 700, letterSpacing: 2,
@@ -509,7 +524,7 @@ export default function TarjetasRegalo({ profile }) {
 
             {/* Calculator */}
             <div style={{
-              background: 'rgba(255,255,255,0.02)',
+              background: '#1a1a1a',
               border: '1px solid rgba(255,255,255,0.06)',
               borderRadius: 16, padding: 24,
             }}>
@@ -517,43 +532,141 @@ export default function TarjetasRegalo({ profile }) {
                 letterSpacing: 3, textTransform: 'uppercase', margin: '0 0 16px' }}>
                 🧮 Calculadora de Cobertura
               </h3>
-              <div style={{ marginBottom: 12 }}>
-                <span style={labelStyle}>Presupuesto de slots (€)</span>
-                <input type="number" min="0" max="1000" step="1"
-                  placeholder="Ej: 500"
-                  value={calcPresupuesto}
-                  onChange={e => setCalcPresupuesto(e.target.value)}
-                  style={{ ...inputStyle, backgroundImage: 'none' }} />
-              </div>
-              {calcNum > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between',
-                    padding: '8px 12px', background: 'rgba(248,113,113,0.08)',
-                    border: '1px solid rgba(248,113,113,0.2)', borderRadius: 10 }}>
-                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
-                      🔒 Seguro pub. (20%, máx 90€)
-                    </span>
-                    <span style={{ fontSize: 13, fontWeight: 900, color: '#f87171' }}>
-                      {calcSeguro.toFixed(2)}€
-                    </span>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+                {/* Tipo — custom dropdown con emojis reales */}
+                <div style={{ position: 'relative' }}>
+                  <span style={labelStyle}>Tipo de tarjeta</span>
+                  <div
+                    onClick={() => setCalcTipoOpen(!calcTipoOpen)}
+                    style={{ ...inputStyle, backgroundImage: 'none', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', gap: 8, userSelect: 'none' }}
+                  >
+                    {calcTipo ? (
+                      <>
+                        <img src={getEmojiImage(calcTipo, calcTipo === 'PLATA' ? 5 : calcTipo === 'ORO' ? 10 : 200)}
+                          alt="" style={{ width: 18, height: 18, flexShrink: 0, objectFit: 'contain' }} />
+                        <span style={{ color: '#fff' }}>
+                          {calcTipo === 'PLATA' ? 'Plata (×0.60)' : calcTipo === 'ORO' ? 'Oro (×0.90)' : 'Diamante (×0.80)'}
+                        </span>
+                      </>
+                    ) : (
+                      <span style={{ color: 'rgba(255,255,255,0.35)' }}>— Selecciona tipo —</span>
+                    )}
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-                    {[
-                      { label: 'Plata ×0.60',   color: '#d0d8e8', val: calcNum / 0.60, bg: 'rgba(160,168,184,0.08)', border: 'rgba(160,168,184,0.2)' },
-                      { label: 'Oro ×0.90',      color: '#ffe566', val: calcNum / 0.90, bg: 'rgba(200,150,10,0.08)',  border: 'rgba(200,150,10,0.2)'  },
-                      { label: 'Diamante ×0.80', color: '#d090ff', val: calcNum / 0.80, bg: 'rgba(180,80,255,0.08)', border: 'rgba(180,80,255,0.2)'  },
-                    ].map(({ label, color, val, bg, border }) => (
-                      <div key={label} style={{ padding: '10px 8px', background: bg,
-                        border: `1px solid ${border}`, borderRadius: 10, textAlign: 'center' }}>
-                        <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.4)',
-                          textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>{label}</div>
-                        <div style={{ fontSize: 14, fontWeight: 900, color }}>{val.toFixed(0)}€</div>
-                        <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.25)', marginTop: 2 }}>en tarjetas</div>
-                      </div>
-                    ))}
-                  </div>
+                  {calcTipoOpen && (
+                    <div style={{
+                      position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10,
+                      marginTop: 4, borderRadius: 10, overflow: 'hidden',
+                      background: '#2a2a2a', border: '1px solid rgba(255,255,255,0.12)',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                    }}>
+                      {[
+                        { tipo: 'PLATA',   label: 'Plata (×0.60)',   denom: 5 },
+                        { tipo: 'ORO',     label: 'Oro (×0.90)',     denom: 10 },
+                        { tipo: 'DIAMANTE',label: 'Diamante (×0.80)',denom: 200 },
+                      ].map(({ tipo, label, denom }) => (
+                        <div key={tipo}
+                          onClick={() => { setCalcTipo(tipo); setCalcTipoOpen(false); setCalcDenom(''); setCalcCantidad(''); }}
+                          style={{
+                            padding: '10px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
+                            background: calcTipo === tipo ? 'rgba(255,255,255,0.08)' : 'transparent',
+                            transition: 'background 0.15s',
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                          onMouseLeave={e => e.currentTarget.style.background = calcTipo === tipo ? 'rgba(255,255,255,0.08)' : 'transparent'}
+                        >
+                          <img src={getEmojiImage(tipo, denom)}
+                            alt="" style={{ width: 18, height: 18, flexShrink: 0, objectFit: 'contain' }} />
+                          <span style={{ fontSize: 12, color: '#fff' }}>{label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
+
+                {/* Denominación */}
+                {calcTipo && (
+                  <div>
+                    <span style={labelStyle}>Denominación</span>
+                    <select
+                      value={calcDenom}
+                      onChange={e => { setCalcDenom(e.target.value); setCalcCantidad(''); }}
+                      style={{ ...inputStyle, backgroundImage: 'none', cursor: 'pointer',
+                        background: '#1a1a1a', color: '#fff' }}
+                    >
+                      <option value=''>— Selecciona valor —</option>
+                      {calcDenomOpciones.map(d => (
+                        <option key={d} value={d}>
+                          {calcTipo === 'PLATA' && d === 7 ? '📦 Envío gratis (7€)' : `${d}€`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Cantidad */}
+                {calcDenom && (
+                  <div>
+                    <span style={labelStyle}>
+                      Cantidad de tarjetas
+                      {calcMaxCantidad > 0 && (
+                        <span style={{ color: 'rgba(255,255,255,0.25)', fontWeight: 400, marginLeft: 6 }}>
+                          (máx. {calcMaxCantidad} uds en catálogo)
+                        </span>
+                      )}
+                    </span>
+                    <input
+                      type="number" min="1" max={calcMaxCantidad} step="1"
+                      placeholder={`Ej: 20`}
+                      value={calcCantidad}
+                      onChange={e => setCalcCantidad(e.target.value)}
+                      style={{ ...inputStyle, backgroundImage: 'none', background: '#1a1a1a', color: '#fff' }}
+                    />
+                  </div>
+                )}
+
+                {/* Resultado */}
+                {calcCobertura > 0 && (
+                  <div style={{
+                    marginTop: 4, padding: '16px 20px', borderRadius: 14, textAlign: 'center',
+                    background: calcTipo === 'PLATA'    ? 'rgba(160,168,184,0.08)'
+                              : calcTipo === 'ORO'      ? 'rgba(200,150,10,0.08)'
+                              : 'rgba(180,80,255,0.08)',
+                    border: `1px solid ${
+                      calcTipo === 'PLATA'    ? 'rgba(160,168,184,0.25)'
+                      : calcTipo === 'ORO'   ? 'rgba(200,150,10,0.25)'
+                      : 'rgba(180,80,255,0.25)'
+                    }`,
+                  }}>
+                    <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)',
+                      textTransform: 'uppercase', letterSpacing: 2, marginBottom: 6 }}>
+                      Cobertura publicitaria generada
+                    </div>
+                    <div style={{
+                      fontSize: 32, fontWeight: 900,
+                      color: calcTipo === 'PLATA' ? '#d0d8e8'
+                           : calcTipo === 'ORO'   ? '#ffe566'
+                           : '#d090ff',
+                    }}>
+                      {calcCobertura.toFixed(0)}€
+                    </div>
+                    <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>
+                      {Number(calcCantidad)} tarjeta{Number(calcCantidad) !== 1 ? 's' : ''} × {calcDenom}€ × {RATIO[calcTipo]}
+                    </div>
+                    {calcCapped && (
+                      <div style={{ marginTop: 8, fontSize: 9, color: '#f87171',
+                        background: 'rgba(248,113,113,0.08)',
+                        border: '1px solid rgba(248,113,113,0.2)',
+                        borderRadius: 8, padding: '4px 10px', display: 'inline-block' }}>
+                        ⚠ Tope de contrato: 1.000€ aplicado
+                      </div>
+                    )}
+                  </div>
+                )}
+
+              </div>
             </div>
 
           </div>
