@@ -399,6 +399,9 @@ const calcCapped    = calcCoberturaRaw > 1000;
                     {nidoSel.tipo_tarjeta === 'DIAMANTE' && (
                       <div>
                         <span style={labelStyle}>Imagen del artículo</span>
+                        <div style={{ fontSize: 9, color: 'rgba(180,80,255,0.5)', marginBottom: 6, lineHeight: 1.4 }}>
+                          Dimensiones recomendadas: 300×450px o 200×300px (ratio 2:3)
+                        </div>
                         <label style={{
                           display: 'block', padding: '10px 14px',
                           background: 'rgba(180,80,255,0.05)',
@@ -413,9 +416,10 @@ const calcCapped    = calcCoberturaRaw > 1000;
                             onChange={handleUploadImagen} style={{ display: 'none' }} />
                         </label>
                         {imagenAprobacion && (
-                          <img src={imagenAprobacion} alt="preview"
-                            style={{ width: '100%', borderRadius: 10,
-                              marginTop: 8, maxHeight: 120, objectFit: 'cover' }} />
+                          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 8 }}>
+                            <img src={imagenAprobacion} alt="preview"
+                              style={{ width: 200, height: 300, borderRadius: 10, objectFit: 'cover' }} />
+                          </div>
                         )}
                       </div>
                     )}
@@ -461,52 +465,92 @@ const calcCapped    = calcCoberturaRaw > 1000;
 
                       {/* ANVERSO */}
                       <div className="flip-face" style={{
-                        backgroundImage: `url(${getCardImage(nidoSel.tipo_tarjeta, nidoSel.denominacion)})`,
+                        backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.1)), url(${getCardImage(nidoSel.tipo_tarjeta, nidoSel.denominacion)})`,
                         backgroundSize: 'cover', backgroundPosition: 'center',
                         padding: '14px 16px',
                         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                         boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
                       }}>
-                        <div>
-                          {descripcion && (
-                            <p style={{
-                              fontSize: 7, color: ts.colorText, opacity: 0.7,
-                              margin: '0 0 4px', lineHeight: 1.4,
-                              overflow: 'hidden', display: '-webkit-box',
-                              WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-                            }}>
-                              {descripcion}
-                            </p>
-                          )}
-                          {palabraClavePub && (
-                            <div style={{ fontSize: 6, letterSpacing: 2, color: ts.colorText,
-                              opacity: 0.4, textTransform: 'uppercase' }}>
-                              REF: {palabraClavePub}
-                            </div>
-                          )}
-                        </div>
                       </div>
 
                       {/* REVERSO */}
                       <div className="flip-face flip-face-back" style={{
-                        backgroundImage: 'url(/images/cards/card-back.webp)',
+                        backgroundImage: 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(/images/cards/card-back.webp)',
                         backgroundSize: 'cover', backgroundPosition: 'center',
                         padding: '14px 16px',
                         display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                         boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
                       }}>
                         <div>
+                          <div style={{ fontSize: 13, fontWeight: 900, color: '#ffffff',
+                            marginBottom: 4, lineHeight: 1.2, overflow: 'hidden',
+                            textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                            textAlign: 'center',
+                            textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
+                            {profile?.razon_social || profile?.alias || 'Comercio'}
+                          </div>
+                          {nidoSel.tipo_tarjeta === 'PLATA' && compraMinima && (
+                            <div style={{ fontSize: 11, color: '#f5b800',
+                              marginBottom: 4, letterSpacing: 1, textAlign: 'center' }}>
+                              🛒 Compra mínima: {compraMinima}€
+                            </div>
+                          )}
+                          {nidoSel.tipo_tarjeta === 'ORO' && (
+                            <div style={{ fontSize: 11, color: '#f5b800',
+                              marginBottom: 4, letterSpacing: 1, textAlign: 'center' }}>
+                              🛒 Compra igual o superior a {nidoSel.denominacion}€
+                            </div>
+                          )}
                           <div style={{ fontSize: 7, fontWeight: 700, letterSpacing: 2,
-                            textTransform: 'uppercase', color: '#ffffff', marginBottom: 8 }}>
+                            textTransform: 'uppercase', color: '#ffffff', marginBottom: 4,
+                            textAlign: 'center',
+                            textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
                             🔐 Clave secreta
                           </div>
                           <div style={{ fontSize: 15, fontWeight: 900, color: '#ffffff',
-                            fontFamily: 'monospace', letterSpacing: 4 }}>
+                            fontFamily: 'monospace', letterSpacing: 4, textAlign: 'center',
+                            textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
                             {claveSecreta || '— — — —'}
+                          </div>
+                          {descripcion && (
+                            <p style={{
+                              fontSize: 13, color: 'rgba(255,255,255,0.7)',
+                              margin: '6px 0', lineHeight: 1.4,
+                              overflow: 'hidden', display: '-webkit-box',
+                              WebkitLineClamp: 3, WebkitBoxOrient: 'vertical',
+                              textShadow: '0 1px 4px rgba(0,0,0,0.5)',
+                            }}>
+                              {descripcion}
+                            </p>
+                          )}
+                          <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                            {nidoSel.tipo_tarjeta === 'DIAMANTE' && (
+                              <button style={{
+                                flex: 1, padding: '6px 0', borderRadius: 8,
+                                border: '1px solid rgba(255,255,255,0.2)',
+                                background: 'rgba(255,255,255,0.08)',
+                                color: '#fff', fontSize: 8, fontWeight: 700,
+                                letterSpacing: 1, cursor: 'pointer',
+                                fontFamily: HEADING, textTransform: 'uppercase',
+                              }}>
+                                Ver Artículo
+                              </button>
+                            )}
+                            <button style={{
+                              flex: 1, padding: '6px 0', borderRadius: 8,
+                              border: '1px solid rgba(255,255,255,0.2)',
+                              background: 'rgba(255,255,255,0.08)',
+                              color: '#fff', fontSize: 8, fontWeight: 700,
+                              letterSpacing: 1, cursor: 'pointer',
+                              fontFamily: HEADING, textTransform: 'uppercase',
+                            }}>
+                              Canjear
+                            </button>
                           </div>
                         </div>
                         <p style={{ fontSize: 7, color: 'rgba(255,255,255,0.8)',
-                          margin: 0, lineHeight: 1.5 }}>
+                          margin: 0, lineHeight: 1.5,
+                          textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
                           {REVERSO_INTRO[nidoSel.tipo_tarjeta]?.(nidoSel.denominacion) || ''}
                         </p>
                       </div>

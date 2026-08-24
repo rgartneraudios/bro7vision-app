@@ -68,23 +68,22 @@ const LegalTerminal = ({ onClose }) => {
         <p className="text-cyan-400 font-mono font-bold text-sm drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]">
           contacto@bro7vision.com
         </p>
+        <p className="text-cyan-400 font-mono font-bold text-sm drop-shadow-[0_0_8px_rgba(34,211,238,0.6)] mt-1">
+          hola@bro7vision.com
+        </p>
       </div>
     </div>
    
-   <div className="w-full h-[1px] bg-white/10 my-6"></div>
-   <a href="https://www.linkedin.com/in/rober-ehgartner-74a10a124/" target="_blank" className="text-[10px] text-gray-400 hover:text-white underline transition-all">
-      LinkedIn Profile &rarr;
-   </a>
-</div>
+   </div>
         </div>
 
         {/* === COLUMNA DERECHA: TEXTO LEGAL === */}
-        <div className="flex-1 bg-black p-8 relative flex flex-col">
-           <button onClick={onClose} className="absolute top-6 right-6 text-gray-600 hover:text-red-500 transition-colors font-bold text-lg">✕</button>
-           
-           <h2 className="text-gray-500 font-mono text-sm uppercase tracking-widest mb-6 border-b border-white/10 pb-4">Protocolos Legales & Privacidad</h2>
-           
-           <div className="overflow-y-auto custom-scrollbar pr-4 space-y-6 text-gray-400 text-xs font-mono leading-relaxed text-justify">
+<div className="flex-1 bg-black p-8 relative flex flex-col min-h-0">
+            <button onClick={onClose} className="absolute top-6 right-6 text-gray-600 hover:text-red-500 transition-colors font-bold text-lg">✕</button>
+            
+            <h2 className="text-gray-500 font-mono text-sm uppercase tracking-widest mb-6 border-b border-white/10 pb-4 shrink-0">Protocolos Legales & Privacidad</h2>
+            
+            <div className="overflow-y-auto custom-scrollbar pr-4 space-y-6 text-gray-400 text-xs font-mono leading-relaxed text-justify flex-1 min-h-0">
               <section>
   <h4 className="text-cyan-300 font-bold mb-2">1. NATURALEZA DEL ECOSISTEMA</h4>
   <p>Bro7Vision es una plataforma de entretenimiento interactivo donde los usuarios participan en juegos, exploran contenidos y acumulan Puntos Lunas canjeables por Tarjetas de Regalo de comercios adheridos. La plataforma se encuentra en fase activa de desarrollo y crecimiento. Algunas funcionalidades pueden evolucionar o ampliarse sin previo aviso.</p>
@@ -116,7 +115,6 @@ const LegalTerminal = ({ onClose }) => {
 </section>              
               <div className="pt-8 text-center opacity-50">
                   <p>Bro7Vision © {new Date().getFullYear()}</p>
-                  <p>Hecho a mano + IA</p>
               </div>
            </div>
         </div>

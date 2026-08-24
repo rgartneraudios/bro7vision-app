@@ -1,6 +1,7 @@
 // src/components/backstage/CarritoTab.jsx
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
+import { useAdOverlay } from '../../hooks/useAdOverlay';
 
 const HEADING = "'Noto Sans', sans-serif";
 const RATIO = { PLATA: 0.60, ORO: 0.90, DIAMANTE: 0.80, LUNA100: 0 };
@@ -62,6 +63,7 @@ export default function CarritoTab({ session, profile }) {
   const [flipId,        setFlipId]        = useState(null);
   const [flippedCards,  setFlippedCards]  = useState({});
   const [uploading,     setUploading]     = useState('');
+  const [showArticuloUrl, setShowArticuloUrl] = useState(null);
 
   useEffect(() => {
     if (!session?.user?.id) return;
@@ -91,10 +93,11 @@ export default function CarritoTab({ session, profile }) {
 
   const coberturaNidos = Object.entries(selection)
     .filter(([_, v]) => v.selected)
-    .reduce((sum, [nido_id]) => {
+    .reduce((sum, [nido_id, v]) => {
       const n = nidosConfig.find(n => n.id === nido_id);
       if (!n) return sum;
-      return sum + (n.cantidad_total * n.denominacion * (RATIO[n.tipo_tarjeta] || 0));
+      const qty = v.cantidad_usada ?? n.cantidad_total;
+      return sum + (qty * n.denominacion * (RATIO[n.tipo_tarjeta] || 0));
     }, 0);
 
   const totalCashEfectivo  = Math.max(totalEspacios - coberturaNidos, 0);
@@ -102,14 +105,27 @@ export default function CarritoTab({ session, profile }) {
     ? Math.min((coberturaNidos / totalEspacios) * 100, 100) : 0;
   const cubreOk = coberturaNidos >= totalEspacios;
 
-  const toggleNido = (nido_id) => {
+  const toggleNido = (nido_id, cantidad_total = 1) => {
+    setSelection(prev => {
+      const activando = !prev[nido_id]?.selected;
+      return {
+        ...prev,
+        [nido_id]: {
+          banner_url:     prev[nido_id]?.banner_url || '',
+          selected:       activando,
+          cantidad_usada: activando
+            ? (prev[nido_id]?.cantidad_usada || cantidad_total)
+            : (prev[nido_id]?.cantidad_usada || cantidad_total),
+        },
+      };
+    });
+  };
+
+  const setCantidadUsada = (nido_id, val, max) => {
+    const v = Math.max(1, Math.min(max, parseInt(val) || 1));
     setSelection(prev => ({
       ...prev,
-      [nido_id]: {
-        banner_url:         prev[nido_id]?.banner_url || '',
-        banner_reverso_url: prev[nido_id]?.banner_reverso_url || '',
-        selected:           !prev[nido_id]?.selected,
-      },
+      [nido_id]: { ...prev[nido_id], cantidad_usada: v },
     }));
   };
 
@@ -160,10 +176,9 @@ export default function CarritoTab({ session, profile }) {
             const n = nidosConfig.find(n => n.id === nido_id);
             return {
               nido_id,
-              cantidad:           n?.cantidad_total || 0,
-              denominacion:       n?.denominacion   || 0,
-              banner_url:         v.banner_url        || null,
-              banner_reverso_url: v.banner_reverso_url || null,
+              cantidad:     v.cantidad_usada ?? n?.cantidad_total ?? 0,
+              denominacion: n?.denominacion   || 0,
+              banner_url:   v.banner_url      || null,
             };
           })
       : [];
@@ -326,7 +341,8 @@ export default function CarritoTab({ session, profile }) {
                   const isFlipped   = !!flippedCards[n.id];
                   const isPendiente = n.tipo_tarjeta === 'DIAMANTE' && !n.aprobado;
                   const ts          = LUNA_STYLES[n.tipo_tarjeta] || LUNA_STYLES.PLATA;
-                  const coberturaN  = n.cantidad_total * n.denominacion * (RATIO[n.tipo_tarjeta] || 0);
+                  const qty         = isSel ? (selection[n.id]?.cantidad_usada ?? n.cantidad_total) : n.cantidad_total;
+                  const coberturaN  = qty * n.denominacion * (RATIO[n.tipo_tarjeta] || 0);
 
                   return (
                     <div key={n.id} style={{
@@ -338,7 +354,7 @@ export default function CarritoTab({ session, profile }) {
                       {/* Row */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <button
-                          onClick={() => !isPendiente && toggleNido(n.id)}
+                          onClick={() => !isPendiente && toggleNido(n.id, n.cantidad_total)}
                           disabled={isPendiente}
                           style={{
                             width: 22, height: 22, borderRadius: 6, flexShrink: 0,
@@ -388,113 +404,196 @@ export default function CarritoTab({ session, profile }) {
                       {(isSel || isPreview) && (
                         <div style={{ marginTop: 16, display: 'flex', gap: 20, alignItems: 'start' }}>
 
-                          {/* Banner uploads — solo si seleccionado */}
+                          {/* Banner upload — solo anverso */}
                           {isSel && (
-                            <div style={{ flex: 1, display: 'flex', gap: 12 }}>
-                              {['banner_url', 'banner_reverso_url'].map(field => {
-                                const uploadKey  = `${n.id}-${field}`;
-                                const currentUrl = selection[n.id]?.[field] || '';
-                                return (
-                                  <div key={field} style={{ flex: 1 }}>
-                                    <span style={{ fontSize: 9, fontWeight: 700,
-                                      letterSpacing: 2, textTransform: 'uppercase',
-                                      color: 'rgba(255,255,255,0.4)',
-                                      display: 'block', marginBottom: 6 }}>
-                                      {field === 'banner_url' ? '🖼 Anverso' : '↩ Reverso'}
-                                    </span>
-                                    <label style={{
-                                      display: 'block', padding: '8px 10px',
-                                      background: 'rgba(255,255,255,0.03)',
-                                      border: currentUrl
-                                        ? '1px solid rgba(74,222,128,0.3)'
-                                        : '1px dashed rgba(255,255,255,0.15)',
-                                      borderRadius: 8, cursor: 'pointer',
-                                      fontSize: 10, textAlign: 'center',
-                                      color: currentUrl ? '#4ade80' : 'rgba(255,255,255,0.35)',
-                                    }}>
-                                      {uploading === uploadKey ? 'Subiendo...'
-                                        : currentUrl ? '✅ Cargado'
-                                        : '+ Subir'}
-                                      <input type="file" accept="image/*"
-                                        onChange={e => handleUploadBanner(e, n.id, field)}
-                                        style={{ display: 'none' }} />
-                                    </label>
-                                    {currentUrl && (
-                                      <img src={currentUrl} alt={field}
-                                        style={{ width: '100%', borderRadius: 6,
-                                          marginTop: 4, maxHeight: 56, objectFit: 'cover' }} />
-                                    )}
-                                  </div>
-                                );
-                              })}
+                            <>
+                            <div style={{ width: '50%' }}>
+                              <span style={{ fontSize: 9, fontWeight: 700,
+                                letterSpacing: 2, textTransform: 'uppercase',
+                                color: 'rgba(255,255,255,0.4)',
+                                display: 'block', marginBottom: 6 }}>
+                                🖼 Anverso
+                              </span>
+                              <label style={{
+                                display: 'block', padding: '8px 10px',
+                                background: 'rgba(255,255,255,0.03)',
+                                border: selection[n.id]?.banner_url
+                                  ? '1px solid rgba(74,222,128,0.3)'
+                                  : '1px dashed rgba(255,255,255,0.15)',
+                                borderRadius: 8, cursor: 'pointer',
+                                fontSize: 10, textAlign: 'center',
+                                color: selection[n.id]?.banner_url ? '#4ade80' : 'rgba(255,255,255,0.35)',
+                              }}>
+                                {uploading === `${n.id}-banner_url` ? 'Subiendo...'
+                                  : selection[n.id]?.banner_url ? '✅ Cargado'
+                                  : '+ Subir'}
+                                <input type="file" accept="image/*"
+                                  onChange={e => handleUploadBanner(e, n.id, 'banner_url')}
+                                  style={{ display: 'none' }} />
+                              </label>
+                              {selection[n.id]?.banner_url && (
+                                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 8 }}>
+                                  <img src={selection[n.id].banner_url} alt="anverso"
+                                    style={{ width: 200, height: 300, borderRadius: 10, objectFit: 'cover' }} />
+                                </div>
+                              )}
                             </div>
+
+                            {/* Cantidad a usar */}
+                            <div style={{ width: '45%' }}>
+                              <span style={{
+                                fontSize: 9, fontWeight: 700, letterSpacing: 2,
+                                textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)',
+                                display: 'block', marginBottom: 6,
+                              }}>
+                                🎴 Tarjetas a usar
+                              </span>
+                              <div style={{
+                                background: 'rgba(255,255,255,0.03)',
+                                border: '1px solid rgba(167,139,250,0.25)',
+                                borderRadius: 8, padding: '8px 10px',
+                                display: 'flex', alignItems: 'center', gap: 8,
+                              }}>
+                                <input
+                                  type="number"
+                                  min={1}
+                                  max={n.cantidad_total}
+                                  value={selection[n.id]?.cantidad_usada ?? n.cantidad_total}
+                                  onChange={e => setCantidadUsada(n.id, e.target.value, n.cantidad_total)}
+                                  style={{
+                                    width: 52, background: 'transparent', border: 'none', outline: 'none',
+                                    color: '#c4b5fd', fontSize: 16, fontWeight: 900,
+                                    fontFamily: HEADING, textAlign: 'center',
+                                  }}
+                                />
+                                <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)' }}>
+                                  / {n.cantidad_total} uds
+                                </span>
+                              </div>
+                              <div style={{ fontSize: 9, color: '#4ade80', marginTop: 5, fontWeight: 700 }}>
+                                → cubre {((selection[n.id]?.cantidad_usada ?? n.cantidad_total) * n.denominacion * (RATIO[n.tipo_tarjeta] || 0)).toFixed(2)}€
+                              </div>
+                            </div>
+                            </>
                           )}
 
                           {/* Flip card preview — solo si isPreview */}
                           {isPreview && (
-                            <div style={{ width: 220, flexShrink: 0 }}>
+                            <div style={{ width: 200, flexShrink: 0 }}>
                               <div
-                                style={{ width: 220, height: 138, perspective: 800, cursor: 'pointer' }}
+                                style={{ width: 200, height: 300, perspective: 800, cursor: 'pointer' }}
                                 onClick={() => setFlippedCards(prev => ({ ...prev, [n.id]: !prev[n.id] }))}>
                                 <div className={`flip-card-inner ${isFlipped ? 'flipped' : ''}`}>
                                   {/* Anverso */}
                                   <div className="flip-face" style={{
-                                    background: selection[n.id]?.banner_url
-                                      ? `url(${selection[n.id].banner_url}) center/cover`
-                                      : `url(${getCardImage(n.tipo_tarjeta, n.denominacion)}) center/cover`,
-                                    padding: '14px 16px',
-                                    display: 'flex', flexDirection: 'column',
-                                    justifyContent: 'space-between',
+                                    backgroundImage: selection[n.id]?.banner_url
+                                      ? `url(${selection[n.id].banner_url})`
+                                      : `url(${getCardImage(n.tipo_tarjeta, n.denominacion)})`,
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
                                     boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
                                   }}>
-                                    <div>
-                                      <div style={{ fontSize: 7, fontWeight: 700,
-                                        letterSpacing: 2, textTransform: 'uppercase', color: ts.color,
-                                        background: ts.lunasBg, border: `1px solid ${ts.lunasBorder}`,
-                                        borderRadius: 20, padding: '1px 7px',
-                                        display: 'inline-block', marginBottom: 4 }}>
-                                        {ts.badge}
-                                      </div>
-                                      <div style={{ fontSize: 16, fontWeight: 900, color: ts.colorText }}>
-                                        {n.tipo_tarjeta === 'LUNA100' ? '100%'
-                                          : n.denominacion === 7 ? 'Envío Gratis'
-                                          : `${n.denominacion}€`}
-                                      </div>
-                                    </div>
-                                    {n.descripcion && (
-                                      <p style={{ fontSize: 7, color: ts.colorText, opacity: 0.6,
-                                        margin: 0, overflow: 'hidden', display: '-webkit-box',
-                                        WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                                        {n.descripcion}
-                                      </p>
+                                    {selection[n.id]?.banner_url && (
+                                      <img src={getCardImage(n.tipo_tarjeta, n.denominacion)}
+                                        alt="overlay"
+                                        style={{
+                                          width: '100%', height: '100%',
+                                          objectFit: 'cover',
+                                          display: 'block',
+                                        }} />
                                     )}
                                   </div>
                                   {/* Reverso */}
                                   <div className="flip-face flip-face-back" style={{
-                                    background: selection[n.id]?.banner_reverso_url
-                                      ? `url(${selection[n.id].banner_reverso_url}) center/cover`
-                                      : 'url(/images/cards/card-back.webp) center/cover',
+                                    backgroundImage: 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url(/images/cards/card-back.webp)',
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
                                     padding: '14px 16px',
                                     display: 'flex', flexDirection: 'column',
                                     justifyContent: 'space-between',
                                     boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
                                   }}>
                                     <div>
+                                      <div style={{ fontSize: 10, fontWeight: 900, color: '#ffffff',
+                                        marginBottom: 4, lineHeight: 1.2, overflow: 'hidden',
+                                        textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                        textShadow: '0 1px 6px rgba(0,0,0,0.8)',
+                                        textAlign: 'center' }}>
+                                        {profile?.razon_social || profile?.alias || 'Comercio'}
+                                      </div>
+                                      {n.tipo_tarjeta === 'PLATA' && n.compra_minima && (
+                                        <div style={{ fontSize: 10, color: '#f5b800',
+                                          marginBottom: 4, letterSpacing: 1, textAlign: 'center' }}>
+                                          🛒 Compra mínima: {n.compra_minima}€
+                                        </div>
+                                      )}
+                                      {n.tipo_tarjeta === 'ORO' && (
+                                        <div style={{ fontSize: 10, color: '#f5b800',
+                                          marginBottom: 4, letterSpacing: 1, textAlign: 'center' }}>
+                                          🛒 Compra igual o superior a {n.denominacion}€
+                                        </div>
+                                      )}
                                       <div style={{ fontSize: 7, fontWeight: 700,
                                         letterSpacing: 2, textTransform: 'uppercase',
-                                        color: '#ffffff', marginBottom: 6 }}>
+                                        color: '#ffffff', marginBottom: 4, textAlign: 'center',
+                                        textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>
                                         🔐 Clave secreta
                                       </div>
                                       <div style={{ fontSize: 13, fontWeight: 900, color: '#ffffff',
-                                        fontFamily: 'monospace', letterSpacing: 3 }}>
+                                        fontFamily: 'monospace', letterSpacing: 3, textAlign: 'center',
+                                        textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>
                                         {n.clave_secreta || '— — — —'}
                                       </div>
+                                      {n.descripcion && (
+                                        <p style={{
+                                          fontSize: 12, color: 'rgba(255,255,255,0.9)',
+                                          margin: '6px 0', lineHeight: 1.4,
+                                          overflow: 'hidden', display: '-webkit-box',
+                                          WebkitLineClamp: 3, WebkitBoxOrient: 'vertical',
+                                          textShadow: '0 1px 6px rgba(0,0,0,0.8)',
+                                        }}>
+                                          {n.descripcion}
+                                        </p>
+                                      )}
+                                      <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+                                        {n.tipo_tarjeta === 'DIAMANTE' && (
+                                          <button
+                                            onClick={() => n.imagen_aprobacion && setShowArticuloUrl(n.imagen_aprobacion)}
+                                            disabled={!n.imagen_aprobacion}
+                                            style={{
+                                              flex: 1, padding: '6px 0', borderRadius: 8,
+                                              border: `1px solid ${n.imagen_aprobacion ? 'rgba(180,80,255,0.5)' : 'rgba(255,255,255,0.1)'}`,
+                                              background: n.imagen_aprobacion ? 'rgba(180,80,255,0.15)' : 'rgba(255,255,255,0.04)',
+                                              color: n.imagen_aprobacion ? '#d090ff' : 'rgba(255,255,255,0.25)',
+                                              fontSize: 8, fontWeight: 700, letterSpacing: 1,
+                                              cursor: n.imagen_aprobacion ? 'pointer' : 'not-allowed',
+                                              fontFamily: HEADING, textTransform: 'uppercase',
+                                            }}>
+                                            {n.imagen_aprobacion ? '🖼 Ver Artículo' : 'Sin imagen'}
+                                          </button>
+                                        )}
+                                        <button style={{
+                                          flex: 1, padding: '6px 0', borderRadius: 8,
+                                          border: '1px solid rgba(255,255,255,0.2)',
+                                          background: 'rgba(255,255,255,0.08)',
+                                          color: '#fff', fontSize: 8, fontWeight: 700,
+                                          letterSpacing: 1, cursor: 'pointer',
+                                          fontFamily: HEADING, textTransform: 'uppercase',
+                                        }}>
+                                          Canjear
+                                        </button>
+                                      </div>
                                     </div>
+                                    <p style={{ fontSize: 7, color: 'rgba(255,255,255,0.8)',
+                                      margin: 0, lineHeight: 1.4,
+                                      textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>
+                                      {REVERSO_INTRO[n.tipo_tarjeta]?.(n.denominacion) || ''}
+                                    </p>
                                   </div>
                                 </div>
                               </div>
-                              <p style={{ textAlign: 'center', fontSize: 8,
-                                color: 'rgba(255,255,255,0.2)', marginTop: 4 }}>
+                              <p style={{ textAlign: 'center', fontSize: 8, marginTop: 4,
+                                color: '#00e5d4', textShadow: '0 0 6px #00e5d4, 0 0 14px cyan' }}>
                                 Clic para voltear
                               </p>
                             </div>
@@ -611,6 +710,46 @@ export default function CarritoTab({ session, profile }) {
         </p>
 
       </div>
+
+      {/* Modal Ver Artículo Diamante */}
+      {showArticuloUrl && (
+        <div
+          onClick={() => setShowArticuloUrl(null)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(0,0,0,0.82)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            backdropFilter: 'blur(6px)',
+            cursor: 'zoom-out',
+          }}>
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              position: 'relative', maxWidth: 480, width: '90%',
+              borderRadius: 16,
+              boxShadow: '0 0 60px rgba(180,80,255,0.35), 0 0 120px rgba(100,40,200,0.2)',
+              overflow: 'hidden',
+            }}>
+            <img
+              src={showArticuloUrl}
+              alt="Artículo Diamante"
+              style={{ width: '100%', display: 'block', borderRadius: 16 }}
+            />
+            <button
+              onClick={() => setShowArticuloUrl(null)}
+              style={{
+                position: 'absolute', top: 10, right: 10,
+                background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '50%', width: 32, height: 32,
+                color: '#fff', fontSize: 16, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
     </>
   );
 }
