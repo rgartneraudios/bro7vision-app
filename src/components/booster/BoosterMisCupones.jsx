@@ -1,32 +1,76 @@
 // src/components/booster/BoosterMisCupones.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../supabaseClient';
-
-const CardStyle = "bg-blue-950/10 backdrop-blur-xl border border-white/10 p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)]";
-
-const TIPO_CONFIG = {
-  PLATA:    { emoji: '🥈', color: 'text-slate-300'  },
-  ORO:      { emoji: '🥇', color: 'text-yellow-300' },
-  DIAMANTE: { emoji: '💎', color: 'text-violet-300' },
-  LUNA100:  { emoji: '🌙', color: 'text-cyan-300'   },
-};
+import StickerCupon from './StickerCupon';
 
 const BoosterMisCupones = () => {
-  const [cupones, setCupones] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [cupones,      setCupones]      = useState([]);
+  const [aliasUsuario, setAliasUsuario] = useState('');
+  const [loading,      setLoading]      = useState(true);
 
   const load = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // 1 — Alias del usuario actual
+      const { data: perfil } = await supabase
+        .from('profiles')
+        .select('alias')
+        .eq('id', user.id)
+        .single();
+      setAliasUsuario(perfil?.alias || '');
+
+      // 2 — Canjes con join hasta comercio_nidos
       const { data: rows } = await supabase
         .from('canjes_usuario')
-        .select('id, pack_id, tipo_tarjeta, valor_euros, clave_secreta, lunas_gastadas, caduca_at, usado, created_at')
+        .select(`
+          id, pack_id, tipo_tarjeta, valor_euros, clave_secreta,
+          lunas_gastadas, caduca_at, usado, created_at,
+          pack_tarjetas!canjes_usuario_pack_id_fkey (
+            nido_id,
+            comercio_nidos!pack_tarjetas_nido_id_fkey (
+              imagen_aprobacion,
+              comercio_user_id,
+              descripcion,
+              compra_minima
+            )
+          )
+        `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      setCupones(rows || []);
+      if (!rows?.length) { setCupones([]); return; }
+
+      // 3 — razon_social de cada comercio
+      const comercioIds = [...new Set(
+        rows
+          .map(r => r.pack_tarjetas?.comercio_nidos?.comercio_user_id)
+          .filter(Boolean)
+      )];
+
+      const { data: perfiles } = await supabase
+        .from('b_advertiser_profiles')
+        .select('id, razon_social')
+        .in('id', comercioIds);
+
+      const perfilMap = Object.fromEntries(
+        (perfiles || []).map(p => [p.id, p.razon_social])
+      );
+
+      // 4 — Merge
+      const enriquecidos = rows.map(r => {
+        const nido = r.pack_tarjetas?.comercio_nidos || {};
+        return {
+          ...r,
+          imagen_aprobacion: nido.imagen_aprobacion || null,
+          descripcion:       nido.descripcion       || null,
+          compra_minima:     nido.compra_minima      || null,
+          comercioNombre:    perfilMap[nido.comercio_user_id] || 'Comercio',
+        };
+      });
+
+      setCupones(enriquecidos);
     } catch (e) {
       console.error('Error loading cupones:', e);
     } finally {
@@ -37,7 +81,7 @@ const BoosterMisCupones = () => {
   useEffect(() => { load(); }, [load]);
 
   const formatDate = (d) => {
-    if (!d) return '—';
+    if (!d) return null;
     return new Date(d).toLocaleDateString('es-ES', {
       day: 'numeric', month: 'short', year: 'numeric',
     });
@@ -68,7 +112,7 @@ const BoosterMisCupones = () => {
   }
 
   return (
-    <div className="space-y-6 animate-fadeIn max-w-5xl mx-auto pb-10">
+    <div className="space-y-12 animate-fadeIn max-w-3xl mx-auto pb-10">
 
       <div className="flex items-center gap-4 mb-2">
         <span className="text-4xl">🎫</span>
@@ -77,63 +121,41 @@ const BoosterMisCupones = () => {
             Mis Cupones
           </h3>
           <p className="text-xs text-gray-500 font-bold tracking-widest mt-0.5">
-            Cupones que has canjeado
+            Clic en el sticker para ver los detalles
           </p>
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto space-y-6">
-        {cupones.map((cupon) => {
-          const cfg = TIPO_CONFIG[cupon.tipo_tarjeta] || TIPO_CONFIG.PLATA;
-          return (
-            <div key={cupon.id} className={CardStyle}>
-              <div className="flex flex-col gap-4">
+      {cupones.map((c) => (
+        <div key={c.id} className="flex flex-col items-center gap-3">
 
-                {/* Cabecera tipo + valor */}
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{cfg.emoji}</span>
-                  <div>
-                    <p className={`text-xs font-black uppercase tracking-widest ${cfg.color}`}>
-                      Tarjeta {cupon.tipo_tarjeta}
-                    </p>
-                    <p className="text-xl font-black text-white">
-                      {cupon.valor_euros
-                        ? `${Number(cupon.valor_euros).toLocaleString('es-ES', { minimumFractionDigits: 0 })} €`
-                        : '—'}
-                    </p>
-                  </div>
-                </div>
+          <StickerCupon
+            comercioNombre  = {c.comercioNombre}
+            claveSecreta    = {c.clave_secreta}
+            aliasUsuario    = {aliasUsuario}
+            fechaCaduca     = {formatDate(c.caduca_at)}
+            banner_11_url   = {c.imagen_aprobacion}
+            tipoTarjeta     = {c.tipo_tarjeta}
+            valorEuros      = {c.valor_euros}
+            costeLunas      = {c.lunas_gastadas}
+            descripcion     = {c.descripcion}
+            compraMinima    = {c.compra_minima}
+            usado           = {c.usado}
+          />
 
-                {/* Datos */}
-                <div className="border-t border-white/10 pt-4 space-y-2">
-                  <p className="text-xs text-gray-400">
-                    <span className="font-bold text-yellow-400">🔐 Clave secreta:</span>{' '}
-                    <span className="font-mono tracking-widest text-white">
-                      {cupon.clave_secreta || '—'}
-                    </span>
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    <span className="font-bold text-gray-300">Lunas gastadas:</span>{' '}
-                    🌙 {cupon.lunas_gastadas?.toLocaleString()}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    <span className="font-bold text-gray-300">Caduca:</span>{' '}
-                    {formatDate(cupon.caduca_at)}
-                  </p>
-                  <span className={`inline-block text-xs font-bold px-3 py-1 rounded-full border ${
-                    cupon.usado
-                      ? 'text-green-400 border-green-500/30 bg-green-950/20'
-                      : 'text-yellow-400 border-yellow-500/30 bg-yellow-950/20'
-                  }`}>
-                    {cupon.usado ? '✅ Usado' : '🟡 Pendiente de usar'}
-                  </span>
-                </div>
+          {/* Clave secreta fuera para fácil copia */}
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-yellow-400 font-bold tracking-widest uppercase">
+              🔐 Clave secreta:
+            </span>
+            <span className="font-mono text-white tracking-widest text-sm bg-white/5 border border-white/10 px-4 py-1.5 rounded-full select-all">
+              {c.clave_secreta}
+            </span>
+          </div>
 
-              </div>
-            </div>
-          );
-        })}
-      </div>
+        </div>
+      ))}
+
     </div>
   );
 };

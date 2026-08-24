@@ -92,8 +92,9 @@ export default function TarjetasRegalo({ profile }) {
   const [descripcion, setDescripcion]         = useState('');
   const [compraMinima, setCompraMinima]       = useState('');
   const [palabraClavePub, setPalabraClavePub] = useState('');
-  const [claveSecreta, setClaveSecreta]       = useState('');
+  const [claveSecreta, setClaveSecreta]         = useState('');
   const [imagenAprobacion, setImagenAprobacion] = useState('');
+  const [caducaFecha, setCaducaFecha]           = useState('');
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -127,6 +128,7 @@ export default function TarjetasRegalo({ profile }) {
     setPalabraClavePub(ex?.palabra_clave_pub || '');
     setClaveSecreta(ex?.clave_secreta || '');
     setImagenAprobacion(ex?.imagen_aprobacion || '');
+    setCaducaFecha(ex?.caduca_fecha || '');
   };
 
   const handleUploadImagen = async (e) => {
@@ -174,6 +176,7 @@ export default function TarjetasRegalo({ profile }) {
         palabra_clave_pub: palabraClavePub.trim(),
         clave_secreta:     claveSecreta.trim(),
         imagen_aprobacion: isDiamante ? (imagenAprobacion || null) : null,
+        caduca_fecha:      !isDiamante ? (caducaFecha || null) : null,
         activo:            false,
         aprobado:          !isDiamante,
         alcance:           null,
@@ -395,6 +398,24 @@ const calcCapped    = calcCoberturaRaw > 1000;
                         El usuario presenta esta clave al comercio para validar el canje.
                       </span>
                     </div>
+
+                    {!isDiamante && (
+                      <div>
+                        <span style={labelStyle}>Fecha de caducidad del canje</span>
+                        <input
+                          type="date"
+                          value={caducaFecha}
+                          onChange={e => setCaducaFecha(e.target.value)}
+                          style={{ ...inputStyle, backgroundImage: 'none', background: '#1a1a1a', color: '#fff', colorScheme: 'dark' }}
+                        />
+                        <span style={{
+                          fontSize: 9, color: 'rgba(255,255,255,0.2)',
+                          letterSpacing: 1, marginTop: 4, display: 'block',
+                        }}>
+                          Fecha límite para que el usuario canjee su tarjeta.
+                        </span>
+                      </div>
+                    )}
 
                     {nidoSel.tipo_tarjeta === 'DIAMANTE' && (
                       <div>
