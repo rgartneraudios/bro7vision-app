@@ -47,8 +47,10 @@ Si el comercio quiere más cobertura, se crea otro Nido con su propio seguro.
 — PALABRAS CLAVE —
 
 Cada tarjeta lleva dos palabras clave que el comercio define al crearla:
-una Palabra Clave Pública, visible en la tarjeta del usuario,
-y una Palabra Clave Secreta, enviada por email al usuario tras el canje.
+una Palabra Clave Pública, para uso interno del comercio entre sucursales
+y distintos momentos de canje,
+y una Palabra Clave Secreta, que se envía al Perfil interno de Bro7Vision
+del usuario una vez completado el canje.
 
 Sirven para validar el canje entre el comercio y el usuario
 y para prevenir el fraude.
@@ -81,12 +83,15 @@ El seguro no es negociable y no puede cubrirse con tarjetas.
 — TIPOS DE TARJETA Y SUS RATIOS —
 
 Luna 100:
-  Solo existe en modalidad 100% descuento.
+  Descuento del 100% en el producto o servicio que el comercio describe.
+  No es apta para cubrir el monto publicitario del Nido.
+  El comercio asume íntegramente el coste del obsequio.
+  Ideal para muestras gratuitas, primeras visitas o captación digital.
   Coste usuario: 10.000 Lunas.
 
 Luna Plata → ratio 0.60 (vale 60% del presupuesto)
   Valores: Envío Gratis, 3€, 5€, 10€, 20€, 40€, 60€, 100€, 200€
-  Nota: la tarjeta "Envío Gratis" tiene valor nominal de 5€ a efectos del cálculo del ratio.
+  Nota: la tarjeta "Envío Gratis" tiene valor nominal de 7€ a efectos del cálculo del ratio.
   El comercio define la compra mínima (máx 10× el valor del descuento).
   Coste usuario: desde 25.000 hasta 70.000 Lunas según valor.
 
@@ -157,14 +162,12 @@ Opción D — Mix: 2 Diamante 200 (ratio 0.80):
 
 — COHERENCIA GEOGRÁFICA —
 
-El alcance geográfico vive en el Nido, no en las tarjetas individuales.
-Al crear el Nido, el comercio define su alcance:
-SALA_CIUDAD, SALA_GRAN_CIUDAD, GIRA_REGIONAL, etc.
-
-Todas las tarjetas dentro de ese Nido heredan el alcance del Nido.
-El alcance debe ser coherente con la ubicación real del comercio.
-Un comercio local en Málaga no puede crear un Nido con alcance exclusivo en Barcelona.
-Puede optar por alcance Nacional o Internacional si su negocio lo permite.
+El alcance geográfico de las tarjetas se define en el Carrito, no en el Nido.
+Al confirmar el contrato, el comercio elige el alcance que aplica a todas las tarjetas usadas:
+  · Cercanías: la ciudad del comercio emisor.
+  · Nacional: todo el territorio nacional.
+  · Internacional: cobertura global.
+El alcance debe ser coherente con la ubicación real del comercio y su tipo de negocio.
 
 
 — FLUJO COMO ASESOR DE TARJETAS —
@@ -182,19 +185,22 @@ Pregunta: ¿Tienes productos físicos, excedente de stock o artículos que pueda
 Si sí → Diamante.
 Si no → ¿Prefieres atraer clientes a tu local con condición de compra (Plata) o dar vale libre (Oro)?
 
-PASO 4 — Crea el Nido primero:
-Antes de crear tarjetas, hay que crear el Nido.
-Pregunta: ¿Qué nombre quieres darle a este Nido? (ej: "Verano 2026 — Madrid Centro")
-¿Y qué alcance geográfico tiene? (SALA_CIUDAD, NACIONAL, etc.)
+PASO 4 — Actualiza el Nido:
+Los Nidos están pre-configurados por tipo y denominación en la sección Tarjetas de Regalo.
+El comercio elige el Nido que mejor se adapta a su campaña y lo actualiza con:
+  · Descripción (ej: "Campaña Verano 2026 — Madrid Centro").
+  · Palabra Clave Pública y Palabra Clave Secreta.
+  · Compra Mínima (solo para tarjetas Plata — no aplica en Oro, Diamante ni Luna 100).
+El Nido queda en estado NIDO hasta que se active desde el Carrito.
+Pregunta: ¿Qué quieres comunicar con esta campaña? ¿Tienes ya tus palabras clave en mente?
 
 PASO 5 — Arma las tarjetas dentro del Nido:
 Dile exactamente cuántas tarjetas crear, de qué tipo y valor.
 Límite del sistema: máximo 10 tarjetas por combinación de tipo y valor dentro de cada Nido.
 Cada combinación es independiente: 10 Oro 10€ + 10 Oro 20€ + 10 Plata 5€ son tres combinaciones distintas.
 Ejemplo: "Dentro de tu Nido 'Verano 2026', crea 10 tarjetas Oro de 20€ + 10 tarjetas Oro de 40€.
-Tu Nido vale 600€ en tarjetas y cubre hasta 480€ de presupuesto publicitario."
-
-(El ejemplo anterior decía "40 tarjetas Oro de 10€" — el sistema las habría rechazado, y además calculaba 440€ de cobertura cuando en realidad son 480€.)
+Tu Nido vale 600€ en tarjetas y cubre hasta 540€ de presupuesto publicitario."
+Cálculo: (10×20 + 10×40) × 0.90 = 600 × 0.90 = 540€
 
 PASO 6 — Cierra con el Carrito:
 Recuérdales que las tarjetas quedan en estado NIDO hasta que confirmen desde el Carrito.
@@ -212,6 +218,65 @@ Ahí se encuentra:
 El comercio debe tener cuenta activa en Brovision para acceder al Backstage.
 Si aún no tiene cuenta, puede solicitarla desde el Booster Studio
 en la pestaña ANUNCIANTE, o escribiendo a contacto@bro7vision.com
+
+
+— NIDOS PRE-ARMADOS EN TARJETAS DE REGALO —
+
+En la sección Tarjetas de Regalo del Backstage,
+el comercio no crea Nidos desde cero.
+Encuentra Nidos ya disponibles, pre-configurados por tipo y denominación,
+y los actualiza con la información de su campaña:
+
+  · Descripción del Nido o campaña.
+  · Palabra Clave Pública (uso interno del comercio).
+  · Palabra Clave Secreta (llega al Perfil interno de Bro7Vision del usuario al canjear).
+  · Compra Mínima — solo para tarjetas Plata; no aplica en Oro, Diamante ni Luna 100.
+
+Los Nidos actualizados quedan en estado NIDO hasta que el comercio los active en el Carrito.
+
+La sección incluye una Calculadora de Cobertura
+que permite calcular en tiempo real cuánto presupuesto publicitario
+cubre el Nido según la cantidad de tarjetas configurada.
+
+En el mismo panel hay un Preview de la tarjeta (anverso):
+La imagen del comercio (300 × 450 px, ratio 2:3, fondo oscuro) se une al Overlay
+transparente de Bro7Vision, que añade:
+  · Header: tipo y denominación de la tarjeta (ej: "Luna Plata 3€").
+  · Footer: coste de canje en Lunas (ej: "30.000 Lunas").
+El comercio solo sube su imagen de marca. El reverso (fondo carbón con nombre
+del comercio, descripción y textos) lo genera Bro7Vision automáticamente.
+
+Nota Luna Diamante: el anverso de las tarjetas Diamante ya está diseñado por Bro7Vision.
+El comercio sube la imagen del producto ofrecido desde el Carrito, no desde aquí.
+
+
+— EL CARRITO — MODO DE PAGO, ALCANCE Y ACTIVACIÓN —
+
+En el Carrito el comercio elige su Modo de Pago:
+  · Cash 100%: paga el total del monto de los slots publicitarios en efectivo.
+  · Canon + Tarjetas: paga el Canon Publicitario (Seguro) en efectivo
+    y cubre el resto del monto con las tarjetas de sus Nidos.
+
+A continuación elige el Alcance de las tarjetas:
+  · Cercanías: ciudad del comercio emisor.
+  · Nacional: todo el territorio nacional.
+  · Internacional: cobertura global.
+
+Luego selecciona los Nidos que quiere aplicar al contrato.
+El sistema descuenta el monto cubierto en tiempo real a medida que se añaden Nidos.
+
+Al seleccionar un Nido, el comercio sube el anverso de la tarjeta:
+imagen de 300 × 450 px (ratio 2:3) con fondo oscuro que representa su marca.
+Esta imagen se une al Overlay de Bro7Vision (header + footer ya incluidos).
+Solo se sube el anverso. El reverso lo genera Bro7Vision automáticamente.
+
+Tarjetas Luna Diamante: el comercio sube aquí la imagen del producto ofrecido.
+El anverso Diamante ya está puesto por Bro7Vision.
+
+Al confirmar el Carrito: el sistema aplica el descuento de los Nidos,
+calcula el Seguro e incorpora el IVA.
+Las tarjetas pasan a estado PRONTO (liberación escalonada anti-fraude)
+y quedarán disponibles para canje en el plazo estimado.
 
 
 ════════════════════════════════════════

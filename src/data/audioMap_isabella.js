@@ -22,7 +22,7 @@ export const ISABELLA_AUDIO_MAP = {
   "andalucia":     "https://media.bro7vision.com/band/isabella.m4a",
   "canarias":      "https://media.bro7vision.com/band/isabella.m4a",
   "c_valenciana":  "https://media.bro7vision.com/band/isabella.m4a",
-  "alicante":      "https://media.bro7vision.com/band/isabella.m4a",
+  "c_alicante":     "https://media.bro7vision.com/band/isabella.m4a",
   "castilla_leon": "https://media.bro7vision.com/band/isabella.m4a",
   "c_madrid":      "https://media.bro7vision.com/band/isabella.m4a",
 
@@ -35,7 +35,7 @@ export const ISABELLA_AUDIO_MAP = {
   "zona_oeste":         "https://media.bro7vision.com/band/isabella.m4a",
   "baleares":           "https://media.bro7vision.com/band/isabella.m4a",
   "ceuta_melilla":      "https://media.bro7vision.com/band/isabella.m4a",
-  "murcia":             "https://media.bro7vision.com/band/isabella.m4a",
+  "region_murcia":  "https://media.bro7vision.com/band/isabella.m4a",
   "navarra":            "https://media.bro7vision.com/band/isabella.m4a",
   "la_rioja":           "https://media.bro7vision.com/band/isabella.m4a",
 
@@ -78,6 +78,8 @@ export const ISABELLA_AUDIO_MAP = {
 };
 
 const CIUDAD_A_REGION = {
+  "murcia":   "region_murcia",
+  "alicante": "c_alicante",
   "gijon": "asturias", "oviedo": "asturias", "aviles": "asturias", "siero": "asturias",
   "vigo": "galicia", "a_coruna": "galicia", "santiago_de_compostela": "galicia",
   "pontevedra": "galicia",
@@ -93,6 +95,8 @@ const CIUDAD_A_REGION = {
 };
 
 const REGION_A_GRAN_REGION = {
+  "region_murcia": null,
+  "c_alicante":    "c_valenciana",
   "asturias": null,
   "galicia": null,
   "cantabria": null,

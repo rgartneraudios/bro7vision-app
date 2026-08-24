@@ -266,16 +266,17 @@ const ComoFuncionaTabs = () => {
             <p className="mb-1">El monto del <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-purple-400 font-bold">Nido</span> debe ser igual o superior al monto del contrato publicitario.</p>
             <p className="mb-1">El <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-emerald-400 font-semibold">seguro</span> va aparte de esta cuenta.</p>
             <p className="mb-1">Ejemplo: <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 font-semibold">Monto Publicitario 100€</span> → 100€ en tarjetas + Seguro.</p>
-            <p className="mb-1">Por Nido o Campaña se pueden crear un máximo de 10 Tarjetas por tipo.</p>
-            <p className="mb-1">Ejemplo: 10 tarjetas de 3€ , 10 tarjetas por 5€ etc.</p>
+            <p className="mb-1">Cada campaña o contrato publicitario tiene un tope de 1000€, con un seguro de 90€</p>
+            <p className="mb-1">congelado desde los 450€. Si necesitas más espacios crea otra campaña paralela.</p>
 
             <div className="h-6" />
 
             <p className="mb-1 font-semibold text-amber-400">PALABRAS CLAVE:</p>
             <p className="mb-1">Son palabras necesarias para la seguridad del canje entre el emisor y el usuario</p>
             <p className="mb-1">y previene el fraude.</p>
-            <p className="mb-1">Se utiliza una Palabra clave Pública y una palabra clave secreta</p>
-            <p className="mb-1">que se envía por email al usuario que ha canjeado sus Lunas por dicha tarjeta.</p>
+            <p className="mb-1">Se utiliza una Palabra clave Pública, para control interno entre sucursales o distintos</p>
+            <p className="mb-1">momentos de los canjes, y una palabra clave secreta</p>
+            <p className="mb-1">que se envía al perfil del usuario que ha canjeado sus Lunas por dicha tarjeta.</p>
 
             <div className="w-24 h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto my-8" />
 

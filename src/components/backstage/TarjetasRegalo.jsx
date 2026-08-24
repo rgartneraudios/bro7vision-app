@@ -250,7 +250,7 @@ const calcCapped    = calcCoberturaRaw > 1000;
               letterSpacing: 3, textTransform: 'uppercase', margin: '0 0 14px' }}>
               🧺 Catálogo de Nidos (20)
             </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 400, overflowY: 'auto' }}>
               {CATALOGO_NIDOS.map((cat) => {
                 const guardado  = getNidoGuardado(cat);
                 const isSel     = nidoSel?.tipo_tarjeta === cat.tipo_tarjeta
