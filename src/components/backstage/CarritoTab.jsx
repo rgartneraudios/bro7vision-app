@@ -727,7 +727,7 @@ export default function CarritoTab({ session, profile }) {
             style={{
               position: 'relative', maxWidth: 480, width: '90%',
               borderRadius: 16,
-              boxShadow: '0 0 60px rgba(180,80,255,0.35), 0 0 120px rgba(100,40,200,0.2)',
+              boxShadow: '0 0 60px rgba(255,255,255,0.25), 0 0 120px rgba(255,255,255,0.1)',
               overflow: 'hidden',
             }}>
             <img
