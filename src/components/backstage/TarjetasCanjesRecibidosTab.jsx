@@ -15,22 +15,26 @@ const BoosterCanjesRecibidos = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data: comercios } = await supabase
-        .from('comercio_cupones')
+      const { data: nidos } = await supabase
+        .from('comercio_nidos')
         .select('id')
-        .eq('user_id', user.id);
+        .eq('comercio_user_id', user.id);
 
-      if (!comercios || comercios.length === 0) {
-        setCanjes([]);
-        return;
-      }
+      if (!nidos || nidos.length === 0) { setCanjes([]); return; }
 
-      const ids = comercios.map(c => c.id);
+      const nidoIds = nidos.map(n => n.id);
+      const { data: packs } = await supabase
+        .from('pack_tarjetas')
+        .select('id')
+        .in('nido_id', nidoIds);
 
+      if (!packs || packs.length === 0) { setCanjes([]); return; }
+
+      const packIds = packs.map(p => p.id);
       let query = supabase
-        .from('cupones_generados')
-        .select('*')
-        .in('comercio_id', ids);
+        .from('canjes_usuario')
+        .select('id, pack_id, tipo_tarjeta, clave_secreta, valor_euros, lunas_gastadas, usado, created_at, caduca_at, user_id')
+        .in('pack_id', packIds);
 
       if (!verHistorial) {
         query = query.gt('caduca_at', new Date().toISOString());
@@ -38,27 +42,23 @@ const BoosterCanjesRecibidos = () => {
 
       const { data: rows } = await query.order('created_at', { ascending: false });
 
-      if (!rows) {
-        setCanjes([]);
-        return;
-      }
+      if (!rows) { setCanjes([]); return; }
 
-      const aliasMap = {};
       const userIds = [...new Set(rows.map(r => r.user_id).filter(Boolean))];
+      const aliasMap = {};
       if (userIds.length > 0) {
         const { data: profiles } = await supabase
           .from('profiles')
           .select('id, alias')
           .in('id', userIds);
-        if (profiles) {
-          profiles.forEach(p => { aliasMap[p.id] = p.alias; });
-        }
+        if (profiles) profiles.forEach(p => { aliasMap[p.id] = p.alias; });
       }
 
       setCanjes(rows.map(r => ({
         ...r,
-        aliasUsuario: r.user_id ? (aliasMap[r.user_id] || 'desconocido') : 'invitado',
+        aliasUsuario: aliasMap[r.user_id] || 'desconocido',
       })));
+
     } catch (e) {
       console.error('Error loading canjes:', e);
     } finally {
@@ -74,7 +74,7 @@ const BoosterCanjesRecibidos = () => {
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
-        table: 'cupones_generados',
+        table: 'canjes_usuario',
       }, () => {
         load(showHistorial);
       })
@@ -94,7 +94,10 @@ const BoosterCanjesRecibidos = () => {
 
   const filteredCanjes = canjes.filter(c => {
     const matchesAlias = c.aliasUsuario.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'TODOS' || c.estado === statusFilter;
+    const matchesStatus =
+      statusFilter === 'TODOS' ||
+      (statusFilter === 'USADO'     &&  c.usado) ||
+      (statusFilter === 'PENDIENTE' && !c.usado);
     return matchesAlias && matchesStatus;
   });
 
@@ -166,7 +169,7 @@ const BoosterCanjesRecibidos = () => {
             <thead>
               <tr className="border-b border-white/10 text-xs text-gray-500 uppercase tracking-widest">
                 <th className="py-3 px-4 font-bold">Cliente</th>
-                <th className="py-3 px-4 font-bold">Palabras clave</th>
+                <th className="py-3 px-4 font-bold">Clave secreta</th>
                 <th className="py-3 px-4 font-bold">Tipo Tarjeta</th>
                 <th className="py-3 px-4 font-bold">Fecha</th>
                 <th className="py-3 px-4 font-bold">Estado</th>
@@ -177,19 +180,19 @@ const BoosterCanjesRecibidos = () => {
                 <tr key={canje.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                   <td className="py-3 px-4 text-sm text-white font-bold">@{canje.aliasUsuario}</td>
                   <td className="py-3 px-4">
-                    <span className="text-sm font-mono text-cyan-300">
-                      {canje.palabra_clave_1 || '—'} · {canje.palabra_clave_2 || '—'} · {canje.palabra_clave_3 || '—'}
+                    <span className="text-sm font-mono text-cyan-300 tracking-widest">
+                      🔐 {canje.clave_secreta || '—'}
                     </span>
                   </td>
                   <td className="py-3 px-4 text-sm text-gray-300">{canje.tipo_tarjeta || '—'}</td>
                   <td className="py-3 px-4 text-sm text-gray-400">{formatDate(canje.created_at)}</td>
                   <td className="py-3 px-4">
                     <span className={`text-sm font-bold px-3 py-1 rounded-full border ${
-                      canje.estado === 'USADO'
+                      canje.usado
                         ? 'text-green-400 border-green-500/30 bg-green-950/20'
                         : 'text-yellow-400 border-yellow-500/30 bg-yellow-950/20'
                     }`}>
-                      {canje.estado === 'USADO' ? '✅ Usado' : '🟡 Pendiente'}
+                      {canje.usado ? '✅ Usado' : '🟡 Pendiente'}
                     </span>
                   </td>
                 </tr>

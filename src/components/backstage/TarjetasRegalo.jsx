@@ -161,7 +161,6 @@ export default function TarjetasRegalo({ profile }) {
     if (!claveSecreta.trim())    { setMsg('La clave secreta es obligatoria.'); return; }
     setSaving(true);
     setMsg('');
-    const isDiamante = nidoSel.tipo_tarjeta === 'DIAMANTE';
     const { error } = await supabase
       .from('comercio_nidos')
       .upsert({
@@ -218,6 +217,7 @@ const calcCapped    = calcCoberturaRaw > 1000;
   };
 
   const ts = nidoSel ? (LUNA_STYLES[nidoSel.tipo_tarjeta] || LUNA_STYLES.PLATA) : null;
+  const isDiamante = nidoSel?.tipo_tarjeta === 'DIAMANTE';
 
   return (
     <>

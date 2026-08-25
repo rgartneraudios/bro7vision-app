@@ -78,6 +78,32 @@ const LUNAS_DIAMANTE = {
   1000: 400000,
 };
 
+const LUNAS_COSTO = {
+  PLATA: {
+    3:   30000,
+    5:   35000,
+    7:   25000,
+    10:  40000,
+    20:  45000,
+    40:  50000,
+    60:  55000,
+    100: 60000,
+    200: 70000,
+  },
+  ORO: {
+    5:   50000,
+    10:  60000,
+    20:  70000,
+    40:  80000,
+    60:  90000,
+    100: 100000,
+    200: 150000,
+  },
+  LUNA100: {
+    0: 10000,
+  },
+};
+
 const REVERSO_INTRO = {
   PLATA:    (valor) => `Descuento de ${valor}€ en compras con importe mínimo establecido por el comercio.`,
   ORO:      (valor) => `Vale de ${valor}€ de descuento en compra de igual o superior monto. Si el total es mayor pagas la diferencia.`,
@@ -222,12 +248,26 @@ export default function CanjearStrip({ scope }) {
   useEffect(() => {
     const fetchCupones = async () => {
       try {
-        let query = supabase
-          .from('comercio_cupones')
-          .select('*')
+        // 1 — Packs LIBRE con join a comercio_nidos (excluye Diamante — tiene su propio fetch)
+        const { data: packs, error } = await supabase
+          .from('pack_tarjetas')
+          .select(`
+            id,
+            tipo_tarjeta,
+            denominacion,
+            cantidad_disponible,
+            comercio_nidos!pack_tarjetas_nido_id_fkey (
+              descripcion,
+              compra_minima,
+              palabra_clave_pub,
+              alcance,
+              comercio_user_id
+            )
+          `)
+          .eq('estado', 'LIBRE')
+          .gt('cantidad_disponible', 0)
+          .neq('tipo_tarjeta', 'DIAMANTE')
           .limit(50);
-
-        const { data: rows, error } = await query;
 
         if (error) {
           console.error('[CanjearStrip] Error:', error.message);
@@ -235,38 +275,54 @@ export default function CanjearStrip({ scope }) {
           return;
         }
 
-        if (!rows || rows.length === 0) { setCupones([]); return; }
+        if (!packs?.length) { setCupones([]); return; }
 
-        // Filtrar solo tarjetas del sistema nuevo (con tipo_tarjeta) y filtrar por alcance
-        const filtradas = rows.filter(r => {
-          if (!r.tipo_tarjeta) return false;
-          const a = Array.isArray(r.alcance) ? r.alcance : [];
-          if (activeTab === 'CERCANIAS') {
-            return a.includes('LOCAL') || a.includes('CERCANIAS');
-          }
-          if (activeTab === 'NACIONAL') return a.includes('NACIONAL');
-          if (activeTab === 'INTERNACIONAL') return a.includes('INTERNACIONAL');
+        // 2 — Filtrar por alcance del tab activo
+        const filtrados = packs.filter(p => {
+          const alcance = p.comercio_nidos?.alcance;
+          if (!alcance) return false;
+          if (activeTab === 'CERCANIAS')     return alcance === 'LOCAL' || alcance === 'CERCANIAS';
+          if (activeTab === 'NACIONAL')      return alcance === 'NACIONAL';
+          if (activeTab === 'INTERNACIONAL') return alcance === 'INTERNACIONAL';
           return false;
         });
 
-        if (filtradas.length === 0) { setCupones([]); return; }
+        if (!filtrados.length) { setCupones([]); return; }
 
-        const userIds = [...new Set(filtradas.map(r => r.user_id).filter(Boolean))];
-        const { data: solicitudes } = await supabase
-          .from('bs_solicitudes')
-          .select('user_id, razon_social, email, telefono, web_url')
-          .in('user_id', userIds);
+        // 3 — razon_social por comercio_user_id
+        const comercioIds = [...new Set(
+          filtrados.map(p => p.comercio_nidos?.comercio_user_id).filter(Boolean)
+        )];
 
-        const solMap = {};
-        if (solicitudes) solicitudes.forEach(s => { solMap[s.user_id] = s; });
+        const { data: perfiles } = await supabase
+          .from('b_advertiser_profiles')
+          .select('id, razon_social')
+          .in('id', comercioIds);
 
-        setCupones(filtradas.map(r => ({
-          ...r,
-          bs_razon_social: solMap[r.user_id]?.razon_social || r.comercio_nombre || '',
-          bs_email:        solMap[r.user_id]?.email        || '',
-          bs_telefono:     solMap[r.user_id]?.telefono     || '',
-          bs_web:          solMap[r.user_id]?.web_url      || r.web_url         || '',
-        })));
+        const perfilMap = Object.fromEntries(
+          (perfiles || []).map(p => [p.id, p.razon_social])
+        );
+
+        // 4 — Enriquecer y normalizar
+        setCupones(filtrados.map(p => {
+          const nido  = p.comercio_nidos || {};
+          const denom = Number(p.denominacion);
+          return {
+            id:              p.id,
+            tipo_tarjeta:    p.tipo_tarjeta,
+            valor_euros:     denom,
+            banner_url:      null,
+            descripcion:     nido.descripcion     || null,
+            compra_minima:   nido.compra_minima   || null,
+            palabra_clave_1: null,
+            bs_razon_social: perfilMap[nido.comercio_user_id] || '',
+            bs_web:          '',
+            bs_telefono:     '',
+            bs_email:        '',
+            coste_lunas:     LUNAS_COSTO[p.tipo_tarjeta]?.[denom] ?? 0,
+          };
+        }));
+
       } catch (err) {
         console.error('[CanjearStrip] fetchCupones error:', err);
         setCupones([]);
