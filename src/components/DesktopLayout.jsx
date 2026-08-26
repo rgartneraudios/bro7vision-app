@@ -8,7 +8,6 @@ import MoonMatrixCircle from './MoonMatrixCircle';
 import BroTuner from './BroTuner';
 import NexusDashboard from './NexusDashboard';
 import CanjearStrip from './CanjearStrip';
-import CityLocationBanner from './CityLocationBanner';
 import SlideRailAmigos from './SlideRailAmigos';
 import TriviaRail from './TriviaRail';
 import { getVideoForLocation } from '../data/VideoMap';
@@ -165,9 +164,7 @@ useEffect(() => {
         </div>
       )}
 
-      {step === 2 && intent === 'games' && (
-        <CityLocationBanner scope={scope} />
-      )}      
+            
 
       {intent === 'canjear' && step === 2 && (
         <div className="fixed inset-0 z-[60]">

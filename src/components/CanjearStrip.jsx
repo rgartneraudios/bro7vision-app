@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import SlideRailCanjear from './SlideRailCanjear';
-import CityLocationBanner from './CityLocationBanner';
 import { getVideoForLocation } from '../data/VideoMap';
 import { useCanjearCupon } from '../hooks/useCanjearCupon';
 import CuponModal from './CuponModal';
@@ -447,7 +446,7 @@ export default function CanjearStrip({ scope }) {
 
       <HeaderWidget />
 
-      <CityLocationBanner scope={scope} />
+      
 
       <SlideRailCanjear />
 

@@ -20,7 +20,6 @@ import { useAgentRumores }    from './hooks/useAgentRumores';
 import { useAgSectorMobile }  from './hooks/useAgSectorMobile';
 import SlideRailAmigos from './components/SlideRailAmigos';
 import ShopAmigos from './components/ShopAmigos';
-import CityLocationBanner from './components/CityLocationBanner';
 import NeuralButton from './components/NeuralButton';
 import DesktopLayout from './components/DesktopLayout';
 import DesktopRealityPlayer from './components/DesktopRealityPlayer';

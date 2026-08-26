@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { supabase } from '../supabaseClient';
-import CityLocationBanner from './CityLocationBanner';
 import AgentChatInput from './AgentChatInput';
 import NeuralButton from './NeuralButton';
 import BroTuner from '../components/BroTuner';
@@ -1065,11 +1064,7 @@ return (
           <LockClockWidget accent={accent} />
         </header>
 
-        {(scope?.city && !selectedCard) || (intent === 'games' && step === 2) ? (
-          <div className="flex-shrink-0 w-full mb-1 flex items-center justify-center">
-            <CityLocationBanner scope={scope} isMobile={true} />
-          </div>
-        ) : null}
+        
 
         {/* Avatar + BroCards */}
         <div className="flex-shrink-0 flex flex-col items-center gap-2 py-2">

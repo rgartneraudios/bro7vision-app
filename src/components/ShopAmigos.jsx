@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import SlideRailAmigos from './SlideRailAmigos';
-import CityLocationBanner from './CityLocationBanner';
 
 const TAB_COLORS = {
   CERCANIAS: '#FF6B00',
@@ -227,7 +226,7 @@ export default function ShopAmigos({ scope }) {
 
       <HeaderWidget />
 
-      <CityLocationBanner scope={scope} />
+      
 
       <SlideRailAmigos />
 
