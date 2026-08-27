@@ -261,7 +261,7 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
           formato: slotData.formato, fase_lunar_id: faseLunarId, cobertura,
           ciudad_codigos: ciudadArr, productor_id: userId, guion: videoUrl.trim(),
           nombre_archivo, estado: 'EN_CASTING',
-          precio: COBERTURAS_LIST.find(c => c.id === cobertura)?.precio ?? 20,
+          precio: precioTarifaPais ?? COBERTURAS_LIST.find(c => c.id === cobertura)?.precio ?? 20,
           fecha_inicio: new Date().toISOString().split('T')[0],
           fecha_fin: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
         }]);
@@ -302,7 +302,7 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
         const { error: butacaErr } = await supabase.from('bs_butacas').insert([{
           productor_id: userId, formato, fase_lunar_id: faseLunarId, cobertura,
           ciudad_codigos: ciudadArr,
-          precio: COBERTURAS_LIST.find(c => c.id === cobertura)?.precio ?? 20,
+          precio: precioTarifaPais ?? COBERTURAS_LIST.find(c => c.id === cobertura)?.precio ?? 20,
           estado: 'EN_CASTING',
           fecha_inicio: new Date().toISOString().split('T')[0],
           fecha_fin: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
@@ -413,7 +413,9 @@ const ContratoModal = ({ slotId, onClose, userId }) => {
             className={`${btnBig} ${cobertura === c.id ? btnActive : btnInactive}`}
           >
             <span>{c.label}</span>
-            <span style={{ marginLeft: '24px', fontSize: '1.8rem' }} className="text-purple-400">{c.precio}€</span>
+            <span style={{ marginLeft: '24px', fontSize: '1.8rem' }} className="text-purple-400">
+              {cobertura === c.id && precioTarifaPais !== null ? precioTarifaPais : c.precio}€
+            </span>
           </button>
         ))}
       </div>

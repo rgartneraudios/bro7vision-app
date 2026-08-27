@@ -3,19 +3,19 @@ import ReactDOM from 'react-dom';
 import { useAudioContext } from '../../context/AudioContext';
 
 const TILE_SIZE = 100;
-const COLS = 11;
-const ROWS = 7;
+const COLS = 13;
+const ROWS = 9;
 const WIDTH = COLS * TILE_SIZE;
 const HEIGHT = ROWS * TILE_SIZE;
 
 // --- CONFIGURACIÓN AJUSTADA ---
-const SPRITE_SIZE = 90;   
-const WALL_PAD = 5;       
-const PLAYER_HITBOX = 50; 
-const ENEMY_HITBOX = 35;  
-const PLAYER_SPEED = 5;
-const ENEMY_NORMAL_SPEED = 2.5;  
-const ENEMY_MONSTER_SPEED = 3.5;  
+const SPRITE_SIZE = 75;   
+const WALL_PAD = 10;       
+const PLAYER_HITBOX = 50;
+const ENEMY_HITBOX = 60;
+const PLAYER_SPEED = 8.5;
+const ENEMY_NORMAL_SPEED = 9.5;  
+const ENEMY_MONSTER_SPEED = 9.5;  
 
 // --- FUNCIÓN MATEMÁTICA FALTANTE ---
 const rectIntersect = (r1, r2) => {
@@ -61,22 +61,24 @@ const Telecronos = ({ onWin, onClose }) => {
   }, []);
 
   const MAP_LAYOUT = [
-    ['C', '.', '#', '.', 'C', 'V', 'C', '.', '#', '.', 'C'],
-    ['.', '#', '#', '.', '.', '.', '.', '.', '#', '#', '.'],
-    ['.', '.', '.', '.', '#', '.', '#', '.', '.', '.', '.'],
-    ['V', '.', '#', '.', '.', 'C', '.', '.', '#', '.', 'V'],
-    ['.', '.', '.', '.', '#', '.', '#', '.', '.', '.', '.'],
-    ['.', '#', '#', '.', '.', '.', '.', '.', '#', '#', '.'],
-    ['C', '.', '#', '.', 'C', 'V', 'C', '.', '#', '.', 'C'],
+    ['C', '.', '.', '.', 'C','#', 'V','#', 'C', '.', '.', '.', 'C'],
+    ['#', '.', '#', '.', '.', '#', '.', '#', '.', '.', '#', '.', '#'],
+    ['V', '.', '#', '.', '.', '.', '.', '.', '.', '.', '#', '.', 'V'],
+    ['#', '.', '.', '.', '#', '#', '.', '#', '#', '.', '.', '.', '#'],
+    ['#', '.', '#', '.', '.', '#', 'C', '#', '.', '.', '#', '.', '#'],
+    ['#', '.', '.', '.', '#', '#', '.', '#', '#', '.', '.', '.', '#'],
+    ['V', '.', '#', '.', '.', '.', '.', '.', '.', '.', '#', '.', 'V'],
+    ['#', '.', '#', '.', '.', '#', '.', '#', '.', '.', '#', '.','#'],
+    ['C', '.', '.', '.', 'C', '#', 'V', '#', 'C', '.', '.', '.', 'C'],
   ];
 
   const gameState = useRef({
-    player: { x: 305, y: 205, skin: 'normal', faceIdx: null, damageCooldown: 0 }, 
+    player: { x: 605, y: 105, skin: 'normal', faceIdx: null, damageCooldown: 0 }, 
     enemies: [
-      { x: 25, y: 205, vx: ENEMY_NORMAL_SPEED, vy: 0, imgId: 0, skin: 'normal', faceIdx: null, portalCD: 0 },
-      { x: 1015, y: 205, vx: -ENEMY_NORMAL_SPEED, vy: 0, imgId: 1, skin: 'normal', faceIdx: null, portalCD: 0 },
-      { x: 25, y: 405, vx: 0, vy: -ENEMY_NORMAL_SPEED, imgId: 2, skin: 'normal', faceIdx: null, portalCD: 0 },
-      { x: 1015, y: 405, vx: 0, vy: ENEMY_NORMAL_SPEED, imgId: 3, skin: 'normal', faceIdx: null, portalCD: 0 }
+      { x: 105,  y: 105, vx: ENEMY_NORMAL_SPEED,  vy: 0,                   imgId: 0, skin: 'normal', faceIdx: null, portalCD: 0 },
+      { x: 1105, y: 105, vx: -ENEMY_NORMAL_SPEED, vy: 0,                   imgId: 1, skin: 'normal', faceIdx: null, portalCD: 0 },
+      { x: 5,    y: 605, vx: 0,                   vy: -ENEMY_NORMAL_SPEED, imgId: 2, skin: 'normal', faceIdx: null, portalCD: 0 },
+      { x: 1205, y: 605, vx: 0,                   vy:  ENEMY_NORMAL_SPEED, imgId: 3, skin: 'normal', faceIdx: null, portalCD: 0 }
     ],
     cubes: [],
     walls: [],
@@ -96,13 +98,17 @@ const Telecronos = ({ onWin, onClose }) => {
         const x = c * TILE_SIZE;
         const y = r * TILE_SIZE;
         if (cell === '#') walls.push({ x, y, w: TILE_SIZE, h: TILE_SIZE });
-        if (cell === 'V') portals.push({ x, y, side: r === 0 ? 'top' : r === 6 ? 'bottom' : c === 0 ? 'left' : 'right' });
+        if (cell === 'V') portals.push({ x, y, side: r === 0 ? 'top' : r === ROWS-1 ? 'bottom' : c === 0 ? 'left' : 'right' });
         if (cell === 'C') {
           let door = 'bottom';
-          if (r === 0) door = 'bottom'; else if (r === 6) door = 'top';
-          else if (c === 0) door = 'right'; else if (c === 10) door = 'left';
-          else if (r === 3 && c === 5) door = 'bottom'; 
-          else if (r < 3) door = 'bottom'; else door = 'top';
+          if (r === 0 && c === 0) door = 'right';
+          else if (r === 0 && c === COLS-1) door = 'left';
+          else if (r === ROWS-1 && c === 0) door = 'right';
+          else if (r === ROWS-1 && c === COLS-1) door = 'left';
+          else if (r === 0) door = 'bottom'; else if (r === ROWS-1) door = 'top';
+          else if (c === 0) door = 'right'; else if (c === COLS-1) door = 'left';
+          else if (r === Math.floor(ROWS/2) && c === Math.floor(COLS/2)) door = 'bottom'; 
+          else if (r < ROWS/2) door = 'bottom'; else door = 'top';
 
           cubes.push({
             id: cubeCount++,
@@ -126,7 +132,7 @@ const Telecronos = ({ onWin, onClose }) => {
         audNames.forEach(k => {
             const a = new Audio(`/audio/${k === 'loop' ? 'loops' : k}.mp3`);
             if (k === 'loop') a.loop = true;
-            a.volume = 1.0;
+            a.volume = 0.5;
             assets.current.audios[k] = a;
         });
     }
@@ -354,7 +360,7 @@ const Telecronos = ({ onWin, onClose }) => {
                     // -- PROTECCIÓN AUDIO --
                     if (!gamesMuted) assets.current.audios.portal.play();
 
-                    const spots = [{x: 505, y: 105}, {x: 505, y: 505}, {x: 105, y: 305}, {x: 905, y: 305}];
+                    const spots = [{x: 105, y: 105}, {x: 1105, y: 705}, {x: 105, y: 305}, {x: 1105, y: 305}];
                     const target = spots[Math.floor(Math.random() * spots.length)];
                     en.x = target.x; en.y = target.y; 
                     en.portalCD = 150;
@@ -466,7 +472,13 @@ const Telecronos = ({ onWin, onClose }) => {
         // -- PROTECCIÓN AUDIO --
         if (!gamesMuted) assets.current.audios.portal.play(); 
     }
-    const spots = [{x: 505, y: 105}, {x: 505, y: 505}, {x: 105, y: 305}, {x: 905, y: 305}];
+    const spots = gameState.current.portals.map(p => {
+  if (p.side === 'top')    return { x: p.x + 5, y: p.y + 100 };
+  if (p.side === 'bottom') return { x: p.x + 5, y: p.y - 100 };
+  if (p.side === 'left')   return { x: p.x + 100, y: p.y + 5 };
+  if (p.side === 'right')  return { x: p.x - 100, y: p.y + 5 };
+});
+
     const target = spots[Math.floor(Math.random() * spots.length)];
     gameState.current.player.x = target.x; 
     gameState.current.player.y = target.y;
@@ -476,13 +488,20 @@ const Telecronos = ({ onWin, onClose }) => {
     const ctx = canvasRef.current?.getContext('2d'); if (!ctx) return;
     const { player, enemies, cubes, walls, portals } = gameState.current;
 
-    ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, WIDTH, HEIGHT);
-    
-    ctx.fillStyle = '#facc15';
+    // 1. Fondo carbón — este ES el color del camino
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+    // 2. Borde neón púrpura
     const border = 10;
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = '#7c3aed';
+    ctx.fillStyle = '#4c1d95';
     ctx.fillRect(0,0,WIDTH,border); ctx.fillRect(0,HEIGHT-border,WIDTH,border);
     ctx.fillRect(0,0,border,HEIGHT); ctx.fillRect(WIDTH-border,0,border,HEIGHT);
-    
+    ctx.shadowBlur = 0;
+
+    // 3. Abrir huecos de portales en el borde (sin cambios)
     portals.forEach(p => {
         if(p.y===0) ctx.clearRect(p.x, 0, 100, border);
         if(p.y===HEIGHT-100) ctx.clearRect(p.x, HEIGHT-border, 100, border);
@@ -490,18 +509,44 @@ const Telecronos = ({ onWin, onClose }) => {
         if(p.x===WIDTH-100) ctx.clearRect(WIDTH-border, p.y, border, 100);
     });
 
-    walls.forEach(w => { 
-        ctx.beginPath(); 
-        ctx.roundRect(w.x - WALL_PAD + 2, w.y - WALL_PAD + 2, w.w + (WALL_PAD*2) - 4, w.h + (WALL_PAD*2) - 4, 8); 
-        ctx.fill(); 
+    // 4. Muros con gradiente neón
+    walls.forEach(w => {
+        const wx = w.x - WALL_PAD + 2;
+        const wy = w.y - WALL_PAD + 2;
+        const ww = w.w + (WALL_PAD * 2) - 4;
+        const wh = w.h + (WALL_PAD * 2) - 4;
+
+        const grad = ctx.createLinearGradient(wx, wy, wx + ww, wy + wh);
+        grad.addColorStop(0, '#1a0a3e');
+        grad.addColorStop(0.5, '#2d1b69');
+        grad.addColorStop(1, '#1a0a3e');
+
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = '#a855f7';
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.roundRect(wx, wy, ww, wh, 8);
+        ctx.fill();
+
+        ctx.strokeStyle = '#c084fc';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
     });
 
-    ctx.shadowBlur = 25; ctx.shadowColor = '#4ade80'; ctx.fillStyle = '#4ade80';
+    // 5. Portales con glow reforzado
+    const portalPulse = Math.sin(Date.now() / 300) * 5 + 15;
+    ctx.shadowBlur = portalPulse;
+    ctx.shadowColor = '#4ade80';
+    ctx.fillStyle = '#4ade80';
     portals.forEach(p => ctx.fillRect(p.x + 25, p.y + 25, 50, 50));
     ctx.shadowBlur = 0;
 
+    // 6. Cubos — marco cyan (solo cambia strokeStyle, resto idéntico)
     cubes.forEach((c, i) => {
-      ctx.strokeStyle = '#facc15'; 
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = '#00ffff';
+      ctx.strokeStyle = '#00ffff';
       ctx.lineWidth = 4;
       ctx.beginPath();
       
